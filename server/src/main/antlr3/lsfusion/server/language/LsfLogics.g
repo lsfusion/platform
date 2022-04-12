@@ -3933,20 +3933,14 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 
 contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<String> keyPresses = new ArrayList<>(), List<List<QuickAccess>> quickAccesses = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
 	:
-	'ACTIONS' image=stringLiteral { $actionImages.add($image.val); } (kp = keyPressLiteral { $keyPresses.add($kp.keyPress); } )?
-	          (toolbar=contextActionToolbar { $quickAccesses.add($toolbar.quickAccessList); })? actDB=listActionDefinitionBody[context, true] { $actions.add($actDB.action); }
-	(',' nextImage=stringLiteral { $actionImages.add($nextImage.val); } (nextKp = keyPressLiteral { $keyPresses.add($nextKp.keyPress); } )?
-	          (nextToolbar=contextActionToolbar { $quickAccesses.add($nextToolbar.quickAccessList); })? nextActDB=listActionDefinitionBody[context, true] { $actions.add($nextActDB.action); })*
+	'ACTIONS' act = contextAction[context] { $actionImages.add($act.actionImage); $keyPresses.add($act.keyPress); $quickAccesses.add($act.quickAccess); $actions.add($act.action); }
+	(',' nextAct = contextAction[context] { $actionImages.add($nextAct.actionImage); $keyPresses.add($nextAct.keyPress); $quickAccesses.add($nextAct.quickAccess); $actions.add($nextAct.action); })*
 	;
 
-keyPressLiteral returns[String keyPress]
-    :
-    'KEYPRESS' kp=stringLiteral { keyPress = $kp.val; }
-    ;
-
-contextActionToolbar returns [List<QuickAccess> quickAccessList = new ArrayList<>()]
+contextAction[List<TypedParameter> context] returns [String actionImage, String keyPress, List<QuickAccess> quickAccess = new ArrayList<>(), LAWithParams action]
 	:
-	'TOOLBAR' (quickAccess { quickAccessList.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*
+	image=stringLiteral { $actionImage = $image.val; } ('KEYPRESS' kp=stringLiteral { $keyPress = $kp.val; })?
+	          ('TOOLBAR' (quickAccess { $quickAccess.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*)? actDB=listActionDefinitionBody[context, true] { $action = $actDB.action; }
 	;
 
 quickAccess returns [QuickAccessMode mode, Boolean hover = false]

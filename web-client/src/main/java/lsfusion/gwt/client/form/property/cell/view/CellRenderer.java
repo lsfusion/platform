@@ -300,8 +300,25 @@ public abstract class CellRenderer<T> {
             }
 
             if (toolbarActions.length > 0) {
+                Element propertyToolbarItemGroup = null;
+
+                boolean allHover = true;
+                for (ToolbarAction toolbarAction : toolbarActions) {
+                    if(!toolbarAction.isHover()) {
+                        allHover = false;
+                        break;
+                    }
+                }
+
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                addToToolbar(toolbarElement, start, verticalSeparator);
+                if(allHover) {
+                    propertyToolbarItemGroup = createPropertyToolbarItemGroup();
+                    addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
+
+                    addToToolbar(propertyToolbarItemGroup, start, verticalSeparator);
+                } else {
+                    addToToolbar(toolbarElement, start, verticalSeparator);
+                }
 
                 int hoverCount = 0;
                 for (ToolbarAction toolbarAction : toolbarActions) {
@@ -310,22 +327,26 @@ public abstract class CellRenderer<T> {
                     ImageElement actionImgElement = Document.get().createImageElement();
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
-                    if (toolbarAction.isHover()) {
-                        actionDivElement.addClassName("hide");
-                        hoverCount++;
-                    }
-                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
 
+                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
-                    addToToolbar(toolbarElement, start, actionDivElement);
+                    if (toolbarAction.isHover()) {
+                        if(propertyToolbarItemGroup == null) {
+                            propertyToolbarItemGroup = createPropertyToolbarItemGroup();
+                            addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
+                        }
+                        addToToolbar(propertyToolbarItemGroup, start, actionDivElement);
+
+                        hoverCount++;
+                    } else {
+                        propertyToolbarItemGroup = null;
+                        addToToolbar(toolbarElement, start, actionDivElement);
+                    }
                 }
 
                 if (hoverCount > 0) {
                     element.addClassName("property-toolbar-on-hover");
-                }
-                if (hoverCount == toolbarActions.length) {
-                    verticalSeparator.addClassName("hide");
                 }
             }
         } else {
@@ -334,6 +355,13 @@ public abstract class CellRenderer<T> {
 
             clearRenderToolbarContent(element);
         }
+    }
+
+    private Element createPropertyToolbarItemGroup() {
+        Element propertyToolbarItemGroup = Document.get().createDivElement();
+        propertyToolbarItemGroup.addClassName("property-toolbar-item-group");
+        propertyToolbarItemGroup.addClassName("hide");
+        return propertyToolbarItemGroup;
     }
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {

@@ -105,6 +105,11 @@
     padding: 2px;
 }
 
+.property-toolbar-item-group {
+    display: flex;
+    align-self: stretch;
+}
+
 .property-toolbar-item {
     /*overflow: hidden;*/
     padding: 2px;

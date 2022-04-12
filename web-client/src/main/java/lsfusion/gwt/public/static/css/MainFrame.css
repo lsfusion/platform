@@ -280,19 +280,13 @@ input[type=checkbox]:focus {
 }
 
 .property-toolbar-on-hover .hide {
-    display: none;
+    width:0;
+    transition:width 500ms linear;
 }
 
 .property-toolbar-on-hover:hover .hide {
-    display: flex;
-    position:relative;
-    animation-name: moveFromRight;
-    animation-duration: 1s;
-}
-
-@keyframes moveFromRight {
-    from { left: 60px; }
-    to   { left: 0px; }
+    width:100%;
+    transition:width 500ms linear;
 }
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {

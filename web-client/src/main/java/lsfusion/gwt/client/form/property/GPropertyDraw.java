@@ -349,9 +349,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 return actionSID;
         }
 
-        Integer keyStrokeIndex = getKeyStrokeIndex(editEvent);
-        if(keyStrokeIndex != null) {
-            contextAction.set(keyStrokeIndex);
+        Integer inputActionIndex = getInputActionIndex(editEvent);
+        if(inputActionIndex != null) {
+            contextAction.set(inputActionIndex);
             return CHANGE;
         }
 
@@ -359,7 +359,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
     }
 
-    public Integer getKeyStrokeIndex(Event editEvent) {
+    public Integer getInputActionIndex(Event editEvent) {
         GInputList inputList;
         if (KEYDOWN.equals(editEvent.getType()) && (inputList = getInputList()) != null) {
             GKeyStroke keyStroke = null;
