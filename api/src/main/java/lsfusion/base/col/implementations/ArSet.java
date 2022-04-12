@@ -401,8 +401,12 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     private void switchToStored(int size, Object[] array) {
-        StoredArSet<K> storedSet = new StoredArSet<>(StoredArraySerializer.getInstance(), size, (K[]) array);
-        switchToStored(storedSet);
+        try {
+            StoredArSet<K> storedSet = new StoredArSet<>(StoredArraySerializer.getInstance(), size, (K[]) array);
+            switchToStored(storedSet);
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
     }
 
     private void switchToStored(StoredArSet<K> storedSet) {

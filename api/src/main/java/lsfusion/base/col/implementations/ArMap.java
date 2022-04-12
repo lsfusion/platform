@@ -422,8 +422,9 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
     private void switchToStored(int size, Object[] keys, Object[] values) {
         try {
+            AddValue<K, V> addValue = (data instanceof AddValue ? (AddValue<K, V>) data : null);
             StoredArMap<K, V> storedMap =
-                    new StoredArMap<>(StoredArraySerializer.getInstance(), size, (K[]) keys, (V[]) values, getAddValue());
+                    new StoredArMap<>(StoredArraySerializer.getInstance(), size, (K[]) keys, (V[]) values, addValue);
             switchToStored(storedMap);
         } catch (RuntimeException e) {
             e.printStackTrace();
