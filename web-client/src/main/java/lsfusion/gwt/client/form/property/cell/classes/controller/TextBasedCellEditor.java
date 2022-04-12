@@ -364,7 +364,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 @Override
                 public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                     // canceling query
-                    assert isThisCellEditor();
+//                    assert isThisCellEditor(); // can be broken when for example tab is changed, it sets display to none before blur occurs
                     if (isLoading())
                         editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                             @Override
