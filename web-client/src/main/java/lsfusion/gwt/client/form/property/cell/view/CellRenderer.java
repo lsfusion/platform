@@ -281,7 +281,7 @@ public abstract class CellRenderer<T> {
             boolean start = !getHorzTextAlignment().equals(Style.TextAlign.LEFT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
-                toolbarElement.addClassName("property-toolbar");
+                toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
                 toolbarElement.addClassName("background-inherit");
                 element.appendChild(toolbarElement);
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
@@ -302,8 +302,14 @@ public abstract class CellRenderer<T> {
             }
 
             if (toolbarActions.length > 0) {
+                Element propertyToolbarItemGroup = null;
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                addToToolbar(toolbarElement, start, verticalSeparator);
+                if(allHover(toolbarActions)) {
+                    propertyToolbarItemGroup = addPropertyToolbarItemGroup(toolbarElement, start);
+                    addToToolbar(propertyToolbarItemGroup, start, verticalSeparator);
+                } else {
+                    addToToolbar(toolbarElement, start, verticalSeparator);
+                }
 
                 int hoverCount = 0;
                 for (ToolbarAction toolbarAction : toolbarActions) {
@@ -312,22 +318,25 @@ public abstract class CellRenderer<T> {
                     ImageElement actionImgElement = Document.get().createImageElement();
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
-                    if (toolbarAction.isHover()) {
-                        actionDivElement.addClassName("hide");
-                        hoverCount++;
-                    }
-                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
 
+                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
-                    addToToolbar(toolbarElement, start, actionDivElement);
+                    if (toolbarAction.isHover()) {
+                        if(propertyToolbarItemGroup == null) {
+                            propertyToolbarItemGroup = addPropertyToolbarItemGroup(toolbarElement, start);
+                        }
+                        addToToolbar(propertyToolbarItemGroup, start, actionDivElement);
+
+                        hoverCount++;
+                    } else {
+                        propertyToolbarItemGroup = null;
+                        addToToolbar(toolbarElement, start, actionDivElement);
+                    }
                 }
 
                 if (hoverCount > 0) {
                     element.addClassName("property-toolbar-on-hover");
-                }
-                if (hoverCount == toolbarActions.length) {
-                    verticalSeparator.addClassName("hide");
                 }
             }
         } else {
@@ -336,6 +345,25 @@ public abstract class CellRenderer<T> {
 
             clearRenderToolbarContent(element);
         }
+    }
+
+    private boolean allHover(ToolbarAction[] toolbarActions) {
+        for (ToolbarAction toolbarAction : toolbarActions) {
+            if (!toolbarAction.isHover()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Element addPropertyToolbarItemGroup(Element toolbarElement, boolean start) {
+        Element propertyToolbarItemGroup = Document.get().createDivElement();
+        propertyToolbarItemGroup.addClassName("property-toolbar-item-group");
+        propertyToolbarItemGroup.addClassName("hide");
+
+        addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
+
+        return propertyToolbarItemGroup;
     }
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {

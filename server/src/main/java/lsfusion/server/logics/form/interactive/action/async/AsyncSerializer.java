@@ -4,6 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static lsfusion.base.BaseUtils.nvl;
+
 public class AsyncSerializer {
 
     public static void serializeEventExec(AsyncEventExec eventExec, DataOutputStream outStream) throws IOException {
@@ -26,6 +28,7 @@ public class AsyncSerializer {
         for(InputListAction action : inputList.actions) {
             dataStream.writeUTF(action.action);
             AsyncSerializer.serializeEventExec(action.asyncExec, dataStream);
+            dataStream.writeUTF(nvl(action.keyStroke, ""));
             dataStream.write(action.quickAccessList.size());
             for(QuickAccess quickAccess : action.quickAccessList) {
                 dataStream.writeByte(serializeQuickAccessMode(quickAccess.mode));

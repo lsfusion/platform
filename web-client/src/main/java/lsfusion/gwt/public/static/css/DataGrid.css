@@ -74,9 +74,15 @@
     overflow: hidden;
 }
 
-.property-toolbar {
+.property-toolbar-start {
     display: flex;
-    justify-content: center;
+    justify-content: start;
+    align-items: center;
+}
+
+.property-toolbar-end {
+    display: flex;
+    justify-content: end;
     align-items: center;
 }
 
@@ -103,6 +109,11 @@
 
 .property-toolbar-loading {
     padding: 2px;
+}
+
+.property-toolbar-item-group {
+    display: flex;
+    align-self: stretch;
 }
 
 .property-toolbar-item {

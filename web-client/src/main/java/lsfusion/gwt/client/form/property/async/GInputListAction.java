@@ -15,9 +15,10 @@ public class GInputListAction implements Serializable {
     public GInputListAction() {
     }
 
-    public GInputListAction(String action, GAsyncEventExec asyncExec, ArrayList<GQuickAccess> quickAccessList) {
+    public GInputListAction(String action, GAsyncEventExec asyncExec, GKeyStroke keyStroke, ArrayList<GQuickAccess> quickAccessList) {
         this.action = action;
         this.asyncExec = asyncExec;
+        this.keyStroke = keyStroke;
         this.quickAccessList = quickAccessList;
     }
 }

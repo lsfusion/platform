@@ -280,11 +280,13 @@ input[type=checkbox]:focus {
 }
 
 .property-toolbar-on-hover .hide {
-    display: none;
+    width:0;
+    transition:width 50ms linear;
 }
 
 .property-toolbar-on-hover:hover .hide {
-    display: flex;
+    width:100%;
+    transition:width 50ms linear;
 }
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {

@@ -2,6 +2,7 @@ package lsfusion.client.form.property.async;
 
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -35,12 +36,13 @@ public class ClientAsyncSerializer {
         for (int i = 0; i < actionsLength; i++) {
             String action = inStream.readUTF();
             ClientAsyncEventExec asyncExec = deserializeEventExec(inStream);
+            KeyStroke keyStroke = KeyStroke.getKeyStroke(inStream.readUTF());
             int quickAccessLength = inStream.readByte();
             List<ClientQuickAccess> quickAccessList = new ArrayList<>();
             for (int j = 0; j < quickAccessLength; j++) {
                 quickAccessList.add(new ClientQuickAccess(deserializeQuickAccessMode(inStream), inStream.readBoolean()));
             }
-            actions[i] = new ClientInputListAction(action, asyncExec, quickAccessList);
+            actions[i] = new ClientInputListAction(action, asyncExec, keyStroke, quickAccessList);
         }
 
         return new ClientInputList(actions, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT);
