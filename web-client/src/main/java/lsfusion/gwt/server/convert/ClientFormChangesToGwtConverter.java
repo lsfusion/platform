@@ -1,6 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.classes.data.ClientImageClass;
 import lsfusion.client.form.ClientFormChanges;
@@ -126,7 +127,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
                 Object propValue = convertOrCast(clientValues.getValue());
-                if (propValue instanceof FileData || propValue instanceof RawFileData) {
+                if (propValue instanceof NamedFileData || propValue instanceof FileData || propValue instanceof RawFileData) {
                     propValue = convertFileValue(reader, propValue, sessionObject);
                 }
                 propValueKeys[j] = groupObjectValue;

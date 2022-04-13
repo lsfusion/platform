@@ -662,6 +662,11 @@ public class BaseUtils {
             return Instant.ofEpochMilli(inStream.readLong());
         }
 
+        if (objectType == 14) {
+            int len = inStream.readInt();
+            return new NamedFileData(IOUtils.readBytesFromStream(inStream, len));
+        }
+
         throw new IOException();
     }
 
@@ -785,6 +790,14 @@ public class BaseUtils {
         if(object instanceof Instant) {
             outStream.writeByte(13);
             outStream.writeLong(((Instant) object).toEpochMilli());
+            return;
+        }
+
+        if (object instanceof NamedFileData) {
+            outStream.writeByte(14);
+            byte[] obj = ((NamedFileData) object).getBytes();
+            outStream.writeInt(obj.length);
+            outStream.write(obj);
             return;
         }
 
