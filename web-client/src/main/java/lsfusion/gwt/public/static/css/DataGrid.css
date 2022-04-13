@@ -111,9 +111,16 @@
     padding: 2px;
 }
 
-.property-toolbar-item-group {
+.property-toolbar-item-group-start {
     display: flex;
     align-self: stretch;
+    justify-content: end;
+}
+
+.property-toolbar-item-group-end {
+    display: flex;
+    align-self: stretch;
+    justify-content: start;
 }
 
 .property-toolbar-item {

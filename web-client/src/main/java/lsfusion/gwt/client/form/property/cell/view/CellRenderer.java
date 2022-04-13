@@ -282,7 +282,6 @@ public abstract class CellRenderer<T> {
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
-                toolbarElement.addClassName("background-inherit");
                 element.appendChild(toolbarElement);
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
 
@@ -290,13 +289,11 @@ public abstract class CellRenderer<T> {
             } else
                 GwtClientUtils.removeAllChildren(toolbarElement);
 
-            // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
-            GFormController.setBackgroundColor(toolbarElement, background, true);
-
             if(loading) {
                 ImageElement loadingImage = Document.get().createImageElement();
                 GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
                 loadingImage.addClassName("property-toolbar-loading");
+                setBackground(loadingImage, background);
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
@@ -304,9 +301,9 @@ public abstract class CellRenderer<T> {
             if (toolbarActions.length > 0) {
                 Element propertyToolbarItemGroup = null;
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
+                setBackground(verticalSeparator, background);
                 if(allHover(toolbarActions)) {
-                    propertyToolbarItemGroup = addPropertyToolbarItemGroup(toolbarElement, start);
-                    addToToolbar(propertyToolbarItemGroup, start, verticalSeparator);
+                    propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(null, toolbarElement, verticalSeparator, start);
                 } else {
                     addToToolbar(toolbarElement, start, verticalSeparator);
                 }
@@ -318,16 +315,13 @@ public abstract class CellRenderer<T> {
                     ImageElement actionImgElement = Document.get().createImageElement();
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
+                    setBackground(actionDivElement, background);
 
                     GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
                     if (toolbarAction.isHover()) {
-                        if(propertyToolbarItemGroup == null) {
-                            propertyToolbarItemGroup = addPropertyToolbarItemGroup(toolbarElement, start);
-                        }
-                        addToToolbar(propertyToolbarItemGroup, start, actionDivElement);
-
+                        propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(propertyToolbarItemGroup, toolbarElement, actionDivElement, start);
                         hoverCount++;
                     } else {
                         propertyToolbarItemGroup = null;
@@ -356,14 +350,23 @@ public abstract class CellRenderer<T> {
         return true;
     }
 
-    private Element addPropertyToolbarItemGroup(Element toolbarElement, boolean start) {
-        Element propertyToolbarItemGroup = Document.get().createDivElement();
-        propertyToolbarItemGroup.addClassName("property-toolbar-item-group");
+    private Element wrapPropertyToolbarItemGroup(Element propertyToolbarItemGroup, Element toolbarElement, Element element, boolean start) {
+        if(propertyToolbarItemGroup == null)
+            propertyToolbarItemGroup = Document.get().createDivElement();
+        propertyToolbarItemGroup.addClassName(start ? "property-toolbar-item-group-start" : "property-toolbar-item-group-end");
         propertyToolbarItemGroup.addClassName("hide");
 
         addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
 
+        addToToolbar(propertyToolbarItemGroup, start, element);
+
         return propertyToolbarItemGroup;
+    }
+
+    private void setBackground(Element element, String background) {
+        element.addClassName("background-inherit");
+        // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
+        GFormController.setBackgroundColor(element, background, true);
     }
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {
