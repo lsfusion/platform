@@ -19,6 +19,11 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
         return (String) value;
     }
 
+    @Override
+    protected boolean needToRenderToolbarContent() {
+        return false; // we don't want to render toolbar content, since richtextcelleditor is usually used for editing, and toolbar will not work / overlap and thus interfere with the editing process
+    }
+
     protected native void initQuill(Element element, String innerText)/*-{
         var toolbarOptions = [
             ['bold', 'italic', 'underline', 'strike'],        // toggled buttons

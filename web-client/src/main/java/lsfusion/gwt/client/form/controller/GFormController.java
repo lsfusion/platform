@@ -993,8 +993,8 @@ public class GFormController implements EditManager {
                 if (chosenOption == DialogBoxHelper.OptionType.YES)
                     executePropertyEventActionConfirmed(editContext, actionSID, event);
             });
-        }
-        executePropertyEventActionConfirmed(editContext, actionSID, event);
+        } else
+            executePropertyEventActionConfirmed(editContext, actionSID, event);
     }
 
     public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, Event event) {
