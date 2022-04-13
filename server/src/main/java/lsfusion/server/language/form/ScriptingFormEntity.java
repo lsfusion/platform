@@ -335,16 +335,12 @@ public class ScriptingFormEntity {
     }
     
     public void addScriptedPropertyDraws(List<? extends ScriptingLogicsModule.AbstractFormActionOrPropertyUsage> properties, 
-                                         List<String> aliases, List<LocalizedString> captions, FormOptions formOptions, 
+                                         List<String> aliases, List<LocalizedString> captions, 
                                          FormPropertyOptions commonOptions, List<FormPropertyOptions> options, Version version, 
                                          List<DebugInfo.DebugPoint> points) throws ScriptingErrorLog.SemanticErrorException {
         boolean reverse = commonOptions.getInsertType() == FIRST || commonOptions.getNeighbourPropertyDraw() != null && commonOptions.getInsertType() == AFTER;
 
-        FormPropertyOptions globalAndCommonOptions = form.getGlobalPropertyOptions(version);
-        if (formOptions != null && formOptions.getPropertyOptions() != null) {
-            globalAndCommonOptions = globalAndCommonOptions.overrideWith(formOptions.getPropertyOptions());
-        }
-        globalAndCommonOptions = globalAndCommonOptions.overrideWith(commonOptions);
+        FormPropertyOptions globalAndCommonOptions = form.getGlobalPropertyOptions(version).overrideWith(commonOptions);
         
         for (int i = reverse ? properties.size() - 1 : 0; (reverse ? i >= 0 : i < properties.size()); i = reverse ? i - 1 : i + 1) {
             ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);

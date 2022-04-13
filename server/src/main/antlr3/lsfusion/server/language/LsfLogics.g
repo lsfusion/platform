@@ -398,24 +398,21 @@ scope {
 @init {
 	boolean initialDeclaration = false;
 	DebugInfo.DebugPoint point = getCurrentDebugPoint();
-	FormOptions options = null;
 }
 @after {
-	if (inMainParseState()) {
-        if (initialDeclaration) {
-            self.finalizeScriptedForm($formStatement::form);
-		}
-		$formStatement::form.setFormOptions(options, self.getVersion());
+	if (inMainParseState() && initialDeclaration) {
+        self.finalizeScriptedForm($formStatement::form);
 	}
 }
 	:	(	declaration=formDeclaration { $formStatement::form = $declaration.form; initialDeclaration = true; }
 		|	extDecl=extendingFormDeclaration { $formStatement::form = $extDecl.form; }
 		)
-		fo = formOptions { options = $fo.options; }
+		fo = formOptions { if (inMainParseState()) 
+		    $formStatement::form.setFormOptions($fo.options, self.getVersion()); }
 		(	formGroupObjectsList
 		|	formTreeGroupObjectList
 		|	formFiltersList
-		|	formPropertiesList[options]
+		|	formPropertiesList
 		|	formHintsList
 		|	formEventsList
 		|	filterGroupDeclaration
@@ -778,7 +775,7 @@ formObjectDeclaration returns [String name, String className, LocalizedString ca
 		)*
 	; 
 	
-formPropertiesList[FormOptions formOptions]
+formPropertiesList
 @init {
 	List<? extends AbstractFormActionOrPropertyUsage> properties = new ArrayList<>();
 	List<String> aliases = new ArrayList<>();
@@ -789,7 +786,7 @@ formPropertiesList[FormOptions formOptions]
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, $formOptions, commonOptions, options, self.getVersion(), points);
+		$formStatement::form.addScriptedPropertyDraws(properties, aliases, captions, commonOptions, options, self.getVersion(), points);
 	}
 }
 	:	'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertyUList[$objects.ids]
