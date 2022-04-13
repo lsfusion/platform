@@ -645,11 +645,9 @@ public class GFormController implements EditManager {
 
         expandCollapseContainers(fc);
 
-        formLayout.update(requestIndex);
-
         activateElements(fc);
 
-        formLayout.onResize();
+        formLayout.update(requestIndex);
     }
 
     public void applyKeyChanges(GFormChanges fc) {
@@ -1268,15 +1266,14 @@ public class GFormController implements EditManager {
 
     public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {
         asyncResponseDispatch(new SetTabActive(tabbedPane.ID, visibleComponent.ID));
-        formLayout.onResize();
+
+        formLayout.updatePanels(); // maybe it's not needed, but we want to make it symmetrical to the container collapsed call
     }
     
     public void setContainerCollapsed(GContainer container, boolean collapsed) {
         asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
 
         formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
-
-        formLayout.onResize();
     }
 
     public void closePressed(EndReason reason) {

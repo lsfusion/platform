@@ -281,12 +281,12 @@ input[type=checkbox]:focus {
 
 .property-toolbar-on-hover .hide {
     width:0;
-    transition:width 500ms linear;
+    transition:width 200ms linear;
 }
 
 .property-toolbar-on-hover:hover .hide {
     width:100%;
-    transition:width 500ms linear;
+    transition:width 200ms linear;
 }
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
