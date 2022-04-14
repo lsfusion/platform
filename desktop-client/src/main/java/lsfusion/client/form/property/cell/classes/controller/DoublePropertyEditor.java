@@ -24,7 +24,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
         final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
 
-        NumberFormatter formatter = new NullNumberFormatter(format, isGroupSeparatorDot ? 0 : 0.0, String.valueOf(separator)) {
+        NumberFormatter formatter = new NullNumberFormatter(df, isGroupSeparatorDot ? 0 : 0.0, String.valueOf(separator)) {
             public boolean lastTextEndsWithSeparator;
             public int lastZero;
 
