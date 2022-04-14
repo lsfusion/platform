@@ -20,9 +20,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
-import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -349,7 +347,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 return actionSID;
         }
 
-        Integer inputActionIndex = getInputActionIndex(editEvent);
+        Integer inputActionIndex = getInputActionIndex(editEvent, false);
         if(inputActionIndex != null) {
             contextAction.set(inputActionIndex);
             return CHANGE;
@@ -359,7 +357,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
     }
 
-    public Integer getInputActionIndex(Event editEvent) {
+    public Integer getInputActionIndex(Event editEvent, boolean isEditing) {
         GInputList inputList;
         if (KEYDOWN.equals(editEvent.getType()) && (inputList = getInputList()) != null) {
             GKeyStroke keyStroke = null;
@@ -368,13 +366,28 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 if (action.keyStroke != null) {
                     if (keyStroke == null)
                         keyStroke = getKeyStroke(editEvent);
-                    if (keyStroke.equals(action.keyStroke)) {
+                    if (keyStroke.equals(action.keyStroke) && bindEditing(action.editingBindingMode, isEditing)) {
                         return i;
                     }
                 }
             }
         }
         return null;
+    }
+
+    private boolean bindEditing(GBindingMode bindEditing, boolean isEditing) {
+        switch (bindEditing) {
+            case AUTO:
+            case ALL:
+                return true;
+            case NO:
+                return !isEditing;
+            case ONLY:
+                return isEditing;
+            case INPUT:
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + bindEditing);
+        }
     }
 
     public boolean isFilterChange(Event editEvent, Result<Boolean> contextAction) {

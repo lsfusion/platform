@@ -121,7 +121,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 return;
             }
         } else {
-            Integer inputActionIndex = property.getInputActionIndex(event);
+            Integer inputActionIndex = property.getInputActionIndex(event, true);
             if(inputActionIndex != null) {
                 validateAndCommit(suggestBox.getElement(), inputActionIndex, true, CommitReason.OTHER);
                 return;

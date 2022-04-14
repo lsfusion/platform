@@ -3,11 +3,13 @@ package lsfusion.gwt.server.convert;
 import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.form.property.async.*;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
+import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.form.event.BindingMode;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -45,7 +47,8 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         for(int i = 0; i < clientInputListAction.quickAccessList.size(); i++) {
             quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));
         }
-        return new GInputListAction(clientInputListAction.action, convertOrCast(clientInputListAction.asyncExec), convertOrCast(clientInputListAction.keyStroke), quickAccessList);
+        return new GInputListAction(clientInputListAction.action, convertOrCast(clientInputListAction.asyncExec),
+                convertOrCast(clientInputListAction.keyStroke), convertOrCast(clientInputListAction.editingBindingMode), quickAccessList);
     }
 
     @Converter(from = KeyStroke.class)
@@ -57,6 +60,11 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         int keyCode = convertKeyCode(keyStroke.getKeyCode());
 
         return new GKeyStroke(keyCode, isAltPressed, isCtrlPressed, isShiftPressed);
+    }
+
+    @Converter(from = BindingMode.class)
+    public GBindingMode convertBindingMode(BindingMode bindingMode) {
+        return  GBindingMode.valueOf(bindingMode.name());
     }
 
     private int convertKeyCode(int keyCode) {

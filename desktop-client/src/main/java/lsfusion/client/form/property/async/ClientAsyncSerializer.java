@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.async;
 
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
+import lsfusion.interop.form.event.BindingMode;
 
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
@@ -37,12 +38,13 @@ public class ClientAsyncSerializer {
             String action = inStream.readUTF();
             ClientAsyncEventExec asyncExec = deserializeEventExec(inStream);
             KeyStroke keyStroke = KeyStroke.getKeyStroke(inStream.readUTF());
+            BindingMode editingBindingMode = BindingMode.deserialize(inStream);
             int quickAccessLength = inStream.readByte();
             List<ClientQuickAccess> quickAccessList = new ArrayList<>();
             for (int j = 0; j < quickAccessLength; j++) {
                 quickAccessList.add(new ClientQuickAccess(deserializeQuickAccessMode(inStream), inStream.readBoolean()));
             }
-            actions[i] = new ClientInputListAction(action, asyncExec, keyStroke, quickAccessList);
+            actions[i] = new ClientInputListAction(action, asyncExec, keyStroke, editingBindingMode, quickAccessList);
         }
 
         return new ClientInputList(actions, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT);

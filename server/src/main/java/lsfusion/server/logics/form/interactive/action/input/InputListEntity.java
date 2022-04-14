@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.form.event.BindingMode;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -33,6 +34,7 @@ import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
+import java.util.Collections;
 
 // pretty similar to ContextFilterEntity
 public class InputListEntity<P extends PropertyInterface, V extends PropertyInterface> {
@@ -119,7 +121,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
                 BaseUtils.add(BaseUtils.add(lp, ActionOrPropertyUtils.getIntParams(lp, singleIndex, contextParams + 1)), // remapping single interface to the new object
                         singleIndex)); // replacing property with the string
 
-        return new InputContextAction<>("new", QuickAccess.EMPTY, newEdit.getActionOrProperty(),
+        return new InputContextAction<>("new", "INSERT", Collections.singletonMap("editing", BindingMode.ONLY), null, QuickAccess.EMPTY, newEdit.getActionOrProperty(),
                 listInterfaces.mapSet(newEdit.listInterfaces).removeRev(singleInterface).crossJoin(mapValues));
     }
 
