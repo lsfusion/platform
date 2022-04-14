@@ -452,11 +452,14 @@ public class GwtClientUtils {
     }
 
     public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
-
         int popupWidth = popup.getOffsetWidth();
         int popupHeight = popup.getOffsetHeight();
         int xCorrection = popupWidth - (Window.getClientWidth() - mouseX);
         int yCorrection = popupHeight - (Window.getClientHeight() - mouseY);
+
+        //to prevent the cursor hovering over the top left of the tooltip
+        int mouseXOffset = 10;
+        int mouseYOffset = 18;
 
         if (xCorrection > 0 || yCorrection > 0) {
             if (xCorrection > 0 && yCorrection > 0) {
@@ -465,12 +468,12 @@ public class GwtClientUtils {
                 popup.setPopupPosition(mouseX - popupWidth, mouseY - popupHeight);
             } else {
                 popup.setPopupPosition(
-                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX + 1,
-                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY + 1
+                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX + mouseXOffset,
+                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY + mouseYOffset
                 );
             }
         } else {
-            popup.setPopupPosition(mouseX + 1, mouseY + 1);
+            popup.setPopupPosition(mouseX + mouseXOffset, mouseY + mouseYOffset);
         }
     }
 
