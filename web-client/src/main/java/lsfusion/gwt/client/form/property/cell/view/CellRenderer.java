@@ -5,6 +5,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
@@ -229,6 +230,7 @@ public abstract class CellRenderer<T> {
     public interface ToolbarAction {
 
         boolean isHover();
+        GKeyStroke getKeyStroke();
         String getImage();
 
         boolean matches(ToolbarAction action);
@@ -319,6 +321,9 @@ public abstract class CellRenderer<T> {
 
                     GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
+
+                    GKeyStroke keyStroke = toolbarAction.getKeyStroke();
+                    actionDivElement.setTitle(keyStroke != null ? keyStroke.toString() : "");
 
                     if (toolbarAction.isHover()) {
                         propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(propertyToolbarItemGroup, toolbarElement, actionDivElement, start);
