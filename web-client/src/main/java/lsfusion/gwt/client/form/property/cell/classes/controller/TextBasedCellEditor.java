@@ -503,23 +503,27 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 };
                 GwtClientUtils.setThemeImage(actions[index].action + ".png", (image -> actionButton.getUpFace().setImage(new Image(image))));
                 buttonsPanel.add(actionButton);
-                TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
-                    public String getTooltip() {
-                        return property.getQuickActionTooltipText(actions[index].keyStroke);
-                    }
 
-                    public boolean stillShowTooltip() {
-                        return actionButton.isAttached() && actionButton.isVisible();
-                    }
+                String tooltip = property.getQuickActionTooltipText(actions[index].keyStroke);
+                if(tooltip != null) {
+                    TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
+                        public String getTooltip() {
+                            return tooltip;
+                        }
 
-                    public String getPath() {
-                        return null;
-                    }
+                        public boolean stillShowTooltip() {
+                            return actionButton.isAttached() && actionButton.isVisible();
+                        }
 
-                    public String getCreationPath() {
-                        return null;
-                    }
-                });
+                        public String getPath() {
+                            return null;
+                        }
+
+                        public String getCreationPath() {
+                            return null;
+                        }
+                    });
+                }
             }
 
             bottomPanel.add(buttonsPanel);

@@ -513,7 +513,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return createTooltipHorizontalSeparator() + "<b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
     }
     public String getQuickActionTooltipText(GKeyStroke keyStroke) {
-        return keyStroke != null ? ("<b>" + getMessages().propertyTooltipHotkey() + ":</b>" + keyStroke) : "";
+        return keyStroke != null ? ("<b>" + getMessages().propertyTooltipHotkey() + ":</b> " + keyStroke) : null;
     }
 
     public String getTooltipText(String caption) {
