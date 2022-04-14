@@ -758,9 +758,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "<b>" + getString("logics.formpath") + ":</b> %7$s" +
                     "</html>";
 
-    public static final String EDIT_KEY_TOOL_TIP_FORMAT =
-            "<hr><b>" + getString("logics.property.edit.key") + ":</b> %1$s<br>";
+    public static final String hotkey = getString("logics.property.hotkey");
+    public static final String EDIT_KEY_TOOL_TIP_FORMAT = "<hr><b>" + hotkey + ":</b> %1$s<br>";
 
+    public String getQuickActionTooltipText(KeyStroke keyStroke) {
+        return keyStroke == null ? "" : String.format("<html><b>" + hotkey + ":</b> %1$s</html>", keyStroke);
+    }
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String changeKeyText = changeKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getChangeKeyCaption());

@@ -121,12 +121,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {
         public final String action;
+        public final GKeyStroke keyStroke;
         public final int index;
         public final boolean hover;
 
         @Override
         public boolean isHover() {
             return hover;
+        }
+
+        @Override
+        public GKeyStroke getKeyStroke() {
+            return keyStroke;
         }
 
         @Override
@@ -148,8 +154,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return isHover() == action.isHover() && index == ((QuickAccessAction) action).index;
         }
 
-        public QuickAccessAction(String action, int index, boolean hover) {
+        public QuickAccessAction(String action, GKeyStroke keyStroke, int index, boolean hover) {
             this.action = action;
+            this.keyStroke = keyStroke;
             this.index = index;
             this.hover = hover;
         }
@@ -217,7 +224,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
                 GInputListAction action = inputList.actions[i];
                 if (enable) {
-                    actions.add(new QuickAccessAction(action.action, i, hover));
+                    actions.add(new QuickAccessAction(action.action, action.keyStroke, i, hover));
                 }
             }
         }
@@ -505,7 +512,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public static String getChangeKeyToolTipFormat() {
         return createTooltipHorizontalSeparator() + "<b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
     }
-            
+    public String getQuickActionTooltipText(GKeyStroke keyStroke) {
+        return keyStroke != null ? ("<b>" + getMessages().propertyTooltipHotkey() + ":</b>" + keyStroke) : "";
+    }
+
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
         String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";
