@@ -49,7 +49,7 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
             ImageDescription image = navigatorElement.image.getImage();
             if (image != null && image.url != null) {
                 iconImageElement = Document.get().createImageElement();
-                iconImageElement.setSrc(image.url);
+                iconImageElement.setSrc(GwtClientUtils.getAppImagePath(image.url));
 
                 icons.put(navigatorElement, iconImageElement);
             }

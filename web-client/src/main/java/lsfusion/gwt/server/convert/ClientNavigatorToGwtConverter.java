@@ -15,13 +15,14 @@ import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.WindowFormType;
 
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
-    public ClientNavigatorToGwtConverter(String logicsName) {
-        super(logicsName);
+    public ClientNavigatorToGwtConverter(ServletContext servletContext, String logicsName) {
+        super(servletContext, logicsName);
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
