@@ -344,7 +344,11 @@ public class ArSet<K> extends AMSet<K> {
 
     @Override
     public AMRevMap<K, K> toMap() {
-        return new ArMap<>(this);
+        if (!isStored()) {
+            return new ArMap<>(size, array, array);
+        } else {
+            return new ArMap<>(stored().getStoredArray(), stored().getStoredArray());
+        }
     }
 
     @Override

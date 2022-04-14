@@ -140,7 +140,11 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ArIndexedMap<K, K> toMap() {
-        return new ArIndexedMap<>(this);
+        if (!isStored()) {
+            return new ArIndexedMap<>(size, array, array);
+        } else {
+            return new ArIndexedMap<>(stored().getStoredArray(), stored().getStoredArray());
+        }
     }
 
     public ImRevMap<K, K> toRevMap() {
