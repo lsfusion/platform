@@ -31,6 +31,6 @@ public abstract class ClientFormatClass<F extends Format> extends ClientDataClas
     }
 
     protected F getEditFormat(Format format, boolean width) {
-        return (F) format;
+        return format == null ? (F) getDefaultFormat() : (F) format;
     }
 }

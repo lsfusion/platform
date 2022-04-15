@@ -23,6 +23,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         this.hasMask = hasMask;
         final boolean isGroupSeparatorDot = df.getDecimalFormatSymbols().getGroupingSeparator() == '.';
         final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
+        final char groupingSeparator = df.getDecimalFormatSymbols().getGroupingSeparator();
 
         NumberFormatter formatter = new NullNumberFormatter(df, isGroupSeparatorDot ? 0 : 0.0, String.valueOf(separator)) {
             public boolean lastTextEndsWithSeparator;
@@ -55,6 +56,7 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
             @Override
             public Object stringToValue(String text) throws ParseException {
+                text = BaseUtils.replaceSeparators(text, separator, groupingSeparator);
                 lastZero = 0;
                 if (text != null && text.length() > 0) {
                     //если >1 decimalSeparator, удаляем по предпоследний включительно
