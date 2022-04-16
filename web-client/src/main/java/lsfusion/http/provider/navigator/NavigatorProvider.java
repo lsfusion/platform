@@ -4,6 +4,7 @@ package lsfusion.http.provider.navigator;
 import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +17,7 @@ public interface NavigatorProvider {
     NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
     void removeNavigatorSessionObject(String sessionID) throws RemoteException;
 
-    String getLogicsName(String sessionID) throws SessionInvalidatedException;
+    ServerSettings getServerSettings(String sessionID) throws SessionInvalidatedException;
     
     String getSessionInfo();
 

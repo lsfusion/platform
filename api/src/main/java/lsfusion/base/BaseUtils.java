@@ -2358,26 +2358,34 @@ public class BaseUtils {
         return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
     }
 
+    check for null
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String namedFileName, File... files) {
+fdd
+    }
+    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String[] namedFileNames, String[] fileNames, InputStream[] fileStreams) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
 
         byte[] result;
         try(DataOutputStream outStream = new DataOutputStream(byteOutStream)) {
+            int length = fileNames.length;
             if (multiple)
-                outStream.writeInt(files.length);
-            for (File file : files) {
+                outStream.writeInt(length);
+            for (int i=0;i<length;i++) {
+                String fileName = fileNames[i];
+                InputStream fileStream = fileStreams[i];
+                String namedFileName = namedFileNames[i];
                 if (storeName) {
-                    outStream.writeInt(file.getName().length());
-                    outStream.writeBytes(file.getName());
+                    outStream.writeInt(fileName.length());
+                    outStream.writeBytes(fileName);
                 }
-                RawFileData rawFileData = new RawFileData(file);
+                RawFileData rawFileData = new RawFileData(fileStream);
 
                 byte[] fileBytes;
                 if (custom) {
-                    String ext = getFileExtension(file);
+                    String ext = getFileExtension(fileName);
                     if(named) {
                         assert !multiple && !storeName;
-                        return new NamedFileData(new FileData(rawFileData, ext), namedFileName != null ? getFileName(namedFileName) : getFileName(file));
+                        return new NamedFileData(new FileData(rawFileData, ext), getFileName(namedFileName != null ? namedFileName : fileName));
                     } else {
                         FileData fileData = new FileData(rawFileData, ext);
                         if(!(multiple || storeName))

@@ -372,8 +372,19 @@ public class GwtSharedUtils {
         return msg.toString();
     }
 
-    public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
-        return  "downloadFile" + (actionFile ? "" : "/static") +
-                "?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "");
+    public static String getDownloadURL(String name, String displayName, String extension) {
+        assert name != null;
+        String params = "";
+        if(displayName != null)
+            params = (params.isEmpty() ? "" : params + "&") + "displayName=" + displayName;
+        if(extension != null)
+            params = (params.isEmpty() ? "" : params + "&") + "extension=" + extension;
+        return name + (params.isEmpty() ? "" : "?" + params);
+    }
+    public static String getUploadURL(String fileName) {
+        String params = "";
+        if(fileName != null)
+            params = (params.isEmpty() ? "" : params + "&") + "sid=" + fileName;
+        return "uploadFile" + (params.isEmpty() ? "" : "?" + params);
     }
 }

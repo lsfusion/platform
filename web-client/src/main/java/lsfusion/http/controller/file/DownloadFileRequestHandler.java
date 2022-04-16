@@ -26,19 +26,14 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         String extension = request.getParameter("extension");
         boolean staticFile = request.getRequestURI().equals("/downloadFile/static");
 
-        File file = new File(FileUtils.APP_TEMP_FOLDER_URL, fileName);
-        
         response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
         //inline = open in browser, attachment = download
         response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName != null ? displayName : fileName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 
-        try(FileInputStream fis = new FileInputStream(file)) {
-            ByteStreams.copy(fis, response.getOutputStream());
-        }
-        
-        if(!staticFile)
-            FileUtils.deleteFile(file);
+        FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, inStream -> {
+            ByteStreams.copy(inStream, response.getOutputStream());
+        });
     }
 
     private String getFileName(String name, String extension) {

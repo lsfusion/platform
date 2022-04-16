@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.function.Consumer;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.getDownloadURL;
 import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.clearBasedTextFonts;
 import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.setBasedTextFonts;
@@ -147,11 +146,11 @@ public class ActionCellRenderer extends CellRenderer {
                 absolute = false;
             } else if(property.hasDynamicImage()) {
                 if ((image = updateContext.getImage()) instanceof String)
-                    imagePath = getDownloadURL((String) image, null, null, false);
+                    imagePath = GwtClientUtils.getAppDownloadURL((String) image, null, null);
                 else
                     imagePath = "";
             } else if(property.hasStaticImage())
-                imagePath = GwtClientUtils.getAppImagePath(property.getImage(enabled).url);
+                imagePath = GwtClientUtils.getAppStaticImageURL(property.getImage(enabled).url);
             else {
                 imagePath = ICON_EXECUTE;
                 absolute = false;

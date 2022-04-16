@@ -50,6 +50,7 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.logics.ServerSettings;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
@@ -65,8 +66,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     private final ClientAsyncToGwtConverter asyncConverter = ClientAsyncToGwtConverter.getInstance();
     private GForm form;
 
-    public ClientComponentToGwtConverter(String logicsName) {
-        super(logicsName);
+    public ClientComponentToGwtConverter(ServerSettings settings) {
+        super(settings);
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {

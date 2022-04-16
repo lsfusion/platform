@@ -49,7 +49,7 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
             ImageDescription image = navigatorElement.image.getImage();
             if (image != null && image.url != null) {
                 iconImageElement = Document.get().createImageElement();
-                iconImageElement.setSrc(image.url);
+                iconImageElement.setSrc(GwtClientUtils.getAppStaticImageURL(image.url));
 
                 icons.put(navigatorElement, iconImageElement);
             }
@@ -109,7 +109,7 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
     @Override
     public void colorThemeChanged() {
         for (GNavigatorElement navigatorElement : icons.keySet()) {
-            icons.get(navigatorElement).setSrc(GwtClientUtils.getAppImagePath(navigatorElement.image.getImage().url));
+            icons.get(navigatorElement).setSrc(GwtClientUtils.getAppStaticImageURL(navigatorElement.image.getImage().url));
         }
     }
 }

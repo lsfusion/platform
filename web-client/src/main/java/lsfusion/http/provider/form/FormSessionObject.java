@@ -12,7 +12,7 @@ public class FormSessionObject<T> {
     public final RemoteFormInterface remoteForm;
     public final String navigatorID;
     
-    public final Map<String, File> savedTempFiles;
+    public final Map<String, Runnable> savedTempFiles;
 
     public int requestIndex = 0;
 

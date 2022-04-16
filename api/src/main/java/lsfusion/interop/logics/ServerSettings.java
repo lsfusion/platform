@@ -45,25 +45,5 @@ public class ServerSettings {
         this.lsfParams = lsfParams;
     }
 
-    private boolean filesSaved = false;
-    public synchronized void saveFiles(String appPath, String  externalResourcesParentPath) {
-        if (!filesSaved) {
-            try {
-                String externalResourcesAbsolutePath = appPath + "/" + externalResourcesParentPath;
-                FileUtils.deleteDirectory(new File(externalResourcesAbsolutePath));
-                for (Pair<String, RawFileData> pair : resourceFiles) {
-                    File outputFile = new File(externalResourcesAbsolutePath, pair.first);
-                    if (!outputFile.exists()) {
-                        outputFile.getParentFile().mkdirs();
-                        try (OutputStream out = new FileOutputStream(outputFile)) {
-                            out.write(pair.second.getBytes());
-                        }
-                    }
-                }
-                filesSaved = true;
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
-        }
-    }
+    public boolean filesSaved = false;
 }

@@ -133,7 +133,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         LoadingBox loadingBox = new LoadingBox(() -> cancel(parent));
 
         Uploader newVersionUploader = new Uploader();
-        newVersionUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile")
+        newVersionUploader.setUploadURL(GwtClientUtils.getUploadURL(null)) // not sure that is needed
                 .setFileQueuedHandler(fileQueuedEvent -> {
                     final File file = fileQueuedEvent.getFile();
                     fileInfo.filePrefix = GwtSharedUtils.randomString(15);
@@ -146,7 +146,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                     return true;
                 })
                 .setUploadStartHandler(uploadStartEvent -> {
-                    newVersionUploader.setUploadURL(GwtClientUtils.getWebAppBaseURL() + "uploadFile?sid=" + fileInfo.filePrefix);
+                    newVersionUploader.setUploadURL(GwtClientUtils.getUploadURL(fileInfo.filePrefix));
                     return true;
                 })
                 .setUploadSuccessHandler(uploadSuccessEvent -> {

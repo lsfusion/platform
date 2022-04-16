@@ -95,7 +95,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GFilesDTO.class)
     public Object convertFiles(GFilesDTO filesObject) {
-        return FileUtils.readFilesAndDelete(filesObject);
+        return FileUtils.readUploadFileAndDelete(filesObject);
     }
 
     @Converter(from = GUserInputResult.class)

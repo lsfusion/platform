@@ -316,11 +316,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(final GBeepAction action) {
-        String fileUrl = GwtClientUtils.getDownloadURL(action.filePath, null, "wav", true);
-        Audio beep = Audio.createIfSupported();
-        if (beep != null) {
-            beep.setSrc(fileUrl);
-            beep.play();
+        if(action.filePath != null) {
+            String fileUrl = GwtClientUtils.getAppDownloadURL(action.filePath, null, "wav");
+            Audio beep = Audio.createIfSupported();
+            if (beep != null) {
+                beep.setSrc(fileUrl);
+                beep.play();
+            }
         }
     }
 
@@ -367,9 +369,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }
 
+        private String getResourcePath(GClientJSAction action) {
+            return GwtClientUtils.getAppStaticFileURL(action.resource);
+        }
+
         private native void executeFile(GClientJSAction action)/*-{
             var thisObj = this;
-            var resourcePath = (@lsfusion.gwt.client.view.MainFrame::devMode ? 'dev' : 'static') + action.@GClientJSAction::resource;
+            var resourcePath = thisObj.@JSExecutor::getResourcePath(*)(action)
 
             if (resourcePath.endsWith('js')) {
                 var documentScripts = $wnd.document.scripts;

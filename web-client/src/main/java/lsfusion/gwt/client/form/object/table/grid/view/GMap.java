@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static java.lang.Math.pow;
 import static lsfusion.gwt.client.base.view.ColorUtils.correctSB;
@@ -33,7 +32,7 @@ import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundCol
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
     // No need to support color themes here as we apply svg filters to the icon anyway.
-    private final String DEFAULT_MARKER_ICON_URL = GwtClientUtils.getModuleImagePath("map_marker.png");
+    private final String DEFAULT_MARKER_ICON_URL = GwtClientUtils.getStaticImageURL("map_marker.png");
 
     public GMap(GFormController form, GGridController grid) {
         super(form, grid);

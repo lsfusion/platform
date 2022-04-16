@@ -1,9 +1,11 @@
 package lsfusion.gwt.server;
 
+import com.helger.commons.io.stream.HasInputStream;
 import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
+import lsfusion.base.Result;
 import lsfusion.interop.base.view.ColorTheme;
 
 import java.awt.*;
@@ -12,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-import static lsfusion.gwt.server.FileUtils.APP_CSS_FOLDER_URL;
 import static lsfusion.interop.base.view.ColorTheme.DEFAULT;
 
 public class ServerColorUtils {
@@ -21,8 +22,11 @@ public class ServerColorUtils {
     public static Map<ColorTheme, Color> componentForegrounds = new HashMap<>();
     
     public static Color readCssColor(ColorTheme theme, String property) {
-        CascadingStyleSheet lightCss = CSSReader.readFromFile(new File(APP_CSS_FOLDER_URL + theme.getSid() + ".css"), StandardCharsets.UTF_8, ECSSVersion.CSS30);
-        String color = ((CSSStyleRule) lightCss.getRuleAtIndex(0)).getDeclarationOfPropertyName(property).getExpression().getMemberAtIndex(0).getAsCSSString();
+        Result<CascadingStyleSheet> rLightCss = new Result<>();
+        FileUtils.readFile(FileUtils.APP_CSS_FOLDER_PATH, theme.getSid() + ".css", false, inStream -> {
+            rLightCss.set(CSSReader.readFromStream(new HasInputStream(() -> inStream, false), StandardCharsets.UTF_8, ECSSVersion.CSS30));
+        });
+        String color = ((CSSStyleRule) rLightCss.result.getRuleAtIndex(0)).getDeclarationOfPropertyName(property).getExpression().getMemberAtIndex(0).getAsCSSString();
         return Color.decode(color);
     }
     

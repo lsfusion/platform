@@ -2,6 +2,7 @@ package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.file.FileData;
@@ -209,8 +210,15 @@ public class MainController {
     public String processMain(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getServerSettings(request, false);
 
-        if(serverSettings != null)
-            serverSettings.saveFiles(FileUtils.APP_PATH, (serverSettings.inDevMode ? "dev" : "static") + "/web/");
+        if(serverSettings != null) {
+            synchronized (serverSettings) {
+                if(!serverSettings.filesSaved) {
+                    saveFiles(serverSettings);
+
+                    serverSettings.filesSaved = true;
+                }
+            }
+        }
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
@@ -218,6 +226,11 @@ public class MainController {
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
 
         return "main";
+    }
+
+    public synchronized void saveFiles(ServerSettings settings) {
+        for (Pair<String, RawFileData> pair : settings.resourceFiles)
+            FileUtils.saveWeb(pair.first, pair.second, settings);
     }
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
@@ -255,7 +268,8 @@ public class MainController {
     }
 
     private String getFileUrl(RawFileData file) {
-        return GwtSharedUtils.getDownloadURL(FileUtils.saveApplicationFile(file), null, null, false);
+        assert file != null;
+        return GwtSharedUtils.getDownloadURL(FileUtils.saveApplicationFile(file), null, null);
     }
 
     public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){
