@@ -1101,6 +1101,12 @@ public class GFormController implements EditManager {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
+    public void asyncCloseForm(GAsyncCloseForm asyncCloseForm, EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
+            formsController.asyncCloseForm(getAsyncFormController(requestIndex), asyncCloseForm);
+        }, onExec);
+    }
+
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ContinueInvocation(requestIndex, actionResults, continueIndex), callback, true);
     }
@@ -1520,7 +1526,7 @@ public class GFormController implements EditManager {
         return !(dispatcher.loadingManager.isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)));
     }
 
-    protected void onFormHidden(int closeDelay, EndReason editFormCloseReason) {
+    protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
             closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
@@ -1544,9 +1550,9 @@ public class GFormController implements EditManager {
 
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
-    public void hideForm(int closeDelay, EndReason editFormCloseReason) {
+    public void hideForm(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
         if(!formHidden) {
-            onFormHidden(closeDelay, editFormCloseReason);
+            onFormHidden(asyncFormController, closeDelay, editFormCloseReason);
             formHidden = true;
         }
     }

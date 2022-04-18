@@ -9,6 +9,10 @@ public interface GAsyncFormController {
 
     void putAsyncForm(FormContainer container);
 
+    FormContainer removeAsyncClosedForm();
+
+    void putAsyncClosedForm(FormContainer container);
+
     boolean onServerInvocationResponse(); // true if we need to check for obsolete asyncForms
 
     boolean canShowDockedModal();

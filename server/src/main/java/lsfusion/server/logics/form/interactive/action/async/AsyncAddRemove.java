@@ -19,7 +19,7 @@ public class AsyncAddRemove extends AsyncFormExec {
 
     @Override
     public byte getTypeId() {
-        return 3;
+        return 4;
     }
 
     @Override

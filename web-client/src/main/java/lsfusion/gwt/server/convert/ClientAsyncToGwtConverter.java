@@ -133,6 +133,12 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
     }
 
     @Cached
+    @Converter(from = ClientAsyncCloseForm.class)
+    public GAsyncCloseForm convertCloseForm(ClientAsyncCloseForm asyncCloseForm) {
+        return new GAsyncCloseForm(asyncCloseForm.canonicalName);
+    }
+
+    @Cached
     @Converter(from = ClientAsyncNoWaitExec.class)
     public GAsyncNoWaitExec convertNoWaitExec(ClientAsyncNoWaitExec asyncNoWaitExec) {
         return new GAsyncNoWaitExec();

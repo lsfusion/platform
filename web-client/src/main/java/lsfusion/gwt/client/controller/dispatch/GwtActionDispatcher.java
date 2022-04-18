@@ -489,6 +489,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private long lastCompletedRequest = -1L;
     private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
+    private NativeHashMap<Long, FormContainer> asyncClosedForms = new NativeHashMap<>();
     private NativeHashMap<Long, Timer> openTimers = new NativeHashMap<>();
 
     public GAsyncFormController getAsyncFormController(long requestIndex) {
@@ -501,6 +502,16 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             @Override
             public void putAsyncForm(FormContainer container) {
                 asyncForms.put(requestIndex, container);
+            }
+
+            @Override
+            public FormContainer removeAsyncClosedForm() {
+                return asyncClosedForms.remove(requestIndex);
+            }
+
+            @Override
+            public void putAsyncClosedForm(FormContainer container) {
+                asyncClosedForms.put(requestIndex, container);
             }
 
             public boolean checkNotCompleted() {

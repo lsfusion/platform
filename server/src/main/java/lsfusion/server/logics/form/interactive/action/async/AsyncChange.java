@@ -28,6 +28,6 @@ public class AsyncChange extends AsyncFormExec {
 
     @Override
     public byte getTypeId() {
-        return 5;
+        return 6;
     }
 }

@@ -9,6 +9,6 @@ public class AsyncNoWaitExec extends AsyncExec {
 
     @Override
     public byte getTypeId() {
-        return 4;
+        return 5;
     }
 }

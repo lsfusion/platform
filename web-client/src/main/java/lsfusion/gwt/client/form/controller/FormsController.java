@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
+import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -246,6 +247,12 @@ public abstract class FormsController {
         }
     }
 
+    public void asyncCloseForm(GAsyncFormController asyncFormController, GAsyncCloseForm closeForm) {
+        FormDockable formContainer = findForm(closeForm.canonicalName);
+        asyncFormController.putAsyncClosedForm(formContainer);
+        formContainer.queryHide(null);
+    }
+
     private boolean isCalculatedSized(ExecContext execContext, GWindowFormType windowType) {
         return isPreferredSize(execContext, windowType) || isAutoSized(execContext, windowType);
     }
@@ -283,9 +290,11 @@ public abstract class FormsController {
     }
 
     public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize) {
-        formContainer.initForm(this, form, editFormCloseReason -> {
-            formContainer.queryHide(editFormCloseReason);
-
+        formContainer.initForm(this, form, (asyncFormController, editFormCloseReason) -> {
+            FormContainer asyncClosedForm = asyncFormController.removeAsyncClosedForm();
+            if(asyncClosedForm == null) {
+                formContainer.queryHide(editFormCloseReason);
+            }
             hiddenHandler.onHidden();
         }, dialog, autoSize);
     }
