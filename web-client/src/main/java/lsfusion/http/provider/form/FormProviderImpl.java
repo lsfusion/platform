@@ -23,6 +23,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -41,6 +42,9 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     @Autowired
     private NavigatorProvider navigatorProvider;
     
+    @Autowired
+    private ServletContext servletContext;
+
     public FormProviderImpl() {}
 
     public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
@@ -50,7 +54,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
 
-        GForm gForm = new ClientComponentToGwtConverter(navigatorProvider.getServerSettings(sessionID)).convertOrCast(clientForm);
+        GForm gForm = new ClientComponentToGwtConverter(servletContext, navigatorProvider.getServerSettings(sessionID)).convertOrCast(clientForm);
 
         Set<Integer> inputObjects = remoteForm.getInputGroupObjects();
         gForm.inputGroupObjects = new HashSet<>();

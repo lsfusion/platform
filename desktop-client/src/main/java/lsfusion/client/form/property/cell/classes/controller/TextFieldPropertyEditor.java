@@ -135,7 +135,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         execTimer.start();
         delayTimer = execTimer;
 
-        asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID,
+        JTable table = tableEditor.getTable();
+        asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(table.getEditingRow(), table.getEditingColumn()), query, actionSID,
                 new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
                     @Override
                     public void done(Pair<List<ClientAsync>, Boolean> result) {
@@ -316,9 +317,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                             for (int i = 0; i < actions.length; i++) {
                                 int index = i;
-                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index].action + ".png"), e -> {
-                                    suggestButtonPressed(index);
-                                });
+                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index].action + ".png"), e -> suggestButtonPressed(index));
+                                button.setToolTipText(property.getQuickActionTooltipText(actions[index].keyStroke));
                                 buttonsPanel.add(button);
                             }
 

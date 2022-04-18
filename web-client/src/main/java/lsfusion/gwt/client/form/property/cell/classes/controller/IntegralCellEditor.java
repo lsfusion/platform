@@ -46,9 +46,17 @@ public class IntegralCellEditor extends TextBasedCellEditor {
 
     @Override
     protected String tryFormatInputText(Object value) {
-        if (value instanceof Number) {
-            return type.formatDouble(((Number) value).doubleValue(), property.pattern);
+        if (value instanceof String) {
+            try {
+                value = tryParseInputText((String) value, false);
+            } catch (ParseException e) {
+                return "";
+            }
         }
+
+        if (value instanceof Number)
+            return type.formatDouble(((Number) value).doubleValue(), property.pattern);
+
         return "";
     }
 }

@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -151,7 +152,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new GInputListAction[]{new GInputListAction("reset", null, null, null)},
+        inputList = new GInputList(new GInputListAction[]{new GInputListAction("reset", null, null, null, null)},
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT);
     }
 
@@ -159,6 +160,11 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         @Override
         public boolean isHover() {
             return true;
+        }
+
+        @Override
+        public GKeyStroke getKeyStroke() {
+            return null;
         }
 
         @Override

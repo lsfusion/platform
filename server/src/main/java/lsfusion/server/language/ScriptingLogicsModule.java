@@ -1346,27 +1346,17 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setChangeKey(LAP property, String code, Boolean showChangeKey) {
-        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
-        if(m.matches()) {
-            Map<String, String> optionsMap = getOptionsMap(m.group(2));
-            property.setChangeKey(KeyStroke.getKeyStroke(m.group(1)), getBindingModesMap(optionsMap));
-            property.setChangeKeyPriority(getPriority(optionsMap));
-        } else {
-            property.setChangeKey(KeyStroke.getKeyStroke(code));
-        }
+        KeyStrokeOptions options = parseKeyStrokeOptions(code);
+        property.setChangeKey(KeyStroke.getKeyStroke(options.keyStroke), options.bindingModesMap);
+        property.setChangeKeyPriority(options.priority);
         if (showChangeKey != null)
             property.setShowChangeKey(showChangeKey);
     }
 
     public void setChangeMouse(LAP property, String code, Boolean showChangeKey) {
-        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
-        if(m.matches()) {
-            Map<String, String> optionsMap = getOptionsMap(m.group(2));
-            property.setChangeMouse((m.group(1)), getBindingModesMap(optionsMap));
-            property.setChangeMousePriority(getPriority(optionsMap));
-        } else {
-            property.setChangeMouse(code);
-        }
+        KeyStrokeOptions options = parseKeyStrokeOptions(code);
+        property.setChangeMouse(options.keyStroke, options.bindingModesMap);
+        property.setChangeMousePriority(options.priority);
         if (showChangeKey != null)
             property.setShowChangeKey(showChangeKey);
     }
@@ -2234,9 +2224,32 @@ public class ScriptingLogicsModule extends LogicsModule {
                         new InputFilterEntity<>(property, mapValues)) : null,
                 ListFact.fromJavaList(actionImages).mapListValues((i, actionImage) -> {
                     LAWithParams action = actions.get(i);
+                    KeyStrokeOptions options = parseKeyStrokeOptions(keyStrokes.get(i));
                     return(splitAPParams(action, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
-                            new InputContextAction(actionImage, keyStrokes.get(i), ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
+                            new InputContextAction(actionImage, options.keyStroke, options.bindingModesMap, options.priority, ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
                 }));
+    }
+
+    private KeyStrokeOptions parseKeyStrokeOptions(String code) {
+        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
+        if(m.matches()) {
+            Map<String, String> optionsMap = getOptionsMap(m.group(2));
+            return new KeyStrokeOptions(m.group(1), getBindingModesMap(optionsMap), getPriority(optionsMap));
+        } else {
+            return new KeyStrokeOptions(code, null, null);
+        }
+    }
+
+    private class KeyStrokeOptions {
+        String keyStroke;
+        Map<String, BindingMode> bindingModesMap;
+        Integer priority;
+
+        public KeyStrokeOptions(String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority) {
+            this.keyStroke = keyStroke;
+            this.bindingModesMap = bindingModesMap;
+            this.priority = priority;
+        }
     }
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,

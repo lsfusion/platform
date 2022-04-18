@@ -22,6 +22,7 @@ import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 
 import javax.imageio.ImageIO;
+import javax.servlet.ServletContext;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.color.ColorSpace;
@@ -82,7 +83,7 @@ public class FileUtils {
         return path + "/" + settings.logicsName + (subFolder.isEmpty() ? "" : "/" + subFolder);
     }
 
-    public static ImageHolder createImageFile(ServerSettings settings, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
+    public static ImageHolder createImageFile(ServletContext servletContext, ServerSettings settings, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
         if (imageHolder != null) {
             ImageHolder imageDescription = new ImageHolder();
                 
@@ -96,9 +97,9 @@ public class FileUtils {
                 ImageIcon image = imageHolder.getImage(colorTheme); 
                 if (image == null) {
                     image = ClientColorUtils.createFilteredImageIcon(imageHolder.getImage(ColorTheme.DEFAULT),
-                            ServerColorUtils.getDefaultThemePanelBackground(),
-                            ServerColorUtils.getPanelBackground(colorTheme),
-                            ServerColorUtils.getComponentForeground(colorTheme));
+                            ServerColorUtils.getDefaultThemePanelBackground(servletContext),
+                            ServerColorUtils.getPanelBackground(servletContext, colorTheme),
+                            ServerColorUtils.getComponentForeground(servletContext, colorTheme));
                 }
 
                 String imagesFolderPath = getStaticPath(APP_STATIC_IMAGE_FOLDER_PATH, settings, imagesFolderName);
@@ -158,7 +159,7 @@ public class FileUtils {
         return bufferedImage;
     }
     
-    public static void createThemedClientImages() {
+    public static void createThemedClientImages(ServletContext servletContext) {
         File imagesFolder = new File(APP_CONTEXT_FOLDER_PATH + "/" + STATIC_IMAGE_FOLDER_PATH);
         Iterator it = org.apache.commons.io.FileUtils.iterateFiles(imagesFolder, null, false);
         while (it.hasNext()) {
@@ -193,9 +194,9 @@ public class FileUtils {
                                 ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
     
                                 ImageIcon themeImage = ClientColorUtils.createFilteredImageIcon(baseImage,
-                                        ServerColorUtils.getDefaultThemePanelBackground(),
-                                        ServerColorUtils.getPanelBackground(colorTheme),
-                                        ServerColorUtils.getComponentForeground(colorTheme));
+                                        ServerColorUtils.getDefaultThemePanelBackground(servletContext),
+                                        ServerColorUtils.getPanelBackground(servletContext, colorTheme),
+                                        ServerColorUtils.getComponentForeground(servletContext, colorTheme));
     
                                 String newImagePath = gColorTheme.getImagePath(imagePath);
                                 String imageFileName = newImagePath.substring(0, newImagePath.lastIndexOf("."));

@@ -1057,7 +1057,7 @@ public abstract class LogicsModule {
             // the order will / have to be the same as in formAction itself
             return addInputAProp(form.getBaseClass(inputObject), inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
-                    mappedList.result, scope, inputFilter, ListFact.toList(new InputContextAction<>("dialog", "F8", QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputFilter, ListFact.toList(new InputContextAction<>("dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));

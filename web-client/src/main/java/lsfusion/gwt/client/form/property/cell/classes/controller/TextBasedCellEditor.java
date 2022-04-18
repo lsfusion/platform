@@ -15,6 +15,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
@@ -121,7 +122,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 return;
             }
         } else {
-            Integer inputActionIndex = property.getInputActionIndex(event);
+            Integer inputActionIndex = property.getInputActionIndex(event, true);
             if(inputActionIndex != null) {
                 validateAndCommit(suggestBox.getElement(), inputActionIndex, true, CommitReason.OTHER);
                 return;
@@ -502,6 +503,27 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 };
                 GwtClientUtils.setThemeImage(actions[index].action + ".png", (image -> actionButton.getUpFace().setImage(new Image(image))));
                 buttonsPanel.add(actionButton);
+
+                String tooltip = property.getQuickActionTooltipText(actions[index].keyStroke);
+                if(tooltip != null) {
+                    TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
+                        public String getTooltip() {
+                            return tooltip;
+                        }
+
+                        public boolean stillShowTooltip() {
+                            return actionButton.isAttached() && actionButton.isVisible();
+                        }
+
+                        public String getPath() {
+                            return null;
+                        }
+
+                        public String getCreationPath() {
+                            return null;
+                        }
+                    });
+                }
             }
 
             bottomPanel.add(buttonsPanel);
