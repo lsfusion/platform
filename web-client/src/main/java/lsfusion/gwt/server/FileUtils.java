@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.base.lambda.EConsumer;
@@ -29,24 +30,22 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
 import java.io.*;
 import java.util.Iterator;
-import java.util.function.Consumer;
+import java.util.Map;
 
 public class FileUtils {
     // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
     public static String APP_CSS_FOLDER_PATH = "static/css/"; // all files has to be prefixed with logicsName
     // static files (platform / app)
     public static String STATIC_IMAGE_FOLDER_PATH = "main/static/images"; // getStaticImageURL
-    public static String APP_STATIC_IMAGE_FOLDER_PATH = "static/images"; // getAppStaticImageURL, all files has to be prefixed with logicsName
-    public static String APP_STATIC_FILE_FOLDER_PATH(boolean inDevMode) { // getAppStaticFileURL
-        return inDevMode ? "dev/web" : "static/web";
-    }
-    public static String APP_DOWNLOAD_FOLDER_PATH = "WEB-INF/temp"; // getAppDownloadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
-    public static String APP_UPLOAD_FOLDER_PATH = "WEB-INF/temp"; // getAppUploadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
+    public static String APP_STATIC_IMAGE_FOLDER_PATH = "images"; // getAppStaticImageURL, all files has to be prefixed with logicsName
+    public static String APP_STATIC_FILE_FOLDER_PATH = "web"; // getAppStaticFileURL
 
-    public static String APP_PATH;
+    public static String APP_DOWNLOAD_FOLDER_PATH; // getAppDownloadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
+    public static String APP_UPLOAD_FOLDER_PATH; // getAppUploadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
+    public static String APP_CONTEXT_FOLDER_PATH;
 
     public static File createFile(String relativePath, String fileName) {
-        return new File(APP_PATH + "/" + relativePath, fileName);
+        return new File(relativePath, fileName);
     }
     public static void readFile(String relativePath, String fileName, boolean close, EConsumer<InputStream, IOException> consumer) {
         File file = createFile(relativePath, fileName);
@@ -79,15 +78,11 @@ public class FileUtils {
         }
     }
 
-    public static File createDir(String path) {
-        return new File(APP_PATH + "/" + path);
-    }
-
     private static String getStaticPath(String path, ServerSettings settings, String subFolder) {
         return path + "/" + settings.logicsName + (subFolder.isEmpty() ? "" : "/" + subFolder);
     }
 
-    public static ImageHolder createImage(ServerSettings settings, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
+    public static ImageHolder createImageFile(ServerSettings settings, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
         if (imageHolder != null) {
             ImageHolder imageDescription = new ImageHolder();
                 
@@ -107,29 +102,30 @@ public class FileUtils {
                 }
 
                 String imagesFolderPath = getStaticPath(APP_STATIC_IMAGE_FOLDER_PATH, settings, imagesFolderName);
-                createImageFile(image.getImage(), imagesFolderPath, imageFileName, imageFileType, false);
+                String imageUrl = saveImageFile(image.getImage(), imagesFolderPath, imageFileName, imageFileType, false);
                 if (canBeDisabled) {
-                    createImageFile(image.getImage(), imagesFolderPath, imageFileName + "_Disabled", imageFileType, true);
+                    saveImageFile(image.getImage(), imagesFolderPath, imageFileName + "_Disabled", imageFileType, true);
                 }
                 
-                imageDescription.addImage(gColorTheme, imagesFolderPath + "/" + imagePath, image.getIconWidth(), image.getIconHeight());
+                imageDescription.addImage(gColorTheme, imageUrl, image.getIconWidth(), image.getIconHeight());
             }
             return imageDescription;
         }
         return null;
     }
 
-    public static String getWeb(String fileName, ServerSettings settings) {
-        return getStaticPath(APP_STATIC_FILE_FOLDER_PATH(settings.inDevMode), settings, "") + "/" + fileName;
+    private static final Map<String, String> webFiles = MapFact.getGlobalConcurrentHashMap();///
+
+    public static String getWebFile(String fileName, ServerSettings settings) {
+        return webFiles.get(fileName);
     }
 
-    public static void saveWeb(String fileName, RawFileData fileData, ServerSettings settings) {
-        String externalResourcesAbsolutePath = getStaticPath(APP_STATIC_FILE_FOLDER_PATH(settings.inDevMode), settings, ""))
-        writeFile(externalResourcesAbsolutePath, fileName, fileData::write);
+    public static void saveWebFile(String fileName, RawFileData fileData, ServerSettings settings) {
+        webFiles.put(fileName, saveFile(false, settings.inDevMode, getStaticPath(APP_STATIC_FILE_FOLDER_PATH, settings, ""), fileName, null, fileData::write));
     }
 
-    private static void createImageFile(Image image, String imagesFolder, String imageFileName, String iconFileType, boolean gray) {
-        writeFile(imagesFolder, imageFileName + "." + iconFileType, fos -> {
+    private static String saveImageFile(Image image, String imagesFolder, String imageFileName, String iconFileType, boolean gray) {
+        return saveFile(false, true, imagesFolder, imageFileName + "." + iconFileType, null, fos -> {
             ImageIO.write((RenderedImage) (
                     image instanceof RenderedImage ? image : getBufferedImage(image, gray)),
                     iconFileType,
@@ -163,7 +159,7 @@ public class FileUtils {
     }
     
     public static void createThemedClientImages() {
-        File imagesFolder = createDir(STATIC_IMAGE_FOLDER_PATH);
+        File imagesFolder = new File(APP_CONTEXT_FOLDER_PATH + "/" + STATIC_IMAGE_FOLDER_PATH);
         Iterator it = org.apache.commons.io.FileUtils.iterateFiles(imagesFolder, null, false);
         while (it.hasNext()) {
             File imageFile = (File) it.next();
@@ -204,8 +200,9 @@ public class FileUtils {
                                 String newImagePath = gColorTheme.getImagePath(imagePath);
                                 String imageFileName = newImagePath.substring(0, newImagePath.lastIndexOf("."));
                                 String imageFileType = newImagePath.substring(newImagePath.lastIndexOf(".") + 1);
-    
-                                createImageFile(themeImage.getImage(), STATIC_IMAGE_FOLDER_PATH, imageFileName, imageFileType, false);
+
+                                saa
+                                saveImageFile(themeImage.getImage(), STATIC_IMAGE_FOLDER_PATH, imageFileName, imageFileType, false);
                             }
                         }
                     }
@@ -221,32 +218,56 @@ public class FileUtils {
         return result.result;
     }
 
+    private static String saveFile(boolean useDownload, boolean isStatic, String innerPath, String fileName, Result<Runnable> rCloser, EConsumer<OutputStream, IOException> consumer) {
+        String relativePath;
+        String url;
+        if(useDownload) { // we'll put it in the temp folder, and add static to final url
+            relativePath = APP_DOWNLOAD_FOLDER_PATH;
+            url = "downloadFile/";
+        } else {
+            relativePath = APP_CONTEXT_FOLDER_PATH;
+            url = "";
+
+            if(isStatic)
+                relativePath += "static/";
+        }
+
+        Runnable closer = writeFile(relativePath, fileName, consumer);
+        if(rCloser != null)
+            rCloser.set(closer);
+
+        if(isStatic)
+            url += "static/";
+
+        return url + fileName;
+    }
+
     public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images
         String fileName = SystemUtils.generateID(fileData.getBytes());
-        saveDownloadFile(fileName, fileData);
-        return "downloadFile/static/" + fileName;
+        return saveDownloadFile(fileName, true, null, fileData);
     }
 
     public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
         if(fileData != null) {
-            String fileName = BaseUtils.randomString(15);
-            saveDownloadFile(fileName, fileData);
-            return "downloadFile/" + fileName;
+            String fileName = BaseUtils.randomString(15);            ;
+            return saveDownloadFile(fileName, false, null, fileData);
         }
         return null;
     }
 
     public static String saveFormFile(RawFileData fileData, FormSessionObject<?> sessionObject) { // multiple usages (form scoped), so should be deleted just right after form is closed
         String fileName = SystemUtils.generateID(fileData.getBytes());
-        if (!sessionObject.savedTempFiles.containsKey(fileName)) {
-            Runnable closer = saveDownloadFile(fileName, fileData);
-            sessionObject.savedTempFiles.put(fileName, closer);
+        Pair<String, Runnable> savedFile = sessionObject.savedTempFiles.get(fileName);
+        if (savedFile == null) {
+            Result<Runnable> rCloser = new Result<>();
+            savedFile = new Pair<>(saveDownloadFile(fileName, true, rCloser, fileData), rCloser.result)
+            sessionObject.savedTempFiles.put(fileName, savedFile);
         }
-        return "downloadFile/static/" + fileName;
+        return savedFile.first;
     }
 
-    private static Runnable saveDownloadFile(String fileName, RawFileData fileData) {
-        return writeFile(APP_DOWNLOAD_FOLDER_PATH, fileName, fileData::write); // assert !exists
+    private static String saveDownloadFile(String fileName, boolean isStatic, Result<Runnable> rCloser, RawFileData fileData) {
+        return saveFile(true, isStatic, "", fileName, rCloser, fileData::write); // assert !exists
     }
 
     public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {

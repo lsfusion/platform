@@ -1,5 +1,6 @@
 package lsfusion.http.provider.form;
 
+import lsfusion.base.Pair;
 import lsfusion.client.form.ClientForm;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
@@ -12,7 +13,7 @@ public class FormSessionObject<T> {
     public final RemoteFormInterface remoteForm;
     public final String navigatorID;
     
-    public final Map<String, Runnable> savedTempFiles;
+    public final Map<String, Pair<String, Runnable>> savedTempFiles; ??? sync
 
     public int requestIndex = 0;
 

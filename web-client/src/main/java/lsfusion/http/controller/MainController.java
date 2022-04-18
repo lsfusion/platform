@@ -230,7 +230,7 @@ public class MainController {
 
     public synchronized void saveFiles(ServerSettings settings) {
         for (Pair<String, RawFileData> pair : settings.resourceFiles)
-            FileUtils.saveWeb(pair.first, pair.second, settings);
+            FileUtils.saveWebFile(pair.first, pair.second, settings);
     }
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {

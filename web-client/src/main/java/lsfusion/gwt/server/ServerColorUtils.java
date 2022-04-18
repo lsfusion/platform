@@ -9,7 +9,6 @@ import lsfusion.base.Result;
 import lsfusion.interop.base.view.ColorTheme;
 
 import java.awt.*;
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class ServerColorUtils {
     
     public static Color readCssColor(ColorTheme theme, String property) {
         Result<CascadingStyleSheet> rLightCss = new Result<>();
-        FileUtils.readFile(FileUtils.APP_CSS_FOLDER_PATH, theme.getSid() + ".css", false, inStream -> {
+        FileUtils.readFile(FileUtils.APP_CONTEXT_FOLDER_PATH + "/" + FileUtils.APP_CSS_FOLDER_PATH, theme.getSid() + ".css", false, inStream -> {
             rLightCss.set(CSSReader.readFromStream(new HasInputStream(() -> inStream, false), StandardCharsets.UTF_8, ECSSVersion.CSS30));
         });
         String color = ((CSSStyleRule) rLightCss.result.getRuleAtIndex(0)).getDeclarationOfPropertyName(property).getExpression().getMemberAtIndex(0).getAsCSSString();

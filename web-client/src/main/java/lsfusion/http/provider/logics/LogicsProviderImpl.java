@@ -50,7 +50,10 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
             throw new IllegalStateException(hostKey + " or " + portKey + " or " + exportNameKey + " parameters aren't set in web.xml");
         }
 
-        FileUtils.APP_PATH = servletContext.getRealPath("");
+        String appPath = servletContext.getRealPath("");
+        FileUtils.APP_CONTEXT_FOLDER_PATH = appPath;
+        FileUtils.APP_DOWNLOAD_FOLDER_PATH = appPath + "/WEB-INF/temp";
+        FileUtils.APP_UPLOAD_FOLDER_PATH = appPath + "/WEB-INF/temp";
 
         setHost(host);
         setPort(Integer.parseInt(port));

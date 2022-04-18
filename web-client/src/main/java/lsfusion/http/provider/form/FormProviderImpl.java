@@ -1,5 +1,6 @@
 package lsfusion.http.provider.form;
 
+import lsfusion.base.Pair;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
@@ -24,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,7 +82,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
     @Override
     public String getFile(String sessionID, String fileName) throws SessionInvalidatedException {
-        return FileUtils.getWeb(fileName, navigatorProvider.getServerSettings(sessionID));
+        return FileUtils.getWebFile(fileName, navigatorProvider.getServerSettings(sessionID));
     }
 
     public void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID) {
@@ -140,8 +140,8 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID);
         currentForms.remove(formSessionID);
         if(sessionObject.savedTempFiles != null) {
-            for (Runnable closer : sessionObject.savedTempFiles.values())
-                closer.run();
+            for (Pair<String, Runnable> closer : sessionObject.savedTempFiles.values())
+                closer.second.run();
         }
     }
 

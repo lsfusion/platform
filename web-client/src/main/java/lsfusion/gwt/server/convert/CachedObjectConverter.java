@@ -21,7 +21,7 @@ public class CachedObjectConverter extends ObjectConverter {
     }
 
     protected ImageHolder createImage(SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
-        return FileUtils.createImage(settings, imageHolder, imagesFolderName, canBeDisabled);
+        return FileUtils.createImageFile(settings, imageHolder, imagesFolderName, canBeDisabled);
     }
 
     @Override
