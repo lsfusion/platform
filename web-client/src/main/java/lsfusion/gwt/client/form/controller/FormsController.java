@@ -14,7 +14,9 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.action.GFormAction;
+import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -26,7 +28,6 @@ import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
-import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -120,9 +121,16 @@ public abstract class FormsController {
     }
 
     public void onServerInvocationResponse(ServerResponseResult response, GAsyncFormController asyncFormController) {
-        if (asyncFormController.onServerInvocationResponse()) {
-            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction))
+        if (asyncFormController.onServerInvocationOpenResponse()) {
+            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
                 asyncFormController.removeAsyncForm().queryHide(CancelReason.OTHER);
+            }
+        }
+        if (asyncFormController.onServerInvocationCloseResponse()) {
+            if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GHideFormAction)) {
+                Pair<FormContainer, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
+                asyncClosedForm.first.show(asyncClosedForm.second);
+            }
         }
     }
 
@@ -247,10 +255,12 @@ public abstract class FormsController {
         }
     }
 
-    public void asyncCloseForm(GAsyncFormController asyncFormController, GAsyncCloseForm closeForm) {
-        FormDockable formContainer = findForm(closeForm.canonicalName);
-        asyncFormController.putAsyncClosedForm(formContainer);
-        formContainer.queryHide(null);
+    public void asyncCloseForm(GAsyncFormController asyncFormController) {
+        FormContainer formContainer = MainFrame.getCurrentForm();
+        if(formContainer instanceof FormDockable) {
+            asyncFormController.putAsyncClosedForm(new Pair<>(formContainer, forms.indexOf(formContainer)));
+            formContainer.queryHide(null);
+        }
     }
 
     private boolean isCalculatedSized(ExecContext execContext, GWindowFormType windowType) {
@@ -291,7 +301,7 @@ public abstract class FormsController {
 
     public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize) {
         formContainer.initForm(this, form, (asyncFormController, editFormCloseReason) -> {
-            FormContainer asyncClosedForm = asyncFormController.removeAsyncClosedForm();
+            Pair<FormContainer, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
             if(asyncClosedForm == null) {
                 formContainer.queryHide(editFormCloseReason);
             }
@@ -313,11 +323,16 @@ public abstract class FormsController {
         return findInList(forms, dockable -> dockable.getCanonicalName() != null && dockable.getCanonicalName().equals(formCanonicalName));
     }
 
-    public void addDockable(FormDockable dockable) {
-        forms.add(dockable);
-        formFocusOrder.add(null);
+    public void addDockable(FormDockable dockable, Integer index) {
+        if(index != null) {
+            forms.add(index, dockable);
+            formFocusOrder.add(index, null);
+        } else {
+            forms.add(dockable);
+            formFocusOrder.add(null);
+        }
 
-        tabsPanel.addTab(dockable.getContentWidget(), dockable.getTabWidget());
+        tabsPanel.addTab(dockable.getContentWidget(), index, dockable.getTabWidget());
         assert !isAdding;
         isAdding = true;
         selectTab(dockable);

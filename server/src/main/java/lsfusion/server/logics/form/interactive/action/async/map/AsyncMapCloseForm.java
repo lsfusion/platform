@@ -37,7 +37,7 @@ public class AsyncMapCloseForm<T extends PropertyInterface> extends AsyncMapExec
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
-        return new AsyncCloseForm(form.getCanonicalName());
+        return new AsyncCloseForm();
     }
 
     @Override

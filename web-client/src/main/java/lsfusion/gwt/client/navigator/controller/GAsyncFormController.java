@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.controller;
 
 import com.google.gwt.core.client.Scheduler;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.view.FormContainer;
 
 public interface GAsyncFormController {
@@ -9,11 +10,13 @@ public interface GAsyncFormController {
 
     void putAsyncForm(FormContainer container);
 
-    FormContainer removeAsyncClosedForm();
+    Pair<FormContainer, Integer> removeAsyncClosedForm();
 
-    void putAsyncClosedForm(FormContainer container);
+    void putAsyncClosedForm(Pair<FormContainer, Integer> container);
 
-    boolean onServerInvocationResponse(); // true if we need to check for obsolete asyncForms
+    boolean onServerInvocationOpenResponse(); // true if we need to check for obsolete asyncOpenForms
+
+    boolean onServerInvocationCloseResponse(); // true if we need to check for obsolete asyncCloseForms
 
     boolean canShowDockedModal();
 

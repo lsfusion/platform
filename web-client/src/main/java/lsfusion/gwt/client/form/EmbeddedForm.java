@@ -111,7 +111,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public void show() {
+    public void show(Integer index) {
         // we don't need to change currentForm for embedded form, since if closes on focus lost, so we don't need notifications / global key events
         // for the same reason we don't need to do onBlur
         // however now it's hard to tell what is the right approach

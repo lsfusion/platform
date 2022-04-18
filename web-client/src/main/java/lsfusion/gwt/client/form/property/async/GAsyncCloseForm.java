@@ -12,21 +12,16 @@ import java.util.function.Consumer;
 public class GAsyncCloseForm extends GAsyncExec {
     public String canonicalName;
 
-    @SuppressWarnings("UnusedDeclaration")
     public GAsyncCloseForm() {
-    }
-
-    public GAsyncCloseForm(String canonicalName) {
-        this.canonicalName = canonicalName;
     }
 
     @Override
     public void exec(GFormController formController, Event event, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        formController.asyncCloseForm(this, editContext, execContext, event, actionSID, pushAsyncResult, externalChange, onExec);
+        formController.asyncCloseForm(editContext, execContext, event, actionSID, pushAsyncResult, externalChange, onExec);
     }
 
     @Override
     public void exec(GAsyncFormController asyncFormController, FormsController formsController, Event editEvent) {
-        formsController.asyncCloseForm(asyncFormController, this);
+        formsController.asyncCloseForm(asyncFormController);
     }
 }

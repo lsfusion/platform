@@ -1,15 +1,10 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
-import lsfusion.interop.form.remote.serialization.SerializationUtil;
-
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class AsyncCloseForm extends AsyncExec {
-    public String canonicalName;
-
-    public AsyncCloseForm(String canonicalName) {
-        this.canonicalName = canonicalName;
+    public AsyncCloseForm() {
     }
 
     @Override
@@ -20,7 +15,5 @@ public class AsyncCloseForm extends AsyncExec {
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
-
-        SerializationUtil.writeString(outStream, canonicalName);
     }
 }

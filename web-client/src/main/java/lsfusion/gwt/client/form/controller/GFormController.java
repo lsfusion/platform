@@ -1101,9 +1101,9 @@ public class GFormController implements EditManager {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
-    public void asyncCloseForm(GAsyncCloseForm asyncCloseForm, EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+    public void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
-            formsController.asyncCloseForm(getAsyncFormController(requestIndex), asyncCloseForm);
+            formsController.asyncCloseForm(getAsyncFormController(requestIndex));
         }, onExec);
     }
 
