@@ -17,10 +17,11 @@ import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class EmbeddedForm extends EditingForm {
 
@@ -110,7 +111,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public void show() {
+    public void show(Integer index) {
         // we don't need to change currentForm for embedded form, since if closes on focus lost, so we don't need notifications / global key events
         // for the same reason we don't need to do onBlur
         // however now it's hard to tell what is the right approach
@@ -121,7 +122,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public void initForm(FormsController formsController, GForm gForm, Consumer<EndReason> hiddenHandler, boolean isDialog, boolean autoSize) {
+    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize) {
         super.initForm(formsController, gForm, hiddenHandler, isDialog, autoSize);
 
         form.contextEditForm = contextForm;

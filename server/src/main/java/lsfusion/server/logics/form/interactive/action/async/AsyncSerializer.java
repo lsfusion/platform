@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -30,7 +31,7 @@ public class AsyncSerializer {
         for(InputListAction action : inputList.actions) {
             dataStream.writeUTF(action.action);
             AsyncSerializer.serializeEventExec(action.asyncExec, dataStream);
-            dataStream.writeUTF(nvl(action.keyStroke, ""));
+            SerializationUtil.writeString(dataStream, action.keyStroke);
 
             //we use only editing bindingMode, so we serialize to client only it
             BindingMode editingBindingMode = action.bindingModesMap != null ? action.bindingModesMap.get("editing") : null;

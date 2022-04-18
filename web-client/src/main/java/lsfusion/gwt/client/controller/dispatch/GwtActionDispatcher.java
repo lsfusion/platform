@@ -12,6 +12,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -489,6 +490,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private long lastCompletedRequest = -1L;
     private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
+    private NativeHashMap<Long, Pair<FormContainer, Integer>> asyncClosedForms = new NativeHashMap<>();
     private NativeHashMap<Long, Timer> openTimers = new NativeHashMap<>();
 
     public GAsyncFormController getAsyncFormController(long requestIndex) {
@@ -503,14 +505,29 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 asyncForms.put(requestIndex, container);
             }
 
+            @Override
+            public Pair<FormContainer, Integer> removeAsyncClosedForm() {
+                return asyncClosedForms.remove(requestIndex);
+            }
+
+            @Override
+            public void putAsyncClosedForm(Pair<FormContainer, Integer> container) {
+                asyncClosedForms.put(requestIndex, container);
+            }
+
             public boolean checkNotCompleted() {
                 return requestIndex > lastCompletedRequest;
             }
 
             @Override
-            public boolean onServerInvocationResponse() {
+            public boolean onServerInvocationOpenResponse() {
                 lastCompletedRequest = requestIndex;
                 return asyncForms.containsKey(requestIndex);
+            }
+
+            public boolean onServerInvocationCloseResponse() {
+                lastCompletedRequest = requestIndex;
+                return asyncClosedForms.containsKey(requestIndex);
             }
 
             @Override

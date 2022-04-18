@@ -110,7 +110,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GHideFormAction action) {
-        form.hideForm(action.closeDelay, editFormCloseReason);
+        form.hideForm(getAsyncFormController(getDispatchingIndex()), action.closeDelay, editFormCloseReason);
     }
 
     @Override

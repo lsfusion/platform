@@ -89,8 +89,12 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
     }
 
     public void addTab(Widget w, Widget tabWidget) {
+        addTab(w, null, tabWidget);
+    }
+
+    public void addTab(Widget w, Integer index, Widget tabWidget) {
         w.addStyleName("gwt-TabPanelBottom");
-        insertTab(tabWidget, getTabCount(), (widgets, beforeIndex) -> widgets.addFill(w, beforeIndex));
+        insertTab(tabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFill(w, beforeIndex));
     }
 
     public void insertTab(String tabText, int beforeIndex, AddToDeck addToDeck) {
@@ -105,7 +109,7 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
         getWidget(tabIndex).setVisible(false);
     }
 
-    public boolean removeTab(int index) {
+    public void removeTab(int index) {
         if (index != -1) {
             if(index == getSelectedTab() && beforeSelectionHandler != null)
                 beforeSelectionHandler.accept(-1);
@@ -116,10 +120,8 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
             if (visibleWidget == tabWidget) {
                 visibleWidget = null;
             }
-            return remove(tabWidget);
+            remove(tabWidget);
         }
-
-        return false;
     }
 
     private int getTabIndex(int index) {
