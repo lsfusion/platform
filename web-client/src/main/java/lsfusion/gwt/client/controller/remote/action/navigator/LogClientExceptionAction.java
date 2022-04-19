@@ -10,6 +10,7 @@ import net.customware.gwt.dispatch.shared.DispatchException;
 
 public class LogClientExceptionAction extends NavigatorPriorityAction<VoidResult> {
     public Throwable throwable;
+    public String jsExceptionStack;
 
     public LogClientExceptionAction() {
     }
@@ -34,6 +35,11 @@ public class LogClientExceptionAction extends NavigatorPriorityAction<VoidResult
 
     public LogClientExceptionAction(Throwable throwable) {
         this.throwable = fromWebClientToWebServer(throwable);
+    }
+
+    public LogClientExceptionAction(Throwable throwable, String jsExceptionStack) {
+        this(throwable);
+        this.jsExceptionStack = jsExceptionStack;
     }
 
     @Override

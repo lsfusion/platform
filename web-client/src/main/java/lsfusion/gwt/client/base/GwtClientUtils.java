@@ -1111,20 +1111,15 @@ public class GwtClientUtils {
         try {
             return function.get();
         } catch (JavaScriptException e) {
-            printJSExceptionStack(e);
-            GExceptionManager.propagate(new Exception(message != null ? message : e.getMessage(), e));
+            String jsExceptionStack = getJsExceptionStack(e);
+            jsExceptionStack = message != null ? message + " \n " + jsExceptionStack : jsExceptionStack;
+            GExceptionManager.logClientError(e, jsExceptionStack);
+            consoleError(jsExceptionStack);
             return null;
         }
     }
 
-    protected static native void printJSExceptionStack(JavaScriptException exception)/*-{
-        var exceptionFields = Object.keys(exception);
-        for (var i = 0; i < exceptionFields.length; i++) {
-            var field = exception[exceptionFields[i]];
-            if (field != null && field.stack != null) {
-                console.error(field.stack);
-                break;
-            }
-        }
+    protected static native String getJsExceptionStack(JavaScriptException exception)/*-{
+        return exception.@Throwable::backingJsObject.stack;
     }-*/;
 }

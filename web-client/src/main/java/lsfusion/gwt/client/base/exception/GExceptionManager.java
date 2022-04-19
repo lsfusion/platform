@@ -21,6 +21,10 @@ import java.util.*;
 public class GExceptionManager {
     private final static Set<Throwable> unreportedThrowables = new HashSet<>();
 
+    public static void logClientError(Throwable throwable, String jsExceptionStack) {
+        logClientError(new LogClientExceptionAction(throwable, jsExceptionStack), throwable);
+    }
+
     public static void logClientError(Throwable throwable) {
         logClientError(new LogClientExceptionAction(throwable), throwable);
     }
