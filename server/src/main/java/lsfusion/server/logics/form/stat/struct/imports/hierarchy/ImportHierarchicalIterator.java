@@ -2,14 +2,9 @@ package lsfusion.server.logics.form.stat.struct.imports.hierarchy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.server.data.type.Type;
-import lsfusion.server.logics.classes.data.integral.NumericClass;
-import lsfusion.server.logics.classes.data.time.DateClass;
-import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.classes.data.time.TimeClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ChildParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
-import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
 import lsfusion.server.logics.form.stat.struct.hierarchy.PropertyParseNode;
 import lsfusion.server.logics.form.stat.struct.imports.ImportIterator;
 
@@ -31,28 +26,17 @@ public class ImportHierarchicalIterator extends ImportIterator {
                     conditionResult = ignoreRowIndexCondition(where.not, rowIndex, where.sign, where.value);
                 } else {
 
-                    PropertyParseNode parseNode = null;
-                    Object fieldValue = null;
-                    for (ParseNode child : children) {
-                        if(child instanceof PropertyParseNode) {
-                            if(((PropertyParseNode) child).getKey().equals(where.field)) {
-                                parseNode = (PropertyParseNode) child;
-                                fieldValue = parseNode.getValue(node);
-                                break;
-                            }
+                    boolean attr = false;
+                    for (ChildParseNode child : children) {
+                        if (child instanceof PropertyParseNode && child.getKey().equals(where.field)) {
+                            attr = ((PropertyParseNode) child).isAttr();
+                            break;
                         }
-                    }
-                    if(parseNode == null) {
-                        throw Throwables.propagate(new RuntimeException(String.format("Incorrect WHERE in IMPORT: no such column '%s'", where.field)));
                     }
 
+                    Object fieldValue = node.getValue(where.field, attr, StringClass.text);
                     if (fieldValue != null) {
-                        Type fieldType = parseNode.getType();
-                        if (fieldType == DateClass.instance || fieldType == TimeClass.instance || fieldType == DateTimeClass.instance || fieldType instanceof NumericClass) {
-                            conditionResult = ignoreRowCondition(where.not, fieldValue, where.sign, fieldType.parseString(where.value));
-                        } else {
-                            conditionResult = ignoreRowCondition(where.not, String.valueOf(fieldValue), where.sign, where.value);
-                        }
+                        conditionResult = ignoreRowCondition(where.not, String.valueOf(fieldValue), where.sign, where.value);
                     } else {
                         conditionResult = true;
                     }

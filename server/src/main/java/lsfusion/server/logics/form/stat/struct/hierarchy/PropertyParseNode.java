@@ -24,23 +24,17 @@ public class PropertyParseNode implements ChildParseNode {
     public String getKey() {
         return property.getIntegrationSID();
     }
-
-    public Type getType() {
-        return property.getType();
+    public boolean isAttr() {
+        return property.attr;
     }
 
-    public <T extends Node<T>> Object getValue(T node) {
+    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
         Object propertyValue;
         try {
             propertyValue = node.getValue(getKey(), property.attr, property.getType());
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
-        return propertyValue;
-    }
-
-    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
-        Object propertyValue = getValue(node);
         importData.addProperty(property, upValues, propertyValue, isExclusive);
     }
     
