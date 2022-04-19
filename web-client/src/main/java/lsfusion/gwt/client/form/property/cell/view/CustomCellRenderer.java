@@ -8,6 +8,8 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCe
 
 import java.util.function.Consumer;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.javaScriptExceptionHandler;
+
 public class CustomCellRenderer extends CellRenderer<Object> {
     private final JavaScriptObject customRenderer;
 
@@ -18,7 +20,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
 
     @Override
     public void renderStaticContent(Element element, RenderContext renderContext) {
-        render(customRenderer, element);
+        javaScriptExceptionHandler(() -> render(customRenderer, element));
     }
 
     protected native void render(JavaScriptObject customRenderer, Element element)/*-{
@@ -27,10 +29,9 @@ public class CustomCellRenderer extends CellRenderer<Object> {
 
     @Override
     public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
-        setRendererValue(customRenderer, element,
-                getController(valueTo -> updateContext.changeProperty(valueTo), updateContext.isPropertyReadOnly()),
-                GSimpleStateTableView.convertValue(property, value));
-
+        javaScriptExceptionHandler(() -> setRendererValue(customRenderer, element,
+                getController(updateContext::changeProperty, updateContext.isPropertyReadOnly()),
+                GSimpleStateTableView.convertValue(property, value)));
         return false;
     }
 
@@ -45,7 +46,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
-        clear(customRenderer, element);
+        javaScriptExceptionHandler(() -> clear(customRenderer, element));
     }
     
     protected native void clear(JavaScriptObject customRenderer, Element element)/*-{

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
@@ -13,12 +14,14 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
@@ -1090,6 +1093,38 @@ public class GwtClientUtils {
     public static native void setOnMouseDown(Element element, Consumer<NativeEvent> run)/*-{
         element.onmousedown = function(event) {
             run.@Consumer::accept(*)(event);
+        }
+    }-*/;
+
+    public static void javaScriptExceptionHandler(Runnable function) {
+        javaScriptExceptionHandler(() -> {
+            function.run();
+            return null;
+        });
+    }
+
+    public static <T> T javaScriptExceptionHandler(Supplier<T> function) {
+        return javaScriptExceptionHandler(function, null);
+    }
+
+    public static <T> T javaScriptExceptionHandler(Supplier<T> function, String message) {
+        try {
+            return function.get();
+        } catch (JavaScriptException e) {
+            printJSExceptionStack(e);
+            GExceptionManager.propagate(new Exception(message != null ? message : e.getMessage(), e));
+            return null;
+        }
+    }
+
+    protected static native void printJSExceptionStack(JavaScriptException exception)/*-{
+        var exceptionFields = Object.keys(exception);
+        for (var i = 0; i < exceptionFields.length; i++) {
+            var field = exception[exceptionFields[i]];
+            if (field != null && field.stack != null) {
+                console.error(field.stack);
+                break;
+            }
         }
     }-*/;
 }
