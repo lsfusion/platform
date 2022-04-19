@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
+import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -15,8 +16,8 @@ public class FormParseNode extends GroupParseNode {
     }
 
     @Override
-    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData) {
-        importChildrenNodes(node, upValues, importData);
+    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
+        importChildrenNodes(node, upValues, importData, iterator);
     }
 
     @Override

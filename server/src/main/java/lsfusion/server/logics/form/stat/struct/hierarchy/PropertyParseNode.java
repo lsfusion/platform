@@ -3,8 +3,10 @@ package lsfusion.server.logics.form.stat.struct.hierarchy;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
+import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
@@ -23,13 +25,22 @@ public class PropertyParseNode implements ChildParseNode {
         return property.getIntegrationSID();
     }
 
-    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData) {
+    public Type getType() {
+        return property.getType();
+    }
+
+    public <T extends Node<T>> Object getValue(T node) {
         Object propertyValue;
         try {
             propertyValue = node.getValue(getKey(), property.attr, property.getType());
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
+        return propertyValue;
+    }
+
+    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
+        Object propertyValue = getValue(node);
         importData.addProperty(property, upValues, propertyValue, isExclusive);
     }
     

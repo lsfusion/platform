@@ -12,8 +12,8 @@ import java.io.IOException;
 
 public class ImportJSONAction extends ImportHierarchicalAction<JSONNode> {
 
-    public ImportJSONAction(int paramsCount, FormEntity formEntity, String charset) {
-        super(paramsCount, formEntity, charset!= null ? charset : ExternalUtils.defaultXMLJSONCharset);
+    public ImportJSONAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
+        super(paramsCount, formEntity, charset!= null ? charset : ExternalUtils.defaultXMLJSONCharset, hasRoot, hasWhere);
     }
 
     @Override
