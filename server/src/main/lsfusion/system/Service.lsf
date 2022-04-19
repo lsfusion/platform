@@ -160,7 +160,7 @@ isNotServerRestarting () = NOT isServerRestarting();
 
 FORM maintenance '{service.form.maintenance}'
     PROPERTIES() scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
-                 uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
+                 //uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
                  clearApplicationLog, 
                  serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, maxQuantityOverCalculate,
                  checkClassesAction, checkAggregationsAction, checkIndicesAction,  
@@ -184,16 +184,16 @@ DESIGN maintenance {
                 MOVE PROPERTY(restartServer());
                 MOVE PROPERTY(cancelRestartServer());
             }    
-            NEW upload {
-                caption = '{service.form.maintenance.caption.upload}';
-                MOVE PROPERTY(uploadStaticCaptionType());
-                MOVE PROPERTY(uploadHost());
-                MOVE PROPERTY(uploadUser());
-                MOVE PROPERTY(uploadPassword());
-                MOVE PROPERTY(uploadInstance());
-                MOVE PROPERTY(uploadDB());
-                MOVE PROPERTY(uploadToDBAction());
-            }
+//            NEW upload {
+//                caption = '{service.form.maintenance.caption.upload}';
+//                MOVE PROPERTY(uploadStaticCaptionType());
+//                MOVE PROPERTY(uploadHost());
+//                MOVE PROPERTY(uploadUser());
+//                MOVE PROPERTY(uploadPassword());
+//                MOVE PROPERTY(uploadInstance());
+//                MOVE PROPERTY(uploadDB());
+//                MOVE PROPERTY(uploadToDBAction());
+//            }
             NEW log {
                 caption = '{service.form.maintenance.caption.logging}';
                 MOVE PROPERTY(clearApplicationLog());
