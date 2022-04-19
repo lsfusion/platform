@@ -89,6 +89,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>fileDownloadHandler</servlet-name>
+        <!-- should correspond DOWNLOAD_HANDLER in FileUtils-->
         <url-pattern>/downloadFile/*</url-pattern>
     </servlet-mapping>
 

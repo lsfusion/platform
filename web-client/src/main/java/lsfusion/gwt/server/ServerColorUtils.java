@@ -2,12 +2,10 @@ package lsfusion.gwt.server;
 
 import com.helger.commons.functional.ISupplier;
 import com.helger.commons.io.stream.HasInputStream;
-import com.helger.commons.io.stream.HasInputStream;
 import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
-import lsfusion.base.Result;
 import lsfusion.interop.base.view.ColorTheme;
 
 import javax.servlet.ServletContext;
@@ -26,7 +24,7 @@ public class ServerColorUtils {
     
     public static Color readCssColor(ServletContext servletContext, ColorTheme theme, String property) {
         CascadingStyleSheet css = CSSReader.readFromStream(
-                HasInputStream.once((ISupplier<InputStream>) () -> servletContext.getResourceAsStream("/static/css/" + theme.getSid() + ".css")),
+                HasInputStream.once((ISupplier<InputStream>) () -> servletContext.getResourceAsStream("/" + FileUtils.STATIC_CSS_RESOURCE_PATH + theme.getSid() + ".css")),
                 StandardCharsets.UTF_8,
                 ECSSVersion.CSS30);
         String color = ((CSSStyleRule) css.getRuleAtIndex(0)).getDeclarationOfPropertyName(property).getExpression().getMemberAtIndex(0).getAsCSSString();

@@ -57,6 +57,8 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     private String rpcPolicyLocation;
     private String beanName;
 
+    public String staticImagesURL;
+
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         // global
         registry.addHandler(new CreateNavigatorHandler(this));
@@ -146,7 +148,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        FileUtils.createThemedClientImages(servletContext);
+        staticImagesURL = FileUtils.createThemedClientImages(servletContext);
         
         InstanceActionHandlerRegistry registry = new DefaultActionHandlerRegistry();
         addHandlers(registry);

@@ -23,8 +23,8 @@ public class CachedObjectConverter extends ObjectConverter {
         this.settings = settings;
     }
 
-    protected ImageHolder createImage(SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
-        return FileUtils.createImageFile(servletContext, settings, imageHolder, imagesFolderName, canBeDisabled);
+    protected ImageHolder createImage(SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
+        return FileUtils.createImageFile(servletContext, settings, imageHolder, canBeDisabled);
     }
 
     @Override

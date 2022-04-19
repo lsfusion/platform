@@ -7,13 +7,14 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FormSessionObject<T> {
     public final ClientForm clientForm;
     public final RemoteFormInterface remoteForm;
     public final String navigatorID;
     
-    public final Map<String, Pair<String, Runnable>> savedTempFiles; ??? sync
+    public final Map<String, Pair<String, Runnable>> savedTempFiles;
 
     public int requestIndex = 0;
 
@@ -22,6 +23,6 @@ public class FormSessionObject<T> {
         this.remoteForm = remoteForm;
         this.navigatorID = navigatorID;
         
-        savedTempFiles = clientForm != null ? new HashMap<>() : null;
+        savedTempFiles = clientForm != null ? new ConcurrentHashMap<>() : null;
     }
 }

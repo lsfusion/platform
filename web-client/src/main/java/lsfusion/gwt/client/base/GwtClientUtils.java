@@ -85,41 +85,50 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    // FileUtils.APP_DOWNLOAD_FOLDER_PATH
-    public static String getAppDownloadURL(String name, String displayName, String extension) {
-        assert name != null;
-        return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension);
+    private static String getDownloadParams(String displayName, String extension) {
+        String params = "";
+        if(displayName != null)
+            params = (params.isEmpty() ? "" : params + "&") + "displayName=" + displayName;
+        if(extension != null)
+            params = (params.isEmpty() ? "" : params + "&") + "extension=" + extension;
+        return (params.isEmpty() ? "" : "?" + params);
     }
 
-    // FileUtils.APP_UPLOAD_FOLDER_PATH
-    public static String getUploadURL(String fileName) {
-        return getWebAppBaseURL() + GwtSharedUtils.getUploadURL(fileName);
+    private static String getURL(String url) {
+        return url == null ? null : getWebAppBaseURL() + url;
     }
 
     // the one that is in gwt(main)/public/static/images
     // FileUtils.STATIC_IMAGE_FOLDER_PATH
     public static String getStaticImageURL(String imagePath) {
-        return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath; // myapp/main/static/images/myimage/imagepath
+        if(imagePath != null && MainFrame.staticImagesURL == null)
+            return GWT.getModuleBaseURL() + "static/images/" + imagePath;
+        return getURL(imagePath != null ? MainFrame.staticImagesURL + imagePath : null); // myapp/imagepath
+//        return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath; // myapp/main/static/images/myimage/imagepath
     }
-
     // the on that is in the app server resources
-    // FileUtils.APP_STATIC_IMAGE_FOLDER_PATH
     public static String getAppStaticImageURL(String imagePath) {
-        return imagePath == null ? null : getWebAppBaseURL() + imagePath; // myapp/imagepath
+        return getURL(imagePath);
     }
 
     public static String getAppStaticFileURL(String filePath) {
-        return filePath == null ? null : getWebAppBaseURL() + filePath; // myapp/filepath
+        return getURL(filePath);
+    }
+    // FileUtils.APP_DOWNLOAD_FOLDER_PATH
+    public static String getAppDownloadURL(String name, String displayName, String extension) {
+        assert name != null;
+        return getURL(name + getDownloadParams(displayName, extension));
+    }
+
+    // FileUtils.APP_UPLOAD_FOLDER_PATH
+    public static String getUploadURL(String fileName) {
+        return getURL("uploadFile" + (fileName != null ? "?sid=" + fileName : ""));
     }
 
     private static Map<String, Boolean> imagePathCache = new HashMap<>();
 
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
-        setThemeImage(imagePath, modifier, true);
-    }
-
-    public static void setThemeImage(String imagePath, Consumer<String> modifier, boolean isEnableColorTheme) {
-        if (imagePath != null && !colorTheme.isDefault() && isEnableColorTheme) {
+        if (imagePath != null && !colorTheme.isDefault()) {
             String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
             GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
                 @Override
@@ -134,6 +143,9 @@ public class GwtClientUtils {
             });
         } else {
             modifier.accept(getStaticImageURL(imagePath));
+
+            if(MainFrame.staticImagesURL == null)
+                MainFrame.staticImagesURLListeners.add(() -> setThemeImage(imagePath, modifier));
         }
     }
 

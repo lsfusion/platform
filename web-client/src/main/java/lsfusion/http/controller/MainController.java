@@ -269,7 +269,7 @@ public class MainController {
 
     private String getFileUrl(RawFileData file) {
         assert file != null;
-        return GwtSharedUtils.getDownloadURL(FileUtils.saveApplicationFile(file), null, null);
+        return FileUtils.saveApplicationFile(file);
     }
 
     public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){

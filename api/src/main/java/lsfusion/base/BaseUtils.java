@@ -2358,9 +2358,25 @@ public class BaseUtils {
         return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
     }
 
-    check for null
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String namedFileName, File... files) {
-fdd
+        try {
+            String[] namedFileNames = new String[files.length];
+            String[] fileNames = new String[files.length];
+            FileInputStream[] fileStreams = new FileInputStream[files.length];
+            for(int i=0;i<files.length;i++) {
+                namedFileNames[i] = namedFileName;
+                fileNames[i] = files[i].getName();
+                fileStreams[i] = new FileInputStream(files[i]);
+            }
+            try {
+                return filesToBytes(multiple, storeName, custom, named, namedFileNames, fileNames, fileStreams);
+            } finally {
+                for(int i=0;i<files.length;i++)
+                    fileStreams[i].close();
+            }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String[] namedFileNames, String[] fileNames, InputStream[] fileStreams) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();

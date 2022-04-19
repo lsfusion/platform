@@ -6,6 +6,8 @@ import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
+import java.util.function.Consumer;
+
 public abstract class FileBasedCellRenderer extends CellRenderer {
     protected static final String ICON_EMPTY = "empty.png";
     protected static final String ICON_FILE = "file.png";
@@ -39,7 +41,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
                 img.removeClassName("selectedFileCellHasEdit");
             }
 
-            img.setSrc(getFilePath(value));
+            setImage(value, img::setSrc);
         }
         element.appendChild(wrapImage(img));
 
@@ -79,7 +81,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.addClassName("requiredValueString");
     }
 
-    protected abstract String getFilePath(Object value);
+    protected abstract void setImage(Object value, Consumer<String> consumer);
 
     protected FileBasedCellRenderer(GPropertyDraw property) {
         super(property);

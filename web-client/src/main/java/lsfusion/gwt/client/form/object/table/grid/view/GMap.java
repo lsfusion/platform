@@ -550,9 +550,6 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected native void updateIcon(JavaScriptObject marker, String icon, String filterStyle)/*-{
         var L = $wnd.L;
         var iconUrl = icon != null ? icon : this.@GMap::DEFAULT_MARKER_ICON_URL;
-        if (iconUrl == null) {
-            iconUrl = L.Icon.Default.prototype._getIconUrl('icon'); 
-        }
         var myIcon = L.divIcon({
             html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\" " +
                 @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + "=\"true\" " +

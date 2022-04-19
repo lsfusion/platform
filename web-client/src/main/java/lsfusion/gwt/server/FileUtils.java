@@ -5,7 +5,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.SystemUtils;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.base.lambda.EConsumer;
@@ -20,6 +19,7 @@ import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import org.apache.commons.io.IOUtils;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
@@ -30,20 +30,28 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
 import java.io.*;
-import java.util.Iterator;
-import java.util.Map;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Set;
 
 public class FileUtils {
     // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
-    public static String APP_CSS_FOLDER_PATH = "static/css/"; // all files has to be prefixed with logicsName
-    // static files (platform / app)
-    public static String STATIC_IMAGE_FOLDER_PATH = "main/static/images"; // getStaticImageURL
-    public static String APP_STATIC_IMAGE_FOLDER_PATH = "images"; // getAppStaticImageURL, all files has to be prefixed with logicsName
-    public static String APP_STATIC_FILE_FOLDER_PATH = "web"; // getAppStaticFileURL
+    public static String STATIC_CSS_RESOURCE_PATH = "static/css/"; // all files has to be prefixed with logicsName
+    public static String STATIC_GWT_IMAGE_RESOURCE_PATH = "main/static/images"; // getStaticImageURL
+
+    // static app files
+    public static String STATIC_IMAGE_FOLDER_PATH = "gwtimages"; // getStaticImageURL
+    public static String APP_STATIC_IMAGE_FOLDER_PATH = "appimages"; // getAppStaticImageURL, all files has to be prefixed with logicsName
+    public static String APP_STATIC_WEB_FOLDER_PATH = "appweb"; // getAppStaticFileURL, all files has to be prefixed with logicsName
 
     public static String APP_DOWNLOAD_FOLDER_PATH; // getAppDownloadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
     public static String APP_UPLOAD_FOLDER_PATH; // getAppUploadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
     public static String APP_CONTEXT_FOLDER_PATH;
+
+    // should correspond from in urlrewrite.xml urls
+    public static String STATIC_PATH = "static";
+    // should correspond url-pattern for fileDownloadHandler (in web.xml)
+    public static String DOWNLOAD_HANDLER = "downloadFile";
 
     public static File createFile(String relativePath, String fileName) {
         return new File(relativePath, fileName);
@@ -79,11 +87,11 @@ public class FileUtils {
         }
     }
 
-    private static String getStaticPath(String path, ServerSettings settings, String subFolder) {
-        return path + "/" + settings.logicsName + (subFolder.isEmpty() ? "" : "/" + subFolder);
+    private static String getStaticPath(String path, ServerSettings settings) {
+        return path + "/" + settings.logicsName;
     }
 
-    public static ImageHolder createImageFile(ServletContext servletContext, ServerSettings settings, SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
+    public static ImageHolder createImageFile(ServletContext servletContext, ServerSettings settings, SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
         if (imageHolder != null) {
             ImageHolder imageDescription = new ImageHolder();
                 
@@ -91,7 +99,6 @@ public class FileUtils {
                 ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
 
                 String imagePath = imageHolder.getImagePath(colorTheme);
-                String imageFileName = imagePath.substring(0, imagePath.lastIndexOf("."));
                 String imageFileType = imagePath.substring(imagePath.lastIndexOf(".") + 1);
                 
                 ImageIcon image = imageHolder.getImage(colorTheme); 
@@ -102,10 +109,11 @@ public class FileUtils {
                             ServerColorUtils.getComponentForeground(servletContext, colorTheme));
                 }
 
-                String imagesFolderPath = getStaticPath(APP_STATIC_IMAGE_FOLDER_PATH, settings, imagesFolderName);
-                String imageUrl = saveImageFile(image.getImage(), imagesFolderPath, imageFileName, imageFileType, false);
+                String imagesFolderPath = getStaticPath(APP_STATIC_IMAGE_FOLDER_PATH, settings);
+                String imageUrl = saveImageFile(getIconSaver(image, imageFileType, false), imagesFolderPath, imagePath, null);
                 if (canBeDisabled) {
-                    saveImageFile(image.getImage(), imagesFolderPath, imageFileName + "_Disabled", imageFileType, true);
+                    String imageFileName = imagePath.substring(0, imagePath.lastIndexOf("."));
+                    saveImageFile(getIconSaver(image, imageFileType, true), imagesFolderPath, imageFileName + "_Disabled." + imageFileType, null);
                 }
                 
                 imageDescription.addImage(gColorTheme, imageUrl, image.getIconWidth(), image.getIconHeight());
@@ -115,24 +123,21 @@ public class FileUtils {
         return null;
     }
 
-    private static final Map<String, String> webFiles = MapFact.getGlobalConcurrentHashMap();///
-
     public static String getWebFile(String fileName, ServerSettings settings) {
-        return webFiles.get(fileName);
+        // assert that it was saved before
+        return saveWebFile(fileName, null, settings);
     }
 
-    public static void saveWebFile(String fileName, RawFileData fileData, ServerSettings settings) {
-        webFiles.put(fileName, saveFile(false, settings.inDevMode, getStaticPath(APP_STATIC_FILE_FOLDER_PATH, settings, ""), fileName, null, fileData::write));
+    public static String saveWebFile(String fileName, RawFileData fileData, ServerSettings settings) {
+        String webFolder = "/web/";
+        assert fileName.startsWith(webFolder);
+        fileName = fileName.substring(webFolder.length());
+
+        return saveDownloadFile(false, !settings.inDevMode, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
     }
 
-    private static String saveImageFile(Image image, String imagesFolder, String imageFileName, String iconFileType, boolean gray) {
-        return saveFile(false, true, imagesFolder, imageFileName + "." + iconFileType, null, fos -> {
-            ImageIO.write((RenderedImage) (
-                    image instanceof RenderedImage ? image : getBufferedImage(image, gray)),
-                    iconFileType,
-                    fos
-            );
-        });
+    private static String saveImageFile(EConsumer<OutputStream, IOException> file, String imagesFolder, String imagePath, Result<String> rUrl) {
+        return saveDownloadFile(false, true, imagesFolder, imagePath, null, rUrl, file);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -159,99 +164,112 @@ public class FileUtils {
         return bufferedImage;
     }
     
-    public static void createThemedClientImages(ServletContext servletContext) {
-        File imagesFolder = new File(APP_CONTEXT_FOLDER_PATH + "/" + STATIC_IMAGE_FOLDER_PATH);
-        Iterator it = org.apache.commons.io.FileUtils.iterateFiles(imagesFolder, null, false);
-        while (it.hasNext()) {
-            File imageFile = (File) it.next();
-                String imagePath = imageFile.getName();
-                
-                boolean alreadyThemed = false;
-                if (imagePath.contains("_")) {
-                    String fileName = imagePath.substring(0, imagePath.lastIndexOf("."));
-                    String possibleThemeSid = fileName.substring(fileName.lastIndexOf("_") + 1);
-                    for (GColorTheme theme : GColorTheme.values()) {
-                        if (!theme.isDefault() && theme.getSid().equals(possibleThemeSid)) {
-                            alreadyThemed = true;
-                            break;
+    public static String createThemedClientImages(ServletContext servletContext) throws IOException {
+        Result<String> rUrl = new Result<>();
+        String imageResourcePath = "/" + STATIC_GWT_IMAGE_RESOURCE_PATH + "/";
+        Set<String> imagePaths = servletContext.getResourcePaths(imageResourcePath);
+        for(String fullImagePath : imagePaths) {
+            String imagePath = fullImagePath;
+
+            assert imagePath.startsWith(imageResourcePath);
+            imagePath = imagePath.substring(imageResourcePath.length());
+            String imageType = BaseUtils.getFileExtension(imagePath);
+
+            boolean alreadyThemed = false;
+            if (imagePath.contains("_")) {
+                String fileName = imagePath.substring(0, imagePath.lastIndexOf("."));
+                String possibleThemeSid = fileName.substring(fileName.lastIndexOf("_") + 1);
+                for (GColorTheme theme : GColorTheme.values()) {
+                    if (!theme.isDefault() && theme.getSid().equals(possibleThemeSid)) {
+                        alreadyThemed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!alreadyThemed) {
+                ImageIcon icon = null;
+                for (GColorTheme gColorTheme : GColorTheme.values()) {
+                    if (!gColorTheme.isDefault()) {
+                        String themedImagePath = gColorTheme.getImagePath(imagePath);
+                        if (!imagePaths.contains(imageResourcePath + themedImagePath)) {
+                            if(icon == null)
+                                icon = new ImageIcon(IOUtils.toByteArray(servletContext.getResource(fullImagePath)));
+                            ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
+                            saveImageFile(getIconSaver(ClientColorUtils.createFilteredImageIcon(icon,
+                                    ServerColorUtils.getDefaultThemePanelBackground(servletContext),
+                                    ServerColorUtils.getPanelBackground(servletContext, colorTheme),
+                                    ServerColorUtils.getComponentForeground(servletContext, colorTheme)),
+                                    imageType, false), themedImagePath, rUrl);
                         }
                     }
                 }
-                
-                if (!alreadyThemed) {
-                    byte[] bytesArray = new byte[(int) imageFile.length()];
-                    try {
-                        FileInputStream fileInputStream = new FileInputStream(imageFile);
-                        fileInputStream.read(bytesArray);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    if (bytesArray.length > 0) {
-                        ImageIcon baseImage = new ImageIcon(bytesArray);
+            }
 
-                        for (GColorTheme gColorTheme : GColorTheme.values()) {
-                            if (!gColorTheme.isDefault()) {
-                                ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
-    
-                                ImageIcon themeImage = ClientColorUtils.createFilteredImageIcon(baseImage,
-                                        ServerColorUtils.getDefaultThemePanelBackground(servletContext),
-                                        ServerColorUtils.getPanelBackground(servletContext, colorTheme),
-                                        ServerColorUtils.getComponentForeground(servletContext, colorTheme));
-    
-                                String newImagePath = gColorTheme.getImagePath(imagePath);
-                                String imageFileName = newImagePath.substring(0, newImagePath.lastIndexOf("."));
-                                String imageFileType = newImagePath.substring(newImagePath.lastIndexOf(".") + 1);
-
-                                saa
-                                saveImageFile(themeImage.getImage(), STATIC_IMAGE_FOLDER_PATH, imageFileName, imageFileType, false);
-                            }
-                        }
-                    }
-                }
+            // have no idea why but gif is not properly saved when using ImageIcon and ImageIO
+            try(InputStream imageFile = servletContext.getResourceAsStream(fullImagePath)) {
+                saveImageFile(fos -> IOUtils.copy(imageFile, fos), imagePath, rUrl);
+            }
         }
+        return rUrl.result;
+    }
+
+    public static EConsumer<OutputStream, IOException> getIconSaver(ImageIcon icon, String iconFileType, boolean gray) {
+        Image image = icon.getImage();
+        return fos -> ImageIO.write((RenderedImage) (image instanceof RenderedImage ? image : getBufferedImage(image, gray)), iconFileType, fos);
+    }
+
+    public static void saveImageFile(EConsumer<OutputStream, IOException> file, String imagePath, Result<String> rUrl) {
+        saveImageFile(file, STATIC_IMAGE_FOLDER_PATH, imagePath, rUrl);
     }
 
     public static Object readUploadFileAndDelete(GFilesDTO filesObj) {
         Result<Object> result = new Result<>();
-        readFile(APP_UPLOAD_FOLDER_PATH, filesObj.filePath, true, inStream -> {
-            result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream}));
-        });
+        readFile(APP_UPLOAD_FOLDER_PATH, filesObj.filePath, true, inStream ->
+                result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream})));
         return result.result;
     }
 
-    private static String saveFile(boolean useDownload, boolean isStatic, String innerPath, String fileName, Result<Runnable> rCloser, EConsumer<OutputStream, IOException> consumer) {
-        String relativePath;
+    private static String saveDownloadFile(boolean useDownload, boolean isStatic, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
+        String filePath;
         String url;
         if(useDownload) { // we'll put it in the temp folder, and add static to final url
-            relativePath = APP_DOWNLOAD_FOLDER_PATH;
-            url = "downloadFile/";
+            filePath = APP_DOWNLOAD_FOLDER_PATH;
+            url = DOWNLOAD_HANDLER + "/";
         } else {
-            relativePath = APP_CONTEXT_FOLDER_PATH;
+            filePath = APP_CONTEXT_FOLDER_PATH;
             url = "";
 
             if(isStatic)
-                relativePath += "static/";
+                filePath += "/" + STATIC_PATH;
+        }
+        if(isStatic)
+            url += STATIC_PATH + "/";
+
+        if(!innerPath.isEmpty()) {
+            filePath += "/" + innerPath;
+            url += innerPath + "/";
         }
 
-        Runnable closer = writeFile(relativePath, fileName, consumer);
+        Runnable closer = writeFile(filePath, fileName, consumer);
         if(rCloser != null)
             rCloser.set(closer);
 
-        if(isStatic)
-            url += "static/";
+        if(rUrl != null)
+            rUrl.set(url);
 
         return url + fileName;
     }
 
     public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images
         String fileName = SystemUtils.generateID(fileData.getBytes());
-        return saveDownloadFile(fileName, true, null, fileData);
+        return saveDataFile(fileName, true, null, fileData);
     }
 
     public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
         if(fileData != null) {
             String fileName = BaseUtils.randomString(15);            ;
-            return saveDownloadFile(fileName, false, null, fileData);
+            return saveDataFile(fileName, false, null, fileData);
         }
         return null;
     }
@@ -261,14 +279,14 @@ public class FileUtils {
         Pair<String, Runnable> savedFile = sessionObject.savedTempFiles.get(fileName);
         if (savedFile == null) {
             Result<Runnable> rCloser = new Result<>();
-            savedFile = new Pair<>(saveDownloadFile(fileName, true, rCloser, fileData), rCloser.result)
+            savedFile = new Pair<>(saveDataFile(fileName, true, rCloser, fileData), rCloser.result);
             sessionObject.savedTempFiles.put(fileName, savedFile);
         }
         return savedFile.first;
     }
 
-    private static String saveDownloadFile(String fileName, boolean isStatic, Result<Runnable> rCloser, RawFileData fileData) {
-        return saveFile(true, isStatic, "", fileName, rCloser, fileData::write); // assert !exists
+    private static String saveDataFile(String fileName, boolean isStatic, Result<Runnable> rCloser, RawFileData fileData) {
+        return saveDownloadFile(true, isStatic, "", fileName, rCloser, null, fileData::write); // assert !exists
     }
 
     public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {

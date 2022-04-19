@@ -21,15 +21,33 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        dsds
-        String fileName = request.getParameter("name");
-        String displayName = request.getParameter("displayName");
+
+        boolean staticFile = false;
+
+        String downloadPrefix = "/" + FileUtils.DOWNLOAD_HANDLER + "/";
+        String staticPrefix = FileUtils.STATIC_PATH + "/";
+
+        String requestURI = request.getRequestURI();
+        assert requestURI.startsWith(downloadPrefix);
+        requestURI = requestURI.substring(downloadPrefix.length());
+        if(requestURI.startsWith(staticPrefix)) {
+            staticFile = true;
+            requestURI = requestURI.substring(staticPrefix.length());
+        }
+        String fileName = requestURI;
+
         String extension = request.getParameter("extension");
-        boolean staticFile = request.getRequestURI().equals("/downloadFile/static");
+        if(extension == null)
+            extension = BaseUtils.getFileExtension(fileName);
+        fileName = BaseUtils.getFileName(fileName);
+
+        String displayName = request.getParameter("displayName");
+        if(displayName == null)
+            displayName = fileName;
 
         response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
         //inline = open in browser, attachment = download
-        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName != null ? displayName : fileName, extension)));
+        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 
         FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, inStream -> {

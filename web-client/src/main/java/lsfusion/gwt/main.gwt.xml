@@ -14,24 +14,24 @@
 
     <!-- to be able to get browser locale on the server side (LSFRemoteAuthenticationProvider) -->
     <set-configuration-property name="locale.useragent" value="Y"/>
-    
-    <!-- Declaration of supported locales and removal of the "default" locale  
-         http://www.gwtproject.org/doc/latest/DevGuideI18nLocale.html#LocaleDefault 
+
+    <!-- Declaration of supported locales and removal of the "default" locale
+         http://www.gwtproject.org/doc/latest/DevGuideI18nLocale.html#LocaleDefault
      -->
     <extend-property name="locale" values="ru,en,be,uk"/>
     <set-property name="locale" value="ru,en,be,uk"/>
     <set-property-fallback name="locale" value="en"/>
-    
+
     <set-configuration-property name="locale.cookie" value="LSFUSION_LOCALE"/>
 
     <set-property name="user.agent" value="gecko1_8,safari"/>
-    
+
     <!-- note:
          Раскомментить при разработке для быстрой компиляции.
          При этом будет работать только в firefox и только с английской локалью
      -->
-    <!--<set-property name="user.agent" value="safari" />-->
-    <!--<set-property name="user.agent" value="gecko1_8" />-->
+    <set-property name="user.agent" value="safari" />
+<!--    <set-property name="user.agent" value="gecko1_8" />-->
     <!--<set-property name="locale" value="ru" />-->
 
     <!-- выключить обфускацию стилей -->

@@ -17,13 +17,14 @@ public class GetClientSettingsResult implements Result {
     public GColorPreferences colorPreferences;
     public String dateFormat;
     public String timeFormat;
+    public String staticImagesURL;
 
     public GetClientSettingsResult() {
     }
 
     public GetClientSettingsResult(boolean busyDialog, long busyDialogTimeout, boolean devMode, String projectLSFDir,
                                    boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
-                                   GColorTheme colorTheme, GColorPreferences colorPreferences, String dateFormat, String timeFormat) {
+                                   GColorTheme colorTheme, GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL) {
         this.busyDialog = busyDialog;
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
@@ -36,5 +37,6 @@ public class GetClientSettingsResult implements Result {
         this.colorPreferences = colorPreferences;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
+        this.staticImagesURL = staticImagesURL;
     }
 }

@@ -11,7 +11,6 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.function.Consumer;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.clearBasedTextFonts;
 import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.setBasedTextFonts;
 import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
@@ -161,7 +160,7 @@ public class ActionCellRenderer extends CellRenderer {
             if(absolute)
                 setImage.accept(imagePath);
             else
-                setThemeImage(imagePath, setImage);
+                GwtClientUtils.setThemeImage(imagePath, setImage);
 
             if(property.drawAsync) {
                 element.setPropertyObject(ASYNCIMAGE, imagePath);

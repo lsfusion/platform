@@ -49,8 +49,12 @@ public class ClientSystemAction extends SystemAction {
             throw Throwables.propagate(e);
         }
 
-        List<String> resources = ResourceUtils.getResources(Pattern.compile("/web/.*" + resourceName.trim()));
-        String resource = isFile ? (resources.size() == 1 ? resources.get(0) : null) : resourceName;
+        String resource;
+        if(isFile) {
+            List<String> resources = ResourceUtils.getResources(Pattern.compile("/web/.*" + resourceName.trim()));
+            resource = (resources.size() == 1 ? resources.get(0) : null);
+        } else
+            resource = resourceName;
 
         ClientJSAction clientJSAction = new ClientJSAction(resource, resourceName, values, types, isFile, syncType);
         if (syncType)

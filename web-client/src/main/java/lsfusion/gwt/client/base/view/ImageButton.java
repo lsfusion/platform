@@ -6,7 +6,6 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
 public class ImageButton extends Button implements ColorThemeChangeListener {
@@ -83,15 +82,15 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
     }
 
     private void ensureAndSet(String imagePath) {
-        setThemeImage(imagePath, this::setAbsoluteImagePath);
+        GwtClientUtils.setThemeImage(imagePath, this::setAbsoluteImagePath);
     }
 
+    private String oldImagePath = null;
     protected void setAbsoluteImagePath(String imagePath) {
-        String oldUrl = image.getUrl();
-        if (!oldUrl.equals(imagePath == null ? "" : imagePath)) {
+        if (!GwtClientUtils.nullEquals(oldImagePath, imagePath)) {
             image.setUrl(imagePath == null ? "" : imagePath);
 
-            if ((oldUrl.isEmpty() && imagePath != null) || (!oldUrl.isEmpty() && imagePath == null)) {
+            if ((oldImagePath == null) == (imagePath != null)) {
                 image.setVisible(imagePath != null);
                 updateStrut();
 
@@ -106,6 +105,7 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
                     }
                 }
             }
+            oldImagePath = imagePath;
         }
     }
 

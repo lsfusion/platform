@@ -77,6 +77,8 @@ public class MainFrame implements EntryPoint {
     public static boolean pivotOnlySelectedColumn;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
+    public static String staticImagesURL;
+    public static List<Runnable> staticImagesURLListeners = new ArrayList<>();
     
     public static GColorTheme colorTheme = GColorTheme.DEFAULT;
     public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>(); 
@@ -237,6 +239,12 @@ public class MainFrame implements EntryPoint {
             @Override
             public void onSuccess(GetClientSettingsResult result) {
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
+
+                staticImagesURL = result.staticImagesURL;
+                for(Runnable listener : staticImagesURLListeners)
+                    listener.run();
+                staticImagesURLListeners = null;
+
                 devMode = result.devMode;
                 projectLSFDir = result.projectLSFDir;
                 showDetailedInfo = result.showDetailedInfo;

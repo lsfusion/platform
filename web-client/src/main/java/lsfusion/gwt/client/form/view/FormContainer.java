@@ -171,7 +171,7 @@ public abstract class FormContainer {
     }
 
     public void setContentLoading() {
-        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
+        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)));
     }
     protected static String loadingAsyncImage = "loading_async.gif";
     protected static Widget createLoadingWidget(String imageUrl) {
