@@ -50,6 +50,8 @@ public class FileUtils {
 
     // should correspond from in urlrewrite.xml urls
     public static String STATIC_PATH = "static";
+    public static String TEMP_PATH = "temp";
+    public static String DEV_PATH = "dev";
     // should correspond url-pattern for fileDownloadHandler (in web.xml)
     public static String DOWNLOAD_HANDLER = "downloadFile";
 
@@ -133,11 +135,11 @@ public class FileUtils {
         assert fileName.startsWith(webFolder);
         fileName = fileName.substring(webFolder.length());
 
-        return saveDownloadFile(false, !settings.inDevMode, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
+        return saveDownloadFile(false, settings.inDevMode ? DownloadType.DEV : DownloadType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
     }
 
     private static String saveImageFile(EConsumer<OutputStream, IOException> file, String imagesFolder, String imagePath, Result<String> rUrl) {
-        return saveDownloadFile(false, true, imagesFolder, imagePath, null, rUrl, file);
+        return saveDownloadFile(false, DownloadType.STATIC, imagesFolder, imagePath, null, rUrl, file);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -230,9 +232,27 @@ public class FileUtils {
         return result.result;
     }
 
-    private static String saveDownloadFile(boolean useDownload, boolean isStatic, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
+    private enum DownloadType {
+        STATIC, // need to be cached for a long time and stored
+        TEMP, // need to be cached for a long time and deleted after usage
+        DEV // need not to be cached but stored
+    }
+
+    private static String saveDownloadFile(boolean useDownload, DownloadType type, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
         String filePath;
         String url;
+        String extraPath = null;
+        switch (type) {
+            case STATIC:
+                extraPath = STATIC_PATH;
+                break;
+            case TEMP:
+                extraPath = TEMP_PATH;
+                break;
+            case DEV:
+                extraPath = DEV_PATH;
+                break;
+        }
         if(useDownload) { // we'll put it in the temp folder, and add static to final url
             filePath = APP_DOWNLOAD_FOLDER_PATH;
             url = DOWNLOAD_HANDLER + "/";
@@ -240,11 +260,9 @@ public class FileUtils {
             filePath = APP_CONTEXT_FOLDER_PATH;
             url = "";
 
-            if(isStatic)
-                filePath += "/" + STATIC_PATH;
+            filePath += "/" + extraPath;
         }
-        if(isStatic)
-            url += STATIC_PATH + "/";
+        url += extraPath + "/";
 
         if(!innerPath.isEmpty()) {
             filePath += "/" + innerPath;
@@ -286,7 +304,7 @@ public class FileUtils {
     }
 
     private static String saveDataFile(String fileName, boolean isStatic, Result<Runnable> rCloser, RawFileData fileData) {
-        return saveDownloadFile(true, isStatic, "", fileName, rCloser, null, fileData::write); // assert !exists
+        return saveDownloadFile(true, isStatic ? DownloadType.STATIC : DownloadType.TEMP, "", fileName, rCloser, null, fileData::write); // assert !exists
     }
 
     public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {
