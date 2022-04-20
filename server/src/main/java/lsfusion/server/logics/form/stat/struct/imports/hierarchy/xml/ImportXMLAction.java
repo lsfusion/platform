@@ -13,8 +13,8 @@ import java.io.IOException;
 
 public class ImportXMLAction extends ImportHierarchicalAction<XMLNode> {
 
-    public ImportXMLAction(int paramsCount, FormEntity formEntity, String charset) {
-        super(paramsCount, formEntity, charset);
+    public ImportXMLAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
+        super(paramsCount, formEntity, charset, hasRoot, hasWhere);
     }
 
     @Override

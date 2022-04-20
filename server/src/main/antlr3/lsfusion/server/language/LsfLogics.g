@@ -2623,11 +2623,13 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Form
                 )
 	|	'JSON'	{ $format = FormIntegrationType.JSON; } (
 	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
 	            ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	            )
 	|	'XML'	{ $format = FormIntegrationType.XML; } (
 	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	            ('ATTR' { $attr = true; })?
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
 	            )
 	|	'TABLE'	{ $format = FormIntegrationType.TABLE; } (
 	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?

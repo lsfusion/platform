@@ -4326,11 +4326,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 whereLCP = findLPByPropertyUsage(new NamedPropertyUsage("imported", toParamClasses), false, true);
         }
 
+        boolean hasRoot = root != null;
+        boolean hasWhere = whereProp != null;
+
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);
-        if(root != null)
+        if(hasRoot)
             params.add(root);
-        if(whereProp != null)
+        if(hasWhere)
             params.add(whereProp);
         if(memoProp != null)
             params.add(memoProp);
@@ -4339,7 +4342,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LA importAction = null;
         try {
-            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator, noHeader, noEscape, charset, sheetAll, attr, whereProp != null, getUParams(props.toArray(new LP[props.size()])));
+            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator,
+                    noHeader, noEscape, charset, sheetAll, attr, hasRoot, hasWhere, getUParams(props.toArray(new LP[props.size()])));
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
@@ -4382,20 +4386,23 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
+        boolean hasRoot = rootProp != null;
+        boolean hasWhere = whereProp != null;
+
         if(attr)
             errLog.emitSimpleError(parser, "IMPORT form with ATTR not supported");
-        if(whereProp != null)
+        if(hasWhere)
             errLog.emitSimpleError(parser, "IMPORT form with WHERE not supported");
         if(memoProp != null)
             errLog.emitSimpleError(parser, "IMPORT form with MEMO not supported");
 
-        if(rootProp != null)
+        if(hasRoot)
             params.add(rootProp);
         if(sheet != null)
             params.add(sheet);
 
         ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.EMPTYORDER();
-        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, whereProp != null, !groupFiles.isEmpty()), params);
+        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasRoot, hasWhere, !groupFiles.isEmpty()), params);
     }
 
     public LP addTypeProp(ValueClass valueClass, boolean bIs) {

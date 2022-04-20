@@ -11,6 +11,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
+import lsfusion.server.logics.form.stat.struct.imports.hierarchy.ImportHierarchicalIterator;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
@@ -41,26 +42,28 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
     }
     
     @Override
-    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData) {
+    public <T extends Node<T>> void importNode(T node, ImMap<ObjectEntity, Object> upValues, ImportData importData, ImportHierarchicalIterator iterator) {
         boolean isIndex = isIndex();
         ObjectEntity object = getSingleObject();
 
         for (Pair<Object, T> data : node.getMap(getKey(), isIndex)) {
-            // getting object value
-            Object objectValue;
-            try {
-                if (isIndex)
-                    objectValue = importData.genObject(object);
-                else
-                    objectValue = ((DataClass) object.baseClass).parseString((String) data.first);
-            } catch (SQLException | ParseException e) {
-                throw Throwables.propagate(e);
+            if(iterator == null || !iterator.ignoreRow(children, data.second)) {
+                // getting object value
+                Object objectValue;
+                try {
+                    if (isIndex)
+                        objectValue = importData.genObject(object);
+                    else
+                        objectValue = ((DataClass) object.baseClass).parseString((String) data.first);
+                } catch (SQLException | ParseException e) {
+                    throw Throwables.propagate(e);
+                }
+
+                ImMap<ObjectEntity, Object> newUpValues = upValues.addExcl(object, objectValue);
+
+                importData.addObject(group, newUpValues, isIndex);
+                importChildrenNodes(data.second, newUpValues, importData, null);
             }
-
-            ImMap<ObjectEntity, Object> newUpValues = upValues.addExcl(object, objectValue);
-
-            importData.addObject(group, newUpValues, isIndex);
-            importChildrenNodes(data.second, newUpValues, importData);
         }
     }
 
