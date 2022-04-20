@@ -27,12 +27,12 @@ public class ImportHierarchicalIterator extends ImportIterator {
                 } else {
 
                     boolean attr = false;
-                    for (ChildParseNode child : children) {
+                    /*for (ChildParseNode child : children) {
                         if (child instanceof PropertyParseNode && child.getKey().equals(where.field)) {
                             attr = ((PropertyParseNode) child).isAttr();
                             break;
                         }
-                    }
+                    }*/
 
                     Object fieldValue = node.getValue(where.field, attr, StringClass.text);
                     if (fieldValue != null) {
