@@ -80,8 +80,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }
 
     public static JavaScriptObject getCustomFunction(String customEditorFunction) {
-        return GwtClientUtils.javaScriptExceptionHandler(() ->
-                GwtClientUtils.call(GwtClientUtils.getGlobalField(customEditorFunction)), "field " + customEditorFunction + " not found");
+        return GwtClientUtils.call(GwtClientUtils.getGlobalField(customEditorFunction));
     }
 
     // COMMON METHODS

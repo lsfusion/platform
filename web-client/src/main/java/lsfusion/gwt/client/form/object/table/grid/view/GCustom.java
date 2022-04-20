@@ -8,8 +8,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.javaScriptExceptionHandler;
-
 public class GCustom extends GTippySimpleStateTableView {
     private final JavaScriptObject renderFunction;
     private final boolean renderFunctionWithoutArguments; //backward compatibility
@@ -23,21 +21,21 @@ public class GCustom extends GTippySimpleStateTableView {
     @Override
     public void onRender(Event editEvent) {
         if (renderFunctionWithoutArguments)
-            javaScriptExceptionHandler(() -> render(renderFunction, getDrawElement(), controller, editEvent));
+            render(renderFunction, getDrawElement(), controller, editEvent);
     }
 
     @Override
     public void onClear() {
         if (renderFunctionWithoutArguments)
-            javaScriptExceptionHandler(() -> clear(renderFunction, getDrawElement()));
+            clear(renderFunction, getDrawElement());
     }
 
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
         if (renderFunctionWithoutArguments)
-            javaScriptExceptionHandler(() -> update(renderFunction, element, controller, list));
+            update(renderFunction, element, controller, list);
         else
-            javaScriptExceptionHandler(() -> runFunction(element, list, renderFunction, controller));
+            runFunction(element, list, renderFunction, controller);
     }
 
     @Override

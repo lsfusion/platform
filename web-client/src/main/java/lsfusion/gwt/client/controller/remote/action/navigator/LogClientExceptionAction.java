@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
+import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.user.client.rpc.StatusCodeException;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
@@ -35,12 +36,13 @@ public class LogClientExceptionAction extends NavigatorPriorityAction<VoidResult
 
     public LogClientExceptionAction(Throwable throwable) {
         this.throwable = fromWebClientToWebServer(throwable);
+        if (throwable instanceof JavaScriptException)
+            this.jsExceptionStack = getJsExceptionStack(throwable);
     }
 
-    public LogClientExceptionAction(Throwable throwable, String jsExceptionStack) {
-        this(throwable);
-        this.jsExceptionStack = jsExceptionStack;
-    }
+    private static native String getJsExceptionStack(Throwable exception)/*-{
+        return exception.@Throwable::backingJsObject.stack;
+    }-*/;
 
     @Override
     public boolean logRemoteException() {

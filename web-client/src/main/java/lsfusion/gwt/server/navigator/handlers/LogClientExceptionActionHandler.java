@@ -79,10 +79,9 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
             throwable = fromWebServerToAppServer(throwable);
 
             try {
-                if (action.jsExceptionStack != null) {
-                    Logger.getLogger(LogClientExceptionActionHandler.class).error(throwable.getMessage(), throwable);
+                if (action.jsExceptionStack != null)
                     Logger.getLogger(LogClientExceptionActionHandler.class).error(action.jsExceptionStack);
-                }
+
                 navigator.logClientException(null, throwable);
             } finally {
                 invocationLogger.info("After logging exception, count : " + newCount + ", navigator " + navigator);
