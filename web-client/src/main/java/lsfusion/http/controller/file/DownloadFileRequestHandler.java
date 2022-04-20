@@ -37,7 +37,7 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         else if(requestURI.startsWith(prefix = FileUtils.DEV_PATH + "/"))
             staticFile = true;
         else
-            throw new UnsupportedOperationException();
+            throw new UnsupportedOperationException("RequestURI : " + request.getRequestURI());
         String fileName = requestURI.substring(prefix.length());
 
         String extension = request.getParameter("extension");
