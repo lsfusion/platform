@@ -65,10 +65,10 @@ public class FileUtils {
         if(close)
             deleteFile(file);
     }
-    public static Runnable writeFile(String relativePath, String fileName, EConsumer<OutputStream, IOException> consumer) {
+    public static Runnable writeFile(String relativePath, boolean override, String fileName, EConsumer<OutputStream, IOException> consumer) {
         File file = createFile(relativePath, fileName);
 
-        if(!file.exists()) {
+        if(override || !file.exists()) {
             try(FileOutputStream outStream = org.apache.commons.io.FileUtils.openOutputStream(file)) {
                 consumer.accept(outStream);
             } catch (IOException e) {
@@ -111,10 +111,11 @@ public class FileUtils {
                 }
 
                 String imagesFolderPath = getStaticPath(APP_STATIC_IMAGE_FOLDER_PATH, settings);
-                String imageUrl = saveImageFile(getIconSaver(image, imageFileType, false), imagesFolderPath, imagePath, null);
+                // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
+                String imageUrl = saveImageFile(getIconSaver(image, imageFileType, false), false, imagesFolderPath, imagePath, null);
                 if (canBeDisabled) {
                     String imageFileName = BaseUtils.getFileWithoutExtension(imagePath);
-                    saveImageFile(getIconSaver(image, imageFileType, true), imagesFolderPath, imageFileName + "_Disabled." + imageFileType, null);
+                    saveImageFile(getIconSaver(image, imageFileType, true), false, imagesFolderPath, imageFileName + "_Disabled." + imageFileType, null);
                 }
                 
                 imageDescription.addImage(gColorTheme, imageUrl, image.getIconWidth(), image.getIconHeight());
@@ -135,11 +136,12 @@ public class FileUtils {
         assert fileName.startsWith(webFolder);
         fileName = fileName.substring(webFolder.length());
 
-        return saveDownloadFile(useDownloadForAppResources, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
+        // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
+        return saveDownloadFile(useDownloadForAppResources, fileData != null && settings.inDevMode, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
     }
 
-    private static String saveImageFile(EConsumer<OutputStream, IOException> file, String imagesFolder, String imagePath, Result<String> rUrl) {
-        return saveDownloadFile(useDownloadForAppResources, DownloadStoreType.STATIC, imagesFolder, imagePath, null, rUrl, file);
+    private static String saveImageFile(EConsumer<OutputStream, IOException> file, boolean override, String imagesFolder, String imagePath, Result<String> rUrl) {
+        return saveDownloadFile(useDownloadForAppResources, override, DownloadStoreType.STATIC, imagesFolder, imagePath, null, rUrl, file);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -222,7 +224,8 @@ public class FileUtils {
     }
 
     public static void saveImageFile(EConsumer<OutputStream, IOException> file, String imagePath, Result<String> rUrl) {
-        saveImageFile(file, STATIC_IMAGE_FOLDER_PATH, imagePath, rUrl);
+        // we can override since it is called only once the container is started
+        saveImageFile(file, true, STATIC_IMAGE_FOLDER_PATH, imagePath, rUrl);
     }
 
     public static Object readUploadFileAndDelete(GFilesDTO filesObj) {
@@ -238,7 +241,7 @@ public class FileUtils {
         DEV // need not to be cached but stored
     }
 
-    private static String saveDownloadFile(boolean useDownload, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
+    private static String saveDownloadFile(boolean useDownload, boolean override, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
         String filePath;
         String url;
         String extraPath = null;
@@ -269,7 +272,7 @@ public class FileUtils {
             url += innerPath + "/";
         }
 
-        Runnable closer = writeFile(filePath, fileName, consumer);
+        Runnable closer = writeFile(filePath, override, fileName, consumer);
         if(rCloser != null)
             rCloser.set(closer);
 
@@ -304,7 +307,8 @@ public class FileUtils {
     }
 
     private static String saveDataFile(String fileName, boolean isStatic, Result<Runnable> rCloser, RawFileData fileData) {
-        return saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, "", fileName, rCloser, null, fileData::write); // assert !exists
+        // we don't want to override file, since it's name is based on base64Hash or random
+        return saveDownloadFile(true, false, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, "", fileName, rCloser, null, fileData::write);
     }
 
     public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {

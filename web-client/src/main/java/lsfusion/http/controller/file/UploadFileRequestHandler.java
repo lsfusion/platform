@@ -11,7 +11,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -32,7 +31,7 @@ public class UploadFileRequestHandler implements HttpRequestHandler {
             // in upload there is no savedTempFiles mechanism, since we don't identify the user who uploads the file
             for (FileItem item : items) {
                 if (!item.isFormField())
-                    FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, request.getParameter("sid") + "_" + item.getName(), fos -> {
+                    FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, true, request.getParameter("sid") + "_" + item.getName(), fos -> {
                         fos.write(item.get());
                     });
             }
