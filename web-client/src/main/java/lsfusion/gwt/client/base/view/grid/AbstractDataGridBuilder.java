@@ -18,7 +18,6 @@ package lsfusion.gwt.client.base.view.grid;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.List;
 import java.util.function.BiPredicate;

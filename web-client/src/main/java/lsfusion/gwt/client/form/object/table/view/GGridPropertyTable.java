@@ -663,8 +663,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
 
             @Override
-            public String getBackground() {
-                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), column.getBackground(property, (T) cell.getRow()));
+            public String getBackground(String baseColor) {
+                String background = column.getBackground(property, (T) cell.getRow());
+                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), background != null ? background : baseColor);
             }
 
             @Override

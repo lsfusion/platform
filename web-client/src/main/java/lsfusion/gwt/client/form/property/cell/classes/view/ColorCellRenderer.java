@@ -21,23 +21,28 @@ public class ColorCellRenderer extends CellRenderer<Object> {
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
-        element.getStyle().clearColor();
-        element.getStyle().clearBackgroundColor();
+//        element.getStyle().clearBackgroundColor();
         element.setTitle(null);
     }
 
     @Override
     public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
-        String color = getColorValue(value);
-        element.getStyle().setColor(color);
-        element.getStyle().setBackgroundColor(color);
-        element.setTitle(color);
+        String baseColor = getColorValue(value);
+        element.setTitle(baseColor);
+
+//        color is set with getBaseBackground
+//        element.getStyle().setBackgroundColor(baseColor);
 
         return false;
     }
 
+    @Override
+    protected String getBaseBackground(Object value) {
+        return getColorValue(value);
+    }
+
     private String getColorValue(Object value) {
-        return value == null ? "" : value.toString();
+        return value == null ? null : value.toString();
     }
 
     @Override

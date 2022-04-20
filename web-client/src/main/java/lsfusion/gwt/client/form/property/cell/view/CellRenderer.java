@@ -138,6 +138,10 @@ public abstract class CellRenderer<T> {
         return false;
     }
 
+    protected String getBaseBackground(Object value) {
+        return null;
+    }
+
     protected boolean needToRenderToolbarContent() {
         return true;
     }
@@ -156,9 +160,6 @@ public abstract class CellRenderer<T> {
     private static final String RENDERED = "rendered";
 
     public void update(Element element, UpdateContext updateContext) {
-        String background = updateContext.getBackground();
-        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground(), true);
-
         boolean selected = updateContext.isSelectedLink();
         if(selected)
             renderEditSelected(element, property);
@@ -167,6 +168,10 @@ public abstract class CellRenderer<T> {
 
         Object value = updateContext.getValue();
         boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
+
+        String baseBackground = getBaseBackground(value);
+        String background = updateContext.getBackground(baseBackground);
+        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground(), baseBackground == null);
 
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
         boolean isNew = false;
@@ -295,7 +300,7 @@ public abstract class CellRenderer<T> {
                 ImageElement loadingImage = Document.get().createImageElement();
                 GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
                 loadingImage.addClassName("property-toolbar-loading");
-                setBackground(loadingImage, background);
+                setToolbarBackground(loadingImage, background);
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
@@ -303,7 +308,7 @@ public abstract class CellRenderer<T> {
             if (toolbarActions.length > 0) {
                 Element propertyToolbarItemGroup = null;
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                setBackground(verticalSeparator, background);
+                setToolbarBackground(verticalSeparator, background);
                 if(allHover(toolbarActions)) {
                     propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(null, toolbarElement, verticalSeparator, start);
                 } else {
@@ -317,7 +322,7 @@ public abstract class CellRenderer<T> {
                     ImageElement actionImgElement = Document.get().createImageElement();
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
-                    setBackground(actionDivElement, background);
+                    setToolbarBackground(actionDivElement, background);
 
                     GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
@@ -368,7 +373,7 @@ public abstract class CellRenderer<T> {
         return propertyToolbarItemGroup;
     }
 
-    private void setBackground(Element element, String background) {
+    private static void setToolbarBackground(Element element, String background) {
         element.addClassName("background-inherit");
         // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
         GFormController.setBackgroundColor(element, background, true);
