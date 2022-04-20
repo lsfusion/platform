@@ -169,10 +169,11 @@ public class FlexPanelImpl {
     //    private static String DROPCOLUMNSTRING = "-1px";
     public static String getLineSizeString(double flex, Integer flexBasis, boolean shrink) {
         // it seems that  min-content is equivalent to auto in flex (and auto in grid layout for example often does not respect margins somewhy)
-        String flexBasisString = flexBasis == null ? (shrink ? "0px" : "min-content") : flexBasis + "px";
+        String flexBasisString = flexBasis == null ? "min-content" : flexBasis + "px";
+        if(shrink)
+            return "minmax(0px," + (flex > 0 ? flex + "fr" : flexBasisString) + ")";
         if(flex > 0)
             return "minmax(" + flexBasisString + "," + flex + "fr)";
-
         return flexBasisString;
     }
 
