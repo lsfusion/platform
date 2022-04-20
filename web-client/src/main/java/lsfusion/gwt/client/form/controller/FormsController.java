@@ -104,6 +104,10 @@ public abstract class FormsController {
         }
 
         tabsPanel = new FlexTabbedPanel("formsTabBar", toolbarView);
+        if (MainFrame.mobile) {
+            tabsPanel.getElement().addClassName("mobileFormsTabPanel");
+            tabsPanel.getElement().getStyle().setProperty("flexDirection", "column-reverse");
+        }
 
         // unselected (but not removed)
         tabsPanel.setBeforeSelectionHandler(index -> {

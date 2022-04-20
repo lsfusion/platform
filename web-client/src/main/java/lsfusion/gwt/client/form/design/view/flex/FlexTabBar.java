@@ -11,7 +11,6 @@ import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.function.Consumer;
@@ -29,9 +28,7 @@ public class FlexTabBar extends Composite implements TabBar {
     public FlexTabBar(Widget extraTabWidget, boolean vertical) {
         panel = new FlexPanel(vertical);
         
-        if (MainFrame.mobile) {
-            panel.getElement().addClassName("mobileTabPanelBar");
-        }
+        panel.getElement().addClassName("tabBarItemsWrapper");
         
         if (extraTabWidget == null) {
             initWidget(panel);
