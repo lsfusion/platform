@@ -55,8 +55,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.*;
-
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint {
     public static LogicsDispatchAsync logicsDispatchAsync;
@@ -487,12 +485,12 @@ public class MainFrame implements EntryPoint {
 
                 formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
                     @Override
-                    public void onSuccess(ServerResponseResult result, Runnable onDispatchFinished) {
-                        super.onSuccess(result, onDispatchFinished);
-
-                        if (formsController.getFormsCount() == 0) {
-                            openNavigatorMenu();
-                        }
+                    protected Runnable getOnRequestFinished() {
+                        return () -> {
+                            if (formsController.getFormsCount() == 0) {
+                                openNavigatorMenu();
+                            }
+                        };
                     }
                 });
             }
