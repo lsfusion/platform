@@ -100,7 +100,7 @@ public class FileUtils {
                 ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
 
                 String imagePath = imageHolder.getImagePath(colorTheme);
-                String imageFileType = imagePath.substring(imagePath.lastIndexOf(".") + 1);
+                String imageFileType = BaseUtils.getFileExtension(imagePath);
                 
                 ImageIcon image = imageHolder.getImage(colorTheme); 
                 if (image == null) {
@@ -113,7 +113,7 @@ public class FileUtils {
                 String imagesFolderPath = getStaticPath(APP_STATIC_IMAGE_FOLDER_PATH, settings);
                 String imageUrl = saveImageFile(getIconSaver(image, imageFileType, false), imagesFolderPath, imagePath, null);
                 if (canBeDisabled) {
-                    String imageFileName = imagePath.substring(0, imagePath.lastIndexOf("."));
+                    String imageFileName = BaseUtils.getFileWithoutExtension(imagePath);
                     saveImageFile(getIconSaver(image, imageFileType, true), imagesFolderPath, imageFileName + "_Disabled." + imageFileType, null);
                 }
                 
@@ -179,7 +179,7 @@ public class FileUtils {
 
             boolean alreadyThemed = false;
             if (imagePath.contains("_")) {
-                String fileName = imagePath.substring(0, imagePath.lastIndexOf("."));
+                String fileName = BaseUtils.getFileName(imagePath);
                 String possibleThemeSid = fileName.substring(fileName.lastIndexOf("_") + 1);
                 for (GColorTheme theme : GColorTheme.values()) {
                     if (!theme.isDefault() && theme.getSid().equals(possibleThemeSid)) {

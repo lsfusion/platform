@@ -263,7 +263,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         String resource = action.resource;
         if(action.isFile)
-            resource = servlet.getFormProvider().getFile(formSessionObject.navigatorID, resource);
+            resource = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, resource);
         return new GClientJSAction(resource, action.resourceName,  values, types, action.isFile, action.syncType);
     }
 }

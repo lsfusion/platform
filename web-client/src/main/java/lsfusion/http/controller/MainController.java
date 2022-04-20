@@ -7,7 +7,6 @@ import lsfusion.base.Result;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
@@ -213,7 +212,8 @@ public class MainController {
         if(serverSettings != null) {
             synchronized (serverSettings) {
                 if(!serverSettings.filesSaved) {
-                    saveFiles(serverSettings);
+                    for (Pair<String, RawFileData> pair : serverSettings.resourceFiles)
+                        FileUtils.saveWebFile(pair.first, pair.second, serverSettings);
 
                     serverSettings.filesSaved = true;
                 }
@@ -226,11 +226,6 @@ public class MainController {
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
 
         return "main";
-    }
-
-    public synchronized void saveFiles(ServerSettings settings) {
-        for (Pair<String, RawFileData> pair : settings.resourceFiles)
-            FileUtils.saveWebFile(pair.first, pair.second, settings);
     }
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {

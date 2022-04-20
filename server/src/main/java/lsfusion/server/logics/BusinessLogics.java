@@ -691,22 +691,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return ResourceUtils.getResources(pattern);
     }
 
-    private Collection<String> webResources;
-    @ManualLazy
-    public Collection<String> getAllWebResources() {
-        if (SystemProperties.inDevMode || webResources == null) {
-            customReports = calculateAllCustomReports();
-        }
-        return customReports;
-    }
-
-    public final static String webDir = "web/";
-
-    public Collection<String> calculateAllWebResources() {
-        Pattern pattern = Pattern.compile("/"+webDir+".*");
-        return ResourceUtils.getResources(pattern);
-    }
-
     public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
 
         for (Property<P> property : getAutoSetProperties()) {

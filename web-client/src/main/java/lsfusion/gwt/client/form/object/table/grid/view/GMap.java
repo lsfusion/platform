@@ -32,7 +32,7 @@ import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundCol
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
     // No need to support color themes here as we apply svg filters to the icon anyway.
-    private final String DEFAULT_MARKER_ICON_URL = GwtClientUtils.getStaticImageURL("map_marker.png");
+    private final String DEFAULT_MARKER_ICON = "map_marker.png";
 
     public GMap(GFormController form, GGridController grid) {
         super(form, grid);
@@ -547,9 +547,12 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE);
     }
 
-    protected native void updateIcon(JavaScriptObject marker, String icon, String filterStyle)/*-{
+    protected void updateIcon(JavaScriptObject marker, String icon, String filterStyle) {
+        updateJsIcon(marker, icon != null ? icon : GwtClientUtils.getStaticImageURL(DEFAULT_MARKER_ICON), filterStyle);
+    }
+
+    protected native void updateJsIcon(JavaScriptObject marker, String iconUrl, String filterStyle)/*-{
         var L = $wnd.L;
-        var iconUrl = icon != null ? icon : this.@GMap::DEFAULT_MARKER_ICON_URL;
         var myIcon = L.divIcon({
             html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\" " +
                 @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + "=\"true\" " +

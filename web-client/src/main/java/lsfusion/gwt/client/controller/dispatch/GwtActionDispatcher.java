@@ -370,7 +370,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
 
         private String getResourcePath(GClientJSAction action) {
-            return GwtClientUtils.getAppStaticFileURL(action.resource);
+            return GwtClientUtils.getAppStaticWebURL(action.resource);
         }
 
         private native void executeFile(GClientJSAction action)/*-{

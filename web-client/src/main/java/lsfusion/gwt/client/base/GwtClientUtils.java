@@ -111,7 +111,7 @@ public class GwtClientUtils {
         return getURL(imagePath);
     }
 
-    public static String getAppStaticFileURL(String filePath) {
+    public static String getAppStaticWebURL(String filePath) {
         return getURL(filePath);
     }
     // FileUtils.APP_DOWNLOAD_FOLDER_PATH
