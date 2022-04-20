@@ -48,6 +48,7 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.ServletContext;
 import javax.swing.*;
@@ -64,8 +65,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     private final ClientAsyncToGwtConverter asyncConverter = ClientAsyncToGwtConverter.getInstance();
     private GForm form;
 
-    public ClientComponentToGwtConverter(ServletContext servletContext, String logicsName) {
-        super(servletContext, logicsName);
+    public ClientComponentToGwtConverter(ServletContext servletContext, ServerSettings settings) {
+        super(servletContext, settings);
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {
@@ -286,7 +287,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.imageHolder = createImage(clientPropertyDraw.design.getImageHolder(), "property", canIconBeDisabled);
+        propertyDraw.imageHolder = createImage(clientPropertyDraw.design.getImageHolder(), canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

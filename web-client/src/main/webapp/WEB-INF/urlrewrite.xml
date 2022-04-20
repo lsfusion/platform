@@ -17,13 +17,13 @@
 
     <!-- webapp, gwt/public, static downloadFile -->
     <rule match-type="regex">
-        <from>.*\/static(\/.*)?</from>
+        <from>.*\/static\/.*</from>
         <set type="response-header" name="Cache-Control">public, max-age=86400</set>
         <set type="expires">1 day</set>
     </rule>
     <!-- non static downloadFile, need for 'save as' dialog -->
     <rule match-type="wildcard">
-        <from>/downloadFile</from>
+        <from>.*\/temp\/.*</from>
         <set type="response-header" name="Cache-Control">public, max-age=3600</set>
         <set type="expires">1 hour</set>
     </rule>

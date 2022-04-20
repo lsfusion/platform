@@ -113,7 +113,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         ServerSettings serverSettings = sessionObject.getServerSettings(navigatorInfo.session, null, false);
         if (serverSettings.sessionConfigTimeout > 0)
             request.getSession().setMaxInactiveInterval(serverSettings.sessionConfigTimeout);
-        return new NavigatorSessionObject(remoteNavigator, serverSettings.logicsName);
+        return new NavigatorSessionObject(remoteNavigator, serverSettings);
     }
 
     @Override
@@ -158,8 +158,8 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
-    public String getLogicsName(String sessionID) throws SessionInvalidatedException {
-        return getNavigatorSessionObject(sessionID).logicsName;
+    public ServerSettings getServerSettings(String sessionID) throws SessionInvalidatedException {
+        return getNavigatorSessionObject(sessionID).serverSettings;
     }
 
     @Override

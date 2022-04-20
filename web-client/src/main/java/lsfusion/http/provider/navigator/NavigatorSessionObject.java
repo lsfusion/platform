@@ -1,5 +1,6 @@
 package lsfusion.http.provider.navigator;
 
+import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 
@@ -9,11 +10,11 @@ public class NavigatorSessionObject {
 
     public final RemoteNavigatorInterface remoteNavigator;
 
-    public final String logicsName; // needed for static resources (images)
-    
-    public NavigatorSessionObject(RemoteNavigatorInterface remoteNavigator, String logicsName) {
+    public final ServerSettings serverSettings; // needed for static resources (images / js / css)
+
+    public NavigatorSessionObject(RemoteNavigatorInterface remoteNavigator, ServerSettings serverSettings) {
         this.remoteNavigator = remoteNavigator;
-        this.logicsName = logicsName;
+        this.serverSettings = serverSettings;
     }
 
     public ClientCallBackInterface remoteCallback; // caching

@@ -27,7 +27,7 @@ public class GetNavigatorInfoHandler extends NavigatorActionHandler<GetNavigator
 
     @Override
     public GetNavigatorInfoResult executeEx(GetNavigatorInfo action, ExecutionContext context) throws RemoteException {
-        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(servlet.getServletContext(), getLogicsName(action));
+        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(servlet.getServletContext(), getServerSettings(action));
 
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
         NavigatorData navigatorData = null;

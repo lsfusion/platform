@@ -16,6 +16,7 @@ import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.ServletContext;
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ import java.util.ArrayList;
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
-    public ClientNavigatorToGwtConverter(ServletContext servletContext, String logicsName) {
-        super(servletContext, logicsName);
+    public ClientNavigatorToGwtConverter(ServletContext servletContext, ServerSettings settings) {
+        super(servletContext, settings);
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
@@ -40,7 +41,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.path = clientElement.path;
         element.children = new ArrayList<>();
 
-        element.image = createImage(clientElement.imageHolder, "navigator", false);
+        element.image = createImage(clientElement.imageHolder, false);
 
         element.asyncExec = convertOrCast(clientElement.asyncExec);
 

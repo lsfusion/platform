@@ -39,8 +39,6 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
-
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     
@@ -270,7 +268,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             img.addClassName("branch-image");
         }
 
-        setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
+        GwtClientUtils.setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
     }
 
     private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
@@ -303,7 +301,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private static void ensureDotsAndSetBackground(Element element) {
         element.addClassName("passby-image");
-        setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+        GwtClientUtils.setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
     }
 
     private static void clearBackground(Element element) {

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -51,10 +52,10 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
         }
 
         String appPath = servletContext.getRealPath("");
-        FileUtils.APP_IMAGES_FOLDER_URL = appPath + "/static/images/";
-        FileUtils.APP_CLIENT_IMAGES_FOLDER_URL = appPath + "/main/static/images/";
-        FileUtils.APP_TEMP_FOLDER_URL = appPath + "/WEB-INF/temp";
-        FileUtils.APP_PATH = appPath;
+        FileUtils.APP_CONTEXT_FOLDER_PATH = appPath;
+        String tempDir = ((File) servletContext.getAttribute(ServletContext.TEMPDIR)).getPath(); // appPath + "/WEB-INF/temp";
+        FileUtils.APP_DOWNLOAD_FOLDER_PATH = tempDir;
+        FileUtils.APP_UPLOAD_FOLDER_PATH = tempDir;
 
         setHost(host);
         setPort(Integer.parseInt(port));

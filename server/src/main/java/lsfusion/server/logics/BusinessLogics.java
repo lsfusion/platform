@@ -690,7 +690,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         Pattern pattern = Pattern.compile("/"+FormReportManager.reportsDir+".*\\.jrxml");
         return ResourceUtils.getResources(pattern);
     }
-    
+
     public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
 
         for (Property<P> property : getAutoSetProperties()) {

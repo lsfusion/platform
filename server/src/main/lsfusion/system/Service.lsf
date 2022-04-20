@@ -419,7 +419,7 @@ getServerSettings() ABSTRACT CASE @@noauth;
 getServerSettings() + WHEN TRUE THEN {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
-    EXPORT FROM file = resourceFiles(STRING str), name = substrFrom(str, 6) WHERE resourceFiles(str) TO jsonResourceFiles;
+    EXPORT FROM file = resourceFiles(STRING str), name = str WHERE resourceFiles(str) TO jsonResourceFiles;
 
     LOCAL jsonLsfParams = JSONFILE ();
     EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;

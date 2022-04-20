@@ -24,7 +24,7 @@ public class ServerColorUtils {
     
     public static Color readCssColor(ServletContext servletContext, ColorTheme theme, String property) {
         CascadingStyleSheet css = CSSReader.readFromStream(
-                HasInputStream.once((ISupplier<InputStream>) () -> servletContext.getResourceAsStream("/static/css/" + theme.getSid() + ".css")),
+                HasInputStream.once((ISupplier<InputStream>) () -> servletContext.getResourceAsStream("/" + FileUtils.STATIC_CSS_RESOURCE_PATH + theme.getSid() + ".css")),
                 StandardCharsets.UTF_8,
                 ECSSVersion.CSS30);
         String color = ((CSSStyleRule) css.getRuleAtIndex(0)).getDeclarationOfPropertyName(property).getExpression().getMemberAtIndex(0).getAsCSSString();
