@@ -22,23 +22,19 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        String downloadPrefix = "/" + FileUtils.DOWNLOAD_HANDLER + "/";
-
-        String requestURI = request.getRequestURI();
-        assert requestURI.startsWith(downloadPrefix);
-        requestURI = requestURI.substring(downloadPrefix.length());
+        String pathInfo = request.getPathInfo();
 
         boolean staticFile;
         String prefix;
-        if(requestURI.startsWith(prefix = FileUtils.STATIC_PATH + "/"))
+        if(pathInfo.startsWith(prefix = "/" + FileUtils.STATIC_PATH + "/"))
             staticFile = true;
-        else if(requestURI.startsWith(prefix = FileUtils.TEMP_PATH + "/"))
+        else if(pathInfo.startsWith(prefix = "/" + FileUtils.TEMP_PATH + "/"))
             staticFile = false;
-        else if(requestURI.startsWith(prefix = FileUtils.DEV_PATH + "/"))
+        else if(pathInfo.startsWith(prefix = "/" + FileUtils.DEV_PATH + "/"))
             staticFile = true;
         else
-            throw new UnsupportedOperationException("RequestURI : " + request.getRequestURI());
-        String fileName = requestURI.substring(prefix.length());
+            throw new UnsupportedOperationException("Path info : " + pathInfo);
+        String fileName = pathInfo.substring(prefix.length());
 
         String extension = request.getParameter("extension");
         if(extension == null)
