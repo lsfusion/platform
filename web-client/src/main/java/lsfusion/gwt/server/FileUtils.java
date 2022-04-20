@@ -30,8 +30,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Set;
 
 public class FileUtils {
@@ -55,9 +53,6 @@ public class FileUtils {
     // should correspond url-pattern for fileDownloadHandler (in web.xml)
     public static String DOWNLOAD_HANDLER = "downloadFile";
 
-    public static File createFile(String relativePath, String fileName) {
-        return new File(relativePath, fileName);
-    }
     public static void readFile(String relativePath, String fileName, boolean close, EConsumer<InputStream, IOException> consumer) {
         File file = createFile(relativePath, fileName);
 
@@ -72,6 +67,7 @@ public class FileUtils {
     }
     public static Runnable writeFile(String relativePath, String fileName, EConsumer<OutputStream, IOException> consumer) {
         File file = createFile(relativePath, fileName);
+
         if(!file.exists()) {
             try(FileOutputStream outStream = org.apache.commons.io.FileUtils.openOutputStream(file)) {
                 consumer.accept(outStream);
@@ -80,6 +76,9 @@ public class FileUtils {
             }
         }
         return () -> deleteFile(file);
+    }
+    public static File createFile(String relativePath, String fileName) {
+        return new File(relativePath, fileName);
     }
     private static void deleteFile(File file) {
         try { // maybe its better to do it with some delay, but now there's no request retry for action files (except maybe beep), and form should be already closed
@@ -130,16 +129,17 @@ public class FileUtils {
         return saveWebFile(fileName, null, settings);
     }
 
+    private final static boolean useDownloadForAppResources = true;
     public static String saveWebFile(String fileName, RawFileData fileData, ServerSettings settings) {
         String webFolder = "/web/";
         assert fileName.startsWith(webFolder);
         fileName = fileName.substring(webFolder.length());
 
-        return saveDownloadFile(false, settings.inDevMode ? DownloadType.DEV : DownloadType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
+        return saveDownloadFile(useDownloadForAppResources, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
     }
 
     private static String saveImageFile(EConsumer<OutputStream, IOException> file, String imagesFolder, String imagePath, Result<String> rUrl) {
-        return saveDownloadFile(false, DownloadType.STATIC, imagesFolder, imagePath, null, rUrl, file);
+        return saveDownloadFile(useDownloadForAppResources, DownloadStoreType.STATIC, imagesFolder, imagePath, null, rUrl, file);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -232,17 +232,17 @@ public class FileUtils {
         return result.result;
     }
 
-    private enum DownloadType {
+    private enum DownloadStoreType {
         STATIC, // need to be cached for a long time and stored
         TEMP, // need to be cached for a long time and deleted after usage
         DEV // need not to be cached but stored
     }
 
-    private static String saveDownloadFile(boolean useDownload, DownloadType type, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
+    private static String saveDownloadFile(boolean useDownload, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
         String filePath;
         String url;
         String extraPath = null;
-        switch (type) {
+        switch (storeType) {
             case STATIC:
                 extraPath = STATIC_PATH;
                 break;
@@ -304,7 +304,7 @@ public class FileUtils {
     }
 
     private static String saveDataFile(String fileName, boolean isStatic, Result<Runnable> rCloser, RawFileData fileData) {
-        return saveDownloadFile(true, isStatic ? DownloadType.STATIC : DownloadType.TEMP, "", fileName, rCloser, null, fileData::write); // assert !exists
+        return saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, "", fileName, rCloser, null, fileData::write); // assert !exists
     }
 
     public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {

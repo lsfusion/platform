@@ -43,11 +43,10 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         String extension = request.getParameter("extension");
         if(extension == null)
             extension = BaseUtils.getFileExtension(fileName);
-        fileName = BaseUtils.getFileName(fileName);
 
         String displayName = request.getParameter("displayName");
         if(displayName == null)
-            displayName = fileName;
+            displayName = BaseUtils.getFileName(fileName);
 
         response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
         //inline = open in browser, attachment = download

@@ -2120,11 +2120,11 @@ updateAsyncPropertyChanges();
         refresh = false;
 
 //        result.out(this);
-        try {
-            Thread.sleep(4000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(4000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
         return result.immutable();
     }
