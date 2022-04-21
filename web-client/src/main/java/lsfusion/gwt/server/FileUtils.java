@@ -42,6 +42,8 @@ public class FileUtils {
     public static String APP_STATIC_IMAGE_FOLDER_PATH = "appimages"; // getAppStaticImageURL, all files has to be prefixed with logicsName
     public static String APP_STATIC_WEB_FOLDER_PATH = "appweb"; // getAppStaticFileURL, all files has to be prefixed with logicsName
 
+    public static String NOAUTH_FOLDER_PREFIX = "noauth"; // in web.xml security should be dropped for such pathes (static/noauth, download/static/noauth)
+
     public static String APP_DOWNLOAD_FOLDER_PATH; // getAppDownloadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
     public static String APP_UPLOAD_FOLDER_PATH; // getAppUploadURL, all files hasn't to be prefixed because their names are (or prefixed with) random strings
     public static String APP_CONTEXT_FOLDER_PATH;
@@ -284,13 +286,13 @@ public class FileUtils {
 
     public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images
         String fileName = SystemUtils.generateID(fileData.getBytes());
-        return saveDataFile(fileName, true, null, fileData);
+        return saveDataFile(fileName, true, true, null, fileData);
     }
 
     public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
         if(fileData != null) {
             String fileName = BaseUtils.randomString(15);            ;
-            return saveDataFile(fileName, false, null, fileData);
+            return saveDataFile(fileName, false, false, null, fileData);
         }
         return null;
     }
@@ -300,15 +302,16 @@ public class FileUtils {
         Pair<String, Runnable> savedFile = sessionObject.savedTempFiles.get(fileName);
         if (savedFile == null) {
             Result<Runnable> rCloser = new Result<>();
-            savedFile = new Pair<>(saveDataFile(fileName, true, rCloser, fileData), rCloser.result);
+            savedFile = new Pair<>(saveDataFile(fileName, true, false, rCloser, fileData), rCloser.result);
             sessionObject.savedTempFiles.put(fileName, savedFile);
         }
         return savedFile.first;
     }
 
-    private static String saveDataFile(String fileName, boolean isStatic, Result<Runnable> rCloser, RawFileData fileData) {
+    private static String saveDataFile(String fileName, boolean isStatic, boolean noAuth, Result<Runnable> rCloser, RawFileData fileData) {
         // we don't want to override file, since it's name is based on base64Hash or random
-        return saveDownloadFile(true, false, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, "", fileName, rCloser, null, fileData::write);
+        assert !(noAuth && !isStatic); // noAuth => isStatic
+        return saveDownloadFile(true, false, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, null, fileData::write);
     }
 
     public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {

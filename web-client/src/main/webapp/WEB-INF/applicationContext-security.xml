@@ -18,24 +18,32 @@
 
         <custom-filter before="FORM_LOGIN_FILTER" ref="tokenFilter"/>
     </http>
-    <!-- for login.css, logo, favicon, etc. -->
-    <http pattern="/static/noauth/**" security="none"/>
-
-    <!-- we need to download logo and icon -->
-    <http pattern="/downloadFile/static" security="none"/>
 
     <!-- for favicon.ico -->
     <http pattern="/favicon.ico" security="none"/>
 
+    <!-- main subdomains (i.e resources), however now it's not needed since saveDownload is used (and thus 2 mechanisms listed below) -->
     <http pattern="/main/*/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
         <csrf disabled="true"/>
     </http>
 
+    <!-- for login.css, logo, favicon, etc. (and download logo and icon if for them context export is enabled) -->
+    <http pattern="/static/noauth/**" security="none"/>
+
     <http pattern="/static/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
         <intercept-url pattern="/**" access="isAuthenticated()"/>
         <csrf disabled="true"/>
     </http>
+
+    <!-- we need to download logo and icon -->
+    <http pattern="/downloadFile/static/noauth/**" security="none"/>
+
+    <http pattern="/downloadFile/**" auto-config="false" disable-url-rewriting="true" entry-point-ref="restAuthenticationEntryPoint">
+        <intercept-url pattern="/**" access="isAuthenticated()"/>
+        <csrf disabled="true"/>
+    </http>
+
     <http pattern="/forgot-password" security="none"/>
     <http pattern="/change-password" security="none"/>
 
