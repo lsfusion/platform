@@ -223,6 +223,18 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         GFormLayout layout = logicsSupplier.getForm().getFormLayout();
         layout.addBaseComponent(condition.filter, conditionView, null);
     }
+    
+    public void addConditions(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent, boolean replace) {
+        if (replace) {
+            removeAllConditionsWithoutApply();
+        }
+        
+        for (GPropertyFilter condition : conditions) {
+            addCondition(condition, null, false, false);
+        }
+        
+        applyFilters(focusFirstComponent, null);
+    }
 
     private void removeConditionView(GPropertyFilter condition) {
         GFormLayout layout = logicsSupplier.getForm().getFormLayout();
@@ -239,11 +251,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         applyFilters(true, null);
     }
 
-    public void resetAllConditions() {
-        resetAllConditions(true);
-    }
-
-    public void resetAllConditions(boolean focusFirstComponent) {
+    public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply() {
         ArrayList<GFilterConditionView> changed = new ArrayList<>();
         for (GPropertyFilter filter : new LinkedHashMap<>(conditionViews).keySet()) {
             if (filter.isFixed()) {
@@ -254,6 +262,16 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 removeConditionViewInner(filter);
             }
         }
+        return changed;
+    }
+
+    public void resetAllConditions() {
+        resetAllConditions(true);
+    }
+
+    public void resetAllConditions(boolean focusFirstComponent) {
+        ArrayList<GFilterConditionView> changed = removeAllConditionsWithoutApply();
+        
         applyFilters(new ArrayList<>(), changed, focusFirstComponent);
     }
 

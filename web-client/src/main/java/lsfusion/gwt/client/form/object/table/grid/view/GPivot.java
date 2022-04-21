@@ -36,7 +36,6 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -47,7 +46,6 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Consumer;
 
 import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
@@ -1930,7 +1928,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.filter.applyFilters(filters, new ArrayList<>(), false);
+                grid.filter.addConditions(filters, false, true);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);
