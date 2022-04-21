@@ -34,10 +34,7 @@ public class LSFTooltipManager {
 
     private static BalloonTip balloonTip;
     private static int index;
-    private static final Timer closeTimer = new Timer(500, e -> {
-        if (balloonTip != null && balloonTip.isShowing())
-            closeBalloon();
-    }) {
+    private static final Timer closeTimer = new Timer(500, e -> closeBalloon()) {
         @Override
         public boolean isRepeats() {
             return false;
@@ -115,7 +112,7 @@ public class LSFTooltipManager {
 
                 if (!tooltipTimer.isRunning() && balloonTip != null && !balloonTip.isShowing() && newIndex != -1)
                     tooltipTimer.start();
-                else if (index != newIndex && balloonTip != null && balloonTip.isShowing())
+                else if (index != newIndex)
                     closeBalloon();
 
                 index = newIndex;
@@ -166,8 +163,7 @@ public class LSFTooltipManager {
         component.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                if (balloonTip != null && balloonTip.isShowing())
-                    closeBalloon();
+                closeBalloon();
                 tooltipTimer.start();
             }
 
@@ -176,6 +172,11 @@ public class LSFTooltipManager {
                 tooltipTimer.stop();
                 if (balloonTip != null && balloonTip.isShowing() && !closeTimer.isRunning())
                     closeTimer.start();
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                closeBalloon();
             }
         });
     }
@@ -293,12 +294,14 @@ public class LSFTooltipManager {
 
     //We need to manually manage tooltip closure because we have support for tooltips on table and tree headers
     private static void closeBalloon() {
-        Container parent = balloonTip.getParent();
-        for (Component parentComponent : parent.getComponents()) {
-            if (parentComponent instanceof BalloonTip)
-                parent.remove(parentComponent);
+        if (balloonTip != null && balloonTip.isShowing()) {
+            Container parent = balloonTip.getParent();
+            for (Component parentComponent : parent.getComponents()) {
+                if (parentComponent instanceof BalloonTip)
+                    parent.remove(parentComponent);
+            }
+            parent.revalidate();
+            parent.repaint();
         }
-        parent.revalidate();
-        parent.repaint();
     }
 }
