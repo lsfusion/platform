@@ -112,6 +112,9 @@ import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
 public class GFormController implements EditManager {
+
+    private static final ClientMessages messages = ClientMessages.Instance.get();
+
     private FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher;
@@ -149,6 +152,8 @@ public class GFormController implements EditManager {
     private boolean hasColumnGroupObjects;
 
     private static Timer linkEditModeTimer;
+
+    private boolean needConfirm;
 
     public FormsController getFormsController() {
         return formsController;
@@ -387,7 +392,7 @@ public class GFormController implements EditManager {
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
         final ListBox filterBox = new ListBox();
         filterBox.setMultipleSelect(false);
-        filterBox.addItem("(" + ClientMessages.Instance.get().multipleFilterComponentAll() + ")", "-1");
+        filterBox.addItem("(" + messages.multipleFilterComponentAll() + ")", "-1");
 
         ArrayList<GRegularFilter> filters = filterGroup.filters;
         for (int i = 0; i < filters.size(); i++) {
@@ -647,6 +652,8 @@ public class GFormController implements EditManager {
 
         activateElements(fc);
 
+        applyNeedConfirm(fc);
+
         formLayout.update(requestIndex);
     }
 
@@ -695,6 +702,10 @@ public class GFormController implements EditManager {
             for(GPropertyDraw propertyDraw : fc.activateProps)
                 focusProperty(propertyDraw);
         });
+    }
+
+    private void applyNeedConfirm(GFormChanges fc) {
+        needConfirm = fc.needConfirm;
     }
 
     private void expandCollapseContainers(GFormChanges formChanges) {
@@ -1102,9 +1113,20 @@ public class GFormController implements EditManager {
     }
 
     public void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
-            formsController.asyncCloseForm(getAsyncFormController(requestIndex));
-        }, onExec);
+        if(needConfirm) {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+                if(chosenOption == DialogBoxHelper.OptionType.YES) {
+                    executeAsyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
+                }
+            });
+        } else {
+            executeAsyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
+        }
+    }
+
+    private void executeAsyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex ->
+                formsController.asyncCloseForm(getAsyncFormController(requestIndex)), onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {

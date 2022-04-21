@@ -31,6 +31,8 @@ public class GFormChanges {
 
     public final HashSet<GPropertyDraw> updateProperties = new HashSet<>();
 
+    public boolean needConfirm;
+
     public static GFormChanges remap(GForm form, GFormChangesDTO dto) {
         GFormChanges remapped = new GFormChanges();
 
@@ -77,6 +79,8 @@ public class GFormChanges {
         for (int expandContainerId : dto.expandContainerIds) {
             remapped.expandContainers.add(form.findContainerByID(expandContainerId));
         }
+
+        remapped.needConfirm = dto.needConfirm;
 
         return remapped;
     }

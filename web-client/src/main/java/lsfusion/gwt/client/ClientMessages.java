@@ -255,6 +255,8 @@ public interface ClientMessages extends Messages {
 
     String noResults();
 
+    String doYouReallyWantToCloseForm();
+
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 

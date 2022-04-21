@@ -40,6 +40,8 @@ public class ClientFormChanges {
     public final List<ClientContainer> collapseContainers;
     public final List<ClientContainer> expandContainers;
 
+    public final boolean needConfirm;
+
     public ClientFormChanges(byte[] formChanges, ClientForm clientForm) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formChanges));
 
@@ -126,6 +128,8 @@ public class ClientFormChanges {
         for (int i = 0; i < count; i++) {
             expandContainers.add(clientForm.findContainerByID(inStream.readInt()));
         }
+
+        needConfirm = inStream.readBoolean();
     }
 
     private ClientPropertyReader deserializePropertyReader(ClientForm clientForm, DataInputStream inStream) throws IOException {
