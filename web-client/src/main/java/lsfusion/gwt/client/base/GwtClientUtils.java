@@ -18,6 +18,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.lang.Math.max;
@@ -999,6 +1000,12 @@ public class GwtClientUtils {
         for (int i = 0; i < values.size() - 1; i++)
             newValues.add(values.get(i));
         return newValues;
+    }
+    public static <T> T[] add(T[] array1, T[] array2, Function<Integer, T[]> instancer) {
+        T[] result = instancer.apply(array1.length + array2.length);
+        System.arraycopy(array1, 0, result, 0, array1.length);
+        System.arraycopy(array2, 0, result, array1.length, array2.length);
+        return result;
     }
 
     //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly

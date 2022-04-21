@@ -6,6 +6,7 @@ import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.logging.impl.StackTracePrintStream;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
@@ -223,14 +224,8 @@ public class GExceptionManager {
         from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
         StackTraceElement[] fromStackTrace = from.getStackTrace();
 
-        if (from instanceof JavaScriptException) {
-            List<StackTraceElement> jsStackTrace = parseJSExceptionStack(from);
-            StackTraceElement[] stackTraceElements = new StackTraceElement[jsStackTrace.size() + fromStackTrace.length];
-            System.arraycopy(jsStackTrace.toArray(), 0, stackTraceElements, 0, jsStackTrace.size());
-            System.arraycopy(fromStackTrace, 0, stackTraceElements, jsStackTrace.size(), fromStackTrace.length);
-
-            fromStackTrace = stackTraceElements;
-        }
+        if (from instanceof JavaScriptException)
+            fromStackTrace = GwtClientUtils.add(parseJSExceptionStack(from).toArray(new StackTraceElement[0]), fromStackTrace, StackTraceElement[]::new);
 
         to.setStackTrace(fromStackTrace);
     }
