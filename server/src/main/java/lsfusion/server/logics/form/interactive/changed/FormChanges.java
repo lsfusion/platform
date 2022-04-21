@@ -63,6 +63,8 @@ public class FormChanges {
     // current (panel) objects
     private final ImMap<GroupObjectInstance, Boolean> updateStateObjects;
 
+    private final boolean needConfirm;
+
     public static FormChanges EMPTY = new MFormChanges().immutable();
 
     public FormChanges(ImMap<GroupObjectInstance, ImMap<ObjectInstance, ? extends ObjectValue>> objects,
@@ -73,7 +75,7 @@ public class FormChanges {
                        ImSet<PropertyDrawInstance> dropProperties,
                        ImMap<GroupObjectInstance, Boolean> updateStateObjects, ImList<ComponentView> activateTabs, 
                        ImList<PropertyDrawInstance> activateProps, ImList<ContainerView> collapseContainers, 
-                       ImList<ContainerView> expandContainers) {
+                       ImList<ContainerView> expandContainers, boolean needConfirm) {
         this.objects = objects;
         this.gridObjects = gridObjects;
         this.parentObjects = parentObjects;
@@ -85,6 +87,7 @@ public class FormChanges {
         this.activateProps = activateProps;
         this.collapseContainers = collapseContainers;
         this.expandContainers = expandContainers;
+        this.needConfirm = needConfirm;
     }
 
     void out(FormInstance bv) {
@@ -206,6 +209,8 @@ public class FormChanges {
         for (ContainerView container : expandContainers) {
             outStream.writeInt(container.getID());
         }
+
+        outStream.writeBoolean(needConfirm);
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {

@@ -2106,6 +2106,8 @@ updateAsyncPropertyChanges();
         result.collapseContainers.addAll(userCollapseContainers);
         result.expandContainers.addAll(userExpandContainers);
 
+        result.needConfirm = needConfirm();
+
         // сбрасываем все пометки
         userActivateTabs = ListFact.EMPTY();
         userActivateProps = ListFact.EMPTY();
@@ -2669,8 +2671,12 @@ updateAsyncPropertyChanges();
         }
     }
 
+    private boolean needConfirm() {
+        return manageSession && session.isStoredDataChanged() && !isEditing;
+    }
+
     public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (manageSession && session.isStoredDataChanged() && !isEditing) {
+        if (!context.isPushedConfirmedClose() && needConfirm()) {
             int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;

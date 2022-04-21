@@ -179,6 +179,8 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             dto.expandContainerIds[i++] = container.ID;
         }
 
+        dto.needConfirm = changes.needConfirm;
+
         return dto;
     }
 

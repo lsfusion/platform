@@ -36,4 +36,6 @@ public class GFormChangesDTO implements Serializable {
     
     public int[] collapseContainerIds;
     public int[] expandContainerIds;
+
+    public boolean needConfirm;
 }
