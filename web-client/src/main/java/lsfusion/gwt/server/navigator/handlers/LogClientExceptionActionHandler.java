@@ -18,7 +18,6 @@ import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import org.apache.log4j.Logger;
 
 import java.rmi.RemoteException;
 import java.util.Timer;
@@ -79,9 +78,7 @@ public class LogClientExceptionActionHandler extends NavigatorActionHandler<LogC
             throwable = fromWebServerToAppServer(throwable);
 
             try {
-                if (action.jsExceptionStack != null)
-                    Logger.getLogger(LogClientExceptionActionHandler.class).error(action.jsExceptionStack);
-
+                throwable.printStackTrace();
                 navigator.logClientException(null, throwable);
             } finally {
                 invocationLogger.info("After logging exception, count : " + newCount + ", navigator " + navigator);

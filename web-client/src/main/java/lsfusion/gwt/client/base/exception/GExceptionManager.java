@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.exception;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.shared.SerializableThrowable;
 import com.google.gwt.logging.impl.StackTracePrintStream;
@@ -220,6 +221,45 @@ public class GExceptionManager {
     // assuming that there should be primitive copy (Strings and other very primitive Java classes)  
     public static void copyStackTraces(Throwable from, Throwable to) {
         from = getRootCause(from); // chained exception stacks are pretty useless (they are always the same as root + line in catch, which is usually pretty evident)
-        to.setStackTrace(from.getStackTrace());
+        StackTraceElement[] fromStackTrace = from.getStackTrace();
+
+        if (from instanceof JavaScriptException) {
+            List<StackTraceElement> jsStackTrace = parseJSExceptionStack(from);
+            StackTraceElement[] stackTraceElements = new StackTraceElement[jsStackTrace.size() + fromStackTrace.length];
+            System.arraycopy(jsStackTrace.toArray(), 0, stackTraceElements, 0, jsStackTrace.size());
+            System.arraycopy(fromStackTrace, 0, stackTraceElements, jsStackTrace.size(), fromStackTrace.length);
+
+            fromStackTrace = stackTraceElements;
+        }
+
+        to.setStackTrace(fromStackTrace);
     }
+
+    public static List<StackTraceElement> parseJSExceptionStack(Throwable exception) {
+        List<StackTraceElement> stack = new ArrayList<>();
+        for (String s : getJsExceptionStack(exception).split("\n")) {
+            s = s.trim();
+            if (s.contains("[")) //Parsing to the first line with square brackets because after will be trash from GWT
+                break;
+
+            int openBracketIndex = s.lastIndexOf("("); //in brackets name:lineNumber:characterNumber
+            int lastColonIndex = s.lastIndexOf(":");
+
+            if (openBracketIndex != -1 && lastColonIndex != -1) {
+                String fileNameWithLineNumber = s.substring(openBracketIndex + 1, lastColonIndex); //file name with line number
+                int colonIndex = fileNameWithLineNumber.lastIndexOf(":");
+
+                String filename = fileNameWithLineNumber.substring(0, colonIndex); // file name
+                String lineNumber = fileNameWithLineNumber.substring(colonIndex + 1); // line number
+
+                // string stack element example "at functionName (fileName:line:character)"
+                stack.add(new StackTraceElement("Unknown", s.substring(s.indexOf("at ") + 3, s.indexOf(" (")), filename, Integer.parseInt(lineNumber)));
+            }
+        }
+        return stack;
+    }
+
+    private static native String getJsExceptionStack(Throwable exception)/*-{
+        return exception.@Throwable::backingJsObject.stack;
+    }-*/;
 }
