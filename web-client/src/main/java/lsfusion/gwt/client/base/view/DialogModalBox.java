@@ -28,6 +28,8 @@ public class DialogModalBox extends DialogBox {
 
     @Override
     public void show() {
+        MainFrame.closeNavigatorMenu();
+        
         focusedElement = GwtClientUtils.getFocusedElement();
         MainFrame.setModalPopup(true);
 
