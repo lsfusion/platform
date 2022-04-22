@@ -485,10 +485,6 @@ public class GwtClientUtils {
         int xCorrection = popupWidth - (Window.getClientWidth() - mouseX);
         int yCorrection = popupHeight - (Window.getClientHeight() - mouseY);
 
-        //to prevent the cursor hovering over the top left of the tooltip
-        int mouseXOffset = 10;
-        int mouseYOffset = 18;
-
         if (xCorrection > 0 || yCorrection > 0) {
             if (xCorrection > 0 && yCorrection > 0) {
                 // For the same reason with a lack of space on both sides (right and bottom) we show popup on the opposite side of the cursor.
@@ -496,12 +492,12 @@ public class GwtClientUtils {
                 popup.setPopupPosition(mouseX - popupWidth, mouseY - popupHeight);
             } else {
                 popup.setPopupPosition(
-                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX + mouseXOffset,
-                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY + mouseYOffset
+                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX,
+                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY
                 );
             }
         } else {
-            popup.setPopupPosition(mouseX + mouseXOffset, mouseY + mouseYOffset);
+            popup.setPopupPosition(mouseX, mouseY);
         }
     }
 
