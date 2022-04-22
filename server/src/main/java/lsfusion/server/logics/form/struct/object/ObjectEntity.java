@@ -26,9 +26,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.form.struct.property.PropertyObjectInterfaceEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -148,6 +146,9 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
     }
 
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        if (serializer.getContext() == null) {
+            throw new RuntimeException("Serialization of ObjectEntity object without context is not supported");
+        }
         ObjectEntity obj = (ObjectEntity) o;
         serializer.serialize(obj.ID, outStream);
     }

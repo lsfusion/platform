@@ -663,6 +663,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
+        if (serializer.getContext() == null) {
+            throw new RuntimeException("Serialization of PropertyDrawEntity object without context is not supported");
+        }
         PropertyDrawEntity<?> obj = (PropertyDrawEntity<?>) o;
         serializer.serialize(obj.ID, outStream);
     }

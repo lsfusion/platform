@@ -83,10 +83,15 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
         } else if (o instanceof Serializable) {
             return SERIALIZABLE_ID;  
         }
-        // todo [dale]: custom exception?
-        throw new RuntimeException(String.format("Serialization of this object (%s) is not supported", o.getClass()));
+        throw new StoredArraySerializerException(String.format("Serialization of '%s' object is not supported", o.getClass()));
     }
-    
+
+    public static class StoredArraySerializerException extends RuntimeException {
+        public StoredArraySerializerException(String message) {
+            super(message);
+        }
+    }
+
     private Integer getId(Class<?> cls) {
         return idMap.get(cls);    
     }
@@ -111,7 +116,7 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
         return o == null || getId(o.getClass()) != null || o instanceof Serializable;
     }
 
-    static StoredArraySerializerRegistry getInstance() {
+    public static StoredArraySerializerRegistry getInstance() {
         if (instance == null) {
             synchronized (StoredArraySerializerRegistry.class) {
                 if (instance == null) {

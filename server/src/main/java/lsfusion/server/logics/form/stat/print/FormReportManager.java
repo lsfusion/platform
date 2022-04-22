@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
+import lsfusion.base.col.implementations.stored.StoredArraySerializerRegistry;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -112,6 +113,8 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     public ReportGenerationData getReportData(FormPrintType printType, int selectTop) throws SQLException, SQLHandledException {
+        StoredArraySerializerRegistry.getInstance().setContext(getFormEntity());
+
         // report sources
         ReportStaticDataGenerator sourceGenerator = new ReportStaticDataGenerator(reportInterface);
         Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyReaderEntity>> sources = sourceGenerator.generate(selectTop);
