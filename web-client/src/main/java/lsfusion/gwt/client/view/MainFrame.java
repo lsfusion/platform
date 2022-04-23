@@ -55,8 +55,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.*;
-
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint {
     public static LogicsDispatchAsync logicsDispatchAsync;
@@ -77,6 +75,8 @@ public class MainFrame implements EntryPoint {
     public static boolean pivotOnlySelectedColumn;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
+    public static String staticImagesURL;
+    public static List<Runnable> staticImagesURLListeners = new ArrayList<>();
     
     public static GColorTheme colorTheme = GColorTheme.DEFAULT;
     public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>(); 
@@ -237,6 +237,12 @@ public class MainFrame implements EntryPoint {
             @Override
             public void onSuccess(GetClientSettingsResult result) {
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
+
+                staticImagesURL = result.staticImagesURL;
+                for(Runnable listener : staticImagesURLListeners)
+                    listener.run();
+                staticImagesURLListeners = null;
+
                 devMode = result.devMode;
                 projectLSFDir = result.projectLSFDir;
                 showDetailedInfo = result.showDetailedInfo;
@@ -479,12 +485,12 @@ public class MainFrame implements EntryPoint {
 
                 formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
                     @Override
-                    public void onSuccess(ServerResponseResult result, Runnable onDispatchFinished) {
-                        super.onSuccess(result, onDispatchFinished);
-
-                        if (formsController.getFormsCount() == 0) {
-                            openNavigatorMenu();
-                        }
+                    protected Runnable getOnRequestFinished() {
+                        return () -> {
+                            if (formsController.getFormsCount() == 0) {
+                                openNavigatorMenu();
+                            }
+                        };
                     }
                 });
             }

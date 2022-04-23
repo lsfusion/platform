@@ -694,12 +694,20 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         assert sessionTablesMap.get(table.getName()).get() == owner;
     }
 
-    public void commitTransaction() throws SQLException {
-        commitTransaction(OperationOwner.unknown);
+    public void commitTransaction() throws SQLException, SQLHandledException {
+        commitTransaction(OperationOwner.unknown, () -> {});
     }
-    public void commitTransaction(OperationOwner owner) throws SQLException {
-        if(inTransaction == 1)
-            privateConnection.sql.commit();
+    public void commitTransaction(OperationOwner owner, SQLRunnable afterCommit) throws SQLException, SQLHandledException {
+        if(inTransaction == 1) {
+            try {
+                privateConnection.sql.commit();
+            } catch (SQLException e) {
+                handleAndPropagate(e, "COMMIT TRANSACTION");
+            }
+        }
+
+        afterCommit.run();
+
         if(isExplainTemporaryTablesEnabled())
             fifo.add("CMT"  + getCurrentTimeStamp() + " " + this + " " + ExecutionStackAspect.getExStackTrace());
 

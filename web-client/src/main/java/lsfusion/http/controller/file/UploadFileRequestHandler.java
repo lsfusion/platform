@@ -1,5 +1,6 @@
 package lsfusion.http.controller.file;
 
+import lsfusion.gwt.server.FileUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -10,7 +11,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -28,11 +28,12 @@ public class UploadFileRequestHandler implements HttpRequestHandler {
 
             List<FileItem> items = fileUpload.parseRequest(request);
 
+            // in upload there is no savedTempFiles mechanism, since we don't identify the user who uploads the file
             for (FileItem item : items) {
-                if (!item.isFormField()) {
-                    File file = new File(context.getRealPath("WEB-INF/temp/" +  request.getParameter("sid") + "_" + item.getName()));
-                    item.write(file);
-                }
+                if (!item.isFormField())
+                    FileUtils.writeFile(FileUtils.APP_UPLOAD_FOLDER_PATH, true, request.getParameter("sid") + "_" + item.getName(), fos -> {
+                        fos.write(item.get());
+                    });
             }
         } catch (Exception e) {
             throw new ServletException(e);

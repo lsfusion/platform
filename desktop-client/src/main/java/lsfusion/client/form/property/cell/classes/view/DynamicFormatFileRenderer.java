@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
@@ -14,8 +15,8 @@ public class DynamicFormatFileRenderer extends FilePropertyRenderer {
         super.setValue(value);
         
         if (value != null) {
-            FileData fileData = (FileData) value;
-            getComponent().setIcon(SwingUtils.getSystemIcon(fileData.getExtension()));
+            String extension = value instanceof NamedFileData ? ((NamedFileData) value).getExtension() : ((FileData) value).getExtension();
+            getComponent().setIcon(SwingUtils.getSystemIcon(extension));
         }
     }
 }

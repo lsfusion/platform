@@ -63,7 +63,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 192;
+        return 194;
     }
 
     public static String getPlatformVersion() {
@@ -662,6 +662,11 @@ public class BaseUtils {
             return Instant.ofEpochMilli(inStream.readLong());
         }
 
+        if (objectType == 14) {
+            int len = inStream.readInt();
+            return new NamedFileData(IOUtils.readBytesFromStream(inStream, len));
+        }
+
         throw new IOException();
     }
 
@@ -785,6 +790,14 @@ public class BaseUtils {
         if(object instanceof Instant) {
             outStream.writeByte(13);
             outStream.writeLong(((Instant) object).toEpochMilli());
+            return;
+        }
+
+        if (object instanceof NamedFileData) {
+            outStream.writeByte(14);
+            byte[] obj = ((NamedFileData) object).getBytes();
+            outStream.writeInt(obj.length);
+            outStream.write(obj);
             return;
         }
 
@@ -2338,6 +2351,13 @@ public class BaseUtils {
         return getFileExtension(file.getName());
     }
 
+    public static String getFileWithoutExtension(String filename) {
+        int dotIndex = filename.lastIndexOf(".");
+        if(dotIndex >= 0)
+            filename = filename.substring(0, dotIndex);
+        return filename;
+    }
+
     public static String getFileExtension(String filename) {
         int endIndex = filename.indexOf("?");
         String result = filename.substring(0, endIndex == -1 ? filename.length() : endIndex);
@@ -2346,25 +2366,49 @@ public class BaseUtils {
     }
 
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String namedFileName, File... files) {
+        try {
+            String[] namedFileNames = new String[files.length];
+            String[] fileNames = new String[files.length];
+            FileInputStream[] fileStreams = new FileInputStream[files.length];
+            for(int i=0;i<files.length;i++) {
+                namedFileNames[i] = namedFileName;
+                fileNames[i] = files[i].getName();
+                fileStreams[i] = new FileInputStream(files[i]);
+            }
+            try {
+                return filesToBytes(multiple, storeName, custom, named, namedFileNames, fileNames, fileStreams);
+            } finally {
+                for(int i=0;i<files.length;i++)
+                    fileStreams[i].close();
+            }
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String[] namedFileNames, String[] fileNames, InputStream[] fileStreams) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
 
         byte[] result;
         try(DataOutputStream outStream = new DataOutputStream(byteOutStream)) {
+            int length = fileNames.length;
             if (multiple)
-                outStream.writeInt(files.length);
-            for (File file : files) {
+                outStream.writeInt(length);
+            for (int i=0;i<length;i++) {
+                String fileName = fileNames[i];
+                InputStream fileStream = fileStreams[i];
+                String namedFileName = namedFileNames[i];
                 if (storeName) {
-                    outStream.writeInt(file.getName().length());
-                    outStream.writeBytes(file.getName());
+                    outStream.writeInt(fileName.length());
+                    outStream.writeBytes(fileName);
                 }
-                RawFileData rawFileData = new RawFileData(file);
+                RawFileData rawFileData = new RawFileData(fileStream);
 
                 byte[] fileBytes;
                 if (custom) {
-                    String ext = getFileExtension(file);
+                    String ext = getFileExtension(fileName);
                     if(named) {
                         assert !multiple && !storeName;
-                        return new NamedFileData(new FileData(rawFileData, ext), namedFileName != null ? getFileName(namedFileName) : getFileName(file));
+                        return new NamedFileData(new FileData(rawFileData, ext), getFileName(namedFileName != null ? namedFileName : fileName));
                     } else {
                         FileData fileData = new FileData(rawFileData, ext);
                         if(!(multiple || storeName))

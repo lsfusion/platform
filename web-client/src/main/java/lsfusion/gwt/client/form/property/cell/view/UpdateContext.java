@@ -20,7 +20,7 @@ public interface UpdateContext {
 
     default CellRenderer.ToolbarAction[] getToolbarActions() { return CellRenderer.noToolbarActions; } ;
 
-    default String getBackground() { return null; }
+    default String getBackground(String baseColor) { return baseColor; }
 
     default String getForeground() { return null; }
 }

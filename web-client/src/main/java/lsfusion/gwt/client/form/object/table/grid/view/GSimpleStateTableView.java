@@ -151,7 +151,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(type instanceof GIntegralType)
             return fromNumber(((Number)value).doubleValue());
         if(type instanceof GImageType)
-            return fromString(GwtClientUtils.getDownloadURL((String) value, null, ((GImageType)type).extension, false));
+            return fromString(GwtClientUtils.getAppDownloadURL((String) value, null, ((GImageType)type).extension));
         if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse((String)value);
 

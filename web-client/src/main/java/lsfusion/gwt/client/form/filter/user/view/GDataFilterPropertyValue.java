@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -96,23 +97,29 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 startEditing(handler.event);
         }
     }
-    
+
+    private Object getValue(GUserInputResult result) {
+        if(result.getContextAction() != null) // assert that reset is called
+            return null;
+        return result.getValue();
+    }
+
     protected void startEditing(Event event) {
         form.edit(property.baseType,
                 event,
                 false,
                 null,
                 inputList,
-                (result, commitReason) -> setValue(result.getValue()),
-                (result, commitReason) -> acceptCommit(result, commitReason.equals(CommitReason.ENTERPRESSED)),
+                (result, commitReason) -> setValue(getValue(result)),
+                (result, commitReason) -> acceptCommit(getValue(result), commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
                 ServerResponse.VALUES, null);
     }
-    
-    private void acceptCommit(GUserInputResult result, boolean enterPressed) {
+
+    private void acceptCommit(Object result, boolean enterPressed) {
         this.enterPressed = enterPressed;
-        afterCommit.accept(result.getValue());
+        afterCommit.accept(result);
         this.enterPressed = false;
     }
 
@@ -140,7 +147,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new GInputListAction[0],
+        inputList = new GInputList(new GInputListAction[]{new GInputListAction("reset", null, null, null, null)},
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT);
     }
 
@@ -148,6 +155,11 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         @Override
         public boolean isHover() {
             return true;
+        }
+
+        @Override
+        public GKeyStroke getKeyStroke() {
+            return null;
         }
 
         @Override

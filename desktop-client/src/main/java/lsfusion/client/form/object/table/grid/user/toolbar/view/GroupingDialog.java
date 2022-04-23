@@ -17,6 +17,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.classes.ClientType;
@@ -1037,8 +1038,8 @@ public abstract class GroupingDialog extends JDialog {
                 } else if (value instanceof Boolean) {
                     length = value.toString().length();
                     sheet.addCell(new jxl.write.Boolean(column, currentRow, (Boolean) value, createCellFormat(null, false)));
-                } else if (value instanceof RawFileData || value instanceof FileData) { // здесь ожидается изображение
-                    RawFileData rawFile = value instanceof RawFileData ? (RawFileData)value : ((FileData)value).getRawFile(); 
+                } else if (value instanceof RawFileData || value instanceof FileData || value instanceof NamedFileData) { // здесь ожидается изображение
+                    RawFileData rawFile = value instanceof RawFileData ? (RawFileData)value : value instanceof FileData ? ((FileData)value).getRawFile() : ((NamedFileData) value).getRawFile();
                     WritableCellFormat format = new WritableCellFormat();
                     format.setBorder(jxl.format.Border.ALL, BorderLineStyle.THIN);
                     sheet.getWritableCell(column, currentRow).setCellFormat(format);

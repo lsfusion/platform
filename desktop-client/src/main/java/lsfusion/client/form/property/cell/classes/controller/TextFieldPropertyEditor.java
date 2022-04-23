@@ -135,7 +135,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         execTimer.start();
         delayTimer = execTimer;
 
-        asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(0, 0), query, actionSID,
+        JTable table = tableEditor.getTable();
+        asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(Math.max(table.getEditingRow(), 0), Math.max(table.getEditingColumn(), 0)), query, actionSID,
                 new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
                     @Override
                     public void done(Pair<List<ClientAsync>, Boolean> result) {
@@ -316,11 +317,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
                             for (int i = 0; i < actions.length; i++) {
                                 int index = i;
-                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index].action + ".png"), e -> {
-                                    asyncChange.setContextAction(index);
-                                    tableEditor.stopCellEditing();
-                                    asyncChange.setContextAction(null);
-                                });
+                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.get(actions[index].action + ".png"), e -> suggestButtonPressed(index));
+                                button.setToolTipText(property.getQuickActionTooltipText(actions[index].keyStroke));
                                 buttonsPanel.add(button);
                             }
 
@@ -358,6 +356,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             });
 
             addListeners(value);
+        }
+
+        private void suggestButtonPressed(Integer index) {
+            asyncChange.setContextAction(index);
+            tableEditor.stopCellEditing();
+            asyncChange.setContextAction(null);
         }
         
         public boolean isShowing() {
@@ -512,6 +516,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                     } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         tableEditor.cancelCellEditing();
                         e.consume();
+                    } else {
+                        Integer inputActionIndex = property.getInputActionIndex(e);
+                        if(inputActionIndex != null) {
+                            suggestButtonPressed(inputActionIndex);
+                            e.consume();
+                        }
                     }
                 }
             });

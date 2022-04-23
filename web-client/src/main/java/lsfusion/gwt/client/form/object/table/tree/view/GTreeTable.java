@@ -23,13 +23,11 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
-import lsfusion.gwt.client.form.object.table.grid.view.GGridTable;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableFooter;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
-import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -38,8 +36,6 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.setThemeImage;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -270,7 +266,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             img.addClassName("branch-image");
         }
 
-        setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
+        GwtClientUtils.setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
     }
 
     private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
@@ -303,7 +299,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private static void ensureDotsAndSetBackground(Element element) {
         element.addClassName("passby-image");
-        setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+        GwtClientUtils.setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
     }
 
     private static void clearBackground(Element element) {

@@ -369,7 +369,12 @@ edit '{logics.edit}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) TOOLBAR;
 edit(Object o) + {  SHOW EDIT Object =o DOCKED; } OPTIMISTICASYNC; //  
 formEdit(Object o)  { edit(o); }
 
-formEditObject(Object o)  { NEWSESSION formEdit(o); }
+formEditObject(Object o)  {
+    IF PREV(o IS Object) THEN 
+        NEWSESSION formEdit(o);
+    ELSE 
+        formEdit(o);
+}
 
 // private, only for interactive usage (for other purposes use operator DELETE)
 delete '{logics.delete}'  ABSTRACT MULTI OVERRIDE FIRST ( Object) IMAGE 'delete.png' CHANGEKEY 'DELETE' HIDE TOOLBAR;

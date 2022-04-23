@@ -31,7 +31,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
     }
 
     public AsyncMapInput<T> override(String action, AsyncMapEventExec<T> asyncExec) {
-        return new AsyncMapInput<>(type, list, inputList.replace(action, asyncExec), customEditorFunction);
+        return new AsyncMapInput<>(type, list, inputList != null ? inputList.replace(action, asyncExec) : null, customEditorFunction);
     }
 
     private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P> list, AsyncMapInputList<P> inputList) {
@@ -44,22 +44,22 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> map(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.map(mapping) : null, inputList.map(mapping));
+        return override(list != null ? list.map(mapping) : null, inputList != null ? inputList.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapInner(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.mapInner(mapping) : null, inputList.mapInner(mapping));
+        return override(list != null ? list.mapInner(mapping) : null, inputList != null ? inputList.mapInner(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        return override(list != null ? list.mapJoin(mapping) : null, inputList.mapJoin(mapping));
+        return override(list != null ? list.mapJoin(mapping) : null, inputList != null ? inputList.mapJoin(mapping) : null);
     }
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
-        return new AsyncInput(type, list != null ? inputList.map(mapObjects, form, toDraw) : null, customEditorFunction);
+        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, toDraw) : null, customEditorFunction);
     }
 
     @Override

@@ -645,11 +645,9 @@ public class GFormController implements EditManager {
 
         expandCollapseContainers(fc);
 
-        formLayout.update(requestIndex);
-
         activateElements(fc);
 
-        formLayout.onResize();
+        formLayout.update(requestIndex);
     }
 
     public void applyKeyChanges(GFormChanges fc) {
@@ -995,8 +993,8 @@ public class GFormController implements EditManager {
                 if (chosenOption == DialogBoxHelper.OptionType.YES)
                     executePropertyEventActionConfirmed(editContext, actionSID, event);
             });
-        }
-        executePropertyEventActionConfirmed(editContext, actionSID, event);
+        } else
+            executePropertyEventActionConfirmed(editContext, actionSID, event);
     }
 
     public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, Event event) {
@@ -1101,6 +1099,12 @@ public class GFormController implements EditManager {
 
     public GAsyncFormController getAsyncFormController(long requestIndex) {
         return actionDispatcher.getAsyncFormController(requestIndex);
+    }
+
+    public void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
+            formsController.asyncCloseForm(getAsyncFormController(requestIndex));
+        }, onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
@@ -1268,15 +1272,14 @@ public class GFormController implements EditManager {
 
     public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {
         asyncResponseDispatch(new SetTabActive(tabbedPane.ID, visibleComponent.ID));
-        formLayout.onResize();
+
+        formLayout.updatePanels(); // maybe it's not needed, but we want to make it symmetrical to the container collapsed call
     }
     
     public void setContainerCollapsed(GContainer container, boolean collapsed) {
         asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
 
         formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
-
-        formLayout.onResize();
     }
 
     public void closePressed(EndReason reason) {
@@ -1523,7 +1526,7 @@ public class GFormController implements EditManager {
         return !(dispatcher.loadingManager.isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)));
     }
 
-    protected void onFormHidden(int closeDelay, EndReason editFormCloseReason) {
+    protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
             closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
@@ -1547,9 +1550,9 @@ public class GFormController implements EditManager {
 
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
-    public void hideForm(int closeDelay, EndReason editFormCloseReason) {
+    public void hideForm(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
         if(!formHidden) {
-            onFormHidden(closeDelay, editFormCloseReason);
+            onFormHidden(asyncFormController, closeDelay, editFormCloseReason);
             formHidden = true;
         }
     }

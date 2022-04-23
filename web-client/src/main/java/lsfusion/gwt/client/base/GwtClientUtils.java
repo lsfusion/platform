@@ -15,6 +15,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.lang.Math.max;
@@ -59,7 +60,7 @@ public class GwtClientUtils {
 
     public static void downloadFile(String name, String displayName, String extension, boolean autoPrint, Integer autoPrintTimeout) {
         if (name != null) {
-            JavaScriptObject window = openWindow(getDownloadURL(name, displayName, extension, true));
+            JavaScriptObject window = openWindow(getAppDownloadURL(name, displayName, extension));
             if (autoPrint)
                 print(window, autoPrintTimeout);
         }
@@ -82,40 +83,67 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
-        return getWebAppBaseURL() + GwtSharedUtils.getDownloadURL(name, displayName, extension, actionFile);
+    private static String getDownloadParams(String displayName, String extension) {
+        String params = "";
+        if(displayName != null)
+            params = (params.isEmpty() ? "" : params + "&") + "displayName=" + displayName;
+        if(extension != null)
+            params = (params.isEmpty() ? "" : params + "&") + "extension=" + extension;
+        return (params.isEmpty() ? "" : "?" + params);
     }
 
-    public static String getModuleImagePath(String imagePath) {
-        return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath;
+    private static String getURL(String url) {
+        return url == null ? null : getWebAppBaseURL() + url;
     }
 
-    public static String getAppImagePath(String imagePath) {
-        return imagePath == null ? null : getWebAppBaseURL() + imagePath;
+    // the one that is in gwt(main)/public/static/images
+    // FileUtils.STATIC_IMAGE_FOLDER_PATH
+    public static String getStaticImageURL(String imagePath) {
+        if(imagePath != null && MainFrame.staticImagesURL == null)
+            return GWT.getModuleBaseURL() + "static/images/" + imagePath;
+        return getURL(imagePath != null ? MainFrame.staticImagesURL + imagePath : null); // myapp/imagepath
+//        return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath; // myapp/main/static/images/myimage/imagepath
+    }
+    // the on that is in the app server resources
+    public static String getAppStaticImageURL(String imagePath) {
+        return getURL(imagePath);
+    }
+
+    public static String getAppStaticWebURL(String filePath) {
+        return getURL(filePath);
+    }
+    // FileUtils.APP_DOWNLOAD_FOLDER_PATH
+    public static String getAppDownloadURL(String name, String displayName, String extension) {
+        assert name != null;
+        return getURL(name + getDownloadParams(displayName, extension));
+    }
+
+    // FileUtils.APP_UPLOAD_FOLDER_PATH
+    public static String getUploadURL(String fileName) {
+        return getURL("uploadFile" + (fileName != null ? "?sid=" + fileName : ""));
     }
 
     private static Map<String, Boolean> imagePathCache = new HashMap<>();
 
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
-        setThemeImage(imagePath, modifier, true);
-    }
-
-    public static void setThemeImage(String imagePath, Consumer<String> modifier, boolean isEnableColorTheme) {
-        if (imagePath != null && !colorTheme.isDefault() && isEnableColorTheme) {
+        if (imagePath != null && !colorTheme.isDefault()) {
             String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
             GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
                 @Override
                 public void onFailure() {
-                    modifier.accept(getModuleImagePath(imagePath));
+                    modifier.accept(getStaticImageURL(imagePath));
                 }
 
                 @Override
                 public void onSuccess() {
-                    modifier.accept(getModuleImagePath(colorThemeImagePath));
+                    modifier.accept(getStaticImageURL(colorThemeImagePath));
                 }
             });
         } else {
-            modifier.accept(getModuleImagePath(imagePath));
+            modifier.accept(getStaticImageURL(imagePath));
+
+            if(MainFrame.staticImagesURL == null)
+                MainFrame.staticImagesURLListeners.add(() -> setThemeImage(imagePath, modifier));
         }
     }
 
@@ -130,7 +158,7 @@ public class GwtClientUtils {
             }
         } else {
             try {
-                RequestBuilder rb = new RequestBuilder(RequestBuilder.HEAD, getModuleImagePath(imagePath));
+                RequestBuilder rb = new RequestBuilder(RequestBuilder.HEAD, getStaticImageURL(imagePath));
                 rb.setCallback(new RequestCallback() {
                     @Override
                     public void onResponseReceived(Request request, Response response) {
@@ -449,11 +477,14 @@ public class GwtClientUtils {
     }
 
     public static void setPopupPosition(PopupPanel popup, int mouseX, int mouseY) {
-
         int popupWidth = popup.getOffsetWidth();
         int popupHeight = popup.getOffsetHeight();
         int xCorrection = popupWidth - (Window.getClientWidth() - mouseX);
         int yCorrection = popupHeight - (Window.getClientHeight() - mouseY);
+
+        //to prevent the cursor hovering over the top left of the tooltip
+        int mouseXOffset = 10;
+        int mouseYOffset = 18;
 
         if (xCorrection > 0 || yCorrection > 0) {
             if (xCorrection > 0 && yCorrection > 0) {
@@ -462,12 +493,12 @@ public class GwtClientUtils {
                 popup.setPopupPosition(mouseX - popupWidth, mouseY - popupHeight);
             } else {
                 popup.setPopupPosition(
-                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX + 1,
-                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY + 1
+                        xCorrection > 0 ? max(mouseX - xCorrection, 0) : mouseX + mouseXOffset,
+                        yCorrection > 0 ? max(mouseY - yCorrection, 0) : mouseY + mouseYOffset
                 );
             }
         } else {
-            popup.setPopupPosition(mouseX + 1, mouseY + 1);
+            popup.setPopupPosition(mouseX + mouseXOffset, mouseY + mouseYOffset);
         }
     }
 
@@ -996,6 +1027,12 @@ public class GwtClientUtils {
             newValues.add(values.get(i));
         return newValues;
     }
+    public static <T> T[] add(T[] array1, T[] array2, Function<Integer, T[]> instancer) {
+        T[] result = instancer.apply(array1.length + array2.length);
+        System.arraycopy(array1, 0, result, 0, array1.length);
+        System.arraycopy(array2, 0, result, array1.length, array2.length);
+        return result;
+    }
 
     //when used in gwt-javascript, so as not to pass many parameters to the native-method and get localized strings directly
     protected static native void getLocalizedString(String string)/*-{
@@ -1023,7 +1060,11 @@ public class GwtClientUtils {
     }
 
     public static native JavaScriptObject getGlobalField(String field)/*-{
-        return $wnd[field];
+        var jsField = $wnd[field];
+        if (jsField != null)
+            return jsField;
+        else
+            throw new Error("Field " + field + " not found");
     }-*/;
     public static native JavaScriptObject getField(JavaScriptObject object, String field)/*-{
         return object[field];

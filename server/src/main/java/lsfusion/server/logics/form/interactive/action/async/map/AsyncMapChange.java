@@ -112,7 +112,7 @@ public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInter
         AsyncMapChange<?, T> change = (AsyncMapChange<?, T>) exec;
         if(!(BaseUtils.nullEquals(object, change.object) &&
                 (property == null ? change.property == null : change.property != null && property.equalsMap(change.property)) && // nullEquals
-                BaseUtils.hashEquals(value, change.value))) // later it maybe makes sense to "or" this lists
+                BaseUtils.nullEquals(value, change.value))) // later it maybe makes sense to "or" this lists
             return null;
 
         return this;

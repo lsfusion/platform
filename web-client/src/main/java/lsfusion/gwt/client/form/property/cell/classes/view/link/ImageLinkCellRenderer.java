@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.view.link;
 
-import com.google.gwt.core.client.GWT;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ImageCellRenderer;
+
+import java.util.function.Consumer;
 
 public class ImageLinkCellRenderer extends ImageCellRenderer {
     public ImageLinkCellRenderer(GPropertyDraw property) {
@@ -10,7 +12,10 @@ public class ImageLinkCellRenderer extends ImageCellRenderer {
     }
 
     @Override
-    protected String getFilePath(Object value) {
-        return value instanceof String ? (String) value : GWT.getModuleBaseURL() + ICON_EMPTY;
+    protected void setImage(Object value, Consumer<String> consumer) {
+        if(value instanceof String)
+            consumer.accept((String) value);
+        else
+            GwtClientUtils.setThemeImage(ICON_EMPTY, consumer);
     }
 }

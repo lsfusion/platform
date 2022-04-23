@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.FileBasedCellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+
+import java.util.function.Consumer;
 
 public class FileCellRenderer extends FileBasedCellRenderer {
     public FileCellRenderer(GPropertyDraw property) {
@@ -13,10 +12,8 @@ public class FileCellRenderer extends FileBasedCellRenderer {
     }
 
     @Override
-    protected String getFilePath(Object value) {
-        StringBuilder sb = new StringBuilder();
-        GwtClientUtils.setThemeImage(value == null ? ICON_EMPTY : ICON_FILE, sb::append);
-        return sb.toString();
+    protected void setImage(Object value, Consumer<String> consumer) {
+        GwtClientUtils.setThemeImage(value == null ? ICON_EMPTY : ICON_FILE, consumer);
     }
 
     @Override

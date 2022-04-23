@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import lsfusion.client.form.property.async.ClientAsyncCloseForm;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
 import lsfusion.client.navigator.ClientNavigatorAction;
 import lsfusion.client.navigator.ClientNavigatorElement;
@@ -7,6 +8,7 @@ import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.tree.window.ClientTreeNavigatorWindow;
 import lsfusion.client.navigator.window.*;
 import lsfusion.gwt.client.action.GAction;
+import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -14,14 +16,16 @@ import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.logics.ServerSettings;
 
+import javax.servlet.ServletContext;
 import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
-    public ClientNavigatorToGwtConverter(String logicsName) {
-        super(logicsName);
+    public ClientNavigatorToGwtConverter(ServletContext servletContext, ServerSettings settings) {
+        super(servletContext, settings);
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
@@ -37,7 +41,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.path = clientElement.path;
         element.children = new ArrayList<>();
 
-        element.image = createImage(clientElement.imageHolder, "navigator", false);
+        element.image = createImage(clientElement.imageHolder, false);
 
         element.asyncExec = convertOrCast(clientElement.asyncExec);
 
@@ -152,5 +156,11 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
         GWindowFormType type = convertOrCast(asyncOpenForm.type);
         return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, type);
+    }
+
+    @Cached
+    @Converter(from = ClientAsyncCloseForm.class)
+    public GAsyncCloseForm convertCloseForm(ClientAsyncCloseForm asyncCloseForm) {
+        return new GAsyncCloseForm();
     }
 }

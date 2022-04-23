@@ -21,10 +21,7 @@ public class NullNumberFormatter extends NumberFormatter {
 
     @Override
     public String valueToString(Object value) throws ParseException {
-        if (minusZeroText != null) {
-            return minusZeroText;
-        }
-        return super.valueToString(value);
+        return minusZeroText != null ? minusZeroText : value instanceof String ? (String) value : super.valueToString(value);
     }
 
     @Override

@@ -19,7 +19,7 @@ import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import static java.lang.Math.min;
 
@@ -79,7 +79,11 @@ public abstract class FormContainer {
         }
     }
 
-    public abstract void show();
+    public void show() {
+        show(null);
+    }
+
+    public abstract void show(Integer index);
 
     // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
     public void queryHide(EndReason editFormCloseReason) {
@@ -121,13 +125,13 @@ public abstract class FormContainer {
 
     protected abstract Element getFocusedElement();
 
-    public void initForm(FormsController formsController, GForm gForm, Consumer<EndReason> hiddenHandler, boolean isDialog, boolean autoSize) {
+    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize) {
         form = new GFormController(formsController, this, gForm, isDialog, autoSize, editEvent) {
             @Override
-            public void onFormHidden(int closeDelay, EndReason editFormCloseReason) {
-                super.onFormHidden(closeDelay, editFormCloseReason);
+            public void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+                super.onFormHidden(asyncFormController, closeDelay, editFormCloseReason);
 
-                hiddenHandler.accept(editFormCloseReason);
+                hiddenHandler.accept(asyncFormController, editFormCloseReason);
             }
 
             @Override
@@ -171,7 +175,7 @@ public abstract class FormContainer {
     }
 
     public void setContentLoading() {
-        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)), false);
+        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)));
     }
     protected static String loadingAsyncImage = "loading_async.gif";
     protected static Widget createLoadingWidget(String imageUrl) {

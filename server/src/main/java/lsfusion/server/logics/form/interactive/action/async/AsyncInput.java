@@ -22,7 +22,7 @@ public class AsyncInput extends AsyncFormExec {
 
     @Override
     public byte getTypeId() {
-        return 2;
+        return 3;
     }
 
     @Override

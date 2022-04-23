@@ -28,7 +28,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     @Override
     public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         setRendererValue(customRenderer, element,
-                getController(valueTo -> updateContext.changeProperty(valueTo), updateContext.isPropertyReadOnly()),
+                getController(updateContext::changeProperty, updateContext.isPropertyReadOnly()),
                 GSimpleStateTableView.convertValue(property, value));
 
         return false;

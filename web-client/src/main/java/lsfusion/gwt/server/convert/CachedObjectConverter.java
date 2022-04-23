@@ -3,7 +3,9 @@ package lsfusion.gwt.server.convert;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.gwt.client.base.ImageHolder;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.interop.logics.ServerSettings;
 
+import javax.servlet.ServletContext;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -14,13 +16,15 @@ import java.util.HashMap;
 public class CachedObjectConverter extends ObjectConverter {
     private final HashMap cache = new HashMap();
 
-    private final String logicsName;
-    protected CachedObjectConverter(String logicsName) {
-        this.logicsName = logicsName;
+    private final ServletContext servletContext;
+    private final ServerSettings settings;
+    protected CachedObjectConverter(ServletContext servletContext, ServerSettings settings) {
+        this.servletContext = servletContext;
+        this.settings = settings;
     }
 
-    protected ImageHolder createImage(SerializableImageIconHolder imageHolder, String imagesFolderName, boolean canBeDisabled) {
-        return FileUtils.createImage(logicsName, imageHolder, imagesFolderName, canBeDisabled);
+    protected ImageHolder createImage(SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
+        return FileUtils.createImageFile(servletContext, settings, imageHolder, canBeDisabled);
     }
 
     @Override

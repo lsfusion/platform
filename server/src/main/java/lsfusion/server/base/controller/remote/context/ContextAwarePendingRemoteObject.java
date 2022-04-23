@@ -45,7 +45,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
 
     protected Context context;
 
-    private static ScheduledExecutorService closeExecutor = ExecutorFactory.createCloseScheduledThreadService(3);
+    private static ScheduledExecutorService closeExecutor = ExecutorFactory.createCloseScheduledThreadService();
     private void scheduleClose(long delay, Runnable run) {
         closeExecutor.schedule(() -> {
             ThreadInfo threadInfo = EventThreadInfo.TIMER(ContextAwarePendingRemoteObject.this);

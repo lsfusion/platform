@@ -18,10 +18,7 @@ import lsfusion.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.async.ClientAsyncInput;
-import lsfusion.client.form.property.async.ClientAsyncEventExec;
-import lsfusion.client.form.property.async.ClientAsyncSerializer;
-import lsfusion.client.form.property.async.ClientInputList;
+import lsfusion.client.form.property.async.*;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.classes.view.FormatPropertyRenderer;
@@ -38,6 +35,7 @@ import lsfusion.interop.form.property.PropertyReadType;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -437,6 +435,19 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return PropertyReadType.DRAW;
     }
 
+    public Integer getInputActionIndex(KeyEvent editEvent) {
+        ClientInputList inputList = getInputList();
+        if (inputList != null) {
+            KeyStroke eventKeyStroke = KeyStroke.getKeyStrokeForEvent(editEvent);
+            for (int i = 0; i < inputList.actions.length; i++) {
+                if (eventKeyStroke.equals(inputList.actions[i].keyStroke)) {
+                    return i;
+                }
+            }
+        }
+        return null;
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
@@ -747,9 +758,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                     "<b>" + getString("logics.formpath") + ":</b> %7$s" +
                     "</html>";
 
-    public static final String EDIT_KEY_TOOL_TIP_FORMAT =
-            "<hr><b>" + getString("logics.property.edit.key") + ":</b> %1$s<br>";
+    public static final String hotkey = getString("logics.property.hotkey");
+    public static final String EDIT_KEY_TOOL_TIP_FORMAT = "<hr><b>" + hotkey + ":</b> %1$s<br>";
 
+    public String getQuickActionTooltipText(KeyStroke keyStroke) {
+        return keyStroke == null ? "" : String.format("<html><b>" + hotkey + ":</b> %1$s</html>", keyStroke);
+    }
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String changeKeyText = changeKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getChangeKeyCaption());

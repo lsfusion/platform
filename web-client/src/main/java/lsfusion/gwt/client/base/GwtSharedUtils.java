@@ -371,9 +371,4 @@ public class GwtSharedUtils {
         }
         return msg.toString();
     }
-
-    public static String getDownloadURL(String name, String displayName, String extension, boolean actionFile) {
-        return  "downloadFile" + (actionFile ? "" : "/static") +
-                "?name=" + name + (displayName != null ? "&displayName=" + displayName : "") + (extension != null ? "&extension=" + extension : "");
-    }
 }

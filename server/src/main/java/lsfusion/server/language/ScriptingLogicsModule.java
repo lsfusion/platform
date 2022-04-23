@@ -1346,27 +1346,17 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setChangeKey(LAP property, String code, Boolean showChangeKey) {
-        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
-        if(m.matches()) {
-            Map<String, String> optionsMap = getOptionsMap(m.group(2));
-            property.setChangeKey(KeyStroke.getKeyStroke(m.group(1)), getBindingModesMap(optionsMap));
-            property.setChangeKeyPriority(getPriority(optionsMap));
-        } else {
-            property.setChangeKey(KeyStroke.getKeyStroke(code));
-        }
+        KeyStrokeOptions options = parseKeyStrokeOptions(code);
+        property.setChangeKey(KeyStroke.getKeyStroke(options.keyStroke), options.bindingModesMap);
+        property.setChangeKeyPriority(options.priority);
         if (showChangeKey != null)
             property.setShowChangeKey(showChangeKey);
     }
 
     public void setChangeMouse(LAP property, String code, Boolean showChangeKey) {
-        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
-        if(m.matches()) {
-            Map<String, String> optionsMap = getOptionsMap(m.group(2));
-            property.setChangeMouse((m.group(1)), getBindingModesMap(optionsMap));
-            property.setChangeMousePriority(getPriority(optionsMap));
-        } else {
-            property.setChangeMouse(code);
-        }
+        KeyStrokeOptions options = parseKeyStrokeOptions(code);
+        property.setChangeMouse(options.keyStroke, options.bindingModesMap);
+        property.setChangeMousePriority(options.priority);
         if (showChangeKey != null)
             property.setShowChangeKey(showChangeKey);
     }
@@ -2209,7 +2199,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     private ScriptingLogicsModule.ILEWithParams getContextListEntity(int contextSize, ScriptingLogicsModule.LPWithParams list, ScriptingLogicsModule.LPWithParams where,
-                                                                     List<String> actionImages, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
+                                                                     List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions) {
         if(list == null) // optimization
             return new ILEWithParams(SetFact.EMPTYORDER(), SetFact.EMPTYORDER(), null, null, ListFact.EMPTY());
 
@@ -2234,14 +2224,37 @@ public class ScriptingLogicsModule extends LogicsModule {
                         new InputFilterEntity<>(property, mapValues)) : null,
                 ListFact.fromJavaList(actionImages).mapListValues((i, actionImage) -> {
                     LAWithParams action = actions.get(i);
+                    KeyStrokeOptions options = parseKeyStrokeOptions(keyStrokes.get(i));
                     return(splitAPParams(action, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
-                            new InputContextAction(actionImage, ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
+                            new InputContextAction(actionImage, options.keyStroke, options.bindingModesMap, options.priority, ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
                 }));
+    }
+
+    private KeyStrokeOptions parseKeyStrokeOptions(String code) {
+        Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
+        if(m.matches()) {
+            Map<String, String> optionsMap = getOptionsMap(m.group(2));
+            return new KeyStrokeOptions(m.group(1), getBindingModesMap(optionsMap), getPriority(optionsMap));
+        } else {
+            return new KeyStrokeOptions(code, null, null);
+        }
+    }
+
+    private class KeyStrokeOptions {
+        String keyStroke;
+        Map<String, BindingMode> bindingModesMap;
+        Integer priority;
+
+        public KeyStrokeOptions(String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority) {
+            this.keyStroke = keyStroke;
+            this.bindingModesMap = bindingModesMap;
+            this.priority = priority;
+        }
     }
 
     public LAWithParams addScriptedInputAProp(ValueClass requestValueClass, LPWithParams oldValue, NamedPropertyUsage targetProp, LAWithParams doAction, LAWithParams elseAction,
                                               List<TypedParameter> oldContext, List<TypedParameter> newContext, boolean assign, boolean constraintFilter, LPWithParams changeProp,
-                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
+                                              LPWithParams listProp, LPWithParams whereProp, List<String> actionImages, List<String> keyStrokes, List<List<QuickAccess>> quickAccesses, List<LAWithParams> actions,
                                               DebugInfo.DebugPoint assignDebugPoint, FormSessionScope listScope, String customEditorFunction) throws ScriptingErrorLog.SemanticErrorException {
         if(listScope == null)
             listScope = FormSessionScope.OLDSESSION;
@@ -2276,7 +2289,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (oldValue != null && requestValueClass instanceof FileClass)
                 oldValue = null;
 
-            ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, quickAccesses, actions);
+            ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
             action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction, notNull);
@@ -4313,11 +4326,14 @@ public class ScriptingLogicsModule extends LogicsModule {
                 whereLCP = findLPByPropertyUsage(new NamedPropertyUsage("imported", toParamClasses), false, true);
         }
 
+        boolean hasRoot = root != null;
+        boolean hasWhere = whereProp != null;
+
         List<LPWithParams> params = new ArrayList<>();
         params.add(fileProp);
-        if(root != null)
+        if(hasRoot)
             params.add(root);
-        if(whereProp != null)
+        if(hasWhere)
             params.add(whereProp);
         if(memoProp != null)
             params.add(memoProp);
@@ -4326,7 +4342,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LA importAction = null;
         try {
-            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator, noHeader, noEscape, charset, sheetAll, attr, whereProp != null, getUParams(props.toArray(new LP[props.size()])));
+            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator,
+                    noHeader, noEscape, charset, sheetAll, attr, hasRoot, hasWhere, getUParams(props.toArray(new LP[props.size()])));
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
@@ -4369,20 +4386,23 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
+        boolean hasRoot = rootProp != null;
+        boolean hasWhere = whereProp != null;
+
         if(attr)
             errLog.emitSimpleError(parser, "IMPORT form with ATTR not supported");
-        if(whereProp != null)
+        if(hasWhere)
             errLog.emitSimpleError(parser, "IMPORT form with WHERE not supported");
         if(memoProp != null)
             errLog.emitSimpleError(parser, "IMPORT form with MEMO not supported");
 
-        if(rootProp != null)
+        if(hasRoot)
             params.add(rootProp);
         if(sheet != null)
             params.add(sheet);
 
         ImOrderSet<GroupObjectEntity> groupFiles = fileProps != null ? SetFact.fromJavaOrderSet(fileProps.keyList()) : SetFact.EMPTYORDER();
-        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, whereProp != null, !groupFiles.isEmpty()), params);
+        return addScriptedJoinAProp(addImportFAProp(format, formEntity, params.size(), groupFiles, sheetAll, separator, noHeader, noEscape, charset, hasRoot, hasWhere, !groupFiles.isEmpty()), params);
     }
 
     public LP addTypeProp(ValueClass valueClass, boolean bIs) {

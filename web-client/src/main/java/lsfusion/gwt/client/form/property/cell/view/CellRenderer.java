@@ -5,6 +5,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
@@ -137,6 +138,10 @@ public abstract class CellRenderer<T> {
         return false;
     }
 
+    protected String getBaseBackground(Object value) {
+        return null;
+    }
+
     protected boolean needToRenderToolbarContent() {
         return true;
     }
@@ -155,9 +160,6 @@ public abstract class CellRenderer<T> {
     private static final String RENDERED = "rendered";
 
     public void update(Element element, UpdateContext updateContext) {
-        String background = updateContext.getBackground();
-        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground(), true);
-
         boolean selected = updateContext.isSelectedLink();
         if(selected)
             renderEditSelected(element, property);
@@ -166,6 +168,10 @@ public abstract class CellRenderer<T> {
 
         Object value = updateContext.getValue();
         boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
+
+        String baseBackground = getBaseBackground(value);
+        String background = updateContext.getBackground(baseBackground);
+        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground(), baseBackground == null);
 
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
         boolean isNew = false;
@@ -177,10 +183,12 @@ public abstract class CellRenderer<T> {
         }
         boolean cleared = false;
         if(isNew || !equalsDynamicState(renderedState, value, loading)) {
-            cleared = renderDynamicContent(element, value, loading, updateContext);
-
+            // there might be stack overflow, if this is done after renderDynamicContent, and this is a custom cell render, which calls changeProperty in its update method
+            // setting value earlier breaks the recursion
             renderedState.value = value;
             renderedState.loading = loading;
+
+            cleared = renderDynamicContent(element, value, loading, updateContext);
         }
 
         if(needToRenderToolbarContent())
@@ -227,6 +235,7 @@ public abstract class CellRenderer<T> {
     public interface ToolbarAction {
 
         boolean isHover();
+        GKeyStroke getKeyStroke();
         String getImage();
 
         boolean matches(ToolbarAction action);
@@ -279,8 +288,7 @@ public abstract class CellRenderer<T> {
             boolean start = !getHorzTextAlignment().equals(Style.TextAlign.LEFT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
-                toolbarElement.addClassName("property-toolbar");
-                toolbarElement.addClassName("background-inherit");
+                toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
                 element.appendChild(toolbarElement);
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
 
@@ -288,20 +296,24 @@ public abstract class CellRenderer<T> {
             } else
                 GwtClientUtils.removeAllChildren(toolbarElement);
 
-            // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
-            GFormController.setBackgroundColor(toolbarElement, background, true);
-
             if(loading) {
                 ImageElement loadingImage = Document.get().createImageElement();
                 GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
                 loadingImage.addClassName("property-toolbar-loading");
+                setToolbarBackground(loadingImage, background);
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
 
             if (toolbarActions.length > 0) {
+                Element propertyToolbarItemGroup = null;
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                addToToolbar(toolbarElement, start, verticalSeparator);
+                setToolbarBackground(verticalSeparator, background);
+                if(allHover(toolbarActions)) {
+                    propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(null, toolbarElement, verticalSeparator, start);
+                } else {
+                    addToToolbar(toolbarElement, start, verticalSeparator);
+                }
 
                 int hoverCount = 0;
                 for (ToolbarAction toolbarAction : toolbarActions) {
@@ -310,22 +322,25 @@ public abstract class CellRenderer<T> {
                     ImageElement actionImgElement = Document.get().createImageElement();
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
-                    if (toolbarAction.isHover()) {
-                        actionDivElement.addClassName("hide");
-                        hoverCount++;
-                    }
-                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
+                    setToolbarBackground(actionDivElement, background);
 
+                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
-                    addToToolbar(toolbarElement, start, actionDivElement);
+                    GKeyStroke keyStroke = toolbarAction.getKeyStroke();
+                    actionDivElement.setTitle(keyStroke != null ? keyStroke.toString() : "");
+
+                    if (toolbarAction.isHover()) {
+                        propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(propertyToolbarItemGroup, toolbarElement, actionDivElement, start);
+                        hoverCount++;
+                    } else {
+                        propertyToolbarItemGroup = null;
+                        addToToolbar(toolbarElement, start, actionDivElement);
+                    }
                 }
 
                 if (hoverCount > 0) {
                     element.addClassName("property-toolbar-on-hover");
-                }
-                if (hoverCount == toolbarActions.length) {
-                    verticalSeparator.addClassName("hide");
                 }
             }
         } else {
@@ -334,6 +349,34 @@ public abstract class CellRenderer<T> {
 
             clearRenderToolbarContent(element);
         }
+    }
+
+    private boolean allHover(ToolbarAction[] toolbarActions) {
+        for (ToolbarAction toolbarAction : toolbarActions) {
+            if (!toolbarAction.isHover()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Element wrapPropertyToolbarItemGroup(Element propertyToolbarItemGroup, Element toolbarElement, Element element, boolean start) {
+        if(propertyToolbarItemGroup == null)
+            propertyToolbarItemGroup = Document.get().createDivElement();
+        propertyToolbarItemGroup.addClassName(start ? "property-toolbar-item-group-start" : "property-toolbar-item-group-end");
+        propertyToolbarItemGroup.addClassName("hide");
+
+        addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
+
+        addToToolbar(propertyToolbarItemGroup, start, element);
+
+        return propertyToolbarItemGroup;
+    }
+
+    private static void setToolbarBackground(Element element, String background) {
+        element.addClassName("background-inherit");
+        // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
+        GFormController.setBackgroundColor(element, background, true);
     }
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {

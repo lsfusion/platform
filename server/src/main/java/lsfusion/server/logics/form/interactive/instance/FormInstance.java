@@ -2121,7 +2121,7 @@ updateAsyncPropertyChanges();
 
 //        result.out(this);
 //        try {
-//            Thread.sleep(2000);
+//            Thread.sleep(4000);
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }

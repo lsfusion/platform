@@ -39,10 +39,8 @@ import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.navigator.window.GModalityType;
-import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -50,7 +48,9 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.interop.logics.ServerSettings;
 
+import javax.servlet.ServletContext;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -65,8 +65,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     private final ClientAsyncToGwtConverter asyncConverter = ClientAsyncToGwtConverter.getInstance();
     private GForm form;
 
-    public ClientComponentToGwtConverter(String logicsName) {
-        super(logicsName);
+    public ClientComponentToGwtConverter(ServletContext servletContext, ServerSettings settings) {
+        super(servletContext, settings);
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {
@@ -287,7 +287,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.imageHolder = createImage(clientPropertyDraw.design.getImageHolder(), "property", canIconBeDisabled);
+        propertyDraw.imageHolder = createImage(clientPropertyDraw.design.getImageHolder(), canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

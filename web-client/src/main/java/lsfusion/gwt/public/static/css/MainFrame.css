@@ -105,14 +105,36 @@ input[type=checkbox]:focus {
     padding-right: 5px;
 }
 
-.formsTabBar .mobileTabPanelBar {
+.mobileFormsTabPanel > .gwt-TabBar-horz {
+    padding-top: 0;
+    padding-bottom: var(--border-padding);
+}
+
+.mobileFormsTabPanel > .gwt-TabBar-horz .tabBarItemsWrapper {
     flex-wrap: nowrap !important;
     overflow-x: auto;
     
     scrollbar-width: none;  /* hide scrollbars in Firefox */
 }
-.formsTabBar .mobileTabPanelBar::-webkit-scrollbar {
+.mobileFormsTabPanel > .gwt-TabBar-horz .tabBarItemsWrapper::-webkit-scrollbar {
     display: none;  /* hide scrollbars in Safari and Chrome */
+}
+
+.mobileFormsTabPanel > .gwt-TabBar-horz .gwt-TabBarItem {
+    border-top: none;
+    border-bottom: 1px solid var(--panel-border-color);
+    border-radius: var(--tab-border-radius-vert);
+}
+
+.mobileFormsTabPanel > .gwt-TabBar-horz .gwt-TabBarItem:hover {
+    border-bottom: 1px solid var(--component-hover-border-color);
+}
+
+.mobileFormsTabPanel > .gwt-TabPanelBottom {
+    padding-top: 0;
+    padding-bottom: var(--border-padding);
+    border-top: none;
+    border-bottom: 1px solid var(--panel-border-color);
 }
 
 .tabLayoutPanelTabWidget {
@@ -280,11 +302,13 @@ input[type=checkbox]:focus {
 }
 
 .property-toolbar-on-hover .hide {
-    display: none;
+    width:0;
+    transition:width 200ms linear;
 }
 
 .property-toolbar-on-hover:hover .hide {
-    display: flex;
+    width:100%;
+    transition:width 200ms linear;
 }
 
 .panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
@@ -875,7 +899,8 @@ button {
 
 .verticalStretchSeparator {
     border-left: 1px solid var(--panel-border-color);
-    margin: 3px 2px;
+    margin: 3px 0;
+    padding: 0 2px;
     align-self: stretch;
 }
 

@@ -21,24 +21,37 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
 
     @Override
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String fileName = request.getParameter("name");
-        String displayName = request.getParameter("displayName");
-        String extension = request.getParameter("extension");
-        boolean staticFile = request.getRequestURI().equals("/downloadFile/static");
 
-        File file = new File(FileUtils.APP_TEMP_FOLDER_URL, fileName);
-        
+        String pathInfo = request.getPathInfo();
+
+        boolean staticFile;
+        String prefix;
+        if(pathInfo.startsWith(prefix = "/" + FileUtils.STATIC_PATH + "/"))
+            staticFile = true;
+        else if(pathInfo.startsWith(prefix = "/" + FileUtils.TEMP_PATH + "/"))
+            staticFile = false;
+        else if(pathInfo.startsWith(prefix = "/" + FileUtils.DEV_PATH + "/"))
+            staticFile = true;
+        else
+            throw new UnsupportedOperationException("Path info : " + pathInfo);
+        String fileName = pathInfo.substring(prefix.length());
+
+        String extension = request.getParameter("extension");
+        if(extension == null)
+            extension = BaseUtils.getFileExtension(fileName);
+
+        String displayName = request.getParameter("displayName");
+        if(displayName == null)
+            displayName = BaseUtils.getFileName(fileName);
+
         response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
         //inline = open in browser, attachment = download
-        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName != null ? displayName : fileName, extension)));
+        response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 
-        try(FileInputStream fis = new FileInputStream(file)) {
-            ByteStreams.copy(fis, response.getOutputStream());
-        }
-        
-        if(!staticFile)
-            FileUtils.deleteFile(file);
+        FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, inStream -> {
+            ByteStreams.copy(inStream, response.getOutputStream());
+        });
     }
 
     private String getFileName(String name, String extension) {

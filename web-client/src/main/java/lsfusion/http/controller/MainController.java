@@ -2,11 +2,11 @@ package lsfusion.http.controller;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.ServerMessages;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.authentication.LSFAuthenticationToken;
@@ -209,8 +209,16 @@ public class MainController {
     public String processMain(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getServerSettings(request, false);
 
-        if(serverSettings != null)
-            serverSettings.saveFiles(FileUtils.APP_PATH, (serverSettings.inDevMode ? "dev" : "static") + "/web/");
+        if(serverSettings != null) {
+            synchronized (serverSettings) {
+                if(!serverSettings.filesSaved) {
+                    for (Pair<String, RawFileData> pair : serverSettings.resourceFiles)
+                        FileUtils.saveWebFile(pair.first, pair.second, serverSettings);
+
+                    serverSettings.filesSaved = true;
+                }
+            }
+        }
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
@@ -255,7 +263,8 @@ public class MainController {
     }
 
     private String getFileUrl(RawFileData file) {
-        return GwtSharedUtils.getDownloadURL(FileUtils.saveApplicationFile(file), null, null, false);
+        assert file != null;
+        return FileUtils.saveApplicationFile(file);
     }
 
     public static ExternalRequest getExternalRequest(Object[] params, HttpServletRequest request){

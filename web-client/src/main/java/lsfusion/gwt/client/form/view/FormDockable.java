@@ -56,8 +56,8 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    public void show() {
-        formsController.addDockable(this);
+    public void show(Integer index) {
+        formsController.addDockable(this, index);
     }
 
     @Override

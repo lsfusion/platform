@@ -1,5 +1,6 @@
 package lsfusion.http.provider.form;
 
+import lsfusion.base.Pair;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
@@ -22,9 +23,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.ServletContext;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,6 +42,9 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     @Autowired
     private NavigatorProvider navigatorProvider;
     
+    @Autowired
+    private ServletContext servletContext;
+
     public FormProviderImpl() {}
 
     public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
@@ -50,7 +54,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
 
-        GForm gForm = new ClientComponentToGwtConverter(navigatorProvider.getLogicsName(sessionID)).convertOrCast(clientForm);
+        GForm gForm = new ClientComponentToGwtConverter(servletContext, navigatorProvider.getServerSettings(sessionID)).convertOrCast(clientForm);
 
         Set<Integer> inputObjects = remoteForm.getInputGroupObjects();
         gForm.inputGroupObjects = new HashSet<>();
@@ -78,6 +82,11 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         addFormSessionObject(formID, formSessionObject);
         gForm.sessionID = formID;
         return gForm;
+    }
+
+    @Override
+    public String getWebFile(String sessionID, String fileName) throws SessionInvalidatedException {
+        return FileUtils.getWebFile(fileName, navigatorProvider.getServerSettings(sessionID));
     }
 
     public void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID) {
@@ -135,8 +144,8 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID);
         currentForms.remove(formSessionID);
         if(sessionObject.savedTempFiles != null) {
-            for (File file : sessionObject.savedTempFiles.values())
-                FileUtils.deleteFile(file);
+            for (Pair<String, Runnable> closer : sessionObject.savedTempFiles.values())
+                closer.second.run();
         }
     }
 

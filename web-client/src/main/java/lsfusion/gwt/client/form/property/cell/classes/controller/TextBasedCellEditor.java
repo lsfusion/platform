@@ -15,6 +15,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GFormatType;
@@ -118,11 +119,17 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 isCorrect = false; // this thing is needed to disable inputting incorrect symbols
 
             handler.consume(isCorrect, false);
-        } if (BLUR.equals(type)) {
+        } else if (BLUR.equals(type)) {
             //restore focus and ignore blur if refresh button pressed
             if(hasList && suggestBox.display.isRefreshButtonPressed()) {
                 suggestBox.display.setRefreshButtonPressed(false);
                 suggestBox.setFocus(true);
+                return;
+            }
+        } else {
+            Integer inputActionIndex = property.getInputActionIndex(event, true);
+            if(inputActionIndex != null) {
+                validateAndCommit(suggestBox.getElement(), inputActionIndex, true, CommitReason.OTHER);
                 return;
             }
         }
@@ -369,7 +376,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 @Override
                 public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                     // canceling query
-                    assert isThisCellEditor();
+//                    assert isThisCellEditor(); // can be broken when for example tab is changed, it sets display to none before blur occurs
                     if (isLoading())
                         editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                             @Override
@@ -515,6 +522,27 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 };
                 GwtClientUtils.setThemeImage(actions[index].action + ".png", (image -> actionButton.getUpFace().setImage(new Image(image))));
                 buttonsPanel.add(actionButton);
+
+                String tooltip = property.getQuickActionTooltipText(actions[index].keyStroke);
+                if(tooltip != null) {
+                    TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
+                        public String getTooltip() {
+                            return tooltip;
+                        }
+
+                        public boolean stillShowTooltip() {
+                            return actionButton.isAttached() && actionButton.isVisible();
+                        }
+
+                        public String getPath() {
+                            return null;
+                        }
+
+                        public String getCreationPath() {
+                            return null;
+                        }
+                    });
+                }
             }
 
             bottomPanel.add(buttonsPanel);

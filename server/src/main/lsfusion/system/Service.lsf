@@ -151,7 +151,6 @@ dropLRUPercent '{service.drop.lru.percent}' = DATA DOUBLE ();
 randomDropLRU '{service.random.drop.lru}' = DATA BOOLEAN ();
 dropLRUCustom '{service.drop.lru}'  INTERNAL  'lsfusion.server.physics.admin.service.action.DropLRUAction' (DOUBLE, BOOLEAN);
 dropLRU '{service.drop.lru}' ()  { dropLRUCustom(dropLRUPercent(), randomDropLRU()); }
-turnCacheStatsOff '{service.turn.cache.stats.off}'  INTERNAL  'lsfusion.server.physics.admin.service.action.TurnCacheStatsOffAction' ();
 makeHeapDump '{service.make.heap.dump}'  INTERNAL  'lsfusion.server.physics.admin.service.action.MakeHeapDumpAction' ();
 isServerRestarting = NATIVE BOOLEAN ();
 isNotServerRestarting () = NOT isServerRestarting();
@@ -160,7 +159,7 @@ isNotServerRestarting () = NOT isServerRestarting();
 
 FORM maintenance '{service.form.maintenance}'
     PROPERTIES() scheduledRestart, forbidLogin, restartServer SHOWIF notRestartPushed(), cancelRestartServer SHOWIF restartPushed(),
-                 uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
+                 //uploadStaticCaptionType, uploadHost, uploadUser, uploadPassword, uploadInstance, uploadDB, uploadToDBAction,
                  clearApplicationLog, 
                  serviceDBAction, recalculateClassesAction, recalculateAction, recalculateFollowsAction, maxQuantityOverCalculate,
                  checkClassesAction, checkAggregationsAction, checkIndicesAction,  
@@ -168,7 +167,7 @@ FORM maintenance '{service.form.maintenance}'
                  packAction, analyzeDBAction, vacuumDBAction, disableTILMode, reupdateMode, singleTransaction, threadCountMultiThread, serviceDBMultiThreadAction,
                  recalculateClassesMultiThreadAction, recalculateMultiThreadAction, recalculateFollowsMultiThreadAction,
                  recalculateStatsMultiThreadAction, overCalculateStatsMultiThreadAction, checkClassesMultiThreadAction, checkAggregationsMultiThreadAction,      
-                 runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, turnCacheStatsOff, makeHeapDump           
+                 runGarbageCollector, getVMInfo, dropLRUPercent, randomDropLRU, dropLRU, makeHeapDump           
 ;
 
 DESIGN maintenance {        
@@ -184,16 +183,16 @@ DESIGN maintenance {
                 MOVE PROPERTY(restartServer());
                 MOVE PROPERTY(cancelRestartServer());
             }    
-            NEW upload {
-                caption = '{service.form.maintenance.caption.upload}';
-                MOVE PROPERTY(uploadStaticCaptionType());
-                MOVE PROPERTY(uploadHost());
-                MOVE PROPERTY(uploadUser());
-                MOVE PROPERTY(uploadPassword());
-                MOVE PROPERTY(uploadInstance());
-                MOVE PROPERTY(uploadDB());
-                MOVE PROPERTY(uploadToDBAction());
-            }
+//            NEW upload {
+//                caption = '{service.form.maintenance.caption.upload}';
+//                MOVE PROPERTY(uploadStaticCaptionType());
+//                MOVE PROPERTY(uploadHost());
+//                MOVE PROPERTY(uploadUser());
+//                MOVE PROPERTY(uploadPassword());
+//                MOVE PROPERTY(uploadInstance());
+//                MOVE PROPERTY(uploadDB());
+//                MOVE PROPERTY(uploadToDBAction());
+//            }
             NEW log {
                 caption = '{service.form.maintenance.caption.logging}';
                 MOVE PROPERTY(clearApplicationLog());
@@ -255,7 +254,6 @@ DESIGN maintenance {
                 MOVE PROPERTY(dropLRUPercent());
                 MOVE PROPERTY(randomDropLRU());
                 MOVE PROPERTY(dropLRU());
-                MOVE PROPERTY(turnCacheStatsOff());
                 MOVE PROPERTY(makeHeapDump());
             }                      
         }
@@ -421,7 +419,7 @@ getServerSettings() ABSTRACT CASE @@noauth;
 getServerSettings() + WHEN TRUE THEN {
     readResources('/web/.*');
     LOCAL jsonResourceFiles = JSONFILE ();
-    EXPORT FROM file = resourceFiles(STRING str), name = substrFrom(str, 6) WHERE resourceFiles(str) TO jsonResourceFiles;
+    EXPORT FROM file = resourceFiles(STRING str), name = str WHERE resourceFiles(str) TO jsonResourceFiles;
 
     LOCAL jsonLsfParams = JSONFILE ();
     EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;
@@ -632,7 +630,10 @@ devMode = devMode(currentUser());
 
 transactTimeout '{service.transact.timeout}' (User user) = DATA INTEGER (CustomUser);
 
+turnCacheStatsOff '{service.turn.cache.stats.off}'  INTERNAL  'lsfusion.server.physics.admin.service.action.TurnCacheStatsOffAction' ();
+
 EXTEND FORM settings
+    PROPERTIES() turnCacheStatsOff
     OBJECTS u = User
     PROPERTIES(u) READONLY name, login, userRoles
     PROPERTIES(u) nameExecEnv, volatileStatsEnabled
@@ -641,8 +642,10 @@ EXTEND FORM settings
 
 DESIGN settings {
     tabs {
-        MOVE BOX(u) {
+        NEW execution {
             caption = '{service.settings.runtime}';
+            MOVE PROPERTY(turnCacheStatsOff());
+            MOVE BOX(u);
         }
     }
 }

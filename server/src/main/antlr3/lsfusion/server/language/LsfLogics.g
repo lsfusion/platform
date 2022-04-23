@@ -2623,11 +2623,13 @@ importSourceFormat [List<TypedParameter> context, boolean dynamic] returns [Form
                 )
 	|	'JSON'	{ $format = FormIntegrationType.JSON; } (
 	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
 	            ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	            )
 	|	'XML'	{ $format = FormIntegrationType.XML; } (
 	            ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
 	            ('ATTR' { $attr = true; })?
+	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
 	            )
 	|	'TABLE'	{ $format = FormIntegrationType.TABLE; } (
 	            ('WHERE' whereProperty = propertyExpression[context, dynamic] {$where = $whereProperty.property; })?
@@ -3892,6 +3894,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
     LPWithParams whereProp = null;
 
     List<String> actionImages = new ArrayList<>();
+    List<String> keyPresses = new ArrayList<>();
     List<List<QuickAccess>> quickAccesses = new ArrayList<>();
     List<LAWithParams> actions = new ArrayList<>();
     String customEditorFunction = null;
@@ -3899,7 +3902,7 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedInputAProp($in.valueClass, $in.initValue, outProp, $dDB.action, $dDB.elseAction, context, newContext,
-		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, quickAccesses, actions, assignDebugPoint, $fs.result, customEditorFunction);
+		 assign, constraintFilter, changeProp, listProp, whereProp, actionImages, keyPresses, quickAccesses, actions, assignDebugPoint, $fs.result, customEditorFunction);
 	}
 }
 	:	'INPUT'
@@ -3924,21 +3927,22 @@ inputActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams ac
         ('CUSTOM' editFun=stringLiteral {customEditorFunction = $editFun.val;})?
 	    ('LIST' listExpr=propertyExpression[newListContext, listDynamic] { listProp = $listExpr.property; })?
         ('WHERE' whereExpr=propertyExpression[newListContext, listDynamic] { whereProp = $whereExpr.property; })?
-        (acts = contextActions[newContext] { actionImages = $acts.actionImages; quickAccesses = $acts.quickAccesses; actions = $acts.actions; })?
+        (acts = contextActions[newContext] { actionImages = $acts.actionImages; keyPresses = $acts.keyPresses; quickAccesses = $acts.quickAccesses; actions = $acts.actions; })?
         fs=formSessionScopeClause?
 		('TO' pUsage=propertyUsage { outProp = $pUsage.propUsage; } )?
         dDB=doInputBody[context, newContext]
 	;
 
-contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<List<QuickAccess>> quickAccesses = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
+contextActions[List<TypedParameter> context] returns [List<String> actionImages = new ArrayList<>(), List<String> keyPresses = new ArrayList<>(), List<List<QuickAccess>> quickAccesses = new ArrayList<>(), List<LAWithParams> actions = new ArrayList<>()]
 	:
-	'ACTIONS' image=stringLiteral { $actionImages.add($image.val); } (toolbar=contextActionToolbar { $quickAccesses.add($toolbar.quickAccessList); })? actDB=listActionDefinitionBody[context, true] { $actions.add($actDB.action); }
-	(',' nextImage=stringLiteral { $actionImages.add($nextImage.val); } (nextToolbar=contextActionToolbar { $quickAccesses.add($nextToolbar.quickAccessList); })? nextActDB=listActionDefinitionBody[context, true] { $actions.add($nextActDB.action); })*
+	'ACTIONS' act = contextAction[context] { $actionImages.add($act.actionImage); $keyPresses.add($act.keyPress); $quickAccesses.add($act.quickAccess); $actions.add($act.action); }
+	(',' nextAct = contextAction[context] { $actionImages.add($nextAct.actionImage); $keyPresses.add($nextAct.keyPress); $quickAccesses.add($nextAct.quickAccess); $actions.add($nextAct.action); })*
 	;
 
-contextActionToolbar returns [List<QuickAccess> quickAccessList = new ArrayList<>()]
+contextAction[List<TypedParameter> context] returns [String actionImage, String keyPress, List<QuickAccess> quickAccess = new ArrayList<>(), LAWithParams action]
 	:
-	'TOOLBAR' (quickAccess { quickAccessList.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*
+	image=stringLiteral { $actionImage = $image.val; } ('KEYPRESS' kp=stringLiteral { $keyPress = $kp.val; })?
+	          ('TOOLBAR' (quickAccess { $quickAccess.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*)? actDB=listActionDefinitionBody[context, true] { $action = $actDB.action; }
 	;
 
 quickAccess returns [QuickAccessMode mode, Boolean hover = false]

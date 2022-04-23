@@ -70,18 +70,9 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
 
             //async actions
             ClientAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
-            if (asyncEventExec != null && asyncEventExec.isDesktopEnabled(canShowDockedModal())) {
-                if (property.askConfirm) {
-                    String msg = property.askConfirmMessage;
-
-                    int result = SwingUtils.showConfirmDialog(getDialogParentContainer(), msg, "lsFusion", JOptionPane.QUESTION_MESSAGE, false);
-                    if (result != JOptionPane.YES_OPTION) {
-                        return true;
-                    }
-                }
-
-                return asyncEventExec.exec(form, this, property, columnKey, actionSID);
-            }
+            if (asyncEventExec != null && asyncEventExec.isDesktopEnabled(canShowDockedModal()))
+                return showConfirmDialog(property) || asyncEventExec.exec(form, this, property, columnKey, actionSID);
+            else if (showConfirmDialog(property)) return true;
 
             editPerformed = true;
             ServerResponse response = form.executeEventAction(property, columnKey, actionSID);
@@ -96,6 +87,10 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         } finally {
             setEditEvent(null);
         }
+    }
+
+    private boolean showConfirmDialog(ClientPropertyDraw property) {
+        return property.askConfirm && SwingUtils.showConfirmDialog(getDialogParentContainer(), property.askConfirmMessage, "lsFusion", JOptionPane.QUESTION_MESSAGE, false) != JOptionPane.YES_OPTION;
     }
 
     public boolean asyncChange(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, ClientAsyncInput asyncChange) throws IOException {

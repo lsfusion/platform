@@ -5,6 +5,8 @@ import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.FileBasedCellRenderer;
 
+import java.util.function.Consumer;
+
 public class ImageCellRenderer extends FileBasedCellRenderer {
 
     public ImageCellRenderer(GPropertyDraw property) {
@@ -17,10 +19,11 @@ public class ImageCellRenderer extends FileBasedCellRenderer {
     }
 
     @Override
-    protected String getFilePath(Object value) {
+    protected void setImage(Object value, Consumer<String> consumer) {
         String extension = ((GImageType) property.baseType).extension;
-        return value instanceof String && !value.equals("null") ?
-                GwtClientUtils.getDownloadURL((String) value, null, extension, false) :
-                GwtClientUtils.getModuleImagePath(ICON_EMPTY);
+        if (value instanceof String)
+            consumer.accept(GwtClientUtils.getAppDownloadURL((String) value, null, extension));
+        else
+            GwtClientUtils.setThemeImage(ICON_EMPTY, consumer);
     }
 }

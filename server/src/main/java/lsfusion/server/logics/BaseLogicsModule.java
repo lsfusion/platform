@@ -969,6 +969,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         PropertyRevImplement<ClassPropertyInterface, ObjectEntity> filterProperty = groupObject.getProperty(prop);
         if(prop.equals(GroupObjectProp.FILTER))
             groupObject.isFilterExplicitlyUsed = true;
+        if(prop.equals(GroupObjectProp.ORDER))
+            groupObject.isOrderExplicitlyUsed = true;
         return addProperty(null, new LP<>(filterProperty.property, groupObject.getOrderObjects().mapOrder(filterProperty.mapping.reverse())));
     }
 

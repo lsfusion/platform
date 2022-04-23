@@ -20,9 +20,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
-import lsfusion.gwt.client.form.event.GInputBindingEvent;
-import lsfusion.gwt.client.form.event.GKeyInputEvent;
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -123,12 +121,18 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {
         public final String action;
+        public final GKeyStroke keyStroke;
         public final int index;
         public final boolean hover;
 
         @Override
         public boolean isHover() {
             return hover;
+        }
+
+        @Override
+        public GKeyStroke getKeyStroke() {
+            return keyStroke;
         }
 
         @Override
@@ -150,8 +154,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return isHover() == action.isHover() && index == ((QuickAccessAction) action).index;
         }
 
-        public QuickAccessAction(String action, int index, boolean hover) {
+        public QuickAccessAction(String action, GKeyStroke keyStroke, int index, boolean hover) {
             this.action = action;
+            this.keyStroke = keyStroke;
             this.index = index;
             this.hover = hover;
         }
@@ -219,7 +224,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
                 GInputListAction action = inputList.actions[i];
                 if (enable) {
-                    actions.add(new QuickAccessAction(action.action, i, hover));
+                    actions.add(new QuickAccessAction(action.action, action.keyStroke, i, hover));
                 }
             }
         }
@@ -349,6 +354,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 return actionSID;
         }
 
+        Integer inputActionIndex = getInputActionIndex(editEvent, false);
+        if(inputActionIndex != null) {
+            contextAction.set(inputActionIndex);
+            return CHANGE;
+        }
+
+        GType changeType = getChangeType();
+        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+    }
+
+    public Integer getInputActionIndex(Event editEvent, boolean isEditing) {
         GInputList inputList;
         if (KEYDOWN.equals(editEvent.getType()) && (inputList = getInputList()) != null) {
             GKeyStroke keyStroke = null;
@@ -357,17 +373,30 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 if (action.keyStroke != null) {
                     if (keyStroke == null)
                         keyStroke = getKeyStroke(editEvent);
-                    if (keyStroke.equals(action.keyStroke)) {
-                        contextAction.set(i);
-                        return CHANGE;
+                    if (keyStroke.equals(action.keyStroke) && bindEditing(action.editingBindingMode, isEditing)) {
+                        return i;
                     }
                 }
             }
         }
-
-        GType changeType = getChangeType();
-        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+        return null;
     }
+
+    private boolean bindEditing(GBindingMode bindEditing, boolean isEditing) {
+        switch (bindEditing) {
+            case AUTO:
+            case ALL:
+                return true;
+            case NO:
+                return !isEditing;
+            case ONLY:
+                return isEditing;
+            case INPUT:
+            default:
+                throw new UnsupportedOperationException("Unsupported bindingMode " + bindEditing);
+        }
+    }
+
     public boolean isFilterChange(Event editEvent, Result<Boolean> contextAction) {
         return GEditBindingMap.isDefaultFilterChange(editEvent, contextAction, baseType.getEditEventFilter());
     }
@@ -476,7 +505,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public static String getChangeKeyToolTipFormat() {
         return createTooltipHorizontalSeparator() + "<b>" + getMessages().propertyTooltipHotkey() + ":</b> %s<br>";
     }
-            
+    public String getQuickActionTooltipText(GKeyStroke keyStroke) {
+        return keyStroke != null ? ("<b>" + getMessages().propertyTooltipHotkey() + ":</b> " + keyStroke) : null;
+    }
+
     public String getTooltipText(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
         String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";

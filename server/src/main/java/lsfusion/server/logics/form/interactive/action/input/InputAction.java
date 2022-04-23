@@ -97,7 +97,7 @@ public class InputAction extends SystemExplicitAction {
 
     private AsyncMapInputList<ClassPropertyInterface> getMapInputList() {
         return new AsyncMapInputList<ClassPropertyInterface>(
-                contextActions.mapListValues(value -> new AsyncMapInputListAction<>(value.image, value.getAsyncEventExec(), value.quickAccessList)),
+                contextActions.mapListValues(value -> new AsyncMapInputListAction<>(value.image, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList)),
                 !(valueClass instanceof DataClass));
     }
 

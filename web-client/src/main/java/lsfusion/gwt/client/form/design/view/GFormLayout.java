@@ -183,6 +183,8 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public void updatePanels() {
         FlexPanel.updatePanels(getMainView());
+
+        onResize();
     }
 
     private boolean updateContainersVisibility(GContainer container, long requestIndex) {
