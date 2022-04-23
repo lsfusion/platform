@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.i18n.client.NumberFormat;
+import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -9,19 +9,17 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
 
-public class IntegralCellEditor extends TextBasedCellEditor {
-    protected final NumberFormat format;
-
+public class IntegralCellEditor extends TextBasedCellEditor implements FormatCellEditor {
     protected final GIntegralType type;
 
     public IntegralCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property) {
-        this(type, editManager, property, NumberFormat.getDecimalFormat());
+        super(editManager, property);
+        this.type = type;
     }
 
-    public IntegralCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property, NumberFormat format) {
-        super(editManager, property);
-        this.format = format;
-        this.type = type;
+    @Override
+    public GFormatType getFormatType() {
+        return type;
     }
 
     @Override
@@ -40,15 +38,7 @@ public class IntegralCellEditor extends TextBasedCellEditor {
             return null;
         } else {
             inputText = inputText.replace(" ", "").replace(GIntegralType.UNBREAKABLE_SPACE, "");
-            return (!onCommit && "-".equals(inputText)) ? true : type.parseString(inputText, property.pattern);
+            return (!onCommit && "-".equals(inputText)) ? true : super.tryParseInputText(inputText, onCommit);
         }
-    }
-
-    @Override
-    protected String tryFormatInputText(Object value) {
-        if (value instanceof Number) {
-            return type.formatDouble(((Number) value).doubleValue(), property.pattern);
-        }
-        return "";
     }
 }

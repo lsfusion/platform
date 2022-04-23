@@ -13,47 +13,44 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
+import java.sql.Time;
 import java.text.ParseException;
+import java.util.Date;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeFormat;
 import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeShortFormat;
 import static lsfusion.gwt.client.classes.data.GDateType.parseDate;
 
-public class GTimeType extends GFormatType<DateTimeFormat> {
+public class GTimeType extends GADateType {
     public static GTimeType instance = new GTimeType();
 
     @Override
-    public DateTimeFormat getFormat(String pattern) {
+    protected DateTimeFormat getFormat(String pattern) {
         return GwtSharedUtils.getTimeFormat(pattern);
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateCellRenderer(property);
-    }
-
-    @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return new TimeCellEditor(editManager, editProperty);
+        return new TimeCellEditor(this, editManager, editProperty);
     }
 
     @Override
-    public GTimeDTO parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : GTimeDTO.fromDate(parseDate(value, getDefaultTimeFormat(), getDefaultTimeShortFormat()));
+    protected DateTimeFormat[] getFormats(String pattern) {
+        return new DateTimeFormat[] {GwtSharedUtils.getTimeFormat(pattern), getDefaultTimeShortFormat()};
     }
 
     @Override
-    protected Object getDefaultWidthValue() {
-        return GDateTimeType.getWideFormattableDateTime();
+    public Object fromDate(Date date) {
+        return GTimeDTO.fromDate(date);
+    }
+
+    @Override
+    public Time toDate(Object value) {
+        return ((GTimeDTO) value).toTime();
     }
 
     @Override
     public String toString() {
         return ClientMessages.Instance.get().typeTimeCaption();
-    }
-
-    @Override
-    public GEditBindingMap.EditEventFilter getEditEventFilter() {
-        return GEditBindingMap.numberEventFilter;
     }
 }

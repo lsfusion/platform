@@ -11,8 +11,9 @@ import com.google.gwt.user.datepicker.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
-import lsfusion.gwt.client.classes.data.GDateType;
-import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.classes.data.GADateType;
+import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -21,17 +22,24 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import java.text.ParseException;
 import java.util.Date;
 
-public class DateCellEditor extends TextBasedPopupCellEditor {
-
-    private static final DateTimeFormat format = GwtSharedUtils.getDefaultDateFormat(true);
+public class DateCellEditor extends TextBasedPopupCellEditor implements FormatCellEditor {
 
     protected GDatePicker datePicker;
 
-    public DateCellEditor(EditManager editManager, GPropertyDraw property) {
+    protected GADateType type;
+
+    public DateCellEditor(GADateType type, EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
+
+        this.type = type;
     }
 
-    protected Widget createPopupComponent(Element parent) {
+    @Override
+    public GFormatType getFormatType() {
+        return type;
+    }
+
+    protected Widget createPopupComponent(Element parent, Object oldValue) {
         ResizableVerticalPanel panel = new ResizableVerticalPanel();
         datePicker = new GDatePicker();
         panel.add(datePicker);
@@ -46,59 +54,27 @@ public class DateCellEditor extends TextBasedPopupCellEditor {
                 }
             }
         }, DoubleClickEvent.getType());
-        return panel;
-    }
 
-    @Override
-    public void start(Event event, Element parent, Object oldValue) {
-        String input = null;
-        boolean selectAll = true;
-        if (GKeyStroke.isCharDeleteKeyEvent(event)) {
-            input = "";
-            selectAll = false;
-        } else if (GKeyStroke.isCharAddKeyEvent(event)) {
-            input = String.valueOf((char) event.getCharCode());
-            selectAll = false;
-        }
 
-        Date oldDate = valueAsDate(oldValue);
-
-        super.start(event, parent, oldDate);
-        GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
-
-        if (oldDate != null) {
+        if (oldValue != null) {
+            Date oldDate = type.toDate(oldValue);
             datePicker.setValue(oldDate);
             datePicker.setCurrentMonth(oldDate);
         } else {
             datePicker.setValue(new Date());
         }
-
-        popup.addAutoHidePartner(editBox);
-        editBox.setValue(
-                input != null ? input : formatToString(oldDate != null ? oldDate : new Date())
-        );
-
-        editBox.focus();
-        if (selectAll)
-            editBox.select();
+        return panel;
     }
 
-    protected String formatToString(Date date) {
-        return format.format(date);
-    }
-
-    protected Date valueAsDate(Object value) {
-        return value instanceof GDateDTO ? ((GDateDTO) value).toDate() : null;
+    protected Date preProceedDate(Date date) {
+        return date;
     }
 
     protected void onDateChanged(ValueChangeEvent<Date> event, Element parent) {
-        editBox.setValue(formatToString(event.getValue()));
+        setInputValue(type.fromDate(preProceedDate(event.getValue())));
+        editBox.focus();
     }
 
-    protected Object parseString(String value) throws ParseException {
-        return GDateType.instance.parseString(value, property.pattern);
-    }
-    
     public static class GDatePicker extends DatePicker {
         public GDatePicker() {
             super(new DefaultMonthSelector(), new DefaultCalendarView(), new CalendarModel() {

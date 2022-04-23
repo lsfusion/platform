@@ -394,15 +394,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public void setUserPattern(String pattern) {
-        if(baseType instanceof GFormatType) {
+        if(baseType instanceof GFormatType)
             this.pattern = pattern != null ? pattern : defaultPattern;
-
-            CellRenderer renderer = getCellRenderer();
-            if (renderer instanceof FormatCellRenderer) {
-                ((FormatCellRenderer) renderer).updateFormat();
-            } else
-                assert renderer instanceof CustomCellRenderer;
-        }
     }
 
     public Object parsePaste(String s, GType parseType) {
@@ -649,8 +642,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return captionHeight != null ? captionHeight : -1;
     }
 
-    public Object getFormat() {
-        return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType)).getFormat(pattern);
+    public GFormatType getFormatType() {
+        return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType));
     }
 
     public Integer getAutoSizeValueHeight(GFont parentFont) {

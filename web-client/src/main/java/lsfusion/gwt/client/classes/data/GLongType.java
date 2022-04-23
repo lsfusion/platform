@@ -18,8 +18,8 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    public Long parseString(String s, String pattern) throws ParseException {
-        return parseToDouble(s, pattern).longValue();
+    protected Object convertDouble(Double doubleValue) {
+        return doubleValue.longValue();
     }
 
     @Override

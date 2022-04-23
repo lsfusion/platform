@@ -17,6 +17,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -85,16 +86,20 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
         //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
         inputElement.focus();
-        setValue(inputElement, value);
+        setInputValue(inputElement, value);
 
         if (selectAll) {
             inputElement.select();
         }
     }
 
-    private native void setValue(Element element, Object value) /*-{
-        element.value = value;
-    }-*/;
+    protected void setInputValue(InputElement element, Object value) {
+        setInputValue(element, tryFormatInputText(value));
+    }
+
+    private void setInputValue(InputElement element, String value) {
+        element.setValue(value);
+    }
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
@@ -397,11 +402,25 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     }
 
     protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        return inputText == null || inputText.isEmpty() ? null : inputText;
+        if(inputText == null || inputText.isEmpty())
+            return null;
+
+        if(this instanceof FormatCellEditor) {
+            GFormatType formatType = ((FormatCellEditor) this).getFormatType();
+            return formatType.parseString(inputText, property.pattern);
+        }
+        return inputText;
     }
 
     protected String tryFormatInputText(Object value) {
-        return value == null ? "" : value.toString();
+        if(value == null)
+            return "";
+
+        if(this instanceof FormatCellEditor) {
+            GFormatType formatType = ((FormatCellEditor) this).getFormatType();
+            return formatType.formatString(value, property.pattern, true);
+        }
+        return value.toString();
     }
 
     private class CustomSuggestBox extends SuggestBox {

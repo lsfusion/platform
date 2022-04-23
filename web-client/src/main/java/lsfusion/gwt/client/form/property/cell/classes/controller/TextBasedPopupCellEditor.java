@@ -3,13 +3,13 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-
-import java.text.ParseException;
 
 public abstract class TextBasedPopupCellEditor extends TextBasedCellEditor {
 
@@ -33,21 +33,19 @@ public abstract class TextBasedPopupCellEditor extends TextBasedCellEditor {
     public void start(Event event, Element parent, Object oldValue) {
         super.start(event, parent, oldValue);
         editBox = getInputElement(parent);
+
+        GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent, oldValue), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
+        popup.addAutoHidePartner(editBox);
+    }
+
+    protected abstract Widget createPopupComponent(Element parent, Object oldValue);
+
+    protected void setInputValue(Object value) {
+        setInputValue(editBox, value);
     }
 
     @Override
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         popup.hide();
     }
-
-    @Override
-    public Object getValue(Element parent, Integer contextAction) {
-        try {
-            return parseString(editBox.getValue());
-        } catch (ParseException ignored) {
-            return RequestValueCellEditor.invalid;
-        }
-    }
-
-    protected abstract Object parseString(String value) throws ParseException;
 }

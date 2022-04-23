@@ -9,7 +9,7 @@ public class GDateIntervalType extends GIntervalType{
     public static GDateIntervalType instance = new GDateIntervalType();
 
     @Override
-    public DateTimeFormat getFormat(String pattern) {
+    public DateTimeFormat getSingleFormat(String pattern) {
         return getDateFormat(pattern, false);
     }
 

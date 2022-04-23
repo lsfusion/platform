@@ -6,7 +6,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.NumberCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -22,7 +22,7 @@ public class GObjectType extends GType {
 
     @Override
     public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberCellRenderer(property);
+        return new IntegralCellRenderer(property);
     }
 
     @Override

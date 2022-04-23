@@ -6,7 +6,7 @@ import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.NumericCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.NumberCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -30,7 +30,7 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new NumberCellRenderer(property);
+        return new IntegralCellRenderer(property);
     }
 
     @Override
@@ -58,12 +58,14 @@ public class GNumericType extends GDoubleType {
 
     @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return new NumericCellEditor(this, editManager, editProperty, getEditFormat(editProperty));
+        return new NumericCellEditor(this, editManager, editProperty);
     }
 
     @Override
     public Object parseString(String s, String pattern) throws ParseException {
-        Double toDouble = parseToDouble(s, pattern); // сперва проверим, конвертится ли строка в число вообще
+        Object parsed = super.parseString(s, pattern);
+        if(parsed == null)
+            return parsed;
 
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator(); // а затем посчитаем цифры
 
@@ -82,7 +84,7 @@ public class GNumericType extends GDoubleType {
             throwParseException(s);
         }
         
-        return toDouble;
+        return parsed;
     }
     
     private void throwParseException(String s) throws ParseException {

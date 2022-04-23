@@ -18,8 +18,8 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
-    public Integer parseString(String s, String pattern) throws ParseException {
-        return parseToDouble(s, pattern).intValue();
+    protected Object convertDouble(Double doubleValue) {
+        return doubleValue.intValue();
     }
 
     @Override

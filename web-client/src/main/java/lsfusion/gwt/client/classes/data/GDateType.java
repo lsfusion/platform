@@ -17,43 +17,38 @@ import java.util.Date;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.getDateFormat;
 
-public class GDateType extends GFormatType<DateTimeFormat> {
+public class GDateType extends GADateType {
 
     public static GDateType instance = new GDateType();
 
     @Override
-    public DateTimeFormat getFormat(String pattern) {
+    protected DateTimeFormat getFormat(String pattern) {
         return getDateFormat(pattern, false);
     }
 
     @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return new DateCellEditor(editManager, editProperty);
+        return new DateCellEditor(this, editManager, editProperty);
     }
 
     @Override
-    public GDateDTO parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : GDateDTO.fromDate(parseDate(value, getDateFormat(pattern, true)));
+    protected DateTimeFormat[] getFormats(String pattern) {
+        return new DateTimeFormat[] {getDateFormat(pattern, true)};
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateCellRenderer(property);
+    public Object fromDate(Date date) {
+        return GDateDTO.fromDate(date);
     }
 
     @Override
-    protected Object getDefaultWidthValue() {
-        return GDateTimeType.getWideFormattableDateTime();
+    public Date toDate(Object value) {
+        return ((GDateDTO) value).toDate();
     }
 
     @Override
     public String toString() {
         return ClientMessages.Instance.get().typeDateCaption();
-    }
-
-    @Override
-    public GEditBindingMap.EditEventFilter getEditEventFilter() {
-        return GEditBindingMap.numberEventFilter;
     }
 
     public static Date parseDate(String value, DateTimeFormat... formats) throws ParseException {

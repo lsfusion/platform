@@ -2,18 +2,20 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.TimeZone;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.view.IntervalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
 
-public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.client.DateTimeFormat> {
+public abstract class GIntervalType extends GFormatType {
 
     public static GIntervalType getInstance(String type) {
         switch (type) {
@@ -29,14 +31,15 @@ public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.clie
         return null;
     }
 
+    public abstract DateTimeFormat getSingleFormat(String pattern);
+
+    protected boolean isSingleLocal() {
+        return true;
+    }
+
     @Override
     public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new FormatCellRenderer<Object, DateTimeFormat>(property) {
-            @Override
-            public String format(Object value) {
-                return formatObject(value);
-            }
-        };
+        return new IntervalCellRenderer(property);
     }
 
     @Override
@@ -45,32 +48,76 @@ public abstract class GIntervalType extends GFormatType<com.google.gwt.i18n.clie
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
-        throw new ParseException("GInterval doesn't support conversion from string", 0);
+    protected Object getDefaultWidthValue() {
+        return new BigDecimal("1636629071.1636629071");
     }
 
     @Override
-    public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        return formatObject("1636629071.1636629071"); // some dateTimeInterval for default width
+    public Object parseString(String s, String pattern) throws ParseException {
+        if(s.isEmpty())
+            return null;
+
+        String[] parts = s.split(" - ");
+        DateTimeFormat singleFormat = getSingleFormat(pattern);
+        return fromDate(singleFormat.parse(parts[0]), singleFormat.parse(parts[1]));
     }
 
-    public String format(Long epoch) {
-        return getFormat(null).format(new Date(epoch * 1000), TimeZone.createTimeZone(0));
+    private static transient TimeZone UTCZone = TimeZone.createTimeZone(0);
+    private static String format(DateTimeFormat format, boolean isLocal, Date utcDate) {
+        if(isLocal)
+            return format.format(utcDate, UTCZone); // formatting in utc
+
+        return format.format(utcDate);
     }
 
-    public String formatObject(Object value) {
-        return format(getEpoch(value, true)) + " - " + format(getEpoch(value, false));
+    @Override
+    public String formatString(Object value, String pattern, boolean edit) {
+        if(value == null)
+            return null;
+
+        DateTimeFormat singleFormat = getSingleFormat(pattern);
+        boolean local = isSingleLocal();
+        return format(singleFormat, local, getUTCDate(value, true)) + " - " + format(singleFormat, local, getUTCDate(value, false));
     }
 
     public abstract String getIntervalType();
 
-    public Date getDate(Object value, boolean from) {
-        return value != null ? getFormat(null).parse(format(getEpoch(value, from))) : new Date();
+
+    public Date toDate(Object value, boolean from) {
+        if(value == null)
+            return new Date();
+
+        Date utcDate = getUTCDate(value, from);
+        boolean local = isSingleLocal();
+        if(local) { // here is tricky for local dates we convert to string (to get "absolute" params, and then parsing back)
+            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
+            return format.parse(format.format(utcDate, UTCZone));
+        }
+
+        return utcDate;
     }
 
-    protected Long getEpoch(Object value, boolean from) {
+    private long fromDate(Date date) {
+        boolean local = isSingleLocal();
+        if(local) { // here is tricky for local dates we convert to string (to get "absolute" params, and then parsing back)
+//            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
+//            date = format.parse(format.format(date), UTCZone);
+            date = GwtClientUtils.fromJsDate(GwtClientUtils.getUTCDate(1900 + date.getYear(), date.getMonth(), date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds()));
+        }
+        return date.getTime();
+    }
+
+    public Object fromDate(Date from, Date to) {
+        if(from == null || to == null)
+            return null;
+
+        return new BigDecimal(fromDate(from) + "." + fromDate(to));
+    }
+
+    public static Date getUTCDate(Object value, boolean from) {
+        assert value instanceof BigDecimal;
         String object = String.valueOf(value);
         int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+        return new Date(Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1)));
     }
 }

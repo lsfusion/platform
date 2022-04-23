@@ -1,18 +1,20 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public abstract class FormatCellRenderer<T, F> extends TextBasedCellRenderer<T> {
-    protected F format;
+public abstract class FormatCellRenderer<T> extends TextBasedCellRenderer<T> {
+
+    protected GFormatType getFormatType() {
+        return property.getFormatType();
+    }
+
+    @Override
+    public String format(T value) {
+        return getFormatType().formatString(value, property.pattern, false);
+    }
 
     public FormatCellRenderer(GPropertyDraw property) {
         super(property);
-        updateFormat();
-    }
-
-    public void updateFormat() {
-        this.format = (F) property.getFormat();
     }
 }
