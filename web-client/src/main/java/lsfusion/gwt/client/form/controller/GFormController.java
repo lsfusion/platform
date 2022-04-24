@@ -2072,8 +2072,11 @@ public class GFormController implements EditManager {
             cellEditor = type.createGridCellEditor(this, property, inputList);
 
         if (cellEditor != null) {
-            if(!hasOldValue) // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
+            if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
                 oldValue = editContext.getValue();
+                if(oldValue == null)
+                    oldValue = cellEditor.getDefaultNullValue();
+            }
 
             edit(cellEditor, event, oldValue, beforeCommit, afterCommit, cancel, editContext, editAsyncValuesSID, -1);
         } else

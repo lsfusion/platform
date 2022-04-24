@@ -66,6 +66,11 @@ public class DateCellEditor extends TextBasedPopupCellEditor implements FormatCe
         return panel;
     }
 
+    @Override
+    public Object getDefaultNullValue() {
+        return type.fromDate(new Date());
+    }
+
     protected Date preProceedDate(Date date) {
         return date;
     }

@@ -10,6 +10,8 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
+import java.util.Date;
+
 public class IntervalCellEditor extends TextBasedPopupCellEditor implements FormatCellEditor  {
 
     private final String intervalType;
@@ -34,6 +36,7 @@ public class IntervalCellEditor extends TextBasedPopupCellEditor implements Form
     }
 
     public SimplePanel createPopupComponent(Element parent, Object oldValue) {
+        assert oldValue != null;
         createPicker(parent, GwtClientUtils.toJsDate(type.toDate(oldValue, true)),
                 GwtClientUtils.toJsDate(type.toDate(oldValue, false)),
                 type.getSingleFormat(property.pattern).getPattern(), false);
@@ -42,6 +45,11 @@ public class IntervalCellEditor extends TextBasedPopupCellEditor implements Form
         popup.addAutoHidePartner(getPickerElement());
         editBox.click(); // need to dateRangePicker opens immediately. because we use an editBox
         return new SimplePanel();
+    }
+
+    @Override
+    public Object getDefaultNullValue() {
+        return type.fromDate(new Date(), new Date());
     }
 
     protected void pickerApply(Element parent) {
