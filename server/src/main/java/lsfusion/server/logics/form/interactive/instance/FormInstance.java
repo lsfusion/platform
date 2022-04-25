@@ -108,6 +108,7 @@ import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.FormScheduler;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
@@ -972,6 +973,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             dataChanged = true;
         } else
             session.changeClass(objectInstance, dataObject, cls);
+    }
+
+    @ThisMessage
+    public void executeFormSchedulerAction(final ExecutionStack stack, int index) throws SQLException, SQLHandledException {
+        FormScheduler formScheduler = entity.formSchedulers.getOrderSet().get(index);
+        formScheduler.actionObjectEntity.getInstance(instanceFactory).execute(this, stack, null, null, this);
     }
 
     @ThisMessage

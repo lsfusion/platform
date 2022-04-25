@@ -99,6 +99,7 @@ import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
@@ -795,7 +796,11 @@ public class ScriptingLogicsModule extends LogicsModule {
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
         form.setModalityType(modalityType);
-        form.setAutoRefresh(autoRefresh);
+
+        if(autoRefresh > 0) {
+            form.addScriptedFormSchedule((ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty(), autoRefresh, false, getVersion());
+        }
+
         form.setLocalAsync(localAsync);
 
         return form;

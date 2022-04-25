@@ -66,6 +66,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     // events : properties
 
+    ServerResponse executeFormSchedulerAction(long requestIndex, long lastReceivedRequestIndex, int index) throws RemoteException;
+
     ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException;
 
     ServerResponse executeNotificationAction(long requestIndex, long lastReceivedRequestIndex, int idNotification) throws RemoteException;
