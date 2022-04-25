@@ -12,6 +12,9 @@ import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.MonitorServer;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
+import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.StackNewThread;
+import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -494,7 +497,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
 
             return currentCal.getTimeInMillis() >= calendarFrom.getTimeInMillis() && currentCal.getTimeInMillis() <= calendarTo.getTimeInMillis();
         }
-        
+
+        @StackNewThread
+        @StackMessage("scheduler.scheduled.task")
+        @ThisMessage
         public boolean run(ScheduledTaskDetail detail) {
             ExecutionStack stack = getStack(); // иначе assertion'ы внутри с проверкой контекста валятся
 

@@ -433,6 +433,14 @@ public class ExecutionStackAspect {
         return ExceptionUtils.getExStackTrace(ExceptionUtils.getStackTrace(), getStackString());
     }
 
+    public static String getLSFStack(Thread thread) {
+        try {
+            return thread == null ? null : getStackString(thread, true, true);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static String getStackString(Thread thread, boolean checkConcurrent, boolean cut) {
         List<Object> elements = getStackList(Collections.singleton(thread), checkConcurrent, false);
         StringBuilder result = new StringBuilder();

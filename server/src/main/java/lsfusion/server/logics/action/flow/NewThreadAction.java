@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -47,19 +48,41 @@ public class NewThreadAction extends AroundAspectAction {
         }
     }
 
+    // in theory we can also pass Thread, and then add ExecutionStackAspect.getStackString to message (to get multi thread stacj)
+    @StackNewThread
+    @StackMessage("NEWTHREAD")
+    @ThisMessage
+    protected void run(ExecutionContext<PropertyInterface> context, @ParamMessage (profile = false) LazyThreadStack callThreadStack) {
+        try {
+            proceed(context);
+        } catch (Throwable t) {
+            ServerLoggers.schedulerLogger.error("New thread error : ", t);
+            throw Throwables.propagate(t);
+        }
+    }
+
+    private static class LazyThreadStack {
+
+        private final Thread thread;
+
+        public LazyThreadStack(Thread thread) {
+            this.thread = thread;
+        }
+
+        @Override
+        public String toString() {
+            return ExecutionStackAspect.getLSFStack(thread);
+        }
+    }
+
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
+        Thread callThread = Thread.currentThread();
         if (connectionProp != null) {
             ObjectValue connectionObject = connectionProp.readClasses(context);
             if(connectionObject instanceof DataObject)
-                context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject, (env, stack) -> {
-                    try {
-                        proceed(context.override(env, stack));
-                    } catch (Throwable t) {
-                        ServerLoggers.schedulerLogger.error("New thread error : ", t);
-                        throw Throwables.propagate(t);
-                    }
-                });
+                context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject,
+                        (env, stack) -> run(context.override(env, stack), new LazyThreadStack(callThread)));
         } else {
             context.getSession().registerThreadStack();
             Long delay = delayProp != null ? ((Number) delayProp.read(context, context.getKeys())).longValue() : 0L;
@@ -68,16 +91,14 @@ public class NewThreadAction extends AroundAspectAction {
             Runnable runContext = () -> {
                 ExecutionStack stack = ThreadLocalContext.getStack();
                 try {
-                    try {
-                        proceed(context.override(stack));
-                    } finally {
-                        if (periodProp == null) {
+                    run(context.override(stack), new LazyThreadStack(callThread));
+                } finally {
+                    if (periodProp == null) {
+                        try {
                             context.getSession().unregisterThreadStack();
+                        } catch (SQLException ignored) {
                         }
                     }
-                } catch (Throwable t) {
-                    ServerLoggers.schedulerLogger.error("New thread error : ", t);
-                    throw Throwables.propagate(t);
                 }
             };
             boolean externalExecutor = context.getExecutorService() != null;
