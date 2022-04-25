@@ -136,7 +136,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         delayTimer = execTimer;
 
         JTable table = tableEditor.getTable();
-        asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(Math.max(table.getEditingRow(), 0), Math.max(table.getEditingColumn(), 0)), query, actionSID,
+        boolean isEditing = table.isEditing();
+        int row = isEditing ? table.getEditingRow() : 0;
+        int column = isEditing ? table.getEditingColumn() : 0;
+        asyncChange.getForm().getAsyncValues(property, asyncChange.getColumnKey(Math.max(row, 0), Math.max(column, 0)), query, actionSID,
                 new AsyncCallback<Pair<List<ClientAsync>, Boolean>>() {
                     @Override
                     public void done(Pair<List<ClientAsync>, Boolean> result) {
