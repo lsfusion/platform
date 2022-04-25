@@ -39,16 +39,15 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     public ArSet(ArSet<K> set) {
-        if (!set.isStored()) {
-            if (needSwitchToStored(set)) {
-                switchToStored(set.size, set.array);
-            } else {
-                size = set.size;
-                array = set.array.clone();
-            }
-        } else {
+        if (set.isStored()) {
             StoredArSet<K> storedSet = new StoredArSet<>(set.stored());
             switchToStored(storedSet);
+        } else if (needToBeStored(set)) {
+            switchToStored(set.size, set.array);
+        }
+        if (!isStored()) {
+            size = set.size;
+            array = set.array.clone();
         }
     }
 
@@ -311,9 +310,13 @@ public class ArSet<K> extends AMSet<K> {
             if (size == 1)
                 return SetFact.singleton(single());
 
-            if (needSwitchToStored(this)) {
+            if (needToBeStored(this)) {
                 sortInplace();
-                return new ArIndexedSet<>(new StoredArray<>((K[]) array, StoredArraySerializer.getInstance()));
+                try {
+                    return new ArIndexedSet<>(new StoredArray<>((K[]) array, StoredArraySerializer.getInstance()));
+                } catch (StoredArray.StoredArrayCreationException e) {
+                    e.printStackTrace();
+                }
             }
 
             if (array.length > size * SetFact.factorNotResize) {
@@ -394,21 +397,24 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needToBeStored(this)) {
             switchToStored(size, array);
         }
     }
 
-    private static boolean needSwitchToStored(ArSet<?> set) {
-        return !set.isStored() && set.size() > LIMIT 
-                && StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
+    private static boolean needToBeStored(ArSet<?> set) {
+        return !set.isStored() && set.size() > LIMIT && canBeStored(set);
+    }
+
+    private static boolean canBeStored(ArSet<?> set) {
+        return StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
     }
 
     private void switchToStored(int size, Object[] array) {
         try {
             StoredArSet<K> storedSet = new StoredArSet<>(size, (K[]) array, StoredArraySerializer.getInstance());
             switchToStored(storedSet);
-        } catch (RuntimeException e) {
+        } catch (StoredArray.StoredArrayCreationException e) {
             e.printStackTrace();
         }
     }

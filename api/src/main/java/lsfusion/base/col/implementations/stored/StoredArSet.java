@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 public class StoredArSet<K> extends AMSet<K> {
     private final StoredArray<K> array;
 
-    public StoredArSet(int size, K[] array, StoredArraySerializer serializer) {
+    public StoredArSet(int size, K[] array, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
         this.array = new StoredArray<>(size, array, serializer, null);
     }
 
@@ -18,7 +18,7 @@ public class StoredArSet<K> extends AMSet<K> {
         this.array = new StoredArray<>(size, serializer);
     }
 
-    public StoredArSet(K[] array, StoredArraySerializer serializer) {
+    public StoredArSet(K[] array, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
         this(array.length, array, serializer);
     }
     

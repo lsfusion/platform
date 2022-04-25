@@ -25,14 +25,14 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createWithArray() {
+    public void createWithArray() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         assertEquals(stored.size(), array.length);
     }
 
     @Test
-    public void createWithZeroLengthArray() {
+    public void createWithZeroLengthArray() throws StoredArray.StoredArrayCreationException {
         StoredArray<StoredClass> stored = new StoredArray<>(new StoredClass[0], serializer);
         assertEquals(stored.size(), 0);
     }
@@ -50,14 +50,14 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createWithArrayAndGet() {
+    public void createWithArrayAndGet() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         checkEquality(array, stored);
     }
 
     @Test
-    public void createWithArrayAndSize() {
+    public void createWithArrayAndSize() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         final int size = 4;
         StoredArray<StoredClass> stored = new StoredArray<>(size, array, serializer, null);
@@ -68,7 +68,7 @@ public class StoredArrayTest {
     } 
     
     @Test
-    public void createWithArrayAndGetReversed() {
+    public void createWithArrayAndGetReversed() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         for (int i = stored.size() - 1; i >= 0; --i) {
@@ -77,7 +77,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createWithCopyConstructor() {
+    public void createWithCopyConstructor() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
         StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         StoredArray<StoredClass> target = new StoredArray<>(stored);
@@ -85,7 +85,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void checkArrayCopy() {
+    public void checkArrayCopy() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
         StoredArray<StoredClass> source = new StoredArray<>(array, serializer);
         StoredArray<StoredClass> target = new StoredArray<>(source);
@@ -94,7 +94,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void checkUnserializableObjectAssert() {
+    public void checkUnserializableObjectAssert() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         array[3] = new StoredTestDataGenerators.OtherStoredClass("triangle", 5, true);
         thrown.expect(RuntimeException.class);
@@ -123,7 +123,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createAndReverseMultipleTimes() {
+    public void createAndReverseMultipleTimes() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         int n = stored.size();
@@ -139,7 +139,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void randomAddWithIndex() {
+    public void randomAddWithIndex() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.simpleArray();
         StoredArray<StoredClass> stored = new StoredArray<>(new StoredClass[array.length], serializer);
         int n = stored.size();
@@ -161,7 +161,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void createWithArrayWithNullsAndGet() {
+    public void createWithArrayWithNullsAndGet() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
         StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
         checkEquality(array, stored);
@@ -188,7 +188,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void squeeze() {
+    public void squeeze() throws StoredArray.StoredArrayCreationException {
         StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
         final DerivedStoredClass weighty = new DerivedStoredClass("LongStringStringString", 45, false, "                    ");
         StoredArray<StoredClass> stored = new StoredArray<>(array, serializer);
@@ -249,7 +249,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void stringArray() {
+    public void stringArray() throws StoredArray.StoredArrayCreationException {
         String[] strings = StoredTestDataGenerators.stringArray();
         StoredArray<String> stored = new StoredArray<>(strings, serializer);
         checkEquality(strings, stored);
@@ -261,7 +261,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void mixedArray() {
+    public void mixedArray() throws StoredArray.StoredArrayCreationException {
         Object[] objects = StoredTestDataGenerators.mixedArray();
         StoredArray<Object> stored = new StoredArray<>(objects, serializer);
         checkEquality(objects, stored);
@@ -273,7 +273,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void sort() {
+    public void sort() throws StoredArray.StoredArrayCreationException {
         StoredClass[] objects = StoredTestDataGenerators.largeSimpleArray();
         StoredClass[] sortedObjects = StoredTestDataGenerators.largeSortedArray();
         StoredArray<Object> stored = new StoredArray<>(objects, serializer);
@@ -285,7 +285,7 @@ public class StoredArrayTest {
     }
 
     @Test    
-    public void sortWithNulls() {
+    public void sortWithNulls() throws StoredArray.StoredArrayCreationException {
         Object[] objects = StoredTestDataGenerators.largeMixedArray();
         StoredArray<Object> stored = new StoredArray<>(objects, serializer);
         Arrays.sort(objects, (a, b) -> {
@@ -312,7 +312,7 @@ public class StoredArrayTest {
     }
 
     @Test
-    public void performanceTest() {
+    public void performanceTest() throws StoredArray.StoredArrayCreationException {
         StoredClass[] simpleArr = StoredTestDataGenerators.largeSimpleArray();
         StoredArray<StoredClass> simpleStored = new StoredArray<>(simpleArr, serializer);
         checkEquality(simpleArr, simpleStored);

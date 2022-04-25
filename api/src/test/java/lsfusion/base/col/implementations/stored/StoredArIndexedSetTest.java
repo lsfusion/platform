@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 public class StoredArIndexedSetTest {
     @Test
-    public void createWithArray() {
+    public void createWithArray() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = sortedArray();
         StoredArIndexedSet<StoredClass> result = new StoredArIndexedSet<>(arr, StoredArrayTest.serializer);
         assertEquals(arr.length, result.size());
@@ -21,7 +21,7 @@ public class StoredArIndexedSetTest {
     }
 
     @Test
-    public void createWithStoredArray() {
+    public void createWithStoredArray() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = sortedArray();
         StoredArIndexedSet<StoredClass> result = initSet(arr);
         assertEquals(arr.length, result.size());
@@ -34,7 +34,7 @@ public class StoredArIndexedSetTest {
     }
 
     @Test
-    public void createWithStoredArIndexedSet() {
+    public void createWithStoredArIndexedSet() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = sortedArray();
         StoredArIndexedSet<StoredClass> result = initSet(arr);
         StoredArIndexedSet<StoredClass> copy = new StoredArIndexedSet<>(result);
@@ -45,7 +45,7 @@ public class StoredArIndexedSetTest {
     }
 
     @Test
-    public void contains() {
+    public void contains() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = sortedArray();
         StoredClass other = new StoredClass("otner", 6, true);
         StoredArIndexedSet<StoredClass> result = initSet(arr);
@@ -58,7 +58,7 @@ public class StoredArIndexedSetTest {
         }
     }
     
-    private StoredArIndexedSet<StoredClass> initSet(StoredClass[] arr) {
+    private StoredArIndexedSet<StoredClass> initSet(StoredClass[] arr) throws StoredArray.StoredArrayCreationException {
         StoredArray<StoredClass> stored = new StoredArray<>(arr, StoredArrayTest.serializer);
         StoredArIndexedSet<StoredClass> result = new StoredArIndexedSet<>(stored);
         return result;

@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 public class StoredArIndexedMapTest {
     @Test
-    public void createWithArrays() {
+    public void createWithArrays() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keysArray = sortedArray();
         StoredClass[] valuesArray = simpleArray();
         StoredArIndexedMap<StoredClass, StoredClass> map =
@@ -18,7 +18,7 @@ public class StoredArIndexedMapTest {
     }
 
     @Test
-    public void createWithStored() {
+    public void createWithStored() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keysArray = sortedArray();
         StoredClass[] valuesArray = simpleArray();
         StoredArray<StoredClass> keys = new StoredArray<>(keysArray, StoredArrayTest.serializer);
@@ -43,7 +43,7 @@ public class StoredArIndexedMapTest {
     }
     
     @Test
-    public void mapValue() {
+    public void mapValue() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keys = sortedArray();
         int n = keys.length;
         String[] values = stringArray();
@@ -59,7 +59,7 @@ public class StoredArIndexedMapTest {
     }
 
     @Test
-    public void getObject() {
+    public void getObject() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keys = sortedArray();
         StoredClass[] values = simpleArray();
         StoredArIndexedMap<StoredClass, StoredClass> map =

@@ -48,12 +48,13 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
 
     public ArIndexedMap(ArIndexedMap<K, V> map, AddValue<K, V> addValue) {
         super(addValue);
-        if (needSwitchToStored(map)) {
-            switchToStored(map.size(), map.keys, map.values);
-        } else if (!map.isStored()) {
-            cloneKeysAndValues(map);
-        } else {
+        if (map.isStored()) {
             switchToStored(new StoredArIndexedMap<>(map.stored(), true));
+        } else if (needToBeStored(map)) {
+            switchToStored(map.size(), map.keys, map.values);
+        }
+        if (!isStored()) {
+            cloneKeysAndValues(map);
         }
     }
 
@@ -152,12 +153,11 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
         if (simple != null)
             return simple;
 
-        if (needSwitchToStored(this)) {
-            switchToStored(size, keys, values);
-            return stored().immutable();
-        }
-
         if (!isStored()) {
+            if (needToBeStored(this) && switchToStored(size, keys, values)) {
+                return stored().immutable();
+            }
+
             if (keys.length > size * SetFact.factorNotResize)
                 resize(size);
 
@@ -623,25 +623,30 @@ public class ArIndexedMap<K, V> extends AMRevMap<K, V> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needToBeStored(this)) {
             switchToStored(size, keys, values);
         }
     }
 
-    private boolean needSwitchToStored(ArIndexedMap<K, V> map) {
-        return !map.isStored() && map.size() > LIMIT
-                && StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0))
-                && StoredArraySerializer.getInstance().canBeSerialized(map.getValue(0));
+    private static boolean needToBeStored(ArIndexedMap<?, ?> map) {
+        return !map.isStored() && map.size() > LIMIT && canBeStored(map);
     }
 
-    private void switchToStored(int size, Object[] keys, Object[] values) {
+    private static boolean canBeStored(ArIndexedMap<?, ?> map) {
+        return StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0))
+            && StoredArraySerializer.getInstance().canBeSerialized(map.getValue(0));
+    }
+
+    private boolean switchToStored(int size, Object[] keys, Object[] values) {
         try {
             AddValue<K, V> addValue = (data instanceof AddValue ? (AddValue<K, V>) data : null);
             StoredArIndexedMap<K, V> storedMap =
                     new StoredArIndexedMap<>(size, (K[]) keys, (V[]) values, StoredArraySerializer.getInstance(), addValue);
             switchToStored(storedMap);
-        } catch (RuntimeException e) {
+            return true;
+        } catch (StoredArray.StoredArrayCreationException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

@@ -20,13 +20,13 @@ public class StoredArMap<K, V> extends AMRevMap<K, V> {
         this.values = new StoredArray<>(serializer);
     }
 
-    public StoredArMap(int size, K[] keys, V[] values, StoredArraySerializer serializer, AddValue<K, V> addValue) {
+    public StoredArMap(int size, K[] keys, V[] values, StoredArraySerializer serializer, AddValue<K, V> addValue) throws StoredArray.StoredArrayCreationException {
         super(addValue);
         this.keys = new StoredArray<>(size, keys, serializer, null);
         this.values = new StoredArray<>(size, values, serializer, null);
     }
 
-    public StoredArMap(int size, K[] keys, V[] values, StoredArraySerializer serializer) {
+    public StoredArMap(int size, K[] keys, V[] values, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
         this(size, keys, values, serializer, null);
     }
 

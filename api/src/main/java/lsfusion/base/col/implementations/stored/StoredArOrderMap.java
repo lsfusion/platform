@@ -39,7 +39,11 @@ public class StoredArOrderMap<K, V> extends AMWrapOrderMap<K, V, StoredArMap<K, 
         int[] order = new int[wrapMap.size()];
         StoredArIndexedMap<K, V> indexedMap = wrapMap.toStoredArIndexedMap(order);
         Integer[] objectOrder = IntStream.of(order).boxed().toArray(Integer[]::new);
-        return new StoredArOrderIndexedMap<>(indexedMap, new StoredArray<>(objectOrder, StoredArraySerializer.getInstance()));
+        try {
+            return new StoredArOrderIndexedMap<>(indexedMap, new StoredArray<>(objectOrder, StoredArraySerializer.getInstance()));
+        } catch (StoredArray.StoredArrayCreationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

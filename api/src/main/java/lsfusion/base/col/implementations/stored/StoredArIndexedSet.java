@@ -15,11 +15,11 @@ public class StoredArIndexedSet<K> extends AMSet<K> {
         this.array = array;
     }
 
-    public StoredArIndexedSet(K[] array, StoredArraySerializer serializer) {
+    public StoredArIndexedSet(K[] array, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
         this(array.length, array, serializer);
     }
     
-    public StoredArIndexedSet(int size, K[] array, StoredArraySerializer serializer) {
+    public StoredArIndexedSet(int size, K[] array, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
         this.array = new StoredArray<>(size, array, serializer, null);
     }
     

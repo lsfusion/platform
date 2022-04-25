@@ -9,21 +9,21 @@ import static org.junit.Assert.*;
 
 public class StoredArSetTest {
     @Test
-    public void createWithArray() {
+    public void createWithArray() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = simpleArray();
         StoredArSet<StoredClass> set = new StoredArSet<>(arr, StoredArrayTest.serializer);
         checkEquality(set, arr);
     }
 
     @Test
-    public void createWithStoredArray() {
+    public void createWithStoredArray() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = simpleArray();
         StoredArSet<StoredClass> set =  initSet(arr);
         checkEquality(set, arr);
     }
 
     @Test
-    public void createWithStoredArSet() {
+    public void createWithStoredArSet() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = simpleArray();
         StoredArSet<StoredClass> set = initSet(arr);
         StoredArSet<StoredClass> copy = new StoredArSet<>(set);
@@ -32,7 +32,7 @@ public class StoredArSetTest {
 
 
     @Test
-    public void contains() {
+    public void contains() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = simpleArray();
         StoredArSet<StoredClass> result = initSet(arr);
         for (StoredClass storedClass : arr) {
@@ -56,7 +56,7 @@ public class StoredArSetTest {
     }
     
     @Test
-    public void largeCreateRead() {
+    public void largeCreateRead() throws StoredArray.StoredArrayCreationException {
         StoredClass[] arr = largeSimpleArray();
         StoredArSet<StoredClass> set = new StoredArSet<>(arr.length, arr, StoredArrayTest.serializer);
         checkEquality(set, arr);
@@ -72,7 +72,7 @@ public class StoredArSetTest {
         checkEquality(set, arr);
     }
     
-    private StoredArSet<StoredClass> initSet(StoredClass[] arr) {
+    private StoredArSet<StoredClass> initSet(StoredClass[] arr) throws StoredArray.StoredArrayCreationException {
         StoredArray<StoredClass> stored = new StoredArray<>(arr, StoredArrayTest.serializer);
         return new StoredArSet<>(stored);
     }

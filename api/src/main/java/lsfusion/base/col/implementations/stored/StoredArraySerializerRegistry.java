@@ -72,8 +72,7 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
         }
     }
 
-    @Override
-    public int getId(Object o) {
+    private int getId(Object o) {
         if (o == null) {
             return NULL_ID;
         } 
@@ -136,9 +135,10 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
                     instance.register(ArList.class, ArList::serialize, ArList::deserialize);
                     instance.register(ArSet.class, ArSet::serialize, ArSet::deserialize);
                     instance.register(HSet.class, HSet::serialize, HSet::deserialize);
-
                     instance.register(ArIndexedSet.class, ArIndexedSet::serialize, ArIndexedSet::deserialize);
+
                     instance.register(ArOrderSet.class, ArOrderSet::serialize, ArOrderSet::deserialize);
+                    instance.register(ArOrderIndexedSet.class, ArOrderIndexedSet::serialize, ArOrderIndexedSet::deserialize);
                     instance.register(HOrderSet.class, HOrderSet::serialize, HOrderSet::deserialize);
 
                     instance.register(ArMap.class, ArMap::serialize, ArMap::deserialize);
@@ -146,6 +146,7 @@ public class StoredArraySerializerRegistry implements StoredArraySerializer {
                     instance.register(ArIndexedMap.class, ArIndexedMap::serialize, ArIndexedMap::deserialize);
 
                     instance.register(ArOrderMap.class, ArOrderMap::serialize, ArOrderMap::deserialize);
+                    instance.register(ArOrderIndexedMap.class, ArOrderIndexedMap::serialize, ArOrderIndexedMap::deserialize);
                     instance.register(HOrderMap.class, HOrderMap::serialize, HOrderMap::deserialize);
                 }
             }

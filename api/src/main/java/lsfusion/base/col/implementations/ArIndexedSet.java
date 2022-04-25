@@ -37,14 +37,15 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     public ArIndexedSet(ArIndexedSet<K> set) {
-        if (needSwitchToStored(set)) {
-            switchToStored(set.size, set.array);
-        } else if (!set.isStored()) {
-            size = set.size;
-            array = set.array.clone();
-        } else {
+        if (set.isStored()) {
             StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(set.stored().getStoredArray());
             switchToStored(storedSet);
+        } else if (needToBeStored(set)) {
+            switchToStored(set.size, set.array);
+        }
+        if (!isStored()) {
+            size = set.size;
+            array = set.array.clone();
         }
     }
 
@@ -123,8 +124,7 @@ public class ArIndexedSet<K> extends AMSet<K> {
         if (size() == 1)
             return SetFact.singleton(single());
 
-        if (needSwitchToStored(this)) {
-            switchToStored(size, array);
+        if (needToBeStored(this) && switchToStored(size, array)) {
             return stored().immutable();
         }
 
@@ -184,22 +184,27 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needToBeStored(this)) {
             switchToStored(size, array);
         }
     }
     
-    private static boolean needSwitchToStored(ArIndexedSet<?> set) {
-        return !set.isStored() && set.size() > LIMIT 
-                && StoredArraySerializer.getInstance().canBeSerialized(set.get(0)); 
+    private static boolean needToBeStored(ArIndexedSet<?> set) {
+        return !set.isStored() && set.size() > LIMIT && canBeStored(set);
     }
-    
-    private void switchToStored(int size, Object[] array) {
+
+    private static boolean canBeStored(ArIndexedSet<?> set) {
+        return StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
+    }
+
+    private boolean switchToStored(int size, Object[] array) {
         try {
             StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(size, (K[]) array, StoredArraySerializer.getInstance());
             switchToStored(storedSet);
-        } catch (RuntimeException e) {
+            return true;
+        } catch (StoredArray.StoredArrayCreationException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

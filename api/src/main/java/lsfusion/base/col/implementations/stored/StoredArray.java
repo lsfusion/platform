@@ -28,27 +28,27 @@ public class StoredArray<T> {
         this(size, serializer, null);
     }
     
-    public StoredArray(T[] array, StoredArraySerializer serializer) {
+    public StoredArray(T[] array, StoredArraySerializer serializer) throws StoredArrayCreationException {
         this(array, serializer, null);
     }
     
-    public StoredArray(T[] array, StoredArraySerializer serializer, StoredArrayFileManager fileManager) {
+    public StoredArray(T[] array, StoredArraySerializer serializer, StoredArrayFileManager fileManager) throws StoredArrayCreationException {
         try {
             this.serializer = serializer;
             this.fileManager = (fileManager == null ? new StoredArrayFileManagerImpl() : fileManager);
             createInitialState(array);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            throw new StoredArrayCreationException(e);
         }
     }
 
-    public StoredArray(int size, T[] array, StoredArraySerializer serializer, StoredArrayFileManager fileManager) {
+    public StoredArray(int size, T[] array, StoredArraySerializer serializer, StoredArrayFileManager fileManager) throws StoredArrayCreationException {
         try {
             this.serializer = serializer;
             this.fileManager = (fileManager == null ? new StoredArrayFileManagerImpl() : fileManager);
             createInitialState(size, array);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        } catch (Exception e) {
+            throw new StoredArrayCreationException(e);
         }
     }
     
@@ -152,7 +152,7 @@ public class StoredArray<T> {
 
             File tmpIndexFile = fileManager.tmpIndexFile();
             try (
-                    DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile));
+                DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile))
             ) {
                 for (int i = 0; i < size(); ++i) {
                     Pair<Integer, Integer> offsetLen = getOffsetLen(sortedHashes.get(i).second);
@@ -378,6 +378,12 @@ public class StoredArray<T> {
     
     private void seekToObject(int offset) throws IOException {
         dataFile.seek(offset);
+    }
+
+    public static class StoredArrayCreationException extends Exception {
+        public StoredArrayCreationException(Throwable cause) {
+            super(cause);
+        }
     }
 
 //    private static class StoredArrayIterator<T> implements Iterator<T> {

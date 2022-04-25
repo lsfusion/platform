@@ -6,8 +6,6 @@ public interface StoredArraySerializer {
     void serialize(Object o, ByteArrayOutputStream oStream);
     Object deserialize(ByteArrayInputStream buf);
     
-    int getId(Object o);
-    
     void setContext(Object context);
     Object getContext();    
     

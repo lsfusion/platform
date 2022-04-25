@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 public class StoredArMapTest {
     @Test
-    public void createWithArrays() {
+    public void createWithArrays() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keysArray = simpleArray();
         StoredClass[] valuesArray = simpleArray();
         StoredArMap<StoredClass, StoredClass> map =
@@ -18,7 +18,7 @@ public class StoredArMapTest {
     }
 
     @Test
-    public void createWithArrays2() {
+    public void createWithArrays2() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keysArray = simpleArray();
         String[] valuesArray = stringArray();
         StoredArMap<StoredClass, String> map =
@@ -28,7 +28,7 @@ public class StoredArMapTest {
     
 
     @Test
-    public void createWithStored() {
+    public void createWithStored() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keysArray = simpleArray();
         String[] valuesArray = stringArray();
         StoredArray<StoredClass> keys = new StoredArray<>(keysArray, StoredArrayTest.serializer);
@@ -52,7 +52,7 @@ public class StoredArMapTest {
     }
 
     @Test
-    public void mapValue() {
+    public void mapValue() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keys = simpleArray();
         int n = keys.length;
         String[] values = stringArray();
@@ -68,7 +68,7 @@ public class StoredArMapTest {
     }
 
     @Test
-    public void getObject() {
+    public void getObject() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keys = simpleArray();
         StoredClass[] values = simpleArray();
         StoredArMap<StoredClass, StoredClass> map =

@@ -46,12 +46,13 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
 
     public ArMap(ArMap<K, V> map, AddValue<K, V> addValue) {
         super(addValue);
-        if (needSwitchToStored(map)) {
-            switchToStored(mapSize(), map.keys, map.values);
-        } else if (!map.isStored()) {
-            cloneKeysAndValues(map);
-        } else {
+        if (map.isStored()) {
             switchToStored(new StoredArMap<>(map.stored(), true));
+        } else if (needToBeStored(map)) {
+            switchToStored(mapSize(), map.keys, map.values);
+        }
+        if (!isStored()) {
+            cloneKeysAndValues(map);
         }
     }
 
@@ -188,13 +189,18 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
         ImMap<K, V> simple = simpleImmutable();
         if (simple != null)
             return simple;
+
         if (!isStored()) {
-            if (needSwitchToStored(this)) {
+            if (needToBeStored(this)) {
                 sortInplace();
-                return new ArIndexedMap<>(
-                        new StoredArray<>((K[]) keys, StoredArraySerializer.getInstance()),
-                        new StoredArray<>((V[]) values, StoredArraySerializer.getInstance())
-                );
+                try {
+                    return new ArIndexedMap<>(
+                            new StoredArray<>((K[]) keys, StoredArraySerializer.getInstance()),
+                            new StoredArray<>((V[]) values, StoredArraySerializer.getInstance())
+                    );
+                } catch (StoredArray.StoredArrayCreationException e) {
+                    e.printStackTrace();
+                }
             }
 
             if (keys.length > size * SetFact.factorNotResize)
@@ -409,15 +415,18 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     private void switchToStoredIfNeeded(int oldSize, int newSize) {
-        if (oldSize <= LIMIT && newSize > LIMIT && needSwitchToStored(this)) {
+        if (oldSize <= LIMIT && newSize > LIMIT && needToBeStored(this)) {
             switchToStored(size, keys, values);
         }
     }
 
-    private boolean needSwitchToStored(ArMap<K, V> map) {
-        return !map.isStored() && map.size() > LIMIT 
-                && StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0)) 
-                && StoredArraySerializer.getInstance().canBeSerialized(map.getValue(0));
+    private static boolean needToBeStored(ArMap<?, ?> map) {
+        return !map.isStored() && map.size() > LIMIT && canBeStored(map);
+    }
+
+    private static boolean canBeStored(ArMap<?, ?> map) {
+        return StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0))
+            && StoredArraySerializer.getInstance().canBeSerialized(map.getValue(0));
     }
 
     private void switchToStored(int size, Object[] keys, Object[] values) {
@@ -426,7 +435,7 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
             StoredArMap<K, V> storedMap =
                     new StoredArMap<>(size, (K[]) keys, (V[]) values, StoredArraySerializer.getInstance(), addValue);
             switchToStored(storedMap);
-        } catch (RuntimeException e) {
+        } catch (StoredArray.StoredArrayCreationException e) {
             e.printStackTrace();
         }
     }

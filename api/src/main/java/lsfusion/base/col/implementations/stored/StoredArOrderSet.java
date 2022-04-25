@@ -25,6 +25,10 @@ public class StoredArOrderSet<K> extends AMWrapOrderSet<K, StoredArSet<K>> {
         int[] order = new int[wrapSet.size()];
         StoredArIndexedSet<K> indexedSet = wrapSet.toStoredArIndexedSet(order);
         Integer[] objectOrder = IntStream.of(order).boxed().toArray(Integer[]::new);
-        return new StoredArOrderIndexedSet<>(indexedSet, new StoredArray<>(objectOrder, StoredArraySerializer.getInstance()));
+        try {
+            return new StoredArOrderIndexedSet<>(indexedSet, new StoredArray<>(objectOrder, StoredArraySerializer.getInstance()));
+        } catch (StoredArray.StoredArrayCreationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
