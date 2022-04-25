@@ -329,6 +329,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
 
+        for(Property property : entity.asyncInitPropertyChanges)
+            asyncPropertyChanges.put(property, HasChanges.NULL);
+
         ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity<?>, OrderInstance>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
             public GroupObjectInstance group(OrderInstance key) {
                 return key.getApplyObject();
@@ -1106,7 +1109,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     }
 
-    // later it would be better if this map is automatically cleaned / filled some way
+    // later it would be better if this map is automatically cleaned / filled some way (see proceedAllEventActions in FormEntity.finalizaeAroundInit)
     private Map<Property, HasChanges> asyncPropertyChanges = new ConcurrentHashMap<>();
     // thread-safe
     private void updateAsyncPropertyChanges() throws SQLException, SQLHandledException {
@@ -2061,7 +2064,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
             }
 
-updateAsyncPropertyChanges();
+            updateAsyncPropertyChanges();
             ChangedData update = session.update(this);
             if(update.wasRestart) // очищаем кэш при рестарте
                 isReallyChanged.clear();

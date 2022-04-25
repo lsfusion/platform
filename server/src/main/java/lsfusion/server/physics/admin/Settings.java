@@ -96,6 +96,8 @@ public class Settings implements Cloneable {
 
     private int barcodeLength = 13;
 
+    private int inlineClassThreshold = 6; // threshold, how many class tables will be wrapped into a subquery
+
     private boolean useSingleJoins = false;
 
     private boolean useQueryExpr = true;
@@ -447,6 +449,14 @@ public class Settings implements Cloneable {
 
     public void setRestructWhereOnMeans(boolean restructWhereOnMeans) {
         this.restructWhereOnMeans = restructWhereOnMeans;
+    }
+
+    public int getInlineClassThreshold() {
+        return inlineClassThreshold;
+    }
+
+    public void setInlineClassThreshold(int inlineClassThreshold) {
+        this.inlineClassThreshold = inlineClassThreshold;
     }
 
     public boolean isSplitGroupSelectExprcases() {

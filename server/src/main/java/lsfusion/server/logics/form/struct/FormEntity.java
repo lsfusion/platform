@@ -1221,9 +1221,22 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             throw new ScriptParsingException("error finalizing form " + this + ":\n" + e.getMessage());
         }
 
-        proceedAllEventActions((action, drawAction) -> {
+        // not sure if we need this, because the platform at first shows optimistic list, so we won't have much benefits from this
+//        MSet<Property> mAsyncInitPropertyChanges = SetFact.mSet();
+        proceedAllEventActions((action, property) -> {
+//            if(property != null) {
+//                AsyncMapEventExec<?> asyncEventExec = action.property.getAsyncEventExec(property.optimisticAsync);
+//                if(asyncEventExec instanceof AsyncMapInput) {
+//                    InputListEntity<?, ?> list = ((AsyncMapInput<?>) asyncEventExec).list;
+//                    if(list != null)
+//                        mAsyncInitPropertyChanges.add(list.getProperty());
+//                }
+//            }
         }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
+//        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
     }
+
+    public ImSet<Property> asyncInitPropertyChanges = SetFact.EMPTY();
 
     public String getCanonicalName() {
         return canonicalName;
@@ -1552,7 +1565,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             for(String changeEvent : propertyDraw.getAllEventActions()) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
-                    consumer.accept(editAction, changeEvent.equals(CHANGE) && !propertyDraw.isProperty() ? propertyDraw : null);
+                    consumer.accept(editAction, propertyDraw);
             }
         }
         for(ImList<ActionObjectEntity<?>> eventActions : getEventActions().valueIt()) {

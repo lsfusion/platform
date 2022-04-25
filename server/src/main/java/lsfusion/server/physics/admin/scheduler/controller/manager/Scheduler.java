@@ -395,6 +395,9 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             this.daysOfMonth = daysOfMonth;
         }
 
+        @StackNewThread
+        @StackMessage("scheduler.scheduled.task")
+        @ThisMessage
         public void run(ExecutionStack stack) throws Exception {
             final Result<Thread> thread = new Result<>();
             Future<Boolean> future = null;

@@ -64,6 +64,10 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return property.interfaces.removeIncl(mapValues.keys());
     }
 
+    public Property<P> getProperty() {
+        return property;
+    }
+
     public InputListEntity<P, V> newSession() {
         return new InputListEntity<>(property, mapValues, true);
     }

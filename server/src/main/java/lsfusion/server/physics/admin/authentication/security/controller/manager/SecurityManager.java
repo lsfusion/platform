@@ -113,9 +113,10 @@ public class SecurityManager extends LogicsManager implements InitializingBean {
         this.securityLM = businessLogics.securityLM;
         this.reflectionLM = businessLogics.reflectionLM;
 
-        for (FormEntity formEntity : businessLogics.getAllForms())
-            formEntity.proceedAllEventActions((eventAction, drawAction) -> {
-            });
+//        not sure what it was for
+//        for (FormEntity formEntity : businessLogics.getAllForms())
+//            formEntity.proceedAllEventActions((eventAction, drawAction) -> {
+//            });
     }
 
     @Override

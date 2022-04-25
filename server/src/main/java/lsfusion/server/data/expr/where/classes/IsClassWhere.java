@@ -40,6 +40,7 @@ import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.physics.admin.Settings;
 
 public class IsClassWhere extends DataWhere {
 
@@ -76,7 +77,7 @@ public class IsClassWhere extends DataWhere {
                 tables = BaseUtils.immutableCast(objectClasses.getObjectClassFields());
             else
                 tables = objectClasses.getIsClassFields();
-            if(tables.size()> IsClassExpr.inlineThreshold)
+            if(tables.size() > Settings.get().getInlineClassThreshold())
                 return new IsClassWhere(expr, classes, type);
             else
                 return getTableWhere(expr, tables, type);
