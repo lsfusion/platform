@@ -52,7 +52,7 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
     }
 
     public Class getReportJavaClass() {
-        return java.util.Date.class;
+        return java.time.Instant.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {

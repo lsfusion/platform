@@ -49,7 +49,7 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
     }
 
     public Class getReportJavaClass() {
-        return java.util.Date.class;
+        return java.time.LocalDateTime.class;
     }
 
     @Override
