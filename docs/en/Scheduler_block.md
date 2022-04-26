@@ -1,5 +1,5 @@
 ---
-title: 'Scheduler Block' ---
+title: 'Scheduler Block'
 ---
 
 Scheduler blocks [instructions `FORM`](FORM_statement.md) - a set of constructions controlling the scheduler in an interactive form view.
