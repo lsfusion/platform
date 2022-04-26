@@ -102,7 +102,7 @@ title: 'События формы'
 
 ### Язык
 
-Для задания обработок событий формы используется опция `ON` в инструкции `FORM` (блок [событий](Event_block.md), блок [свойств и действий](Properties_and_actions_block.md), блок [объектов](Object_blocks.md#objects)), а также в [опциях свойств](Property_options.md). 
+Для задания обработок событий формы используется опция `ON` в инструкции `FORM` (блок [событий](Event_block.md), (блок [планировщиков](Scheduler_block.md), блок [свойств и действий](Properties_and_actions_block.md), блок [объектов](Object_blocks.md#objects)), а также в [опциях свойств](Property_options.md). 
 
 ### Примеры
 

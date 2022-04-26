@@ -102,7 +102,7 @@ For properties and actions on the form, it is also possible to define the follow
 
 ### Language
 
-To define the form event handlers, use the `ON` option in the `FORM` statement ([events](Event_block.md) block, [properties and actions](Properties_and_actions_block.md) block, [objects](Object_blocks.md#objects) block), as well as in [property options](Property_options.md). 
+To define the form event handlers, use the `ON` option in the `FORM` statement ([events](Event_block.md) block, ([schedulers](Scheduler_block.md) block, [properties and actions](Properties_and_actions_block.md) block, [objects](Object_blocks.md#objects) block), as well as in [property options](Property_options.md). 
 
 ### Examples
 
