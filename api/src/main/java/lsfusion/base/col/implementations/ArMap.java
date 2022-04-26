@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import static lsfusion.base.col.implementations.stored.StoredArray.isStoredArraysEnabled;
 import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.LIMIT;
 import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.STORED_FLAG;
 
@@ -425,7 +426,8 @@ public class ArMap<K, V> extends AMRevMap<K, V> {
     }
 
     private static boolean canBeStored(ArMap<?, ?> map) {
-        return StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0))
+        return isStoredArraysEnabled()
+            && StoredArraySerializer.getInstance().canBeSerialized(map.getKey(0))
             && StoredArraySerializer.getInstance().canBeSerialized(map.getValue(0));
     }
 

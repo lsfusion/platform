@@ -15,6 +15,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import static lsfusion.base.col.implementations.stored.StoredArray.isStoredArraysEnabled;
 import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.LIMIT;
 import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.STORED_FLAG;
 
@@ -194,7 +195,7 @@ public class ArIndexedSet<K> extends AMSet<K> {
     }
 
     private static boolean canBeStored(ArIndexedSet<?> set) {
-        return StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
+        return isStoredArraysEnabled() && StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
     }
 
     private boolean switchToStored(int size, Object[] array) {

@@ -386,6 +386,11 @@ public class StoredArray<T> {
         }
     }
 
+    public static boolean isStoredArraysEnabled() {
+        String isEnabled = System.getProperty("storedArraysEnabled");
+        return "true".equalsIgnoreCase(isEnabled);
+    }
+
 //    private static class StoredArrayIterator<T> implements Iterator<T> {
 //        private final StoredArray<? extends T> array;
 //        private int index;

@@ -18,6 +18,7 @@ public class ArIndexedTest {
         StoredArraySerializerRegistry serializer = (StoredArraySerializerRegistry) StoredArraySerializer.getInstance();
         serializer.register(StoredClass.class, StoredClass::serialize, StoredClass::deserialize);
         serializer.register(DerivedStoredClass.class, DerivedStoredClass::serialize, DerivedStoredClass::deserialize);
+        System.setProperty("storedArraysEnabled", "true");
     }
 
     @Test

@@ -17,6 +17,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import static lsfusion.base.col.implementations.stored.StoredArray.isStoredArraysEnabled;
 import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.LIMIT;
 import static lsfusion.base.col.implementations.stored.StoredImplementationsPolicy.STORED_FLAG;
 
@@ -379,7 +380,7 @@ public class ArSet<K> extends AMSet<K> {
     public static void serialize(Object o, StoredArraySerializer serializer, ByteArrayOutputStream outStream) {
         ArSet<?> set = (ArSet<?>) o;
         serializer.serialize(set.size, outStream);
-        ArCol.serializeArray(set.array, serializer, outStream);    
+        ArCol.serializeArray(set.array, serializer, outStream);
     }
 
     public static Object deserialize(ByteArrayInputStream inStream, StoredArraySerializer serializer) {
@@ -407,7 +408,7 @@ public class ArSet<K> extends AMSet<K> {
     }
 
     private static boolean canBeStored(ArSet<?> set) {
-        return StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
+        return isStoredArraysEnabled() && StoredArraySerializer.getInstance().canBeSerialized(set.get(0));
     }
 
     private void switchToStored(int size, Object[] array) {
