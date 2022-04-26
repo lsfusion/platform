@@ -116,7 +116,7 @@ public class FileUtils {
                 // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
                 String imageUrl = saveImageFile(getIconSaver(image, imageFileType, false), false, imagesFolderPath, imagePath, null);
                 if (canBeDisabled) {
-                    String imageFileName = BaseUtils.getFileWithoutExtension(imagePath);
+                    String imageFileName = BaseUtils.getFileName(imagePath);
                     saveImageFile(getIconSaver(image, imageFileType, true), false, imagesFolderPath, imageFileName + "_Disabled." + imageFileType, null);
                 }
                 

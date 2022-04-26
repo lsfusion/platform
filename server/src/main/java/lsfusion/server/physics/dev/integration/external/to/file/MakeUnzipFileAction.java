@@ -17,10 +17,10 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -41,9 +41,9 @@ public class MakeUnzipFileAction extends InternalAction {
                 String extension = unzippingFile.getExtension();
 
                 Map<String, FileData> result = new HashMap<>();
-                if (extension.toLowerCase().equals("rar")) {
+                if (extension.equalsIgnoreCase("rar")) {
                     result = unpackRARFile(file);
-                } else if (extension.toLowerCase().equals("zip")) {
+                } else if (extension.equalsIgnoreCase("zip")) {
                     result = unpackZIPFile(file);
                 }
                 for(Map.Entry<String, FileData> entry : result.entrySet()) {
@@ -65,7 +65,7 @@ public class MakeUnzipFileAction extends InternalAction {
             fileBytes.write(inputFile);
 
             List<File> dirList = new ArrayList<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
                 dirList.add(outputDirectory);
                 Archive a = new Archive(new FileVolumeManager(inputFile));
@@ -118,10 +118,10 @@ public class MakeUnzipFileAction extends InternalAction {
 
             byte[] buffer = new byte[1024];
             Set<File> dirList = new HashSet<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
                 dirList.add(outputDirectory);
-                ZipInputStream inputStream = new ZipInputStream(new FileInputStream(inputFile), Charset.forName("cp866"));
+                ZipInputStream inputStream = new ZipInputStream(Files.newInputStream(inputFile.toPath()), Charset.forName("cp866"));
 
                 ZipEntry ze = inputStream.getNextEntry();
                 while (ze != null) {
@@ -166,7 +166,7 @@ public class MakeUnzipFileAction extends InternalAction {
 
     private String getFileName(Map<String, FileData> files, String fileName) {
         if (files.containsKey(fileName)) {
-            String name = getFileNameWithoutExt(fileName);
+            String name = BaseUtils.getFileName(fileName);
             String extension = BaseUtils.getFileExtension(fileName);
             int count = 1;
             while (files.containsKey(name + "_" + count + (extension.isEmpty() ? "" : ("." + extension)))) {
@@ -175,16 +175,5 @@ public class MakeUnzipFileAction extends InternalAction {
             fileName = name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
         }
         return fileName;
-    }
-
-    private String getFileNameWithoutExt(File file) {
-        String name = file.getName();
-        int index = name.lastIndexOf(".");
-        return (index == -1) ? name : name.substring(0, index);
-    }
-
-    private String getFileNameWithoutExt(String name) {
-        int index = name.lastIndexOf(".");
-        return (index == -1) ? name : name.substring(0, index);
     }
 }

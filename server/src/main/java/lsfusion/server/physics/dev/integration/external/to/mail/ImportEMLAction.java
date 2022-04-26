@@ -28,6 +28,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -93,7 +94,7 @@ public class ImportEMLAction extends EmailAction {
                     DataObject attachmentObject = session.addObject((ConcreteCustomClass) emailLM.findClass("AttachmentEmail"));
                     emailLM.findProperty("email[AttachmentEmail]").change(emailObject, session, attachmentObject);
                     emailLM.findProperty("id[AttachmentEmail]").change(String.valueOf(attachment.id), session, attachmentObject);
-                    emailLM.findProperty("name[AttachmentEmail]").change(getFileNameWithoutExt(attachment.name), session, attachmentObject);
+                    emailLM.findProperty("name[AttachmentEmail]").change(BaseUtils.getFileName(attachment.name), session, attachmentObject);
                     emailLM.findProperty("file[AttachmentEmail]").change(attachment.file, session, attachmentObject);
                 }
                 String result = session.applyMessage();
@@ -104,7 +105,7 @@ public class ImportEMLAction extends EmailAction {
 
         } catch (Exception e) {
             logger.error(localize("{mail.failed.to.receive.mail}"), e);
-            context.delayUserInterfaction(new MessageClientAction(localize("{mail.failed.to.receive.mail}") + " : " + e.toString(), localize("{mail.receiving}")));
+            context.delayUserInterfaction(new MessageClientAction(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}")));
         }
 
     }
@@ -204,7 +205,7 @@ public class ImportEMLAction extends EmailAction {
     }
 
     private MultipartBody extractWinMail(File winMailFile) throws IOException {
-        HMEFMessage msg = new HMEFMessage(new FileInputStream(winMailFile));
+        HMEFMessage msg = new HMEFMessage(Files.newInputStream(winMailFile.toPath()));
         Map<String, FileData> attachments = new HashMap<>();
         for(Attachment attach : msg.getAttachments()) {
             String attachName = attach.getFilename();
@@ -247,9 +248,9 @@ public class ImportEMLAction extends EmailAction {
         String[] fileNameAndExt = fileName.split("\\.");
         String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1].trim() : "";
         if (unpack) {
-            if (fileExtension.toLowerCase().equals("rar")) {
+            if (fileExtension.equalsIgnoreCase("rar")) {
                 attachments.putAll(unpackRARFile(byteArray));
-            } else if (fileExtension.toLowerCase().equals("zip")) {
+            } else if (fileExtension.equalsIgnoreCase("zip")) {
                 attachments.putAll(unpackZIPFile(byteArray));
             }
         }
@@ -267,7 +268,7 @@ public class ImportEMLAction extends EmailAction {
             rawFile.write(inputFile);
 
             List<File> dirList = new ArrayList<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
                 dirList.add(outputDirectory);
                 Archive a = new Archive(new FileVolumeManager(inputFile));
@@ -317,10 +318,10 @@ public class ImportEMLAction extends EmailAction {
 
             byte[] buffer = new byte[1024];
             Set<File> dirList = new HashSet<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if (inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
                 dirList.add(outputDirectory);
-                ZipInputStream inputStream = new ZipInputStream(new FileInputStream(inputFile), Charset.forName("cp866"));
+                ZipInputStream inputStream = new ZipInputStream(Files.newInputStream(inputFile.toPath()), Charset.forName("cp866"));
 
                 ZipEntry ze = inputStream.getNextEntry();
                 while (ze != null) {
@@ -368,7 +369,7 @@ public class ImportEMLAction extends EmailAction {
 
     private String getFileName(Map<String, FileData> files, String fileName) {
         if (files.containsKey(fileName)) {
-            String name = getFileNameWithoutExt(fileName);
+            String name = BaseUtils.getFileName(fileName);
             String extension = BaseUtils.getFileExtension(fileName);
             int count = 1;
             while (files.containsKey(name + "_" + count + (extension.isEmpty() ? "" : ("." + extension)))) {
@@ -377,17 +378,6 @@ public class ImportEMLAction extends EmailAction {
             fileName = name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
         }
         return fileName;
-    }
-
-    private String getFileNameWithoutExt(File file) {
-        String name = file.getName();
-        int index = name.lastIndexOf(".");
-        return (index == -1) ? name : name.substring(0, index);
-    }
-
-    private String getFileNameWithoutExt(String name) {
-        int index = name.lastIndexOf(".");
-        return (index == -1) ? name : name.substring(0, index);
     }
 
     private class Email {

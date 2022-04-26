@@ -53,11 +53,11 @@ public abstract class ReadUtils {
                     break;
                 case "ftp":
                     copyFTPToFile(filePath.path, localFile);
-                    extension = BaseUtils.getFileExtension(filePath.path);
+                    extension = getFileExtension(filePath.path);
                     break;
                 case "sftp":
                     copySFTPToFile(filePath.path, localFile);
-                    extension = BaseUtils.getFileExtension(filePath.path);
+                    extension = getFileExtension(filePath.path);
                     break;
                 default:
                     if(extraReadProcessor != null) {
@@ -102,7 +102,14 @@ public abstract class ReadUtils {
         if(contentType != null) {
             fileExtension = MIMETypeUtils.fileExtensionForMIMEType(contentType);
         }
-        return fileExtension != null ? fileExtension : BaseUtils.getFileExtension(urlString);
+        return fileExtension != null ? fileExtension : getFileExtension(urlString);
+    }
+
+    private static String getFileExtension(String filename) {
+        int endIndex = filename.indexOf("?");
+        String result = filename.substring(0, endIndex == -1 ? filename.length() : endIndex);
+        int beginIndex = result.lastIndexOf(".");
+        return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
     }
 
     public static String showReadFileDialog(String path) {

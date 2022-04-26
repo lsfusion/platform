@@ -2351,18 +2351,8 @@ public class BaseUtils {
         return getFileExtension(file.getName());
     }
 
-    public static String getFileWithoutExtension(String filename) {
-        int dotIndex = filename.lastIndexOf(".");
-        if(dotIndex >= 0)
-            filename = filename.substring(0, dotIndex);
-        return filename;
-    }
-
     public static String getFileExtension(String filename) {
-        int endIndex = filename.indexOf("?");
-        String result = filename.substring(0, endIndex == -1 ? filename.length() : endIndex);
-        int beginIndex = result.lastIndexOf(".");
-        return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
+        return FilenameUtils.getExtension(filename);
     }
 
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String namedFileName, File... files) {
