@@ -6,7 +6,7 @@ Scheduler blocks [instructions `FORM`](FORM_statement.md) - a set of constructio
 
 ### Syntax
 
-    SCHEDULE PERIOD intPeriod FIXED? actionOperator
+    SCHEDULE PERIOD intPeriod [FIXED] actionOperator
 
 ### Description.
 
@@ -34,5 +34,4 @@ someProperty = DATA STRING();
 FORM autoApplyForm
 PROPERTIES() someProperty
 SCHEDULE PERIOD 60 FIXED apply();
-;
 ```

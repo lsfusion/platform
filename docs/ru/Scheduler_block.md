@@ -6,7 +6,7 @@ title: 'Блок планировщика'
 
 ### Синтаксис
 
-    SCHEDULE PERIOD intPeriod FIXED? actionOperator
+    SCHEDULE PERIOD intPeriod [FIXED] actionOperator
 
 ### Описание
 
@@ -34,5 +34,4 @@ someProperty = DATA STRING();
 FORM autoApplyForm
 PROPERTIES() someProperty
 SCHEDULE PERIOD 60 FIXED apply();
-;
 ```
