@@ -38,6 +38,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex, boolean ok) throws RemoteException;
 
+    ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, int index) throws RemoteException;
+
     // events : group objects
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException;
@@ -65,8 +67,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
     // events : properties
-
-    ServerResponse executeFormSchedulerAction(long requestIndex, long lastReceivedRequestIndex, int index) throws RemoteException;
 
     ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException;
 

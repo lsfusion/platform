@@ -591,7 +591,7 @@ public class GFormController implements EditManager {
                         }
 
                     } else {
-                        scheduleFormScheduler(formScheduler, index);
+                        return true;
                     }
                 }
                 return false;

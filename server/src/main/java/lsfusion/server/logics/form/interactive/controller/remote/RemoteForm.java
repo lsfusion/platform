@@ -698,7 +698,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse executeFormSchedulerAction(long requestIndex, long lastReceivedRequestIndex, int index) throws RemoteException {
+    public ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, int index) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> form.executeFormSchedulerAction(stack, index));
     }
 

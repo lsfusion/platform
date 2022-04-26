@@ -12,7 +12,6 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.base.lambda.EProvider;
-import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ClientImages;
@@ -426,7 +425,7 @@ public class ClientFormController implements AsyncListener {
                             if (formScheduler.fixed) {
                                 scheduleFormScheduler(scheduler, formScheduler, index);
                             }
-                            return remoteForm.executeFormSchedulerAction(requestIndex, lastReceivedRequestIndex, index);
+                            return remoteForm.formSchedulerExecuted(requestIndex, lastReceivedRequestIndex, index);
                         }
 
                         @Override

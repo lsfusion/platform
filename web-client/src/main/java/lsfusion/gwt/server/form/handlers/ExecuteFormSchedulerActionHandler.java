@@ -16,6 +16,6 @@ public class ExecuteFormSchedulerActionHandler extends FormServerResponseActionH
 
     @Override
     public ServerResponseResult executeEx(final ExecuteFormSchedulerAction action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, remoteForm -> remoteForm.executeFormSchedulerAction(action.requestIndex, action.lastReceivedRequestIndex, action.index));
+        return getServerResponseResult(action, remoteForm -> remoteForm.formSchedulerExecuted(action.requestIndex, action.lastReceivedRequestIndex, action.index));
     }
 }
