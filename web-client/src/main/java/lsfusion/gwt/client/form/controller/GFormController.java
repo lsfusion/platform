@@ -14,10 +14,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.GFormChanges;
-import lsfusion.gwt.client.GFormChangesDTO;
+import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
@@ -193,7 +190,7 @@ public class GFormController implements EditManager {
 
         initializeUserOrders();
 
-        initializeAutoRefresh();
+        initializeFormSchedulers();
 
         initLinkEditModeTimer();
     }
@@ -563,9 +560,9 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ExecuteNotification(idNotification));
     }
 
-    private void initializeAutoRefresh() {
-        if (form.autoRefresh > 0) {
-            scheduleRefresh();
+    private void initializeFormSchedulers() {
+        for(int i = 0; i < form.formSchedulers.size(); i++) {
+            scheduleFormScheduler(form.formSchedulers.get(i), i);
         }
     }
 
@@ -573,28 +570,33 @@ public class GFormController implements EditManager {
         return formLayout;
     }
 
-    private void scheduleRefresh() {
+    private void scheduleFormScheduler(GFormScheduler formScheduler, int index) {
+
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
                 if (!formHidden) {
-                    if (isShowing(getWidget())) {
-                        asyncDispatch(new GetRemoteChanges(true, false), new ServerResponseCallback() {
-                            @Override
+                    if (isShowing(getWidget()) && !MainFrame.isModalPopup()) {
+                        asyncDispatch(new ExecuteFormSchedulerAction(index), new ServerResponseCallback() {
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                                 super.onSuccess(response, onDispatchFinished);
-                                if (!formHidden) {
-                                    scheduleRefresh();
+                                if (!formHidden && !formScheduler.fixed) {
+                                    scheduleFormScheduler(formScheduler, index);
                                 }
                             }
                         });
+
+                        if(formScheduler.fixed) {
+                            scheduleFormScheduler(formScheduler, index);
+                        }
+
                     } else {
-                        scheduleRefresh();
+                        return true;
                     }
                 }
                 return false;
             }
-        }, form.autoRefresh * 1000);
+        }, formScheduler.period * 1000);
     }
 
     public GPropertyDraw getProperty(int id) {

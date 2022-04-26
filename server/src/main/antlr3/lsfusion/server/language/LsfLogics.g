@@ -414,6 +414,7 @@ scope {
 		|	formPropertiesList
 		|	formHintsList
 		|	formEventsList
+		|   formScheduleDeclaration
 		|	filterGroupDeclaration
 		|	extendFilterGroupDeclaration
 		|	userFiltersDeclaration
@@ -1148,6 +1149,21 @@ formHintsList
 }
 	:	(('HINTNOUPDATE') | ('HINTTABLE' { hintNoUpdate = false; })) 'LIST'
 		list=nonEmptyPropertyUsageList
+	;
+
+formScheduleDeclaration
+@init {
+    int period = 0;
+    boolean fixed = false;
+}
+@after {
+	if (inMainParseState()) {
+		$formStatement::form.addScriptedFormSchedule($faprop.action, period, fixed, self.getVersion());
+	}
+}
+	:	'SCHEDULE'
+        ('PERIOD' periodLiteral=intLiteral { period = $periodLiteral.val; } ('FIXED' { fixed = true; })? )?
+        faprop=formActionObject
 	;
 
 formEventsList

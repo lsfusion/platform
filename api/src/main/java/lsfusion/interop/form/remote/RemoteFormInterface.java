@@ -38,6 +38,8 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex, boolean ok) throws RemoteException;
 
+    ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, int index) throws RemoteException;
+
     // events : group objects
 
     ServerResponse changeGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupID, byte[] value) throws RemoteException;

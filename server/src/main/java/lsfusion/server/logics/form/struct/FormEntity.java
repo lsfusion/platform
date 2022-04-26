@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -251,7 +250,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ModalityType modalityType = ModalityType.DOCKED;
-    public int autoRefresh = 0;
+    public NFOrderSet<FormScheduler> formSchedulers = NFFact.orderSet();
     public boolean localAsync = false;
 
     public PropertyObjectEntity<?> reportPathProp;
@@ -1509,6 +1508,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         FormView richDesign = getNFRichDesign(version);
         if(richDesign !=null)
             richDesign.addPivotMeasure(column, version);
+    }
+
+    public void addFormScheduler(FormScheduler formScheduler, Version version) {
+        formSchedulers.add(formScheduler, version);
     }
 
     public void setNeedVerticalScroll(boolean scroll) {
