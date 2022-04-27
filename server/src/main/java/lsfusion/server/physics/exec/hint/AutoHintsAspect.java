@@ -62,6 +62,17 @@ public class AutoHintsAspect {
         return disabledHints != null && disabledHints.test(property);
     }
 
+    public static Predicate<Property> pushCatchDisabledHint(Predicate<Property> predicate) {
+        Predicate<Property> prevPredicate = catchDisabledHints.get();
+        if(prevPredicate != null)
+            predicate = BaseUtils.or(prevPredicate, predicate);
+        catchDisabledHints.set(predicate);
+        return prevPredicate;
+    }
+    public static void popCatchDisabledHint(Predicate<Property> predicate) {
+        catchDisabledHints.set(predicate);
+    }
+
     public static ThreadLocal<Integer> catchDisabledComplex = new ThreadLocal<>();
     public static void pushDisabledComplex() {
         Integer prev = catchDisabledComplex.get();

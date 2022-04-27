@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -46,13 +47,13 @@ public abstract class GGridSortableHeaderManager<T> {
     }
 
     public final void changeOrder(T columnKey, GOrder modiType) {
-        changeOrderDirection(columnKey, modiType);
-        orderChanged(columnKey, modiType);
+        if(changeOrderDirection(columnKey, modiType))
+            orderChanged(columnKey, modiType);
     }
 
-    private void changeOrderDirection(T columnKey, GOrder modiType) {
-        if (columnKey == null || noSort(columnKey)) {
-            return;
+    private boolean changeOrderDirection(T columnKey, GOrder modiType) {
+        if (columnKey == null || noSort(columnKey)) { // columnKey can be null for grid expand column
+            return false;
         }
 
         switch (modiType) {
@@ -71,15 +72,20 @@ public abstract class GGridSortableHeaderManager<T> {
                 orderDirections.remove(columnKey);
                 break;
         }
+        return true;
     }
 
     public final boolean changeOrders(GGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
         if(!GwtSharedUtils.hashEquals(orderDirections, set)) {
             orderDirections.clear();
-            for(Map.Entry<T, Boolean> entry : set.entrySet()) {
-                changeOrderDirection(entry.getKey(), GOrder.ADD);
-                if(!entry.getValue())
-                    changeOrderDirection(entry.getKey(), GOrder.DIR);
+            for (Iterator<Map.Entry<T, Boolean>> iterator = set.entrySet().iterator(); iterator.hasNext(); ) {
+                Map.Entry<T, Boolean> entry = iterator.next();
+                if (!changeOrderDirection(entry.getKey(), GOrder.ADD))
+                    iterator.remove();
+                else if (!entry.getValue()) {
+                        boolean changed = changeOrderDirection(entry.getKey(), GOrder.DIR);
+                        assert changed;
+                    }
             }
 
             if (!alreadySet)

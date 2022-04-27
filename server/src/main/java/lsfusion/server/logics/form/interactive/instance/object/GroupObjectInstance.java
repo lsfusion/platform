@@ -80,6 +80,7 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
+import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -485,35 +486,35 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return entity;
     }
 
-    public interface FilterProcessor {
-        ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys);
-
-        ImSet<FilterInstance> getFilters();
-    }
-
     public static ImMap<ObjectInstance, ValueClass> getGridClasses(ImSet<ObjectInstance> objects) {
         return objects.filterFn(element -> !element.noClasses).mapValues(ObjectInstance::getGridClass);
     }
 
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
-        return getWhere(mapKeys, modifier, reallyChanged, (MSet<Property>) null);
+    public static class FilterProcessor {
+        protected final GroupObjectInstance groupObject;
+
+        public FilterProcessor(GroupObjectInstance groupObject) {
+            this.groupObject = groupObject;
+        }
+
+        public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+            return filt.getWhere(mapKeys, modifier, reallyChanged, null);
+        }
+
+        public ImSet<FilterInstance> getFilters() {
+            return groupObject.getFilters();
+        }
     }
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
-        return getWhere(mapKeys, modifier, reallyChanged, null, mUsedProps);
+    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+        return getWhere(mapKeys, modifier, reallyChanged, new FilterProcessor(this));
     }
     public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor) throws SQLException, SQLHandledException {
-        return getWhere(mapKeys, modifier, reallyChanged, processor, null);
-    }
-    public Where getWhere(ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged, FilterProcessor processor, MSet<Property> mUsedProps) throws SQLException, SQLHandledException {
         Where where = Where.TRUE();
-        for(FilterInstance filt : (processor != null ? processor.getFilters() : getFilters())) {
-            if(processor != null) {
-                ImMap<ObjectInstance, ? extends Expr> overridedKeys = processor.process(filt, mapKeys);
-                if(overridedKeys == null)
-                    continue;
-                mapKeys = overridedKeys;
-            }
-            where = where.and(filt.getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
+        for(FilterInstance filt : processor.getFilters()) {
+            Where filtWhere = processor.process(filt, mapKeys, modifier, reallyChanged);
+            if(filtWhere == null)
+                continue;
+            where = where.and(filtWhere);
         }
         return where;
     }
@@ -611,12 +612,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
 
-        final ImSet<KeyExpr> usedContext = immutableCast(getWhere(mapKeys, Property.defaultModifier, null, new FilterProcessor() {
-            @Override
-            public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
-                return mapKeys;
-            }
-
+        final ImSet<KeyExpr> usedContext = immutableCast(getWhere(mapKeys, Property.defaultModifier, null, new FilterProcessor(this) {
             @Override
             public ImSet<FilterInstance> getFilters() {
                 return getFixedFilters(false, false);
@@ -916,7 +912,15 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
         return usedEnvironmentIncrementProps.get(propType);
     }
-            
+
+    private boolean checkEnvironmentRecursion(Property envProp, MSet<Property> mResultUsedProps, MSet<Property> mUsedProps) {
+        ImSet<Property> resultUsedProps = mResultUsedProps.immutable();
+        if(Property.depends(resultUsedProps, envProp))
+            return true;
+        mUsedProps.addAll(resultUsedProps);
+        return false;
+    }
+
     public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged, Predicate<GroupObjectInstance> hidden) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
         if(mappedProp != null) {
@@ -941,28 +945,59 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             final ImRevMap<ObjectInstance, KeyExpr> mapKeys = getMapKeys();
             PropertyChange<ClassPropertyInterface> change;
             ImRevMap<ClassPropertyInterface, KeyExpr> mappedKeys = mappedProp.mapping.join(mapKeys);
+
+            // we don't want properties depending on mappedProp to be materialized, since this hints will likely to be dropped during environmentIncrement.add, and lead to "used returned table"
+            // now it's not needed we've cut the while branch with the recursion check
+//            environmentIncrement.eventChange(mappedProp.property, dataChanged, true);
+//            Predicate<Property> prevPredicate = AutoHintsAspect.pushCatchDisabledHint(property -> Property.depends(property, mappedProp.property));
+
+//            try {
+            MSet<Property> fmUsedProps = mUsedProps;
             switch (propType) {
                 case FILTER:
-                    change = new PropertyChange<>(mappedKeys, ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged, mUsedProps));
+                    change = new PropertyChange<>(mappedKeys, ValueExpr.TRUE, getWhere(mapKeys, modifier, reallyChanged, new FilterProcessor(this) {
+                        @Override
+                        public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+                            final MSet<Property> mFilterUsedProps = SetFact.mSet();
+                            Where result = filt.getWhere(mapKeys, modifier, reallyChanged, mFilterUsedProps);
+                            if (checkEnvironmentRecursion(mappedProp.property, mFilterUsedProps, fmUsedProps))
+                                return Where.TRUE();
+                            return result;
+                        }
+                    }));
                     break;
                 case ORDER:
-                    if(orders.isEmpty())
+                    int ordersSize = orders.size();
+                    MOrderExclMap<Expr, Boolean> mOrderExprs = MapFact.mOrderExclMapMax(ordersSize);
+                    MList<Type> mTypes = ListFact.mListMax(ordersSize);
+                    for (int i = 0; i < ordersSize; i++) {
+                        OrderInstance order = orders.getKey(i);
+                        final MSet<Property> mOrderUsedProps = SetFact.mSet();
+                        Expr orderExpr = order.getExpr(mapKeys, modifier, reallyChanged, mOrderUsedProps);
+                        if (checkEnvironmentRecursion(mappedProp.property, mOrderUsedProps, fmUsedProps))
+                            continue;
+                        mOrderExprs.exclAdd(orderExpr, orders.getValue(i));
+                        mTypes.add(order.getType());
+                    }
+                    ImOrderMap<Expr, Boolean> orderExprs = mOrderExprs.immutableOrder();
+
+                    if (orderExprs.isEmpty())
                         change = mappedProp.property.getNoChange();
                     else {
-                        final MSet<Property> fmUsedProps = mUsedProps;
-                        ImOrderMap<Expr, Boolean> orderExprs = orders.mapOrderKeysEx((ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier, reallyChanged, fmUsedProps));
                         Expr orderExpr;
-                        if(orderExprs.size() == 1 && orderExprs.singleValue().equals(false)) // optimization
+                        if (orderExprs.size() == 1 && orderExprs.singleValue().equals(false)) // optimization
                             orderExpr = orderExprs.singleKey();
                         else
-                            orderExpr = FormulaUnionExpr.create(OrderClass.get(orders.keyOrderSet().mapListValues(OrderInstance::getType),
-                                                                    orderExprs.valuesList()), orderExprs.keyOrderSet());
+                            orderExpr = FormulaUnionExpr.create(OrderClass.get(mTypes.immutableList(), orderExprs.valuesList()), orderExprs.keyOrderSet());
                         change = new PropertyChange<>(mappedKeys, orderExpr);
                     }
                     break;
                 default:
                     throw new UnsupportedOperationException();
             }
+//            } finally {
+//                AutoHintsAspect.popCatchDisabledHint(prevPredicate);
+//            }
             environmentIncrement.add(mappedProp.property, change, dataChanged);
             if(mUsedProps != null)
                 usedEnvironmentIncrementProps.add(propType, mUsedProps.immutable());

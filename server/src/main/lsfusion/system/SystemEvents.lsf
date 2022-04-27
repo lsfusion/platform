@@ -206,7 +206,6 @@ isMobile() = isNativeMobile() OR isWebMobile();
 isNative() = isNativeDesktop() OR isNativeMobile();
 isWeb() = isWebDesktop() OR isWebMobile();
 
-//backward compatibility
 onClientStarted () + {
     IF isNativeDesktop() THEN {
         onDesktopClientStarted();

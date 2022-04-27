@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -2972,5 +2973,9 @@ public class BaseUtils {
         } catch (ClassNotFoundException e) {
             throw new IOException(getString("serialization.can.not.read.object"), e);
         }
+    }
+
+    public static <T> java.util.function.Predicate<T> or(java.util.function.Predicate<T> a, java.util.function.Predicate<T> b) {
+        return value -> a.test(value) || b.test(value);
     }
 }
