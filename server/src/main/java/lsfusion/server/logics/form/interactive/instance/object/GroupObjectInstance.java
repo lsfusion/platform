@@ -917,7 +917,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         ImSet<Property> resultUsedProps = mResultUsedProps.immutable();
         if(Property.depends(resultUsedProps, envProp))
             return true;
-        mUsedProps.addAll(resultUsedProps);
+        if(mUsedProps != null)
+            mUsedProps.addAll(resultUsedProps);
         return false;
     }
 
