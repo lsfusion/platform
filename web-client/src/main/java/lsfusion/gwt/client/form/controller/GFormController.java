@@ -97,6 +97,7 @@ import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -2066,7 +2067,8 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
 
         CellEditor cellEditor;
-        if (customChangeFunction != null && !customChangeFunction.equals("DEFAULT")) // see LsfLogics.g propertyCustomView rule
+        boolean hasCustomEditor = customChangeFunction != null && !customChangeFunction.equals("DEFAULT");
+        if (hasCustomEditor) // see LsfLogics.g propertyCustomView rule
             cellEditor = CustomReplaceCellEditor.create(this, property, customChangeFunction);
         else
             cellEditor = type.createGridCellEditor(this, property, inputList);
@@ -2076,6 +2078,13 @@ public class GFormController implements EditManager {
                 oldValue = editContext.getValue();
                 if(oldValue == null)
                     oldValue = cellEditor.getDefaultNullValue();
+                else if(!editContext.canUseChangeValueForRendering(type) && !hasCustomEditor) {
+                    try {
+                        oldValue = type.parseString(oldValue.toString(), property.pattern);
+                    } catch (ParseException e) {
+                        oldValue = null;
+                    }
+                }
             }
 
             edit(cellEditor, event, oldValue, beforeCommit, afterCommit, cancel, editContext, editAsyncValuesSID, -1);
