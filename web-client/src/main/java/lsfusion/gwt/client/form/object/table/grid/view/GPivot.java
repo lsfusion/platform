@@ -1407,7 +1407,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         if(dataHeight.isEmpty()) {
             NodeList<Node> children = element.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                rowHeight = Math.max(rowHeight, getTableToExcelMaxRowHeight((Element) children.getItem(i)));
+                Node child = children.getItem(i);
+                if (child.getNodeType() == Node.ELEMENT_NODE) {
+                    rowHeight = Math.max(rowHeight, getTableToExcelMaxRowHeight((Element) child));
+                }
             }
         } else {
             rowHeight = Double.parseDouble(dataHeight);
