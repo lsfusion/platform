@@ -413,7 +413,7 @@ public class ScriptingFormEntity {
             propertyDraw.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
 
             if(forceChangeAction != null)
-                propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction);
+                propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction, true);
 
             // temporary check
             if(nvl(scope, PropertyDrawEntity.DEFAULT_ACTION_EVENTSCOPE) != OLDSESSION && !(pDrawUsage instanceof ScriptingLogicsModule.FormPredefinedUsage) && (propertyOptions.getEventActions() == null || !propertyOptions.getEventActions().containsKey(ServerResponse.CHANGE)))
@@ -559,12 +559,12 @@ public class ScriptingFormEntity {
 
         Boolean isSelector = options.getSelector();
         if(isSelector != null && isSelector)
-            property.setEventAction(ServerResponse.CHANGE, property::getSelectorAction);
+            property.setEventAction(ServerResponse.CHANGE, property::getSelectorAction, true);
 
         Map<String, ActionObjectEntity> eventActions = options.getEventActions();
         if (eventActions != null) {
             for (Map.Entry<String, ActionObjectEntity> e : eventActions.entrySet()) {
-                property.setEventAction(e.getKey(), e.getValue());
+                property.setEventAction(e.getKey(), e.getValue(), false);
             }
         }
 
