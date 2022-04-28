@@ -196,7 +196,7 @@ public class GFormController implements EditManager {
     }
 
     public void checkGlobalMouseEvent(Event event) {
-        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, true));
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, false));
     }
 
     public Event popEditEvent() {
