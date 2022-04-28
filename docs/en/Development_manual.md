@@ -1,5 +1,5 @@
 ---
-title: 'To develop'
+title: 'For development'
 ---
 
 
