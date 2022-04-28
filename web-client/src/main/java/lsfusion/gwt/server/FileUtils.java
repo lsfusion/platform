@@ -15,7 +15,6 @@ import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
-import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -225,9 +224,9 @@ public class FileUtils {
         }
     }
 
-    public static Pair<String, String> exportReport(FormPrintType type, ReportGenerationData reportData, RemoteLogicsInterface remoteLogics) {
+    public static Pair<String, String> exportReport(FormPrintType type, ReportGenerationData reportData) {
         try {
-            RawFileData report = ReportGenerator.exportToFileByteArray(reportData, type, remoteLogics);
+            RawFileData report = ReportGenerator.exportToFileByteArray(reportData, type);
             return new Pair<>(FileUtils.saveActionFile(report), type.getExtension());
         } catch (Exception e) {
             throw Throwables.propagate(e);

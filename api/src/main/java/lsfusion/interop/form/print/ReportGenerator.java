@@ -2,10 +2,8 @@ package lsfusion.interop.form.print;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -83,13 +81,13 @@ public class ReportGenerator {
         JRVirtualizationHelper.setThreadVirtualizer(virtualizer);
     }
 
-    public JasperPrint createReport(FormPrintType printType, RemoteLogicsInterface remoteLogics) throws ClassNotFoundException, IOException, JRException {
+    public JasperPrint createReport(FormPrintType printType) throws ClassNotFoundException, IOException, JRException {
         Pair<String, Map<String, List<String>>> hpair = retrieveReportHierarchy(generationData.reportHierarchyData);
         rootID = hpair.first;
         hierarchy = hpair.second;
 
         designs = retrieveReportDesigns(generationData);
-
+        
         Pair<Map<String, ClientKeyData>, ClientPropertyData> output = retrieveReportSources(generationData);        
         keyData = output.first;
         propData = output.second;
@@ -97,25 +95,13 @@ public class ReportGenerator {
         transformDesigns(printType.ignorePagination());
 
         Map<String, Object> params = new HashMap<>();
+        iterateChildReport(rootID, params, virtualizer);
 
-        // external classloader required for correct Jasper report generation on clients
-        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
-        JasperPrint print;
-        try {
-            if (remoteLogics != null)
-                Thread.currentThread().setContextClassLoader(new RemoteClassLoader.ExternalClassLoader(remoteLogics));
+        JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
+        ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
+        Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
 
-            iterateChildReport(rootID, params, virtualizer);
-
-            JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
-            ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
-            Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
-
-            print = JasperFillManager.fillReport(report, childParams, source);
-        } finally {
-            if (remoteLogics != null)
-                Thread.currentThread().setContextClassLoader(originalClassloader);
-        }
+        JasperPrint print = JasperFillManager.fillReport(report, childParams, source);
 
         JasperDesign rootDesign = designs.get(rootID);
         print.setProperty(SIDES_PROPERTY_NAME, rootDesign.getProperty(SIDES_PROPERTY_NAME));
@@ -538,7 +524,7 @@ public class ReportGenerator {
 
     @Deprecated
     public static File exportToXlsx(ReportGenerationData generationData) throws IOException, ClassNotFoundException, JRException {
-        return exportToFile(generationData, FormPrintType.XLSX, null, null, null);
+        return exportToFile(generationData, FormPrintType.XLSX, null, null);
     }
 
     private void removeZeroWidthElements(JasperDesign design) {
@@ -732,13 +718,13 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean, RemoteLogicsInterface remoteLogics) {
-        exportAndOpen(generationData, type, null, null, remoteLogics);
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, boolean fixBoolean) {
+        exportAndOpen(generationData, type, null, null);
     }
 
-    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) {
+    public static void exportAndOpen(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) {
         try {
-            File tempFile = exportToFile(generationData, type, sheetName, password, remoteLogics);
+            File tempFile = exportToFile(generationData, type, sheetName, password);
 
             try {
                 if (Desktop.isDesktopSupported()) {
@@ -771,13 +757,13 @@ public class ReportGenerator {
         }
     }
 
-    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) throws ClassNotFoundException, IOException, JRException {
+    public static File exportToFile(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) throws ClassNotFoundException, IOException, JRException {
         String extension = type.getExtension();
         File tempFile = File.createTempFile("lsf", "." + extension);
 
         ReportGenerator report = new ReportGenerator(generationData);
 
-        JasperPrint print = report.createReport(type, remoteLogics);
+        JasperPrint print = report.createReport(type);
         print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
         if(type == FormPrintType.XLSX) {
             print.setProperty(XlsReportConfiguration.PROPERTY_MAXIMUM_ROWS_PER_SHEET, "1048576");
@@ -836,14 +822,14 @@ public class ReportGenerator {
         return tempFile;
     }
 
-    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, RemoteLogicsInterface remoteLogics) {
-        return exportToFileByteArray(generationData, type, null, null, remoteLogics);
+    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type) {
+        return exportToFileByteArray(generationData, type, null, null);
     }
     
-    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) {
+    public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password) {
         try {
             try {
-                return new RawFileData(exportToFile(generationData, type, sheetName, password, remoteLogics));
+                return new RawFileData(exportToFile(generationData, type, sheetName, password));
             } finally {
                 JRVirtualizationHelper.clearThreadVirtualizer();
             }

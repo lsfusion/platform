@@ -198,13 +198,6 @@
             </exclusions>
         </dependency>
 
-        <!--required for correct Jasper report generation-->
-        <dependency>
-            <groupId>org.eclipse.jdt.core.compiler</groupId>
-            <artifactId>ecj</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>

@@ -33,7 +33,7 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, GroupRepo
             report = FileUtils.exportFile((RawFileData) reportData);
         } else {
             //assert reportData instanceof ReportGenerationData
-            report = FileUtils.exportReport(printType, (ReportGenerationData) reportData, servlet.getNavigatorProvider().getRemoteLogics());
+            report = FileUtils.exportReport(printType, (ReportGenerationData) reportData);
         }
         return new GroupReportResult(report.first, report.second);
     }

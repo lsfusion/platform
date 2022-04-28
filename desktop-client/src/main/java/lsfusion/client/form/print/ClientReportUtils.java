@@ -3,7 +3,6 @@ package lsfusion.client.form.print;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.exception.ClientExceptionManager;
 import lsfusion.client.base.log.Log;
-import lsfusion.client.controller.MainController;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.print.ReportGenerator;
@@ -74,7 +73,7 @@ public class ClientReportUtils {
                     }
                 }
 
-                JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT, MainController.remoteLogics);
+                JasperPrint print = new ReportGenerator(generationData).createReport(FormPrintType.PRINT);
                 print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
 
                 PrintRequestAttributeSet attrSet = new HashPrintRequestAttributeSet();
