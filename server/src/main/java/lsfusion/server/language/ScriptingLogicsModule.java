@@ -16,6 +16,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
@@ -798,7 +799,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         form.setModalityType(modalityType);
 
         if(autoRefresh > 0) {
-            form.addScriptedFormSchedule((ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty(), autoRefresh, false, getVersion());
+            formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());
         }
 
         form.setLocalAsync(localAsync);

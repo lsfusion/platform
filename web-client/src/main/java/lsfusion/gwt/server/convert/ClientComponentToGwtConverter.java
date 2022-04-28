@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.data.ClientFileClass;
 import lsfusion.client.form.ClientForm;
-import lsfusion.client.form.ClientFormScheduler;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
@@ -45,6 +44,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.PivotOptions;
@@ -615,8 +615,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         this.form = form;
 
         form.creationPath = clientForm.creationPath;
-        for(ClientFormScheduler clientFormScheduler : clientForm.formSchedulers) {
-            form.formSchedulers.add(convertOrCast(clientFormScheduler));
+        for(FormScheduler formScheduler : clientForm.formSchedulers) {
+            form.formSchedulers.add(convertOrCast(formScheduler));
         }
         GContainer mainContainer = convertOrCast(clientForm.mainContainer);
         mainContainer.main = true;
@@ -667,8 +667,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return gPivotPropertiesList;
     }
 
-    @Converter(from = ClientFormScheduler.class)
-    public GFormScheduler convertAction(ClientFormScheduler scheduler) {
+    @Converter(from = FormScheduler.class)
+    public GFormScheduler convertAction(FormScheduler scheduler) {
         return new GFormScheduler(scheduler.period, scheduler.fixed);
     }
 }

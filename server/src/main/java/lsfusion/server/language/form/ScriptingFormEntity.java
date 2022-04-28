@@ -34,7 +34,6 @@ import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelecto
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.FormScheduler;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
@@ -822,10 +821,6 @@ public class ScriptingFormEntity {
         if (modalityType != null) {
             form.modalityType = modalityType;
         }
-    }
-
-    public void addScriptedFormSchedule(ActionObjectEntity actionObjectEntity, int period, boolean fixed, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        form.addFormScheduler(new FormScheduler(actionObjectEntity, period, fixed), version);
     }
 
     public void setLocalAsync(boolean localAsync) {

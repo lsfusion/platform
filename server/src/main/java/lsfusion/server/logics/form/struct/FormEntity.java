@@ -13,6 +13,7 @@ import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -122,6 +123,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<ActionObjectEntity<?>> getEventActionsListIt(Object eventObject) {
         return eventActions.getListIt(eventObject);
     }
+    public NFOrderSet<FormScheduler> formSchedulers = NFFact.orderSet();
 
     private NFOrderSet<GroupObjectEntity> groups = NFFact.orderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<GroupObjectEntity> getGroupsIt() {
@@ -250,7 +252,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ModalityType modalityType = ModalityType.DOCKED;
-    public NFOrderSet<FormScheduler> formSchedulers = NFFact.orderSet();
     public boolean localAsync = false;
 
     public PropertyObjectEntity<?> reportPathProp;
@@ -1126,6 +1127,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(drop)
             eventActions.removeAll(eventObject, version);
         eventActions.addAll(eventObject, Arrays.asList(actions), version);
+        if(eventObject instanceof FormScheduler) {
+            formSchedulers.add((FormScheduler) eventObject, version);
+        }
     }
 
     public ComponentView getDrawComponent(PropertyDrawEntity<?> property) {
@@ -1508,10 +1512,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         FormView richDesign = getNFRichDesign(version);
         if(richDesign !=null)
             richDesign.addPivotMeasure(column, version);
-    }
-
-    public void addFormScheduler(FormScheduler formScheduler, Version version) {
-        formSchedulers.add(formScheduler, version);
     }
 
     public void setNeedVerticalScroll(boolean scroll) {

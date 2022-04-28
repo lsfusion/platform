@@ -14,6 +14,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.interop.form.event.FormScheduler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,7 +29,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public String canonicalName = "";
     public String creationPath = "";
 
-    public List<ClientFormScheduler> formSchedulers = new ArrayList<>();
+    public List<FormScheduler> formSchedulers = new ArrayList<>();
 
     public static ClientGroupObject lastActiveGroupObject;
 
@@ -218,11 +219,11 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         return properties;
     }
 
-    private List<ClientFormScheduler> deserializeFormSchedulers(DataInputStream inStream) throws IOException {
-        List<ClientFormScheduler> formSchedulers = new ArrayList<>();
+    private List<FormScheduler> deserializeFormSchedulers(DataInputStream inStream) throws IOException {
+        List<FormScheduler> formSchedulers = new ArrayList<>();
         int size = inStream.readInt();
         for(int i = 0; i < size; i++) {
-            formSchedulers.add(ClientFormScheduler.deserialize(inStream));
+            formSchedulers.add(FormScheduler.deserialize(inStream));
         }
         return formSchedulers;
     }
