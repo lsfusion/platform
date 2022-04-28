@@ -1,9 +1,9 @@
 package lsfusion.base.classloader;
 
+import com.google.common.base.Throwables;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -26,24 +26,6 @@ public class RemoteClassLoader extends ClassLoader {
     }
 
     @Override
-    public URL getResource(String name) {
-        URL resource = super.getResource(name);
-
-        if (classesMap == null) // it's a call from the web
-            return resource;
-        else if (resource != null) { //it's a call from the server. Save classes that are used in jrxml
-            try {
-                if (!name.startsWith("lsfusion/base") && !name.startsWith("java") && !name.startsWith("net/sf"))
-                    classesMap.accept(name, resource.openStream().readAllBytes());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return resource;
-    }
-
-    @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             return super.findClass(name);
@@ -63,7 +45,21 @@ public class RemoteClassLoader extends ClassLoader {
     // used in JasperCompileManager not in the desktop-client
     @Override
     public InputStream getResourceAsStream(String name) {
-        return classes != null && classes.containsKey(name) ? new ByteArrayInputStream(classes.get(name)) : super.getResourceAsStream(name);
+        InputStream resourceAsStream = super.getResourceAsStream(name);
+
+        if (classes != null && classes.containsKey(name)) { // call from the client. Load class from bytes
+            return new ByteArrayInputStream(classes.get(name));
+        } else if (classesMap == null) // If class doesn't contain in the classes we assume it is in the client's classpath
+            return resourceAsStream;
+        else if (resourceAsStream != null) { //call from the server. Save classes that are used in .jrxml
+            try {
+                if (!name.startsWith("lsfusion/base") && !name.startsWith("java") && !name.startsWith("net/sf")) //save classes that will not be in the client's classpath
+                    classesMap.accept(name, resourceAsStream.readAllBytes());
+            } catch (IOException e) {
+                Throwables.propagate(e);
+            }
+        }
+        return super.getResourceAsStream(name);
     }
 
 }

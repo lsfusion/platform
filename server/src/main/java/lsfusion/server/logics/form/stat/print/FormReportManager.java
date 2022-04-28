@@ -125,19 +125,20 @@ public abstract class FormReportManager extends FormDataManager {
 
         // report design
         Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(printType, reportPrefix.result, hierarchy, propData.columnData, propData.types);
+        Map<String, byte[]> usedClasses = getUsedClasses(designs.values());
 
         // serializing
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(hierarchy.reportHierarchy);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(hierarchy.reportHierarchy, keyData, propData);
         byte[] reportDesignsByteArray = getReportDesignsByteArray(designs);
-        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray,
-                Settings.get().isUseShowIfInReports(), getClassesByteArray(getUsedClasses(designs.values())));
+        byte[] classesByteArray = getClassesByteArray(usedClasses);
+        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports(), classesByteArray);
     }
 
-    private HashMap<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
+    private Map<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         try {
-            HashMap<String, byte[]> classes = new HashMap<>();
+            Map<String, byte[]> classes = new HashMap<>();
             Thread.currentThread().setContextClassLoader(new RemoteClassLoader(classes::put, originalClassloader));
             for (JasperDesign design : designs) {
                 JasperCompileManager.compileReport(design);
