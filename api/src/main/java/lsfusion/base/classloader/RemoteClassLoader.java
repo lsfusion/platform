@@ -37,11 +37,12 @@ public class RemoteClassLoader extends RMIClassLoaderSpi {
                 Class<?> aClass = findLoadedClass(name);
                 byte[] classBytes;
                 if (aClass == null) {
+
                     classBytes = remoteLogics.findClass(name);
                     aClass = defineClass(name, classBytes, 0, classBytes.length);
                 }
                 return aClass;
-            } catch (RemoteException | IllegalArgumentException remote) { // catch IllegalArgumentException to the JRClassloader work correctly. Because remoteLogics.findClass() throws IllegalArgumentException from getResource, but JRClassloader catches only ClassNotFoundException
+            } catch (RemoteException remote) {
                 throw new ClassNotFoundException(getString("errors.error.loading.class.on.the.client"), remote);
             }
         }
