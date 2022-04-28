@@ -2,7 +2,7 @@ package lsfusion.interop.form.print;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.classloader.RemoteClassLoader;
+import lsfusion.base.classloader.WriteUsedClassLoader;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -101,7 +101,7 @@ public class ReportGenerator {
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         JasperPrint print;
         try {
-            Thread.currentThread().setContextClassLoader(new RemoteClassLoader(retrieveClasses(generationData), originalClassloader));
+            Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader));
 
             iterateChildReport(rootID, params, virtualizer);
 

@@ -5,7 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
-import lsfusion.base.classloader.RemoteClassLoader;
+import lsfusion.base.classloader.ReadUsedClassLoader;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -138,12 +138,11 @@ public abstract class FormReportManager extends FormDataManager {
     private Map<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         try {
-            Map<String, byte[]> classes = new HashMap<>();
-            Thread.currentThread().setContextClassLoader(new RemoteClassLoader(classes::put, originalClassloader));
+            Thread.currentThread().setContextClassLoader(new ReadUsedClassLoader(originalClassloader));
             for (JasperDesign design : designs) {
                 JasperCompileManager.compileReport(design);
             }
-            return classes;
+            return ReadUsedClassLoader.getClasses();
         } catch (JRException e) {
             throw new RuntimeException(e);
         } finally {
