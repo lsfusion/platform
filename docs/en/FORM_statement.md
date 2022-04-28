@@ -57,7 +57,7 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 
 - `AUTOREFRESH period`
 
-    Specifying the [automatic form update](Interactive_view.md#extra) period. If the option is not specified, the form will not be updated automatically. **deprecated since version 5, use `SCHEDULE refresh()`**
+    Specifying the [automatic form update](Interactive_view.md#extra) period. If the option is not specified, the form will not be updated automatically. **deprecated since version 5, use `EVENTS ON SCHEDULE refresh()`**
 
     - `period`
     
@@ -92,10 +92,6 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 - `EVENTS ...`
 
     Defines actions that are executed on specific events. [Syntax of the event block](Event_block.md).
-
-- `SCHEDULE ...`
-
-  Defines form scheduler. [Syntax of the scheduler block](Scheduler_block.md).
 
 - `FORMEXTID extID`
 

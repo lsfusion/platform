@@ -20,6 +20,7 @@ import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -108,7 +109,6 @@ import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.FormScheduler;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.filter.FilterEntityInstance;
@@ -976,12 +976,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             dataChanged = true;
         } else
             session.changeClass(objectInstance, dataObject, cls);
-    }
-
-    @ThisMessage
-    public void executeFormSchedulerAction(final ExecutionStack stack, int index) throws SQLException, SQLHandledException {
-        FormScheduler formScheduler = entity.formSchedulers.getOrderSet().get(index);
-        formScheduler.actionObjectEntity.getInstance(instanceFactory).execute(this, stack, null, null, this);
     }
 
     @ThisMessage
@@ -2561,6 +2555,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public void fireQueryClose(ExecutionStack stack, boolean ok) throws SQLException, SQLHandledException {
         fireEvent(ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE, stack);
+    }
+
+    public void fireFormSchedulerEvent(ExecutionStack stack, FormScheduler formScheduler) throws SQLException, SQLHandledException {
+        fireEvent(formScheduler, stack);
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {

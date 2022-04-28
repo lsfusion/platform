@@ -26,7 +26,6 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.controller.remote.RmiRequest;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
-import lsfusion.client.form.ClientFormScheduler;
 import lsfusion.client.form.controller.dispatch.ClientFormActionDispatcher;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.design.ClientComponent;
@@ -408,14 +407,14 @@ public class ClientFormController implements AsyncListener {
     private void initializeFormSchedulers() {
         formSchedulers = new ArrayList<>();
         for(int i = 0; i < form.formSchedulers.size(); i++) {
-            ClientFormScheduler formScheduler = form.formSchedulers.get(i);
+            FormScheduler formScheduler = form.formSchedulers.get(i);
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             formSchedulers.add(scheduler);
-            scheduleFormScheduler(scheduler, formScheduler, i);
+            scheduleFormScheduler(scheduler, formScheduler);
         }
     }
 
-    private void scheduleFormScheduler(ScheduledExecutorService scheduler, ClientFormScheduler formScheduler, int index) {
+    private void scheduleFormScheduler(ScheduledExecutorService scheduler, FormScheduler formScheduler) {
         if (remoteForm != null) {
             scheduler.schedule(() -> {
                 if (formLayout.isShowing()) {
@@ -423,21 +422,21 @@ public class ClientFormController implements AsyncListener {
                         @Override
                         protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                             if (formScheduler.fixed) {
-                                scheduleFormScheduler(scheduler, formScheduler, index);
+                                scheduleFormScheduler(scheduler, formScheduler);
                             }
-                            return remoteForm.formSchedulerExecuted(requestIndex, lastReceivedRequestIndex, index);
+                            return remoteForm.formSchedulerExecuted(requestIndex, lastReceivedRequestIndex, formScheduler);
                         }
 
                         @Override
                         protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
                             super.onResponse(requestIndex, result);
                             if (!formScheduler.fixed) {
-                                scheduleFormScheduler(scheduler, formScheduler, index);
+                                scheduleFormScheduler(scheduler, formScheduler);
                             }
                         }
                     }));
                 } else {
-                    scheduleFormScheduler(scheduler, formScheduler, index);
+                    scheduleFormScheduler(scheduler, formScheduler);
                 }
             }, formScheduler.period, TimeUnit.SECONDS);
         }

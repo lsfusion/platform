@@ -8,6 +8,7 @@ While the application is running, there is a number of events for each form that
 
 -   `QUERYCLOSE` - the user tries to close the form by clicking on the corresponding button in the form header.
 -   `QUERYOK` - the user tries to close a modal form by double-clicking on any row in the table.
+-   `SCHEDULE` - scheduler that executes some action at form.
 
 #### For objects on the form
 

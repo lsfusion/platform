@@ -561,8 +561,8 @@ public class GFormController implements EditManager {
     }
 
     private void initializeFormSchedulers() {
-        for(int i = 0; i < form.formSchedulers.size(); i++) {
-            scheduleFormScheduler(form.formSchedulers.get(i), i);
+        for(GFormScheduler formScheduler : form.formSchedulers) {
+            scheduleFormScheduler(formScheduler);
         }
     }
 
@@ -570,24 +570,24 @@ public class GFormController implements EditManager {
         return formLayout;
     }
 
-    private void scheduleFormScheduler(GFormScheduler formScheduler, int index) {
+    private void scheduleFormScheduler(GFormScheduler formScheduler) {
 
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
                 if (!formHidden) {
                     if (isShowing(getWidget()) && !MainFrame.isModalPopup()) {
-                        asyncDispatch(new ExecuteFormSchedulerAction(index), new ServerResponseCallback() {
+                        asyncDispatch(new ExecuteFormSchedulerAction(formScheduler), new ServerResponseCallback() {
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                                 super.onSuccess(response, onDispatchFinished);
                                 if (!formHidden && !formScheduler.fixed) {
-                                    scheduleFormScheduler(formScheduler, index);
+                                    scheduleFormScheduler(formScheduler);
                                 }
                             }
                         });
 
                         if(formScheduler.fixed) {
-                            scheduleFormScheduler(formScheduler, index);
+                            scheduleFormScheduler(formScheduler);
                         }
 
                     } else {

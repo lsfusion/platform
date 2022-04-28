@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -263,6 +264,14 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
     }
 
     @Override
+    public ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, FormScheduler formScheduler) throws RemoteException {
+        logRemoteMethodStartCall("schedulerExecuted");
+        ServerResponse result = target.formSchedulerExecuted(requestIndex, lastReceivedRequestIndex, formScheduler);
+        logRemoteMethodEndCall("schedulerExecuted", result);
+        return result;
+    }
+
+    @Override
     public ServerResponse expandGroupObjectRecursive(long requestIndex, long lastReceivedRequestIndex, int groupId, boolean current) throws RemoteException {
         logRemoteMethodStartVoidCall("expandTreeNodeRecursive");
         ServerResponse result = target.expandGroupObjectRecursive(requestIndex, lastReceivedRequestIndex, groupId, current);
@@ -296,14 +305,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         logRemoteMethodStartVoidCall("moveGroupObject");
         ServerResponse result = target.moveGroupObject(requestIndex, lastReceivedRequestIndex, parentGroupId, parentKey, childGroupId, childKey, index);
         logRemoteMethodEndVoidCall("moveGroupObject");
-        return result;
-    }
-
-    @Override
-    public ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, int index) throws RemoteException {
-        logRemoteMethodStartCall("formSchedulerExecuted");
-        ServerResponse result = target.formSchedulerExecuted(requestIndex, lastReceivedRequestIndex, index);
-        logRemoteMethodEndCall("formSchedulerExecuted", result);
         return result;
     }
 
