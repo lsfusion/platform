@@ -1,5 +1,5 @@
 ---
-title: 'Development (auto)'
+title: 'To develop'
 ---
 
 On this page you can download installers that install everything needed for development in a single click. In addition to lsFusion, these installers also install OpenJDK, PostgreSQL, Tomcat, and IntelliJ IDEA Community Edition with the built-in lsFusion plugin. If any of these programs are already on your computer, you can exclude them during the installation process.
