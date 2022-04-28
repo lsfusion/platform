@@ -13,6 +13,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
+    import lsfusion.interop.form.event.FormScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
     import lsfusion.interop.form.property.ClassViewType;
     import lsfusion.interop.form.property.PivotOptions;
@@ -414,7 +415,6 @@ scope {
 		|	formPropertiesList
 		|	formHintsList
 		|	formEventsList
-		|   formScheduleDeclaration
 		|	filterGroupDeclaration
 		|	extendFilterGroupDeclaration
 		|	userFiltersDeclaration
@@ -1151,21 +1151,6 @@ formHintsList
 		list=nonEmptyPropertyUsageList
 	;
 
-formScheduleDeclaration
-@init {
-    int period = 0;
-    boolean fixed = false;
-}
-@after {
-	if (inMainParseState()) {
-		$formStatement::form.addScriptedFormSchedule($faprop.action, period, fixed, self.getVersion());
-	}
-}
-	:	'SCHEDULE'
-        ('PERIOD' periodLiteral=intLiteral { period = $periodLiteral.val; } ('FIXED' { fixed = true; })? )?
-        faprop=formActionObject
-	;
-
 formEventsList
 @init {
 	List<ActionObjectEntity> actions = new ArrayList<>();
@@ -1197,9 +1182,14 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
+		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
+	;
+
+scheduleFormEventDeclaration returns [int period, boolean fixed]
+	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
 
 
