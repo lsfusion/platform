@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
+import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -129,7 +130,34 @@ public abstract class FormReportManager extends FormDataManager {
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(hierarchy.reportHierarchy);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(hierarchy.reportHierarchy, keyData, propData);
         byte[] reportDesignsByteArray = getReportDesignsByteArray(designs);
-        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports());
+        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray,
+                Settings.get().isUseShowIfInReports(), getClassesByteArray(getUsedClasses(designs.values())));
+    }
+
+    private HashMap<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
+        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+        try {
+            HashMap<String, byte[]> classes = new HashMap<>();
+            Thread.currentThread().setContextClassLoader(new RemoteClassLoader(classes::put, originalClassloader));
+            for (JasperDesign design : designs) {
+                JasperCompileManager.compileReport(design);
+            }
+            return classes;
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassloader);
+        }
+    }
+
+    private byte[] getClassesByteArray(Map<String, byte[]> classes) {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            new ObjectOutputStream(outStream).writeObject(classes);
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected StaticDataGenerator.ReportHierarchy getReportHierarchy(Result<String> reportPrefix) {
