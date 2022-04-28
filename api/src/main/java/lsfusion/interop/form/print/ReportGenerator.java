@@ -2,7 +2,7 @@ package lsfusion.interop.form.print;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.classloader.WriteUsedClassLoader;
+import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -97,11 +97,13 @@ public class ReportGenerator {
         transformDesigns(printType.ignorePagination());
 
         Map<String, Object> params = new HashMap<>();
-//        // external classloader required for correct Jasper report generation on clients
+
+        // external classloader required for correct Jasper report generation on clients
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         JasperPrint print;
         try {
-            Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader));
+            if (remoteLogics != null)
+                Thread.currentThread().setContextClassLoader(new RemoteClassLoader.ExternalClassLoader(remoteLogics));
 
             iterateChildReport(rootID, params, virtualizer);
 
@@ -111,7 +113,8 @@ public class ReportGenerator {
 
             print = JasperFillManager.fillReport(report, childParams, source);
         } finally {
-            Thread.currentThread().setContextClassLoader(originalClassloader);
+            if (remoteLogics != null)
+                Thread.currentThread().setContextClassLoader(originalClassloader);
         }
 
         JasperDesign rootDesign = designs.get(rootID);
@@ -169,10 +172,6 @@ public class ReportGenerator {
         String rootID = objStream.readUTF();
         Map<String, java.util.List<String>> hierarchy = (Map<String, java.util.List<String>>) objStream.readObject();
         return new Pair<>(rootID, hierarchy);
-    }
-
-    private static Map<String, byte[]> retrieveClasses(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
-        return (Map<String, byte[]>) new ObjectInputStream(new ByteArrayInputStream(generationData.classes)).readObject();
     }
 
     private static Map<String, JasperDesign> retrieveReportDesigns(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
@@ -475,7 +474,7 @@ public class ReportGenerator {
                     if (exprText.startsWith("$F{")) {
                         String fieldName = getFieldName(exprText);
                         // We need to check already divided fields as well
-                        if (hidingFieldsNames.contains(removeIndexMarkerIfExists(fieldName))) {
+                        if (hidingFieldsNames.contains(removeIndexMarkerIfExists(fieldName))) { 
                             textFieldsToHide.add(textElement);
                         }
                     }
