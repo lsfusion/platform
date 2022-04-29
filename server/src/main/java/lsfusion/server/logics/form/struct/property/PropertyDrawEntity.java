@@ -66,6 +66,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<String, ActionObjectEntity<?>> eventActions;
 
+    public boolean ignoreIsInInterfaceCheck;
+
     public boolean optimisticAsync;
 
     public Boolean askConfirm;
@@ -353,11 +355,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setEventAction(String actionSID, ActionObjectEntity<?> eventAction) {
+    public void setEventAction(String actionSID, ActionObjectEntity<?> eventAction, boolean ignoreIsInInterfaceCheck) {
         if(eventActions ==null) {
             eventActions = new HashMap<>();
         }
         eventActions.put(actionSID, eventAction);
+        this.ignoreIsInInterfaceCheck = ignoreIsInInterfaceCheck;
     }
 
     private ActionOrProperty<P> getEventProperty() {

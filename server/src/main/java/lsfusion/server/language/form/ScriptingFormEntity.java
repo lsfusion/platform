@@ -534,7 +534,7 @@ public class ScriptingFormEntity {
         Map<String, ActionObjectEntity> eventActions = options.getEventActions();
         if (eventActions != null) {
             for (Map.Entry<String, ActionObjectEntity> e : eventActions.entrySet()) {
-                property.setEventAction(e.getKey(), e.getValue());
+                property.setEventAction(e.getKey(), e.getValue(), false);
             }
         }
 
@@ -559,7 +559,7 @@ public class ScriptingFormEntity {
         Boolean isSelector = options.getSelector();
         ActionObjectEntity selectorAction;
         if(isSelector != null && isSelector && (selectorAction = property.getSelectorAction(form, version)) != null)
-            property.setEventAction(ServerResponse.CHANGE, selectorAction);
+            property.setEventAction(ServerResponse.CHANGE, selectorAction, true);
 
         String eventID = options.getEventId();
         if (eventID != null)
