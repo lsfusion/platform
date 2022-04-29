@@ -7,6 +7,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.SingleInstance;
@@ -79,6 +80,7 @@ public class MainController {
     // lifecycle
 
     public static void start(final String[] args) {
+
         registerSingleInstanceListener();
 
         computerName = SystemUtils.getLocalHostName();
@@ -277,10 +279,31 @@ public class MainController {
     }
 
     public static void initRmiClassLoader(RemoteLogicsInterface remoteLogics) {
-        // reset the SecurityManager that installs JavaWS,
-        // since it doesn't let the RemoteClassLoader class do anything,
-        // since it is loaded from a temporary directory
-        System.setSecurityManager(null);
+        // since RMIClassLoader uses Spi Class.forname to load,
+        // and this does not work correctly, since JWS uses its own user-class loader,
+        // and the jar-files are not added to java.class.path
+        // requires RemoteClassLoader to run with native JWS ClassLoader
+
+        try {
+            Field field = RMIClassLoader.class.getDeclaredField("provider");
+            field.setAccessible(true);
+
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+            field.set(null, new RemoteClassLoader(remoteLogics));
+
+            // reset the SecurityManager that installs JavaWS,
+            // since it doesn't let the RemoteClassLoader class do anything,
+            // since it is loaded from a temporary directory
+            System.setSecurityManager(null);
+        } catch (Exception ex) {
+            logger.error("Error during startup: ", ex);
+            ex.printStackTrace();
+            removeSingleInstanceListener();
+            System.exit(1);
+        }
     }
     
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
