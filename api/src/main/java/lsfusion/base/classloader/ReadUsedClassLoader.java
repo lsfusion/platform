@@ -1,7 +1,6 @@
 package lsfusion.base.classloader;
 
 import com.google.common.base.Throwables;
-import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +26,7 @@ public class ReadUsedClassLoader extends ClassLoader {
         if (resourceAsStream != null) { //call from the server. Save classes that are used in .jrxml
             try {
                 if (!name.startsWith("lsfusion/base") && !name.startsWith("java") && !name.startsWith("net/sf")) //save classes that will not be in the client's classpath
-                    classes.put(name, IOUtils.toByteArray(resourceAsStream));
+                    classes.put(name, resourceAsStream.readAllBytes());
             } catch (IOException e) {
                 Throwables.propagate(e);
             }
