@@ -2,6 +2,7 @@ package lsfusion.client.form.print.view;
 
 import com.google.common.base.Throwables;
 import lsfusion.client.base.SwingUtils;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -21,7 +22,7 @@ public class ReportDialog extends JDialog {
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         ReportGenerator report = new ReportGenerator(generationData);
-        JasperPrint print = report.createReport(FormPrintType.PRINT);
+        JasperPrint print = report.createReport(FormPrintType.PRINT, MainController.remoteLogics);
         print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
         pageCount = print.getPages().size();
 

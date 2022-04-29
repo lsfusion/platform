@@ -7,6 +7,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.SingleInstance;
@@ -21,7 +22,6 @@ import lsfusion.client.base.log.Log;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.controller.remote.ClientRMIClassLoaderSpi;
 import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.form.print.SavingThread;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
@@ -300,7 +300,7 @@ public class MainController {
         modifiersField.setAccessible(true);
         modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
-        field.set(null, new ClientRMIClassLoaderSpi());
+        field.set(null, new RemoteClassLoader(remoteLogics));
 
         // сбрасываем SecurityManager, который устанавливает JavaWS,
         // поскольку он не дает ничего делать классу ClientRMIClassLoaderSpi,
