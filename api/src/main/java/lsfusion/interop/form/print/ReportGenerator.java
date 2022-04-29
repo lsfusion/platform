@@ -2,7 +2,6 @@ package lsfusion.interop.form.print;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
-import lsfusion.base.classloader.WriteUsedClassLoader;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -97,22 +96,14 @@ public class ReportGenerator {
         transformDesigns(printType.ignorePagination());
 
         Map<String, Object> params = new HashMap<>();
-//        // external classloader required for correct Jasper report generation on clients
-        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
-        JasperPrint print;
-        try {
-            Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader));
 
-            iterateChildReport(rootID, params, virtualizer);
+        iterateChildReport(rootID, params, virtualizer);
 
-            JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
-            ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
-            Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
+        JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
+        ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
+        Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
 
-            print = JasperFillManager.fillReport(report, childParams, source);
-        } finally {
-            Thread.currentThread().setContextClassLoader(originalClassloader);
-        }
+        JasperPrint print = JasperFillManager.fillReport(report, childParams, source);
 
         JasperDesign rootDesign = designs.get(rootID);
         print.setProperty(SIDES_PROPERTY_NAME, rootDesign.getProperty(SIDES_PROPERTY_NAME));
@@ -169,10 +160,6 @@ public class ReportGenerator {
         String rootID = objStream.readUTF();
         Map<String, java.util.List<String>> hierarchy = (Map<String, java.util.List<String>>) objStream.readObject();
         return new Pair<>(rootID, hierarchy);
-    }
-
-    private static Map<String, byte[]> retrieveClasses(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
-        return (Map<String, byte[]>) new ObjectInputStream(new ByteArrayInputStream(generationData.classes)).readObject();
     }
 
     private static Map<String, JasperDesign> retrieveReportDesigns(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
