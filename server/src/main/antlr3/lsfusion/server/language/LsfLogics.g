@@ -1162,7 +1162,7 @@ formEventsList
 		$formStatement::form.addScriptedFormEvents(actions, types, replaces, self.getVersion());
 	}
 }
-	:	'EVENTS'
+	:	('EVENTS')?
 		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); }
 		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); })*
 	;
