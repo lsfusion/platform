@@ -82,6 +82,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private OrderedMap<String, LocalizedString> contextMenuBindings;
     private Map<String, ActionObjectSelector> eventActions;
 
+    public boolean ignoreIsInInterfaceCheck;
+
     public boolean optimisticAsync;
 
     public Boolean askConfirm;
@@ -381,7 +383,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         contextMenuBindings.put(actionSID, caption);
     }
 
-    public void setEventAction(String actionSID, ActionObjectSelector eventAction) {
+    public void setEventAction(String actionSID, ActionObjectSelector eventAction, boolean ignoreIsInInterfaceCheck) {
         if(actionSID.equals(CHANGE_WYS)) { // CHANGE_WYS, temp check
             ServerLoggers.startLogger.info("WARNING! CHANGE_WYS is deprecated, use LIST clause in INPUT / DIALOG operator instead " + this);
             return;
@@ -391,6 +393,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             eventActions = new HashMap<>();
         }
         eventActions.put(actionSID, eventAction);
+        this.ignoreIsInInterfaceCheck = ignoreIsInInterfaceCheck;
     }
 
     public FormSessionScope defaultChangeEventScope = null;

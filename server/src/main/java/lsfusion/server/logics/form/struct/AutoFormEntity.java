@@ -22,7 +22,7 @@ public abstract class AutoFormEntity extends FormEntity {
         Pair<LP, ActionObjectSelector> valueProp = LM.getObjValueProp(this, object);
         PropertyDrawEntity propertyDraw = addPropertyDraw(valueProp.first, version, object);
         if(valueProp.second != null)
-            propertyDraw.setEventAction(ServerResponse.CHANGE, valueProp.second);
+            propertyDraw.setEventAction(ServerResponse.CHANGE, valueProp.second, true);
         return propertyDraw;
     }
 }
