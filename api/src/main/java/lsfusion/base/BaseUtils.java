@@ -62,7 +62,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 149;
+        return 150;
     }
 
     public static String getPlatformVersion() {
@@ -347,7 +347,7 @@ public class BaseUtils {
         };
     }
 
-    // возвращает более конкретный класс если 
+    // возвращает более конкретный класс если
     public static <K, V, CV extends V> Map<K, CV> filterClass(Map<K, V> map, Class<CV> cvClass) {
         for (Map.Entry<K, V> entry : map.entrySet())
             if (!cvClass.isInstance(entry.getValue()))
