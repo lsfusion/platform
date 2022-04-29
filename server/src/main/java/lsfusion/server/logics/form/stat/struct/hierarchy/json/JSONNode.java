@@ -109,16 +109,22 @@ public class JSONNode implements Node<JSONNode> {
 
     public void addValue(JSONNode node, String key, boolean attr, Object value, Type type) {
         try {
-            node.element.put(key, parseObject(type.formatJSON(value)));
+            boolean escapeInnerJSON = false;
+            String escapeInnerJSONKey = ":escapeInnerJSON";
+            if(key.endsWith(escapeInnerJSONKey)) {
+                escapeInnerJSON = true;
+                key = key.substring(0, key.lastIndexOf(escapeInnerJSONKey));
+            }
+            node.element.put(key, parseObject(type.formatJSON(value), escapeInnerJSON));
         } catch (JSONException e) {
             throw Throwables.propagate(e);
         }
     }
 
     //check if it's json inside
-    private Object parseObject(Object obj) {
+    private Object parseObject(Object obj, boolean escapeInnerJSON) {
         try {
-            if (obj instanceof String && ((String) obj).matches("\\s*?((\\[.*\\])|(\\{.*\\}))\\s*")) {
+            if (obj instanceof String && !escapeInnerJSON && ((String) obj).matches("\\s*?((\\[.*\\])|(\\{.*\\}))\\s*")) {
                 return JSONReader.readObject((String) obj);
             }
         } catch (Exception ignored) {
