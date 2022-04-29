@@ -225,7 +225,7 @@ public enum GroupType implements AggrType {
 
     public Type getType(Type exprType) {
         if(this==CONCAT)
-            StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);
+            return StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);
         assert this != SUM || exprType instanceof IntegralClass;
 
         return exprType;
