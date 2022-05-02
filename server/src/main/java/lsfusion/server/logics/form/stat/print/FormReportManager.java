@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
+import lsfusion.base.classloader.ReadUsedClassLoader;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -179,12 +180,39 @@ public abstract class FormReportManager extends FormDataManager {
 
         // report design
         Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(printType, reportPrefix.result, hierarchy, propData.columnData, propData.types);
+        Map<String, byte[]> usedClasses = getUsedClasses(designs.values());
 
         // serializing
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(hierarchy.reportHierarchy);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(hierarchy.reportHierarchy, keyData, propData);
         byte[] reportDesignsByteArray = getReportDesignsByteArray(designs);
-        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports());
+        byte[] classesByteArray = getClassesByteArray(usedClasses);
+        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports(), classesByteArray);
+    }
+
+    private Map<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
+        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(new ReadUsedClassLoader(originalClassloader));
+            for (JasperDesign design : designs) {
+                JasperCompileManager.compileReport(design);
+            }
+            return ReadUsedClassLoader.getClasses();
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassloader);
+        }
+    }
+
+    private byte[] getClassesByteArray(Map<String, byte[]> classes) {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            new ObjectOutputStream(outStream).writeObject(classes);
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected StaticDataGenerator.ReportHierarchy getReportHierarchy(Result<String> reportPrefix) {
