@@ -7,6 +7,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.remote.ZipClientSocketFactory;
 import lsfusion.client.SingleInstance;
@@ -79,6 +80,8 @@ public class MainController {
     // lifecycle
 
     public static void start(final String[] args) {
+        Thread.currentThread().setContextClassLoader(new RemoteClassLoader(Thread.currentThread().getContextClassLoader()));
+
         registerSingleInstanceListener();
 
         computerName = SystemUtils.getLocalHostName();
@@ -277,6 +280,7 @@ public class MainController {
     }
 
     public static void initRmiClassLoader(RemoteLogicsInterface remoteLogics) {
+        RemoteClassLoader.setRemoteLogics(remoteLogics);
         // reset the SecurityManager that installs JavaWS,
         // since it doesn't let the RemoteClassLoader class do anything,
         // since it is loaded from a temporary directory
