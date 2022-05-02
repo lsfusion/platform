@@ -4,8 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
-import static lsfusion.base.ApiResourceBundle.getString;
-
 public class WriteUsedClassLoader extends ClassLoader {
 
     private final Map<String, byte[]> classes;
@@ -20,12 +18,8 @@ public class WriteUsedClassLoader extends ClassLoader {
         try {
             return super.findClass(name);
         } catch (ClassNotFoundException cne) {
-            try {
-                byte[] buf = classes.get(name.replace(".", "/") + ".class");
-                return defineClass(name, buf, 0, buf.length);
-            } catch (IllegalArgumentException remote) { // catch IllegalArgumentException to the JRClassloader work correctly. Because remoteLogics.findClass() throws IllegalArgumentException from getResource, but JRClassloader catches only ClassNotFoundException
-                throw new ClassNotFoundException(getString("errors.error.loading.class.on.the.client"), remote);
-            }
+            byte[] buf = classes.get(name.replace(".", "/") + ".class");
+            return buf != null ? defineClass(name, buf, 0, buf.length) : null;
         }
     }
 
