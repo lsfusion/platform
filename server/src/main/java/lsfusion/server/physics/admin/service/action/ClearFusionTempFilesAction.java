@@ -54,6 +54,7 @@ public class ClearFusionTempFilesAction extends InternalAction {
     private boolean needDeleteDir(File dir) {
         String name = dir.getName();
         return name.startsWith("lsfusiondebug")
+                || name.startsWith(".lsfusion")
                 || ((name.startsWith("gwtc") || name.startsWith("gwt-codeserver")) && name.endsWith(".tmp")); //GWT temp dirs
     }
 

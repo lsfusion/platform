@@ -36,12 +36,16 @@ public class StoredArrayFileManagerImpl implements StoredArrayFileManager {
 
     @Override
     public File tmpIndexFile() {
-        return new File(getTmpIndexFilePath());
+        File indexFile = new File(getTmpIndexFilePath());
+        indexFile.deleteOnExit();
+        return indexFile;
     }
     
     @Override
     public File tmpDataFile() {
-        return new File(getTmpDataFilePath());
+        File dataFile = new File(getTmpDataFilePath());
+        dataFile.deleteOnExit();
+        return dataFile;
     }
     
     @Override
