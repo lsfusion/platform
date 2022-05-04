@@ -3,6 +3,7 @@ package lsfusion.client.form.design.view;
 import lsfusion.base.BaseUtils;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
+import lsfusion.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 
@@ -32,8 +33,11 @@ public abstract class AbstractClientContainerView implements ClientContainerView
 
         child.installMargins(view.getComponent());
 
-        boolean fixFlexBasis = false; // we don't need this for now, since tabbed pane in desktop uses max preferredSize
-        // child.isTab() && child.getFlex() > 0 && container.getFlexCount() > 1;
+        boolean fixFlexBasis = view instanceof FlexTabbedPanel && child.getFlex() > 0 && container.getFlexCount() > 1;
+        if(fixFlexBasis) {
+            FlexTabbedPanel tabbedView = (FlexTabbedPanel) view;
+            tabbedView.setBeforeSelectionHandler(tabIndex -> ((FlexTabbedPanel) view).setPreferredSize(tabbedView.getMaxPreferredSize(tabbedView.isVertical())));
+        }
 
         children.add(index, child);
         childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));

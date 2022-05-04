@@ -6,6 +6,7 @@ import lsfusion.client.form.design.view.widget.Widget;
 
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import java.awt.*;
 import java.util.function.Consumer;
 
 public class FlexTabbedPanel extends FlexPanel {
@@ -123,5 +124,16 @@ public class FlexTabbedPanel extends FlexPanel {
                 oldWidget.setVisible(false);
             }
         }
+    }
+
+    public Dimension getMaxPreferredSize(boolean vertical) {
+        int maxWidth = 0;
+        int maxHeight = 0;
+        for(Widget child : getChildren()) {
+            Dimension prefSize = child.getFlexPreferredSize(vertical);
+            maxWidth = Math.max(maxWidth, vertical ? prefSize.height : prefSize.width);
+            maxHeight = Math.max(maxHeight, vertical ? prefSize.height : prefSize.width);
+        }
+        return new Dimension(maxWidth, maxHeight);
     }
 }
