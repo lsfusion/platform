@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Widget;
@@ -13,9 +15,13 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+import lsfusion.gwt.client.view.ColorThemeChangeListener;
+import lsfusion.gwt.client.view.MainFrame;
+
+import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 
 // property value renderer with editing
-public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext {
+public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext, ColorThemeChangeListener {
 
     protected Object value;
     protected boolean loading;
@@ -57,12 +63,12 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     @Override
     public String getBackground(String baseColor) {
-        return background != null ? background.toString() : baseColor;
+        return getDisplayColor(background != null ? background.toString() : baseColor);
     }
 
     @Override
     public String getForeground() {
-        return foreground != null ? foreground.toString() : null;
+        return getDisplayColor(foreground != null ? foreground.toString() : null);
     }
 
     protected GPropertyDraw property;
@@ -88,6 +94,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.globalCaptionIsDrawn = globalCaptionIsDrawn;
 
         getRenderElement().setPropertyObject("groupObject", property.groupObject);
+        
+        MainFrame.addColorThemeChangeListener(this);
     }
 
     public Element getRenderElement() {
@@ -277,6 +285,11 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         this.foreground = foreground;
         this.readOnly = readOnly;
 
+        update();
+    }
+
+    @Override
+    public void colorThemeChanged() {
         update();
     }
 

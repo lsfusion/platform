@@ -37,6 +37,16 @@ public class ColorCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
+    protected String getBackground(UpdateContext updateContext) {
+        String baseBackground = getBaseBackground(updateContext.getValue());
+        if (baseBackground != null) {
+            return baseBackground;
+        } else {
+            return updateContext.getBackground(null);
+        }
+    }
+
+    @Override
     protected String getBaseBackground(Object value) {
         return getColorValue(value);
     }

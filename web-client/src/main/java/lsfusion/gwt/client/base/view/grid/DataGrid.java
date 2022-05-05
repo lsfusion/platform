@@ -21,7 +21,10 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
+import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.*;
@@ -38,7 +41,8 @@ import java.util.function.Function;
 import static java.lang.Math.min;
 import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
-import static lsfusion.gwt.client.view.StyleDefaults.*;
+import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
+import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
 
 // we need resizesimplepanel for "scroller" padding in headers (we don't know if there gonna be vertival scroller)
 public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorThemeChangeListener, HasMaxPreferredSize {
@@ -1454,9 +1458,13 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     public static String getSelectedCellBackground(boolean selected, boolean focused, String background) {
         String setColor;
         if (selected) {
-            setColor = focused ? getFocusedCellBackgroundColor(background != null) : getSelectedRowBackgroundColor(background != null);
-            if (background != null)
-                setColor = mixColors(background, setColor);
+            if (focused) {
+                setColor = background != null ? getDisplayColor(background) : getFocusedCellBackgroundColor(false);
+            } else {
+                setColor = getSelectedRowBackgroundColor(background != null);
+                if (background != null)
+                    setColor = mixColors(background, setColor);
+            }
         } else {
             setColor = background != null ? getDisplayColor(background) : null;
         }

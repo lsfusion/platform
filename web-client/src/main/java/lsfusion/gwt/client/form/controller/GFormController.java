@@ -104,7 +104,6 @@ import java.util.stream.Collectors;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
@@ -2280,21 +2279,17 @@ public class GFormController implements EditManager {
         return editContext != null && editContext.getEditElement() == element;
     }
 
-    public static void setBackgroundColor(Element element, String color, boolean themeConvert) {
+    public static void setBackgroundColor(Element element, String color) {
         if (color != null) {
-            element.getStyle().setBackgroundColor(themeConvert ? getDisplayColor(color) : color);
+            element.getStyle().setBackgroundColor(color);
         } else {
             element.getStyle().clearBackgroundColor();
         }
     }
 
     public static void setForegroundColor(Element element, String color) {
-        setForegroundColor(element, color, false);
-    }
-
-    public static void setForegroundColor(Element element, String color, boolean themeConvert) {
         if (color != null) {
-            element.getStyle().setColor(themeConvert ? getDisplayColor(color) : color);
+            element.getStyle().setColor(color);
         } else {
             element.getStyle().clearColor();
         }
