@@ -17,8 +17,9 @@ public class StoredArray<T> {
     private RandomAccessFile dataFile;
     
     private final ArrayList<T> dataBuffer = new ArrayList<>();
-    
-    private final byte[] twoIntBuffer = new byte[Integer.BYTES * 2];
+
+    private final int olBufferSize = Long.BYTES + Integer.BYTES;
+    private final byte[] offsetLenBuffer = new byte[olBufferSize];
     
     public StoredArray(StoredArraySerializer serializer) {
         this(0, serializer);
@@ -95,10 +96,10 @@ public class StoredArray<T> {
 
                 seekToIndex(index);
                 ByteBuffer buf = readOffsetLen();
-                int offset = buf.getInt();
+                long offset = buf.getLong();
                 int len = buf.getInt();
 
-                int newOffset = (newLen <= len ? offset : (int) dataFile.length());
+                long newOffset = (newLen <= len ? offset : dataFile.length());
                 setIndexData(index, newOffset, newLen);
                 seekToObject(newOffset);
                 writeElementData(outStream.toByteArray());
@@ -155,8 +156,8 @@ public class StoredArray<T> {
                 DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile))
             ) {
                 for (int i = 0; i < size(); ++i) {
-                    Pair<Integer, Integer> offsetLen = getOffsetLen(sortedHashes.get(i).second);
-                    tmpIndexStream.writeInt(offsetLen.first);
+                    Pair<Long, Integer> offsetLen = getOffsetLen(sortedHashes.get(i).second);
+                    tmpIndexStream.writeLong(offsetLen.first);
                     tmpIndexStream.writeInt(offsetLen.second);
                 }
             }
@@ -179,16 +180,17 @@ public class StoredArray<T> {
             dataBuffer.add(index - storedSize, element);
         } else {
             try {
-                int offset = (int) dataFile.length();
+                long offset = dataFile.length();
                 seekToObject(offset);
                 int len = writeElement(element);
 
                 seekToIndex(index);
-                int nextOffset = 0, nextLen = 0;
+                long nextOffset = 0;
+                int nextLen = 0;
                 for (int i = index; i <= storedSize; ++i) {
                     if (i < storedSize) {
                         ByteBuffer buf = readOffsetLen();
-                        nextOffset = buf.getInt();
+                        nextOffset = buf.getLong();
                         nextLen = buf.getInt();
                     }
                     setIndexData(i, offset, len);
@@ -243,14 +245,14 @@ public class StoredArray<T> {
         ByteArrayOutputStream indexStreamBuf = new ByteArrayOutputStream();
         
         int prevDataStreamSize = 0;
-        int dataOffset = (int) dataFile.length();
+        long dataOffset = dataFile.length();
         seekToObject(dataOffset);
         seekToIndex(storedSize);
         for (T element : dataBuffer) {
             serializer.serialize(element, dataStreamBuf);
             int elementSize = dataStreamBuf.size() - prevDataStreamSize;
-            ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
-            buffer.putInt(dataOffset);
+            ByteBuffer buffer = ByteBuffer.allocate(olBufferSize);
+            buffer.putLong(dataOffset);
             buffer.putInt(elementSize);
             indexStreamBuf.write(buffer.array());
             dataOffset += elementSize;
@@ -270,10 +272,10 @@ public class StoredArray<T> {
         }
     }
     
-    private void setIndexData(int index, int offset, int len) throws IOException {
+    private void setIndexData(int index, long offset, int len) throws IOException {
         seekToIndex(index);
-        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES * 2);
-        buffer.putInt(offset);
+        ByteBuffer buffer = ByteBuffer.allocate(olBufferSize);
+        buffer.putLong(offset);
         buffer.putInt(len);
         indexFile.write(buffer.array());
     }
@@ -298,8 +300,8 @@ public class StoredArray<T> {
     }
     
     private int prepareForElementReading(int index) throws IOException {
-        Pair<Integer, Integer> offsetLen = getOffsetLen(index);
-        int offset = offsetLen.first;
+        Pair<Long, Integer> offsetLen = getOffsetLen(index);
+        long offset = offsetLen.first;
         int len = offsetLen.second; 
         if (len > 0) {
             seekToObject(offset);
@@ -307,18 +309,18 @@ public class StoredArray<T> {
         return len;
     }
 
-    private Pair<Integer, Integer> getOffsetLen(int index) throws IOException {
+    private Pair<Long, Integer> getOffsetLen(int index) throws IOException {
         assert index < storedSize;
         seekToIndex(index);
         ByteBuffer buf = readOffsetLen();
-        int offset = buf.getInt();
+        long offset = buf.getLong();
         int len = buf.getInt();
         return new Pair<>(offset, len);
     }
     
     private ByteBuffer readOffsetLen() throws IOException {
-        indexFile.read(twoIntBuffer);
-        return ByteBuffer.wrap(twoIntBuffer);
+        indexFile.read(offsetLenBuffer);
+        return ByteBuffer.wrap(offsetLenBuffer);
     }    
     
     public void squeeze() {
@@ -330,12 +332,12 @@ public class StoredArray<T> {
                 DataOutputStream tmpIndexStream = new DataOutputStream(new FileOutputStream(tmpIndexFile));
                 FileOutputStream tmpDataStream = new FileOutputStream(tmpDataFile)
             ) {
-                int total = 0;
+                long total = 0;
                 for (int i = 0; i < size(); ++i) {
                     int len = prepareForElementReading(i);
                     byte[] buf = new byte[len];
                     dataFile.read(buf);
-                    tmpIndexStream.writeInt(total);
+                    tmpIndexStream.writeLong(total);
                     tmpIndexStream.writeInt(len);
                     tmpDataStream.write(buf);
                     total += len;
@@ -372,11 +374,11 @@ public class StoredArray<T> {
         indexFile.close();
     }
     
-    private void seekToIndex(int index) throws IOException {
-        indexFile.seek((long) index * Integer.BYTES * 2);
+    private void seekToIndex(long index) throws IOException {
+        indexFile.seek(index * olBufferSize);
     }
     
-    private void seekToObject(int offset) throws IOException {
+    private void seekToObject(long offset) throws IOException {
         dataFile.seek(offset);
     }
 
