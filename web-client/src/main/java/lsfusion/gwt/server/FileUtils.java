@@ -139,7 +139,8 @@ public class FileUtils {
         fileName = fileName.substring(webFolder.length());
 
         // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
-        return saveDownloadFile(useDownloadForAppResources, fileData != null && settings.inDevMode, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
+        // UPD: server settings is cached, so we want to always override file (which can change after app server update)
+        return saveDownloadFile(useDownloadForAppResources, fileData != null, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
     }
 
     private static String saveImageFile(EConsumer<OutputStream, IOException> file, boolean override, String imagesFolder, String imagePath, Result<String> rUrl) {
