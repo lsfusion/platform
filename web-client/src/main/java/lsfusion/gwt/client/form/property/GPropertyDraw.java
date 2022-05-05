@@ -15,6 +15,7 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
+import lsfusion.gwt.client.classes.data.GStringType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
@@ -95,6 +96,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean hasColumnGroupObjects() {
         return columnGroupObjects != null && !columnGroupObjects.isEmpty();
+    }
+
+    public GType getFilterBaseType() {
+        return getDefaultCompare() == GCompare.MATCH && baseType instanceof GStringType ? new GStringType(GExtInt.UNLIMITED, ((GStringType) baseType).caseInsensitive, ((GStringType) baseType).blankPadded) : baseType;
     }
 
     public GType getChangeType() {
