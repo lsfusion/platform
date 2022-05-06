@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 public class RichTextCellEditor implements RequestEmbeddedCellEditor {
 
     private final EditManager editManager;
+    private String oldValue;
 
     public RichTextCellEditor(EditManager editManager) {
         this.editManager = editManager;
@@ -18,12 +19,38 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public void start(Event event, Element parent, Object oldValue) {
-        start(parent);
+        String value = oldValue == null ? "" : oldValue.toString();
+        this.oldValue = value;
+
+        String startEventValue = checkStartEvent(event, parent, null);
+        boolean selectAll = startEventValue == null;
+        value = startEventValue != null ? startEventValue : value;
+
+        start(parent, value, selectAll);
     }
 
-    protected native void start(Element element)/*-{
+    protected native void start(Element element, String value, boolean selectAll)/*-{
         this.@RichTextCellEditor::enableEditing(*)(element, true);
-        element.quill.focus();
+        var quill = element.quill;
+        quill.focus();
+
+        if (selectAll) {
+            if (value === "")
+                quill.deleteText(0, quill.getLength());
+
+            quill.setSelection(0, this.@RichTextCellEditor::getEditorValue(*)(element).length);
+        } else {
+            this.@RichTextCellEditor::setEditorValue(*)(element, value);
+            setTimeout(function setSelection() {
+                quill.setSelection(quill.getLength(), 0); //set the cursor to the end
+            }, 0);
+        }
+    }-*/;
+
+    protected native void setEditorValue(Element element, String value)/*-{
+        var quill = element.quill;
+        quill.deleteText(0, quill.getLength());
+        quill.root.innerHTML = value;
     }-*/;
 
     protected native String getEditorValue(Element element)/*-{
@@ -43,15 +70,18 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
     @Override
     public void commit(Element parent, CommitReason commitReason) {
         editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), commitReason);
+        parent.focus(); //return focus to the parent
     }
 
     @Override
     public void cancel(Element parent, CancelReason cancelReason) {
+        setEditorValue(parent, oldValue); //to return the previous value after pressing esc
         editManager.cancelEditing(cancelReason);
+        parent.focus(); //return focus to the parent
     }
 
     @Override
     public boolean checkEnterEvent(Event event) {
-        return false;
+        return event.getShiftKey();
     }
 }

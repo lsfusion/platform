@@ -76,15 +76,10 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             suggestBox.setValue(value);
         }
         InputElement inputElement = getInputElement(parent);
-        boolean selectAll = true;
-        if (GKeyStroke.isCharDeleteKeyEvent(event)) {
-            value = "";
-            selectAll = false;
-        } else if (GKeyStroke.isCharAddKeyEvent(event)) {
-            String input = String.valueOf((char) event.getCharCode());
-            value = checkInputValidity(parent, input) ? input : "";
-            selectAll = false;
-        }
+        String startEventValue = checkStartEvent(event, parent, this::checkInputValidity);
+        boolean selectAll = startEventValue == null;
+        value = startEventValue != null ? startEventValue : value;
+
         //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
         inputElement.focus();
         setInputValue(inputElement, value);

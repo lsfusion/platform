@@ -1,5 +1,15 @@
 .ql-editor {
     width: 100%;
-    padding: unset;
+    padding: 1px 0;
     color: var(--text-color);
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
+    font-size: 9pt;
+}
+
+.ql-container:not(.ql-disabled) {
+    background-color: var(--component-background-color);
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed .ql-container.ql-disabled {
+    background-color: var(--selection-color);
 }
