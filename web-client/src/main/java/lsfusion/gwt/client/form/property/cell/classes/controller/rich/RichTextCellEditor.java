@@ -72,8 +72,12 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
         enableEditing(parent, false);
+
         if (!blurred)
             parent.focus(); //return focus to the parent
+
+        if (cancel)
+            setEditorValue(parent, oldValue); //to return the previous value after pressing esc
     }
 
     @Override
@@ -83,7 +87,6 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public void cancel(Element parent, CancelReason cancelReason) {
-        setEditorValue(parent, oldValue); //to return the previous value after pressing esc
         editManager.cancelEditing(cancelReason);
     }
 
