@@ -40,7 +40,7 @@ public class GTextType extends GStringType {
     }
 
     @Override
-    public GType getFilterType() {
+    public GType getFilterMatchType() {
         return this;
     }
 

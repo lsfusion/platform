@@ -69,7 +69,7 @@ public class GStringType extends GDataType {
 
     private final static GStringType text = new GStringType(GExtInt.UNLIMITED, false, false);
     @Override
-    public GType getFilterType() {
+    public GType getFilterMatchType() {
         return text;
     }
 

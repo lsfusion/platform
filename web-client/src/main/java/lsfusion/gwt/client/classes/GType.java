@@ -57,7 +57,7 @@ public abstract class GType implements Serializable {
         return false;
     }
 
-    public GType getFilterType() {
+    public GType getFilterMatchType() {
         return this;
     }
 }

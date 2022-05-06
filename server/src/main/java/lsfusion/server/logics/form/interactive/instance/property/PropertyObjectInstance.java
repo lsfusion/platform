@@ -19,7 +19,6 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
@@ -53,7 +52,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
     public ValueClass getFilterValueClass(Compare compare) {
         ValueClass valueClass = property.getValueClass(ClassType.formPolicy);
-        return compare == Compare.MATCH ? valueClass.getFilterValueClass() : valueClass;
+        return compare == Compare.MATCH ? valueClass.getFilterMatchValueClass() : valueClass;
     }
 
     private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) throws SQLException, SQLHandledException {

@@ -43,7 +43,7 @@ public class TextClass extends StringClass {
     }
 
     @Override
-    public ValueClass getFilterValueClass() {
+    public ValueClass getFilterMatchValueClass() {
         return this;
     }
 

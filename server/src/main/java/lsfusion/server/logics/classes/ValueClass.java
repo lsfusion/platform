@@ -41,7 +41,7 @@ public interface ValueClass extends AClass {
     
     String getParsedName();
 
-    default ValueClass getFilterValueClass() {
+    default ValueClass getFilterMatchValueClass() {
         return this;
     }
 

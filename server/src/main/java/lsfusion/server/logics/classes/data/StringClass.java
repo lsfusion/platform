@@ -343,7 +343,7 @@ public class StringClass extends DataClass<String> {
     }
 
     @Override
-    public ValueClass getFilterValueClass() {
+    public ValueClass getFilterMatchValueClass() {
         return text;
     }
 }
