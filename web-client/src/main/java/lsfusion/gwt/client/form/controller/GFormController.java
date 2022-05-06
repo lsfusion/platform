@@ -2108,11 +2108,13 @@ public class GFormController implements EditManager {
         this.editRequestIndex = editRequestIndex;  // we need to force dispatch responses till this index because otherwise we won't
 
         Element element = getEditElement();
+
+        editContext.startEditing();
+
         if (cellEditor instanceof ReplaceCellEditor) {
             focusedElement = GwtClientUtils.getFocusedElement();
             if(!editContext.isFocusable()) // assert that otherwise it's already has focus
                 forceSetFocus = editContext.forceSetFocus();
-            editContext.startEditing();
 
             RenderContext renderContext = editContext.getRenderContext();
 
@@ -2185,10 +2187,10 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
+        editContext.stopEditing();
+
         if(cellEditor instanceof ReplaceCellEditor) {
             render(editContext);
-
-            editContext.stopEditing();
 
             if(forceSetFocus != null) {
                 editContext.restoreSetFocus(forceSetFocus);

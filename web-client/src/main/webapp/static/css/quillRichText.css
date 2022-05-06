@@ -5,11 +5,3 @@
     font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
     font-size: 9pt;
 }
-
-.ql-container:not(.ql-disabled) {
-    background-color: var(--component-background-color);
-}
-
-.panelRendererValueFocused.panelRendererValueBoxed .ql-container.ql-disabled {
-    background-color: var(--selection-color);
-}
