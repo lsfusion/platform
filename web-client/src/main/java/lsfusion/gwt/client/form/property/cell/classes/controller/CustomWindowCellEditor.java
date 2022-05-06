@@ -40,7 +40,7 @@ public class CustomWindowCellEditor extends WindowValueCellEditor implements Cus
     }
 
     @Override
-    public void stop(Element parent, boolean cancel) {
+    public void stop(Element parent, boolean cancel, boolean blurred) {
         clearRender(parent, null, cancel);
     }
 

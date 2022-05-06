@@ -20,7 +20,7 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
     @Override
     public void start(Event event, Element parent, Object oldValue) {
         String value = oldValue == null ? "" : oldValue.toString();
-        this.oldValue = value;
+        this.oldValue = getEditorValue(parent);
 
         String startEventValue = checkStartEvent(event, parent, null);
         boolean selectAll = startEventValue == null;
@@ -34,23 +34,30 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
         var quill = element.quill;
         quill.focus();
 
-        if (selectAll) {
+        this.@RichTextCellEditor::setEditorValue(*)(element, value);
+        if (selectAll === true) {
             if (value === "")
                 quill.deleteText(0, quill.getLength());
 
-            quill.setSelection(0, this.@RichTextCellEditor::getEditorValue(*)(element).length);
+            this.@RichTextCellEditor::selectContent(*)(quill, 0, value.length);
         } else {
-            this.@RichTextCellEditor::setEditorValue(*)(element, value);
-            setTimeout(function setSelection() {
-                quill.setSelection(quill.getLength(), 0); //set the cursor to the end
-            }, 0);
+            this.@RichTextCellEditor::selectContent(*)(quill, quill.getLength(), 0); //set the cursor to the end
         }
     }-*/;
 
+    protected native void selectContent(Element quill, int from, int to)/*-{
+        setTimeout(function setSelection() {
+            quill.setSelection(from, to);
+        }, 0);
+    }-*/;
+
+
     protected native void setEditorValue(Element element, String value)/*-{
-        var quill = element.quill;
-        quill.deleteText(0, quill.getLength());
-        quill.root.innerHTML = value;
+        if (this.@RichTextCellEditor::getEditorValue(*)(element) !== value) {
+            var quill = element.quill;
+            quill.deleteText(0, quill.getLength());
+            quill.root.innerHTML = value;
+        }
     }-*/;
 
     protected native String getEditorValue(Element element)/*-{
@@ -63,21 +70,21 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
     }-*/;
 
     @Override
-    public void stop(Element parent, boolean cancel) {
+    public void stop(Element parent, boolean cancel, boolean blurred) {
         enableEditing(parent, false);
+        if (!blurred)
+            parent.focus(); //return focus to the parent
     }
 
     @Override
     public void commit(Element parent, CommitReason commitReason) {
         editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), commitReason);
-        parent.focus(); //return focus to the parent
     }
 
     @Override
     public void cancel(Element parent, CancelReason cancelReason) {
         setEditorValue(parent, oldValue); //to return the previous value after pressing esc
         editManager.cancelEditing(cancelReason);
-        parent.focus(); //return focus to the parent
     }
 
     @Override

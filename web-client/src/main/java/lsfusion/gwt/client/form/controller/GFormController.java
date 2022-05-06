@@ -2179,7 +2179,7 @@ public class GFormController implements EditManager {
         this.editAsyncValuesSID = null;
 
         if(cellEditor instanceof RequestCellEditor)
-            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
+            ((RequestCellEditor)cellEditor).stop(renderElement, cancel, blurred);
 
         if(cellEditor instanceof ReplaceCellEditor)
             ((ReplaceCellEditor) cellEditor).clearRender(renderElement, editContext.getRenderContext(), cancel);

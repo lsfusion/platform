@@ -29,10 +29,10 @@ public class IntervalCellEditor extends TextBasedPopupCellEditor implements Form
     }
 
     @Override
-    public void stop(Element parent, boolean cancel) {
+    public void stop(Element parent, boolean cancel, boolean blurred) {
         removePicker();
 
-        super.stop(parent, cancel);
+        super.stop(parent, cancel, blurred);
     }
 
     public SimplePanel createPopupComponent(Element parent, Object oldValue) {
