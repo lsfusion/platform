@@ -6,10 +6,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.base.lambda.set.NotFunctionSet;
 import lsfusion.base.lambda.set.SFunctionSet;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
@@ -27,7 +27,6 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
-import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -51,8 +50,9 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         return property.read(formInstance, getInterfaceObjectValues());
     }
 
-    public ValueClass getValueClass() {
-        return property.getValueClass(ClassType.formPolicy);
+    public ValueClass getFilterValueClass(Compare compare) {
+        ValueClass valueClass = property.getValueClass(ClassType.formPolicy);
+        return compare == Compare.MATCH ? valueClass.getFilterMatchValueClass() : valueClass;
     }
 
     private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) throws SQLException, SQLHandledException {

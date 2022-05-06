@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
@@ -36,6 +37,11 @@ public class GTextType extends GStringType {
     @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new TextCellEditor(editManager, editProperty, inputList);
+    }
+
+    @Override
+    public GType getFilterMatchType() {
+        return this;
     }
 
     @Override

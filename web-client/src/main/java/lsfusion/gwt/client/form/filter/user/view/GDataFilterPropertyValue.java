@@ -110,7 +110,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     protected void startEditing(Event event) {
-        form.edit(property.baseType,
+        form.edit(property.getFilterBaseType(),
                 event,
                 false,
                 null,

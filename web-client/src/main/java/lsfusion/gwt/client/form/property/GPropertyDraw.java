@@ -97,6 +97,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return columnGroupObjects != null && !columnGroupObjects.isEmpty();
     }
 
+    public GType getFilterBaseType() {
+        return getDefaultCompare() == GCompare.MATCH ? baseType.getFilterMatchType() : baseType;
+    }
+
     public GType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
         return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).changeType : null;
