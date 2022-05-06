@@ -8,6 +8,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.*;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -339,5 +340,10 @@ public class StringClass extends DataClass<String> {
     @Override
     public boolean isFlex() {
         return true;
+    }
+
+    @Override
+    public ValueClass getFilterValueClass() {
+        return text;
     }
 }

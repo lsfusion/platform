@@ -53,7 +53,7 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
 
     public ValueClass getFilterValueClass(Compare compare) {
         ValueClass valueClass = property.getValueClass(ClassType.formPolicy);
-        return compare == Compare.MATCH && valueClass instanceof StringClass ? StringClass.text : valueClass;
+        return compare == Compare.MATCH ? valueClass.getFilterValueClass() : valueClass;
     }
 
     private Expr getExpr(final ImMap<ObjectInstance, ? extends Expr> classSource, final Modifier modifier, WhereBuilder whereBuilder) throws SQLException, SQLHandledException {

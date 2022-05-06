@@ -40,7 +40,11 @@ public interface ValueClass extends AClass {
     IsClassProperty getProperty();
     
     String getParsedName();
-    
+
+    default ValueClass getFilterValueClass() {
+        return this;
+    }
+
     Comparator<ValueClass> comparator = (o1, o2) -> {
         String sid1 = o1.getSID();
         String sid2 = o2.getSID();

@@ -99,7 +99,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public GType getFilterBaseType() {
-        return getDefaultCompare() == GCompare.MATCH && baseType instanceof GStringType ? new GStringType(GExtInt.UNLIMITED, ((GStringType) baseType).caseInsensitive, ((GStringType) baseType).blankPadded) : baseType;
+        return getDefaultCompare() == GCompare.MATCH ? baseType.getFilterType() : baseType;
     }
 
     public GType getChangeType() {
