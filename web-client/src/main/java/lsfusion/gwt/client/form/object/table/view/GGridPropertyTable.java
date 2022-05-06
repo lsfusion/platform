@@ -34,7 +34,7 @@ import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Math.max;
+import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
@@ -670,7 +670,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             @Override
             public String getForeground() {
-                return column.getForeground(property, (T) cell.getRow());
+                return getThemedColor(column.getForeground(property, (T) cell.getRow()));
             }
         };
     }

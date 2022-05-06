@@ -356,15 +356,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return value != null ? value.toString() : null;
     }
 
-    protected static String getDisplayBackgroundColor(String color, boolean isCurrentKey) {
-        if (isCurrentKey) {
-            if (color != null) {
-                return ColorUtils.mixColors(color, StyleDefaults.getFocusedCellBackgroundColor(true));
-            } else {
-                return StyleDefaults.getFocusedCellBackgroundColor(false);
-            }
+    protected static String getThemedBackgroundColor(String color, boolean isCurrentKey) {
+        if (isCurrentKey && color == null) {
+            // for now focus color is not mixed with base cell color - as it is done in panel
+            return StyleDefaults.getFocusedCellBackgroundColor(false);
         } else
-            return ColorUtils.getDisplayColor(color);
+            return ColorUtils.getThemedColor(color);
     }
 
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
@@ -494,10 +491,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return null;
             },
             getDisplayBackgroundColor: function (color, isCurrentKey) {
-                return @GSimpleStateTableView::getDisplayBackgroundColor(*)(color, isCurrentKey);
+                return @GSimpleStateTableView::getThemedBackgroundColor(*)(color, isCurrentKey);
             },
             getDisplayForegroundColor: function (color) {
-                return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(color);
+                return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(color);
             },
             getGroupObjectForegroundColor: function(object) {
                 var color = thisObj.@GStateTableView::getRowForegroundColor(*)(thisObj.@GSimpleStateTableView::getKey(*)(object));

@@ -18,7 +18,7 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext, ColorThemeChangeListener {
@@ -63,12 +63,12 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
     @Override
     public String getBackground(String baseColor) {
-        return getDisplayColor(background != null ? background.toString() : baseColor);
+        return getThemedColor(background != null ? background.toString() : baseColor);
     }
 
     @Override
     public String getForeground() {
-        return getDisplayColor(foreground != null ? foreground.toString() : null);
+        return getThemedColor(foreground != null ? foreground.toString() : null);
     }
 
     protected GPropertyDraw property;

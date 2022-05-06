@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static java.lang.Math.min;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
+import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
 import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
@@ -1456,17 +1456,21 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     public static String getSelectedCellBackground(boolean selected, boolean focused, String background) {
+        // to achieve 'themed' color base color should be converted with getThemedColor() only once
+        // mix and convert calls order in not important
+        // notice: getFocusedCellBackgroundColor() and getSelectedRowBackgroundColor() return already themed color - no need of additional conversion 
         String setColor;
         if (selected) {
             if (focused) {
-                setColor = background != null ? getDisplayColor(background) : getFocusedCellBackgroundColor(false);
+                // for now focus color is not mixed with base cell color - as it is done in panel
+                setColor = background != null ? getThemedColor(background) : getFocusedCellBackgroundColor(false);
             } else {
                 setColor = getSelectedRowBackgroundColor(background != null);
                 if (background != null)
                     setColor = mixColors(background, setColor);
             }
         } else {
-            setColor = background != null ? getDisplayColor(background) : null;
+            setColor = getThemedColor(background);
         }
         return setColor;
     }

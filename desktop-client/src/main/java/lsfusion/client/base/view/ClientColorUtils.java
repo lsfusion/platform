@@ -30,7 +30,7 @@ public class ClientColorUtils {
         return baseRGB;
     }
 
-    public static Color getDisplayColor(Color baseColor) {
+    public static Color getThemedColor(Color baseColor) {
         if (baseColor != null && !MainController.colorTheme.isDefault()) {
             return new Color(filterColor(baseColor.getRGB(),
                     SwingDefaults.getDefaultThemeTableCellBackground(),
@@ -53,12 +53,12 @@ public class ClientColorUtils {
         design.installFont(comp);
 
         if (design.background != null) {
-            comp.setBackground(getDisplayColor(design.background));
+            comp.setBackground(getThemedColor(design.background));
             comp.setOpaque(true);
         }
 
         if (design.foreground != null) {
-            comp.setForeground(getDisplayColor(design.foreground));
+            comp.setForeground(getThemedColor(design.foreground));
         }
     }
 

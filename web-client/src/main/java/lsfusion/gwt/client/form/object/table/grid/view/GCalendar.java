@@ -267,12 +267,12 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
         if (!GwtClientUtils.nullEquals(oldEvent.backgroundColor, event.backgroundColor))
             updateAction = addUpdateAction(calendarEvent -> {
-                updateCalendarProperty("backgroundColor", getDisplayBackgroundColor(event.backgroundColor, false), calendarEvent);
+                updateCalendarProperty("backgroundColor", getThemedBackgroundColor(event.backgroundColor, false), calendarEvent);
                 updateCalendarExtendedProperty("sourceBackgroundColor", event.backgroundColor, calendarEvent);
             }, updateAction);
 
         if (!GwtClientUtils.nullEquals(oldEvent.foregroundColor, event.foregroundColor))
-            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("foregroundColor", ColorUtils.getDisplayColor(event.foregroundColor), calendarEvent), updateAction);
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("foregroundColor", ColorUtils.getThemedColor(event.foregroundColor), calendarEvent), updateAction);
 
         if (updateAction != null)
             eventsToUpdate.put(key, updateAction);
@@ -317,13 +317,13 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             var key = calendarEvent.extendedProps.key;
             if (calendar.currentEventId != null && @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, calendar.currentEventId)) {
                 calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(false));
-                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getDisplayBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, false))
+                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getThemedBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, false))
                 calendarEvent.setProp('borderColor', null);
             }
 
             if (@lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, id)) {
                 calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(true));
-                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getDisplayBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, true))
+                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getThemedBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, true))
                 calendarEvent.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());
             }
         }
@@ -385,8 +385,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             sourceTextColor: foregroundColor,
 
             classNames: @GCalendar::getClassNames(*)(isCurrentKey),
-            backgroundColor: @GSimpleStateTableView::getDisplayBackgroundColor(*)(backgroundColor, isCurrentKey),
-            textColor: @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(foregroundColor),
+            backgroundColor: @GSimpleStateTableView::getThemedBackgroundColor(*)(backgroundColor, isCurrentKey),
+            textColor: @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(foregroundColor),
             borderColor: isCurrentKey ? @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()() : null
         };
     }-*/;
@@ -442,12 +442,12 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         for (var i = 0; i < events.length; i++) {
             var event = events[i];
             var isCurrentKey = @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(calendar.currentEventId, event.extendedProps.id);
-            var displayBackgroundColor = @GSimpleStateTableView::getDisplayBackgroundColor(*)(event.extendedProps.sourceBackgroundColor, isCurrentKey);
+            var displayBackgroundColor = @GSimpleStateTableView::getThemedBackgroundColor(*)(event.extendedProps.sourceBackgroundColor, isCurrentKey);
             if (displayBackgroundColor) {
                 event.setProp('backgroundColor', displayBackgroundColor)
             }
             if (event.extendedProps.sourceTextColor) {
-                event.setProp('textColor', @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(Ljava/lang/String;)(event.extendedProps.sourceTextColor))
+                event.setProp('textColor', @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(event.extendedProps.sourceTextColor))
             }
             if (isCurrentKey) {
                 event.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());

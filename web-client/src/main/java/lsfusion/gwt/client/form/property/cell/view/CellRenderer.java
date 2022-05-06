@@ -177,6 +177,7 @@ public abstract class CellRenderer<T> {
         Object value = updateContext.getValue();
         boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
 
+        // already themed colors expected
         String background = getBackground(updateContext);
         AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground());
 

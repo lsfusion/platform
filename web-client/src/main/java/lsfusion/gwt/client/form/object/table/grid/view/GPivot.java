@@ -704,7 +704,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 return { width : pivotElement.offsetWidth, height : pivotElement.offsetHeight };
             },
             getDisplayColor: function (rgb) {
-                return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(III)(rgb[0], rgb[1], rgb[2]);
+                return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(III)(rgb[0], rgb[1], rgb[2]);
             }
         }
     }-*/;
@@ -787,7 +787,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                     String[] splitColorString = heatColorString.split(",");
                     assert splitColorString.length == 3;
                     try {
-                        td.getStyle().setBackgroundColor(getDisplayColor(
+                        td.getStyle().setBackgroundColor(getThemedColor(
                                 decode(splitColorString[0]),
                                 decode(splitColorString[1]),
                                 decode(splitColorString[2])));
