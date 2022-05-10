@@ -7,14 +7,13 @@ import static lsfusion.base.ApiResourceBundle.getString;
 
 public class RemoteClassLoader extends ClassLoader {
 
-    private static RemoteLogicsInterface remoteLogics;
-    public static void setRemoteLogics(RemoteLogicsInterface logics) {
+    private RemoteLogicsInterface remoteLogics;
+    public void setRemoteLogics(RemoteLogicsInterface logics) {
         remoteLogics = logics;
     }
 
     public RemoteClassLoader(ClassLoader cl) {
         super(cl);
-
     }
 
     @Override

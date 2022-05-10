@@ -102,7 +102,7 @@ public class ReportGenerator {
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         JasperPrint print;
         try {
-            Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader instanceof RemoteClassLoader ? originalClassloader.getParent() : originalClassloader));
+            Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader));
 
             iterateChildReport(rootID, params, virtualizer);
 
@@ -878,6 +878,9 @@ public class ReportGenerator {
     }
 
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, RemoteLogicsInterface remoteLogics) {
+        RemoteClassLoader remoteClassLoader = new RemoteClassLoader(Thread.currentThread().getContextClassLoader());
+        remoteClassLoader.setRemoteLogics(remoteLogics);
+        Thread.currentThread().setContextClassLoader(remoteClassLoader);
         return exportToFileByteArray(generationData, type, null, null, remoteLogics);
     }
     
