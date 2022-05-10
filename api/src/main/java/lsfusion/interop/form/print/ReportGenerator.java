@@ -101,9 +101,8 @@ public class ReportGenerator {
 //        // external classloader required for correct Jasper report generation on clients
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         JasperPrint print;
+        Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader));
         try {
-            Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader));
-
             iterateChildReport(rootID, params, virtualizer);
 
             JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
@@ -878,10 +877,17 @@ public class ReportGenerator {
     }
 
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, RemoteLogicsInterface remoteLogics) {
+        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+
         RemoteClassLoader remoteClassLoader = new RemoteClassLoader(Thread.currentThread().getContextClassLoader());
         remoteClassLoader.setRemoteLogics(remoteLogics);
+
         Thread.currentThread().setContextClassLoader(remoteClassLoader);
-        return exportToFileByteArray(generationData, type, null, null, remoteLogics);
+        try {
+            return exportToFileByteArray(generationData, type, null, null, remoteLogics);
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassloader);
+        }
     }
     
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) {
