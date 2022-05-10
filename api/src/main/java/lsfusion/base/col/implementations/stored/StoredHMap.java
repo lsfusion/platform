@@ -11,11 +11,11 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class StoredHMap<K, V> extends AMRevMap<K, V> {
-    public int size;
-    public int[] indexes; // номера в таблице
+    private int size;
+    private int[] indexes; // номера в таблице
 
-    public StoredArray<K> table;
-    protected StoredArray<V> vtable;
+    private StoredArray<K> table;
+    private StoredArray<V> vtable;
 
     private final static float loadFactor = 0.3f;
 
@@ -32,22 +32,12 @@ public class StoredHMap<K, V> extends AMRevMap<K, V> {
         assert clone;
     }
 
-    public StoredHMap(int size, K[] table, V[] vtable, int[] indexes) throws StoredArray.StoredArrayCreationException {
-        this(
-                size,
-                new StoredArray<>(table, StoredArraySerializer.getInstance()),
-                new StoredArray<>(vtable, StoredArraySerializer.getInstance()),
-                indexes
-        );
+    public StoredHMap(int size, K[] table, V[] vtable, int[] indexes, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
+        this(size, new StoredArray<>(table, serializer), new StoredArray<>(vtable, serializer), indexes);
     }
 
-    private StoredHMap(int size, K[] table, int[] indexes) throws StoredArray.StoredArrayCreationException {
-        this(
-                size,
-                new StoredArray<>(table, StoredArraySerializer.getInstance()),
-                new StoredArray<>(table.length, StoredArraySerializer.getInstance()),
-                indexes
-        );
+    private StoredHMap(int size, K[] table, int[] indexes, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
+        this(size, new StoredArray<>(table, serializer), new StoredArray<>(table.length, serializer), indexes);
     }
 
     private StoredHMap(int size, StoredArray<K> table, int[] indexes) {
@@ -66,7 +56,7 @@ public class StoredHMap<K, V> extends AMRevMap<K, V> {
     }
 
     public StoredHMap(StoredHSet<K> set) {
-        this(set.size(), set.table, set.indexes);
+        this(set.size(), set.getTable(), set.getIndexes());
     }
 
     public int size() {

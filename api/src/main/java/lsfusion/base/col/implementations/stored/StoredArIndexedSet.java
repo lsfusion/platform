@@ -9,7 +9,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class StoredArIndexedSet<K> extends AMSet<K> {
 
-    private StoredArray<K> array;
+    private final StoredArray<K> array;
     
     public StoredArIndexedSet(StoredArray<K> array) {
         this.array = array;

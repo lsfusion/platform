@@ -11,15 +11,15 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 
 public class StoredHSet<T> extends AMSet<T> {
     private int size;
-    protected StoredArray<T> table;
-    public int[] indexes;
+    private StoredArray<T> table;
+    private int[] indexes;
 
     public static final float loadFactor = 0.3f;
 
-    public StoredHSet(int size, Object[] table, int[] indexes) throws StoredArray.StoredArrayCreationException {
+    public StoredHSet(int size, T[] table, int[] indexes, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
         this.size = size;
         this.indexes = indexes;
-        this.table = new StoredArray<>((T[]) table, StoredArraySerializer.getInstance());
+        this.table = new StoredArray<>(table, serializer);
     }
 
     public StoredHSet(StoredHSet<T> set) {
@@ -134,4 +134,11 @@ public class StoredHSet<T> extends AMSet<T> {
         return null;
     }
 
+    public StoredArray<T> getTable() {
+        return table;
+    }
+
+    public int[] getIndexes() {
+        return indexes;
+    }
 }
