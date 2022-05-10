@@ -137,8 +137,8 @@ public abstract class FormReportManager extends FormDataManager {
 
     private Map<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(new ReadUsedClassLoader(originalClassloader));
         try {
-            Thread.currentThread().setContextClassLoader(new ReadUsedClassLoader(originalClassloader));
             for (JasperDesign design : designs) {
                 JasperCompileManager.compileReport(design);
             }
