@@ -21,8 +21,8 @@ public class WriteUsedClassLoader extends ClassLoader {
             byte[] buf = classes.get(name.replace(".", "/") + ".class");
             if (buf != null)
                 return defineClass(name, buf, 0, buf.length);
-            else
-                throw cne;
+
+            throw cne;
         }
     }
 

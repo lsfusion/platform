@@ -879,7 +879,7 @@ public class ReportGenerator {
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, RemoteLogicsInterface remoteLogics) {
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
 
-        RemoteClassLoader remoteClassLoader = new RemoteClassLoader(Thread.currentThread().getContextClassLoader());
+        RemoteClassLoader remoteClassLoader = new RemoteClassLoader(originalClassloader);
         remoteClassLoader.setRemoteLogics(remoteLogics);
 
         Thread.currentThread().setContextClassLoader(remoteClassLoader);
