@@ -19,7 +19,10 @@ public class WriteUsedClassLoader extends ClassLoader {
             return super.findClass(name);
         } catch (ClassNotFoundException cne) {
             byte[] buf = classes.get(name.replace(".", "/") + ".class");
-            return buf != null ? defineClass(name, buf, 0, buf.length) : null;
+            if (buf != null)
+                return defineClass(name, buf, 0, buf.length);
+
+            throw cne;
         }
     }
 

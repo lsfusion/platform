@@ -79,8 +79,10 @@ public class MainController {
 
     // lifecycle
 
+    private static RemoteClassLoader remoteClassLoader;
     public static void start(final String[] args) {
-        Thread.currentThread().setContextClassLoader(new RemoteClassLoader(Thread.currentThread().getContextClassLoader()));
+        remoteClassLoader = new RemoteClassLoader(Thread.currentThread().getContextClassLoader());
+        Thread.currentThread().setContextClassLoader(remoteClassLoader);
 
         registerSingleInstanceListener();
 
@@ -280,7 +282,7 @@ public class MainController {
     }
 
     public static void initRmiClassLoader(RemoteLogicsInterface remoteLogics) {
-        RemoteClassLoader.setRemoteLogics(remoteLogics);
+        remoteClassLoader.setRemoteLogics(remoteLogics);
         // reset the SecurityManager that installs JavaWS,
         // since it doesn't let the RemoteClassLoader class do anything,
         // since it is loaded from a temporary directory
