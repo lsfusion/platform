@@ -5,7 +5,7 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 public class FinalizeNavigatorElementsTask extends GroupNavigatorElementsTask {
 
     protected void runTask(NavigatorElement ne) {
-        ne.finalizeAroundInit();
+        ne.finalizeAroundInit(getBL().LM);
     }
 
     public String getCaption() {

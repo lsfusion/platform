@@ -9,13 +9,18 @@ public class NavigatorAction extends NavigatorElement {
     private final Action<?> action;
     private final FormEntity form;
 
-    public NavigatorAction(Action<?> action, String canonicalName, LocalizedString caption, FormEntity form, String icon, DefaultIcon defaultIcon) {
+    public NavigatorAction(Action<?> action, String canonicalName, LocalizedString caption, FormEntity form) {
         super(canonicalName, caption);
         
         this.action = action;
         this.form = form;
-        setImage(icon);
-        setDefaultIcon(defaultIcon);
+    }
+
+    @Override
+    protected String getDefaultIcon(boolean top) {
+        if(form != null)
+            return top ? "formTop.png" : "form.png";
+        return top ? "actionTop.png" : "action.png";
     }
 
     @Override

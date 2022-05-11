@@ -108,7 +108,6 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.*;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -4899,15 +4898,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, String imagePath) {
-        if (imagePath != null) {
+        if (imagePath != null)
             element.setImage(imagePath);
-        } else if (element.defaultIcon != null) {
-            if (baseLM.root != null && baseLM.root.equals(parent)) {
-                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "actionTop.png" :
-                        element.defaultIcon == DefaultIcon.OPEN ? "openTop.png" : "formTop.png");
-            }
-            element.defaultIcon = null;
-        }
     }
 
     public LPWithParams propertyExpressionCreated(LPWithParams property, List<TypedParameter> context, boolean needFullContext) {

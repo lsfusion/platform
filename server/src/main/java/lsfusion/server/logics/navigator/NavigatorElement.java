@@ -31,7 +31,8 @@ import static lsfusion.base.col.MapFact.singletonOrder;
 public abstract class NavigatorElement {
     
     private SerializableImageIconHolder imageHolder;
-    public DefaultIcon defaultIcon;
+
+    protected abstract String getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
 
@@ -210,13 +211,13 @@ public abstract class NavigatorElement {
             imageHolder = new SerializableImageIconHolder();
         imageHolder.setImage(imagePath);
     }
-    public final void setDefaultIcon(DefaultIcon defaultIcon) {
-        this.defaultIcon = defaultIcon;
-    }
 
-    public void finalizeAroundInit() {
+    public void finalizeAroundInit(BaseLogicsModule LM) {
         parent.finalizeChanges();
         children.finalizeChanges();
+
+        if(imageHolder == null)
+            setImage(getDefaultIcon(LM.root.equals(getParent())));
     }
 
     @Override
