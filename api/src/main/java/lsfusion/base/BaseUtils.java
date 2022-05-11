@@ -2348,12 +2348,33 @@ public class BaseUtils {
         return FilenameUtils.getBaseName(filename);
     }
 
+    public static String getFileNameAndExtension(String filename) {
+        return FilenameUtils.getName(filename);
+    }
+
+    public static String getFilePath(String filename) {
+        return FilenameUtils.getFullPath(filename);
+    }
+
     public static String getFileExtension(File file) {
         return getFileExtension(file.getName());
     }
 
     public static String getFileExtension(String filename) {
         return FilenameUtils.getExtension(filename);
+    }
+
+    public static String replaceFileName(String filePath, String toName, boolean escapeDot) {
+        return FilenameUtils.getFullPath(filePath) + toName + (escapeDot ? "\\" : "") + "." + FilenameUtils.getExtension(filePath);
+    }
+    public static String replaceFileNameAndExtension(String filePath, String toName) {
+        return FilenameUtils.getFullPath(filePath) + toName;
+    }
+    public static String addSuffix(String filePath, String suffix) {
+        return FilenameUtils.getFullPath(filePath) + FilenameUtils.getBaseName(filePath) + suffix + "." + FilenameUtils.getExtension(filePath);
+    }
+    public static String addPrefix(String filePath, String prefix) {
+        return FilenameUtils.getFullPath(filePath) + prefix + FilenameUtils.getBaseName(filePath) + "." + FilenameUtils.getExtension(filePath);
     }
 
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String namedFileName, File... files) {

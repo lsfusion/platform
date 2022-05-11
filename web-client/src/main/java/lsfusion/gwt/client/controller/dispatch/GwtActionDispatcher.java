@@ -344,9 +344,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     private class JSExecutor {
-        private final List<GClientJSAction> actions = new ArrayList<>();
+        private final List<GClientWebAction> actions = new ArrayList<>();
 
-        public void addAction(GClientJSAction action) {
+        public void addAction(GClientWebAction action) {
             if (action.syncType)
                 pauseDispatching();
 
@@ -361,7 +361,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         private boolean isExecuting = false;
         private void flush() {
             if (!isExecuting && !actions.isEmpty()) {
-                GClientJSAction action = actions.get(0);
+                GClientWebAction action = actions.get(0);
                 isExecuting = true;
                 if (action.isFile)
                     executeFile(action);
@@ -370,15 +370,14 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }
 
-        private String getResourcePath(GClientJSAction action) {
-            return GwtClientUtils.getAppStaticWebURL(action.resource);
+        private void executeFile(GClientWebAction action) {
+            executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName);
         }
 
-        private native void executeFile(GClientJSAction action)/*-{
+        private native void executeFile(GClientWebAction action, String resourcePath, String resourceName)/*-{
             var thisObj = this;
-            var resourcePath = thisObj.@JSExecutor::getResourcePath(*)(action)
 
-            if (resourcePath.endsWith('js')) {
+            if (resourceName.endsWith('js')) {
                 var documentScripts = $wnd.document.scripts;
                 for (var i = 0; i < documentScripts.length; i++) {
                     var src = documentScripts[i].src;
@@ -392,7 +391,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 scr.type = 'text/javascript';
                 $wnd.document.head.appendChild(scr);
                 scr.onload = function() {thisObj.@JSExecutor::onActionExecuted(*)(action); }
-            } else if (resourcePath.endsWith('css')) {
+            } else if (resourceName.endsWith('css')) {
                 var documentStyleSheets = $wnd.document.styleSheets;
                 for (var j = 0; j < documentStyleSheets.length; j++) {
                     var href = documentStyleSheets[j].href;
@@ -410,7 +409,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }-*/;
 
-        private void onActionExecuted(GClientJSAction action) {
+        private void onActionExecuted(GClientWebAction action) {
             if (action.syncType)
                 continueDispatching();
 
@@ -419,7 +418,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             flush();
         }
 
-        private void executeJSFunction(GClientJSAction action) {
+        private void executeJSFunction(GClientWebAction action) {
             JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
             ArrayList<Object> types = action.types;
             for (int i = 0; i < types.size(); i++) {
@@ -433,7 +432,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private JSExecutor jsExecutor;
     @Override
-    public void execute(GClientJSAction action) {
+    public void execute(GClientWebAction action) {
         if (jsExecutor == null)
             jsExecutor = new JSExecutor();
         jsExecutor.addAction(action);

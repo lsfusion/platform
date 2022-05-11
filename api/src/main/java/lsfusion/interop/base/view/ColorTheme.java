@@ -1,5 +1,7 @@
 package lsfusion.interop.base.view;
 
+import lsfusion.base.BaseUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,14 +33,13 @@ public enum ColorTheme {
     }
 
     public String getImagePath(String path) {
-        if (path != null) {
-            int dotInd = path.lastIndexOf(".");
-            if (dotInd != -1) {
-                return path.substring(0, dotInd) + getFileNameSuffix() + path.substring(dotInd);
-            }
-        }
-
-        return path;
+        return BaseUtils.addSuffix(path, getFileNameSuffix());
+    }
+    public static String addIDSuffix(String ID, String suffix) {
+        return ID + suffix;
+    }
+    public String getID(String ID) {
+        return addIDSuffix(ID, getFileNameSuffix());
     }
 
     private static final Map<String, ColorTheme> lookup = new HashMap<>();

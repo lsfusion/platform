@@ -44,6 +44,10 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         if(displayName == null)
             displayName = BaseUtils.getFileName(fileName);
 
+        String version = request.getParameter("version");
+        if(version != null)
+            fileName = BaseUtils.replaceFileNameAndExtension(fileName, version);
+
         response.setContentType(MIMETypeUtils.MIMETypeForFileExtension(extension));
         //inline = open in browser, attachment = download
         response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName, extension)));

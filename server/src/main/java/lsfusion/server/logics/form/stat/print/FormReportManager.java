@@ -192,23 +192,8 @@ public abstract class FormReportManager extends FormDataManager {
         }
     }
 
-    public final static String reportsDir = ""; // "reports/" 
-    
-    private String findCustomReportFileName(String fileName) {
-        if(fileName.startsWith("/")) {
-            //absolute path
-            return ResourceUtils.getResource(fileName) != null ? fileName : null;
-        } else {
-            //relative path
-            Collection<String> result = reportInterface.getBL().getAllCustomReports();
-
-            for(String entry : result){
-                if(entry.endsWith("/" + fileName))
-                    return entry; //"/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
-            }
-
-            return null; // не нашли "/" + reportsDir + filePath;
-        }
+    private String findCustomReport(String fileName) {
+        return ResourceUtils.findResource(fileName, true, !SystemProperties.inDevMode, "reports");
     }
 
     private String getReportFileName(GroupObjectHierarchy.ReportNode reportNode, String reportPrefix) {
@@ -254,7 +239,7 @@ public abstract class FormReportManager extends FormDataManager {
                     continue;
                 defaultCustomReportPath = getCustomReportPath(nodeFileName);
             } else
-                defaultCustomReportPath = getDefaultCustomReportPath("/" + reportsDir + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
+                defaultCustomReportPath = getDefaultCustomReportPath("/" + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
             String reportName = defaultCustomReportPath.customPath;
             
             new File(reportName).getParentFile().mkdirs();
@@ -278,7 +263,7 @@ public abstract class FormReportManager extends FormDataManager {
             }
 
             if(readReport instanceof String) {
-                String fileName = findCustomReportFileName(reportPrefix + ((String) readReport).trim());
+                String fileName = findCustomReport(BaseUtils.addPrefix(((String) readReport).trim(), reportPrefix));
                 if(fileName != null)
                     return new ResourceReportSource(fileName);
             } else if(readReport instanceof RawFileData) {
@@ -342,7 +327,7 @@ public abstract class FormReportManager extends FormDataManager {
         if(reportSource != null)
             return reportSource;
 
-        String fileName = findCustomReportFileName(getReportFileName(reportNode, reportPrefix));
+        String fileName = findCustomReport(getReportFileName(reportNode, reportPrefix));
         if(fileName != null)
             return new ResourceReportSource(fileName);
 

@@ -149,7 +149,7 @@ public class ActionCellRenderer extends CellRenderer {
                 else
                     imagePath = "";
             } else if(property.hasStaticImage())
-                imagePath = GwtClientUtils.getAppStaticImageURL(property.getImage(enabled).url);
+                imagePath = GwtClientUtils.getAppStaticImageURL(property.getImage().getUrl(enabled));
             else {
                 imagePath = ICON_EXECUTE;
                 absolute = false;

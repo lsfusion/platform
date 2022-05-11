@@ -12,20 +12,12 @@ public class ImageHolder implements Serializable {
     public ImageHolder() {
     }
 
-    public void addImage(GColorTheme colorTheme, String url, int width, int height) {
-        images.put(colorTheme, new ImageDescription(url, width, height));
+    public void addImage(GColorTheme colorTheme, String url, String disabledUrl, int width, int height) {
+        images.put(colorTheme, new ImageDescription(url, disabledUrl, width, height));
     }
 
     public ImageDescription getImage() {
-        return getImage(MainFrame.colorTheme);
+        return images.get(MainFrame.colorTheme);
     }
 
-    public ImageDescription getImage(GColorTheme colorTheme) {
-        ImageDescription themeImage = images.get(colorTheme);
-        return themeImage != null ? themeImage : getDefaultImage();
-    }
-    
-    public ImageDescription getDefaultImage() {
-        return images.get(GColorTheme.DEFAULT);
-    }
 }

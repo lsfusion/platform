@@ -49,7 +49,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.ClientSystemAction;
+import lsfusion.server.logics.action.WebClientAction;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.BreakAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
@@ -1788,7 +1788,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(isFile && paramsCount > 0)
             errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
 
-        return new LA(new ClientSystemAction(resourceName, paramsCount, isFile, syncType));
+        return new LA(new WebClientAction(resourceName, paramsCount, isFile, syncType));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {

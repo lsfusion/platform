@@ -1,8 +1,9 @@
 package lsfusion.base;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.file.RawFileData;
 import org.apache.commons.io.FilenameUtils;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,7 @@ import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -157,11 +159,6 @@ public class ResourceUtils {
         }
     }
 
-    public static ImageIcon readImage(String imagePath) {
-        URL resource = ResourceUtils.class.getResource("/images/" + imagePath);
-        return resource != null ? new ImageIcon(resource) : null;
-    }
-
     public static URL getResource(String path) {
         return ResourceUtils.class.getResource(path);
     }
@@ -191,7 +188,7 @@ public class ResourceUtils {
     }
 
     public static String getFileParentDirectoryPath(String fileName) {
-        URL resource = ResourceUtils.class.getResource(fileName);
+        URL resource = getResource(fileName);
         String fullPath = "";
         if(resource != null) {
             try {
@@ -226,5 +223,60 @@ public class ResourceUtils {
                 .filter(path -> Files.exists(Paths.get(path, endpoint)))
                 .map(path -> FilenameUtils.separatorsToUnix(Paths.get(path, endpoint).toString()))
                 .collect(Collectors.toList());
+    }
+
+    public static RawFileData findResourceAsFileData(String resourcePath, boolean checkExists, boolean cache, Result<String> fullPath, String optimisticFolder) {
+        resourcePath = findResource(resourcePath, checkExists, cache, optimisticFolder);
+        if (resourcePath == null)
+            return null;
+        if(fullPath != null)
+            fullPath.set(resourcePath.substring(1)); // remov
+        try {
+            return new RawFileData(resourcePath, true);
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private final static ConcurrentHashMap<String, List<String>> cachedFoundResourses = new ConcurrentHashMap<>();
+    public static String findResource(String fileName, boolean checkExists, boolean cache, String optimisticFolder) {
+        if(fileName.startsWith("/")) {
+            //absolute path
+            if(!checkExists || ResourceUtils.getResource(fileName) != null)
+                return fileName;
+        } else {
+            if(optimisticFolder != null) {
+                String optimisticPath = "/" + optimisticFolder + "/" + fileName;
+                if(ResourceUtils.getResource(optimisticPath) != null)
+                    return optimisticPath;
+            }
+
+            if(cache) {
+                String template = BaseUtils.replaceFileName(fileName, ".*", true);
+
+                List<String> result = cachedFoundResourses.get(template);
+                if(result == null) {
+                    Pattern pattern = Pattern.compile(".*/" + template);
+                    result = ResourceUtils.getResources(pattern);
+                    cachedFoundResourses.put(template, result);
+                }
+
+                for (String entry : result)
+                    if (entry.endsWith("/" + fileName))
+                        return entry;
+            } else {
+                Pattern pattern = Pattern.compile(".*/" + fileName.replace(".", "\\."));
+                List<String> result = ResourceUtils.getResources(pattern);
+                if(!result.isEmpty())
+                    return result.get(0);
+            }
+        }
+        return null;
+    }
+    public static void clearResourceFileCaches(String extension) {
+        Collection<String> cachedResourceKeys = new HashSet<>(cachedFoundResourses.keySet());
+        for (String resource : cachedResourceKeys)
+            if (resource.endsWith("." + extension))
+                cachedFoundResourses.remove(resource);
     }
 }

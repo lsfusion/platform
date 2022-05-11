@@ -89,10 +89,10 @@ public class GwtClientUtils {
     private static String getDownloadParams(String displayName, String extension) {
         String params = "";
         if(displayName != null)
-            params = (params.isEmpty() ? "" : params + "&") + "displayName=" + displayName;
+            params = params + "&displayName=" + displayName;
         if(extension != null)
-            params = (params.isEmpty() ? "" : params + "&") + "extension=" + extension;
-        return (params.isEmpty() ? "" : "?" + params);
+            params = params + "&extension=" + extension;
+        return params;
     }
 
     private static String getURL(String url) {
@@ -116,9 +116,9 @@ public class GwtClientUtils {
         return getURL(filePath);
     }
     // FileUtils.APP_DOWNLOAD_FOLDER_PATH
-    public static String getAppDownloadURL(String name, String displayName, String extension) {
-        assert name != null;
-        return getURL(name + getDownloadParams(displayName, extension));
+    public static String getAppDownloadURL(String url, String displayName, String extension) {
+        assert url != null;
+        return getURL(url + getDownloadParams(displayName, extension));
     }
 
     // FileUtils.APP_UPLOAD_FOLDER_PATH

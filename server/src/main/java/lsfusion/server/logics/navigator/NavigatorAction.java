@@ -14,7 +14,8 @@ public class NavigatorAction extends NavigatorElement {
         
         this.action = action;
         this.form = form;
-        setImage(icon, defaultIcon);
+        setImage(icon);
+        setDefaultIcon(defaultIcon);
     }
 
     @Override

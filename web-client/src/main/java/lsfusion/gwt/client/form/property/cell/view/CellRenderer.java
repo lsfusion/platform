@@ -152,7 +152,7 @@ public abstract class CellRenderer<T> {
     private static class RenderedState {
         public Object value;
         public boolean loading;
-        public GColorTheme colorTheme;
+        public GColorTheme colorTheme; // for action and color cell renderer
 
         public ToolbarState toolbar;
     }
@@ -163,8 +163,8 @@ public abstract class CellRenderer<T> {
     private static final String RENDERED = "rendered";
 
     protected String getBackground(UpdateContext updateContext) {
-        String baseBackground = getBaseBackground(updateContext.getValue());
-        return updateContext.getBackground(baseBackground);
+        String baseBackground = getBaseBackground(updateContext.getValue()); // not converted (with getDisplayColor)
+        return updateContext.getBackground(baseBackground); // converted (with getDisplayColor)
     }
     
     public void update(Element element, UpdateContext updateContext) {
@@ -272,6 +272,7 @@ public abstract class CellRenderer<T> {
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
+    // backgroud - converted (with getDisplayColor)
     protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
         ToolbarAction[] toolbarActions = updateContext.getToolbarActions();

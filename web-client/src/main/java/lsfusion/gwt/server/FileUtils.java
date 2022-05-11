@@ -4,7 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
-import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.base.lambda.EConsumer;
@@ -31,6 +30,7 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
 import java.io.*;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class FileUtils {
     // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
@@ -38,9 +38,8 @@ public class FileUtils {
     public static String STATIC_GWT_IMAGE_RESOURCE_PATH = "main/static/images"; // getStaticImageURL
 
     // static app files
-    public static String STATIC_IMAGE_FOLDER_PATH = "gwtimages"; // getStaticImageURL
-    public static String APP_STATIC_IMAGE_FOLDER_PATH = "appimages"; // getAppStaticImageURL, all files has to be prefixed with logicsName
-    public static String APP_STATIC_WEB_FOLDER_PATH = "appweb"; // getAppStaticFileURL, all files has to be prefixed with logicsName
+    public static String STATIC_IMAGE_SUBFOLDER_SUBPATH = "gwtimages"; // getStaticImageURL
+    public static String APP_STATIC_FOLDER_SUBPATH = "app"; // getAppStaticImageURL, all files has to be prefixed with logicsName
 
     public static String NOAUTH_FOLDER_PREFIX = "noauth"; // in web.xml security should be dropped for such pathes (static/noauth, download/static/noauth)
 
@@ -90,8 +89,8 @@ public class FileUtils {
         }
     }
 
-    private static String getStaticPath(String path, ServerSettings settings) {
-        return path + "/" + settings.logicsName;
+    private static String getStaticPath(ServerSettings settings) {
+        return APP_STATIC_FOLDER_SUBPATH + "/" + settings.logicsName;
     }
 
     public static ImageHolder createImageFile(ServletContext servletContext, ServerSettings settings, SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
@@ -101,50 +100,57 @@ public class FileUtils {
             for (GColorTheme gColorTheme : GColorTheme.values()) {
                 ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
 
-                String imagePath = imageHolder.getImagePath(colorTheme);
-                String imageFileType = BaseUtils.getFileExtension(imagePath);
-                
-                ImageIcon image = imageHolder.getImage(colorTheme); 
-                if (image == null) {
-                    image = ClientColorUtils.createFilteredImageIcon(imageHolder.getImage(ColorTheme.DEFAULT),
+                String imagePath;
+                ImageIcon defaultImageIcon;
+                Supplier<ImageIcon> imageIcon;
+                String ID;
+
+                RawFileData imageFile = imageHolder.getImage(colorTheme);
+                if (imageFile == null) {
+                    RawFileData defaultImageFile = imageHolder.getImage(ColorTheme.DEFAULT);
+                    String defaultImagePath = imageHolder.getImagePath(ColorTheme.DEFAULT);
+
+                    defaultImageIcon = defaultImageFile.getImageIcon();
+                    imageIcon = () -> ClientColorUtils.createFilteredImageIcon(defaultImageIcon,
                             ServerColorUtils.getDefaultThemePanelBackground(servletContext),
                             ServerColorUtils.getPanelBackground(servletContext, colorTheme),
                             ServerColorUtils.getComponentForeground(servletContext, colorTheme));
+                    ID = colorTheme.getID(defaultImageFile.getID());
+                    imagePath = colorTheme.getImagePath(defaultImagePath);
+                } else {
+                    defaultImageIcon = imageFile.getImageIcon();
+                    imageIcon = () -> defaultImageIcon;
+                    ID = imageFile.getID();
+                    imagePath = imageHolder.getImagePath(colorTheme);
                 }
 
-                String imagesFolderPath = getStaticPath(APP_STATIC_IMAGE_FOLDER_PATH, settings);
-                // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
-                String imageUrl = saveImageFile(getIconSaver(image, imageFileType, false), false, imagesFolderPath, imagePath, null);
-                if (canBeDisabled) {
-                    String imageFileName = BaseUtils.getFileName(imagePath);
-                    saveImageFile(getIconSaver(image, imageFileType, true), false, imagesFolderPath, imageFileName + "_Disabled." + imageFileType, null);
-                }
-                
-                imageDescription.addImage(gColorTheme, imageUrl, image.getIconWidth(), image.getIconHeight());
+                imageDescription.addImage(gColorTheme, saveImageFile(imagePath, imageIcon, ID, settings, false),
+                                        canBeDisabled ? saveImageFile(imagePath, imageIcon, ID, settings, true) : null,
+                        defaultImageIcon.getIconWidth(), defaultImageIcon.getIconHeight());
             }
             return imageDescription;
         }
         return null;
     }
 
-    public static String getWebFile(String fileName, ServerSettings settings) {
-        // assert that it was saved before
-        return saveWebFile(fileName, null, settings);
+    public static String saveImageFile(String imagePath, Supplier<ImageIcon> imageIcon, String ID, ServerSettings settings, boolean disabled) {
+        if(disabled) {
+            String disabledSuffix = "_Disabled";
+            ID = ColorTheme.addIDSuffix(ID, disabledSuffix);
+            imagePath = BaseUtils.addSuffix(imagePath, disabledSuffix);
+        }
+        return saveImageFile(getIconSaver(imageIcon, BaseUtils.getFileExtension(imagePath), disabled), ID, false, getStaticPath(settings), imagePath, null);
     }
 
     private final static boolean useDownloadForAppResources = true;
     public static String saveWebFile(String fileName, RawFileData fileData, ServerSettings settings) {
-        String webFolder = "/web/";
-        assert fileName.startsWith(webFolder);
-        fileName = fileName.substring(webFolder.length());
-
         // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
         // UPD: server settings is cached, so we want to always override file (which can change after app server update)
-        return saveDownloadFile(useDownloadForAppResources, fileData != null, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(APP_STATIC_WEB_FOLDER_PATH, settings), fileName, null, null, fileData != null ? fileData::write : null);
+        return saveDownloadFile(useDownloadForAppResources, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(settings), fileName, null, fileData, fileData.getID());
     }
 
-    private static String saveImageFile(EConsumer<OutputStream, IOException> file, boolean override, String imagesFolder, String imagePath, Result<String> rUrl) {
-        return saveDownloadFile(useDownloadForAppResources, override, DownloadStoreType.STATIC, imagesFolder, imagePath, null, rUrl, file);
+    private static String saveImageFile(EConsumer<OutputStream, IOException> file, String ID, boolean override, String imagesFolder, String imagePath, Result<String> rUrl) {
+        return saveDownloadFile(useDownloadForAppResources, override, DownloadStoreType.STATIC, imagesFolder, imagePath, null, rUrl, file, ID);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -203,11 +209,11 @@ public class FileUtils {
                             if(icon == null)
                                 icon = new ImageIcon(IOUtils.toByteArray(servletContext.getResource(fullImagePath)));
                             ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
-                            saveImageFile(getIconSaver(ClientColorUtils.createFilteredImageIcon(icon,
+                            ImageIcon filteredImageIcon = ClientColorUtils.createFilteredImageIcon(icon,
                                     ServerColorUtils.getDefaultThemePanelBackground(servletContext),
                                     ServerColorUtils.getPanelBackground(servletContext, colorTheme),
-                                    ServerColorUtils.getComponentForeground(servletContext, colorTheme)),
-                                    imageType, false), themedImagePath, rUrl);
+                                    ServerColorUtils.getComponentForeground(servletContext, colorTheme));
+                            saveImageFile(getIconSaver(() -> filteredImageIcon, imageType, false), themedImagePath, rUrl);
                         }
                     }
                 }
@@ -221,14 +227,16 @@ public class FileUtils {
         return rUrl.result;
     }
 
-    public static EConsumer<OutputStream, IOException> getIconSaver(ImageIcon icon, String iconFileType, boolean gray) {
-        Image image = icon.getImage();
-        return fos -> ImageIO.write((RenderedImage) (image instanceof RenderedImage ? image : getBufferedImage(image, gray)), iconFileType, fos);
+    public static EConsumer<OutputStream, IOException> getIconSaver(Supplier<ImageIcon> icon, String iconFileType, boolean gray) {
+        return fos -> {
+            Image image = icon.get().getImage();
+            ImageIO.write((RenderedImage) (image instanceof RenderedImage ? image : getBufferedImage(image, gray)), iconFileType, fos);
+        };
     }
 
     public static void saveImageFile(EConsumer<OutputStream, IOException> file, String imagePath, Result<String> rUrl) {
         // we can override since it is called only once the container is started
-        saveImageFile(file, true, STATIC_IMAGE_FOLDER_PATH, imagePath, rUrl);
+        saveImageFile(file, null, true, STATIC_IMAGE_SUBFOLDER_SUBPATH, imagePath, rUrl);
     }
 
     public static Object readUploadFileAndDelete(GFilesDTO filesObj) {
@@ -244,7 +252,11 @@ public class FileUtils {
         DEV // need not to be cached but stored
     }
 
-    private static String saveDownloadFile(boolean useDownload, boolean override, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer) {
+    private static String saveDownloadFile(boolean useDownload, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, RawFileData fileData, String ID) {
+        return saveDownloadFile(useDownload, false, storeType, innerPath, fileName, rCloser, null, fileData::write, ID);
+    }
+
+    private static String saveDownloadFile(boolean useDownload, boolean override, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer, String ID) {
         String filePath;
         String url;
         String extraPath = null;
@@ -270,36 +282,50 @@ public class FileUtils {
         }
         url += extraPath + "/";
 
+        assert !fileName.startsWith("/");
+        String innerFileName = fileName;
+        if(useDownload && ID != null)
+            innerFileName = BaseUtils.replaceFileNameAndExtension(fileName, ID);
+
         if(!innerPath.isEmpty()) {
             filePath += "/" + innerPath;
             url += innerPath + "/";
         }
 
-        Runnable closer = writeFile(filePath, override, fileName, consumer);
+        Runnable closer = writeFile(filePath, override, innerFileName, consumer);
         if(rCloser != null)
             rCloser.set(closer);
 
         if(rUrl != null)
             rUrl.set(url);
 
-        return url + fileName;
+        url += fileName;
+
+        String urlParams = "";
+        if(useDownload && ID != null)
+            urlParams = "version=" + ID;
+
+        if(urlParams.isEmpty()) // we assume that url should have params, because getDownloadParams assumes that
+            urlParams = "dumb=0";
+
+        return url + "?" + urlParams;
     }
 
     public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images
-        String fileName = SystemUtils.generateID(fileData.getBytes());
+        String fileName = fileData.getID();
         return saveDataFile(fileName, true, true, null, fileData);
     }
 
     public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
         if(fileData != null) {
-            String fileName = BaseUtils.randomString(15);            ;
+            String fileName = BaseUtils.randomString(15);
             return saveDataFile(fileName, false, false, null, fileData);
         }
         return null;
     }
 
     public static String saveFormFile(RawFileData fileData, FormSessionObject<?> sessionObject) { // multiple usages (form scoped), so should be deleted just right after form is closed
-        String fileName = SystemUtils.generateID(fileData.getBytes());
+        String fileName = fileData.getID();
         Pair<String, Runnable> savedFile = sessionObject.savedTempFiles.get(fileName);
         if (savedFile == null) {
             Result<Runnable> rCloser = new Result<>();
@@ -312,7 +338,7 @@ public class FileUtils {
     private static String saveDataFile(String fileName, boolean isStatic, boolean noAuth, Result<Runnable> rCloser, RawFileData fileData) {
         // we don't want to override file, since it's name is based on base64Hash or random
         assert !(noAuth && !isStatic); // noAuth => isStatic
-        return saveDownloadFile(true, false, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, null, fileData::write);
+        return saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, fileData, null);
     }
 
     public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {

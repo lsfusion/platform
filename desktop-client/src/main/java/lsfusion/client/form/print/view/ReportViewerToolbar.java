@@ -1,8 +1,8 @@
 package lsfusion.client.form.print.view;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.controller.remote.RmiQueue;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -208,7 +208,7 @@ public class ReportViewerToolbar extends JRViewerToolbar {
     }
     
     private JButton createButton(String iconPath, String tooltipText, boolean visible, ActionListener actionListener) {
-        JButton button = new JButton(ResourceUtils.readImage(iconPath));
+        JButton button = new JButton(ClientImages.readImage(iconPath));
         button.setToolTipText(tooltipText);
         button.setMargin(new Insets(2, 2, 2, 2));
         button.setMaximumSize(new Dimension(23, 23));

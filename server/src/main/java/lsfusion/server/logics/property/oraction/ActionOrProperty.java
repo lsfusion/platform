@@ -15,6 +15,7 @@ import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.comb.ListPermutations;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -695,7 +696,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.setCaptionWidth(captionWidth);
             if(propertyView.captionHeight == null)
                 propertyView.setCaptionHeight(captionHeight);
-            if (propertyView.design.getImage() == null && imagePath != null) {
+            if (propertyView.design.getImageHolder() == null && imagePath != null) {
                 propertyView.design.setImage(imagePath);
             }
             if (propertyView.changeKey == null)

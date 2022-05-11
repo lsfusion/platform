@@ -248,8 +248,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GResetWindowsLayoutAction();
     }
 
-    @Converter(from = ClientJSAction.class)
-    public GClientJSAction convertAction(ClientJSAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
+    @Converter(from = ClientWebAction.class)
+    public GClientWebAction convertAction(ClientWebAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         ArrayList<Object> values = new ArrayList<>();
         ArrayList<Object> types = new ArrayList<>();
 
@@ -261,9 +261,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             values.add(deserializeServerValue(actionValues.get(i)));
         }
 
-        String resource = action.resource;
+        Object resource = action.resource;
+        String resourcePath;
         if(action.isFile)
-            resource = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, resource);
-        return new GClientJSAction(resource, action.resourceName,  values, types, action.isFile, action.syncType);
+            resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData)resource);
+        else
+            resourcePath = (String) resource;
+        return new GClientWebAction(resourcePath, action.resourceName,  values, types, action.isFile, action.syncType);
     }
 }

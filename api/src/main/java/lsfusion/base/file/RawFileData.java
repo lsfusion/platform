@@ -1,9 +1,12 @@
 package lsfusion.base.file;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ResourceUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.mutability.TwinImmutableObject;
 import org.apache.commons.io.FileUtils;
 
+import javax.swing.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -36,7 +39,12 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
     public RawFileData(String filePath) throws IOException {
         this.array = IOUtils.getFileBytes(filePath);
     }
-    
+
+    public RawFileData(String resourcePath, boolean resource) throws IOException {
+        this(ResourceUtils.getResourceAsStream(resourcePath));
+        assert resource;
+    }
+
     public byte[] getBytes() {
         return array;
     }
@@ -61,6 +69,18 @@ public class RawFileData extends TwinImmutableObject<RawFileData> implements Ser
         try(FileOutputStream fos = new FileOutputStream(filePath)) {
             write(fos);
         }
+    }
+
+    // cache ???
+    public ImageIcon getImageIcon() {
+        return new ImageIcon(array);
+    }
+
+    private String ID;
+    public String getID() {
+        if(ID == null)
+            ID = SystemUtils.generateID(array);
+        return ID;
     }
     
     public InputStream getInputStream() {

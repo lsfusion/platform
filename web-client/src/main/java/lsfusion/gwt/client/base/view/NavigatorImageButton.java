@@ -19,8 +19,7 @@ public class NavigatorImageButton extends ImageButton {
 
     public void setImage(ImageDescription imageDescription) {
         if (imageDescription != null) {
-            String url = imageDescription.url;
-            setAbsoluteImagePath(url == null ? null : GwtClientUtils.getAppStaticImageURL(url));
+            setAbsoluteImagePath(GwtClientUtils.getAppStaticImageURL(imageDescription.getUrl()));
             if (imageDescription.width != -1) {
                 image.setWidth(imageDescription.width + "px");
             }
