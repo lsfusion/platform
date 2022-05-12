@@ -35,7 +35,7 @@ public class WebClientAction extends SystemAction {
 
         if(isFile) {
             Result<String> fullPath = new Result<>();
-            RawFileData fileData = ResourceUtils.findResourceAsFileData(resourceName, false, false, fullPath, "web");
+            RawFileData fileData = ResourceUtils.findResourceAsFileData(resourceName, false, true, fullPath, "web");
             fileData.getID(); // to calculate the cache
             resource = fileData;
             this.resourceName = fullPath.result;
