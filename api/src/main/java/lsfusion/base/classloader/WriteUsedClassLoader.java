@@ -12,7 +12,7 @@ public class WriteUsedClassLoader extends RemoteClassLoader { //extends RemoteCl
 
     public WriteUsedClassLoader(Map<String, byte[]> classes, ClassLoader originalClassloader, RemoteLogicsInterface remoteLogics) {
         super(originalClassloader);
-        super.setRemoteLogics(remoteLogics);
+        setRemoteLogics(remoteLogics);
         this.classes = classes;
     }
 
