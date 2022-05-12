@@ -6,8 +6,11 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class NavigatorFolder extends NavigatorElement {
     public NavigatorFolder(String canonicalName, LocalizedString caption) {
         super(canonicalName, caption);
+    }
 
-        setImage("open.png", DefaultIcon.OPEN);
+    @Override
+    protected String getDefaultIcon(boolean top) {
+        return top ? "openTop.png" : "open.png";
     }
 
     @Override

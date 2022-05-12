@@ -20,6 +20,7 @@ import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -328,6 +329,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (RegularFilterGroupEntity filterGroupEntity : entity.getRegularFilterGroupsList()) {
             regularFilterGroups.add(instanceFactory.getInstance(filterGroupEntity));
         }
+
+        for(Property property : entity.asyncInitPropertyChanges)
+            asyncPropertyChanges.put(property, HasChanges.NULL);
 
         ImMap<GroupObjectInstance, ImOrderMap<OrderInstance, Boolean>> fixedOrders = entity.getFixedOrdersList().mapOrderKeys((Function<OrderEntity<?>, OrderInstance>) value -> value.getInstance(instanceFactory)).groupOrder(new BaseUtils.Group<GroupObjectInstance, OrderInstance>() {
             public GroupObjectInstance group(OrderInstance key) {
@@ -1106,7 +1110,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     }
 
-    // later it would be better if this map is automatically cleaned / filled some way
+    // later it would be better if this map is automatically cleaned / filled some way (see proceedAllEventActions in FormEntity.finalizaeAroundInit)
     private Map<Property, HasChanges> asyncPropertyChanges = new ConcurrentHashMap<>();
     // thread-safe
     private void updateAsyncPropertyChanges() throws SQLException, SQLHandledException {
@@ -2061,7 +2065,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 resultActions.add(new AsyncGetRemoteChangesClientAction(true));
             }
 
-updateAsyncPropertyChanges();
+            updateAsyncPropertyChanges();
             ChangedData update = session.update(this);
             if(update.wasRestart) // очищаем кэш при рестарте
                 isReallyChanged.clear();
@@ -2105,6 +2109,8 @@ updateAsyncPropertyChanges();
         
         result.collapseContainers.addAll(userCollapseContainers);
         result.expandContainers.addAll(userExpandContainers);
+
+        result.needConfirm = needConfirm();
 
         // сбрасываем все пометки
         userActivateTabs = ListFact.EMPTY();
@@ -2256,7 +2262,7 @@ updateAsyncPropertyChanges();
     }
 
     private boolean isPropertyStaticShown(ComponentView drawComponent, PropertyDrawInstance drawProperty, ImSet<GroupObjectInstance> propRowColumnGrids) {
-        if(!drawProperty.isInInterface(propRowColumnGrids, true)) { // don't show property if it is always null
+        if(!drawProperty.isInInterface(propRowColumnGrids, true) && !drawProperty.getEntity().ignoreIsInInterfaceCheck) { // don't show property if it is always null
             return false;
         }
 
@@ -2551,6 +2557,10 @@ updateAsyncPropertyChanges();
         fireEvent(ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE, stack);
     }
 
+    public void fireFormSchedulerEvent(ExecutionStack stack, FormScheduler formScheduler) throws SQLException, SQLHandledException {
+        fireEvent(formScheduler, stack);
+    }
+
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
         for(ActionValueImplement event : getEvents(eventObject))
             event.execute(this, stack);
@@ -2669,8 +2679,12 @@ updateAsyncPropertyChanges();
         }
     }
 
+    private boolean needConfirm() {
+        return manageSession && session.isStoredDataChanged() && !isEditing;
+    }
+
     public void formClose(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        if (manageSession && session.isStoredDataChanged() && !isEditing) {
+        if (!context.isPushedConfirmedClose() && needConfirm()) {
             int result = (Integer) context.requestUserInteraction(new ConfirmClientAction("lsFusion", ThreadLocalContext.localize("{form.do.you.really.want.to.close.form}")));
             if (result != JOptionPane.YES_OPTION) {
                 return;

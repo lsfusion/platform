@@ -8,6 +8,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.view.GColorTheme;
+import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class CellRenderer<T> {
 
@@ -150,15 +152,21 @@ public abstract class CellRenderer<T> {
     private static class RenderedState {
         public Object value;
         public boolean loading;
+        public GColorTheme colorTheme; // for action and color cell renderer
 
         public ToolbarState toolbar;
     }
-    private boolean equalsDynamicState(RenderedState state, Object value, boolean isLoading) {
-        return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading;
+    private boolean equalsDynamicState(RenderedState state, Object value, boolean isLoading, GColorTheme colorTheme) {
+        return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading && state.colorTheme == colorTheme;
     }
 
     private static final String RENDERED = "rendered";
 
+    protected String getBackground(UpdateContext updateContext) {
+        String baseBackground = getBaseBackground(updateContext.getValue()); // not converted (with getDisplayColor)
+        return updateContext.getBackground(baseBackground); // converted (with getDisplayColor)
+    }
+    
     public void update(Element element, UpdateContext updateContext) {
         boolean selected = updateContext.isSelectedLink();
         if(selected)
@@ -169,9 +177,9 @@ public abstract class CellRenderer<T> {
         Object value = updateContext.getValue();
         boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
 
-        String baseBackground = getBaseBackground(value);
-        String background = updateContext.getBackground(baseBackground);
-        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground(), baseBackground == null);
+        // already themed colors expected
+        String background = getBackground(updateContext);
+        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground());
 
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
         boolean isNew = false;
@@ -182,11 +190,12 @@ public abstract class CellRenderer<T> {
             isNew = true;
         }
         boolean cleared = false;
-        if(isNew || !equalsDynamicState(renderedState, value, loading)) {
+        if(isNew || !equalsDynamicState(renderedState, value, loading, MainFrame.colorTheme)) {
             // there might be stack overflow, if this is done after renderDynamicContent, and this is a custom cell render, which calls changeProperty in its update method
             // setting value earlier breaks the recursion
             renderedState.value = value;
             renderedState.loading = loading;
+            renderedState.colorTheme = MainFrame.colorTheme;
 
             cleared = renderDynamicContent(element, value, loading, updateContext);
         }
@@ -263,6 +272,7 @@ public abstract class CellRenderer<T> {
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
+    // backgroud - converted (with getDisplayColor)
     protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
         ToolbarAction[] toolbarActions = updateContext.getToolbarActions();
@@ -376,7 +386,7 @@ public abstract class CellRenderer<T> {
     private static void setToolbarBackground(Element element, String background) {
         element.addClassName("background-inherit");
         // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
-        GFormController.setBackgroundColor(element, background, true);
+        GFormController.setBackgroundColor(element, background);
     }
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {

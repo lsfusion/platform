@@ -36,7 +36,6 @@ import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -47,7 +46,6 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Consumer;
 
 import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
@@ -706,7 +704,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 return { width : pivotElement.offsetWidth, height : pivotElement.offsetHeight };
             },
             getDisplayColor: function (rgb) {
-                return @lsfusion.gwt.client.base.view.ColorUtils::getDisplayColor(III)(rgb[0], rgb[1], rgb[2]);
+                return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(III)(rgb[0], rgb[1], rgb[2]);
             }
         }
     }-*/;
@@ -789,7 +787,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                     String[] splitColorString = heatColorString.split(",");
                     assert splitColorString.length == 3;
                     try {
-                        td.getStyle().setBackgroundColor(getDisplayColor(
+                        td.getStyle().setBackgroundColor(getThemedColor(
                                 decode(splitColorString[0]),
                                 decode(splitColorString[1]),
                                 decode(splitColorString[2])));
@@ -1405,7 +1403,10 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         if(dataHeight.isEmpty()) {
             NodeList<Node> children = element.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
-                rowHeight = Math.max(rowHeight, getTableToExcelMaxRowHeight((Element) children.getItem(i)));
+                Node child = children.getItem(i);
+                if (child.getNodeType() == Node.ELEMENT_NODE) {
+                    rowHeight = Math.max(rowHeight, getTableToExcelMaxRowHeight((Element) child));
+                }
             }
         } else {
             rowHeight = Double.parseDouble(dataHeight);
@@ -1926,7 +1927,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 filters.addAll(getFilters(config.getArrayString("cols"), colKeyValues));
 
                 config.getArrayString("rows").push(caption);
-                grid.filter.applyFilters(filters, new ArrayList<>(), false);
+                grid.filter.addConditions(filters, false, true);
 //                updateView(true, null);
             });
             menuBar.addItem(menuItem);

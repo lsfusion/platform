@@ -32,13 +32,12 @@ public class ReadResourcesAction extends InternalAction {
 
     @Override
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        String resourcePath = (String) context.getKeyValue(resourcePathInterface).getValue();
-        List<String> allResources = ResourceUtils.getResources(Pattern.compile(resourcePath));
+        String pattern = (String) context.getKeyValue(resourcePathInterface).getValue();
+        List<String> allResources = ResourceUtils.getResources(Pattern.compile(pattern));
         allResources
                 .forEach(r -> {
                     try {
-                        RawFileData fileData = new RawFileData(ResourceUtils.getResourceAsStream(r));
-                        findProperty("resourceFiles[STRING]").change(fileData, context, new DataObject(r, StringClass.text));
+                        findProperty("resourceFiles[STRING]").change(new RawFileData(r, true), context, new DataObject(r, StringClass.text));
                     } catch (ScriptingErrorLog.SemanticErrorException | IOException | SQLException | SQLHandledException e) {
                         throw Throwables.propagate(e);
                     }

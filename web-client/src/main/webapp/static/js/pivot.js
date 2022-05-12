@@ -1510,7 +1510,7 @@
           listItem.bind("dblclick", function() {
             var pvtContainer;
             if (unusedDiv.has(attrElem).length > 0) {
-              pvtContainer = $('.pvtAxisContainer.pvtHorizList');
+              pvtContainer = $(uiTable).find('.pvtAxisContainer.pvtHorizList');
               listItem.appendTo(pvtContainer[pvtContainer.length - 1]);
             } else {
               listItem.prependTo(unusedDiv);

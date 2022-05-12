@@ -43,7 +43,7 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     public int getReportPreferredWidth() { return 70; }
 
     public Class getReportJavaClass() {
-        return java.util.Date.class;
+        return java.time.LocalDate.class;
     }
 
     public void fillReportDrawField(ReportDrawField reportField) {

@@ -2,6 +2,9 @@ package lsfusion.server.base.task;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
+import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.StackNewThread;
+import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
 import lsfusion.server.base.controller.thread.ThreadUtils;
@@ -75,7 +78,15 @@ public abstract class Task {
 
     public abstract Set<Task> getAllDependencies();
 
+    @StackNewThread
+    @StackMessage("scheduler.form.scheduled.task")
+    @ThisMessage
     public abstract void run(Logger logger);
+
+    @Override
+    public String toString() {
+        return getCaption();
+    }
 
     // не так важно какой
     public void dependProceeded(BusinessLogics BL, Executor executor, ExecutionContext context, Object monitor, AtomicInteger taskCount, Logger logger,

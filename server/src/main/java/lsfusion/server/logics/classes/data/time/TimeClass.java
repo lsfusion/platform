@@ -51,7 +51,7 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
     }
 
     protected Class getReportJavaClass() {
-        return java.util.Date.class;
+        return java.time.LocalTime.class;
     }
 
     @Override

@@ -2,8 +2,10 @@ package lsfusion.server.logics.action;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.ResourceUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
-import lsfusion.interop.action.ClientJSAction;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.action.ClientWebAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.value.ObjectValue;
@@ -16,22 +18,31 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import static lsfusion.base.BaseUtils.serializeObject;
 
-public class ClientSystemAction extends SystemAction {
+public class WebClientAction extends SystemAction {
 
+    private final Object resource;
     private final String resourceName;
     private final boolean isFile;
     private final boolean syncType;
 
-    public ClientSystemAction(String resourceName, int size, boolean isFile, boolean syncType) {
-        super(LocalizedString.create("ClientJS"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
-        this.resourceName = resourceName;
+    public WebClientAction(String resourceName, int size, boolean isFile, boolean syncType) {
+        super(LocalizedString.create("Web client"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
         this.isFile = isFile;
         this.syncType = syncType;
+
+        if(isFile) {
+            Result<String> fullPath = new Result<>();
+            RawFileData fileData = ResourceUtils.findResourceAsFileData(resourceName, false, false, fullPath, "web");
+            fileData.getID(); // to calculate the cache
+            resource = fileData;
+            this.resourceName = fullPath.result;
+        } else {
+            resource = resourceName;
+            this.resourceName = resourceName;
+        }
     }
 
     @Override
@@ -49,18 +60,11 @@ public class ClientSystemAction extends SystemAction {
             throw Throwables.propagate(e);
         }
 
-        String resource;
-        if(isFile) {
-            List<String> resources = ResourceUtils.getResources(Pattern.compile("/web/.*" + resourceName.trim()));
-            resource = (resources.size() == 1 ? resources.get(0) : null);
-        } else
-            resource = resourceName;
-
-        ClientJSAction clientJSAction = new ClientJSAction(resource, resourceName, values, types, isFile, syncType);
+        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, isFile, syncType);
         if (syncType)
-            context.requestUserInteraction(clientJSAction);
+            context.requestUserInteraction(clientWebAction);
         else
-            context.delayUserInteraction(clientJSAction);
+            context.delayUserInteraction(clientWebAction);
 
         return FlowResult.FINISH;
     }

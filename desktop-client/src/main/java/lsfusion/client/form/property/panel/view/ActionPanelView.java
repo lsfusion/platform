@@ -228,7 +228,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     }
 
     public void setBackgroundColor(Color background) {
-        setBackground(background == null ? SwingDefaults.getButtonBackground() : ClientColorUtils.getDisplayColor(background));
+        setBackground(background == null ? SwingDefaults.getButtonBackground() : ClientColorUtils.getThemedColor(background));
     }
 
     public void setForegroundColor(Color background) {

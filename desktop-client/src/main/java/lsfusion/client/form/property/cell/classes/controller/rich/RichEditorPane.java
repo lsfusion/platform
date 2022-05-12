@@ -32,7 +32,7 @@ import java.util.Vector;
 
 import static java.lang.Math.max;
 import static java.util.Arrays.asList;
-import static lsfusion.base.ResourceUtils.readImage;
+import static lsfusion.client.base.view.ClientImages.readImage;
 
 /**
  * based on net.atlanticbb.tantlinger.shef.HTMLEditorPane

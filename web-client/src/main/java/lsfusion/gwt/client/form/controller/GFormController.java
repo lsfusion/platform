@@ -14,10 +14,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.GFormChanges;
-import lsfusion.gwt.client.GFormChangesDTO;
+import lsfusion.gwt.client.*;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.action.GLogMessageAction;
 import lsfusion.gwt.client.base.*;
@@ -108,11 +105,13 @@ import java.util.stream.Collectors;
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
 import static lsfusion.gwt.client.base.GwtSharedUtils.putToDoubleNativeMap;
 import static lsfusion.gwt.client.base.GwtSharedUtils.removeFromDoubleMap;
-import static lsfusion.gwt.client.base.view.ColorUtils.getDisplayColor;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.isChangeEvent;
 
 public class GFormController implements EditManager {
+
+    private static final ClientMessages messages = ClientMessages.Instance.get();
+
     private FormDispatchAsync dispatcher;
 
     private final GFormActionDispatcher actionDispatcher;
@@ -150,6 +149,8 @@ public class GFormController implements EditManager {
     private boolean hasColumnGroupObjects;
 
     private static Timer linkEditModeTimer;
+
+    private boolean needConfirm;
 
     public FormsController getFormsController() {
         return formsController;
@@ -189,13 +190,13 @@ public class GFormController implements EditManager {
 
         initializeUserOrders();
 
-        initializeAutoRefresh();
+        initializeFormSchedulers();
 
         initLinkEditModeTimer();
     }
 
     public void checkGlobalMouseEvent(Event event) {
-        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, true));
+        checkFormEvent(event, (handler, preview) -> checkMouseEvent(handler, preview, null, false, false));
     }
 
     public Event popEditEvent() {
@@ -388,7 +389,7 @@ public class GFormController implements EditManager {
     private void createMultipleFilterComponent(final GRegularFilterGroup filterGroup) {
         final ListBox filterBox = new ListBox();
         filterBox.setMultipleSelect(false);
-        filterBox.addItem("(" + ClientMessages.Instance.get().multipleFilterComponentAll() + ")", "-1");
+        filterBox.addItem("(" + messages.multipleFilterComponentAll() + ")", "-1");
 
         ArrayList<GRegularFilter> filters = filterGroup.filters;
         for (int i = 0; i < filters.size(); i++) {
@@ -559,9 +560,9 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ExecuteNotification(idNotification));
     }
 
-    private void initializeAutoRefresh() {
-        if (form.autoRefresh > 0) {
-            scheduleRefresh();
+    private void initializeFormSchedulers() {
+        for(GFormScheduler formScheduler : form.formSchedulers) {
+            scheduleFormScheduler(formScheduler);
         }
     }
 
@@ -569,28 +570,33 @@ public class GFormController implements EditManager {
         return formLayout;
     }
 
-    private void scheduleRefresh() {
+    private void scheduleFormScheduler(GFormScheduler formScheduler) {
+
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
                 if (!formHidden) {
-                    if (isShowing(getWidget())) {
-                        asyncDispatch(new GetRemoteChanges(true, false), new ServerResponseCallback() {
-                            @Override
+                    if (isShowing(getWidget()) && !MainFrame.isModalPopup()) {
+                        asyncDispatch(new ExecuteFormSchedulerAction(formScheduler), new ServerResponseCallback() {
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                                 super.onSuccess(response, onDispatchFinished);
-                                if (!formHidden) {
-                                    scheduleRefresh();
+                                if (!formHidden && !formScheduler.fixed) {
+                                    scheduleFormScheduler(formScheduler);
                                 }
                             }
                         });
+
+                        if(formScheduler.fixed) {
+                            scheduleFormScheduler(formScheduler);
+                        }
+
                     } else {
-                        scheduleRefresh();
+                        return true;
                     }
                 }
                 return false;
             }
-        }, form.autoRefresh * 1000);
+        }, formScheduler.period * 1000);
     }
 
     public GPropertyDraw getProperty(int id) {
@@ -648,6 +654,8 @@ public class GFormController implements EditManager {
 
         activateElements(fc);
 
+        applyNeedConfirm(fc);
+
         formLayout.update(requestIndex);
     }
 
@@ -696,6 +704,10 @@ public class GFormController implements EditManager {
             for(GPropertyDraw propertyDraw : fc.activateProps)
                 focusProperty(propertyDraw);
         });
+    }
+
+    private void applyNeedConfirm(GFormChanges fc) {
+        needConfirm = fc.needConfirm;
     }
 
     private void expandCollapseContainers(GFormChanges formChanges) {
@@ -1103,9 +1115,20 @@ public class GFormController implements EditManager {
     }
 
     public void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, pushAsyncResult, externalChange, requestIndex -> {
-            formsController.asyncCloseForm(getAsyncFormController(requestIndex));
-        }, onExec);
+        if(needConfirm) {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+                if(chosenOption == DialogBoxHelper.OptionType.YES) {
+                    executeAsyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
+                }
+            });
+        } else {
+            executeAsyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
+        }
+    }
+
+    private void executeAsyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex ->
+                formsController.asyncCloseForm(getAsyncFormController(requestIndex)), onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
@@ -2270,21 +2293,17 @@ public class GFormController implements EditManager {
         return editContext != null && editContext.getEditElement() == element;
     }
 
-    public static void setBackgroundColor(Element element, String color, boolean themeConvert) {
+    public static void setBackgroundColor(Element element, String color) {
         if (color != null) {
-            element.getStyle().setBackgroundColor(themeConvert ? getDisplayColor(color) : color);
+            element.getStyle().setBackgroundColor(color);
         } else {
             element.getStyle().clearBackgroundColor();
         }
     }
 
     public static void setForegroundColor(Element element, String color) {
-        setForegroundColor(element, color, false);
-    }
-
-    public static void setForegroundColor(Element element, String color, boolean themeConvert) {
         if (color != null) {
-            element.getStyle().setColor(themeConvert ? getDisplayColor(color) : color);
+            element.getStyle().setColor(color);
         } else {
             element.getStyle().clearColor();
         }

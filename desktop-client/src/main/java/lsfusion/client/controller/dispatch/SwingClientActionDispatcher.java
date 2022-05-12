@@ -693,7 +693,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
-    public void execute(ClientJSAction action) {
+    public void execute(ClientWebAction action) {
         //desktop stub. do nothing
     }
 

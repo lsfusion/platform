@@ -391,7 +391,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
 
             GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
-            AbstractDataGridBuilder.updateColors(cellElement, DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground()), rowValue.getRowForeground(), true);
+            AbstractDataGridBuilder.updateColors(cellElement, DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground()), rowValue.getRowForeground());
         }
 
         @Override

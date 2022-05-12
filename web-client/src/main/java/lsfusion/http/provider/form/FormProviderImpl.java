@@ -1,6 +1,7 @@
 package lsfusion.http.provider.form;
 
 import lsfusion.base.Pair;
+import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
@@ -85,8 +86,8 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     }
 
     @Override
-    public String getWebFile(String sessionID, String fileName) throws SessionInvalidatedException {
-        return FileUtils.getWebFile(fileName, navigatorProvider.getServerSettings(sessionID));
+    public String getWebFile(String sessionID, String fileName, RawFileData fileData) throws SessionInvalidatedException {
+        return FileUtils.saveWebFile(fileName, fileData, navigatorProvider.getServerSettings(sessionID));
     }
 
     public void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID) {

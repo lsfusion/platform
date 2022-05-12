@@ -27,6 +27,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class ConstraintCheckChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends ChangeProperty<ConstraintCheckChangeProperty.Interface<P>> {
 
@@ -121,12 +122,12 @@ public class ConstraintCheckChangeProperty<T extends PropertyInterface,P extends
         Where newWhere;
         Where prevWhere = null;
         // we don't want pull exprs from change modifier to be materialized (it will throw an error)
-        AutoHintsAspect.catchDisabledHints.set(property -> Property.depends(property, toChange));
+        Predicate<Property> prevPredicate = AutoHintsAspect.pushCatchDisabledHint(property -> Property.depends(property, toChange));
         try {
             newWhere = getChangeWhere(mapKeys, calcType, propChanges);
             if(changedWhere != null) prevWhere = getChangeWhere(mapKeys, calcType, PropertyChanges.EMPTY);
         } finally {
-            AutoHintsAspect.catchDisabledHints.set(null);
+            AutoHintsAspect.popCatchDisabledHint(prevPredicate);
         }
 
         Where newExprWhere = GroupExpr.create(mapExprs, newWhere, joinImplement).getWhere(); // constraints (filters)

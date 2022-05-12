@@ -27,6 +27,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
+import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
@@ -82,36 +83,32 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
         this.integrationKey = integrationKey;
     }
 
-    private static class UpStaticParamsProcessor implements GroupObjectInstance.FilterProcessor {
-        private final GroupObjectInstance groupObject;
-
+    private static class UpStaticParamsProcessor extends GroupObjectInstance.FilterProcessor {
         public UpStaticParamsProcessor(GroupObjectInstance groupObject) {
-            this.groupObject = groupObject;
+            super(groupObject);
         }
 
         public ImSet<FilterInstance> getFilters() {
             return groupObject.getFixedFilters(true, true); // we can't combine filters (see check below)
         }
 
-        public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
-            return MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues((ObjectInstance value) -> value.entity.getParamExpr()));
+        public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+            return super.process(filt, MapFact.addExcl(mapKeys, filt.getObjects().remove(mapKeys.keys()).mapValues((ObjectInstance value) -> value.entity.getParamExpr())), modifier, reallyChanged);
         }
     }
-    private static class NoUpProcessor implements GroupObjectInstance.FilterProcessor {
-        private final GroupObjectInstance groupObject;
-
+    private static class NoUpProcessor extends GroupObjectInstance.FilterProcessor {
         public NoUpProcessor(GroupObjectInstance groupObject) {
-            this.groupObject = groupObject;
+            super(groupObject);
         }
 
         public ImSet<FilterInstance> getFilters() {
             return groupObject.getFixedFilters(true, true); // we can't combine filters (see check below)
         }
 
-        public ImMap<ObjectInstance, ? extends Expr> process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys) {
+        public Where process(FilterInstance filt, ImMap<ObjectInstance, ? extends Expr> mapKeys, Modifier modifier, ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
             if(!groupObject.getOrderObjects().getSet().containsAll(filt.getObjects())) // если есть "внешние" объекты исключаем
                 return null;
-            return mapKeys;
+            return super.process(filt, mapKeys, modifier, reallyChanged);
         }
     }
 

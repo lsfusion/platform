@@ -70,7 +70,7 @@ public interface ClientActionDispatcher {
     
     void execute(ResetWindowsLayoutClientAction action);
 
-    void execute(ClientJSAction action);
+    void execute(ClientWebAction action);
 
     EventBus getEventBus();
 

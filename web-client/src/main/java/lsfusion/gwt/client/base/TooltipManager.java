@@ -104,6 +104,14 @@ public class TooltipManager {
                             if (!toolbarButtonTooltip)
                                 addDebugLink(tooltipHelper, panel);
 
+                            //to prevent the cursor hovering over the top left of the tooltip
+                            //set the style of the popup to the internal element(panel) and make the popup transparent
+                            // so that when you hover over it, the focus does not go to other components
+                            tooltip.getElement().getStyle().setBackgroundColor("rgba(0, 0, 0, 0)");
+                            tooltip.removeStyleName("gwt-PopupPanel");
+                            panel.setStyleName("gwt-PopupPanel");
+                            panel.getElement().getStyle().setMargin(10, Style.Unit.PX);
+
                             GwtClientUtils.showPopupInWindow(tooltip, panel, mouseX, mouseY);
                         }
                     } else {

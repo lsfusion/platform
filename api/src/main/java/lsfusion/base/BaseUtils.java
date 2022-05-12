@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -63,7 +64,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 194;
+        return 200;
     }
 
     public static String getPlatformVersion() {
@@ -1378,6 +1379,16 @@ public class BaseUtils {
         return result;
     }
 
+    public static <G, K> Map<G, K> groupListFirst(Group<G, K> getter, List<K> keys) {
+        Map<G, K> result = new HashMap<>();
+        for (K key : keys) {
+            G group = getter.group(key);
+            if (group != null && !result.containsKey(group))
+                result.put(group, key);
+        }
+        return result;
+    }
+
     public static <G, K> Map<G, Set<K>> groupSet(Group<G, K> getter, Collection<K> keys) { // assert что keys - set
         Map<G, Set<K>> result = new HashMap<>();
         for (K key : keys) {
@@ -1413,11 +1424,7 @@ public class BaseUtils {
     }
 
     public static <G, K> Map<G, List<K>> groupList(final Map<K, G> getter, List<K> keys) {
-        return groupList(new Group<G, K>() {
-            public G group(K key) {
-                return getter.get(key);
-            }
-        }, keys);
+        return groupList(key -> getter.get(key), keys);
     }
 
     public static <G, K> Map<G, Set<K>> groupSet(final Map<K, G> getter) {
@@ -2347,22 +2354,33 @@ public class BaseUtils {
         return FilenameUtils.getBaseName(filename);
     }
 
+    public static String getFileNameAndExtension(String filename) {
+        return FilenameUtils.getName(filename);
+    }
+
+    public static String getFilePath(String filename) {
+        return FilenameUtils.getFullPath(filename);
+    }
+
     public static String getFileExtension(File file) {
         return getFileExtension(file.getName());
     }
 
-    public static String getFileWithoutExtension(String filename) {
-        int dotIndex = filename.lastIndexOf(".");
-        if(dotIndex >= 0)
-            filename = filename.substring(0, dotIndex);
-        return filename;
+    public static String getFileExtension(String filename) {
+        return FilenameUtils.getExtension(filename);
     }
 
-    public static String getFileExtension(String filename) {
-        int endIndex = filename.indexOf("?");
-        String result = filename.substring(0, endIndex == -1 ? filename.length() : endIndex);
-        int beginIndex = result.lastIndexOf(".");
-        return beginIndex == -1 ? "" : result.substring(beginIndex + 1);
+    public static String replaceFileName(String filePath, String toName, boolean escapeDot) {
+        return FilenameUtils.getFullPath(filePath) + toName + (escapeDot ? "\\" : "") + "." + FilenameUtils.getExtension(filePath);
+    }
+    public static String replaceFileNameAndExtension(String filePath, String toName) {
+        return FilenameUtils.getFullPath(filePath) + toName;
+    }
+    public static String addSuffix(String filePath, String suffix) {
+        return FilenameUtils.getFullPath(filePath) + FilenameUtils.getBaseName(filePath) + suffix + "." + FilenameUtils.getExtension(filePath);
+    }
+    public static String addPrefix(String filePath, String prefix) {
+        return FilenameUtils.getFullPath(filePath) + prefix + FilenameUtils.getBaseName(filePath) + "." + FilenameUtils.getExtension(filePath);
     }
 
     public static Object filesToBytes(boolean multiple, boolean storeName, boolean custom, boolean named, String namedFileName, File... files) {
@@ -2982,5 +3000,9 @@ public class BaseUtils {
         } catch (ClassNotFoundException e) {
             throw new IOException(getString("serialization.can.not.read.object"), e);
         }
+    }
+
+    public static <T> java.util.function.Predicate<T> or(java.util.function.Predicate<T> a, java.util.function.Predicate<T> b) {
+        return value -> a.test(value) || b.test(value);
     }
 }

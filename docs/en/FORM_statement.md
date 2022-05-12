@@ -57,7 +57,7 @@ The `FORM` statement declares a new form and adds it to the current [module](Mod
 
 - `AUTOREFRESH period`
 
-    Specifying the [automatic form update](Interactive_view.md#extra) period. If the option is not specified, the form will not be updated automatically.
+    Specifying the [automatic form update](Interactive_view.md#extra) period. If the option is not specified, the form will not be updated automatically. **deprecated since version 5, use `EVENTS ON SCHEDULE refresh()`**
 
     - `period`
     

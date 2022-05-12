@@ -2,6 +2,8 @@ package lsfusion.interop.form.print;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.*;
+import lsfusion.base.classloader.RemoteClassLoader;
+import lsfusion.base.classloader.WriteUsedClassLoader;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -96,14 +98,23 @@ public class ReportGenerator {
         transformDesigns(printType.ignorePagination());
 
         Map<String, Object> params = new HashMap<>();
+//        // external classloader required for correct Jasper report generation on clients
+        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+        JasperPrint print;
+        Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData),
+                originalClassloader instanceof RemoteClassLoader ? originalClassloader.getParent() : originalClassloader, //not possible to do via parent because it is used in a load class and not in a find
+                remoteLogics));
+        try {
+            iterateChildReport(rootID, params, virtualizer);
 
-        iterateChildReport(rootID, params, virtualizer);
+            JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
+            ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
+            Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
 
-        JasperReport report = (JasperReport) params.get(rootID + ReportConstants.reportSuffix);
-        ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
-        Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
-
-        JasperPrint print = JasperFillManager.fillReport(report, childParams, source);
+            print = JasperFillManager.fillReport(report, childParams, source);
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassloader);
+        }
 
         JasperDesign rootDesign = designs.get(rootID);
         print.setProperty(SIDES_PROPERTY_NAME, rootDesign.getProperty(SIDES_PROPERTY_NAME));
@@ -160,6 +171,10 @@ public class ReportGenerator {
         String rootID = objStream.readUTF();
         Map<String, java.util.List<String>> hierarchy = (Map<String, java.util.List<String>>) objStream.readObject();
         return new Pair<>(rootID, hierarchy);
+    }
+
+    private static Map<String, byte[]> retrieveClasses(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
+        return (Map<String, byte[]>) new ObjectInputStream(new ByteArrayInputStream(generationData.classes)).readObject();
     }
 
     private static Map<String, JasperDesign> retrieveReportDesigns(ReportGenerationData generationData) throws IOException, ClassNotFoundException {
@@ -864,7 +879,17 @@ public class ReportGenerator {
     }
 
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, RemoteLogicsInterface remoteLogics) {
-        return exportToFileByteArray(generationData, type, null, null, remoteLogics);
+        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+
+        RemoteClassLoader remoteClassLoader = new RemoteClassLoader(originalClassloader);
+        remoteClassLoader.setRemoteLogics(remoteLogics);
+
+        Thread.currentThread().setContextClassLoader(remoteClassLoader);
+        try {
+            return exportToFileByteArray(generationData, type, null, null, remoteLogics);
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassloader);
+        }
     }
     
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) {

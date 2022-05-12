@@ -40,6 +40,7 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -268,7 +269,7 @@ public class EmailReceiver {
                             int counter = 1;
                             if (messageEmail.attachments != null) {
                                 for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
-                                    dataAttachments.add(Arrays.asList(idEmail, String.valueOf(counter), getFileNameWithoutExt(entry.getKey()), entry.getValue()));
+                                    dataAttachments.add(Arrays.asList(idEmail, String.valueOf(counter), BaseUtils.getFileName(entry.getKey()), entry.getValue()));
                                     counter++;
                                 }
                             }
@@ -422,7 +423,7 @@ public class EmailReceiver {
     }
 
     private MultipartBody extractWinMail(File winMailFile) throws IOException {
-        HMEFMessage msg = new HMEFMessage(new FileInputStream(winMailFile));
+        HMEFMessage msg = new HMEFMessage(Files.newInputStream(winMailFile.toPath()));
         Map<String, FileData> attachments = new HashMap<>();
         for(Attachment attach : msg.getAttachments()) {
             String attachName = attach.getFilename();
@@ -433,8 +434,7 @@ public class EmailReceiver {
 
     private MultipartBody getMultipartBodyStream(String subjectEmail, FilterInputStream filterInputStream, String fileName, boolean unpack) throws IOException {
         RawFileData byteArray = new RawFileData(filterInputStream);
-        Map<String, FileData> attachments = new HashMap<>();
-        attachments.putAll(unpack(byteArray, fileName, unpack));
+        Map<String, FileData> attachments = new HashMap<>(unpack(byteArray, fileName, unpack));
         return new MultipartBody(subjectEmail, attachments);
     }
 
@@ -486,9 +486,9 @@ public class EmailReceiver {
         String[] fileNameAndExt = fileName.split("\\.");
         String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1].trim() : "";
         if (unpack) {
-            if (fileExtension.toLowerCase().equals("rar")) {
+            if (fileExtension.equalsIgnoreCase("rar")) {
                 attachments.putAll(unpackRARFile(byteArray));
-            } else if (fileExtension.toLowerCase().equals("zip")) {
+            } else if (fileExtension.equalsIgnoreCase("zip")) {
                 attachments.putAll(unpackZIPFile(byteArray));
             }
         }
@@ -506,7 +506,7 @@ public class EmailReceiver {
             rawFile.write(inputFile);
 
             List<File> dirList = new ArrayList<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
                 dirList.add(outputDirectory);
                 Archive a = new Archive(new FileVolumeManager(inputFile));
@@ -561,10 +561,10 @@ public class EmailReceiver {
 
             byte[] buffer = new byte[1024];
             Set<File> dirList = new HashSet<>();
-            File outputDirectory = new File(inputFile.getParent() + "/" + getFileNameWithoutExt(inputFile));
+            File outputDirectory = new File(inputFile.getParent() + "/" + BaseUtils.getFileName(inputFile));
             if(inputFile.exists() && (outputDirectory.exists() || outputDirectory.mkdir())) {
                 dirList.add(outputDirectory);
-                ZipInputStream inputStream = new ZipInputStream(new FileInputStream(inputFile), Charset.forName("cp866"));
+                ZipInputStream inputStream = new ZipInputStream(Files.newInputStream(inputFile.toPath()), Charset.forName("cp866"));
 
                 ZipEntry ze = inputStream.getNextEntry();
                 while (ze != null) {
@@ -617,7 +617,7 @@ public class EmailReceiver {
 
     private String getFileName(Map<String, FileData> files, String fileName) {
         if (files.containsKey(fileName)) {
-            String name = getFileNameWithoutExt(fileName);
+            String name = BaseUtils.getFileName(fileName);
             String extension = BaseUtils.getFileExtension(fileName);
             int count = 1;
             while (files.containsKey(name + "_" + count + (extension.isEmpty() ? "" : ("." + extension)))) {
@@ -626,17 +626,6 @@ public class EmailReceiver {
             fileName = name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
         }
         return fileName;
-    }
-
-    private String getFileNameWithoutExt(File file) {
-        String name = file.getName();
-        int index = name.lastIndexOf(".");
-        return (index == -1) ? name : name.substring(0, index);
-    }
-
-    private String getFileNameWithoutExt(String name) {
-        int index = name.lastIndexOf(".");
-        return (index == -1) ? name : name.substring(0, index);
     }
 }
 

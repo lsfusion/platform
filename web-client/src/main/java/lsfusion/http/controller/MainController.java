@@ -209,16 +209,16 @@ public class MainController {
     public String processMain(ModelMap model, HttpServletRequest request) {
         ServerSettings serverSettings = getServerSettings(request, false);
 
-        if(serverSettings != null) {
-            synchronized (serverSettings) {
-                if(!serverSettings.filesSaved) {
-                    for (Pair<String, RawFileData> pair : serverSettings.resourceFiles)
-                        FileUtils.saveWebFile(pair.first, pair.second, serverSettings);
-
-                    serverSettings.filesSaved = true;
-                }
-            }
-        }
+//        if(serverSettings != null) {
+//            synchronized (serverSettings) {
+//                if(!serverSettings.filesSaved) {
+//                    for (Pair<String, RawFileData> pair : serverSettings.resourceFiles)
+//                        FileUtils.saveWebFile(pair.first, pair.second, serverSettings);
+//
+//                    serverSettings.filesSaved = true;
+//                }
+//            }
+//        }
 
         model.addAttribute("title", getTitle(serverSettings));
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));

@@ -107,7 +107,6 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
@@ -2264,7 +2263,7 @@ public abstract class LogicsModule {
     }
 
     protected NavigatorAction addNavigatorAction(LA<?> property, String canonicalName, LocalizedString caption) {
-        NavigatorAction navigatorAction = new NavigatorAction(property.action, canonicalName, caption, null, "action.png", DefaultIcon.ACTION);
+        NavigatorAction navigatorAction = new NavigatorAction(property.action, canonicalName, caption, null);
         addNavigatorElement(navigatorAction);
         return navigatorAction;
     }
@@ -2274,7 +2273,7 @@ public abstract class LogicsModule {
     }
 
     protected NavigatorElement addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
-        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).action, canonicalName, caption, form, "form.png", DefaultIcon.FORM);
+        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).action, canonicalName, caption, form);
 
         addNavigatorElement(navigatorForm);
         return navigatorForm;

@@ -44,6 +44,8 @@ public class MFormChanges {
     public MList<ContainerView> collapseContainers = ListFact.mList();
     public MList<ContainerView> expandContainers = ListFact.mList();
 
+    public boolean needConfirm = false;
+
     public FormChanges immutable() {
 
         return new FormChanges(
@@ -57,7 +59,8 @@ public class MFormChanges {
                 activateTabs.immutableList(),
                 activateProps.immutableList(),
                 collapseContainers.immutableList(),
-                expandContainers.immutableList()
+                expandContainers.immutableList(),
+                needConfirm
         );
     }
 }

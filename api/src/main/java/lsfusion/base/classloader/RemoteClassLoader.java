@@ -1,17 +1,14 @@
 package lsfusion.base.classloader;
 
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.rmi.RemoteException;
 
 import static lsfusion.base.ApiResourceBundle.getString;
 
 public class RemoteClassLoader extends ClassLoader {
 
-    private static RemoteLogicsInterface remoteLogics;
-    public static void setRemoteLogics(RemoteLogicsInterface logics) {
+    private RemoteLogicsInterface remoteLogics;
+    public void setRemoteLogics(RemoteLogicsInterface logics) {
         remoteLogics = logics;
     }
 
@@ -37,19 +34,4 @@ public class RemoteClassLoader extends ClassLoader {
             }
         }
     }
-
-    // used in JasperCompileManager not in the desktop-client
-    @Override
-    public InputStream getResourceAsStream(String name) {
-        InputStream resourceAsStream = super.getResourceAsStream(name);
-        if (resourceAsStream == null) {
-            try {
-                resourceAsStream = new ByteArrayInputStream(remoteLogics.findClass(name.replace(".class", "")));
-            } catch (IllegalArgumentException | RemoteException e) {
-                return null;
-            }
-        }
-        return resourceAsStream;
-    }
-
 }

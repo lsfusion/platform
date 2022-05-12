@@ -10,14 +10,14 @@ public class DefaultLocalizer extends AbstractLocalizer {
     private final Collection<String> resourceBundleNames; 
     
     public DefaultLocalizer() {
-        resourceBundleNames = new ArrayList<>();
-        Pattern pattern = Pattern.compile("/([^/]*ResourceBundle\\.properties)"); // возможно нужен другой regexp
-        Collection<String> filenames = ResourceUtils.getResources(pattern);
-        for (String filename : filenames) {
-            resourceBundleNames.add(filename.substring(0, filename.lastIndexOf('.')));
-        }
+        resourceBundleNames = getBundlesNames();
     }
-    
+
+    public static List<String> getBundlesNames() {
+        Pattern pattern = Pattern.compile("/([^/]*ResourceBundle)\\.properties"); // () will be returned, i.e. without extension
+        return ResourceUtils.getResources(pattern);
+    }
+
     @Override
     public String localizeKey(String key, Locale locale) {
         for (String bundleName : resourceBundleNames) {

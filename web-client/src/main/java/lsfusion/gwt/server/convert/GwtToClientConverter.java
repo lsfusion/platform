@@ -4,7 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.client.form.object.ClientCustomObjectValue;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.async.ClientPushAsyncAdd;
+import lsfusion.client.form.property.async.ClientPushAsyncClose;
 import lsfusion.client.form.property.async.ClientPushAsyncInput;
+import lsfusion.gwt.client.GFormScheduler;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.design.GFont;
@@ -17,12 +19,14 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.property.GClassViewType;
 import lsfusion.gwt.client.form.property.GPropertyGroupType;
 import lsfusion.gwt.client.form.property.async.GPushAsyncAdd;
+import lsfusion.gwt.client.form.property.async.GPushAsyncClose;
 import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -135,12 +139,16 @@ public class GwtToClientConverter extends ObjectConverter {
 
     // should correspond AsyncChange.deserializePush(byte[])
     @Converter(from = GPushAsyncAdd.class)
-    public byte[] convertPushSyncAdd(GPushAsyncAdd pushAsyncChange) {
+    public byte[] convertPushASyncAdd(GPushAsyncAdd pushAsyncChange) {
         return new ClientPushAsyncAdd(pushAsyncChange.ID).serialize();
     }
     @Converter(from = GPushAsyncInput.class)
     public byte[] convertPushAsyncChange(GPushAsyncInput pushAsync) {
         return new ClientPushAsyncInput(convertOrCast(pushAsync.result)).serialize();
+    }
+    @Converter(from = GPushAsyncClose.class)
+    public byte[] convertPushASyncClose(GPushAsyncClose pushAsyncChange) {
+        return new ClientPushAsyncClose().serialize();
     }
 
     @Converter(from = GExternalHttpResponse.class)
@@ -194,5 +202,10 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GColumnUserPreferences.class)
     public ColumnUserPreferences convertColumnPreferences(GColumnUserPreferences gprefs) {
         return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
+    }
+
+    @Converter(from = GFormScheduler.class)
+    public FormScheduler convertFormScheduler(GFormScheduler formScheduler) {
+        return new FormScheduler(formScheduler.period, formScheduler.fixed);
     }
 }

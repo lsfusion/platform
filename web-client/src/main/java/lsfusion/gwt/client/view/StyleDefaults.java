@@ -72,7 +72,7 @@ public class StyleDefaults {
     public static String calculateSelectedRowBackgroundColor(boolean canBeMixed) {
         ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
         if (preferredColor != null)
-            return getDisplayColor(preferredColor.toString());
+            return getThemedColor(preferredColor.toString());
 
         // should be the same as '--selection-color' in <theme>.css.
         // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
@@ -82,7 +82,7 @@ public class StyleDefaults {
     public static String calculateFocusedCellBackgroundColor(boolean canBeMixed) {
         ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
         if (preferredColor != null)
-            return getDisplayColor(preferredColor.toString());
+            return getThemedColor(preferredColor.toString());
 
         return getSelectedColor(canBeMixed);
     }
@@ -124,7 +124,7 @@ public class StyleDefaults {
         if (focusedCellBorderColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBorderColor();
             if (preferredColor != null) {
-                focusedCellBorderColor = getDisplayColor(preferredColor.toString());
+                focusedCellBorderColor = getThemedColor(preferredColor.toString());
             } else {
                 focusedCellBorderColor = getFocusColor(false);
             }
@@ -135,7 +135,7 @@ public class StyleDefaults {
     public static String getTableGridColor() {
         if (tableGridColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getTableGridColor();
-            tableGridColor = preferredColor != null ? getDisplayColor(preferredColor.toString()) : null;
+            tableGridColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
         }
         return tableGridColor;
     }

@@ -82,7 +82,7 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
                 InputStream inputStream = httpcon.getInputStream();
                 result = new RawFileData(inputStream);
                 
-                ImageIcon icon = new ImageIcon(result.getBytes()); // проверка на то, что массив байтов - картинка. readBytesFromStream возвращает 4 байта, а не null
+                ImageIcon icon = result.getImageIcon(); // проверка на то, что массив байтов - картинка. readBytesFromStream возвращает 4 байта, а не null
                 if (icon.getIconWidth() < 0 || icon.getIconHeight() < 0) {
                     result = null;
                 }

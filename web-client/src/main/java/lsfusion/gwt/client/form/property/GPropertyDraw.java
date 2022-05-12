@@ -97,6 +97,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return columnGroupObjects != null && !columnGroupObjects.isEmpty();
     }
 
+    public GType getFilterBaseType() {
+        return getDefaultCompare() == GCompare.MATCH ? baseType.getFilterMatchType() : baseType;
+    }
+
     public GType getChangeType() {
         GAsyncEventExec asyncExec = getAsyncEventExec(ServerResponse.CHANGE);
         return asyncExec instanceof GAsyncInput ? ((GAsyncInput) asyncExec).changeType : null;
@@ -541,18 +545,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public ImageDescription getImage() {
-        return getImage(true);
-    }
-
-    public ImageDescription getImage(boolean enabled) {
-        ImageDescription image = imageHolder != null ? imageHolder.getImage() : null;
-        if (!enabled && image != null && image.url != null) {
-            int dotInd = image.url.lastIndexOf(".");
-            if (dotInd != -1) {
-                return new ImageDescription(image.url.substring(0, dotInd) + "_Disabled" + image.url.substring(dotInd), image.width, image.height);
-            }
-        }
-        return image;
+        return imageHolder != null ? imageHolder.getImage() : null;
     }
 
     @Override

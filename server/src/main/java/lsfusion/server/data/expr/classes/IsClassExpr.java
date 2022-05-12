@@ -45,6 +45,7 @@ import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
+import lsfusion.server.physics.admin.Settings;
 
 public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 
@@ -77,7 +78,7 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
             else
                 return classTable.getStoredExpr(expr);
         } else {
-            assert classTables.size() > inlineThreshold;
+            assert classTables.size() > Settings.get().getInlineClassThreshold();
             // будем делить на inlineThreshold корзин
             Pair<KeyExpr,Expr> subQuery = getBaseClass().getSubQuery(classTables, type);
             return new SubQueryExpr(new SubQueryExpr.Query(subQuery.second, false, 0), MapFact.singleton(subQuery.first, expr));
@@ -88,7 +89,8 @@ public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
     public static Expr create(SingleClassExpr expr, ImSet<ObjectClassField> classes, IsClassType type) {
         classes = packTables(Where.TRUE(), expr, classes, type);
 
-        if(classes.size()> inlineThreshold || classes.size()==1)
+        int inlineThreshold = Settings.get().getInlineClassThreshold();
+        if(classes.size() > inlineThreshold || classes.size()==1)
             return getExpr(type, BaseExpr.create(new IsClassExpr(expr, classes, type)));
         else
             return getTableExpr(expr, classes, inlineThreshold, type);

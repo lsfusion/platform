@@ -16,6 +16,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
@@ -48,7 +49,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.ClientSystemAction;
+import lsfusion.server.logics.action.WebClientAction;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.BreakAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
@@ -99,6 +100,7 @@ import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.CCCContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
@@ -106,7 +108,6 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.navigator.DefaultIcon;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.window.*;
 import lsfusion.server.logics.property.AggregateProperty;
@@ -795,7 +796,11 @@ public class ScriptingLogicsModule extends LogicsModule {
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
         form.setModalityType(modalityType);
-        form.setAutoRefresh(autoRefresh);
+
+        if(autoRefresh > 0) {
+            formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());
+        }
+
         form.setLocalAsync(localAsync);
 
         return form;
@@ -1782,7 +1787,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(isFile && paramsCount > 0)
             errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
 
-        return new LA(new ClientSystemAction(resourceName, paramsCount, isFile, syncType));
+        return new LA(new WebClientAction(resourceName, paramsCount, isFile, syncType));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -4893,15 +4898,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, String imagePath) {
-        if (imagePath != null) {
+        if (imagePath != null)
             element.setImage(imagePath);
-        } else if (element.defaultIcon != null) {
-            if (baseLM.root != null && baseLM.root.equals(parent)) {
-                element.setImage(element.defaultIcon == DefaultIcon.ACTION ? "actionTop.png" :
-                        element.defaultIcon == DefaultIcon.OPEN ? "openTop.png" : "formTop.png");
-            }
-            element.defaultIcon = null;
-        }
     }
 
     public LPWithParams propertyExpressionCreated(LPWithParams property, List<TypedParameter> context, boolean needFullContext) {

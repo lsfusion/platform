@@ -1,5 +1,5 @@
 ---
-title: 'Development (manual)'
+title: 'For development'
 ---
 
 

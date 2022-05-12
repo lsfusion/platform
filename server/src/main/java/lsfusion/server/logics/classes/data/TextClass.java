@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
@@ -39,6 +40,11 @@ public class TextClass extends StringClass {
     @Override
     public DataClass getCompatible(DataClass compClass, boolean or) {
             return compClass instanceof StringClass ? this : super.getCompatible(compClass, or);
+    }
+
+    @Override
+    public ValueClass getFilterMatchValueClass() {
+        return this;
     }
 
     @Override

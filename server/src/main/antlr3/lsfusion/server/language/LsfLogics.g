@@ -13,6 +13,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
+    import lsfusion.interop.form.event.FormScheduler;
     import lsfusion.interop.form.object.table.grid.ListViewType;
     import lsfusion.interop.form.property.ClassViewType;
     import lsfusion.interop.form.property.PivotOptions;
@@ -1161,7 +1162,7 @@ formEventsList
 		$formStatement::form.addScriptedFormEvents(actions, types, replaces, self.getVersion());
 	}
 }
-	:	'EVENTS'
+	:	('EVENTS')?
 		decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); }
 		(',' decl=formEventDeclaration { actions.add($decl.action); types.add($decl.type); replaces.add($decl.replace); })*
 	;
@@ -1181,9 +1182,14 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYOK'	 { $type = FormEventType.QUERYOK; }
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
+		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
+	;
+
+scheduleFormEventDeclaration returns [int period, boolean fixed]
+	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
 
 

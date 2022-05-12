@@ -450,7 +450,7 @@ public class GroupingTreeTable extends JXTreeTable {
             if (value != null) {
                 ImageIcon icon = null;
                 if (value instanceof RawFileData) {
-                    icon = new ImageIcon(((RawFileData) value).getBytes());
+                    icon = ((RawFileData) value).getImageIcon();
                 }
                 if (icon != null) {
                     Dimension scaled = ImagePropertyRenderer.getIconScale(icon, getColumn(column).getWidth(), getRowHeight());

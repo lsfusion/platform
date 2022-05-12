@@ -52,13 +52,13 @@ public class LogicsSessionObject {
             if (jnlpUrls != null && contextPath != null) {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
             }
-            List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
+//            List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
             boolean disableRegistration = json.optBoolean("disableRegistration");
 
             Map<String, String> lsfParams = getLsfParamsFromJson(json.optJSONArray("lsfParams"));
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
-                    inDevMode, sessionConfigTimeout, anonymousUI, jnlpUrls, files, disableRegistration, lsfParams);
+                    inDevMode, sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams); // , files
         }
         return serverSettings;
     }

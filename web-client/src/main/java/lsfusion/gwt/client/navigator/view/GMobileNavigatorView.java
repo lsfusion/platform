@@ -5,7 +5,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -46,13 +45,9 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
 
         ImageElement iconImageElement = null;
         if (navigatorElement.image != null) {
-            ImageDescription image = navigatorElement.image.getImage();
-            if (image != null && image.url != null) {
-                iconImageElement = Document.get().createImageElement();
-                iconImageElement.setSrc(GwtClientUtils.getAppStaticImageURL(image.url));
-
-                icons.put(navigatorElement, iconImageElement);
-            }
+            iconImageElement = Document.get().createImageElement();
+            icons.put(navigatorElement, iconImageElement);
+            setImageSrc(navigatorElement);
         }
 
         Element textElement;
@@ -90,6 +85,10 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
         return liElement;
     }
 
+    private void setImageSrc(GNavigatorElement navigatorElement) {
+        icons.get(navigatorElement).setSrc(GwtClientUtils.getAppStaticImageURL(navigatorElement.image.getImage().getUrl()));
+    }
+
     public final native void enableMMenu(Element element, String title) /*-{
         menu = new $wnd.MmenuLight(element);
         navigator = menu.navigation({
@@ -109,7 +108,7 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
     @Override
     public void colorThemeChanged() {
         for (GNavigatorElement navigatorElement : icons.keySet()) {
-            icons.get(navigatorElement).setSrc(GwtClientUtils.getAppStaticImageURL(navigatorElement.image.getImage().url));
+            setImageSrc(navigatorElement);
         }
     }
 }

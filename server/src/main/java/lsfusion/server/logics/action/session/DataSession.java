@@ -559,21 +559,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         // cancel
         //    по кому не было restart :  from -> в applied (помечая что был restart)
 
-        ImSet<Property> changedProps = null;
-        if(!cancel) {
-            mChangedProps.addAll(getChangedProps());
-        }
-
-        synchronized (updateLock) {
-            if (changedProps != null)
-                for (Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
-                    appliedChange.second.add(new UpdateChanges(changedProps));
-            assert appliedChanges.disjointKeys(cancel ? updateChanges : incrementChanges);
-            appliedChanges.putAll(cancel ? updateChanges : incrementChanges);
-            incrementChanges = new WeakIdentityHashMap<>();
-            updateChanges = new WeakIdentityHashMap<>();
-        }
-
         dropTables(keep);
         classChanges.clear();
         clearNotSessionData(keep);
@@ -589,6 +574,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         updateNotChangedOld.clear();
 
         applyObject = null; // сбрасываем в том числе когда cancel потому как cancel drop'ает в том числе и добавление объекта
+    }
+
+    public void updateLocalChanges(boolean cancel, ImSet<Property> changedProps) {
+        synchronized (updateLock) {
+            if (changedProps != null)
+                for (Pair<FormInstance, UpdateChanges> appliedChange : appliedChanges.entryIt())
+                    appliedChange.second.add(new UpdateChanges(changedProps));
+            assert appliedChanges.disjointKeys(cancel ? updateChanges : incrementChanges);
+            appliedChanges.putAll(cancel ? updateChanges : incrementChanges);
+            incrementChanges = new WeakIdentityHashMap<>();
+            updateChanges = new WeakIdentityHashMap<>();
+        }
     }
 
     public DataObject addObject() throws SQLException {
@@ -2183,6 +2180,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             apply.clear(sql, owner); // все сохраненные хинты обнуляем
             clearDataHints(owner); // drop'ем hint'ы (можно и без sql но пока не важно)
 
+            mChangedProps.addAll(getChangedProps());
+
             restart(false, getKeepProps()); // оставляем usedSessiona
         } finally {
             sql.inconsistent = false;
@@ -2209,7 +2208,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         ImSet<CustomClass> removedClasses = this.mRemovedClasses.immutable(); // сбросятся в endTransaction
         registerClassRemove.removed(removedClasses, Long.MAX_VALUE); // надо так как между commit'ом и регистрацией изменения может начаться новая транзакция и update conflict'а не будет, поэтому временно включим режим будущего
-try {
+        try {
             commitTransaction();
         } finally {
             registerClassRemove.removed(removedClasses, getTimestamp());
@@ -2218,6 +2217,8 @@ try {
         registerClassRemove.checked(checkedTimestamp);
 
         changes.regChange(changedProps, this);
+
+        updateLocalChanges(false, changedProps);
 
         updateSessionNotChangedEvents(keepProps); // need this to mark that nested props are not changed, not in restart to be out of transaction
 
@@ -2578,6 +2579,8 @@ try {
         keep = BaseUtils.merge(keepNested(true), keep);
 
         restart(true, keep);
+
+        updateLocalChanges(true, null);
 
         updateSessionNotChangedEvents(keep); // need this to mark that nested props are not changed
 

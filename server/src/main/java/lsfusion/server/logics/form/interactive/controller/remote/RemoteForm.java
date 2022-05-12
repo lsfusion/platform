@@ -16,6 +16,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -652,6 +653,18 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             form.formQueryClose(stack, ok);
+        });
+    }
+
+    @Override
+    public ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, FormScheduler formScheduler) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+
+            if (logger.isTraceEnabled()) {
+                logger.trace("formScheduler executed");
+            }
+
+            form.fireFormSchedulerEvent(stack, formScheduler);
         });
     }
 

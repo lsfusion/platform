@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
+import lsfusion.base.classloader.ReadUsedClassLoader;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -124,12 +125,39 @@ public abstract class FormReportManager extends FormDataManager {
 
         // report design
         Map<GroupObjectHierarchy.ReportNode, JasperDesign> designs = getReportDesigns(printType, reportPrefix.result, hierarchy, propData.columnData, propData.types);
+        Map<String, byte[]> usedClasses = getUsedClasses(designs.values());
 
         // serializing
         byte[] reportHierarchyByteArray = getReportHierarchyByteArray(hierarchy.reportHierarchy);
         byte[] reportSourcesByteArray = getReportSourcesByteArray(hierarchy.reportHierarchy, keyData, propData);
         byte[] reportDesignsByteArray = getReportDesignsByteArray(designs);
-        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports());
+        byte[] classesByteArray = getClassesByteArray(usedClasses);
+        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports(), classesByteArray);
+    }
+
+    private Map<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
+        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(new ReadUsedClassLoader(originalClassloader));
+        try {
+            for (JasperDesign design : designs) {
+                JasperCompileManager.compileReport(design);
+            }
+            return ReadUsedClassLoader.getClasses();
+        } catch (JRException e) {
+            throw new RuntimeException(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalClassloader);
+        }
+    }
+
+    private byte[] getClassesByteArray(Map<String, byte[]> classes) {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            new ObjectOutputStream(outStream).writeObject(classes);
+            return outStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected StaticDataGenerator.ReportHierarchy getReportHierarchy(Result<String> reportPrefix) {
@@ -164,23 +192,8 @@ public abstract class FormReportManager extends FormDataManager {
         }
     }
 
-    public final static String reportsDir = ""; // "reports/" 
-    
-    private String findCustomReportFileName(String fileName) {
-        if(fileName.startsWith("/")) {
-            //absolute path
-            return ResourceUtils.getResource(fileName) != null ? fileName : null;
-        } else {
-            //relative path
-            Collection<String> result = reportInterface.getBL().getAllCustomReports();
-
-            for(String entry : result){
-                if(entry.endsWith("/" + fileName))
-                    return entry; //"/" + reportsDir + entry.split(reportsDir)[1]; // отрезаем путь reports/custom и далее
-            }
-
-            return null; // не нашли "/" + reportsDir + filePath;
-        }
+    private String findCustomReport(String fileName) {
+        return ResourceUtils.findResource(fileName, true, !SystemProperties.inDevMode, "reports");
     }
 
     private String getReportFileName(GroupObjectHierarchy.ReportNode reportNode, String reportPrefix) {
@@ -226,7 +239,7 @@ public abstract class FormReportManager extends FormDataManager {
                     continue;
                 defaultCustomReportPath = getCustomReportPath(nodeFileName);
             } else
-                defaultCustomReportPath = getDefaultCustomReportPath("/" + reportsDir + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
+                defaultCustomReportPath = getDefaultCustomReportPath("/" + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
             String reportName = defaultCustomReportPath.customPath;
             
             new File(reportName).getParentFile().mkdirs();
@@ -250,7 +263,7 @@ public abstract class FormReportManager extends FormDataManager {
             }
 
             if(readReport instanceof String) {
-                String fileName = findCustomReportFileName(reportPrefix + ((String) readReport).trim());
+                String fileName = findCustomReport(BaseUtils.addPrefix(((String) readReport).trim(), reportPrefix));
                 if(fileName != null)
                     return new ResourceReportSource(fileName);
             } else if(readReport instanceof RawFileData) {
@@ -314,7 +327,7 @@ public abstract class FormReportManager extends FormDataManager {
         if(reportSource != null)
             return reportSource;
 
-        String fileName = findCustomReportFileName(getReportFileName(reportNode, reportPrefix));
+        String fileName = findCustomReport(getReportFileName(reportNode, reportPrefix));
         if(fileName != null)
             return new ResourceReportSource(fileName);
 

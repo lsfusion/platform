@@ -172,13 +172,13 @@ public abstract class AbstractDataGridBuilder<T> {
         column.updateDom(cell, cellParent);
     }
 
-    public static void updateColors(Element element, String backgroundColor, String foregroundColor, boolean themeConvert) {
-        GFormController.setBackgroundColor(element, backgroundColor, themeConvert);
-        GFormController.setForegroundColor(element, foregroundColor, themeConvert);
+    public static void updateColors(Element element, String backgroundColor, String foregroundColor) {
+        GFormController.setBackgroundColor(element, backgroundColor);
+        GFormController.setForegroundColor(element, foregroundColor);
     }
 
     public static void clearColors(Element element) {
-        GFormController.setBackgroundColor(element, null, false);
-        GFormController.setForegroundColor(element, null, false);
+        GFormController.setBackgroundColor(element, null);
+        GFormController.setForegroundColor(element, null);
     }
 }

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.action;
 
 import java.util.ArrayList;
 
-public class GClientJSAction extends GExecuteAction {
+public class GClientWebAction extends GExecuteAction {
 
     public String resource;
     public String resourceName;
@@ -12,9 +12,9 @@ public class GClientJSAction extends GExecuteAction {
     public boolean syncType;
 
     @SuppressWarnings("UnusedDeclaration")
-    public GClientJSAction() {}
+    public GClientWebAction() {}
 
-    public GClientJSAction(String resource, String resourceName, ArrayList<Object> values, ArrayList<Object> types, boolean isFile, boolean syncType) {
+    public GClientWebAction(String resource, String resourceName, ArrayList<Object> values, ArrayList<Object> types, boolean isFile, boolean syncType) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.values = values;

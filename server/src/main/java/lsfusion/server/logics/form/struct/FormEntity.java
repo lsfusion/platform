@@ -11,9 +11,9 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
@@ -123,6 +123,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<ActionObjectEntity<?>> getEventActionsListIt(Object eventObject) {
         return eventActions.getListIt(eventObject);
     }
+    public NFOrderSet<FormScheduler> formSchedulers = NFFact.orderSet();
 
     private NFOrderSet<GroupObjectEntity> groups = NFFact.orderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<GroupObjectEntity> getGroupsIt() {
@@ -251,7 +252,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ModalityType modalityType = ModalityType.DOCKED;
-    public int autoRefresh = 0;
     public boolean localAsync = false;
 
     public PropertyObjectEntity<?> reportPathProp;
@@ -1127,6 +1127,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(drop)
             eventActions.removeAll(eventObject, version);
         eventActions.addAll(eventObject, Arrays.asList(actions), version);
+        if(eventObject instanceof FormScheduler) {
+            formSchedulers.add((FormScheduler) eventObject, version);
+        }
     }
 
     public ComponentView getDrawComponent(PropertyDrawEntity<?> property) {
@@ -1221,9 +1224,22 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             throw new ScriptParsingException("error finalizing form " + this + ":\n" + e.getMessage());
         }
 
-        proceedAllEventActions((action, drawAction) -> {
+        // not sure if we need this, because the platform at first shows optimistic list, so we won't have much benefits from this
+//        MSet<Property> mAsyncInitPropertyChanges = SetFact.mSet();
+        proceedAllEventActions((action, property) -> {
+//            if(property != null) {
+//                AsyncMapEventExec<?> asyncEventExec = action.property.getAsyncEventExec(property.optimisticAsync);
+//                if(asyncEventExec instanceof AsyncMapInput) {
+//                    InputListEntity<?, ?> list = ((AsyncMapInput<?>) asyncEventExec).list;
+//                    if(list != null)
+//                        mAsyncInitPropertyChanges.add(list.getProperty());
+//                }
+//            }
         }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
+//        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
     }
+
+    public ImSet<Property> asyncInitPropertyChanges = SetFact.EMPTY();
 
     public String getCanonicalName() {
         return canonicalName;
@@ -1552,7 +1568,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             for(String changeEvent : propertyDraw.getAllEventActions()) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
-                    consumer.accept(editAction, changeEvent.equals(CHANGE) && !propertyDraw.isProperty() ? propertyDraw : null);
+                    consumer.accept(editAction, propertyDraw);
             }
         }
         for(ImList<ActionObjectEntity<?>> eventActions : getEventActions().valueIt()) {

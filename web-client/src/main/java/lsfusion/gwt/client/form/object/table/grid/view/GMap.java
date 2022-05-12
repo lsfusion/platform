@@ -174,7 +174,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 markersToRefresh.push(marker);
 
             if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color) && groupMarker.isCurrent == oldGroupMarker.isCurrent)))
-                updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
+                updateIcon(marker, groupMarker.icon, getThemedColorFilter(groupMarker));
 
             if(groupMarker.isEditing())
                 enableEditing(marker, isPoly);
@@ -381,14 +381,14 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             groupMarker.isCurrent = isCurrent;
             if (!isPoly)
-                updateIcon(marker, groupMarker.icon, getDisplayColorFilter(groupMarker));
+                updateIcon(marker, groupMarker.icon, getThemedColorFilter(groupMarker));
 
             if(groupMarker.isEditing())
                 enableEditing(marker, isPoly);
         }
     }
 
-    private String getDisplayColorFilter(GroupMarker marker) {
+    private String getThemedColorFilter(GroupMarker marker) {
         String color = marker.color;
         boolean isCurrent = marker.isCurrent;
         if (color == null) {

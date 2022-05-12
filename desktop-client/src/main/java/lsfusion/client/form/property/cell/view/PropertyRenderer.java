@@ -9,7 +9,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 
-import static lsfusion.client.base.view.ClientColorUtils.getDisplayColor;
+import static lsfusion.client.base.view.ClientColorUtils.getThemedColor;
 import static lsfusion.client.base.view.SwingDefaults.getFocusedTableCellBackground;
 import static lsfusion.client.base.view.SwingDefaults.getFocusedTableRowBackground;
 
@@ -79,18 +79,23 @@ public abstract class PropertyRenderer {
     }
 
     protected void drawBackground(boolean isInFocusedRow, boolean hasFocus, Color conditionalBackground) {
+        // to achieve 'themed' color base color should be converted with getThemedColor() only once
+        // mix and convert calls order in not important
+        // notice: getFocusedTableCellBackground() and getFocusedTableRowBackground() return already themed color - no need of additional conversion
+        
         Color logicsBackground = conditionalBackground;
         if (logicsBackground == null && property != null) {
             logicsBackground = property.design.background;
         }
         
         if (hasFocus) {
-            getComponent().setBackground(logicsBackground != null ? getDisplayColor(logicsBackground) : getFocusedTableCellBackground());
+            // for now focus color is not mixed with base cell color - as it is done in panel
+            getComponent().setBackground(logicsBackground != null ? getThemedColor(logicsBackground) : getFocusedTableCellBackground());
         } else if (isInFocusedRow) {
             final Color focusedRowBackground = getFocusedTableRowBackground();
             getComponent().setBackground(logicsBackground != null ? new Color(focusedRowBackground.getRGB() & logicsBackground.getRGB()) : focusedRowBackground);
         } else if (logicsBackground != null) {
-            getComponent().setBackground(getDisplayColor(logicsBackground));
+            getComponent().setBackground(getThemedColor(logicsBackground));
         } else {
             getComponent().setBackground(getDefaultBackground());
         }
@@ -107,9 +112,9 @@ public abstract class PropertyRenderer {
             }
         } else {
             if (conditionalForeground != null) {
-                getComponent().setForeground(getDisplayColor(conditionalForeground));
+                getComponent().setForeground(getThemedColor(conditionalForeground));
             } else if (property != null && property.design.foreground != null) {
-                getComponent().setForeground(getDisplayColor(property.design.foreground));
+                getComponent().setForeground(getThemedColor(property.design.foreground));
             } else {
                 getComponent().setForeground(SwingDefaults.getTableCellForeground());
             }

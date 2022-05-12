@@ -12,7 +12,6 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.lambda.AsyncCallback;
 import lsfusion.base.lambda.EProvider;
-import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ClientImages;
@@ -182,7 +181,7 @@ public class ClientFormController implements AsyncListener {
 
     private boolean selected = true;
 
-    private ScheduledExecutorService autoRefreshScheduler;
+    private List<ScheduledExecutorService> formSchedulers;
 
     private List<ClientComponent> firstTabsToActivate;
     private List<ClientPropertyDraw> firstPropsToActivate;
@@ -320,7 +319,7 @@ public class ClientFormController implements AsyncListener {
 
         initializeUserOrders();
 
-        initializeAutoRefresh();
+        initializeFormSchedulers();
     }
 
     public List<ClientPropertyDraw> getPropertyDraws() {
@@ -405,41 +404,41 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    private void initializeAutoRefresh() {
-        if (form.autoRefresh > 0) {
-            autoRefreshScheduler = Executors.newScheduledThreadPool(1);
-            scheduleRefresh();
+    private void initializeFormSchedulers() {
+        formSchedulers = new ArrayList<>();
+        for(int i = 0; i < form.formSchedulers.size(); i++) {
+            FormScheduler formScheduler = form.formSchedulers.get(i);
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            formSchedulers.add(scheduler);
+            scheduleFormScheduler(scheduler, formScheduler);
         }
     }
 
-    private void scheduleRefresh() {
+    private void scheduleFormScheduler(ScheduledExecutorService scheduler, FormScheduler formScheduler) {
         if (remoteForm != null) {
-            autoRefreshScheduler.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    if (formLayout.isShowing()) {
-                        SwingUtils.invokeLater(new ERunnable() {
-                            @Override
-                            public void run() throws Exception {
-                                rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("autoRefresh.getRemoteChanges") {
-                                    @Override
-                                    protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                                        return remoteForm.getRemoteChanges(requestIndex, lastReceivedRequestIndex, true, false);
-                                    }
-
-                                    @Override
-                                    protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
-                                        super.onResponse(requestIndex, result);
-                                        scheduleRefresh();
-                                    }
-                                });
+            scheduler.schedule(() -> {
+                if (formLayout.isShowing()) {
+                    SwingUtils.invokeLater(() -> rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("executeFormSchedulerAction") {
+                        @Override
+                        protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
+                            if (formScheduler.fixed) {
+                                scheduleFormScheduler(scheduler, formScheduler);
                             }
-                        });
-                    } else {
-                        scheduleRefresh();
-                    }
+                            return remoteForm.formSchedulerExecuted(requestIndex, lastReceivedRequestIndex, formScheduler);
+                        }
+
+                        @Override
+                        protected void onResponse(long requestIndex, ServerResponse result) throws Exception {
+                            super.onResponse(requestIndex, result);
+                            if (!formScheduler.fixed) {
+                                scheduleFormScheduler(scheduler, formScheduler);
+                            }
+                        }
+                    }));
+                } else {
+                    scheduleFormScheduler(scheduler, formScheduler);
                 }
-            }, form.autoRefresh, TimeUnit.SECONDS);
+            }, formScheduler.period, TimeUnit.SECONDS);
         }
     }
 
@@ -1622,8 +1621,10 @@ public class ClientFormController implements AsyncListener {
     private static ExecutorService closeService = Executors.newCachedThreadPool();
 
     protected void onFormHidden() {
-        if (autoRefreshScheduler != null) {
-            autoRefreshScheduler.shutdown();
+        if(formSchedulers != null) {
+            for (ScheduledExecutorService formScheduler : formSchedulers) {
+                formScheduler.shutdown();
+            }
         }
         RemoteFormInterface closeRemoteForm = remoteForm;
         closeService.submit(() -> {

@@ -1,6 +1,5 @@
 package lsfusion.server.logics.navigator;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -22,7 +21,6 @@ import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
-import javax.swing.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -33,7 +31,8 @@ import static lsfusion.base.col.MapFact.singletonOrder;
 public abstract class NavigatorElement {
     
     private SerializableImageIconHolder imageHolder;
-    public DefaultIcon defaultIcon;
+
+    protected abstract String getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
 
@@ -207,21 +206,18 @@ public abstract class NavigatorElement {
 
     public abstract AsyncExec getAsyncExec();
 
-    public void setImage(String icon) {
-        setImage(icon, null);
+    public void setImage(String imagePath) {
+        if(imageHolder == null)
+            imageHolder = new SerializableImageIconHolder();
+        imageHolder.setImage(imagePath);
     }
 
-    public final void setImage(String imagePath, DefaultIcon defaultIcon) {
-        ImageIcon image = ResourceUtils.readImage(imagePath);
-        if (image != null) {
-            imageHolder = new SerializableImageIconHolder(image, imagePath);
-            this.defaultIcon = defaultIcon;
-        }
-    }
-
-    public void finalizeAroundInit() {
+    public void finalizeAroundInit(BaseLogicsModule LM) {
         parent.finalizeChanges();
         children.finalizeChanges();
+
+        if(imageHolder == null)
+            setImage(getDefaultIcon(LM.root.equals(getParent())));
     }
 
     @Override

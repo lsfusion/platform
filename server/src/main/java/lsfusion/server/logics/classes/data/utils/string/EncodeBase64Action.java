@@ -26,12 +26,17 @@ public class EncodeBase64Action extends InternalAction {
 
     @Override
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        String value = (String) context.getDataKeyValue(stringInterface).getValue();
+        String value = (String) context.getKeyValue(stringInterface).getValue();
         try {
-            String encoded = new String(Base64.encodeBase64(value.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+            String encoded = value != null ? new String(Base64.encodeBase64(value.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8) : null;
             findProperty("encodedBase64[]").change(encoded, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    @Override
+    protected boolean allowNulls() {
+        return true;
     }
 }

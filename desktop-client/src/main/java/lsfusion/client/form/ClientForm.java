@@ -14,6 +14,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.interop.form.event.FormScheduler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -28,7 +29,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public String canonicalName = "";
     public String creationPath = "";
 
-    public int autoRefresh = 0;
+    public List<FormScheduler> formSchedulers = new ArrayList<>();
 
     public static ClientGroupObject lastActiveGroupObject;
 
@@ -181,7 +182,6 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
-        outStream.writeInt(autoRefresh);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -207,7 +207,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         canonicalName = pool.readString(inStream);
         creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
-        autoRefresh = inStream.readInt();
+        formSchedulers = deserializeFormSchedulers(inStream);
     }
 
     private List<List<ClientPropertyDraw>> deserializePivot(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -217,6 +217,15 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
             properties.add(pool.deserializeList(inStream));
         }
         return properties;
+    }
+
+    private List<FormScheduler> deserializeFormSchedulers(DataInputStream inStream) throws IOException {
+        List<FormScheduler> formSchedulers = new ArrayList<>();
+        int size = inStream.readInt();
+        for(int i = 0; i < size; i++) {
+            formSchedulers.add(FormScheduler.deserialize(inStream));
+        }
+        return formSchedulers;
     }
 
     public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {

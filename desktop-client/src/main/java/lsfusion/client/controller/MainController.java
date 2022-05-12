@@ -5,7 +5,6 @@ import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.classloader.RemoteClassLoader;
 import lsfusion.base.file.RawFileData;
@@ -78,9 +77,10 @@ public class MainController {
 
     // lifecycle
 
+    private static RemoteClassLoader remoteClassLoader;
     public static void start(final String[] args) {
-
-        Thread.currentThread().setContextClassLoader(new RemoteClassLoader(Thread.currentThread().getContextClassLoader()));
+        remoteClassLoader = new RemoteClassLoader(Thread.currentThread().getContextClassLoader());
+        Thread.currentThread().setContextClassLoader(remoteClassLoader);
 
         registerSingleInstanceListener();
 
@@ -280,8 +280,7 @@ public class MainController {
     }
 
     public static void initRmiClassLoader(RemoteLogicsInterface remoteLogics) {
-        RemoteClassLoader.setRemoteLogics(remoteLogics);
-
+        remoteClassLoader.setRemoteLogics(remoteLogics);
         // reset the SecurityManager that installs JavaWS,
         // since it doesn't let the RemoteClassLoader class do anything,
         // since it is loaded from a temporary directory
@@ -456,7 +455,7 @@ public class MainController {
         Set<Image> images = new LinkedHashSet<>();
         RawFileData logicsMainIcon = serverSettings != null ? serverSettings.logicsIcon : null;
         if(logicsMainIcon != null) {
-            ImageIcon resource = new ImageIcon(logicsMainIcon.getBytes());
+            ImageIcon resource = logicsMainIcon.getImageIcon();
             if(resource.getImageLoadStatus() == MediaTracker.COMPLETE) {
                 images.add(resource.getImage());
             }
@@ -472,7 +471,7 @@ public class MainController {
 
     public static ImageIcon getLogo(ServerSettings serverSettings) {
         RawFileData logicsMainLogo = serverSettings != null ? serverSettings.logicsLogo : null;
-        return logicsMainLogo != null ? new ImageIcon(logicsMainLogo.getBytes()) : getImageIcon(DEFAULT_ICON_PATH + "logo.png");
+        return logicsMainLogo != null ? logicsMainLogo.getImageIcon() : getImageIcon(DEFAULT_ICON_PATH + "logo.png");
     }
 
     private static Image getImage(String resourcePath) {
@@ -480,7 +479,7 @@ public class MainController {
     }
 
     private static ImageIcon getImageIcon(String resourcePath) {
-        return ResourceUtils.readImage(resourcePath);
+        return ClientImages.readImage(resourcePath);
     }
 
     public static String getMainTitle() {

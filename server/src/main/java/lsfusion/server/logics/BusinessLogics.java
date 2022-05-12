@@ -677,20 +677,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return mResult.immutableOrder();                    
     }
 
-    private Collection<String> customReports;
-    @ManualLazy
-    public Collection<String> getAllCustomReports() {
-        if (SystemProperties.inDevMode || customReports == null) {
-            customReports = calculateAllCustomReports();
-        }
-        return customReports;
-    }
-
-    public Collection<String> calculateAllCustomReports() {
-        Pattern pattern = Pattern.compile("/"+FormReportManager.reportsDir+".*\\.jrxml");
-        return ResourceUtils.getResources(pattern);
-    }
-
     public <P extends PropertyInterface> void resolveAutoSet(DataSession session, ConcreteCustomClass customClass, DataObject dataObject, CustomClassListener classListener) throws SQLException, SQLHandledException {
 
         for (Property<P> property : getAutoSetProperties()) {
@@ -2117,7 +2103,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
                 if(!element.endsWith("*")) {
-                    final Path path = Paths.get(BaseUtils.removeTrailingSlash(element + "/" + FormReportManager.reportsDir));
+                    final Path path = Paths.get(element + "/");
 //                logger.info("Reset reports cache: processing path : " + path);
                     if (Files.isDirectory(path)) {
 //                    logger.info("Reset reports cache: path is directory: " + path);
@@ -2125,7 +2111,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                             logger.info("Reset reports cache: run scheduler task for " + path);
                             ResourceUtils.watchPathForChange(path, () -> {
                                 logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
-                                customReports = null;
+                                ResourceUtils.clearResourceFileCaches("jrxml");
                             }, Pattern.compile(".*\\.jrxml"));
                         }, true, null, false, "Custom Reports"));
                     }

@@ -44,7 +44,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         super(inStream,form);
         negate = inStream.readBoolean();
         compare = Compare.deserialize(inStream);
-        value = deserializeCompare(inStream, form, property.getValueClass());
+        value = deserializeCompare(inStream, form, property.getFilterValueClass(compare));
         junction = inStream.readBoolean();
     }
 

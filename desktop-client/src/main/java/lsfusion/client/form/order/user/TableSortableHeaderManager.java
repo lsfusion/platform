@@ -14,6 +14,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -106,13 +107,13 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
     }
 
     public final void changeOrder(T columnKey, Order modiType) {
-        changeOrderDirection(columnKey, modiType);
-        orderChanged(columnKey, modiType);
+        if(changeOrderDirection(columnKey, modiType))
+            orderChanged(columnKey, modiType);
     }
 
-    private void changeOrderDirection(T columnKey, Order modiType) {
+    private boolean changeOrderDirection(T columnKey, Order modiType) {
         if (columnKey == null || noSort(columnKey)) {
-            return;
+            return false;
         }
 
         switch (modiType) {
@@ -131,15 +132,21 @@ public abstract class TableSortableHeaderManager<T> extends MouseAdapter {
                 orderDirections.remove(columnKey);
                 break;
         }
+
+        return true;
     }
 
     public final boolean changeOrders(ClientGroupObject groupObject, LinkedHashMap<T, Boolean> set, boolean alreadySet) {
         if(!BaseUtils.hashEquals(orderDirections, set)) {
             orderDirections.clear();
-            for(Map.Entry<T, Boolean> entry : set.entrySet()) {
-                changeOrderDirection(entry.getKey(), Order.ADD);
-                if(!entry.getValue())
-                    changeOrderDirection(entry.getKey(), Order.DIR);
+            for (Iterator<Map.Entry<T, Boolean>> iterator = set.entrySet().iterator(); iterator.hasNext(); ) {
+                Map.Entry<T, Boolean> entry = iterator.next();
+                if(!changeOrderDirection(entry.getKey(), Order.ADD))
+                    iterator.remove();
+                else if (!entry.getValue()) {
+                    boolean changed = changeOrderDirection(entry.getKey(), Order.DIR);
+                    assert changed;
+                }
             }
 
             if(!alreadySet)

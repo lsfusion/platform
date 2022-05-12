@@ -1,6 +1,5 @@
 package lsfusion.interop.form.design;
 
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.context.ContextObject;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.interop.base.view.ColorTheme;
@@ -23,23 +22,10 @@ public class ComponentDesign extends ContextObject implements Serializable {
     public ComponentDesign() {
     }
 
-    public ImageIcon getImage() {
-        return imageHolder != null ? imageHolder.getImage() : null;
-    }
-
-    public ImageIcon getImage(ColorTheme colorTheme) {
-        return imageHolder != null ? imageHolder.getImage(colorTheme) : null;
-    }
-
     public void setImage(String imagePath) {
-        ImageIcon image = ResourceUtils.readImage(imagePath);
-        if (image != null) {
-            if (imageHolder == null) {
-                imageHolder = new SerializableImageIconHolder(image, imagePath);
-            } else {
-                imageHolder.setImage(image, imagePath);
-            }
-        }
+        if (imageHolder == null)
+            imageHolder = new SerializableImageIconHolder();
+        imageHolder.setImage(imagePath);
     }
 
     public SerializableImageIconHolder getImageHolder() {

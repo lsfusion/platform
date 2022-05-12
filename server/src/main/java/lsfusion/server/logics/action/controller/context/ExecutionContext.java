@@ -44,7 +44,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
-import lsfusion.server.logics.form.interactive.action.async.InputList;
+import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -56,9 +56,6 @@ import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncAdd;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncInput;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -453,6 +450,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     private DataObject getPushedAddObject() {
         return pushedAsyncResult instanceof PushAsyncAdd ? ((PushAsyncAdd) pushedAsyncResult).value : null; 
+    }
+
+    public boolean isPushedConfirmedClose() {
+        return pushedAsyncResult instanceof PushAsyncClose;
     }
     
     public DataObject addObject(ConcreteCustomClass cls) throws SQLException, SQLHandledException {

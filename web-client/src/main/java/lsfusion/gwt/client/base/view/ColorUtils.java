@@ -62,15 +62,15 @@ public class ColorUtils {
         return color & 0xFF;
     }
 
-    public static String getDisplayColor(String baseColor) {
+    public static String getThemedColor(String baseColor) {
         if (!colorTheme.isDefault() && baseColor != null) {
             int baseRGB = toRGB(baseColor);
-            return getDisplayColor(getRed(baseRGB), getGreen(baseRGB), getBlue(baseRGB));
+            return getThemedColor(getRed(baseRGB), getGreen(baseRGB), getBlue(baseRGB));
         }
         return baseColor;
     }
 
-    public static String getDisplayColor(int baseRed, int baseGreen, int baseBlue) {
+    public static String getThemedColor(int baseRed, int baseGreen, int baseBlue) {
         if (!colorTheme.isDefault()) {
             int baseBackgroundColor = toRGB(StyleDefaults.getDefaultComponentBackground());
             int newBackgroundColor = toRGB(StyleDefaults.getComponentBackground(colorTheme));

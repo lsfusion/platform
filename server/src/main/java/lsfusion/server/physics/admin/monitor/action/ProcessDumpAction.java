@@ -109,19 +109,11 @@ public abstract class ProcessDumpAction extends InternalAction {
         LogInfo logInfo = thread == null ? null : ThreadLocalContext.logInfoMap.get(thread);
         String computer = logInfo == null ? null : logInfo.hostnameComputer;
         String user = logInfo == null ? null : logInfo.userName;
-        String lsfStack = getLSFStack(thread);
+        String lsfStack = ExecutionStackAspect.getLSFStack(thread);
         Long lastAllocatedBytes = thread == null ? null : SQLSession.getThreadAllocatedBytes(allocatedBytes, thread.getId());
 
         return !onlyActive || ThreadUtils.isActiveJavaProcess(status, stackTrace, false) ? new JavaProcess(stackTrace, name, status, lockName, lockOwnerId,
                 lockOwnerName, computer, user, lsfStack, allocatedBytes, lastAllocatedBytes) : null;
-    }
-
-    private String getLSFStack(Thread thread) {
-        try {
-            return thread == null ? null : ExecutionStackAspect.getStackString(thread, true, true);
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     private SQLProcess getSQLProcess(String query, String addressUser, LocalDateTime dateTime, Boolean isActive,

@@ -64,15 +64,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         this.instance = instance;
     }
 
-    private List<String> resources;
-
     public void ensure(boolean cleanDB) throws Exception {
         ensureDB(cleanDB);
 
         ensureConnection = startConnection();
         ensureConnection.setAutoCommit(true);
-
-        resources = ResourceUtils.getResources(Pattern.compile("/sql/.*"));
 
         ensureSqlFuncs();
     }
@@ -81,10 +77,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         return new ArrayList<>(Arrays.asList(PostgreDataAdapter.DB_NAME, MySQLDataAdapter.DB_NAME));
     }
 
-    private List<String> filterResources() {
+    private List<String> findSQLScripts() {
         List<String> allDBNames = getAllDBNames();
         allDBNames.remove(getDBName());
-        return resources.stream().filter(resource -> {
+        return ResourceUtils.getResources(Pattern.compile("/sql/.*")).stream().filter(resource -> {
             if (resource.contains(".tsql"))
                 return false;
             for (String key : allDBNames) {
@@ -98,7 +94,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected abstract String getDBName();
 
     protected void ensureSqlFuncs() throws IOException, SQLException {
-        executeEnsure(filterResources());
+        executeEnsure(findSQLScripts());
     }
 
     public void ensureLogLevel() {
