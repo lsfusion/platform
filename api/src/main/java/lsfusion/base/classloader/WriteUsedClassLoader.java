@@ -1,15 +1,18 @@
 package lsfusion.base.classloader;
 
+import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
-public class WriteUsedClassLoader extends ClassLoader {
+public class WriteUsedClassLoader extends RemoteClassLoader { //extends RemoteClassLoader because in java web start we need remoteLogics.findClass()
 
     private final Map<String, byte[]> classes;
 
-    public WriteUsedClassLoader(Map<String, byte[]> classes, ClassLoader originalClassloader) {
+    public WriteUsedClassLoader(Map<String, byte[]> classes, ClassLoader originalClassloader, RemoteLogicsInterface remoteLogics) {
         super(originalClassloader);
+        setRemoteLogics(remoteLogics);
         this.classes = classes;
     }
 
