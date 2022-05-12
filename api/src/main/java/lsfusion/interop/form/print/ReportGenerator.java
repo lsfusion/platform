@@ -101,7 +101,7 @@ public class ReportGenerator {
 //        // external classloader required for correct Jasper report generation on clients
         ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
         JasperPrint print;
-        Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader));
+        Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData), originalClassloader, remoteLogics));
         try {
             iterateChildReport(rootID, params, virtualizer);
 
