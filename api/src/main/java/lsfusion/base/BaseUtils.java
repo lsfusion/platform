@@ -1379,6 +1379,16 @@ public class BaseUtils {
         return result;
     }
 
+    public static <G, K> Map<G, K> groupListFirst(Group<G, K> getter, List<K> keys) {
+        Map<G, K> result = new HashMap<>();
+        for (K key : keys) {
+            G group = getter.group(key);
+            if (group != null && !result.containsKey(group))
+                result.put(group, key);
+        }
+        return result;
+    }
+
     public static <G, K> Map<G, Set<K>> groupSet(Group<G, K> getter, Collection<K> keys) { // assert что keys - set
         Map<G, Set<K>> result = new HashMap<>();
         for (K key : keys) {
@@ -1414,11 +1424,7 @@ public class BaseUtils {
     }
 
     public static <G, K> Map<G, List<K>> groupList(final Map<K, G> getter, List<K> keys) {
-        return groupList(new Group<G, K>() {
-            public G group(K key) {
-                return getter.get(key);
-            }
-        }, keys);
+        return groupList(key -> getter.get(key), keys);
     }
 
     public static <G, K> Map<G, Set<K>> groupSet(final Map<K, G> getter) {

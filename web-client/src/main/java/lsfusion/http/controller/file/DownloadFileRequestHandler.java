@@ -53,6 +53,8 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
         response.addHeader("Content-Disposition", "inline; filename*=UTF-8''" + URIUtil.encodeQuery(getFileName(displayName, extension)));
         // expiration will be set in urlRewrite.xml /downloadFile (just to have it at one place)
 
+        // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
+
         FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, inStream -> {
             ByteStreams.copy(inStream, response.getOutputStream());
         });

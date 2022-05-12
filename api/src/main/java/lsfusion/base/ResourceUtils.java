@@ -238,30 +238,35 @@ public class ResourceUtils {
         }
     }
 
-    private final static ConcurrentHashMap<String, List<String>> cachedFoundResourses = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, Pair<List<String>, Map<String, String>>> cachedFoundResourses = new ConcurrentHashMap<>();
     public static String findResource(String fileName, boolean checkExists, boolean cache, String optimisticFolder) {
         if(fileName.startsWith("/")) {
             //absolute path
             if(!checkExists || ResourceUtils.getResource(fileName) != null)
                 return fileName;
         } else {
-            if(optimisticFolder != null) {
-                String optimisticPath = "/" + optimisticFolder + "/" + fileName;
-                if(ResourceUtils.getResource(optimisticPath) != null)
-                    return optimisticPath;
-            }
+            // we can't use optimistic folder, since it will break the classpath precedence
+//            if(optimisticFolder != null) {
+//                String optimisticPath = "/" + optimisticFolder + "/" + fileName;
+//                if(ResourceUtils.getResource(optimisticPath) != null)
+//                    return optimisticPath;
+//            }
 
             if(cache) {
                 String template = BaseUtils.replaceFileName(fileName, ".*", true);
 
-                List<String> result = cachedFoundResourses.get(template);
-                if(result == null) {
+                Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourses.get(template);
+                if(cachedResources == null) {
                     Pattern pattern = Pattern.compile(".*/" + template);
-                    result = ResourceUtils.getResources(pattern);
-                    cachedFoundResourses.put(template, result);
+                    List<String> resources = ResourceUtils.getResources(pattern);
+                    cachedResources = new Pair<>(resources, BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources));
+                    cachedFoundResourses.put(template, cachedResources);
                 }
 
-                for (String entry : result)
+                if(fileName.equals(BaseUtils.getFileNameAndExtension(fileName)))
+                    return cachedResources.second.get(fileName);
+
+                for (String entry : cachedResources.first)
                     if (entry.endsWith("/" + fileName))
                         return entry;
             } else {
