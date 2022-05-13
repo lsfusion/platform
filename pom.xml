@@ -28,7 +28,7 @@
     </properties>
 
     <scm>
-        <developerConnection>scm:git:https://github.com/lsfusion/platform.git</developerConnection>
+        <developerConnection>scm:git:ssh://git@github.com/lsfusion/platform.git</developerConnection>
       <tag>HEAD</tag>
     </scm>
 
