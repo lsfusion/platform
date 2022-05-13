@@ -344,9 +344,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
             if(compare1.greater.intersect(compare2.less)) // если пересекаются
                 return false;
 
-            for(int i=0;i<compare1.greater.size;i++)
+            for(int i=0;i<compare1.greater.size();i++)
                 compare1.greater.get(i).less.addAll(compare2.less);
-            for(int i=0;i<compare2.less.size;i++)
+            for(int i=0;i<compare2.less.size();i++)
                 compare2.less.get(i).greater.addAll(compare1.greater);
 
             return true;

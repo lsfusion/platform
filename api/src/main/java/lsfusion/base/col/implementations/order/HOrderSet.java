@@ -42,30 +42,32 @@ public class HOrderSet<K> extends AMWrapOrderSet<K, HSet<K>> {
     }
 
     public ImOrderSet<K> immutableOrder() {
-        if(wrapSet.size==0)
+        if(wrapSet.size()==0)
             return SetFact.EMPTYORDER();
-        if(wrapSet.size==1)
+        if(wrapSet.size()==1)
             return SetFact.singletonOrder(single());
 
-        if(wrapSet.size < SetFact.useArrayMax) {
-            Object[] array = new Object[wrapSet.size];
-            for(int i=0;i<wrapSet.size;i++)
-                array[i] = get(i);
-            return new ArOrderSet<>(new ArSet<>(wrapSet.size, array));
-        }
-        if(wrapSet.size >= SetFact.useIndexedArrayMin) {
-            Object[] array = new Object[wrapSet.size];
-            for(int i=0;i<wrapSet.size;i++)
-                array[i] = get(i);
-            int[] order = new int[wrapSet.size];
-            ArSet.sortArray(wrapSet.size, array, order);
-            return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size, array), order);
-        }
+        if (!wrapSet.isStored()) {
+            if (wrapSet.size() < SetFact.useArrayMax) {
+                Object[] array = new Object[wrapSet.size()];
+                for (int i = 0; i < wrapSet.size(); i++)
+                    array[i] = get(i);
+                return new ArOrderSet<>(new ArSet<>(wrapSet.size(), array));
+            }
+            if (wrapSet.size() >= SetFact.useIndexedArrayMin) {
+                Object[] array = new Object[wrapSet.size()];
+                for (int i = 0; i < wrapSet.size(); i++)
+                    array[i] = get(i);
+                int[] order = new int[wrapSet.size()];
+                ArSet.sortArray(wrapSet.size(), array, order);
+                return new ArOrderIndexedSet<>(new ArIndexedSet<>(wrapSet.size(), array), order);
+            }
 
-        if(wrapSet.indexes.length > wrapSet.size * SetFact.factorNotResize) {
-            int[] newIndexes = new int[wrapSet.size];
-            System.arraycopy(wrapSet.indexes, 0, newIndexes, 0, wrapSet.size);
-            wrapSet.indexes = newIndexes;
+            if (wrapSet.getIndexes().length > wrapSet.size() * SetFact.factorNotResize) {
+                int[] newIndexes = new int[wrapSet.size()];
+                System.arraycopy(wrapSet.getIndexes(), 0, newIndexes, 0, wrapSet.size());
+                wrapSet.setIndexes(newIndexes);
+            }
         }
         return this;
     }

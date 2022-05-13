@@ -970,7 +970,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private static ActionOrProperty<?> findMinProperty(HMap<ActionOrProperty, LinkType> component) {
         ActionOrProperty minProp = null;
         LinkType minLinkType = null; 
-        for (int i = 0; i < component.size; i++) {
+        for (int i = 0; i < component.size(); i++) {
             ActionOrProperty prop = component.getKey(i);
             LinkType linkType = component.getValue(i);
             if(minProp == null || compare(minLinkType, minProp, linkType, prop) > 0) {
@@ -989,7 +989,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             return;
 
         HSet<Link> linksIn = linksMap.get(property);
-        for (int i = 0; i < linksIn.size; i++) {
+        for (int i = 0; i < linksIn.size(); i++) {
             Link link = linksIn.get(i);
             if (!proceeded.contains(link.from)) { // если не в верхней компоненте
                 findComponent(link.from, link.type, linksMap, proceeded, component);
@@ -1031,7 +1031,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         while(true) {
             ActionOrProperty current = left >= 0 ? queue[left].from : property;
             HSet<Link> linksIn = linksMap.get(current);
-            for (int i = 0; i < linksIn.size; i++) {
+            for (int i = 0; i < linksIn.size(); i++) {
                 Link link = linksIn.get(i);
 
                 if(BaseUtils.hashEquals(link.from, property)) { // нашли цикл
@@ -1098,7 +1098,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     // upComponent нужен так как изначально неизвестны все элементы
-    private static HSet<ActionOrProperty> buildList(HSet<ActionOrProperty> props, HSet<ActionOrProperty> exclude, HSet<Link> removedLinks, MOrderExclSet<ActionOrProperty> mResult, boolean events, DebugInfoWriter debugInfoWriter) {
+    private static HSet<ActionOrProperty> buildList(ImSet<ActionOrProperty> props, HSet<ActionOrProperty> exclude, HSet<Link> removedLinks, MOrderExclSet<ActionOrProperty> mResult, boolean events, DebugInfoWriter debugInfoWriter) {
         HSet<ActionOrProperty> proceeded;
 
         List<ActionOrProperty> order = new ArrayList<>();
@@ -1117,7 +1117,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
 
                 ActionOrProperty minProperty = findMinProperty(innerComponentOutTypes);
-                HSet<ActionOrProperty> innerComponent = innerComponentOutTypes.keys();
+                ImSet<ActionOrProperty> innerComponent = innerComponentOutTypes.keys();
                         
                 assert innerComponent.size() > 0;
                 if (innerComponent.size() == 1) { // если цикла нет все ОК

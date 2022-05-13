@@ -119,7 +119,7 @@ public class StoredHSet<T> extends AMSet<T> {
 
     @Override
     public StoredHMap<T, T> toMap() {
-        return new StoredHMap<>(size, table, table, indexes);
+        return new StoredHMap<>(size, table, table, indexes, null);
     }
 
     @Override

@@ -32,19 +32,20 @@ public class StoredHMap<K, V> extends AMRevMap<K, V> {
         assert clone;
     }
 
-    public StoredHMap(int size, K[] table, V[] vtable, int[] indexes, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
-        this(size, new StoredArray<>(table, serializer), new StoredArray<>(vtable, serializer), indexes);
+    public StoredHMap(int size, K[] table, V[] vtable, int[] indexes, StoredArraySerializer serializer, AddValue<K, V> addValue) throws StoredArray.StoredArrayCreationException {
+        this(size, new StoredArray<>(table, serializer), new StoredArray<>(vtable, serializer), indexes, addValue);
     }
 
     private StoredHMap(int size, K[] table, int[] indexes, StoredArraySerializer serializer) throws StoredArray.StoredArrayCreationException {
-        this(size, new StoredArray<>(table, serializer), new StoredArray<>(table.length, serializer), indexes);
+        this(size, new StoredArray<>(table, serializer), new StoredArray<>(table.length, serializer), indexes, null);
     }
 
     private StoredHMap(int size, StoredArray<K> table, int[] indexes) {
-        this(size, table, new StoredArray<>(table.size(), table.getSerializer()), indexes);
+        this(size, table, new StoredArray<>(table.size(), table.getSerializer()), indexes, null);
     }
 
-    public StoredHMap(int size, StoredArray<K> table, StoredArray<V> vtable, int[] indexes) {
+    public StoredHMap(int size, StoredArray<K> table, StoredArray<V> vtable, int[] indexes, AddValue<K, V> addValue) {
+        super(addValue);
         this.size = size;
         this.indexes = indexes;
         this.table = table;
@@ -158,5 +159,13 @@ public class StoredHMap<K, V> extends AMRevMap<K, V> {
     @Override
     public StoredHSet<K> keys() {
         return new StoredHSet<>(size, table, indexes);
+    }
+
+    public StoredArray<K> getStoredKeys() {
+        return table;
+    }
+
+    public int[] getIndexes() {
+        return indexes;
     }
 }

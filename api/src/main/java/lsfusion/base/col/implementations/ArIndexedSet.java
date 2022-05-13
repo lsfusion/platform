@@ -39,7 +39,7 @@ public class ArIndexedSet<K> extends AMSet<K> {
 
     public ArIndexedSet(ArIndexedSet<K> set) {
         if (set.isStored()) {
-            StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(set.stored().getStoredArray());
+            StoredArIndexedSet<K> storedSet = new StoredArIndexedSet<>(set.stored());
             switchToStored(storedSet);
         } else if (needToBeStored(set)) {
             switchToStored(set.size, set.array);
