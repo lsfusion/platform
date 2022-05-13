@@ -7,8 +7,6 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 
-import java.text.ParseException;
-
 public class GLongType extends GIntegralType {
     public static GLongType instance = new GLongType();
 
@@ -18,7 +16,7 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    protected Object convertDouble(Double doubleValue) {
+    public Object convertDouble(Double doubleValue) {
         return doubleValue.longValue();
     }
 

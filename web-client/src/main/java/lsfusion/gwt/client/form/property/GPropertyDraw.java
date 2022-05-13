@@ -13,6 +13,7 @@ import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GFormatType;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -445,7 +446,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean canUseChangeValueForRendering(GType type) {
-        return type != null && baseType.getClass() == type.getClass();
+        return type != null && baseType.getClass() == type.getClass() && !(baseType instanceof GJSONType);
     }
 
     public String getDynamicCaption(Object caption) {

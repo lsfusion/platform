@@ -66,12 +66,4 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
                     cancel(parent);
         });
     }
-
-    protected static native <T> JavaScriptObject fromObject(T object) /*-{
-        return object;
-    }-*/;
-
-    protected static native <T> T toObject(JavaScriptObject object) /*-{
-        return object;
-    }-*/;
 }

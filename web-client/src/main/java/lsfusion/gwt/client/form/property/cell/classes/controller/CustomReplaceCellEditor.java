@@ -6,6 +6,8 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.GType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -17,6 +19,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     private final GPropertyDraw property;
 
     private final String renderFunction;
+    private final GType type;
     private final JavaScriptObject customEditor;
 
     @Override
@@ -25,15 +28,21 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }
 
     @Override
+    public GType getType() {
+        return type;
+    }
+
+    @Override
     public JavaScriptObject getCustomEditor() {
         return customEditor;
     }
 
-    public CustomReplaceCellEditor(EditManager editManager, GPropertyDraw property, String renderFunction, JavaScriptObject customEditor) {
+    public CustomReplaceCellEditor(EditManager editManager, GPropertyDraw property, GType type, String renderFunction, JavaScriptObject customEditor) {
         super(editManager);
         this.property = property;
 
         this.renderFunction = renderFunction;
+        this.type = type;
         this.customEditor = customEditor;
     }
 
@@ -65,18 +74,18 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
 
     // FACTORY
 
-    public static CellEditor create(EditManager editManager, GPropertyDraw property, String customEditorFunction) {
+    public static CellEditor create(EditManager editManager, GPropertyDraw property, GType type, String customEditorFunction) {
         JavaScriptObject customEditor = getCustomFunction(customEditorFunction);
 
         String functionName = "Input";
         if(hasRenderFunction(functionName, customEditor))
-            return new CustomTextCellEditor(editManager, property, functionName, customEditor);
+            return new CustomTextCellEditor(editManager, property, type, functionName, customEditor);
 
         functionName = "Dialog";
         if(hasRenderFunction(functionName, customEditor))
-            return new CustomWindowCellEditor(editManager, property, functionName, customEditor);
+            return new CustomWindowCellEditor(editManager, property, type, functionName, customEditor);
 
-        return new CustomReplaceCellEditor(editManager, property, "", customEditor);
+        return new CustomReplaceCellEditor(editManager, property, type, "", customEditor);
     }
 
     public static JavaScriptObject getCustomFunction(String customEditorFunction) {
@@ -93,27 +102,31 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         customEditor['render' + functionName](element, controller, value);
     }-*/;
 
-    private void forceCommit(Element parent) {
-        commit(parent, CommitReason.FORCED);
+    private static void forceCommit(CustomCellEditor cellEditor, Element parent) {
+        cellEditor.commit(parent, CommitReason.FORCED);
     }
 
-    private void commitJSValue(Element parent, JavaScriptObject value) {
-        commitValue(parent, toObject(value));
+    private static void commitJSValue(CustomCellEditor cellEditor, Element parent, JavaScriptObject value) {
+        cellEditor.commitValue(parent, GSimpleStateTableView.convertFromJSValue(cellEditor.getType(), value));
     }
 
-    public static native JavaScriptObject getController(CellEditor thisObj, Element cellParent)/*-{
+    private static void setDeferredCommit(CustomCellEditor cellEditor, boolean deferredCommitOnBlur) {
+        cellEditor.setDeferredCommitOnBlur(deferredCommitOnBlur);
+    }
+
+    public static native JavaScriptObject getController(CustomCellEditor thisObj, Element cellParent)/*-{
         return {
             setDeferredCommitOnBlur: function (deferredCommitOnBlur) {
-                thisObj.@CustomTextCellEditor::setDeferredCommitOnBlur(*)(deferredCommitOnBlur);
+                @CustomReplaceCellEditor::setDeferredCommit(*)(thisObj, deferredCommitOnBlur);
             },
             commit: function (value) {
                 if(arguments.length === 1)
-                    thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor::commitJSValue(*)(cellParent, value);
+                    @lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor::commitJSValue(*)(thisObj, cellParent, value);
                 else
-                    thisObj.@CustomReplaceCellEditor::forceCommit(*)(cellParent);
+                    @CustomReplaceCellEditor::forceCommit(*)(thisObj, cellParent);
             },
             cancel: function () {
-                thisObj.@RequestCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(cellParent);
+                thisObj.@CustomReplaceCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(cellParent);
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();

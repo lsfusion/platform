@@ -9,16 +9,13 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
-import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.ProgressBar;
 import lsfusion.server.base.controller.stack.StackProgress;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -31,7 +28,6 @@ import lsfusion.server.logics.action.session.classes.change.ClassChanges;
 import lsfusion.server.logics.action.session.table.SessionTableUsage;
 import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.form.stat.struct.imports.FormImportData;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -60,19 +56,10 @@ public abstract class ImportAction extends SystemAction {
         this.charset = charset;
     }
 
-    protected static RawFileData readFile(ObjectValue value) throws SQLException, SQLHandledException {
+    protected static RawFileData readFile(ObjectValue value) {
         if(value instanceof DataObject)
-            return readFile(((DataObject) value).objectClass.getType(), ((DataObject) value).object);
+            return ((DataObject) value).objectClass.getType().readProp(((DataObject) value).object);
         return null;
-    }
-    private static RawFileData readFile(Type type, Object singleFile) {
-        if (type instanceof StaticFormatFileClass) {
-            return (RawFileData) singleFile;
-        } else {
-            if(singleFile == null)
-                return null;
-            return ((FileData)singleFile).getRawFile();
-        }
     }
 
     protected abstract FormImportData getData(ExecutionContext<PropertyInterface> context) throws IOException, SQLException, SQLHandledException;

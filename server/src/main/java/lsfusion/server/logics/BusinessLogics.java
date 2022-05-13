@@ -2084,6 +2084,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
     }
 
+    // for reports SavingThread is used
     private Scheduler.SchedulerTask getSynchronizeWebDirectoriesTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> {
             for (String path : ResourceUtils.findInClassPath("web")) {

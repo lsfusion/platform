@@ -2092,7 +2092,7 @@ public class GFormController implements EditManager {
         CellEditor cellEditor;
         boolean hasCustomEditor = customChangeFunction != null && !customChangeFunction.equals("DEFAULT");
         if (hasCustomEditor) // see LsfLogics.g propertyCustomView rule
-            cellEditor = CustomReplaceCellEditor.create(this, property, customChangeFunction);
+            cellEditor = CustomReplaceCellEditor.create(this, property, type, customChangeFunction);
         else
             cellEditor = type.createGridCellEditor(this, property, inputList);
 

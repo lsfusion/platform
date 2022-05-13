@@ -10,8 +10,6 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-import java.text.ParseException;
-
 public class GDoubleType extends GIntegralType {
     public static GDoubleType instance = new GDoubleType();
 
@@ -33,7 +31,7 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    protected Object convertDouble(Double doubleValue) {
+    public Object convertDouble(Double doubleValue) {
         return doubleValue;
     }
 

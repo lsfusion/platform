@@ -7,7 +7,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.print.FormStaticType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -43,11 +43,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
         this.selectTop = selectTop == null ? 0 : selectTop;
     }
 
-    protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile, DataObject... params) throws SQLException, SQLHandledException {
-        if (exportFile.property.getType() instanceof StaticFormatFileClass) {
-            exportFile.change(singleFile, context, params);
-        } else {
-            exportFile.change(singleFile != null ? new FileData(singleFile, staticType.getExtension()) : null, context, params);
-        }
+    protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile) throws SQLException, SQLHandledException {
+        exportFile.change(exportFile.property.getType().writeProp(singleFile, staticType.getExtension()), context);
     }
 }

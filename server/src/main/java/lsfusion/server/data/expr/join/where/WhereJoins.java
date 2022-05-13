@@ -697,12 +697,8 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
             return getKeyStat(edge.join, edge.key);
         }
 
-        private <K extends BaseExpr> ImMap<K, Stat> getDistinct(ImSet<K> exprs, final MAddMap<BaseExpr, PropStat> exprStats) {
-            return new DistinctKeys<>(exprs.mapValues(new Function<K, Stat>() {
-                public Stat apply(K value) {
-                    return getPropStat(value, exprStats).distinct;
-                }
-            }));
+        private <K extends BaseExpr> ImMap<K, Stat> getDistinct(ImSet<K> exprs, final MAddMap<BaseExpr, PropStat> exprStats, Stat stat) {
+            return new DistinctKeys<>(exprs.mapValues((Function<K, Stat>) value -> getPropStat(value, exprStats).distinct.min(stat)));
         }
 
         private static ImMap<QueryJoin, PushCost> addPushCosts(ImMap<QueryJoin, PushCost> left, ImMap<QueryJoin, PushCost> right) {
@@ -828,7 +824,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
                 rows.set(stat);
             if (compileInfo != null)
                 compileInfo.set(costStat.compileInfo);
-            return StatKeys.create(cost, stat, new DistinctKeys<>(costStat.getDistinct(groups, exprStats)));
+            return StatKeys.create(cost, stat, new DistinctKeys<>(costStat.getDistinct(groups, exprStats, stat)));
         }, null, null, null, false, debugInfoWriter);
     }
 

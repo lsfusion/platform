@@ -2,6 +2,7 @@ package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -129,6 +130,32 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     protected String formatHTTPNotNullString(T value, Charset charset) {
         return formatString(value);
+    }
+
+    @Override
+    public T writeProp(RawFileData value, String extension) {
+        if(value == null)
+            return null;
+        return writePropNotNull(value, extension);
+    }
+
+    protected T writePropNotNull(RawFileData value, String extension) {
+        try {
+            return parseString(new String(value.getBytes()));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public RawFileData readProp(T value) {
+        if(value == null)
+            return null;
+        return readPropNotNull(value);
+    }
+
+    public RawFileData readPropNotNull(T value) {
+        return new RawFileData(formatString(value).getBytes());
     }
 
     public T parseNullableString(String string, boolean emptyIsNull) throws ParseException {

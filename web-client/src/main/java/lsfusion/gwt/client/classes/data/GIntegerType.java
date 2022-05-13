@@ -7,8 +7,6 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.IntegerCellEdit
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 
-import java.text.ParseException;
-
 public class GIntegerType extends GIntegralType {
     public static GIntegerType instance = new GIntegerType();
 
@@ -18,7 +16,7 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
-    protected Object convertDouble(Double doubleValue) {
+    public Object convertDouble(Double doubleValue) {
         return doubleValue.intValue();
     }
 

@@ -422,10 +422,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
             ArrayList<Object> types = action.types;
             for (int i = 0; i < types.size(); i++) {
-                arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), action.values.get(i)));
+                arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), action.values.get(i)));
             }
             String function = action.resource;
             GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+            // todo: convert result back with convertFromJSValue (type should be get from the server)
             onActionExecuted(action);
         }
     }

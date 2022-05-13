@@ -29,7 +29,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         setRendererValue(customRenderer, element,
                 getController(updateContext::changeProperty, updateContext.isPropertyReadOnly()),
-                GSimpleStateTableView.convertValue(property, value));
+                GSimpleStateTableView.convertToJSValue(property, value));
 
         return false;
     }
@@ -60,7 +60,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     
     protected void changeValue(Consumer<Object> valueChangeConsumer, JavaScriptObject value) {
         if (valueChangeConsumer != null) {
-            valueChangeConsumer.accept(toObject(value));
+            valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSValue(property.getExternalChangeType(), value));
         }
     }
 
@@ -86,14 +86,6 @@ public class CustomCellRenderer extends CellRenderer<Object> {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             }
         }
-    }-*/;
-
-    protected native final <T> JavaScriptObject fromObject(T object) /*-{
-        return object;
-    }-*/;
-
-    protected native final <T> T toObject(JavaScriptObject object) /*-{
-        return object;
     }-*/;
 
     @Override

@@ -42,7 +42,7 @@ public abstract class GIntegralType extends GFormatType {
         }
     }
 
-    protected abstract Object convertDouble(Double doubleValue);
+    public abstract Object convertDouble(Double doubleValue);
 
     // render, edit
     @Override

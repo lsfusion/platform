@@ -253,17 +253,19 @@ public class ResourceUtils {
 //            }
 
             if(cache) {
+                boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
+
                 String template = BaseUtils.replaceFileName(fileName, ".*", true);
 
                 Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourses.get(template);
                 if(cachedResources == null) {
                     Pattern pattern = Pattern.compile(".*/" + template);
                     List<String> resources = ResourceUtils.getResources(pattern);
-                    cachedResources = new Pair<>(resources, BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources));
+                    cachedResources = new Pair<>(resources, simpleFile ? BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources) : null);
                     cachedFoundResourses.put(template, cachedResources);
                 }
 
-                if(fileName.equals(BaseUtils.getFileNameAndExtension(fileName)))
+                if(simpleFile)
                     return cachedResources.second.get(fileName);
 
                 for (String entry : cachedResources.first)

@@ -1131,6 +1131,16 @@ public class GwtClientUtils {
         }
     }-*/;
 
+    public static native String jsonStringify(JavaScriptObject value)/*-{
+        try {
+            if(value == null)
+                return null;
+            return JSON.stringify(value);
+        } catch(e) {
+            return "{}";
+        }
+    }-*/;
+
     public static native void consoleError(String error)/*-{
         console.error(error);
     }-*/;

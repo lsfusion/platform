@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.WindowValueCellEditor;
@@ -13,6 +14,7 @@ public class CustomWindowCellEditor extends WindowValueCellEditor implements Cus
     private final GPropertyDraw property;
 
     private final String renderFunction;
+    private final GType type;
     private final JavaScriptObject customEditor;
 
     @Override
@@ -21,16 +23,22 @@ public class CustomWindowCellEditor extends WindowValueCellEditor implements Cus
     }
 
     @Override
+    public GType getType() {
+        return type;
+    }
+
+    @Override
     public JavaScriptObject getCustomEditor() {
         return customEditor;
     }
 
-    public CustomWindowCellEditor(EditManager editManager, GPropertyDraw property, String renderFunction, JavaScriptObject customEditor) {
+    public CustomWindowCellEditor(EditManager editManager, GPropertyDraw property, GType type, String renderFunction, JavaScriptObject customEditor) {
         super(editManager);
 
         this.property = property;
 
         this.renderFunction = renderFunction;
+        this.type = type;
         this.customEditor = customEditor;
     }
 

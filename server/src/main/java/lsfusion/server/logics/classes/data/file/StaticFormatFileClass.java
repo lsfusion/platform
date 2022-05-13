@@ -52,6 +52,8 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
             return "cast_named_file_to_static_file(" + value + ")";
         }else if (typeFrom instanceof DynamicFormatFileClass) {
             return "cast_dynamic_file_to_static_file(" + value + ")";
+        }else if (typeFrom instanceof JSONClass) {
+            return "cast_json_to_static_file(" + value + ")";
         }
         return super.getCast(value, syntax, typeEnv, typeFrom);
     }
@@ -75,7 +77,17 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     protected FileData formatHTTPNotNull(RawFileData b) {
         return new FileData(b, getOpenExtension(b));
     }
-    
+
+    @Override
+    protected RawFileData writePropNotNull(RawFileData value, String extension) {
+        return value;
+    }
+
+    @Override
+    public RawFileData readPropNotNull(RawFileData value) {
+        return value;
+    }
+
     protected ImSet<String> getExtensions() {
         return SetFact.singleton(getExtension());
     } 

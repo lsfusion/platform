@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -12,6 +13,7 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 public class CustomTextCellEditor extends TextBasedCellEditor implements CustomCellEditor {
 
     private final String renderFunction;
+    private final GType type;
     private final JavaScriptObject customEditor;
 
     @Override
@@ -20,14 +22,20 @@ public class CustomTextCellEditor extends TextBasedCellEditor implements CustomC
     }
 
     @Override
+    public GType getType() {
+        return type;
+    }
+
+    @Override
     public JavaScriptObject getCustomEditor() {
         return customEditor;
     }
 
-    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, String renderFunction, JavaScriptObject customEditor) {
+    public CustomTextCellEditor(EditManager editManager, GPropertyDraw property, GType type, String renderFunction, JavaScriptObject customEditor) {
         super(editManager, property);
 
         this.renderFunction = renderFunction;
+        this.type = type;
         this.customEditor = customEditor;
     }
 
