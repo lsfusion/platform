@@ -10,9 +10,11 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -879,6 +881,23 @@ public class GwtClientUtils {
             if(predicate.test(element))
                 return element;
         return null;
+    }
+
+    public static <E extends Exception> Object parseInterval(String s, EFunction<String, Long, E> parseFunction) throws E {
+        String[] dates = s.split(" - ");
+        Long epochFrom = parseFunction.apply(dates[0]);
+        Long epochTo = parseFunction.apply(dates[1]);
+        return epochFrom <= epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+    }
+
+    public static String formatInterval(Object obj, Function<Long, String> formatFunction) {
+        return formatFunction.apply(getIntervalPart(obj, true)) + " - " + formatFunction.apply(getIntervalPart(obj, false));
+    }
+
+    public static Long getIntervalPart(Object o, boolean from) {
+        String object = String.valueOf(o);
+        int indexOfDecimal = object.indexOf(".");
+        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 
     public static Element wrapCenteredImg(Element th, Integer height, Consumer<ImageElement> imgProcessor) {

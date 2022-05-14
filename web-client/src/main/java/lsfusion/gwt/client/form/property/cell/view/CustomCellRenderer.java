@@ -67,7 +67,10 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     protected native JavaScriptObject getController(Consumer<Object> valueChangeConsumer, Boolean isReadOnly)/*-{
         var thisObj = this;
         return {
-            changeValue: function (value) {
+            change: function (value) {
+                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, value);
+            },
+            changeValue: function (value) { // deprecated
                 return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, value);
             },
             isReadOnly: function () {

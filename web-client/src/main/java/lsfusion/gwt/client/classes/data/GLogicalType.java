@@ -43,7 +43,7 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
         try {
             return GwtSharedUtils.nullBoolean(Boolean.parseBoolean(s));
         } catch (NumberFormatException nfe) {

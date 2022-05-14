@@ -79,7 +79,7 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
         return new DatePropertyEditor(value, getEditFormat(property), property);
     }
 
-    public Object parseString(String s) throws ParseException {
+    public LocalDate parseString(String s) throws ParseException {
         try {
             return sqlDateToLocalDate(safeDateToSql(MainFrame.dateFormat.parse(s)));
         } catch (Exception e) {

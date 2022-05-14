@@ -167,9 +167,6 @@ public abstract class MainFrame extends JFrame {
     public static DateFormat dateFormat;
     public static DateFormat timeFormat;
     public static DateFormat dateTimeFormat;
-    public static DateTimeFormatter dateFormatter;
-    public static DateTimeFormatter timeFormatter;
-    public static DateTimeFormatter dateTimeFormatter;
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
     public static BigDecimal wideFormattableDateTimeInterval;
@@ -189,18 +186,15 @@ public abstract class MainFrame extends JFrame {
 
         //dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
         dateFormat = new SimpleDateFormat(localePreferences.dateFormat);
-        dateFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateFormat).toPattern());
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateFormat).set2DigitYearStart(twoDigitYearStartDate);
         }
 
         //timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
         timeFormat = new SimpleDateFormat(localePreferences.timeFormat);
-        timeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.timeFormat).toPattern());
 
         //dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
         dateTimeFormat = new SimpleDateFormat(localePreferences.dateFormat + " " + localePreferences.timeFormat);
-        dateTimeFormatter = DateTimeFormatter.ofPattern(((SimpleDateFormat) MainFrame.dateTimeFormat).toPattern());
         if (twoDigitYearStartDate != null) {
             ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
         }

@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import lsfusion.base.lambda.EFunction;
 import org.apache.http.ParseException;
 
 import java.math.BigDecimal;
@@ -224,7 +225,7 @@ public class DateConverter {
         return LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("UTC"));
     }
 
-    public static Object parseInterval(String s, Function<String, Long> parseFunction) {
+    public static <E extends Exception> Object parseInterval(String s, EFunction<String, Long, E> parseFunction) throws E {
         String[] dates = s.split(" - ");
         Long epochFrom = parseFunction.apply(dates[0]);
         Long epochTo = parseFunction.apply(dates[1]);

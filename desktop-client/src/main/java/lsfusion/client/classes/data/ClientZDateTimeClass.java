@@ -32,7 +32,7 @@ public class ClientZDateTimeClass extends ClientDateTimeClass {
         return new ZDateTimePropertyEditor(value, getEditFormat(property), property);
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Instant parseString(String s) throws ParseException {
         try {
             return sqlTimestampToInstant(dateToStamp((Date) MainFrame.dateTimeFormat.parseObject(s)));
         } catch (Exception e) {

@@ -31,8 +31,6 @@ public abstract class GIntervalType extends GFormatType {
         return null;
     }
 
-    public abstract DateTimeFormat getSingleFormat(String pattern);
-
     protected boolean isSingleLocal() {
         return true;
     }
@@ -52,22 +50,26 @@ public abstract class GIntervalType extends GFormatType {
         return new BigDecimal("1636629071.1636629071");
     }
 
+    protected Long parse(String date, String pattern, boolean edit) throws ParseException {
+        GADateType timeSeriesType = getTimeSeriesType();
+        return fromDate(timeSeriesType.toDate(timeSeriesType.parseString(date, pattern, edit)));
+    }
+    protected String format(Long epoch, String pattern, boolean edit) {
+        GADateType timeSeriesType = getTimeSeriesType();
+        return timeSeriesType.formatString(timeSeriesType.fromDate(toDate(epoch)), pattern, edit);
+    }
+    public DateTimeFormat getSingleFormat(String pattern) {
+        return getTimeSeriesType().getFormat(pattern, false);
+    }
+
+    protected abstract GADateType getTimeSeriesType();
+
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
         if(s.isEmpty())
             return null;
 
-        String[] parts = s.split(" - ");
-        DateTimeFormat singleFormat = getSingleFormat(pattern);
-        return fromDate(singleFormat.parse(parts[0]), singleFormat.parse(parts[1]));
-    }
-
-    private static transient TimeZone UTCZone = TimeZone.createTimeZone(0);
-    private static String format(DateTimeFormat format, boolean isLocal, Date utcDate) {
-        if(isLocal)
-            return format.format(utcDate, UTCZone); // formatting in utc
-
-        return format.format(utcDate);
+        return GwtClientUtils.parseInterval(s, date -> parse(date, pattern, edit));
     }
 
     @Override
@@ -75,29 +77,31 @@ public abstract class GIntervalType extends GFormatType {
         if(value == null)
             return null;
 
-        DateTimeFormat singleFormat = getSingleFormat(pattern);
-        boolean local = isSingleLocal();
-        return format(singleFormat, local, getUTCDate(value, true)) + " - " + format(singleFormat, local, getUTCDate(value, false));
+        return GwtClientUtils.formatInterval(value, epoch -> format(epoch, pattern, edit));
     }
 
     public abstract String getIntervalType();
-
 
     public Date toDate(Object value, boolean from) {
         if(value == null)
             return new Date();
 
-        Date utcDate = getUTCDate(value, from);
+        return toDate(getEpoch(value, from));
+    }
+
+    private static transient TimeZone UTCZone = TimeZone.createTimeZone(0);
+    protected Date toDate(long epoch) {
+        Date date = new Date(epoch);
         boolean local = isSingleLocal();
         if(local) { // here is tricky for local dates we convert to string (to get "absolute" params, and then parsing back)
             DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
-            return format.parse(format.format(utcDate, UTCZone));
+            return format.parse(format.format(date, UTCZone));
         }
 
-        return utcDate;
+        return date;
     }
 
-    private long fromDate(Date date) {
+    protected long fromDate(Date date) {
         boolean local = isSingleLocal();
         if(local) { // here is tricky for local dates we convert to string (to get "absolute" params, and then parsing back)
 //            DateTimeFormat format = getSingleFormat(null);// we don't care about the pattern
@@ -114,10 +118,10 @@ public abstract class GIntervalType extends GFormatType {
         return new BigDecimal(fromDate(from) + "." + fromDate(to));
     }
 
-    public static Date getUTCDate(Object value, boolean from) {
+    public static long getEpoch(Object value, boolean from) {
         assert value instanceof BigDecimal;
         String object = String.valueOf(value);
         int indexOfDecimal = object.indexOf(".");
-        return new Date(Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1)));
+        return Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 }

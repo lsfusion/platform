@@ -31,7 +31,7 @@ public abstract class GIntegralType extends GFormatType {
 
     // paste, edit
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
         if(s.isEmpty())
             return null;
 

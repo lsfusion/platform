@@ -115,8 +115,9 @@ public class GwtSharedUtils {
     }
 
     public static DateTimeFormat getDefaultDateTimeFormat(boolean edit) {
+        String dateTimeFormat = MainFrame.dateTimeFormat;
         if(edit) {
-            String pattern = getValidEditDateFormat(MainFrame.dateFormat + " " + MainFrame.timeFormat, true);
+            String pattern = getValidEditDateFormat(dateTimeFormat, true);
             if(pattern != null) {
                 return DateTimeFormat.getFormat(pattern);
             } else {
@@ -124,7 +125,7 @@ public class GwtSharedUtils {
                 return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), getDateFormatShort(info.dateFormatShort())).replace(",", ""));
             }
         } else {
-            return DateTimeFormat.getFormat(MainFrame.dateFormat + " " + MainFrame.timeFormat);
+            return DateTimeFormat.getFormat(dateTimeFormat);
         }
     }
 

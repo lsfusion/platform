@@ -1,9 +1,9 @@
 package lsfusion.client.classes.data;
 
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
 import java.text.ParseException;
+import java.time.Instant;
 
 public class ClientZDateTimeIntervalClass extends ClientIntervalClass {
 
@@ -20,16 +20,12 @@ public class ClientZDateTimeIntervalClass extends ClientIntervalClass {
     }
 
     @Override
-    protected Long parse(String date) {
-        try {
-            return MainFrame.dateTimeFormat.parse(date).getTime() / 1000;
-        } catch (ParseException e) {
-            return null;
-        }
+    protected Long parse(String date) throws ParseException {
+        return ClientZDateTimeClass.instance.parseString(date).getEpochSecond();
     }
 
     @Override
     protected String format(Long epoch) {
-        return MainFrame.dateTimeFormat.format(epoch * 1000);
+        return ClientZDateTimeClass.instance.formatString(Instant.ofEpochSecond(epoch));
     }
 }

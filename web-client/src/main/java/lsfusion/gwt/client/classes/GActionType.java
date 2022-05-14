@@ -33,7 +33,7 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
         throw new ParseException("Action class doesn't support conversion from string", 0);
     }
 

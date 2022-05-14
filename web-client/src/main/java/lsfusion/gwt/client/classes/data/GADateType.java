@@ -30,19 +30,21 @@ public abstract class GADateType extends GFormatType {
     }
 
     @Override
-    public Object parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : fromDate(GDateType.parseDate(value, getFormats(pattern)));
+    public Object parseString(String value, String pattern, boolean edit) throws ParseException {
+        return value.isEmpty() ? null : fromDate(GDateType.parseDate(value, getFormats(pattern, edit)));
     }
 
     @Override
     public String formatString(Object value, String pattern, boolean edit) {
-        return value == null ? "" : getFormat(pattern).format(toDate(value));
+        return value == null ? "" : getFormat(pattern, edit).format(toDate(value));
     }
 
     // "extended" getFormat + some extra formates
-    protected abstract DateTimeFormat[] getFormats(String pattern);
+    protected DateTimeFormat[] getFormats(String pattern, boolean edit) {
+        return new DateTimeFormat[] {getFormat(pattern, edit)};
+    }
 
-    protected abstract DateTimeFormat getFormat(String pattern);
+    protected abstract DateTimeFormat getFormat(String pattern, boolean edit);
 
     public abstract Object fromDate(Date date);
 

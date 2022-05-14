@@ -1,20 +1,16 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
-
-import static lsfusion.gwt.client.base.GwtSharedUtils.getDateTimeFormat;
-
 public class GDateTimeIntervalType extends GIntervalType {
 
     public static GDateTimeIntervalType instance = new GDateTimeIntervalType();
 
     @Override
-    public DateTimeFormat getSingleFormat(String pattern) {
-        return getDateTimeFormat(pattern, false);
+    public String getIntervalType() {
+        return "DATETIME";
     }
 
     @Override
-    public String getIntervalType() {
-        return "DATETIME";
+    protected GADateType getTimeSeriesType() {
+        return GDateTimeType.instance;
     }
 }

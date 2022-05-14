@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
@@ -9,7 +10,6 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.DateTimeCellEdi
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-import java.text.ParseException;
 import java.util.Date;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
@@ -18,8 +18,8 @@ public class GDateTimeType extends GADateType {
     public static GDateTimeType instance = new GDateTimeType();
 
     @Override
-    protected com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern) {
-        return getDateTimeFormat(pattern, false);
+    protected com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern, boolean edit) {
+        return getDateTimeFormat(pattern, edit);
     }
 
     @Override
@@ -28,8 +28,8 @@ public class GDateTimeType extends GADateType {
     }
 
     @Override
-    protected DateTimeFormat[] getFormats(String pattern) {
-        return new DateTimeFormat[] { getDateTimeFormat(pattern, true), getDefaultDateTimeShortFormat(), getDefaultDateFormat(true) };
+    protected DateTimeFormat[] getFormats(String pattern, boolean edit) {
+        return GwtClientUtils.add(super.getFormats(pattern, edit), new DateTimeFormat[] { getDefaultDateTimeShortFormat(), getDefaultDateTimeFormat(edit) }, DateTimeFormat[]::new);
     }
 
     @Override

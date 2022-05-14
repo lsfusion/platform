@@ -409,7 +409,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.parseString(inputText, property.pattern);
+            return formatType.parseString(inputText, property.pattern, true);
         }
         return inputText;
     }

@@ -21,4 +21,9 @@ public class GZDateTimeIntervalType extends GDateTimeIntervalType {
     protected boolean isSingleLocal() {
         return false;
     }
+
+    @Override
+    protected GADateType getTimeSeriesType() {
+        return GZDateTimeType.instance;
+    }
 }

@@ -28,7 +28,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -439,7 +438,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(parseType == null)
             return null;
         try {
-            return parseType.parseString(s, pattern);
+            return parseType.parseString(s, pattern, false);
         } catch (ParseException pe) {
             return null;
         }
