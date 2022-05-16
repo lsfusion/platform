@@ -99,11 +99,15 @@ public class ReportGenerator {
 
         Map<String, Object> params = new HashMap<>();
 //        // external classloader required for correct Jasper report generation on clients
-        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
+        ClassLoader originalClassloader = null;
+        if (remoteLogics != null) {
+            originalClassloader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData),
+                    originalClassloader instanceof RemoteClassLoader ? originalClassloader.getParent() : originalClassloader, //not possible to do via parent because it is used in a load class and not in a find
+                    remoteLogics));
+        }
+
         JasperPrint print;
-        Thread.currentThread().setContextClassLoader(new WriteUsedClassLoader(retrieveClasses(generationData),
-                originalClassloader instanceof RemoteClassLoader ? originalClassloader.getParent() : originalClassloader, //not possible to do via parent because it is used in a load class and not in a find
-                remoteLogics));
         try {
             iterateChildReport(rootID, params, virtualizer);
 
@@ -113,7 +117,8 @@ public class ReportGenerator {
 
             print = JasperFillManager.fillReport(report, childParams, source);
         } finally {
-            Thread.currentThread().setContextClassLoader(originalClassloader);
+            if (remoteLogics != null)
+                Thread.currentThread().setContextClassLoader(originalClassloader);
         }
 
         JasperDesign rootDesign = designs.get(rootID);
