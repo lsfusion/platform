@@ -389,7 +389,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return integrationSID;
     }
 
-    public Object parseChangeValueOrNull(String s) {
+    public Object parsePaste(String s) {
         if (externalChangeType == null) {
             return null;
         }
@@ -400,7 +400,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
-    public Object parseBaseValue(String s) throws ParseException {
+    public Object parseBasePaste(String s) throws ParseException {
         return baseType.parseString(s);
     }
 

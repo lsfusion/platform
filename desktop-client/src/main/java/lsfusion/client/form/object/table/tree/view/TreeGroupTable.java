@@ -691,7 +691,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             if (property != null) {
                 try {
                     String value = table.get(0).get(0);
-                    Object newValue = value == null ? null : property.parseChangeValueOrNull(value);
+                    Object newValue = value == null ? null : property.parsePaste(value);
                     if (property.canUsePasteValueForRendering()) {
                         model.setValueAt(newValue, row, column);
                     }

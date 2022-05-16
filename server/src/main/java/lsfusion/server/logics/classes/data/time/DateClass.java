@@ -5,6 +5,7 @@ import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -50,6 +51,7 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
+        reportField.pattern = ThreadLocalContext.getTFormats().datePattern;
     }
 
     public byte getTypeID() {
@@ -144,11 +146,9 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     public LocalDate parseString(String s) throws ParseException {
         try {
             //try to parse with default locale formats
-            for(FormatStyle formatStyle : new FormatStyle[]{FormatStyle.MEDIUM, FormatStyle.SHORT}) {
-                try {
-                    return LocalDate.parse(s, DateTimeFormatter.ofLocalizedDate(formatStyle));
-                } catch (Exception ignored) {
-                }
+            try {
+                return LocalDate.parse(s, ThreadLocalContext.getTFormats().dateParser);
+            } catch (Exception ignored) {
             }
             LocalDateTime result = DateConverter.smartParse(s);
             return result != null ? result.toLocalDate() : null;
@@ -158,7 +158,7 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     }
 
     public String formatString(LocalDate value) {
-        return value == null ? null : value.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT));
+        return value == null ? null : value.format(ThreadLocalContext.getTFormats().dateFormatter);
     }
 
     public String getSID() {

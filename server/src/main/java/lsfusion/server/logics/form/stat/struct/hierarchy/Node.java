@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.struct.hierarchy;
 
 import lsfusion.base.Pair;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 
 // there are two strategies working with hierarchy : JSON - edge-based, и XML - node-based, we'll use edge-based approach, because in xml attr and maps are also more edge-based then node-based  
@@ -23,5 +24,5 @@ public interface Node<T extends Node<T>> {
     
     void addValue(T node, String key, boolean attr, Object value, Type type); // property
 
-    boolean addMap(T node, String key, boolean isIndex, Iterable<Pair<Object, T>> map); // group object
+    boolean addMap(T node, String key, boolean isIndex, Iterable<Pair<Pair<Object, DataClass>, T>> map); // group object
 }

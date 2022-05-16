@@ -6,6 +6,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import org.apache.commons.io.IOUtils;
@@ -245,18 +246,18 @@ public class XMLNode implements Node<XMLNode> {
         }
     }
 
-    public boolean addMap(XMLNode node, String key, boolean isIndex, Iterable<Pair<Object, XMLNode>> map) {
+    public boolean addMap(XMLNode node, String key, boolean isIndex, Iterable<Pair<Pair<Object, DataClass>, XMLNode>> map) {
         boolean isNotEmpty = false;
         if(isIndex) {
-            for(Pair<Object, XMLNode> value : map) {
+            for(Pair<Pair<Object, DataClass>, XMLNode> value : map) {
                 isNotEmpty = true;
                 addXMLChild(node.element, tag != null ? tag : key, value.second.element);
             }
         } else {
             isNotEmpty = true;
             Element addElement = new Element(tag != null ? tag : key);
-            for(Pair<Object, XMLNode> value : map) { // we don't support namespaces in getMap, so won't support it here
-                value.second.element.setName((String) value.first);                    
+            for(Pair<Pair<Object, DataClass>, XMLNode> value : map) { // we don't support namespaces in getMap, so won't support it here
+                value.second.element.setName(value.first.second.formatXML(value.first.first));
                 addElement.addContent(value.second.element);
             }
             node.element.addContent(addElement); // need to support namespaces, but it is not used for now

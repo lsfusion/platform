@@ -5,6 +5,7 @@ import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -39,7 +40,7 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
 
     public final static ZDateTimeClass instance = new ZDateTimeClass();
 
-    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
+//    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
@@ -59,7 +60,7 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
         super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
-        reportField.pattern = dateTimePattern;
+        reportField.pattern = ThreadLocalContext.getTFormats().zDateTimePattern;
     }
 
     public byte getTypeID() {
@@ -153,7 +154,7 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
     public Instant parseString(String s) throws ParseException {
         try {
             try {
-                return ZonedDateTime.parse(s, DateTimeFormatter.ISO_DATE_TIME).toInstant();
+                return ZonedDateTime.parse(s, ThreadLocalContext.getTFormats().zDateTimeParser).toInstant();
             } catch (DateTimeParseException ignored) {
             }
             return DateConverter.smartParseInstant(s);
@@ -164,7 +165,7 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
 
     @Override
     public String formatString(Instant value) {
-        return value == null ? null : DateTimeFormatter.ISO_INSTANT.format(value);
+        return value == null ? null : ThreadLocalContext.getTFormats().zDateTimeFormatter.format(value);
     }
 
     public String getSID() {

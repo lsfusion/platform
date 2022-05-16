@@ -1,5 +1,6 @@
 package lsfusion.client.classes.data;
 
+import lsfusion.base.DateConverter;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
@@ -10,8 +11,13 @@ import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
+import java.text.Format;
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
@@ -32,9 +38,18 @@ public class ClientZDateTimeClass extends ClientDateTimeClass {
         return new ZDateTimePropertyEditor(value, getEditFormat(property), property);
     }
 
+    @Override
+    public Format getDefaultFormat() {
+        return MainFrame.tFormats.zDateTime;
+    }
+
     public Instant parseString(String s) throws ParseException {
         try {
-            return sqlTimestampToInstant(dateToStamp((Date) MainFrame.dateTimeFormat.parseObject(s)));
+            try {
+                return ZonedDateTime.parse(s, MainFrame.tFormats.zDateTimeParser).toInstant();
+            } catch (DateTimeParseException ignored) {
+            }
+            return DateConverter.smartParseInstant(s);
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
@@ -42,7 +57,7 @@ public class ClientZDateTimeClass extends ClientDateTimeClass {
 
     @Override
     public String formatString(Object obj) {
-        return obj != null ? MainFrame.dateTimeFormat.format(instantToSqlTimestamp((Instant) obj)) : "";
+        return obj != null ? MainFrame.tFormats.zDateTimeFormatter.format((Instant) obj) : "";
     }
 
     @Override

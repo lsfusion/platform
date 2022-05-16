@@ -5,6 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.imports.hierarchy.json.JSONReader;
@@ -132,18 +133,18 @@ public class JSONNode implements Node<JSONNode> {
         return obj;
     }
 
-    public boolean addMap(JSONNode node, String key, boolean isIndex, Iterable<Pair<Object, JSONNode>> map) {
+    public boolean addMap(JSONNode node, String key, boolean isIndex, Iterable<Pair<Pair<Object, DataClass>, JSONNode>> map) {
         try {
             Object addObject;
             if(isIndex) {
                 JSONArray array = new JSONArray();
-                for(Pair<Object, JSONNode> value : map)
+                for(Pair<Pair<Object, DataClass>, JSONNode> value : map)
                     array.put(putJSONNode(value.second, true));
                 addObject = array;
             } else {
                 JSONObject object = new OrderedJSONObject();
-                for(Pair<Object, JSONNode> value : map)
-                    object.put((String) value.first, putJSONNode(value.second, true));
+                for(Pair<Pair<Object, DataClass>, JSONNode> value : map)
+                    object.put(value.first.second.formatJSON(value.first.first).toString(), putJSONNode(value.second, true));
                 addObject = object;
             }                
             node.element.put(key, addObject);

@@ -1221,7 +1221,7 @@ public class ClientFormController implements AsyncListener {
             for (int i = 0; i < propertyColumns; i++) {
                 ClientPropertyDraw property = propertyList.get(i);
                 String sCell = i < sRow.size() ? sRow.get(i) : null;
-                Object oCell = sCell == null ? null : property.parseChangeValueOrNull(sCell);
+                Object oCell = sCell == null ? null : property.parsePaste(sCell);
                 valueRow.add(serializeObject(oCell));
             }
             values.add(valueRow);

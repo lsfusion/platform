@@ -5,6 +5,7 @@ import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -36,7 +37,7 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
     public final static DateTimeClass instance = new DateTimeClass();
 
-    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
+//    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
@@ -57,7 +58,7 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
         super.fillReportDrawField(reportField);
 
         reportField.alignment = HorizontalTextAlignEnum.RIGHT;
-        reportField.pattern = dateTimePattern;
+        reportField.pattern = ThreadLocalContext.getTFormats().dateTimePattern; // dateTimePattern;
     }
 
     public byte getTypeID() {
@@ -152,15 +153,9 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
     public LocalDateTime parseString(String s) throws ParseException {
         try {
-            //try to parse with default locale formats
-            FormatStyle[] formatStyles = new FormatStyle[]{FormatStyle.SHORT, FormatStyle.MEDIUM};
-            for(FormatStyle dateStyle : formatStyles) {
-                for(FormatStyle timeStyle : formatStyles) {
-                    try {
-                        return LocalDateTime.parse(s, DateTimeFormatter.ofLocalizedDateTime(dateStyle, timeStyle));
-                    } catch (DateTimeParseException ignored) {
-                    }
-                }
+            try {
+                return LocalDateTime.parse(s, ThreadLocalContext.getTFormats().dateTimeParser);
+            } catch (DateTimeParseException ignored) {
             }
             return DateConverter.smartParse(s);
         } catch (Exception e) {
@@ -170,7 +165,7 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
     @Override
     public String formatString(LocalDateTime value) {
-        return value == null ? null : value.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM));
+        return value == null ? null : value.format(ThreadLocalContext.getTFormats().dateTimeFormatter);
     }
 
     public String getSID() {

@@ -16,6 +16,7 @@ import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.base.log.StringDebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;
@@ -180,6 +181,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     private String setLanguage;
     private String setCountry;
 
+    private Integer twoDigitYearStart;
+    private String dateFormat;
+    private String timeFormat;
+
+    public TFormats tFormats;
+
     private LocalizedString.Localizer localizer;
     
     private PublicTask initTask;
@@ -303,6 +310,18 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         this.initTask = initTask;
     }
 
+    public void setTwoDigitYearStart(Integer twoDigitYearStart) {
+        this.twoDigitYearStart = twoDigitYearStart;
+    }
+
+    public void setDateFormat(String dateFormat) {
+        this.dateFormat = dateFormat;
+    }
+
+    public void setTimeFormat(String timeFormat) {
+        this.timeFormat = timeFormat;
+    }
+
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(initTask, "initTask must be specified");
@@ -323,7 +342,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 if (timeZone != null) {
                     TimeZone.setDefault(timeZone);
                 }
-                
+
+                tFormats = new TFormats(twoDigitYearStart,
+                        dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
+                        timeFormat != null ? timeFormat : BaseUtils.getTimePattern());
+
                 new TaskRunner(this).runTask(initTask, startLogger);
             } catch (RuntimeException re) {
                 throw re;

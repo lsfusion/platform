@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -179,6 +180,11 @@ public class DateConverter {
         dateString = dateString.trim();
         if(dateString.isEmpty())
             return null;
+
+        try {
+            return ZonedDateTime.parse(dateString, DateTimeFormatter.ISO_DATE_TIME).toInstant();
+        } catch (DateTimeParseException ignored) {
+        }
 
         for (String regexp : ZONED_DATETIME_FORMAT_REGEXPS.keySet()) {
             if (dateString.toLowerCase().matches(regexp)) {

@@ -22,6 +22,7 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -49,7 +50,6 @@ import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -127,6 +127,8 @@ public abstract class MainFrame extends JFrame {
 
             setupTimePreferences(localePreferences);
 
+            setupFormattableDates();
+
             setUIFontSize();
 
             logger.info("Before init frame");
@@ -164,9 +166,8 @@ public abstract class MainFrame extends JFrame {
 
     // time
     
-    public static DateFormat dateFormat;
-    public static DateFormat timeFormat;
-    public static DateFormat dateTimeFormat;
+    public static TFormats tFormats;
+
     public static Date wideFormattableDate;
     public static Date wideFormattableDateTime;
     public static BigDecimal wideFormattableDateTimeInterval;
@@ -178,27 +179,10 @@ public abstract class MainFrame extends JFrame {
             TimeZone.setDefault(timeZone);
         }
 
-        Date twoDigitYearStartDate = null;
-        if (localePreferences.twoDigitYearStart != null) {
-            GregorianCalendar c = new GregorianCalendar(localePreferences.twoDigitYearStart, Calendar.JANUARY, 1);
-            twoDigitYearStartDate = c.getTime();
-        }
+        tFormats = new TFormats(localePreferences.twoDigitYearStart, localePreferences.dateFormat, localePreferences.timeFormat);
+    }
 
-        //dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-        dateFormat = new SimpleDateFormat(localePreferences.dateFormat);
-        if (twoDigitYearStartDate != null) {
-            ((SimpleDateFormat) dateFormat).set2DigitYearStart(twoDigitYearStartDate);
-        }
-
-        //timeFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
-        timeFormat = new SimpleDateFormat(localePreferences.timeFormat);
-
-        //dateTimeFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
-        dateTimeFormat = new SimpleDateFormat(localePreferences.dateFormat + " " + localePreferences.timeFormat);
-        if (twoDigitYearStartDate != null) {
-            ((SimpleDateFormat) dateTimeFormat).set2DigitYearStart(twoDigitYearStartDate);
-        }
-
+    private static void setupFormattableDates() {
         wideFormattableDate = createWideFormattableDate();
         wideFormattableDateTime = createWideFormattableDate();
         wideFormattableDateTimeInterval = createWideFormattableDateTimeInterval();

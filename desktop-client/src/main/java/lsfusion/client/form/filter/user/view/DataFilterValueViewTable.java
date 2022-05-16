@@ -8,7 +8,6 @@ import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.async.ClientInputListAction;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
@@ -79,7 +78,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
             List<String> row = table.get(0);
             if (!row.isEmpty()) {
                 try {
-                    setValueAt(getProperty().parseBaseValue(row.get(0)), 0, 0);
+                    setValueAt(getProperty().parseBasePaste(row.get(0)), 0, 0);
                 } catch (ParseException ignored) {
                 }
             }

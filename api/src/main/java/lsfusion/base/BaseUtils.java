@@ -2320,7 +2320,7 @@ public class BaseUtils {
     }
 
     public static String getTimePattern() {
-        return getSystemDateFormat(DateFormat.MEDIUM, false);
+        return getSystemDateFormat(DateFormat.SHORT, false);
     }
 
     public static Locale defaultFormatLocale;
@@ -2332,7 +2332,7 @@ public class BaseUtils {
             return ((SimpleDateFormat) (date ? provider.getDateInstance(style, locale) : provider.getTimeInstance(style, locale))).toPattern();
         } catch(Exception e) {
             //openJDK has no getDateFormatProvider method
-            return ((SimpleDateFormat) (date ? DateFormat.getDateInstance(DateFormat.SHORT) : DateFormat.getTimeInstance(DateFormat.MEDIUM))).toPattern();
+            return ((SimpleDateFormat) (date ? DateFormat.getDateInstance(DateFormat.SHORT) : DateFormat.getTimeInstance(DateFormat.SHORT))).toPattern();
         }
     }
 
