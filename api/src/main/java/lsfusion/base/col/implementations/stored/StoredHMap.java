@@ -151,9 +151,7 @@ public class StoredHMap<K, V> extends AMRevMap<K, V> {
 
     @Override
     public ImOrderMap<K, V> toOrderMap() {
-        // todo [dale]: uncomment
-//        return new StoredHOrderMap<>(this);
-        return null;
+        return new StoredHOrderMap<>(this);
     }
 
     @Override

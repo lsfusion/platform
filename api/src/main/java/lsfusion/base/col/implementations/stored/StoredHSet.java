@@ -129,9 +129,7 @@ public class StoredHSet<T> extends AMSet<T> {
 
     @Override
     public ImOrderSet<T> toOrderSet() {
-        // todo [dale]: uncomment
-        // return new StoredHOrderSet<>(this);
-        return null;
+        return new StoredHOrderSet<>(this);
     }
 
     public StoredArray<T> getTable() {
