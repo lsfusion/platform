@@ -48,11 +48,11 @@ public class NewThreadAction extends AroundAspectAction {
         }
     }
 
-    // in theory we can also pass Thread, and then add ExecutionStackAspect.getStackString to message (to get multi thread stacj)
+    // in theory we can also pass Thread, and then add ExecutionStackAspect.getStackString to message (to get multi thread stack)
     @StackNewThread
     @StackMessage("NEWTHREAD")
     @ThisMessage
-    protected void run(ExecutionContext<PropertyInterface> context, @ParamMessage (profile = false) LazyThreadStack callThreadStack) {
+    protected void run(ExecutionContext<PropertyInterface> context) { //, @ParamMessage (profile = false) String callThreadStack) {
         try {
             proceed(context);
         } catch (Throwable t) {
@@ -61,28 +61,14 @@ public class NewThreadAction extends AroundAspectAction {
         }
     }
 
-    private static class LazyThreadStack {
-
-        private final Thread thread;
-
-        public LazyThreadStack(Thread thread) {
-            this.thread = thread;
-        }
-
-        @Override
-        public String toString() {
-            return ExecutionStackAspect.getLSFStack(thread);
-        }
-    }
-
     @Override
     protected FlowResult aroundAspect(final ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        Thread callThread = Thread.currentThread();
+//        String callThread = ExecutionStackAspect.getStackString();
         if (connectionProp != null) {
             ObjectValue connectionObject = connectionProp.readClasses(context);
             if(connectionObject instanceof DataObject)
                 context.getNavigatorsManager().pushNotificationCustomUser((DataObject) connectionObject,
-                        (env, stack) -> run(context.override(env, stack), new LazyThreadStack(callThread)));
+                        (env, stack) -> run(context.override(env, stack))); //, callThread));
         } else {
             context.getSession().registerThreadStack();
             Long delay = delayProp != null ? ((Number) delayProp.read(context, context.getKeys())).longValue() : 0L;
@@ -91,7 +77,7 @@ public class NewThreadAction extends AroundAspectAction {
             Runnable runContext = () -> {
                 ExecutionStack stack = ThreadLocalContext.getStack();
                 try {
-                    run(context.override(stack), new LazyThreadStack(callThread));
+                    run(context.override(stack)); //, callThread);
                 } finally {
                     if (periodProp == null) {
                         try {
