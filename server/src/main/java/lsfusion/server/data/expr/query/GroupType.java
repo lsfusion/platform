@@ -4,6 +4,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -15,11 +16,9 @@ import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.GroupProperty;
 import lsfusion.server.logics.property.set.MaxGroupProperty;
@@ -226,7 +225,7 @@ public enum GroupType implements AggrType {
 
     public Type getType(Type exprType) {
         if(this==CONCAT)
-            return ((StringClass)exprType).extend(10);
+            StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);
         assert this != SUM || exprType instanceof IntegralClass;
 
         return exprType;
