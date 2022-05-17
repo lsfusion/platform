@@ -78,12 +78,14 @@
     display: flex;
     justify-content: start;
     align-items: center;
+    max-width: 50%;
 }
 
 .property-toolbar-end {
     display: flex;
     justify-content: end;
     align-items: center;
+    max-width: 50%;
 }
 
 .wrap-wrapimgdiv {
