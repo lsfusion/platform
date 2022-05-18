@@ -4,11 +4,13 @@ import com.google.common.base.Throwables;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ClientWebAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -27,11 +29,13 @@ public class WebClientAction extends SystemAction {
     private final String resourceName;
     private final boolean isFile;
     private final boolean syncType;
+    private final ImList<LP> targetPropList;
 
-    public WebClientAction(String resourceName, int size, boolean isFile, boolean syncType) {
+    public WebClientAction(String resourceName, int size, boolean isFile, boolean syncType, ImList<LP> targetPropList) {
         super(LocalizedString.create("Web client"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
         this.isFile = isFile;
         this.syncType = syncType;
+        this.targetPropList = targetPropList;
 
         if(isFile) {
             Result<String> fullPath = new Result<>();
@@ -61,8 +65,11 @@ public class WebClientAction extends SystemAction {
         }
 
         ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, isFile, syncType);
-        if (syncType)
-            context.requestUserInteraction(clientWebAction);
+        if (syncType) {
+            Object result = context.requestUserInteraction(clientWebAction);
+            for (int i = 0; i < targetPropList.size(); i++)
+                targetPropList.get(i).change(result, context);
+        }
         else
             context.delayUserInteraction(clientWebAction);
 

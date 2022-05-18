@@ -3596,40 +3596,25 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 internalContextActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     InternalFormat format = null;
-
-    //DB
-    LPWithParams exec = null;
     List<LPWithParams> params = new ArrayList<>();
-
-    //CLIENT
-    List<String> classes = null;
-    boolean syncType = false;
-
 }
 @after {
 	if (inMainParseState()) {
       if(format == InternalFormat.DB) {
-        $action = self.addScriptedInternalDBAction(exec, params, context, $tl.propUsages);
+        $action = self.addScriptedInternalDBAction($execProp.property, params, context, $tl.propUsages);
       } else if(format == InternalFormat.CLIENT) {
-        $action = new LAWithParams(self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0, syncType), new ArrayList());
+        $action = self.addScriptedInternalClientAction($execStr.val, params, $tl.propUsages);
       }
 	}
 }
 	:	'INTERNAL'
 	    (
-            (
-                'DB' { format = InternalFormat.DB; }
-                execVal = propertyExpression[context, dynamic] { exec = $execVal.property; }
-                ('PARAMS' exprList=propertyExpressionList[context, dynamic] { params = $exprList.props; } )?
-                ('TO' tl = nonEmptyPropertyUsageList)?
-            )
+            ( 'DB' { format = InternalFormat.DB; } execProp = propertyExpression[context, dynamic] )
         |
-            (
-                'CLIENT' { format = InternalFormat.CLIENT; }
-                (sync = syncTypeLiteral { syncType = $sync.val; })?
-                classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
-            )
+            ( 'CLIENT' { format = InternalFormat.CLIENT; } execStr = stringLiteral )
         )
+        ('PARAMS' exprList=propertyExpressionList[context, dynamic] { params = $exprList.props; } )?
+        ('TO' tl = nonEmptyPropertyUsageList)?
 	;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

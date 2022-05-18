@@ -346,28 +346,30 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     private class JSExecutor {
         private final List<GClientWebAction> actions = new ArrayList<>();
 
-        public void addAction(GClientWebAction action) {
+        public Object addAction(GClientWebAction action) {
             if (action.syncType)
                 pauseDispatching();
 
             if (action.resource != null) {
                 actions.add(action);
-                flush();
+                return flush();
             } else {
                 GwtClientUtils.consoleError("Resource load error: " + action.resourceName);
             }
+            return null;
         }
 
         private boolean isExecuting = false;
-        private void flush() {
+        private Object flush() {
             if (!isExecuting && !actions.isEmpty()) {
                 GClientWebAction action = actions.get(0);
                 isExecuting = true;
                 if (action.isFile)
                     executeFile(action);
                 else
-                    executeJSFunction(action);
+                    return executeJSFunction(action);
             }
+            return null;
         }
 
         private void executeFile(GClientWebAction action) {
@@ -418,25 +420,26 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             flush();
         }
 
-        private void executeJSFunction(GClientWebAction action) {
+        private Object executeJSFunction(GClientWebAction action) {
             JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
             ArrayList<Object> types = action.types;
             for (int i = 0; i < types.size(); i++) {
                 arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), action.values.get(i)));
             }
             String function = action.resource;
-            GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
+            JavaScriptObject result = GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
             // todo: convert result back with convertFromJSValue (type should be get from the server)
             onActionExecuted(action);
+            return result;
         }
     }
 
     private JSExecutor jsExecutor;
     @Override
-    public void execute(GClientWebAction action) {
+    public Object execute(GClientWebAction action) {
         if (jsExecutor == null)
             jsExecutor = new JSExecutor();
-        jsExecutor.addAction(action);
+        return jsExecutor.addAction(action);
     }
 
     @Override

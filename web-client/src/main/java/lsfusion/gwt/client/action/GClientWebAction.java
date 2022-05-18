@@ -2,7 +2,7 @@ package lsfusion.gwt.client.action;
 
 import java.util.ArrayList;
 
-public class GClientWebAction extends GExecuteAction {
+public class GClientWebAction implements GAction {
 
     public String resource;
     public String resourceName;
@@ -24,7 +24,7 @@ public class GClientWebAction extends GExecuteAction {
     }
 
     @Override
-    public void execute(GActionDispatcher dispatcher) throws Throwable {
-        dispatcher.execute(this);
+    public Object dispatch(GActionDispatcher dispatcher) throws Throwable {
+        return dispatcher.execute(this);
     }
 }
