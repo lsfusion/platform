@@ -4,12 +4,10 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
 import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 import static lsfusion.base.DateConverter.epochToLocalDateTime;
 import static lsfusion.base.DateConverter.localDateTimeToUTCEpoch;

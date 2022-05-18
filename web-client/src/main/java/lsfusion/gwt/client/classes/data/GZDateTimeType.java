@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
@@ -9,10 +8,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.ZDateTimeCellEd
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 
-import java.text.ParseException;
 import java.util.Date;
-
-import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
 public class GZDateTimeType extends GDateTimeType {
     public static GZDateTimeType instance = new GZDateTimeType();

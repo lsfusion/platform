@@ -18,7 +18,7 @@ public class GDateTimeType extends GADateType {
     public static GDateTimeType instance = new GDateTimeType();
 
     @Override
-    protected com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern, boolean edit) {
+    public com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern, boolean edit) {
         return getDateTimeFormat(pattern, edit);
     }
 

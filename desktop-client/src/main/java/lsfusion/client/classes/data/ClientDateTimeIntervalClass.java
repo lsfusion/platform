@@ -1,6 +1,5 @@
 package lsfusion.client.classes.data;
 
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
 import java.text.ParseException;

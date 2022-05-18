@@ -19,7 +19,7 @@ public class GTimeType extends GADateType {
     public static GTimeType instance = new GTimeType();
 
     @Override
-    protected DateTimeFormat getFormat(String pattern, boolean edit) {
+    public DateTimeFormat getFormat(String pattern, boolean edit) {
         return GwtSharedUtils.getTimeFormat(pattern);
     }
 

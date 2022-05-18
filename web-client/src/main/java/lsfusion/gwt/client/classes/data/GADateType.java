@@ -44,7 +44,7 @@ public abstract class GADateType extends GFormatType {
         return new DateTimeFormat[] {getFormat(pattern, edit)};
     }
 
-    protected abstract DateTimeFormat getFormat(String pattern, boolean edit);
+    public abstract DateTimeFormat getFormat(String pattern, boolean edit);
 
     public abstract Object fromDate(Date date);
 
