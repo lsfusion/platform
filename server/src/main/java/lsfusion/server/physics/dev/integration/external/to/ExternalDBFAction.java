@@ -35,7 +35,7 @@ import java.util.List;
 
 import static lsfusion.base.BaseUtils.substring;
 
-public class ExternalDBFAction extends ExternalAction {
+public class ExternalDBFAction extends CallAction {
     private PropertyInterface connectionString;
 
     private String charset;

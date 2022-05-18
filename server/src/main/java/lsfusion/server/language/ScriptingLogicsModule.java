@@ -1922,6 +1922,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         throw new UnsupportedOperationException("EXTERNAL JAVA not supported");
     }
 
+    public LAWithParams addScriptedInternalDBAction(LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new InternalDBAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
+                BaseUtils.addList(exec, params));
+    }
+
     public LAWithParams addScriptedExternalDBAction(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         return addScriptedJoinAProp(addAProp(new ExternalDBAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
                 BaseUtils.mergeList(Arrays.asList(connectionString, exec), params));

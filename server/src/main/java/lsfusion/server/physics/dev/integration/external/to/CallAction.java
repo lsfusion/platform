@@ -24,7 +24,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 
-public abstract class ExternalAction extends SystemAction {
+public abstract class CallAction extends SystemAction {
 
     protected ImOrderSet<PropertyInterface> paramInterfaces;
     protected ImMap<PropertyInterface, Type> paramTypes;
@@ -39,7 +39,7 @@ public abstract class ExternalAction extends SystemAction {
         return "qxprm" + prmID + "nx";
     }
 
-    public ExternalAction(int exParams, ImList<Type> params, ImList<LP> targetPropList) {
+    public CallAction(int exParams, ImList<Type> params, ImList<LP> targetPropList) {
         super(LocalizedString.NONAME, SetFact.toOrderExclSet(params.size() + exParams, i -> new PropertyInterface()));
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
         this.paramInterfaces = orderInterfaces.subOrder(exParams, orderInterfaces.size());

@@ -42,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ExternalHTTPAction extends ExternalAction {
+public class ExternalHTTPAction extends CallAction {
     boolean clientAction;
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;

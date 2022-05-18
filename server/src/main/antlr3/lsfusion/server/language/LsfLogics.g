@@ -82,6 +82,7 @@ grammar LsfLogics;
     import lsfusion.server.physics.dev.debug.DebugInfo;
     import lsfusion.server.physics.dev.debug.PropertyFollowsDebug;
     import lsfusion.server.physics.dev.i18n.LocalizedString;
+    import lsfusion.server.physics.dev.integration.internal.to.InternalFormat;
     import lsfusion.server.physics.dev.integration.external.to.ExternalFormat;
     import lsfusion.interop.session.ExternalHttpMethod;
     import lsfusion.server.physics.dev.integration.external.to.mail.AttachmentFormat;
@@ -3197,6 +3198,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $action = $activeFormADB.action; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $action = $activateADB.action; }
 	|	expandCollapseADB=expandCollapseActionDefinitionBody[context, dynamic] { $action = $expandCollapseADB.action; }
+    |   internalADB=internalContextActionDefinitionBody[context, dynamic] { $action = $internalADB.action;}
     |   externalADB=externalActionDefinitionBody[context, dynamic] { $action = $externalADB.action;}
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
@@ -3589,6 +3591,45 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 		|   code = codeLiteral
         )
 	    ('NULL' { allowNullValue = true; })?
+	;
+
+internalContextActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+    InternalFormat format = null;
+
+    //DB
+    LPWithParams exec = null;
+    List<LPWithParams> params = new ArrayList<>();
+
+    //CLIENT
+    List<String> classes = null;
+    boolean syncType = false;
+
+}
+@after {
+	if (inMainParseState()) {
+      if(format == InternalFormat.DB) {
+        $action = self.addScriptedInternalDBAction(exec, params, context, $tl.propUsages);
+      } else if(format == InternalFormat.CLIENT) {
+        $action = new LAWithParams(self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0, syncType), new ArrayList());
+      }
+	}
+}
+	:	'INTERNAL'
+	    (
+            (
+                'DB' { format = InternalFormat.DB; }
+                execVal = propertyExpression[context, dynamic] { exec = $execVal.property; }
+                ('PARAMS' exprList=propertyExpressionList[context, dynamic] { params = $exprList.props; } )?
+                ('TO' tl = nonEmptyPropertyUsageList)?
+            )
+        |
+            (
+                'CLIENT' { format = InternalFormat.CLIENT; }
+                (sync = syncTypeLiteral { syncType = $sync.val; })?
+                classN = stringLiteral ('(' cls=classIdList ')' { classes = $cls.ids; })?
+            )
+        )
 	;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
