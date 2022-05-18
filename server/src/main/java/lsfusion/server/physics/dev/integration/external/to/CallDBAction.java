@@ -22,6 +22,7 @@ import lsfusion.server.data.type.parse.AbstractParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.FlowResult;
@@ -56,8 +57,9 @@ public abstract class CallDBAction extends CallAction {
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         String replacedParams = connectionString != null ? replaceParams(context, getTransformedText(context, connectionString)) : null;
 
-        String exec = getTransformedText(context, this.exec);
+        String exec = (String) context.getKeyObject(this.exec);
         boolean isFile = exec.endsWith(".sql");
+        exec = ScriptingLogicsModule.transformFormulaText(exec, getParamName("$1"));
         if(isFile) {
             try {
                 RawFileData resourceFile = ResourceUtils.findResourceAsFileData(exec, false, false, null, null);

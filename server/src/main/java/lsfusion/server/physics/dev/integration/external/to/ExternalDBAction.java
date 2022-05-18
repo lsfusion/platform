@@ -39,7 +39,7 @@ public class ExternalDBAction extends CallDBAction {
         ExConnection exConn = null;
         boolean prevReadOnly = false;
         Connection conn;
-        if(isLocalDB) {
+        if(isLocalDB) { //deprecated, use INTERNAL DB
             DataAdapter adapter = dbManager.getAdapter();
             syntax = adapter.syntax;
             connOwner = new MutableObject();
