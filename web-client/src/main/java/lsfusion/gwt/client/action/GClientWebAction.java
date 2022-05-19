@@ -14,6 +14,8 @@ public class GClientWebAction implements GAction {
     public boolean isFile;
     public boolean syncType;
 
+    public transient Object execResult;
+
     @SuppressWarnings("UnusedDeclaration")
     public GClientWebAction() {}
 
