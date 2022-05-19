@@ -25,8 +25,18 @@ import static lsfusion.base.BaseUtils.serializeObject;
 
 public class InternalClientAction extends CallAction {
 
-    public InternalClientAction(ImList<Type> params, ImList<LP> targetPropList) {
-        super(1, params, targetPropList);
+    private final boolean syncType;
+    @Deprecated
+    private final String resourceName;
+
+    public InternalClientAction(ImList<Type> params, ImList<LP> targetPropList, boolean syncType) {
+        this(params, targetPropList, syncType, null, null);
+    }
+
+    public InternalClientAction(ImList<Type> params, ImList<LP> targetPropList, boolean syncType, String resourceName, ImList<Type> types) {
+        super(resourceName != null ? 0 : 1,  resourceName != null ? types : params, targetPropList);
+        this.syncType = syncType;
+        this.resourceName = resourceName;
     }
 
     @Override
@@ -38,11 +48,11 @@ public class InternalClientAction extends CallAction {
         LP targetProp = targetPropList.isEmpty() ? null : targetPropList.get(0);
 
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
-        String exec = (String) context.getKeyObject(orderInterfaces.get(0));
+        String exec = resourceName != null ? resourceName : (String) context.getKeyObject(orderInterfaces.get(0));
         boolean isFile = exec.endsWith(".js") || exec.endsWith(".css");
 
         try {
-            for (int i = 1; i < orderInterfaces.size(); i++) {
+            for (int i = resourceName != null ? 0 : 1; i < orderInterfaces.size(); i++) {
                 PropertyInterface orderInterface = orderInterfaces.get(i);
                 ObjectValue objectValue = context.getKeys().get(orderInterface);
                 values.add(serializeObject(objectValue.getValue()));
@@ -66,11 +76,13 @@ public class InternalClientAction extends CallAction {
             resourceName = exec;
         }
 
-
-        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, returnType, isFile, true);
-        Object result = context.requestUserInteraction(clientWebAction);
-        if(targetProp != null)
-            targetProp.change(result, context);
+        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, returnType, isFile, syncType);
+        if (syncType) {
+            Object result = context.requestUserInteraction(clientWebAction);
+            if(targetProp != null)
+                targetProp.change(result, context);
+        } else
+            context.delayUserInteraction(clientWebAction);
 
         return FlowResult.FINISH;
     }

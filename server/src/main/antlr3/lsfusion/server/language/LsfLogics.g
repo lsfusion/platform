@@ -3574,7 +3574,7 @@ internalActionDefinitionBody[List<TypedParameter> context] returns [LA action, L
 	    List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
 
         if(clientAction)
-            $action = self.addScriptedInternalClientAction($classN.val, classes != null ? classes.size() : 0, syncType);
+            $action = self.addScriptedInternalClientAction($classN.val, classes, syncType);
         else if($code.val == null)
 	        $action = self.addScriptedInternalAction($classN.val, classes, contextParams, allowNullValue);
 	    else
@@ -3598,17 +3598,23 @@ internalContextActionDefinitionBody [List<TypedParameter> context, boolean dynam
     InternalFormat format = null;
     List<LPWithParams> params = new ArrayList<>();
     List<NamedPropertyUsage> toList = new ArrayList<>();
+    boolean syncType = false;
 }
 @after {
 	if (inMainParseState()) {
       if(format == InternalFormat.DB) {
         $action = self.addScriptedInternalDBAction($execProp.property, params, context, toList);
       } else if(format == InternalFormat.CLIENT) {
-        $action = self.addScriptedInternalClientAction($execProp.property, params, context, toList);
+        $action = self.addScriptedInternalClientAction($execProp.property, params, context, toList, syncType);
       }
 	}
 }
-	:	'INTERNAL' ( 'DB' { format = InternalFormat.DB; } | 'CLIENT' { format = InternalFormat.CLIENT; } )
+	:	'INTERNAL'
+	    (
+	        ( 'DB' { format = InternalFormat.DB; } )
+	    |
+	        ( 'CLIENT' { format = InternalFormat.CLIENT; } (sync = syncTypeLiteral { syncType = $sync.val; })? )
+	    )
         execProp = propertyExpression[context, dynamic]
         ('PARAMS' exprList=propertyExpressionList[context, dynamic] { params = $exprList.props; } )?
         ('TO' tl = nonEmptyPropertyUsageList { toList = $tl.propUsages; } )?
