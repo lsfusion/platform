@@ -89,10 +89,6 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
     }
 
-    protected void setInputValue(InputElement element, Object value) {
-        setInputValue(element, tryFormatInputText(value));
-    }
-
     private void setInputValue(InputElement element, String value) {
         element.setValue(value);
     }

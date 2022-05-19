@@ -15,7 +15,7 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
     private final GIntervalType type;
 
     public IntervalCellEditor(EditManager editManager, GPropertyDraw property, String intervalType, GIntervalType type) {
-        super(editManager, property, false);
+        super(editManager, property);
         this.intervalType = intervalType;
         this.type = type;
     }
@@ -53,6 +53,11 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
     @Override
     protected Object getInputValue() {
         return type.fromDate(GwtClientUtils.fromJsDate(getPickerStartDate()), GwtClientUtils.fromJsDate(getPickerEndDate()));
+    }
+
+    @Override
+    protected boolean isSinglePicker() {
+        return false;
     }
 
     @Override

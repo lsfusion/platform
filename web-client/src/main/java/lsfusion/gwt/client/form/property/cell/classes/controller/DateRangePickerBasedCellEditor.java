@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.core.client.JsDate;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.SimplePanel;
+import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -11,11 +12,8 @@ import java.text.ParseException;
 
 public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellEditor implements FormatCellEditor {
 
-    private final boolean isSinglePicker;
-
-    public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property, boolean isSinglePicker) {
+    public DateRangePickerBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         super(editManager, property);
-        this.isSinglePicker = isSinglePicker;
     }
 
     @Override
@@ -25,9 +23,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     }
 
     protected void pickerApply(Element parent) {
-        setInputValue(getInputValue());
-        popup.hide();
-        commit(parent, CommitReason.BLURRED);
+        //when auto-apply selects a date, at the end a mousedown occurs and takes the focus to a nothing
+        SmartScheduler.getInstance().scheduleDeferred(true, () -> commitValue(parent, getInputValue()));
     }
 
     private boolean commit = false;
@@ -53,7 +50,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     @Override
     public SimplePanel createPopupComponent(Element parent, Object oldValue) {
         assert oldValue != null;
-        createPicker(parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker, isTimeEditor(), isDateEditor());
+        createPicker(parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
 
         popup.setVisible(false);
         popup.addAutoHidePartner(getPickerElement());
@@ -67,6 +64,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected abstract boolean isTimeEditor();
     protected abstract boolean isDateEditor();
     protected abstract Object getInputValue();
+    protected abstract boolean isSinglePicker();
 
     protected native void removePicker()/*-{
         $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').remove();
@@ -96,7 +94,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
         //Must be called before the picker is initialised, or its events will be triggered earlier
         editElement.on('keydown.daterangepicker', function (e) {
-            if (("key" in e && e.key === "Escape" || e.key === "Esc") || e.keyCode === 27) {
+            if (e.keyCode === 27) {
                 thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
             } else if ((e.keyCode === 9) || (e.keyCode === 13)) {
                 //For picker does not close on pressing enter. We will close it ourselves in the commit method. stopPropagation() and preventDefault() does not work;
@@ -141,15 +139,15 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
             timePicker24Hour: true,
             showDropdowns: true,
             autoApply: true,
-            ranges: !time && !singleDatePicker ? $wnd.getRanges($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
+            ranges: !time ? $wnd[singleDatePicker ? 'getSingleRanges' : 'getRanges']($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
                 messages.@lsfusion.gwt.client.ClientMessages::yesterday()(),
-                messages.@lsfusion.gwt.client.ClientMessages::last7Days()(),
-                messages.@lsfusion.gwt.client.ClientMessages::last30Days()(),
-                messages.@lsfusion.gwt.client.ClientMessages::thisMonth()(),
-                messages.@lsfusion.gwt.client.ClientMessages::lastMonth()(),
-                messages.@lsfusion.gwt.client.ClientMessages::clear()()): undefined,
+                singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::sevenDaysAgo()() : messages.@lsfusion.gwt.client.ClientMessages::last7Days()(),
+                singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::thirtyDaysAgo()() : messages.@lsfusion.gwt.client.ClientMessages::last30Days()(),
+                singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::monthStart()() : messages.@lsfusion.gwt.client.ClientMessages::thisMonth()(),
+                singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::previousMonthStart()() : messages.@lsfusion.gwt.client.ClientMessages::previousMonth()(),
+                singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::thisYearStart()() : messages.@lsfusion.gwt.client.ClientMessages::thisYear()(),
+                messages.@lsfusion.gwt.client.ClientMessages::clear()()) : undefined,
             singleDatePicker: singleDatePicker,
-            autoUpdateInput: false, // update the parent component only after pressing "apply" and not when hiding
             alwaysShowCalendars: true // need to use with ranges
         });
 
@@ -162,7 +160,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         }
 
         //Return focus to editElement and then we will handle the press of the esc button. Because daterangepicker does not allow to handle events
-        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup', function () {
+        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup change.daterangepicker', function () {
             editElement.focus();
             var input = editElement.get(0);
             input.selectionStart = input.selectionEnd = input.value.length; //To place the cursor at the very end

@@ -14,7 +14,7 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
     protected GADateType type;
 
     public DateCellEditor(GADateType type, EditManager editManager, GPropertyDraw property) {
-        super(editManager, property, true);
+        super(editManager, property);
         this.type = type;
     }
 
@@ -48,7 +48,13 @@ public class DateCellEditor extends DateRangePickerBasedCellEditor {
 
     @Override
     protected Object getInputValue() {
-        return type.fromDate(GwtClientUtils.fromJsDate(getPickerStartDate()));
+        JsDate pickerStartDate = getPickerStartDate();
+        return pickerStartDate != null ? type.fromDate(GwtClientUtils.fromJsDate(pickerStartDate)) : null;
+    }
+
+    @Override
+    protected boolean isSinglePicker() {
+        return true;
     }
 
     @Override
