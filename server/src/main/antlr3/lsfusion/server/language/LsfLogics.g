@@ -3597,24 +3597,21 @@ internalContextActionDefinitionBody [List<TypedParameter> context, boolean dynam
 @init {
     InternalFormat format = null;
     List<LPWithParams> params = new ArrayList<>();
+    List<NamedPropertyUsage> toList = new ArrayList<>();
 }
 @after {
 	if (inMainParseState()) {
       if(format == InternalFormat.DB) {
-        $action = self.addScriptedInternalDBAction($execProp.property, params, context, $tl.propUsages);
+        $action = self.addScriptedInternalDBAction($execProp.property, params, context, toList);
       } else if(format == InternalFormat.CLIENT) {
-        $action = self.addScriptedInternalClientAction($execStr.val, params, $tl.propUsages);
+        $action = self.addScriptedInternalClientAction($execProp.property, params, context, toList);
       }
 	}
 }
-	:	'INTERNAL'
-	    (
-            ( 'DB' { format = InternalFormat.DB; } execProp = propertyExpression[context, dynamic] )
-        |
-            ( 'CLIENT' { format = InternalFormat.CLIENT; } execStr = stringLiteral )
-        )
+	:	'INTERNAL' ( 'DB' { format = InternalFormat.DB; } | 'CLIENT' { format = InternalFormat.CLIENT; } )
+        execProp = propertyExpression[context, dynamic]
         ('PARAMS' exprList=propertyExpressionList[context, dynamic] { params = $exprList.props; } )?
-        ('TO' tl = nonEmptyPropertyUsageList)?
+        ('TO' tl = nonEmptyPropertyUsageList { toList = $tl.propUsages; } )?
 	;
 
 externalActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

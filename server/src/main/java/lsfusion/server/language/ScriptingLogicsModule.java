@@ -1787,7 +1787,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(isFile && paramsCount > 0)
             errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
 
-        return new LA(new WebClientAction(resourceName, paramsCount, isFile, syncType, ListFact.EMPTY()));
+        return new LA(new WebClientAction(resourceName, paramsCount, isFile, syncType));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -1927,13 +1927,12 @@ public class ScriptingLogicsModule extends LogicsModule {
                 BaseUtils.addList(exec, params));
     }
 
-    public LAWithParams addScriptedInternalClientAction(String resourceName, List<LPWithParams> params, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
-        boolean isFile = resourceName.contains(".js") || resourceName.contains(".css");
+    public LAWithParams addScriptedInternalClientAction(LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        if (toPropertyUsageList.size() > 1) {
+            errLog.emitInternalClientActionHasTooMuchToPropertiesError(parser);
+        }
 
-        if(isFile && params.size() > 0)
-            errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
-
-        return addScriptedJoinAProp(new LA(new WebClientAction(resourceName, params.size(), isFile, true, findLPsNoParamsByPropertyUsage(toPropertyUsageList))), params);
+        return addScriptedJoinAProp(addAProp(new InternalClientAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))), BaseUtils.addList(exec, params));
     }
 
     public LAWithParams addScriptedExternalDBAction(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {

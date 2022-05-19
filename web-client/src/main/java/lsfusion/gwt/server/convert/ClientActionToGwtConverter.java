@@ -261,12 +261,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             values.add(deserializeServerValue(actionValues.get(i)));
         }
 
+        GType returnType = action.returnType != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.returnType)) : null;
+
         Object resource = action.resource;
         String resourcePath;
         if(action.isFile)
             resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData)resource);
         else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName,  values, types, action.isFile, action.syncType);
+        return new GClientWebAction(resourcePath, action.resourceName,  values, types, returnType, action.isFile, action.syncType);
     }
 }

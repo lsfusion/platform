@@ -29,13 +29,11 @@ public class WebClientAction extends SystemAction {
     private final String resourceName;
     private final boolean isFile;
     private final boolean syncType;
-    private final ImList<LP> targetPropList;
 
-    public WebClientAction(String resourceName, int size, boolean isFile, boolean syncType, ImList<LP> targetPropList) {
+    public WebClientAction(String resourceName, int size, boolean isFile, boolean syncType) {
         super(LocalizedString.create("Web client"), SetFact.toOrderExclSet(size, i -> new PropertyInterface()));
         this.isFile = isFile;
         this.syncType = syncType;
-        this.targetPropList = targetPropList;
 
         if(isFile) {
             Result<String> fullPath = new Result<>();
@@ -64,12 +62,9 @@ public class WebClientAction extends SystemAction {
             throw Throwables.propagate(e);
         }
 
-        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, isFile, syncType);
-        if (syncType) {
-            Object result = context.requestUserInteraction(clientWebAction);
-            for (int i = 0; i < targetPropList.size(); i++)
-                targetPropList.get(i).change(result, context);
-        }
+        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, null, isFile, syncType);
+        if (syncType)
+            context.requestUserInteraction(clientWebAction);
         else
             context.delayUserInteraction(clientWebAction);
 

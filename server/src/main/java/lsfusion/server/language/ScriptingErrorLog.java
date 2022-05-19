@@ -145,6 +145,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "Calling .js file: INTERNAL CLIENT '" + argument + "' - Should not have arguments. Use arguments only with js function() calling");
     }
 
+    public void emitInternalClientActionHasTooMuchToPropertiesError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "Calling .js file: INTERNAL CLIENT Should have max 1 TO property");
+    }
+
     public void emitIllegalAddNavigatorToSubnavigatorError(ScriptParser parser, String addedElement, String addedToElement) throws SemanticErrorException {
         emitSimpleError(parser, format("can't add navigator element '%s' to it's subelement '%s'", addedElement, addedToElement));
     }
