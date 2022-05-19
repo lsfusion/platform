@@ -8,7 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ClientWebAction;
-import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -87,10 +87,10 @@ public class InternalClientAction extends CallAction {
         return FlowResult.FINISH;
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public Pair<Object, String> findResourceAsFileData(String exec) {
         Result<String> fullPath = new Result<>();
-        RawFileData fileData = ResourceUtils.findResourceAsFileData(exec, false, false, fullPath, "web");
+        RawFileData fileData = ResourceUtils.findResourceAsFileData(exec, false, true, fullPath, "web");
         fileData.getID(); // to calculate the cache
         return Pair.create(fileData, fullPath.result);
     }
