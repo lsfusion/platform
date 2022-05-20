@@ -79,7 +79,7 @@ public class InternalClientAction extends CallAction {
             resourceName = exec;
         }
 
-        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, returnType, isFile, syncType);
+        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, exec, values, types, returnType, isFile, syncType);
         if (syncType) {
             Object result = context.requestUserInteraction(clientWebAction);
             if(targetProp != null)
