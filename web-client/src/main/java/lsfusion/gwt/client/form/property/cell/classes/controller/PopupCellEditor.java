@@ -69,7 +69,7 @@ public interface PopupCellEditor extends RequestCellEditor {
         setPopup(new PopupEditorDialogPanel(this, parent, removeBorder()));
     }
 
-    default void stop(Element parent, boolean cancel) {
+    default void stop(Element parent, boolean cancel, boolean blurred) {
         getPopup().hide();
     }
 }

@@ -13,6 +13,7 @@ import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GFormatType;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -27,7 +28,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.classes.view.FormatCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -427,15 +427,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public void setUserPattern(String pattern) {
-        if(baseType instanceof GFormatType) {
+        if(baseType instanceof GFormatType)
             this.pattern = pattern != null ? pattern : defaultPattern;
-
-            CellRenderer renderer = getCellRenderer();
-            if (renderer instanceof FormatCellRenderer) {
-                ((FormatCellRenderer) renderer).updateFormat();
-            } else
-                assert renderer instanceof CustomCellRenderer;
-        }
     }
 
     public Object parsePaste(String s, GType parseType) {
@@ -452,7 +445,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean canUseChangeValueForRendering(GType type) {
-        return type != null && baseType.getClass() == type.getClass();
+        return type != null && baseType.getClass() == type.getClass() && !(baseType instanceof GJSONType);
     }
 
     public String getDynamicCaption(Object caption) {
@@ -674,8 +667,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return captionHeight != null ? captionHeight : -1;
     }
 
-    public Object getFormat() {
-        return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType)).getFormat(pattern);
+    public GFormatType getFormatType() {
+        return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType));
     }
 
     public Integer getAutoSizeValueHeight(GFont parentFont) {

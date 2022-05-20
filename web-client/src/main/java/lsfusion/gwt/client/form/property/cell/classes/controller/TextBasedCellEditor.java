@@ -18,6 +18,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -75,27 +76,22 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             suggestBox.setValue(value);
         }
         InputElement inputElement = getInputElement(parent);
-        boolean selectAll = true;
-        if (GKeyStroke.isCharDeleteKeyEvent(event)) {
-            value = "";
-            selectAll = false;
-        } else if (GKeyStroke.isCharAddKeyEvent(event)) {
-            String input = String.valueOf((char) event.getCharCode());
-            value = checkInputValidity(parent, input) ? input : "";
-            selectAll = false;
-        }
+        String startEventValue = checkStartEvent(event, parent, this::checkInputValidity);
+        boolean selectAll = startEventValue == null;
+        value = startEventValue != null ? startEventValue : value;
+
         //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
         inputElement.focus();
-        setValue(inputElement, value);
+        setInputValue(inputElement, value);
 
         if (selectAll) {
             inputElement.select();
         }
     }
 
-    private native void setValue(Element element, Object value) /*-{
-        element.value = value;
-    }-*/;
+    private void setInputValue(InputElement element, String value) {
+        element.setValue(value);
+    }
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
@@ -404,11 +400,25 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     }
 
     protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
-        return inputText == null || inputText.isEmpty() ? null : inputText;
+        if(inputText == null || inputText.isEmpty())
+            return null;
+
+        if(this instanceof FormatCellEditor) {
+            GFormatType formatType = ((FormatCellEditor) this).getFormatType();
+            return formatType.parseString(inputText, property.pattern);
+        }
+        return inputText;
     }
 
     protected String tryFormatInputText(Object value) {
-        return value == null ? "" : value.toString();
+        if(value == null)
+            return "";
+
+        if(this instanceof FormatCellEditor) {
+            GFormatType formatType = ((FormatCellEditor) this).getFormatType();
+            return formatType.formatString(value, property.pattern);
+        }
+        return value.toString();
     }
 
     private class CustomSuggestBox extends SuggestBox {

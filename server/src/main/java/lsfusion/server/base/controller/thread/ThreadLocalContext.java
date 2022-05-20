@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.context.AbstractContext;
@@ -164,6 +165,9 @@ public class ThreadLocalContext {
     }
     public static BaseLogicsModule getBaseLM() {
         return getBusinessLogics().LM;
+    }
+    public static TFormats getTFormats() {
+        return getBusinessLogics().tFormats;
     }
 
     public static NavigatorsManager getNavigatorsManager() {

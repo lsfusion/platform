@@ -1,27 +1,3 @@
-package lsfusion.server.logics.action;
-
-import com.google.common.base.Throwables;
-import lsfusion.base.ResourceUtils;
-import lsfusion.base.Result;
-import lsfusion.base.col.SetFact;
-import lsfusion.base.file.RawFileData;
-import lsfusion.interop.action.ClientWebAction;
-import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.type.TypeSerializer;
-import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.flow.ChangeFlowType;
-import lsfusion.server.logics.action.flow.FlowResult;
-import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
-
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-
-import static lsfusion.base.BaseUtils.serializeObject;
-
-public class WebClientAction extends SystemAction {
 
     private final Object resource;
     private final String resourceName;

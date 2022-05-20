@@ -1,5 +1,6 @@
 package lsfusion.base;
 
+import lsfusion.base.lambda.EFunction;
 import org.apache.http.ParseException;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -179,6 +181,11 @@ public class DateConverter {
         if(dateString.isEmpty())
             return null;
 
+        try {
+            return ZonedDateTime.parse(dateString, DateTimeFormatter.ISO_DATE_TIME).toInstant();
+        } catch (DateTimeParseException ignored) {
+        }
+
         for (String regexp : ZONED_DATETIME_FORMAT_REGEXPS.keySet()) {
             if (dateString.toLowerCase().matches(regexp)) {
                 return ZonedDateTime.parse(dateString, DateTimeFormatter.ofPattern(ZONED_DATETIME_FORMAT_REGEXPS.get(regexp))).toInstant();
@@ -224,7 +231,7 @@ public class DateConverter {
         return LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("UTC"));
     }
 
-    public static Object parseInterval(String s, Function<String, Long> parseFunction) {
+    public static <E extends Exception> Object parseInterval(String s, EFunction<String, Long, E> parseFunction) throws E {
         String[] dates = s.split(" - ");
         Long epochFrom = parseFunction.apply(dates[0]);
         Long epochTo = parseFunction.apply(dates[1]);

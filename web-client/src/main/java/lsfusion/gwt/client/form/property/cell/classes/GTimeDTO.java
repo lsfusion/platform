@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes;
 
 import java.io.Serializable;
 import java.sql.Time;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 
@@ -19,8 +20,9 @@ public class GTimeDTO implements Serializable {
         this.second = second;
     }
 
-    public Time toTime() {
-        return new Time(hour, minute, second);
+    // should correspond ClientTimeIntervalClass, TimeIntervalClass
+    public Date toTime() {
+        return new Date(90, 0, 1, hour, minute, second);
     }
 
     public static GTimeDTO fromDate(Date date) {

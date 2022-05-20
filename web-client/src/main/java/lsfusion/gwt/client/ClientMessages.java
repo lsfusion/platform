@@ -248,9 +248,15 @@ public interface ClientMessages extends Messages {
     String today();
     String yesterday();
     String last7Days();
+    String sevenDaysAgo();
     String last30Days();
+    String thirtyDaysAgo();
     String thisMonth();
-    String lastMonth();
+    String monthStart();
+    String previousMonth();
+    String previousMonthStart();
+    String thisYear();
+    String thisYearStart();
     String clear();
 
     String noResults();

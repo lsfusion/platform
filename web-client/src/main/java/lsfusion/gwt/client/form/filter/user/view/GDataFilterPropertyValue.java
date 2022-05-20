@@ -63,12 +63,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     @Override
     public void pasteValue(String stringValue) {
-        Object objValue = null;
-        try {
-            objValue = property.baseType.parseString(stringValue, property.pattern);
-        } catch (ParseException ignored) {}
-
-        updateAndCommit(objValue);
+        updateAndCommit(property.parsePaste(stringValue, property.baseType));
     }
 
     @Override

@@ -9,6 +9,8 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 
+import java.util.function.BiFunction;
+
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 
@@ -38,5 +40,16 @@ public interface RequestEmbeddedCellEditor extends RequestCellEditor {
 
     default boolean checkEnterEvent(Event event) {
         return GKeyStroke.isPlainKeyEvent(event);
+    }
+
+    default String checkStartEvent(Event event, Element parent, BiFunction<Element, String, Boolean> checkInputValidity) {
+        String value = null;
+        if (GKeyStroke.isCharDeleteKeyEvent(event)) {
+            value = "";
+        } else if (GKeyStroke.isCharAddKeyEvent(event)) {
+            String input = String.valueOf((char) event.getCharCode());
+            value = (checkInputValidity == null || checkInputValidity.apply(parent, input)) ? input : "";
+        }
+        return value;
     }
 }

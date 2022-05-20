@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class ExternalSocketAction extends ExternalAction {
+public abstract class ExternalSocketAction extends CallAction {
     boolean clientAction;
     private PropertyInterface queryInterface;
 

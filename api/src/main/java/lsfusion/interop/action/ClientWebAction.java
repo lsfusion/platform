@@ -9,14 +9,16 @@ public class ClientWebAction extends ExecuteClientAction {
     public final String resourceName;
     public ArrayList<byte[]> values;
     public ArrayList<byte[]> types;
+    public byte[] returnType;
     public boolean isFile;
     public boolean syncType;
 
-    public ClientWebAction(Object resource, String resourceName, ArrayList<byte[]> values, ArrayList<byte[]> types, boolean isFile, boolean syncType) {
+    public ClientWebAction(Object resource, String resourceName, ArrayList<byte[]> values, ArrayList<byte[]> types, byte[] returnType, boolean isFile, boolean syncType) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.values = values;
         this.types = types;
+        this.returnType = returnType;
         this.isFile = isFile;
         this.syncType = syncType;
     }

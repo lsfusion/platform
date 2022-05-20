@@ -45,7 +45,7 @@ public interface GActionDispatcher {
 
     void execute(GResetWindowsLayoutAction action);
 
-    void execute(GClientWebAction action);
+    Object execute(GClientWebAction action);
 
     Object execute(GHttpClientAction action) throws RequestException;
 }

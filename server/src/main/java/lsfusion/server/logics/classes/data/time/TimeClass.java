@@ -5,6 +5,7 @@ import lsfusion.base.TimeConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -34,7 +35,7 @@ import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 public class TimeClass extends TimeSeriesClass<LocalTime> {
     public final static TimeClass instance = new TimeClass();
 
-    private final static String timePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(null, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
+//    private final static String timePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(null, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
@@ -58,17 +59,14 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
     public void fillReportDrawField(ReportDrawField reportField) {
         super.fillReportDrawField(reportField);
 
-        reportField.pattern = timePattern;
+        reportField.pattern = ThreadLocalContext.getTFormats().timePattern; // timePattern;
     }
 
     public LocalTime parseString(String s) throws ParseException {
         try {
-            //try to parse with default locale formats
-            for(FormatStyle formatStyle : new FormatStyle[]{FormatStyle.MEDIUM, FormatStyle.SHORT}) {
-                try {
-                    return LocalTime.parse(s, DateTimeFormatter.ofLocalizedTime(formatStyle));
-                } catch (Exception ignored) {
-                }
+            try {
+                return LocalTime.parse(s, ThreadLocalContext.getTFormats().timeParser);
+            } catch (Exception ignored) {
             }
             return TimeConverter.smartParse(s);
         } catch (Exception e) {
@@ -78,7 +76,7 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
 
     @Override
     public String formatString(LocalTime value) {
-        return value == null ? null : value.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM));
+        return value == null ? null : value.format(ThreadLocalContext.getTFormats().timeFormatter);
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

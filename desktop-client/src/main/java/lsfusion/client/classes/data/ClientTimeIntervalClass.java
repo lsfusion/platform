@@ -4,11 +4,10 @@ import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.IntervalPropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
+import java.text.ParseException;
 import java.time.LocalDate;
-import java.time.LocalTime;
 
 import static lsfusion.base.DateConverter.epochToLocalDateTime;
 import static lsfusion.base.DateConverter.localDateTimeToUTCEpoch;
@@ -32,13 +31,15 @@ public class ClientTimeIntervalClass extends ClientIntervalClass {
         return "TIME";
     }
 
+    // should correspond TimeIntervalClass, GTimeDTO.toTime
+    private static final LocalDate dateEpoch = LocalDate.of(1900, 1, 1);
     @Override
-    protected Long parse(String date) {
-        return localDateTimeToUTCEpoch(LocalTime.parse(date, MainFrame.timeFormatter).atDate(LocalDate.now()));
+    protected Long parse(String date) throws ParseException {
+        return localDateTimeToUTCEpoch(ClientTimeClass.instance.parseString(date).atDate(dateEpoch));
     }
 
     @Override
     protected String format(Long epoch) {
-        return epochToLocalDateTime(epoch).toLocalTime().format(MainFrame.timeFormatter);
+        return ClientTimeClass.instance.formatString(epochToLocalDateTime(epoch).toLocalTime());
     }
 }

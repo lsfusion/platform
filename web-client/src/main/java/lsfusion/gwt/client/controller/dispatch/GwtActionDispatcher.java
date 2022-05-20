@@ -346,16 +346,19 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     private class JSExecutor {
         private final List<GClientWebAction> actions = new ArrayList<>();
 
-        public void addAction(GClientWebAction action) {
-            if (action.syncType)
+        public Object addAction(GClientWebAction action) {
+            actions.add(action);
+
+            boolean syncType = action.syncType;
+            if (syncType)
                 pauseDispatching();
 
-            if (action.resource != null) {
-                actions.add(action);
-                flush();
-            } else {
-                GwtClientUtils.consoleError("Resource load error: " + action.resourceName);
-            }
+            flush();
+
+            if(syncType)
+                return action.execResult;
+
+            return null;
         }
 
         private boolean isExecuting = false;
@@ -382,7 +385,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 for (var i = 0; i < documentScripts.length; i++) {
                     var src = documentScripts[i].src;
                     if (src != null && src.endsWith(resourcePath)) {
-                        thisObj.@JSExecutor::onActionExecuted(*)(action);
+                        thisObj.@JSExecutor::onFileExecuted(*)(action)
                         return;
                     }
                 }
@@ -390,13 +393,13 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 scr.src = resourcePath;
                 scr.type = 'text/javascript';
                 $wnd.document.head.appendChild(scr);
-                scr.onload = function() {thisObj.@JSExecutor::onActionExecuted(*)(action); }
+                scr.onload = function() {thisObj.@JSExecutor::onFileExecuted(*)(action); }
             } else if (resourceName.endsWith('css')) {
                 var documentStyleSheets = $wnd.document.styleSheets;
                 for (var j = 0; j < documentStyleSheets.length; j++) {
                     var href = documentStyleSheets[j].href;
                     if (href != null && href.endsWith(resourcePath)) {
-                        thisObj.@JSExecutor::onActionExecuted(*)(action);
+                        thisObj.@JSExecutor::onFileExecuted(*)(action)
                         return;
                     }
                 }
@@ -405,16 +408,24 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 link.type = "text/css";
                 link.rel = "stylesheet";
                 $wnd.document.head.appendChild(link);
-                thisObj.@JSExecutor::onActionExecuted(*)(action);
+                thisObj.@JSExecutor::onFileExecuted(*)(action);
             }
         }-*/;
 
-        private void onActionExecuted(GClientWebAction action) {
-            if (action.syncType)
-                continueDispatching();
+        private void onFileExecuted(GClientWebAction action) {
+            onActionExecuted(action, null);
+        }
 
+        private void onActionExecuted(GClientWebAction action, Object currentActionResult) {
             isExecuting = false;
             actions.remove(action);
+
+            if (action.syncType) {
+                Result<Object> result = new Result<>();
+                continueDispatching(currentActionResult, result);
+                action.execResult = result.result;
+            }
+
             flush();
         }
 
@@ -422,20 +433,21 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
             ArrayList<Object> types = action.types;
             for (int i = 0; i < types.size(); i++) {
-                arguments.push(GSimpleStateTableView.convertValue((GType) types.get(i), action.values.get(i)));
+                arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), action.values.get(i)));
             }
             String function = action.resource;
-            GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments);
-            onActionExecuted(action);
+            Object currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
+                    GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments));
+            onActionExecuted(action, currentActionResult);
         }
     }
 
     private JSExecutor jsExecutor;
     @Override
-    public void execute(GClientWebAction action) {
+    public Object execute(GClientWebAction action) {
         if (jsExecutor == null)
             jsExecutor = new JSExecutor();
-        jsExecutor.addAction(action);
+        return jsExecutor.addAction(action);
     }
 
     @Override

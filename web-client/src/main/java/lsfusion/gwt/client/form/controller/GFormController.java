@@ -94,6 +94,7 @@ import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -2089,14 +2090,25 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
 
         CellEditor cellEditor;
-        if (customChangeFunction != null && !customChangeFunction.equals("DEFAULT")) // see LsfLogics.g propertyCustomView rule
-            cellEditor = CustomReplaceCellEditor.create(this, property, customChangeFunction);
+        boolean hasCustomEditor = customChangeFunction != null && !customChangeFunction.equals("DEFAULT");
+        if (hasCustomEditor) // see LsfLogics.g propertyCustomView rule
+            cellEditor = CustomReplaceCellEditor.create(this, property, type, customChangeFunction);
         else
             cellEditor = type.createGridCellEditor(this, property, inputList);
 
         if (cellEditor != null) {
-            if(!hasOldValue) // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
+            if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
                 oldValue = editContext.getValue();
+                if(oldValue == null)
+                    oldValue = cellEditor.getDefaultNullValue();
+                else if(!editContext.canUseChangeValueForRendering(type) && !hasCustomEditor) {
+                    try {
+                        oldValue = type.parseString(oldValue.toString(), property.pattern);
+                    } catch (ParseException e) {
+                        oldValue = null;
+                    }
+                }
+            }
 
             edit(cellEditor, event, oldValue, beforeCommit, afterCommit, cancel, editContext, editAsyncValuesSID, -1);
         } else
@@ -2119,11 +2131,13 @@ public class GFormController implements EditManager {
         this.editRequestIndex = editRequestIndex;  // we need to force dispatch responses till this index because otherwise we won't
 
         Element element = getEditElement();
+
+        editContext.startEditing();
+
         if (cellEditor instanceof ReplaceCellEditor) {
             focusedElement = GwtClientUtils.getFocusedElement();
             if(!editContext.isFocusable()) // assert that otherwise it's already has focus
                 forceSetFocus = editContext.forceSetFocus();
-            editContext.startEditing();
 
             RenderContext renderContext = editContext.getRenderContext();
 
@@ -2188,7 +2202,7 @@ public class GFormController implements EditManager {
         this.editAsyncValuesSID = null;
 
         if(cellEditor instanceof RequestCellEditor)
-            ((RequestCellEditor)cellEditor).stop(renderElement, cancel);
+            ((RequestCellEditor)cellEditor).stop(renderElement, cancel, blurred);
 
         if(cellEditor instanceof ReplaceCellEditor)
             ((ReplaceCellEditor) cellEditor).clearRender(renderElement, editContext.getRenderContext(), cancel);
@@ -2196,10 +2210,10 @@ public class GFormController implements EditManager {
         //getAsyncValues need editContext, so it must be after clearRenderer
         this.editContext = null;
 
+        editContext.stopEditing();
+
         if(cellEditor instanceof ReplaceCellEditor) {
             render(editContext);
-
-            editContext.stopEditing();
 
             if(forceSetFocus != null) {
                 editContext.restoreSetFocus(forceSetFocus);

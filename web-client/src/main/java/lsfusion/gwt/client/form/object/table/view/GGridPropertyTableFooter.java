@@ -64,16 +64,4 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
             prevValue = value;
         }
     }
-
-    private String getRenderedCaption() {
-        String result = null;
-        if (value != null) {
-            try {
-                result = property.getCellRenderer().format(value);
-            } catch (Exception ignored) {
-                result = value.toString();
-            }
-        }
-        return result != null ? result : "";
-    }
 }

@@ -6,7 +6,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 public class NumericCellEditor extends IntegralCellEditor {
-    public NumericCellEditor(GNumericType numericType, EditManager editManager, GPropertyDraw property, NumberFormat format) {
-        super(numericType, editManager, property, format);
+    public NumericCellEditor(GNumericType numericType, EditManager editManager, GPropertyDraw property) {
+        super(numericType, editManager, property);
     }
 }

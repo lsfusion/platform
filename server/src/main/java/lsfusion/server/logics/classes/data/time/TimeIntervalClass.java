@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.time;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.time.LocalDate;
@@ -10,7 +11,7 @@ import java.time.LocalTime;
 import static lsfusion.base.DateConverter.epochToLocalDateTime;
 import static lsfusion.base.DateConverter.localDateTimeToUTCEpoch;
 
-public class TimeIntervalClass extends IntervalClass {
+public class TimeIntervalClass extends IntervalClass<LocalTime> {
 
     public final static IntervalClass instance = new TimeIntervalClass();
 
@@ -33,13 +34,15 @@ public class TimeIntervalClass extends IntervalClass {
         return DataType.TIMEINTERVAL;
     }
 
+    // should correspond ClientTimeIntervalClass, GTimeDTO.toTime
+    private static final LocalDate dateEpoch = LocalDate.of(1900, 1, 1);
     @Override
-    protected Long parse(String date) {
-        return localDateTimeToUTCEpoch(LocalTime.parse(date, TIME_FORMATTER).atDate(LocalDate.now()));
+    protected Long parse(String date) throws ParseException {
+        return localDateTimeToUTCEpoch(TimeClass.instance.parseString(date).atDate(dateEpoch));
     }
 
     @Override
     protected String format(Long epoch) {
-        return epochToLocalDateTime(epoch).toLocalTime().format(TIME_FORMATTER);
+        return TimeClass.instance.formatString(epochToLocalDateTime(epoch).toLocalTime());
     }
 }

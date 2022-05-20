@@ -43,7 +43,7 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
     }
 
     @Override
-    public void stop(Element parent, boolean cancel) {
+    public void stop(Element parent, boolean cancel, boolean blurred) {
         stop(parent);
     }
 

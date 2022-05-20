@@ -4,16 +4,13 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.classes.controller.PopupCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.controller.RequestReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
@@ -63,11 +60,11 @@ public class PopupForm extends EditingForm {
         }
 
         @Override
-        public void stop(Element parent, boolean cancel) {
+        public void stop(Element parent, boolean cancel, boolean blurred) {
             onBlur(true);
 
             // actual hide
-            PopupCellEditor.super.stop(parent, cancel);
+            PopupCellEditor.super.stop(parent, cancel, blurred);
 
             if(prevForm != null)
                 prevForm.onFocus(false);

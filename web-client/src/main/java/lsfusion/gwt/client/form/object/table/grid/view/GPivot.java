@@ -1277,30 +1277,26 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         String dataValue = null;
         if(property.baseType instanceof GObjectType || property.baseType instanceof GIntegralType) {
             type = "n";
-            Object propertyFormat = property.getFormat();
-            if(propertyFormat instanceof NumberFormat) {
-                String pattern;
-                if(value != null) {
-                    NumberConstants numberConstants = LocaleInfo.getCurrentLocale().getNumberConstants();
-                    dataValue = NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())).replace(
-                            numberConstants.decimalSeparator(), ".").replace(numberConstants.groupingSeparator(), "");
-                    BigDecimal numericValue = new BigDecimal(dataValue);
-                    int fractDigits = 0;
-                    while (numericValue.longValue() - numericValue.doubleValue() != 0) {
-                        numericValue = numericValue.multiply(BigDecimal.TEN);
-                        fractDigits++;
-                    }
-                    if (fractDigits > 0) {
-                        pattern = "#,##0." + replicate('0', fractDigits);
-                    } else {
-                        pattern = "#,##0";
-                    }
-                } else {
-                    pattern = ";;;@";
+            String pattern;
+            if(value != null) {
+                NumberConstants numberConstants = LocaleInfo.getCurrentLocale().getNumberConstants();
+                dataValue = NumberFormat.getDecimalFormat().format(Double.valueOf(value.toString())).replace(
+                        numberConstants.decimalSeparator(), ".").replace(numberConstants.groupingSeparator(), "");
+                BigDecimal numericValue = new BigDecimal(dataValue);
+                int fractDigits = 0;
+                while (numericValue.longValue() - numericValue.doubleValue() != 0) {
+                    numericValue = numericValue.multiply(BigDecimal.TEN);
+                    fractDigits++;
                 }
-                element.setAttribute("data-num-fmt", pattern);
-
+                if (fractDigits > 0) {
+                    pattern = "#,##0." + replicate('0', fractDigits);
+                } else {
+                    pattern = "#,##0";
+                }
+            } else {
+                pattern = ";;;@";
             }
+            element.setAttribute("data-num-fmt", pattern);
         } else if(property.baseType instanceof GLogicalType) {
             type = "b";
             dataValue = String.valueOf(value != null);

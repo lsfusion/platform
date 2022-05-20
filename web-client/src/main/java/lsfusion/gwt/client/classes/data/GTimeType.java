@@ -2,24 +2,20 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TimeCellEditor;
-import lsfusion.gwt.client.form.property.cell.classes.view.DateCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-import java.text.ParseException;
+import java.util.Date;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeFormat;
-import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeShortFormat;
-import static lsfusion.gwt.client.classes.data.GDateType.parseDate;
+import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
-public class GTimeType extends GFormatType<DateTimeFormat> {
+public class GTimeType extends GADateType {
     public static GTimeType instance = new GTimeType();
 
     @Override
@@ -28,32 +24,27 @@ public class GTimeType extends GFormatType<DateTimeFormat> {
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
-        return new DateCellRenderer(property);
-    }
-
-    @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return new TimeCellEditor(editManager, editProperty);
+        return new TimeCellEditor(this, editManager, editProperty);
     }
 
     @Override
-    public GTimeDTO parseString(String value, String pattern) throws ParseException {
-        return value.isEmpty() ? null : GTimeDTO.fromDate(parseDate(value, getDefaultTimeFormat(), getDefaultTimeShortFormat()));
+    protected DateTimeFormat[] getFormats(String pattern) {
+        return GwtClientUtils.add(super.getFormats(pattern), new DateTimeFormat[] { getDefaultTimeShortFormat(), getDefaultTimeFormat() }, DateTimeFormat[]::new);
     }
 
     @Override
-    protected Object getDefaultWidthValue() {
-        return GDateTimeType.getWideFormattableDateTime();
+    public Object fromDate(Date date) {
+        return GTimeDTO.fromDate(date);
+    }
+
+    @Override
+    public Date toDate(Object value) {
+        return ((GTimeDTO) value).toTime();
     }
 
     @Override
     public String toString() {
         return ClientMessages.Instance.get().typeTimeCaption();
-    }
-
-    @Override
-    public GEditBindingMap.EditEventFilter getEditEventFilter() {
-        return GEditBindingMap.numberEventFilter;
     }
 }

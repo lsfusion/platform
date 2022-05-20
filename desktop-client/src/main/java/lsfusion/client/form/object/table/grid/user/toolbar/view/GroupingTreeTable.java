@@ -55,21 +55,21 @@ public class GroupingTreeTable extends JXTreeTable {
         setDefaultRenderer(LocalTime.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
-                super.setValue(value != null ? MainFrame.timeFormat.format(localTimeToSqlTime((LocalTime) value)) : null);
+                super.setValue(value != null ? MainFrame.tFormats.time.format(localTimeToSqlTime((LocalTime) value)) : null);
             }
         });
 
         setDefaultRenderer(LocalDateTime.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
-                super.setValue(value != null ? MainFrame.dateTimeFormat.format(localDateTimeToSqlTimestamp((LocalDateTime) value)) : null);
+                super.setValue(value != null ? MainFrame.tFormats.dateTime.format(localDateTimeToSqlTimestamp((LocalDateTime) value)) : null);
             }
         });
 
         setDefaultRenderer(Instant.class, new DefaultTableCellRenderer() {
             @Override
             protected void setValue(Object value) {
-                super.setValue(value != null ? MainFrame.dateTimeFormat.format(instantToSqlTimestamp((Instant) value)) : null);
+                super.setValue(value != null ? MainFrame.tFormats.dateTime.format(instantToSqlTimestamp((Instant) value)) : null);
             }
         });
         

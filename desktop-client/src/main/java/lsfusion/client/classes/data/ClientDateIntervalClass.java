@@ -1,9 +1,8 @@
 package lsfusion.client.classes.data;
 
-import lsfusion.client.view.MainFrame;
 import lsfusion.interop.classes.DataType;
 
-import java.time.LocalDate;
+import java.text.ParseException;
 
 import static lsfusion.base.DateConverter.*;
 
@@ -21,12 +20,12 @@ public class ClientDateIntervalClass extends ClientIntervalClass {
     }
 
     @Override
-    protected Long parse(String date) {
-        return localDateTimeToUTCEpoch(LocalDate.parse(date, MainFrame.dateFormatter).atStartOfDay());
+    protected Long parse(String date) throws ParseException {
+        return localDateTimeToUTCEpoch(ClientDateClass.instance.parseString(date).atStartOfDay());
     }
 
     @Override
     protected String format(Long epoch) {
-        return epochToLocalDateTime(epoch).toLocalDate().format(MainFrame.dateFormatter);
+        return ClientDateClass.instance.formatString(epochToLocalDateTime(epoch).toLocalDate());
     }
 }

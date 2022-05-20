@@ -8,6 +8,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.FormPropertyDataInterface;
@@ -72,7 +73,7 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
         boolean isIndex = isIndex();
         boolean upDown = node.isUpDown();
 
-        MList<Pair<Object, T>> mMap = ListFact.mList();
+        MList<Pair<Pair<Object, DataClass>, T>> mMap = ListFact.mList();
         int i=0;
         ImList<ImMap<ObjectEntity, Object>> objects = exportData.getObjects(group, upValues);
         for (ImMap<ObjectEntity, Object> data : objects) {
@@ -82,16 +83,19 @@ public class GroupObjectParseNode extends GroupParseNode implements ChildParseNo
 
             // getting object value
             Object objectValue;
-            if (isIndex)
+            DataClass objectClass;
+            if (isIndex) {
                 objectValue = i++;
-            else {
+                objectClass = null;
+            } else {
                 ObjectEntity object = getSingleObject();
-                objectValue = ((DataClass) object.baseClass).formatString(data.get(object));
+                objectValue = data.get(object);
+                objectClass = (DataClass) object.baseClass;
             }
 
-            mMap.add(new Pair<>(objectValue, newNode));
+            mMap.add(new Pair<>(new Pair<>(objectValue, objectClass), newNode));
         }
-        ImList<Pair<Object, T>> map = mMap.immutableList();
+        ImList<Pair<Pair<Object, DataClass>, T>> map = mMap.immutableList();
         boolean isNotEmpty = node.addMap(node, getKey(), isIndex, map);
 
         if(upDown) {

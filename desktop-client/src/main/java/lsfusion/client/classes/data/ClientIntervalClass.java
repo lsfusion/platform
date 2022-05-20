@@ -43,7 +43,7 @@ public abstract class ClientIntervalClass extends ClientFormatClass<SimpleDateFo
         return new FormatPropertyRenderer(property){};
     }
 
-    protected abstract Long parse(String date);
+    protected abstract Long parse(String date) throws ParseException;
     protected abstract String format(Long epoch);
 
     @Override

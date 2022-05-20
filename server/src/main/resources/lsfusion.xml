@@ -183,9 +183,6 @@
         <property name="defaultUserTwoDigitYearStart" value="${user.defaultTwoDigitYearStart:#{null}}"/>
         <property name="defaultUserDateFormat" value="${user.defaultDateFormat:#{null}}"/>
         <property name="defaultUserTimeFormat" value="${user.defaultTimeFormat:#{null}}"/>
-        <property name="serverTwoDigitYearStart" value="${user.serverTwoDigitYearStart:#{null}}"/>
-        <property name="serverDateFormat" value="${user.serverDateFormat:#{null}}"/>
-        <property name="serverTimeFormat" value="${user.serverTimeFormat:#{null}}"/>
     </bean>
 
     <bean id="reflectionManager" class="lsfusion.server.physics.admin.reflection.controller.manager.ReflectionManager">
@@ -889,5 +886,8 @@
         <property name="setTimezone" value="${user.setTimezone:#{null}}"/>
         <property name="setLanguage" value="${user.setLanguage:#{null}}"/>
         <property name="setCountry" value="${user.setCountry:#{null}}"/>
+        <property name="twoDigitYearStart" value="${user.twoDigitYearStart:#{null}}"/>
+        <property name="dateFormat" value="${user.dateFormat:#{null}}"/>
+        <property name="timeFormat" value="${user.timeFormat:#{null}}"/>
     </bean>
 </beans>

@@ -2,6 +2,7 @@ package lsfusion.server.data.type;
 
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
@@ -88,7 +89,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String formatXML(T object);
     void formatXLS(T object, Cell cell, ExportXLSWriter.Styles styles);
 
-    T parseNullableString(String s, boolean emptyIsNull) throws ParseException; // s - not null (файлы decode'ся base64)
+    T parseNullableString(String s, boolean emptyIsNull) throws ParseException; // s - can be null
     
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 
@@ -97,6 +98,10 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     T parseHTTP(Object o, Charset charset) throws ParseException; // o - String or FileData, o - not null, null'ы decode'ся в зависимости от типа
 
     Object formatHTTP(T value, Charset charset); // returns String or FileData (не null), null'ы encode'ит в зависимости от типа
+
+    T writeProp(RawFileData value, String extension);
+
+    RawFileData readProp(T value);
 
     AndClassSet getBaseClassSet(BaseClass baseClass);
 

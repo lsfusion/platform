@@ -11,7 +11,7 @@ public abstract class ClientFormatClass<F extends Format> extends ClientDataClas
     public abstract F createUserFormat(String pattern);
 
     protected F getEditFormat(ClientPropertyDraw propertyDraw) {
-        return getEditFormat(propertyDraw.getFormat(), false);
+        return getEditFormat(propertyDraw, false);
     }
 
     protected F getEditFormat(ClientPropertyDraw propertyDraw, boolean edit) {

@@ -1,14 +1,16 @@
 package lsfusion.gwt.client.classes.data;
 
-import com.google.gwt.i18n.client.DateTimeFormat;
+import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.Date;
-
-import static lsfusion.gwt.client.base.GwtSharedUtils.getDateTimeFormat;
-
-public class GZDateTimeIntervalType extends GIntervalType {
+public class GZDateTimeIntervalType extends GDateTimeIntervalType {
 
     public static GZDateTimeIntervalType instance = new GZDateTimeIntervalType();
+
+    // we want to have string width independent of the timezone
+    @Override
+    public String getDefaultWidthString(GPropertyDraw propertyDraw) {
+        return GDateTimeIntervalType.instance.getDefaultWidthString(propertyDraw);
+    }
 
     @Override
     public String getIntervalType() {
@@ -16,17 +18,12 @@ public class GZDateTimeIntervalType extends GIntervalType {
     }
 
     @Override
-    public DateTimeFormat getFormat(String pattern) {
-        return getDateTimeFormat(pattern, false);
+    protected boolean isSingleLocal() {
+        return false;
     }
 
     @Override
-    public String format(Long epoch) {
-        return getFormat(null).format(new Date(epoch * 1000));
-    }
-
-    @Override
-    public Date getDate(Object value, boolean from) {
-        return value != null ? new Date(getEpoch(value, from) * 1000) : new Date();
+    protected GADateType getTimeSeriesType() {
+        return GZDateTimeType.instance;
     }
 }

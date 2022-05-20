@@ -1,6 +1,7 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.DateConverter;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -18,6 +19,7 @@ import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static lsfusion.base.DateConverter.*;
 import static lsfusion.client.form.property.cell.EditBindingMap.EditEventFilter;
@@ -43,8 +45,8 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
         return result;
     }
 
-    public Format getDefaultFormat() {
-        return MainFrame.dateFormat;
+    public SimpleDateFormat getDefaultFormat() {
+        return MainFrame.tFormats.date;
     }
 
     @Override
@@ -79,9 +81,14 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
         return new DatePropertyEditor(value, getEditFormat(property), property);
     }
 
-    public Object parseString(String s) throws ParseException {
+    public LocalDate parseString(String s) throws ParseException {
         try {
-            return sqlDateToLocalDate(safeDateToSql(MainFrame.dateFormat.parse(s)));
+            try {
+                return LocalDate.parse(s, MainFrame.tFormats.dateParser);
+            } catch (Exception ignored) {
+            }
+            LocalDateTime result = DateConverter.smartParse(s);
+            return result != null ? result.toLocalDate() : null;
         } catch (Exception e) {
             throw new ParseException(s +  ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
@@ -89,7 +96,7 @@ public class ClientDateClass extends ClientFormatClass<SimpleDateFormat> impleme
 
     @Override
     public String formatString(Object obj) {
-        return obj != null ? MainFrame.dateFormat.format(localDateToSqlDate((LocalDate) obj)) : "";
+        return obj != null ? ((LocalDate) obj).format(MainFrame.tFormats.dateFormatter) : "";
     }
 
     @Override

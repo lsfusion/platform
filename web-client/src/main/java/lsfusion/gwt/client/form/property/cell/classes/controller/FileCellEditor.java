@@ -65,7 +65,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     }
 
     @Override
-    public void stop(Element parent, boolean cancel) {
+    public void stop(Element parent, boolean cancel, boolean blurred) {
         if(cancel && newVersionUploader != null)
             newVersionUploader.cancelUpload();
         newVersionUploader = null;

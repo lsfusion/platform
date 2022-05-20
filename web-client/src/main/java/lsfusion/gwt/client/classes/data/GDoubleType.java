@@ -10,8 +10,6 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
-import java.text.ParseException;
-
 public class GDoubleType extends GIntegralType {
     public static GDoubleType instance = new GDoubleType();
 
@@ -24,7 +22,7 @@ public class GDoubleType extends GIntegralType {
 
     @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return new DoubleCellEditor(editManager, editProperty, getEditFormat(editProperty));
+        return new DoubleCellEditor(editManager, editProperty);
     }
 
     @Override
@@ -33,8 +31,8 @@ public class GDoubleType extends GIntegralType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
-        return parseToDouble(s, pattern);
+    public Object convertDouble(Double doubleValue) {
+        return doubleValue;
     }
 
     @Override
@@ -43,7 +41,7 @@ public class GDoubleType extends GIntegralType {
     }
     
     @Override
-    public NumberFormat getFormat(String pattern) {
-        return NumberFormat.getFormat(pattern != null ? pattern : defaultPattern);
+    protected NumberFormat getDefaultFormat() {
+        return NumberFormat.getFormat(defaultPattern);
     }
 }

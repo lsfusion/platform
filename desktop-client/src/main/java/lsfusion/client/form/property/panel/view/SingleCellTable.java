@@ -144,7 +144,7 @@ public abstract class SingleCellTable extends ClientPropertyTable {
                     }
                 }
                 if(matches) {
-                    Object newValue = value == null ? null : property.parseChangeValueOrNull(value);
+                    Object newValue = value == null ? null : property.parsePaste(value);
                     if (property.canUsePasteValueForRendering()) {
                         setValue(newValue);
                     }

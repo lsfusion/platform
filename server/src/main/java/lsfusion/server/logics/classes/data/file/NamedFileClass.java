@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data.file;
 
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
@@ -71,6 +72,16 @@ public class NamedFileClass extends AbstractDynamicFormatFileClass<NamedFileData
     @Override
     protected String formatHTTPNotNullString(NamedFileData value, Charset charset) {
         return value != null ? new String(value.getRawFile().getBytes(), charset) : null;
+    }
+
+    @Override
+    protected NamedFileData writePropNotNull(RawFileData value, String extension) {
+        return new NamedFileData(new FileData(value, extension), "file");
+    }
+
+    @Override
+    public RawFileData readPropNotNull(NamedFileData value) {
+        return value.getRawFile();
     }
 
     @Override

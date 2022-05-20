@@ -132,13 +132,31 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
                 GGroupObjectValue fullKey = key != null ? GGroupObjectValue.getFullKey(key, columnKey) : GGroupObjectValue.EMPTY;
 
-                rowValues.push(convertValue(property, propValues.get(fullKey)));
+                rowValues.push(convertToJSValue(property, propValues.get(fullKey)));
             }
         }
         rowValues.push(fromObject(key));
         return rowValues;
     }
-    public static JavaScriptObject convertValue(GType type, Object value) {
+    public static Object convertFromJSValue(GType type, JavaScriptObject value) {
+        // have to reverse convertToJSValue as well as convertFileValue (???)
+        if (type instanceof GLogicalType) {
+            if(!((GLogicalType) type).threeState)
+                return toBoolean(value) ? true : null;
+
+            if(value != null)
+                return toBoolean(value);
+        }
+        if(value == null)
+            return null;
+        if(type instanceof GIntegralType)
+            return ((GIntegralType) type).convertDouble(toDouble(value));
+        if(type instanceof GJSONType)
+            return GwtClientUtils.jsonStringify(value);
+
+        return toObject(value);
+    }
+    public static JavaScriptObject convertToJSValue(GType type, Object value) {
         if (type instanceof GLogicalType) {
             if(!((GLogicalType) type).threeState)
                 return fromBoolean(value != null);
@@ -149,7 +167,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(value == null)
             return null;
         if(type instanceof GIntegralType)
-            return fromNumber(((Number)value).doubleValue());
+            return fromDouble(((Number)value).doubleValue());
         if(type instanceof GImageType)
             return fromString(GwtClientUtils.getAppDownloadURL((String) value, null, ((GImageType)type).extension));
         if(type instanceof GJSONType)
@@ -158,8 +176,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return fromString(value.toString());
     }
 
-    public static JavaScriptObject convertValue(GPropertyDraw property, Object value) {
-        return convertValue(property.baseType, value);
+    public static JavaScriptObject convertToJSValue(GPropertyDraw property, Object value) {
+        return convertToJSValue(property.baseType, value);
     }
 
     protected JsArray<JavaScriptObject> getCaptions(NativeHashMap<String, Column> columnMap, Predicate<GPropertyDraw> filter) {
@@ -248,6 +266,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             if(!recordView.isVisible())
                 hidePopup();
         }
+    }
+
+    protected void changeJSProperty(String column, JavaScriptObject object, JavaScriptObject newValue) {
+        changeProperty(column, object, (Serializable) GSimpleStateTableView.convertFromJSValue(columnMap.get(column).property.getExternalChangeType(), newValue));
     }
 
     protected void changeProperty(String column, JavaScriptObject object, Serializable newValue) {
@@ -406,7 +428,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
         for (int i = 0; i < list.length(); i++) {
             JavaScriptObject object = list.get(i);
-            GwtClientUtils.setField(object, "index", fromNumber(i));
+            GwtClientUtils.setField(object, "index", fromDouble(i));
             mappedList.put(getKey(object), object);
 
             JavaScriptObject oldValue = oldOptionsList.remove(getKey(object));
@@ -442,7 +464,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                     object = null;
                 if(newValue === undefined)
                     newValue = true;
-                return thisObj.@GSimpleStateTableView::changeProperty(*)(property, object, newValue);
+                return thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
                 return thisObj.@GSimpleStateTableView::changeDateTimeProperty(*)(property, object, year, month, day, hour, minute, second);

@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.http.client.*;
@@ -13,9 +10,11 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -791,20 +790,22 @@ public class GwtClientUtils {
         return value.replace('.', ',');
     }
 
-    public static Double smartParse(String value, NumberFormat format) {
+    public static String editParse(String value) {
         String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
         if (UNBREAKABLE_SPACE.equals(groupingSeparator)) {
             value = value.replace(" ", UNBREAKABLE_SPACE);
         }
         String decimalSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().decimalSeparator();
-        return format.parse(replaceSeparators(value, decimalSeparator, groupingSeparator));
+        return replaceSeparators(value, decimalSeparator, groupingSeparator);
     }
 
-    public static String plainFormat(Double value, NumberFormat format) {
+    public static String editFormat(String value) {
         String groupingSeparator = LocaleInfo.getCurrentLocale().getNumberConstants().groupingSeparator();
-        String s = format.format(value).replace(groupingSeparator, "");
+        value = value.replace(groupingSeparator, "");
         //need because of IntegralCellEditor.createInputElement
-        return MainFrame.mobile ? GwtClientUtils.replaceCommaSeparator(s) : s;
+        if(MainFrame.mobile)
+            value = GwtClientUtils.replaceCommaSeparator(value);
+        return value;
     }
 
     public static String replicate(char character, int length) {
@@ -880,6 +881,23 @@ public class GwtClientUtils {
             if(predicate.test(element))
                 return element;
         return null;
+    }
+
+    public static <E extends Exception> Object parseInterval(String s, EFunction<String, Long, E> parseFunction) throws E {
+        String[] dates = s.split(" - ");
+        Long epochFrom = parseFunction.apply(dates[0]);
+        Long epochTo = parseFunction.apply(dates[1]);
+        return epochFrom <= epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+    }
+
+    public static String formatInterval(Object obj, Function<Long, String> formatFunction) {
+        return formatFunction.apply(getIntervalPart(obj, true)) + " - " + formatFunction.apply(getIntervalPart(obj, false));
+    }
+
+    public static Long getIntervalPart(Object o, boolean from) {
+        String object = String.valueOf(o);
+        int indexOfDecimal = object.indexOf(".");
+        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 
     public static Element wrapCenteredImg(Element th, Integer height, Consumer<ImageElement> imgProcessor) {
@@ -1082,6 +1100,21 @@ public class GwtClientUtils {
         return object[field] = value;
     }-*/;
 
+    public static JsDate toJsDate(Date date) {
+        if(date == null)
+            return null;
+        return JsDate.create(date.getTime());
+    }
+    public static Date fromJsDate(JsDate date) {
+        if(date == null)
+            return null;
+        return new Date(Math.round(date.getTime()));
+    }
+    public static native JsDate getUTCDate(int year, int month, int date, int hours, int minutes, int seconds)/*-{
+        return new Date(Date.UTC(year, month, date, hours, minutes, seconds));
+    }-*/;
+
+
     public static native JavaScriptObject sortArray(JavaScriptObject array, String sortField, boolean reverseOrder)/*-{
         return array.sort(function (a, b) {
             return reverseOrder ? b[sortField] - a[sortField] : a[sortField] - b[sortField];
@@ -1114,6 +1147,16 @@ public class GwtClientUtils {
             return JSON.parse(value);
         } catch(e) {
             return {};
+        }
+    }-*/;
+
+    public static native String jsonStringify(JavaScriptObject value)/*-{
+        try {
+            if(value == null)
+                return null;
+            return JSON.stringify(value);
+        } catch(e) {
+            return "{}";
         }
     }-*/;
 

@@ -1,12 +1,17 @@
 package lsfusion.server.logics.classes.data.file;
 
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.postgresql.util.PGobject;
 
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -18,6 +23,16 @@ public class JSONClass extends DataClass<String> {
     }
 
     public final static JSONClass instance = new JSONClass();
+
+    @Override
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+        if (typeFrom instanceof StaticFormatFileClass) {
+            return "cast_static_file_to_json(" + value + ")";
+        }else if (typeFrom instanceof DynamicFormatFileClass) {
+            return "cast_dynamic_file_to_json(" + value + ")";
+        }
+        return super.getCast(value, syntax, typeEnv, typeFrom);
+    }
 
     static {
         DataClass.storeClass(instance);
@@ -74,6 +89,19 @@ public class JSONClass extends DataClass<String> {
     @Override
     public String formatString(String value) {
         return value;
+    }
+
+    @Override
+    public Object formatHTTP(String value, Charset charset) {
+        if(charset != null || value == null)
+            return super.formatHTTP(value, charset);
+
+        return new FileData(new RawFileData(value.getBytes()), "json");
+    }
+
+    @Override
+    protected String writePropNotNull(RawFileData value, String extension) {
+        return new String(value.getBytes());
     }
 
     @Override

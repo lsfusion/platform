@@ -49,7 +49,6 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.action.WebClientAction;
 import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.flow.BreakAction;
 import lsfusion.server.logics.action.flow.ListCaseAction;
@@ -1781,13 +1780,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LA addScriptedInternalClientAction(String resourceName, int paramsCount, boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
-        boolean isFile = resourceName.contains(".js") || resourceName.contains(".css");
+    public LA addScriptedInternalClientAction(String resourceName, List<String> classes, boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
+        List<Type> types = new ArrayList<>();
+        if(classes != null) {
+            boolean isFile = resourceName.contains(".js") || resourceName.contains(".css");
+            if (isFile && classes.size() > 0) {
+                errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
+            }
 
-        if(isFile && paramsCount > 0)
-            errLog.emitInternalClientActionHasParamsOnFileCallingError(parser, resourceName);
+            for (String cls : classes) {
+                types.add(findClass(cls).getType());
+            }
+        }
 
-        return new LA(new WebClientAction(resourceName, paramsCount, isFile, syncType));
+        return new LA(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), syncType, resourceName, ListFact.toList(types)));
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -1920,6 +1926,19 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedExternalJavaAction(List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) {
         throw new UnsupportedOperationException("EXTERNAL JAVA not supported");
+    }
+
+    public LAWithParams addScriptedInternalDBAction(LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJoinAProp(addAProp(new InternalDBAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList))),
+                BaseUtils.addList(exec, params));
+    }
+
+    public LAWithParams addScriptedInternalClientAction(LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList, boolean syncType) throws ScriptingErrorLog.SemanticErrorException {
+        if (toPropertyUsageList.size() > 1) {
+            errLog.emitInternalClientActionHasTooMuchToPropertiesError(parser);
+        }
+
+        return addScriptedJoinAProp(addAProp(new InternalClientAction(getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList), syncType || !toPropertyUsageList.isEmpty())), BaseUtils.addList(exec, params));
     }
 
     public LAWithParams addScriptedExternalDBAction(LPWithParams connectionString, LPWithParams exec, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {

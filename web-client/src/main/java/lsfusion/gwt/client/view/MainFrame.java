@@ -85,6 +85,7 @@ public class MainFrame implements EntryPoint {
 
     public static String dateFormat;
     public static String timeFormat;
+    public static String dateTimeFormat;
 
     private LoadingManager loadingManager;
 
@@ -254,6 +255,7 @@ public class MainFrame implements EntryPoint {
                 StyleDefaults.init();
                 dateFormat = result.dateFormat;
                 timeFormat = result.timeFormat;
+                dateTimeFormat = result.dateFormat + " " + result.timeFormat;
             }
         });
 

@@ -13,15 +13,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Date;
 
-import static lsfusion.base.DateConverter.formatInterval;
-import static lsfusion.base.DateConverter.parseInterval;
+import static lsfusion.base.DateConverter.*;
 
-public abstract class IntervalClass extends DataClass<BigDecimal> {
-
-    protected static final DateTimeFormatter DATE_FORMATTER= DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT);
-    protected static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT, FormatStyle.MEDIUM);
-    protected static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.MEDIUM);
-    protected static final DateTimeFormatter Z_DATE_TIME_FORMATTER = DateTimeFormatter.ISO_INSTANT;
+public abstract class IntervalClass<T> extends DataClass<BigDecimal> {
 
     public static IntervalClass getInstance(String type) {
         switch (type) {
@@ -81,7 +75,7 @@ public abstract class IntervalClass extends DataClass<BigDecimal> {
         return false;
     }
 
-    protected abstract Long parse(String date);
+    protected abstract Long parse(String date) throws ParseException;
     protected abstract String format(Long epoch);
 
     @Override

@@ -936,7 +936,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                             }
                         }
 
-                        Object newValue = sPasteValue == null ? null : property.parseChangeValueOrNull(sPasteValue);
+                        Object newValue = sPasteValue == null ? null : property.parsePaste(sPasteValue);
                         if (property.canUsePasteValueForRendering()) {
                             for (ClientGroupObjectValue key : keys) {
                                 Map<ClientGroupObjectValue, Object> propValues = values.get(property);

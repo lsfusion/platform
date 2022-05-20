@@ -81,6 +81,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP twoDigitYearStart;
     public LP dateFormat;
     public LP timeFormat;
+    public LP dateUserFormat;
+    public LP timeUserFormat;
 
     public LP clientLanguage;
     public LP clientCountry;
