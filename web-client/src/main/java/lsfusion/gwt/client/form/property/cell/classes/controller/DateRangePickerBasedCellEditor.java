@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
@@ -27,24 +26,9 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         SmartScheduler.getInstance().scheduleDeferred(true, () -> commitValue(parent, getInputValue()));
     }
 
-    private boolean commit = false;
     protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         //to be able to enter the date from keyboard
-        if (commit) {
-            try {
-                return super.tryParseInputText(inputText, onCommit);
-            } catch (ParseException e) {
-                commit = false;
-                throw e;
-            }
-        }
-        return inputText;
-    }
-
-    @Override
-    public void commit(Element parent, CommitReason commitReason) {
-        commit = true;
-        super.commit(parent, commitReason);
+        return onCommit ? super.tryParseInputText(inputText, true) : inputText;
     }
 
     @Override
