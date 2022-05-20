@@ -5,7 +5,8 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class StoredTestDataGenerators {
-    private static final int SIZE = 10000;
+    private static final int LARGE_SIZE = 10000;
+    private static final int MEDIUM_SIZE = 500;
 
     public static StoredClass[] simpleArray() {
         SerializableNameClass name = new SerializableNameClass("Square");
@@ -71,13 +72,15 @@ public class StoredTestDataGenerators {
             null
         };
     }
-    
+
+    public static StoredClass[] mediumSimpleArray() { return replicateStoredArray(simpleArray(), MEDIUM_SIZE); }
+
     public static StoredClass[] largeSimpleArray() {
-        return replicateStoredArray(simpleArray(), SIZE);
+        return replicateStoredArray(simpleArray(), LARGE_SIZE);
     }
 
     public static StoredClass[] largeArrayWithNulls() {
-        return replicateStoredArray(arrayWithNulls(), SIZE);
+        return replicateStoredArray(arrayWithNulls(), LARGE_SIZE);
     }
 
     public static StoredClass[] largeSortedArray() {
@@ -86,17 +89,26 @@ public class StoredTestDataGenerators {
         return array;
     }
 
+    public static String[] mediumStringArray() {
+        return replicateStringArray(stringArray(), MEDIUM_SIZE);
+    }
+
     public static String[] largeStringArray() {
-        String[] array = stringArray();
-        String[] res = new String[SIZE]; 
-        for (int i = 0; i < SIZE; ++i) {
+        return replicateStringArray(stringArray(), LARGE_SIZE);
+    }
+
+    private static String[] replicateStringArray(String[] array, int size) {
+        String[] res = new String[size];
+        for (int i = 0; i < size; ++i) {
             res[i] = array[i % array.length];
         }
         return res;
     }
 
+    public static Object[] mediumMixedArray() { return replicateArray(mixedArray(), MEDIUM_SIZE); }
+
     public static Object[] largeMixedArray() {
-        return replicateArray(mixedArray(), SIZE);
+        return replicateArray(mixedArray(), LARGE_SIZE);
     }
     
     private static StoredClass[] replicateStoredArray(StoredClass[] array, int size) {

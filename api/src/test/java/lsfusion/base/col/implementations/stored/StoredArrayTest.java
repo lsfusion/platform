@@ -223,8 +223,8 @@ public class StoredArrayTest {
 
     @Test
     public void insertToMiddle() {
-        StoredClass[] array = StoredTestDataGenerators.arrayWithNulls();
-        int mid = array.length / 4;
+        StoredClass[] array = StoredTestDataGenerators.mediumSimpleArray();
+        int mid = array.length * 9 / 20;
         StoredArray<StoredClass> stored = new StoredArray<>(serializer);
         for (int i = 0; i < mid; ++i) {
             stored.append(array[i]);
@@ -262,7 +262,7 @@ public class StoredArrayTest {
 
     @Test
     public void mixedArray() throws StoredArray.StoredArrayCreationException {
-        Object[] objects = StoredTestDataGenerators.mixedArray();
+        Object[] objects = StoredTestDataGenerators.mediumMixedArray();
         StoredArray<Object> stored = new StoredArray<>(objects, serializer);
         checkEquality(objects, stored);
         objects[0] = 5.0;

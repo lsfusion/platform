@@ -1,6 +1,7 @@
 package lsfusion.base.col.implementations.stored;
 
 import lsfusion.base.col.implementations.stored.StoredTestDataGenerators.StoredClass;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import org.junit.Test;
 
 import static lsfusion.base.col.implementations.stored.StoredTestDataGenerators.*;
@@ -41,7 +42,30 @@ public class StoredArIndexedMapTest {
         }
         checkEquality(map, keys, values);
     }
-    
+
+    @Test
+    public void addEqual() throws StoredArray.StoredArrayCreationException, CloneNotSupportedException {
+        StoredClass[] keys = sortedArray();
+        StoredClass[] values = simpleArray();
+        StoredArIndexedMap<StoredClass, StoredClass> map = new StoredArIndexedMap<>(keys.length, keys, values, StoredArraySerializer.getInstance(),
+                new SymmAddValue<StoredClass, StoredClass>() {
+                @Override
+                public StoredClass addValue(StoredClass key, StoredClass prevValue, StoredClass newValue) {
+                    return newValue;
+                }
+            });
+        for (int i = 0; i < keys.length; ++i) {
+            StoredClass newValue = values[i].clone();
+            newValue.cnt += 100;
+            map.add(keys[i], newValue);
+        }
+        assertEquals(keys.length, map.size());
+        for (int i = 0; i < keys.length; ++i) {
+            assertEquals(keys[i], map.getKey(i));
+            assertEquals(values[i].cnt + 100, map.getValue(i).cnt);
+        }
+    }
+
     @Test
     public void mapValue() throws StoredArray.StoredArrayCreationException {
         StoredClass[] keys = sortedArray();

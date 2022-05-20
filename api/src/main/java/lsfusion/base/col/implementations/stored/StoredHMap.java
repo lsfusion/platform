@@ -163,6 +163,10 @@ public class StoredHMap<K, V> extends AMRevMap<K, V> {
         return table;
     }
 
+    public StoredArray<V> getStoredValues() {
+        return vtable;
+    }
+
     public int[] getIndexes() {
         return indexes;
     }

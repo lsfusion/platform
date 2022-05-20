@@ -280,6 +280,14 @@ public class HMap<K, V> extends AMRevMap<K, V> {
         }
     }
 
+    public Object[] getVTable() {
+        if (!isStored()) {
+            return vtable;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     public void setIndexes(int[] indexes) {
         if (!isStored()) {
             this.indexes = indexes;
