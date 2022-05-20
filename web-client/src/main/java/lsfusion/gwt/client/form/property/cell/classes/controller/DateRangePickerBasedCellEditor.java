@@ -77,7 +77,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         var format = pattern.replaceAll("d", "D").replaceAll("y", "Y").replaceAll("a", "A"); // dateRangePicker format - date uses capital letters, time uses small letters, AM/PM uses capital letter
 
         //Must be called before the picker is initialised, or its events will be triggered earlier
-        editElement.on('keydown.daterangepicker', function (e) {
+        editElement.on('keydown', function (e) {
             if (e.keyCode === 27) {
                 thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
             } else if ((e.keyCode === 9) || (e.keyCode === 13)) {
@@ -144,11 +144,19 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         }
 
         //Return focus to editElement and then we will handle the press of the esc button. Because daterangepicker does not allow to handle events
-        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup change.daterangepicker', function () {
+        var pickerEl = $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()());
+        pickerEl.on('keyup change.daterangepicker', function () {
+            returnFocus()}
+        );
+        pickerEl.on('mouseup', function (e) {
+            if (e.target.tagName !== 'SELECT')
+                returnFocus()
+        });
+        function returnFocus() {
             editElement.focus();
             var input = editElement.get(0);
             input.selectionStart = input.selectionEnd = input.value.length; //To place the cursor at the very end
-        });
+        }
 
         editElement.on('cancel.daterangepicker', function () {
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(parent);
