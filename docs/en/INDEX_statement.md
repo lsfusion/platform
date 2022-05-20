@@ -42,5 +42,5 @@ INDEX customer(Order o);
 date = DATA DATE (Order);
 INDEX date(Order o), o;
 
-INDEX name(Sku s), price(s, DATE d), d;
+INDEX supplier(Sku s, DATE d), s, price(s, d), d;
 ```

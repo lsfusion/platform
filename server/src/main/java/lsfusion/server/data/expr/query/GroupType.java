@@ -4,6 +4,7 @@ import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -15,11 +16,9 @@ import lsfusion.server.data.type.reader.NullReader;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.file.FileClass;
-import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.link.LinkClass;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.GroupProperty;
 import lsfusion.server.logics.property.set.MaxGroupProperty;
@@ -185,16 +184,10 @@ public enum GroupType implements AggrType {
                 return (type instanceof ConcatenateType && syntax.hasAggConcProblem() ? "MINC" : "MIN") + "(" + exprs.get(0) + ")";
             case ANY:
                 assert exprs.size()==1 && orders.size()==0;
-                return syntax.getAnyValueFunc() + "(" + exprs.get(0) + ")";
+                return syntax.getAnyValueFunc() + "(" + getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv) + ")";
             case SUM:
                 assert exprs.size()==1 && orders.size()==0;
-                String exprSource = exprs.get(0);
-                if(exprReaders != null) {
-                    ClassReader classReader = exprReaders.get(0);
-                    if (classReader instanceof NullReader) // если null cast'им, на самом деле это частично хак, так как может протолкнуться условие, но emptyselect не получится, а empty будет конкретное выражение (возможно тоже самое нужно для partition и т.п.)
-                        exprSource = type.getCast(exprSource, syntax, typeEnv);
-                }
-                return syntax.getNotZero("SUM(" + exprSource + ")", type, typeEnv);
+                return syntax.getNotZero("SUM(" + getSafeExprSource(0, exprs, exprReaders, type, syntax, typeEnv) + ")", type, typeEnv);
             case CONCAT:
                 assert exprs.size() == 1 || exprs.size() == 2;
                 return type.getCast(syntax.getOrderGroupAgg(this, type, exprs, exprReaders, orders, typeEnv), syntax, typeEnv); // тут точная ширина не нужна главное чтобы не больше
@@ -212,6 +205,17 @@ public enum GroupType implements AggrType {
         }
     }
 
+    // it seems that null cast is needed for all aggr types, but for now we faced only SUM and ANYVALUE
+    private static String getSafeExprSource(int index, ImList<String> exprs, ImList<ClassReader> exprReaders, Type type, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        String exprSource = exprs.get(index);
+        if(exprReaders != null) {
+            ClassReader classReader = exprReaders.get(index);
+            if (classReader instanceof NullReader) // если null cast'им, на самом деле это частично хак, так как может протолкнуться условие, но emptyselect не получится, а empty будет конкретное выражение (возможно тоже самое нужно для partition и т.п.)
+                exprSource = type.getCast(exprSource, syntax, typeEnv);
+        }
+        return exprSource;
+    }
+
     public int numExprs() {
         if(this==CONCAT || this==LAST)
             return 2;
@@ -221,7 +225,7 @@ public enum GroupType implements AggrType {
 
     public Type getType(Type exprType) {
         if(this==CONCAT)
-            return ((StringClass)exprType).extend(10);
+            return StringClass.getv(((StringClass)exprType).caseInsensitive, ExtInt.UNLIMITED);
         assert this != SUM || exprType instanceof IntegralClass;
 
         return exprType;
