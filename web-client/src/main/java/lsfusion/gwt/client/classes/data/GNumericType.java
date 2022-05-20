@@ -62,8 +62,8 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
-        Object parsed = super.parseString(s, pattern, edit);
+    public Object parseString(String s, String pattern) throws ParseException {
+        Object parsed = super.parseString(s, pattern);
         if(parsed == null)
             return parsed;
 

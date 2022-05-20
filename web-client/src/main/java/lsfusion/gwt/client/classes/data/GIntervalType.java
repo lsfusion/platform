@@ -50,34 +50,34 @@ public abstract class GIntervalType extends GFormatType {
         return new BigDecimal("1636629071.1636629071");
     }
 
-    protected Long parse(String date, String pattern, boolean edit) throws ParseException {
+    protected Long parse(String date, String pattern) throws ParseException {
         GADateType timeSeriesType = getTimeSeriesType();
-        return fromDate(timeSeriesType.toDate(timeSeriesType.parseString(date, pattern, edit)));
+        return fromDate(timeSeriesType.toDate(timeSeriesType.parseString(date, pattern)));
     }
-    protected String format(Long epoch, String pattern, boolean edit) {
+    protected String format(Long epoch, String pattern) {
         GADateType timeSeriesType = getTimeSeriesType();
-        return timeSeriesType.formatString(timeSeriesType.fromDate(toDate(epoch)), pattern, edit);
+        return timeSeriesType.formatString(timeSeriesType.fromDate(toDate(epoch)), pattern);
     }
     public DateTimeFormat getSingleFormat(String pattern) {
-        return getTimeSeriesType().getFormat(pattern, false);
+        return getTimeSeriesType().getFormat(pattern);
     }
 
     protected abstract GADateType getTimeSeriesType();
 
     @Override
-    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
+    public Object parseString(String s, String pattern) throws ParseException {
         if(s.isEmpty())
             return null;
 
-        return GwtClientUtils.parseInterval(s, date -> parse(date, pattern, edit));
+        return GwtClientUtils.parseInterval(s, date -> parse(date, pattern));
     }
 
     @Override
-    public String formatString(Object value, String pattern, boolean edit) {
+    public String formatString(Object value, String pattern) {
         if(value == null)
             return null;
 
-        return GwtClientUtils.formatInterval(value, epoch -> format(epoch, pattern, edit));
+        return GwtClientUtils.formatInterval(value, epoch -> format(epoch, pattern));
     }
 
     public abstract String getIntervalType();

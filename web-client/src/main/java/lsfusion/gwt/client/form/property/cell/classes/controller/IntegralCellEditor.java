@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -40,5 +41,13 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
             inputText = inputText.replace(" ", "").replace(GIntegralType.UNBREAKABLE_SPACE, "");
             return (!onCommit && "-".equals(inputText)) ? true : super.tryParseInputText(inputText, onCommit);
         }
+    }
+
+    @Override
+    protected String tryFormatInputText(Object value) {
+        String result = super.tryFormatInputText(value);
+        if(result != null)
+            result = GwtClientUtils.editFormat(result);
+        return result;
     }
 }

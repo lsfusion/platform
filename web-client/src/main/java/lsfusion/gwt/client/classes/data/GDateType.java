@@ -19,8 +19,8 @@ public class GDateType extends GADateType {
     public static GDateType instance = new GDateType();
 
     @Override
-    public DateTimeFormat getFormat(String pattern, boolean edit) {
-        return GwtSharedUtils.getDateFormat(pattern, edit);
+    public DateTimeFormat getFormat(String pattern) {
+        return GwtSharedUtils.getDateFormat(pattern);
     }
 
     @Override
@@ -29,8 +29,8 @@ public class GDateType extends GADateType {
     }
 
     @Override
-    protected DateTimeFormat[] getFormats(String pattern, boolean edit) {
-        return GwtClientUtils.add(super.getFormats(pattern, edit), new DateTimeFormat[] { GwtSharedUtils.getDefaultDateFormat(edit) }, DateTimeFormat[]::new);
+    protected DateTimeFormat[] getFormats(String pattern) {
+        return GwtClientUtils.add(super.getFormats(pattern), new DateTimeFormat[] { GwtSharedUtils.getDefaultDateFormat() }, DateTimeFormat[]::new);
     }
 
     @Override

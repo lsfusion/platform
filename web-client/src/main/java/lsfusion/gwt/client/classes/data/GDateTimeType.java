@@ -18,8 +18,8 @@ public class GDateTimeType extends GADateType {
     public static GDateTimeType instance = new GDateTimeType();
 
     @Override
-    public com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern, boolean edit) {
-        return getDateTimeFormat(pattern, edit);
+    public com.google.gwt.i18n.client.DateTimeFormat getFormat(String pattern) {
+        return getDateTimeFormat(pattern);
     }
 
     @Override
@@ -28,8 +28,8 @@ public class GDateTimeType extends GADateType {
     }
 
     @Override
-    protected DateTimeFormat[] getFormats(String pattern, boolean edit) {
-        return GwtClientUtils.add(super.getFormats(pattern, edit), new DateTimeFormat[] { getDefaultDateTimeShortFormat(), getDefaultDateTimeFormat(edit) }, DateTimeFormat[]::new);
+    protected DateTimeFormat[] getFormats(String pattern) {
+        return GwtClientUtils.add(super.getFormats(pattern), new DateTimeFormat[] { getDefaultDateTimeShortFormat(), getDefaultDateTimeFormat() }, DateTimeFormat[]::new);
     }
 
     @Override

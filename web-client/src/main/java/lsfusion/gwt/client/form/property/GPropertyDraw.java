@@ -438,7 +438,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(parseType == null)
             return null;
         try {
-            return parseType.parseString(s, pattern, false);
+            return parseType.parseString(s, pattern);
         } catch (ParseException pe) {
             return null;
         }

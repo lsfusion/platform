@@ -8,11 +8,11 @@ public abstract class GFormatType extends GDataType {
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
         Object defaultWidthValue = getDefaultWidthValue();
         if(defaultWidthValue != null)
-            return formatString(defaultWidthValue, propertyDraw.pattern, false);
+            return formatString(defaultWidthValue, propertyDraw.pattern);
         return super.getDefaultWidthString(propertyDraw);
     }
 
-    public abstract String formatString(Object value, String pattern, boolean edit);
+    public abstract String formatString(Object value, String pattern);
 
     protected Object getDefaultWidthValue() {
         return null;

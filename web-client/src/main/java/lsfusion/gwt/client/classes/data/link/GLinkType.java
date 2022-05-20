@@ -33,7 +33,7 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
+    public Object parseString(String s, String pattern) throws ParseException {
         return s;
     }
 

@@ -11,7 +11,7 @@ public abstract class FormatCellRenderer<T> extends TextBasedCellRenderer<T> {
 
     @Override
     public String format(T value) {
-        return getFormatType().formatString(value, property.pattern, false);
+        return getFormatType().formatString(value, property.pattern);
     }
 
     public FormatCellRenderer(GPropertyDraw property) {

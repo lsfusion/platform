@@ -80,29 +80,20 @@ public class GwtSharedUtils {
         return count;
     }
 
-    public static DateTimeFormat getDateFormat(String pattern, boolean edit) {
-        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateFormat(edit);
+    public static DateTimeFormat getDateFormat(String pattern) {
+        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateFormat();
     }
 
     public static DateTimeFormat getTimeFormat(String pattern) {
         return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultTimeFormat();
     }
 
-    public static DateTimeFormat getDateTimeFormat(String pattern, boolean edit) {
-        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateTimeFormat(edit);
+    public static DateTimeFormat getDateTimeFormat(String pattern) {
+        return pattern != null ? DateTimeFormat.getFormat(pattern) : getDefaultDateTimeFormat();
     }
 
-    public static DateTimeFormat getDefaultDateFormat(boolean edit) {
-        if(edit) {
-            String pattern = getValidEditDateFormat(MainFrame.dateFormat, false);
-            if(pattern != null) {
-                return DateTimeFormat.getFormat(pattern);
-            } else {
-                return getDateFormatShort(DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT));
-            }
-        } else {
-            return DateTimeFormat.getFormat(MainFrame.dateFormat);
-        }
+    public static DateTimeFormat getDefaultDateFormat() {
+        return DateTimeFormat.getFormat(MainFrame.dateFormat);
     }
 
     public static DateTimeFormat getDefaultTimeFormat() {
@@ -114,19 +105,8 @@ public class GwtSharedUtils {
         return DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.TIME_SHORT);
     }
 
-    public static DateTimeFormat getDefaultDateTimeFormat(boolean edit) {
-        String dateTimeFormat = MainFrame.dateTimeFormat;
-        if(edit) {
-            String pattern = getValidEditDateFormat(dateTimeFormat, true);
-            if(pattern != null) {
-                return DateTimeFormat.getFormat(pattern);
-            } else {
-                DateTimeFormatInfo info = LocaleInfo.getCurrentLocale().getDateTimeFormatInfo();
-                return DateTimeFormat.getFormat(info.dateTime(info.timeFormatMedium(), getDateFormatShort(info.dateFormatShort())).replace(",", ""));
-            }
-        } else {
-            return DateTimeFormat.getFormat(dateTimeFormat);
-        }
+    public static DateTimeFormat getDefaultDateTimeFormat() {
+        return DateTimeFormat.getFormat(MainFrame.dateTimeFormat);
     }
 
     //equal to BaseUtils.getValidEditDateFormat

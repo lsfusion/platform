@@ -31,7 +31,7 @@ public abstract class GIntegralType extends GFormatType {
 
     // paste, edit
     @Override
-    public Object parseString(String s, String pattern, boolean edit) throws ParseException {
+    public Object parseString(String s, String pattern) throws ParseException {
         if(s.isEmpty())
             return null;
 
@@ -46,15 +46,12 @@ public abstract class GIntegralType extends GFormatType {
 
     // render, edit
     @Override
-    public String formatString(Object value, String pattern, boolean edit) {
+    public String formatString(Object value, String pattern) {
         if(value == null)
             return null;
 
         // there was doubleValue before, but not sure what for
-        String result = getFormat(pattern).format((Number) value);
-        if(edit)
-            result = GwtClientUtils.editFormat(result);
-        return result;
+        return getFormat(pattern).format((Number) value);
     }
 
     @Override

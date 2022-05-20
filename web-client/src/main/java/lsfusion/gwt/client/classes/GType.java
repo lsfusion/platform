@@ -47,7 +47,7 @@ public abstract class GType implements Serializable {
     }
 
     public abstract GCompare[] getFilterCompares();
-    public abstract Object parseString(String s, String pattern, boolean edit) throws ParseException;
+    public abstract Object parseString(String s, String pattern) throws ParseException;
 
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return null;

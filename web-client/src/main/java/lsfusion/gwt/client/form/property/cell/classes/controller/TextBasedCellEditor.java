@@ -405,7 +405,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.parseString(inputText, property.pattern, true);
+            return formatType.parseString(inputText, property.pattern);
         }
         return inputText;
     }
@@ -416,7 +416,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         if(this instanceof FormatCellEditor) {
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
-            return formatType.formatString(value, property.pattern, true);
+            return formatType.formatString(value, property.pattern);
         }
         return value.toString();
     }
