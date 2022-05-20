@@ -409,6 +409,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 link.rel = "stylesheet";
                 $wnd.document.head.appendChild(link);
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
+            } else {
+                $wnd.lsfFiles[resourceName] = resourcePath;
+                thisObj.@JSExecutor::onFileExecuted(*)(action);
             }
         }-*/;
 
@@ -437,7 +440,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
             String function = action.resource;
             Object currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
-                    GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments));
+                    GwtClientUtils.call(GwtClientUtils.getGlobalField(function), arguments));
             onActionExecuted(action, currentActionResult);
         }
     }
