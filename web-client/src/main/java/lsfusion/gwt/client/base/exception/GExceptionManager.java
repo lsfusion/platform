@@ -240,7 +240,7 @@ public class GExceptionManager {
             int openBracketIndex = s.lastIndexOf("("); //in brackets name:lineNumber:characterNumber
             int lastColonIndex = s.lastIndexOf(":");
 
-            if (openBracketIndex != -1 && lastColonIndex != -1) {
+            if (openBracketIndex != -1 && lastColonIndex != -1 && openBracketIndex < lastColonIndex) {
                 String fileNameWithLineNumber = s.substring(openBracketIndex + 1, lastColonIndex); //file name with line number
                 int colonIndex = fileNameWithLineNumber.lastIndexOf(":");
 
