@@ -76,16 +76,22 @@
 
 .property-toolbar-start {
     display: flex;
-    justify-content: start;
     align-items: center;
     max-width: 50%;
 }
 
+:not(.panelRendererValueFocused) > .property-toolbar-on-hover .property-toolbar-start {
+    justify-content: start;
+}
+
 .property-toolbar-end {
     display: flex;
-    justify-content: end;
     align-items: center;
     max-width: 50%;
+}
+
+:not(.panelRendererValueFocused) > .property-toolbar-on-hover .property-toolbar-end {
+    justify-content: end;
 }
 
 .wrap-wrapimgdiv {
