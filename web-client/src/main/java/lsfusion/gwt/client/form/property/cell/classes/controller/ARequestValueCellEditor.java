@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
@@ -47,6 +46,10 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         editManager.commitEditing(new GUserInputResult(value, contextAction), commitReason);
     }
 
+    protected boolean isThisCellEditor() {
+        return editManager.isThisCellEditing(this);
+    }
+
     // current value
     public void validateAndCommit(Element parent, boolean cancelIfInvalid) {
         validateAndCommit(parent, cancelIfInvalid, CommitReason.OTHER);
@@ -58,12 +61,13 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
 
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, CommitReason commitReason) {
         SmartScheduler.getInstance().scheduleDeferred(commitReason.isBlurred() && isDeferredCommitOnBlur(), () -> {
-            Object value = getValue(parent, contextAction);
-            if(value == null || !value.equals(RequestValueCellEditor.invalid))
-                commitFinish(parent, value, contextAction, commitReason);
-            else
-                if(cancelIfInvalid)
+            if (editManager.isThisCellEditing(this)) {
+                Object value = getValue(parent, contextAction);
+                if (value == null || !value.equals(RequestValueCellEditor.invalid))
+                    commitFinish(parent, value, contextAction, commitReason);
+                else if (cancelIfInvalid)
                     cancel(parent);
+            }
         });
     }
 }
