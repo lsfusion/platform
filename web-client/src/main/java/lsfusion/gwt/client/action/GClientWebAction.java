@@ -8,6 +8,7 @@ public class GClientWebAction implements GAction {
 
     public String resource;
     public String resourceName;
+    public String originalResourceName;
     public ArrayList<Object> values;
     public ArrayList<Object> types;
     public GType returnType;
@@ -19,9 +20,10 @@ public class GClientWebAction implements GAction {
     @SuppressWarnings("UnusedDeclaration")
     public GClientWebAction() {}
 
-    public GClientWebAction(String resource, String resourceName, ArrayList<Object> values, ArrayList<Object> types, GType returnType, boolean isFile, boolean syncType) {
+    public GClientWebAction(String resource, String resourceName, String originalResourceName, ArrayList<Object> values, ArrayList<Object> types, GType returnType, boolean isFile, boolean syncType) {
         this.resource = resource;
         this.resourceName = resourceName;
+        this.originalResourceName = originalResourceName;
         this.values = values;
         this.types = types;
         this.returnType = returnType;

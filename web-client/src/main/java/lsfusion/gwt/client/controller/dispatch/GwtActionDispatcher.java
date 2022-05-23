@@ -374,10 +374,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
 
         private void executeFile(GClientWebAction action) {
-            executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName);
+            executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName, action.originalResourceName);
         }
 
-        private native void executeFile(GClientWebAction action, String resourcePath, String resourceName)/*-{
+        private native void executeFile(GClientWebAction action, String resourcePath, String resourceName, String originalResourceName)/*-{
             var thisObj = this;
 
             if (resourceName.endsWith('js')) {
@@ -409,6 +409,9 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 link.rel = "stylesheet";
                 $wnd.document.head.appendChild(link);
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
+            } else {
+                $wnd.lsfFiles[originalResourceName] = resourcePath;
+                thisObj.@JSExecutor::onFileExecuted(*)(action);
             }
         }-*/;
 
@@ -437,7 +440,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
             String function = action.resource;
             Object currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
-                    GwtClientUtils.call(GwtClientUtils.getGlobalField(function.substring(0, function.indexOf("("))), arguments));
+                    GwtClientUtils.call(GwtClientUtils.getGlobalField(function), arguments));
             onActionExecuted(action, currentActionResult);
         }
     }

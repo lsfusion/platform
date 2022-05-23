@@ -51,7 +51,10 @@ public class InternalClientAction extends CallAction {
 
         ImOrderSet<PropertyInterface> orderInterfaces = getOrderInterfaces();
         String exec = resourceName != null ? resourceName : (String) context.getKeyObject(orderInterfaces.get(0));
-        boolean isFile = exec.endsWith(".js") || exec.endsWith(".css");
+        boolean isFile = exec.contains(".");
+        if(resourceName != null && !isFile && exec.contains("(")) { //backward compatibility
+           exec = exec.substring(0, exec.indexOf("("));
+        }
 
         try {
             for (int i = resourceName != null ? 0 : 1; i < orderInterfaces.size(); i++) {
@@ -76,7 +79,7 @@ public class InternalClientAction extends CallAction {
             resourceName = exec;
         }
 
-        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, values, types, returnType, isFile, syncType);
+        ClientWebAction clientWebAction = new ClientWebAction(resource, resourceName, exec, values, types, returnType, isFile, syncType);
         if (syncType) {
             Object result = context.requestUserInteraction(clientWebAction);
             if(targetProp != null)

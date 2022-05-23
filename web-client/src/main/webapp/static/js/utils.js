@@ -31,3 +31,4 @@ var getSingleRanges = function (wnd, rangeToday, rangeYesterday, rangeSevenDaysA
 }
 
 var lsfParams = {};
+var lsfFiles = {};
