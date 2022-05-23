@@ -23,7 +23,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
     protected void pickerApply(Element parent) {
         //when auto-apply selects a date, at the end a mousedown occurs and takes the focus to a nothing
-        SmartScheduler.getInstance().scheduleDeferred(true, () -> commitValue(parent, getInputValue()));
+        SmartScheduler.getInstance().scheduleDeferred(true, () -> {
+            if (editManager.isThisCellEditing(this))
+                commitValue(parent, getInputValue());
+        });
     }
 
     protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {

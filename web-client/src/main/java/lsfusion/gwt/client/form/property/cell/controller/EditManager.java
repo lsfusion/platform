@@ -13,4 +13,6 @@ public interface EditManager {
     void commitEditing(GUserInputResult result, CommitReason commitReason);  // assert if blurred then editor rerender dom
 
     void cancelEditing(CancelReason cancelReason);
+
+    boolean isThisCellEditing(CellEditor cellEditor);
 }

@@ -2176,6 +2176,11 @@ public class GFormController implements EditManager {
     }
 
     @Override
+    public boolean isThisCellEditing(CellEditor cellEditor) {
+        return cellEditor == this.cellEditor;
+    }
+
+    @Override
     public void cancelEditing(CancelReason cancelReason) {
         finishEditing(false, true);
 
