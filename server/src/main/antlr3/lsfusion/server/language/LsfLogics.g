@@ -2209,13 +2209,12 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, orderProperties, orderDirections);
 	}
 }
-	:	'JSON' '('
+	:	'JSON'
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
 		('ORDER' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); }
         	(',' orderedProp=propertyExpressionWithOrder[newContext, true] { orderProperties.add($orderedProp.property); orderDirections.add($orderedProp.order); } )*
         )?
-        ')'
 	;
 
 sessionPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
