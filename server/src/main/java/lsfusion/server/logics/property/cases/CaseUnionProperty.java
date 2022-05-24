@@ -334,10 +334,6 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     private ClassWhere<Object> classValueWhere;
 
     @Override
-    public boolean noOld() {
-        return isAbstract() || super.noOld();
-    }
-    @Override
     public ImSet<OldProperty> getParseOldDepends() {
         if(isAbstract())
             return SetFact.EMPTY();

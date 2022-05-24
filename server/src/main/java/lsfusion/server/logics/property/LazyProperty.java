@@ -1,10 +1,14 @@
 package lsfusion.server.logics.property;
 
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
+import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -40,6 +44,17 @@ public abstract class LazyProperty extends SimpleIncrementProperty<ClassProperty
         super.finalizeInit();
 
         property = createProperty();
+    }
+
+    // we need this to avoid fillDepends call, since getParseOldDepends is called before finalizeInit
+    @Override
+    public ImSet<OldProperty> getParseOldDepends() {
+        return SetFact.EMPTY();
+    }
+
+    @Override
+    protected void fillDepends(MSet<Property> depends, boolean events) {
+        depends.add(property.property);
     }
 
     protected abstract PropertyMapImplement<?, ClassPropertyInterface> createProperty();
