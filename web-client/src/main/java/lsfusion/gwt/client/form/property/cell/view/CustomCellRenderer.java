@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
@@ -28,7 +29,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     @Override
     public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         setRendererValue(customRenderer, element,
-                getController(updateContext::changeProperty, updateContext.isPropertyReadOnly()),
+                getController(updateContext::changeProperty, element, updateContext.isPropertyReadOnly()),
                 GSimpleStateTableView.convertToJSValue(property, value));
 
         return false;
@@ -58,20 +59,26 @@ public class CustomCellRenderer extends CellRenderer<Object> {
         return value == null ? "" : value.toString();
     }
     
-    protected void changeValue(Consumer<Object> valueChangeConsumer, JavaScriptObject value) {
-        if (valueChangeConsumer != null) {
-            valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSValue(property.getExternalChangeType(), value));
-        }
+    protected void changeValue(Element element, Consumer<Object> valueChangeConsumer, JavaScriptObject value) {
+        GType externalChangeType = property.getExternalChangeType();
+
+        // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)
+        // there might be a problem that this change might be grouped with the another change that will change the state to the previous value, but update won't be called (because of caching), which is usually an "unexpected behaviour"
+        // disabling caching at all will lead to dropping state after, for example, refresh
+        if(!property.canUseChangeValueForRendering(externalChangeType))
+            rerenderState(element);
+
+        valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSValue(externalChangeType, value));
     }
 
-    protected native JavaScriptObject getController(Consumer<Object> valueChangeConsumer, Boolean isReadOnly)/*-{
+    protected native JavaScriptObject getController(Consumer<Object> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
         var thisObj = this;
         return {
             change: function (value) {
-                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, value);
+                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, element, value);
             },
             changeValue: function (value) { // deprecated
-                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, value);
+                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, element, value);
             },
             isReadOnly: function () {
                 return isReadOnly;

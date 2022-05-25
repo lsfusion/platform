@@ -154,10 +154,12 @@ public abstract class CellRenderer<T> {
         public boolean loading;
         public GColorTheme colorTheme; // for action and color cell renderer
 
+        public boolean rerender;
+
         public ToolbarState toolbar;
     }
     private boolean equalsDynamicState(RenderedState state, Object value, boolean isLoading, GColorTheme colorTheme) {
-        return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading && state.colorTheme == colorTheme;
+        return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading && state.colorTheme == colorTheme && !state.rerender;
     }
 
     private static final String RENDERED = "rendered";
@@ -165,6 +167,12 @@ public abstract class CellRenderer<T> {
     protected String getBackground(UpdateContext updateContext) {
         String baseBackground = getBaseBackground(updateContext.getValue()); // not converted (with getDisplayColor)
         return updateContext.getBackground(baseBackground); // converted (with getDisplayColor)
+    }
+
+    protected void rerenderState(Element element) {
+        RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
+        if(renderedState != null) // since element can be already dead
+            renderedState.rerender = true;
     }
     
     public void update(Element element, UpdateContext updateContext) {
@@ -196,6 +204,7 @@ public abstract class CellRenderer<T> {
             renderedState.value = value;
             renderedState.loading = loading;
             renderedState.colorTheme = MainFrame.colorTheme;
+            renderedState.rerender = false;
 
             cleared = renderDynamicContent(element, value, loading, updateContext);
         }
