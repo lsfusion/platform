@@ -75,10 +75,10 @@ public class CustomCellRenderer extends CellRenderer<Object> {
         var thisObj = this;
         return {
             change: function (value) {
-                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, element, value);
+                return thisObj.@CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value);
             },
             changeValue: function (value) { // deprecated
-                return thisObj.@CustomCellRenderer::changeValue(*)(valueChangeConsumer, element, value);
+                return thisObj.@CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value);
             },
             isReadOnly: function () {
                 return isReadOnly;
