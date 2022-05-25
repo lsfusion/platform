@@ -153,6 +153,7 @@ import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.janino.SimpleCompiler;
 
@@ -3224,14 +3225,21 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
+    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
         LP lp = null;
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
-            case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
+            case STRING:
+                String source = ((LocalizedString)value).getSourceString();
+                if(source.matches(".*\\$\\{.*\\}.*")) {
+                    lp = addStringInterpolateProp(source, context, dynamic);
+                } else {
+                    lp = addUnsafeCProp(getStringConstClass((LocalizedString) value), value);
+                }
+                break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
             case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
             case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
@@ -3242,6 +3250,46 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NULL: lp =  baseLM.vnull; break;
         }
         return Pair.create(lp, new LPLiteral(value));
+    }
+
+    protected LP addStringInterpolateProp(String source, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
+        List<String> literals = new ArrayList<>();
+
+        int pos = 0;
+        int bracketsCount = 0;
+        String currentLiteral = "";
+        while (pos < source.length()) {
+            char c = source.charAt(pos);
+            if (c == '$' && (pos + 1) < source.length() && source.charAt(pos + 1) == '{') {
+                if (bracketsCount == 0) {
+                    pos++;
+                    if(!currentLiteral.isEmpty()) {
+                        literals.add('\'' + currentLiteral + '\'');
+                        currentLiteral = "";
+                    }
+                } else {
+                    currentLiteral += c;
+                }
+                bracketsCount++;
+            } else if (c == '}') {
+                bracketsCount--;
+                if (bracketsCount == 0) {
+                    literals.add(currentLiteral);
+                    currentLiteral = "";
+                } else {
+                    currentLiteral += c;
+                }
+            } else {
+                currentLiteral += c;
+            }
+            pos++;
+        }
+        if(!currentLiteral.isEmpty()) {
+            literals.add('\'' + currentLiteral + '\'');
+        }
+
+        String code = StringUtils.join(literals, " + ");
+        return parser.runStringInterpolateCode(this, code, context, dynamic).getLP();
     }
 
     private LP addNumericConst(BigDecimal value) {

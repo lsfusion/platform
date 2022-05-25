@@ -69,14 +69,7 @@ public class ScriptParser {
                             int lineNumberBefore, int lineNumberAfter, boolean enabledMeta) throws RecognitionException {
         assert !insideMetaDecl;
 
-        LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
-        LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
-
-        lexer.self = LM;
-        lexer.parseState = currentState;
-
-        parser.self = LM;
-        parser.parseState = currentState;
+        LsfLogicsParser parser = getParser(LM, code);
 
         //lineNumber is 1-based
         currentExpansionLine += lineNumberAfter - 1;
@@ -111,6 +104,23 @@ public class ScriptParser {
         }
 
         currentExpansionLine -= lineNumberAfter - 1;
+    }
+
+    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) throws RecognitionException {
+        return getParser(LM, code).propertyExpression(context, dynamic);
+    }
+
+    private LsfLogicsParser getParser(ScriptingLogicsModule LM, String code) {
+        LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
+        LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
+
+        lexer.self = LM;
+        lexer.parseState = currentState;
+
+        parser.self = LM;
+        parser.parseState = currentState;
+
+        return parser;
     }
     
     private int linesCount(String code) {
