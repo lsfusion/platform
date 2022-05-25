@@ -3,6 +3,7 @@ package lsfusion.server.language;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -11,6 +12,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
@@ -3234,7 +3236,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
                 String source = ((LocalizedString)value).getSourceString();
-                if(source.contains("${")) {
+                if(source.contains("${") || source.contains("$I{")) {
                     lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
                 } else {
                     lp = addUnsafeCProp(getStringConstClass((LocalizedString) value), value);
@@ -3252,8 +3254,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         return Pair.create(lp, new LPLiteral(value));
     }
 
-    protected LP addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
+    protected LP addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+        List<String> literals = parseStringInterpolateProp(source);
+        String code = StringUtils.join(literals, " + ");
+        return parser.runStringInterpolateCode(this, code, lineNumber, context, dynamic).getLP();
+    }
+
+    private List<String> parseStringInterpolateProp(String source) throws ScriptingErrorLog.SemanticErrorException {
         List<String> literals = new ArrayList<>();
+
+        if(source.startsWith("$I{") && source.endsWith("}")) {
+            source = source.substring(3, source.length() - 1);
+            RawFileData resource = ResourceUtils.findResourceAsFileData(source, true, false, new Result(), null);
+            if (resource == null) {
+                errLog.emitNotFoundError(parser, "file", source);
+            } else {
+                try {
+                    source = IOUtils.readStreamToString(resource.getInputStream());
+                    if(source.endsWith("\r\n"))
+                        source = source.substring(0, source.length() - 2);
+                } catch (IOException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+        }
 
         int pos = 0;
         int bracketsCount = 0;
@@ -3263,8 +3287,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (c == '$' && (pos + 1) < source.length() && source.charAt(pos + 1) == '{') {
                 if (bracketsCount == 0) {
                     pos++;
-                    if(!currentLiteral.isEmpty()) {
-                        literals.add('\'' + currentLiteral + '\'');
+                    if (!currentLiteral.isEmpty()) {
+                        literals.add(escapeLiteral(currentLiteral));
                         currentLiteral = "";
                     }
                 } else {
@@ -3284,12 +3308,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             pos++;
         }
-        if(!currentLiteral.isEmpty()) {
-            literals.add('\'' + currentLiteral + '\'');
+        if (!currentLiteral.isEmpty()) {
+            literals.add(escapeLiteral(currentLiteral));
         }
+        return literals;
+    }
 
-        String code = StringUtils.join(literals, " + ");
-        return parser.runStringInterpolateCode(this, code, lineNumber, context, dynamic).getLP();
+    private String escapeLiteral(String value) {
+        return '\'' + value.replace("'", "\\'") + '\'';
     }
 
     private LP addNumericConst(BigDecimal value) {
