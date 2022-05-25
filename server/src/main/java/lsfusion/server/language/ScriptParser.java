@@ -70,53 +70,50 @@ public class ScriptParser {
 
     public void runMetaCode(ScriptingLogicsModule LM, String code, int metaLineNumber, String metaModuleName, String callString, 
                             int lineNumberBefore, int lineNumberAfter, boolean enabledMeta) throws RecognitionException {
-        assert !insideMetaDecl;
-
-        //lineNumber is 1-based
-        currentExpansionLine += lineNumberAfter - 1;
-
-        boolean isTopParser = parsers.size() == 1; // for meta decl parsing it doesn't matter
-
-        if (!enabledMeta && isTopParser) {
-            insideNonEnabledMeta = true;
-        }
-
-        Result<Boolean> result = new Result();
-
         runCode(LM, code, metaLineNumber, metaModuleName, callString, lineNumberBefore, parser -> {
             try {
-                result.set(parser.inMainParseState()); // in theory we might also need offset in class step
+                assert !insideMetaDecl;
+
+                //lineNumber is 1-based
+                currentExpansionLine += lineNumberAfter - 1;
+
+                boolean isTopParser = parsers.size() == 1; // for meta decl parsing it doesn't matter
+                boolean needOffset = parser.inMainParseState(); // in theory we might also need offset in class step
+
+                if (!enabledMeta && isTopParser) {
+                    insideNonEnabledMeta = true;
+                }
+
                 parser.metaCodeParsingStatement();
+
+                int codeLinesCnt = 0;
+                if (needOffset) {
+                    codeLinesCnt = linesCount(code);
+                    globalExpandedLines += codeLinesCnt - 1;
+                }
+
+                if (isTopParser) {
+                    currentExpandedLines = 0;
+                } else if (needOffset) {
+                    currentExpandedLines += codeLinesCnt - 1;
+                }
+
+                if (!enabledMeta && isTopParser) {
+                    insideNonEnabledMeta = false;
+                }
+
+                currentExpansionLine -= lineNumberAfter - 1;
+
             } catch (RecognitionException e) {
                 throw Throwables.propagate(e);
             }
         });
-
-        boolean needOffset = result.result;
-
-        int codeLinesCnt = 0;
-        if (needOffset) {
-            codeLinesCnt = linesCount(code);
-            globalExpandedLines += codeLinesCnt - 1;
-        }
-        
-        if (isTopParser) {
-            currentExpandedLines = 0;
-        } else if (needOffset) {
-            currentExpandedLines += codeLinesCnt - 1; 
-        }
-
-        if (!enabledMeta && isTopParser) {
-            insideNonEnabledMeta = false;
-        }
-
-        currentExpansionLine -= lineNumberAfter - 1;
     }
 
-    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) {
+    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, String moduleName, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) {
         Result<ScriptingLogicsModule.LPWithParams> result = new Result();
 
-        runCode(LM, code, 0, null, null, lineNumber, parser -> {
+        runCode(LM, code, 0, moduleName, "", lineNumber, parser -> {
             try {
                 result.set(parser.propertyExpression(context, dynamic));
             } catch (RecognitionException e) {

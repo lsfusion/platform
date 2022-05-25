@@ -3236,7 +3236,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
                 String source = ((LocalizedString)value).getSourceString();
-                if(source.contains("${") || source.contains("$I{")) {
+                if(source.startsWith("$I{") && source.endsWith("}")) {
+                    lp = addStringInlineProp(source, lineNumber, context, dynamic);
+                } else if(source.contains("${")) {
                     lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
                 } else {
                     lp = addUnsafeCProp(getStringConstClass((LocalizedString) value), value);
@@ -3254,30 +3256,37 @@ public class ScriptingLogicsModule extends LogicsModule {
         return Pair.create(lp, new LPLiteral(value));
     }
 
-    protected LP addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
-        List<String> literals = parseStringInterpolateProp(source);
-        String code = StringUtils.join(literals, " + ");
-        return parser.runStringInterpolateCode(this, code, lineNumber, context, dynamic).getLP();
+    protected LP addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+        String resourceName = source.substring(3, source.length() - 1);
+        String code = parseStringInlineProp(resourceName);
+        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic).getLP();
     }
 
-    private List<String> parseStringInterpolateProp(String source) throws ScriptingErrorLog.SemanticErrorException {
-        List<String> literals = new ArrayList<>();
-
-        if(source.startsWith("$I{") && source.endsWith("}")) {
-            source = source.substring(3, source.length() - 1);
-            RawFileData resource = ResourceUtils.findResourceAsFileData(source, true, false, new Result(), null);
-            if (resource == null) {
-                errLog.emitNotFoundError(parser, "file", source);
-            } else {
-                try {
-                    source = IOUtils.readStreamToString(resource.getInputStream());
-                    if(source.endsWith("\r\n"))
-                        source = source.substring(0, source.length() - 2);
-                } catch (IOException e) {
-                    throw Throwables.propagate(e);
-                }
+    private String parseStringInlineProp(String resourceName) throws ScriptingErrorLog.SemanticErrorException {
+        String result = null;
+        RawFileData resource = ResourceUtils.findResourceAsFileData(resourceName, true, false, new Result(), null);
+        if (resource == null) {
+            errLog.emitNotFoundError(parser, "file", resourceName);
+        } else {
+            try {
+                result = IOUtils.readStreamToString(resource.getInputStream());
+                if(result.endsWith("\r\n"))
+                    result = result.substring(0, result.length() - 2);
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
         }
+
+        return escapeLiteral(result);
+    }
+
+    protected LP addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+        String code = StringUtils.join(parseStringInterpolateProp(source), " + ");
+        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
+    }
+
+    private List<String> parseStringInterpolateProp(String source) {
+        List<String> literals = new ArrayList<>();
 
         int pos = 0;
         int bracketsCount = 0;
@@ -3298,7 +3307,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             } else if (c == '}') {
                 bracketsCount--;
                 if (bracketsCount == 0) {
-                    literals.add(currentLiteral);
+                    literals.add("(" + currentLiteral + ")");
                     currentLiteral = "";
                 } else {
                     currentLiteral += c;
@@ -3315,7 +3324,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private String escapeLiteral(String value) {
-        return '\'' + value.replace("'", "\\'") + '\'';
+        return value != null ? ('\'' + value.replace("'", "\\'") + '\'') : null;
     }
 
     private LP addNumericConst(BigDecimal value) {
