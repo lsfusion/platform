@@ -117,7 +117,7 @@ public class ScriptParser {
             try {
                 result.set(parser.propertyExpression(context, dynamic));
             } catch (RecognitionException e) {
-                throw new RuntimeException(e);
+                throw Throwables.propagate(e);
             }
         });
 

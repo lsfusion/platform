@@ -14,10 +14,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.IOUtils;
-import lsfusion.base.file.NamedFileData;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.*;
 import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -668,6 +665,23 @@ public class BaseUtils {
             return new NamedFileData(IOUtils.readBytesFromStream(inStream, len));
         }
 
+        if (objectType == 15) {
+            int size = inStream.readInt();
+            String[] names = new String[size];
+            for(int i = 0; i < size; i++) {
+                names[i] = inStream.readUTF();
+            }
+            RawFileData[] files = new RawFileData[size];
+            for(int i = 0; i < size; i++) {
+                files[i] = new RawFileData(IOUtils.readBytesFromStream(inStream, inStream.readInt()));
+            }
+            String[] postfixes = new String[size];
+            for(int i = 0; i < size; i++) {
+                postfixes[i] = inStream.readUTF();
+            }
+            return new StringWithFiles(names, files, postfixes);
+        }
+
         throw new IOException();
     }
 
@@ -799,6 +813,23 @@ public class BaseUtils {
             byte[] obj = ((NamedFileData) object).getBytes();
             outStream.writeInt(obj.length);
             outStream.write(obj);
+            return;
+        }
+
+        if (object instanceof StringWithFiles) {
+            outStream.writeByte(15);
+            outStream.writeInt(((StringWithFiles) object).names.length);
+            for(String name : ((StringWithFiles) object).names) {
+                outStream.writeUTF(name);
+            }
+            for(RawFileData file : ((StringWithFiles) object).files) {
+                byte[] obj = file.getBytes();
+                outStream.writeInt(obj.length);
+                outStream.write(obj);
+            }
+            for(String postfix : ((StringWithFiles) object).postfixes) {
+                outStream.writeUTF(postfix);
+            }
             return;
         }
 

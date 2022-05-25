@@ -9,9 +9,14 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
+import lsfusion.gwt.client.form.property.cell.classes.GStringWithFiles;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.getAppStaticImageURL;
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public class GFormChanges {
     public final NativeSIDMap<GGroupObject, GGroupObjectValue> objects = new NativeSIDMap<>();
@@ -53,7 +58,7 @@ public class GFormChanges {
         }
 
         for (int i = 0; i < dto.properties.length; i++) {
-            remapped.properties.put(remapPropertyReader(form, dto.properties[i]), remap(dto.propertiesValueKeys[i], dto.propertiesValueValues[i]));
+            remapped.properties.put(remapPropertyReader(form, dto.properties[i]), remap(dto.propertiesValueKeys[i], remapValues(dto.propertiesValueValues[i])));
         }
 
         for (Integer propertyID : dto.dropPropertiesIds) {
@@ -90,6 +95,23 @@ public class GFormChanges {
         for(int i=0;i<keys.length;i++)
             result.put(keys[i], values[i]);
         return result;
+    }
+
+    private static Serializable[] remapValues(Serializable[] values) {
+        Serializable[] newValues = new Serializable[values.length];
+        for (int i = 0; i < values.length; i++) {
+            Serializable value = values[i];
+            if (value instanceof GStringWithFiles) {
+                String result = "";
+                for (int j = 0; j < ((GStringWithFiles) value).urls.length; j++) {
+                    result += nvl(getAppStaticImageURL(((GStringWithFiles) value).urls[j]), "") + ((GStringWithFiles) value).postfixes[j];
+                }
+                newValues[i] = result;
+            } else {
+                newValues[i] = value;
+            }
+        }
+        return newValues;
     }
 
     private static GPropertyReader remapPropertyReader(GForm form, GPropertyReaderDTO readerDTO) {

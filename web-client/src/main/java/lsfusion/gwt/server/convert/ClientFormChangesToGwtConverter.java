@@ -3,6 +3,7 @@ package lsfusion.gwt.server.convert;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.StringWithFiles;
 import lsfusion.client.classes.data.ClientImageClass;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
@@ -20,9 +21,11 @@ import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 
 import java.awt.*;
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -46,7 +49,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientFormChanges.class)
-    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex, FormSessionObject sessionObject) {
+    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex, FormSessionObject sessionObject, MainDispatchServlet servlet) throws IOException {
         GFormChangesDTO dto = new GFormChangesDTO();
 
         dto.requestIndex = requestIndex;
@@ -129,6 +132,13 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 Object propValue = convertOrCast(clientValues.getValue());
                 if (propValue instanceof NamedFileData || propValue instanceof FileData || propValue instanceof RawFileData) {
                     propValue = convertFileValue(reader, propValue, sessionObject);
+                } else if(propValue instanceof StringWithFiles) {
+                    StringWithFiles value = (StringWithFiles) propValue;
+                    String[] names = new String[value.names.length];
+                    for(int k = 0; k < value.names.length; k++) {
+                        names[k] = value.files[k].equals(RawFileData.EMPTY) ? null : servlet.getFormProvider().getWebFile(sessionObject.navigatorID, value.names[k], value.files[k]);
+                    }
+                    propValue = new GStringWithFiles(names, ((StringWithFiles) propValue).postfixes);
                 }
                 propValueKeys[j] = groupObjectValue;
                 propValueValues[j] = (Serializable) propValue;

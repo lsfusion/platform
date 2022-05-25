@@ -3270,8 +3270,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             try {
                 result = IOUtils.readStreamToString(resource.getInputStream());
-                if(result.endsWith("\r\n"))
-                    result = result.substring(0, result.length() - 2);
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             }
@@ -3291,11 +3289,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         int pos = 0;
         int bracketsCount = 0;
         String currentLiteral = "";
+        boolean fMode = false;
+        boolean iMode = false;
         while (pos < source.length()) {
             char c = source.charAt(pos);
-            if (c == '$' && (pos + 1) < source.length() && source.charAt(pos + 1) == '{') {
-                if (bracketsCount == 0) {
-                    pos++;
+
+            if(bracketsCount == 0) {
+                boolean nextF = compareChar(source, pos + 1, 'F');
+                boolean nextI = compareChar(source, pos + 1, 'I');
+                if (c == '$' && (nextF || nextI) && compareChar(source, pos + 2, '{')) {
+                    pos += 3;
+                    if (!currentLiteral.isEmpty()) {
+                        literals.add(escapeLiteral(currentLiteral));
+                        currentLiteral = "";
+                    }
+                    fMode = nextF;
+                    iMode = nextI;
+                    bracketsCount++;
+                    continue;
+                }
+            }
+
+            if (c == '$' && compareChar(source, pos + 1, '{')) {
+                if(bracketsCount == 0) {
+                    pos += 1;
                     if (!currentLiteral.isEmpty()) {
                         literals.add(escapeLiteral(currentLiteral));
                         currentLiteral = "";
@@ -3307,7 +3324,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             } else if (c == '}') {
                 bracketsCount--;
                 if (bracketsCount == 0) {
-                    literals.add("(" + currentLiteral + ")");
+                    if (fMode) {
+                        fMode = false;
+                        literals.add(escapeLiteral("<filelink>" + currentLiteral + "</filelink>"));
+                    } else if (iMode) {
+                        iMode = false;
+                        literals.add(escapeLiteral("$I{" + currentLiteral + "}"));
+                    } else {
+                        literals.add("(" + currentLiteral + ")");
+                    }
                     currentLiteral = "";
                 } else {
                     currentLiteral += c;
@@ -3323,8 +3348,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return literals;
     }
 
+    private boolean compareChar(String source, int pos, char cmp) {
+        return source.length() > pos && source.charAt(pos) == cmp;
+    }
+
     private String escapeLiteral(String value) {
-        return value != null ? ('\'' + value.replace("'", "\\'") + '\'') : null;
+        return value != null ? ('\'' + value.replace("'", "\\'").replace("\r", "\\r").replace("\n", "\\n") + '\'') : null;
     }
 
     private LP addNumericConst(BigDecimal value) {

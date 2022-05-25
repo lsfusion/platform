@@ -2,6 +2,8 @@ package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ResourceUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -10,6 +12,8 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.StringWithFiles;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -175,7 +179,33 @@ public class FormChanges {
 
                 serializeGroupObjectValue(outStream, objectValues);
 
-                BaseUtils.serializeObject(outStream, rows.getValue(j).getValue());
+                Object value = rows.getValue(j).getValue();
+
+                if (value instanceof String && ((String) value).contains("<filelink>")) {
+
+                    String[] parts = ((String) value).split("<filelink>");
+
+                    String[] names = new String[parts.length];
+                    RawFileData[] files = new RawFileData[parts.length];
+                    String[] postfixes = new String[parts.length];
+                    for(int p = 0; p < parts.length; p++) {
+                        String part = parts[p];
+                        String[] entry = part.split("</filelink>");
+                        if(entry.length > 1) {
+                            names[p] = entry[0];
+                            files[p] = ResourceUtils.findResourceAsFileData(entry[0], true, false, new Result<>(), null);
+                            postfixes[p] = entry[1];
+                        } else {
+                            names[p] = "";
+                            files[p] = RawFileData.EMPTY;
+                            postfixes[p] = entry[0];
+                        }
+                    }
+
+                    value = new StringWithFiles(names, files, postfixes);
+                }
+
+                BaseUtils.serializeObject(outStream, value);
             }
         }
 
