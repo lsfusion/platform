@@ -1,6 +1,7 @@
 package lsfusion.http.provider.navigator;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ServerUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.navigator.ConnectionInfo;
@@ -21,9 +22,11 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.web.util.WebUtils;
 import ua_parser.Client;
 import ua_parser.Parser;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.rmi.RemoteException;
 import java.util.Locale;
@@ -43,7 +46,10 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        return new SessionInfo(request.getRemoteHost(), request.getRemoteAddr(), null, null, null, null, // we don't need client language and country because they were already provided when authenticating (see method above)
+        Cookie hostNameCookie = WebUtils.getCookie(request, ServerUtils.HOSTNAME_COOKIE_NAME);
+        String hostName = hostNameCookie != null ? hostNameCookie.getValue() : request.getRemoteHost();
+
+        return new SessionInfo(hostName, request.getRemoteAddr(), null, null, null, null, // we don't need client language and country because they were already provided when authenticating (see method above)
                 MainController.getExternalRequest(new Object[0], request));
     }
 

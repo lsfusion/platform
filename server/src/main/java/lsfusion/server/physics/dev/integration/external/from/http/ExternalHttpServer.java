@@ -81,6 +81,9 @@ public class ExternalHttpServer extends MonitorServer {
         this.remoteLogics = remoteLogics;
     }
 
+    // should be equal to ServerUtils.HOSTNAME_COOKIE_NAME
+    public static final String HOSTNAME_COOKIE_NAME = "LSFUSION_HOSTNAME";
+
     public class HttpRequestHandler implements HttpHandler {
 
         public void handle(HttpExchange request) {
@@ -112,7 +115,11 @@ public class ExternalHttpServer extends MonitorServer {
 
                 InetSocketAddress remoteAddress = request.getRemoteAddress();
                 InetAddress address = remoteAddress.getAddress();
-                SessionInfo sessionInfo = new SessionInfo(getHostName(remoteAddress), address != null ? address.getHostAddress() : null, null, null, null, null);// client locale does not matter since we use anonymous authentication
+
+                String hostNameCookie = cookiesMap.get(HOSTNAME_COOKIE_NAME);
+                String hostName = hostNameCookie != null ? hostNameCookie : getHostName(remoteAddress);
+
+                SessionInfo sessionInfo = new SessionInfo(hostName, address != null ? address.getHostAddress() : null, null, null, null, null);// client locale does not matter since we use anonymous authentication
 
                 String[] host = request.getRequestHeaders().getFirst("Host").split(":");
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);

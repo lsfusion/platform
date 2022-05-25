@@ -9,6 +9,8 @@ import java.util.Locale;
 
 public class ServerUtils {
     public static final String LOCALE_COOKIE_NAME = "LSFUSION_LOCALE";
+    // should be equal to ExternalHttpServer.HOSTNAME_COOKIE_NAME
+    public static final String HOSTNAME_COOKIE_NAME = "LSFUSION_HOSTNAME";
     private static final String DEFAULT_LOCALE_LANGUAGE = "ru";
 
     public static Authentication getAuthentication() {
