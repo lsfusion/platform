@@ -32,19 +32,18 @@ textReplyTo (Message m) = text(replyTo(m));
 The list of chat messages on the form will be displayed as rows in a table with one column.
 For this column the value display component will be changed to one that will be written in JavaScript.
 The easiest way to represent the value is in the form of JSON format string, which will store all the parameters of the message.
-To build this string we will use built-in PostgreSQL function _json_build_object_ :
+To build this string we will use operator JSON :
 
 ```lsf
 json (Message m) = 
-    [FORMULA STRING 'json_build_object(\'author\',$1,\'time\',$2,\'text\',$3,\'own\',$4,\'replyAuthor\',$5,\'replyText\',$6,\'replyMessage\',$7)'](
-         (OVERRIDE nameAuthor(m), ''), 
-         dateTime(m), 
-         text(m), 
-         IF author(m) = currentUser() THEN 1 ELSE 0, 
-         (OVERRIDE nameAuthorReplyTo(m), ''), 
-         (OVERRIDE textReplyTo(m), ''), 
-         (OVERRIDE LONG(replyTo(m)), 0)
-    );
+    JSON FROM
+         author = nameAuthor(m), 
+         time = dateTime(m), 
+         text = text(m), 
+         own = IF author(m) = currentUser() THEN 1 ELSE 0, 
+         replyAuthor = nameAuthorReplyTo(m), 
+         replyText = textReplyTo(m), 
+         replyMessage = replyTo(m);
 ```
 Example value:
 ```json
@@ -59,11 +58,8 @@ Example value:
 }
 ```
 
-Note that all values must not contain NULL. Otherwise, the value of the expression obtained through [FORMULA](FORMULA_operator.md) operator, will also be NULL.
-
 Next, use JavaScript and CSS to create a component that will display messages in the browser.
 The component will be created in the chat.js file, which will be located in the _resources/web_ folder.
-When the platform starts up, all js and css files inside the web folder of any element from the classpath will be loaded onto the browser page automatically.
 
 Inside the chat.js file, create _chatMessageRender_ function. It will return an object consisting of two functions: _render_ and _update_.
 
@@ -211,22 +207,23 @@ To update the displayed values, the platform will call the _update_ function eac
 as in the _render_ function, as well as the value itself:
 ```js
 update: function (element, controller, value) {
-    let obj = JSON.parse(value);
-    element.author.innerHTML = obj.author;
+update: function (element, controller, value) {
+    element.author.innerHTML = value.author || '';
 
-    element.replyAuthor.innerHTML = obj.replyAuthor;
-    element.replyText.innerHTML = obj.replyText;
+    element.replyAuthor.innerHTML = value.replyAuthor || '';
+    element.replyText.innerHTML = value.replyText || '';
 
-    element.time.innerHTML = obj.time;
-    element.text.innerHTML = obj.text;
+    element.time.innerHTML = value.time;
+    element.text.innerHTML = value.text || '';
 
-    if (obj.own) {
+    if (value.own)
         element.message.classList.add('chat-message-own');
-    } else
+    else
         element.message.classList.remove('chat-message-own');
 }
+}
 ```
-This function converts the string value _value_, which was calculated from the previously described _json_ property, into a JavaScript object. 
+This function takes as the _value_ parameter the JavaScript object that is calculated from the previously described _json_ property. 
 The values of all fields are written to the elements that were previously constructed in the _render_ function.
 
 To combine these two functions into one, a new function _chatMessageRender_ is created, which returns them within the same object:
@@ -243,6 +240,14 @@ function chatMessageRender() {
 }
 ```
 
+In order to load created js and css files when the page opens in the browser, you must add their initialization to the action _onWebClientLoad_ using the operator [INTERNAL](INTERNAL_operator.md) :
+```lsf
+onWebClientLoad() + {
+    INTERNAL CLIENT 'chat.js';
+    INTERNAL CLIENT 'chat.css';
+}
+```
+
 The message displayed by the created component will look like this:
 
 ![](images/How-to_Custom_components_message.png)
@@ -256,44 +261,38 @@ in [local property](Data_properties_DATA.md#---local) and setting the focus in t
 The _controller_ parameter, passed to the _update_ function, is used to notify the server of an event made by the user:
 ```js
 element.replyAction.onclick = function(event) {
-    controller.changeValue(JSON.stringify({ action : 'reply' }));
+    controller.change({ action : 'reply' });
     $(this).closest("div[lsfusion-container='chat']").find(".chat-textarea").focus();
 }
 
 element.replyContent.onmousedown = function(event) {
-    controller.changeValue(JSON.stringify({ action : 'goToReply' }));
+    controller.change({ action : 'goToReply' });
 }
 ```
 Clicking on the quoted message also searches for the message field using jQuery and sets the current focus to it.
 The DOM element with the class chat-message-input-area will be created later.
 
-Depending on the action made by the user, the _changeValue_ method is called on the controller, which sends information about the event as a JSON format string.
+Depending on the action made by the user, the _change_ method is called on the controller, which sends information about the event as a JSON-object.
 The platform will automatically pass the value to the defined [action](Actions.md) _changeMessage_ :
 ```lsf
 replyTo = DATA LOCAL Message ();
 
 changeMessage (Message m) {
-    INPUT s = STRING DO { // get the string
-        stringToFile(s); // transform it to resultFile()
-        
-        LOCAL action = STRING();
-        IMPORT JSON FROM resultFile() TO() action; // import the file as a json in local properties
-        
-        IF action() = 'goToReply' THEN {
-            seek(replyTo(m)); // go to the quoted message
+    INPUT f = JSON DO
+        IMPORT JSON FROM f FIELDS() STRING action DO { // import the file as a json in local properties
+            IF action = 'goToReply' THEN
+                seek(replyTo(m)); // go to the quoted message
+    
+            IF action = 'reply' THEN
+                replyTo() <- m; // store the current message in a local property
         }
-
-        IF action() = 'reply' THEN {
-            replyTo() <- m; // store the current message in a local property
-        }
-    }
 }
 ```
-This action reads the string passed from JavaScript, parses JSON, and then performs the appropriate action.
+This action reads the object passed from JavaScript, parses JSON, and then performs the appropriate action.
 
 Finally, create a chat form and add a table with a list of messages to it. The table will have exactly one column, the value of which will be JSON built earlier.
 The keyword **CUSTOM** specifies that the value is to be displayed using the _chatMessageRender_ function created earlier.
-The action specified after the keyword **ON CHANGE** is called when the _controller.changeValue_ method is executed for the selected message.
+The action specified after the keyword **ON CHANGE** is called when the _controller.change_ method is executed for the selected message.
 
 ```lsf
 FORM chat 'Chat'
@@ -353,8 +352,10 @@ send 'Send' () {
 
 Similar to the _json_ property described earlier, we create a new _jsonInputMessage_ property, which will be used by the component to enter a new message:
 ```lsf
-jsonInputMessage () = [FORMULA STRING 'json_build_object(\'replyAuthor\',$1,\'replyText\',$2,\'text\',$3)']
-                       ((OVERRIDE nameAuthor(replyTo()), ''), (OVERRIDE text(replyTo()), ''), (OVERRIDE message(), ''));
+jsonInputMessage () = JSON FROM
+            replyAuthor = nameAuthor(replyTo()),
+            replyText = text(replyTo()),
+            text = message();  
 ```
 
 Next, create a function that will generate a component to display and input a new message.
@@ -406,14 +407,12 @@ function chatMessageInputRender() {
     },
     update: function (element, controller, value) {
         if (value !== null) {
-            let obj = JSON.parse(value);
+            element.replyAuthor.innerHTML = value.replyAuthor || '';
+            element.replyText.innerHTML = value.replyText || '';
 
-            element.replyAuthor.innerHTML = obj.replyAuthor;
-            element.replyText.innerHTML = obj.replyText;
+            element.replyRemove.innerHTML = value.replyAuthor ? '❌' : '';
 
-            element.replyRemove.innerHTML = (obj.replyAuthor === '') ? '' : '❌';
-
-            element.text.innerHTML = obj.text;
+            element.text.innerHTML = value.text || '';
         }
     }
 }
@@ -452,45 +451,38 @@ and write the entered message to a local property when the component loses focus
 The browser side will have the following JavaScript code:
 ```js
 element.replyRemove.onclick = function(event) {
-    controller.changeValue(JSON.stringify({ action : 'replyRemove' }));
+    controller.change({ action : 'replyRemove' });
 }
 
 element.text.onkeydown = function(event) {
     if (event.keyCode == 10 || event.keyCode == 13)
         if (event.ctrlKey)
-            controller.changeValue(JSON.stringify({ action : 'send', value : element.text.innerHTML }))
+            controller.change({ action : 'send', value : element.text.innerHTML })
         else
             event.stopPropagation(); // stop further processing after pressing ENTER
 }
 
 element.text.onblur = function (event) {
-    controller.changeValue(JSON.stringify({ action : 'change', value : element.text.innerHTML }));
+    controller.change({ action : 'change', value : element.text.innerHTML });
 }
 ```
 
 The _changeInputMessage_ action will receive these events on the server:
 ```lsf
 changeInputMessage () {
-    INPUT s = TEXT DO {
-        stringToFile(s);
-        
-        LOCAL action = STRING();
-        LOCAL value = TEXT();
-        IMPORT JSON FROM resultFile() TO() action, value;
-
-        IF action() = 'replyRemove' THEN {
-            replyTo() <- NULL;
+    INPUT f = JSON DO
+        IMPORT JSON FROM f FIELDS() STRING action, TEXT value DO {
+            IF action = 'replyRemove' THEN
+                replyTo() <- NULL;
+    
+            IF action = 'send' THEN {
+                message() <- value;
+                send();
+            }
+            
+            IF action = 'change' THEN
+                message() <- value;
         }
-
-        IF action() = 'send' THEN {
-            message() <- value();
-            send();
-        }
-        
-        IF action() = 'change' THEN {
-            message() <- value();
-        }
-    }
 }
 ```
 
@@ -507,7 +499,6 @@ Change the design of the form, so that the field for entering a message and the 
 DESIGN chat {
     chat {
         NEW chatMessage {
-            autoSize = TRUE;
             type = CONTAINERH;
             alignment = STRETCH;
             MOVE PROPERTY(jsonInputMessage()) {
