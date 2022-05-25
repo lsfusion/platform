@@ -42,7 +42,7 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
             modules: {
                 toolbar: toolbarOptions
             },
-            bounds: element,
+            bounds: element, //for the tooltip is not hidden behind the parent component
             theme: 'bubble',
             readOnly: true
         });
