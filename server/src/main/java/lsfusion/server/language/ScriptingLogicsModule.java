@@ -3225,7 +3225,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
+    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
         LP lp = null;
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
@@ -3234,8 +3234,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
                 String source = ((LocalizedString)value).getSourceString();
-                if(source.matches(".*\\$\\{.*\\}.*")) {
-                    lp = addStringInterpolateProp(source, context, dynamic);
+                if(source.contains("${")) {
+                    lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
                 } else {
                     lp = addUnsafeCProp(getStringConstClass((LocalizedString) value), value);
                 }
@@ -3252,7 +3252,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return Pair.create(lp, new LPLiteral(value));
     }
 
-    protected LP addStringInterpolateProp(String source, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
+    protected LP addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
         List<String> literals = new ArrayList<>();
 
         int pos = 0;
@@ -3289,7 +3289,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         String code = StringUtils.join(literals, " + ");
-        return parser.runStringInterpolateCode(this, code, context, dynamic).getLP();
+        return parser.runStringInterpolateCode(this, code, lineNumber, context, dynamic).getLP();
     }
 
     private LP addNumericConst(BigDecimal value) {

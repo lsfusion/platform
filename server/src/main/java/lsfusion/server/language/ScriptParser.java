@@ -106,8 +106,12 @@ public class ScriptParser {
         currentExpansionLine -= lineNumberAfter - 1;
     }
 
-    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) throws RecognitionException {
-        return getParser(LM, code).propertyExpression(context, dynamic);
+    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) throws RecognitionException {
+        LsfLogicsParser parser = getParser(LM, code);
+        parsers.push(new ParserInfo(parser, 0, null, null, lineNumber));
+        ScriptingLogicsModule.LPWithParams result = parser.propertyExpression(context, dynamic);
+        parsers.pop();
+        return result;
     }
 
     private LsfLogicsParser getParser(ScriptingLogicsModule LM, String code) {

@@ -5307,12 +5307,13 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 	
 constantProperty[List<TypedParameter> context, boolean dynamic] returns [LP property, LPNotExpr ci]
 @init {
+    int lineNumber = self.getParser().getCurrentParserLineNumber();
 	ScriptingLogicsModule.ConstType cls = null;
 	Object value = null;
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value, context, dynamic);
+		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value, lineNumber, context, dynamic);
 		$property = constantProp.first;
 		$ci = constantProp.second;
 	}
