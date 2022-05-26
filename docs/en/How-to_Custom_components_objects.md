@@ -181,5 +181,13 @@ To complete the design setup, create a file _itemcards.css_, which we will also 
 }
 ```
 
+In order to load created js and css files when the page opens in the browser, you must add their initialization to the action _onWebClientLoad_ using the operator [INTERNAL](INTERNAL_operator.md) :
+```lsf
+onWebClientLoad() + {
+    INTERNAL CLIENT 'itemcards.js';
+    INTERNAL CLIENT 'itemcards.css';
+}
+```
+
 The resulting form will look like this:
 ![](images/How-to_Custom_components_objects.png)

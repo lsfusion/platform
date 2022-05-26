@@ -181,5 +181,13 @@ function itemCards() {
 }
 ```
 
+Для того, чтобы при открытии страницы в браузере, загрузились созданные js и css файлы, нужно добавить их инициализацию в действии _onWebClientLoad_ при помощи оператора [INTERNAL](INTERNAL_operator.md) :
+```lsf
+onWebClientLoad() + {
+    INTERNAL CLIENT 'itemcards.js';
+    INTERNAL CLIENT 'itemcards.css';
+}
+```
+
 В результате получившаяся форма будет выглядеть следующим образом:
 ![](images/How-to_Custom_components_objects.png)
