@@ -1396,7 +1396,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     private void updateSelectedCells(int rowIndex, ArrayList<Column> dataColumnsChanged) {
         // last parameter is an optimization
         // actually only background and selected changed (i.e. tColumn.hasQuickAccessAction(cell))
-        tableBuilder.updateRow(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex), (tColumn, cell) -> (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
+        tableBuilder.updateRowImpl(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex), (tColumn, cell) -> (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
     }
 
     private void updateDataDOM(boolean columnsChanged, ArrayList<Column> dataColumnsChanged) {

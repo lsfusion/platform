@@ -65,20 +65,9 @@ public class GTreeTableTree {
 
         for (int i = 0; i < keys.size(); i++) {
             GGroupObjectValue key = keys.get(i);
+            GGroupObjectValue parent = parents.get(i);
 
-            GGroupObjectValueBuilder parentPathBuilder =
-                    new GGroupObjectValueBuilder(key)
-                            .removeAll(group.objects)
-                            .putAll(parents.get(i));
-
-            GGroupObjectValue parentPath = parentPathBuilder.toGroupObjectValue();
-
-            List<GGroupObjectValue> children = childTree.get(parentPath);
-            if (children == null) {
-                children = new ArrayList<>();
-                childTree.put(parentPath, children);
-            }
-            children.add(key);
+            childTree.computeIfAbsent(getParentPath(group, key, parent), k -> new ArrayList<>()).add(key);
         }
 
         for (GTreeTableNode groupNode : getGroupNodes(group.getUpTreeGroup())) {
@@ -86,7 +75,16 @@ public class GTreeTableTree {
         }
     }
 
-    void synchronize(GTreeTableNode parent, GGroupObject syncGroup, Map<GGroupObjectValue, List<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Boolean> expandables) {
+    public GGroupObjectValue getParentPath(GGroupObject group, GGroupObjectValue key, GGroupObjectValue parent) {
+        GGroupObjectValueBuilder parentPathBuilder =
+                new GGroupObjectValueBuilder(key)
+                        .removeAll(group.objects)
+                        .putAll(parent);
+
+        return parentPathBuilder.toGroupObjectValue();
+    }
+
+    private void synchronize(GTreeTableNode parent, GGroupObject syncGroup, Map<GGroupObjectValue, List<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Boolean> expandables) {
         List<GGroupObjectValue> syncChilds = tree.get(parent.getKey());
         if (syncChilds == null) {
             syncChilds = new ArrayList<>();

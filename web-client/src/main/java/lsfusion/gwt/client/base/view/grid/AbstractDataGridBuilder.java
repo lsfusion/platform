@@ -80,8 +80,7 @@ public abstract class AbstractDataGridBuilder<T> {
         } else {
             if (rowCount > 0) {
                 //update changed rows
-                NodeList<TableRowElement> rows = tbodyElement.getRows();
-                TableRowElement tr = rows.getItem(0);
+                TableRowElement tr = tbodyElement.getFirstChild().cast();
                 updateRow(0, values.get(0), columnsToRedraw, tr);
                 for (int i = 1; i < rowCount; ++i) {
                     tr = tr.getNextSibling().cast();
@@ -135,10 +134,10 @@ public abstract class AbstractDataGridBuilder<T> {
      */
     public void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
         setRowValueIndex(tr, rowIndex);
-        updateRow(rowIndex, rowValue, columnsToRedraw, tr, null);
+        updateRowImpl(rowIndex, rowValue, columnsToRedraw, tr, null);
     }
 
-    public abstract void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement, BiPredicate<Column<T, ?>, Cell> filter);
+    public abstract void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement rowElement, BiPredicate<Column<T, ?>, Cell> filter);
 
     public void updateRowStickyLeft(TableSectionElement tbodyElement, List<Integer> stickyColumns, List<Integer> stickyLefts) {
         int rowCount = tbodyElement.getChildCount();

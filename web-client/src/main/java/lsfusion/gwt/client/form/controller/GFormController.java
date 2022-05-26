@@ -1118,15 +1118,15 @@ public class GFormController implements EditManager {
         if(needConfirm) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
-                    executeAsyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
+                    asyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
                 }
             });
         } else {
-            executeAsyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
+            asyncCloseForm(editContext, execContext, editEvent, actionSID, externalChange, onExec);
         }
     }
 
-    private void executeAsyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
+    private void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex ->
                 formsController.asyncCloseForm(getAsyncFormController(requestIndex)), onExec);
     }
