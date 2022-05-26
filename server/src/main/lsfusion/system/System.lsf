@@ -90,12 +90,6 @@ seek '{system.seek}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.
 
 sleep '{system.sleep}'  INTERNAL  'lsfusion.server.logics.action.flow.SleepAction' (LONG);
 
-initQuillJS INTERNAL CLIENT 'input-quill.js';
-initQuillCSS INTERNAL CLIENT 'input-quill.css';
-
-initOptionJS INTERNAL CLIENT 'option.js';
-initOptionCSS INTERNAL CLIENT WAIT 'option.css';
-
 sessionOwners = DATA LOCAL NESTED MANAGESESSION INTEGER ();
 manageSession = NOT sessionOwners() > 1;
 

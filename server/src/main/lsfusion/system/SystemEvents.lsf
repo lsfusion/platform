@@ -11,11 +11,13 @@ onWebClientLoad ABSTRACT LIST ();
 onWebClientStarted () +{ 
     onWebClientLoad();
 
-    initQuillJS();
-    initQuillCSS();
+    INTERNAL CLIENT 'input-quill.js';
+    INTERNAL CLIENT 'input-quill.css';
     
-    initOptionJS();
-    initOptionCSS();
+    INTERNAL CLIENT 'input.js';
+
+    INTERNAL CLIENT 'option.js';
+    INTERNAL CLIENT WAIT 'option.css';
 }
 
 CLASS ABSTRACT Exception '{system.events.exception}';

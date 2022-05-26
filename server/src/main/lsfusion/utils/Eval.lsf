@@ -160,11 +160,7 @@ changeScript(Script sc) {
     }
 }
 
-initInterpreterJS INTERNAL CLIENT 'interpreter.js';
-
-onWebClientStarted() + {
-    initInterpreterJS();
-}
+onWebClientStarted() + { INTERNAL CLIENT 'interpreter.js'; }
 
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
