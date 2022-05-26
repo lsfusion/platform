@@ -327,9 +327,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     private Set<FilterInstance> userFilters = new HashSet<>();
     public void clearUserFilters() {
-        userFilters.clear();
+        if(!userFilters.isEmpty()) {
+            userFilters.clear();
 
-        dynamicFiltersUpdated();
+            dynamicFiltersUpdated();
+        }
     }
     public void addUserFilter(FilterInstance addFilter) {
         userFilters.add(addFilter);

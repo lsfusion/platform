@@ -53,8 +53,12 @@ public class GTreeTableNode {
         child.setParent(this);
     }
 
+    public int indexOf(GTreeTableNode child) {
+        return children.indexOf(child);
+    }
+
     public void removeNode(GTreeTableNode child) {
-        int index = children.indexOf(child);
+        int index = indexOf(child);
         if (index > -1) {
             removeNode(index);
         }

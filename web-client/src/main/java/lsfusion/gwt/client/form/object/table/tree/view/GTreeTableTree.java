@@ -227,7 +227,7 @@ public class GTreeTableTree {
             }
 
             GTreeColumnValue treeValue = generateTreeCellValue(child, parentValue, level);
-            treeValue.addLastInLevel(level - 1, node.getChildren().indexOf(child) == node.getChildren().size() - 1);
+            treeValue.addLastInLevel(level - 1, node.indexOf(child) == node.getChildren().size() - 1);
             record.setTreeValue(treeValue);
             result.add(record);
             if (child.isOpen()) {
