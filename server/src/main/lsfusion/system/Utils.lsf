@@ -194,6 +194,11 @@ urlParse INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlParseActi
 //urlParsed -> urlFormatted
 urlFormat INTERNAL 'lsfusion.server.logics.classes.data.utils.string.UrlFormatAction' ();
 
+cookie = DATA LOCAL STRING ();
+getCookie (STRING name) { INTERNAL CLIENT 'getCookie' PARAMS name TO cookie; }
+
+setCookie (STRING name, STRING value, JSON options) { INTERNAL CLIENT 'setCookie' PARAMS name, value, options; }
+
 generatedUUID = DATA LOCAL TEXT();
 generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.GenerateUUIDAction' ();
 
