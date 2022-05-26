@@ -1164,7 +1164,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     currentObject = MapFact.EMPTY();
                 } else if (updateKeys) {
                     UpdateType updateType = getUpdateType();
-                    if (!updateObjects) // не изменились фильтры, порядки, ищем текущий объект
+                    if (!updateObjects && !(updateType == UpdateType.NULL && isNull()))
                         updateType = UpdateType.PREV;
                     seeks = getSeekObjects(updateType);
                 } else if (updateObject || updatePageSize) {
