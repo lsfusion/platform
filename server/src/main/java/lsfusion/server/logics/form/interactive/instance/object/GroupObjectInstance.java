@@ -872,7 +872,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public ImSet<Property> getUsedEnvironmentIncrementProps(GroupObjectProp propType) {
         return usedEnvironmentIncrementProps.get(propType);
     }
-            
+
     public void updateEnvironmentIncrementProp(IncrementChangeProps environmentIncrement, final Modifier modifier, Result<ChangedData> changedProps, final ReallyChanged reallyChanged, GroupObjectProp propType, boolean propsChanged, boolean dataChanged, Predicate<GroupObjectInstance> hidden) throws SQLException, SQLHandledException {
         PropertyRevImplement<ClassPropertyInterface, ObjectInstance> mappedProp = props.get(propType);
         if(mappedProp != null) {
@@ -1072,7 +1072,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                     currentObject = MapFact.EMPTY();
                 } else if (updateKeys) {
                     UpdateType updateType = getUpdateType();
-                    if (!updateObjects) // не изменились фильтры, порядки, ищем текущий объект
+                    if (!updateObjects && !(updateType == UpdateType.NULL && isNull()))
                         updateType = UpdateType.PREV;
                     seeks = getSeekObjects(updateType);
                 } else if (updateObject || updatePageSize) {
