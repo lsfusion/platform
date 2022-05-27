@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -667,6 +666,10 @@ public class BaseUtils {
 
         if (objectType == 15) {
             int size = inStream.readInt();
+            String[] prefixes = new String[size + 1];
+            for(int i = 0; i < size; i++) {
+                prefixes[i] = inStream.readUTF();
+            }
             String[] names = new String[size];
             for(int i = 0; i < size; i++) {
                 names[i] = inStream.readUTF();
@@ -675,11 +678,8 @@ public class BaseUtils {
             for(int i = 0; i < size; i++) {
                 files[i] = new RawFileData(IOUtils.readBytesFromStream(inStream, inStream.readInt()));
             }
-            String[] postfixes = new String[size];
-            for(int i = 0; i < size; i++) {
-                postfixes[i] = inStream.readUTF();
-            }
-            return new StringWithFiles(names, files, postfixes);
+
+            return new StringWithFiles(prefixes, names, files);
         }
 
         throw new IOException();
@@ -819,6 +819,9 @@ public class BaseUtils {
         if (object instanceof StringWithFiles) {
             outStream.writeByte(15);
             outStream.writeInt(((StringWithFiles) object).names.length);
+            for(String prefix : ((StringWithFiles) object).prefixes) {
+                outStream.writeUTF(prefix);
+            }
             for(String name : ((StringWithFiles) object).names) {
                 outStream.writeUTF(name);
             }
@@ -826,9 +829,6 @@ public class BaseUtils {
                 byte[] obj = file.getBytes();
                 outStream.writeInt(obj.length);
                 outStream.write(obj);
-            }
-            for(String postfix : ((StringWithFiles) object).postfixes) {
-                outStream.writeUTF(postfix);
             }
             return;
         }
@@ -2991,6 +2991,8 @@ public class BaseUtils {
     }
 
     public static final String impossibleString = "FDWREVSFFGFSDRSDR";
+
+    public static final String inlineFileSeparator = impossibleString;
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {

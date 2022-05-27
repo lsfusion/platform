@@ -22,6 +22,7 @@ import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
 
 import java.awt.*;
@@ -130,15 +131,8 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
                 Object propValue = convertOrCast(clientValues.getValue());
-                if (propValue instanceof NamedFileData || propValue instanceof FileData || propValue instanceof RawFileData) {
-                    propValue = convertFileValue(reader, propValue, sessionObject);
-                } else if(propValue instanceof StringWithFiles) {
-                    StringWithFiles value = (StringWithFiles) propValue;
-                    String[] names = new String[value.names.length];
-                    for(int k = 0; k < value.names.length; k++) {
-                        names[k] = value.files[k].equals(RawFileData.EMPTY) ? null : servlet.getFormProvider().getWebFile(sessionObject.navigatorID, value.names[k], value.files[k]);
-                    }
-                    propValue = new GStringWithFiles(names, ((StringWithFiles) propValue).postfixes);
+                if (propValue instanceof NamedFileData || propValue instanceof FileData || propValue instanceof RawFileData || propValue instanceof StringWithFiles) {
+                    propValue = convertFileValue(reader, propValue, sessionObject, servlet);
                 }
                 propValueKeys[j] = groupObjectValue;
                 propValueValues[j] = (Serializable) propValue;
@@ -194,10 +188,17 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return dto;
     }
 
-    private Object convertFileValue(ClientPropertyReader reader, Object value, FormSessionObject sessionObject) {
+    private Object convertFileValue(ClientPropertyReader reader, Object value, FormSessionObject sessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
         if ((reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass)
                 || reader instanceof ClientPropertyDraw.ImageReader) {
             return FileUtils.saveFormFile((RawFileData) value, sessionObject);
+        } else if (value instanceof StringWithFiles) {
+            StringWithFiles stringWithFiles = (StringWithFiles) value;
+            String[] urls = new String[stringWithFiles.names.length];
+            for (int k = 0; k < stringWithFiles.names.length; k++) {
+                urls[k] = servlet.getFormProvider().getWebFile(sessionObject.navigatorID, stringWithFiles.names[k], stringWithFiles.files[k]);
+            }
+            return new GStringWithFiles(stringWithFiles.prefixes, urls);
         } else {
             return value == null ? null : true;
         }

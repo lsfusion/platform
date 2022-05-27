@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -12,6 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.StringWithFiles;
 import lsfusion.server.data.value.DataObject;
@@ -36,7 +38,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.util.List;
 
+import static lsfusion.base.BaseUtils.inlineFileSeparator;
 import static lsfusion.base.BaseUtils.serializeObject;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
@@ -181,28 +185,26 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                if (value instanceof String && ((String) value).contains("<filelink>")) {
+                if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
 
-                    String[] parts = ((String) value).split("<filelink>");
+                    String[] parts = ((String) value).split(inlineFileSeparator);
 
-                    String[] names = new String[parts.length];
-                    RawFileData[] files = new RawFileData[parts.length];
-                    String[] postfixes = new String[parts.length];
-                    for(int p = 0; p < parts.length; p++) {
-                        String part = parts[p];
-                        String[] entry = part.split("</filelink>");
-                        if(entry.length > 1) {
-                            names[p] = entry[0];
-                            files[p] = ResourceUtils.findResourceAsFileData(entry[0], true, false, new Result<>(), null);
-                            postfixes[p] = entry[1];
-                        } else {
-                            names[p] = "";
-                            files[p] = RawFileData.EMPTY;
-                            postfixes[p] = entry[0];
+                    MList<String> prefixes = ListFact.mList();
+                    MList<String> names = ListFact.mList();
+                    MList<RawFileData> files = ListFact.mList();
+                    for (int p = 0; p < parts.length; p = p + 2) {
+                        prefixes.add(parts[p]);
+                        String name = p + 1 < parts.length ? parts[p + 1] : null;
+                        if(name != null) {
+                            names.add(name);
+                            files.add(ResourceUtils.findResourceAsFileData(name, true, false, new Result<>(), null));
                         }
                     }
 
-                    value = new StringWithFiles(names, files, postfixes);
+                    value = new StringWithFiles(
+                            prefixes.immutableList().toArray(new String[0]),
+                            names.immutableList().toArray(new String[0]),
+                            files.immutableList().toArray(new RawFileData[0]));
                 }
 
                 BaseUtils.serializeObject(outStream, value);

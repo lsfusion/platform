@@ -98,20 +98,17 @@ public class GFormChanges {
     }
 
     private static Serializable[] remapValues(Serializable[] values) {
-        Serializable[] newValues = new Serializable[values.length];
         for (int i = 0; i < values.length; i++) {
             Serializable value = values[i];
             if (value instanceof GStringWithFiles) {
                 String result = "";
-                for (int j = 0; j < ((GStringWithFiles) value).urls.length; j++) {
-                    result += nvl(getAppStaticImageURL(((GStringWithFiles) value).urls[j]), "") + ((GStringWithFiles) value).postfixes[j];
+                for (int j = 0; j < ((GStringWithFiles) value).prefixes.length; j++) {
+                    result += ((GStringWithFiles) value).prefixes[j] + (j + 1 < ((GStringWithFiles) value).urls.length ? getAppStaticImageURL(((GStringWithFiles) value).urls[j]) : "");
                 }
-                newValues[i] = result;
-            } else {
-                newValues[i] = value;
+                values[i] = result;
             }
         }
-        return newValues;
+        return values;
     }
 
     private static GPropertyReader remapPropertyReader(GForm form, GPropertyReaderDTO readerDTO) {

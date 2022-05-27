@@ -3239,7 +3239,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 if(source.startsWith("$I{") && source.endsWith("}")) {
                     lp = addStringInlineProp(source, lineNumber, context, dynamic);
                 } else if(source.contains("${")) {
-                    lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
+                    lp = addStringInterpolateProp(source, ((LocalizedString) value).needToBeLocalized(), lineNumber, context, dynamic);
                 } else {
                     lp = addUnsafeCProp(getStringConstClass((LocalizedString) value), value);
                 }
@@ -3275,15 +3275,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        return escapeLiteral(result);
+        return escapeLiteral(result, false);
     }
 
-    protected LP addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
-        String code = StringUtils.join(parseStringInterpolateProp(source), " + ");
+    protected LP addStringInterpolateProp(String source, boolean needToBeLocalized, int lineNumber, List<TypedParameter> context, boolean dynamic) {
+        String code = StringUtils.join(parseStringInterpolateProp(source, needToBeLocalized), " + ");
         return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
     }
 
-    private List<String> parseStringInterpolateProp(String source) {
+    private List<String> parseStringInterpolateProp(String source, boolean needToBeLocalized) {
         List<String> literals = new ArrayList<>();
 
         int pos = 0;
@@ -3299,10 +3299,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 boolean nextI = compareChar(source, pos + 1, 'I');
                 if (c == '$' && (nextF || nextI) && compareChar(source, pos + 2, '{')) {
                     pos += 3;
-                    if (!currentLiteral.isEmpty()) {
-                        literals.add(escapeLiteral(currentLiteral));
-                        currentLiteral = "";
-                    }
+                    currentLiteral = flushCurrentLiteral(literals, currentLiteral, needToBeLocalized);
                     fMode = nextF;
                     iMode = nextI;
                     bracketsCount++;
@@ -3313,10 +3310,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (c == '$' && compareChar(source, pos + 1, '{')) {
                 if(bracketsCount == 0) {
                     pos += 1;
-                    if (!currentLiteral.isEmpty()) {
-                        literals.add(escapeLiteral(currentLiteral));
-                        currentLiteral = "";
-                    }
+                    currentLiteral = flushCurrentLiteral(literals, currentLiteral, needToBeLocalized);
                 } else {
                     currentLiteral += c;
                 }
@@ -3326,10 +3320,10 @@ public class ScriptingLogicsModule extends LogicsModule {
                 if (bracketsCount == 0) {
                     if (fMode) {
                         fMode = false;
-                        literals.add(escapeLiteral("<filelink>" + currentLiteral + "</filelink>"));
+                        literals.add(inlineFileSeparator + currentLiteral + inlineFileSeparator);
                     } else if (iMode) {
                         iMode = false;
-                        literals.add(escapeLiteral("$I{" + currentLiteral + "}"));
+                        literals.add("$I{" + currentLiteral + "}");
                     } else {
                         literals.add("(" + currentLiteral + ")");
                     }
@@ -3342,9 +3336,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             pos++;
         }
-        if (!currentLiteral.isEmpty()) {
-            literals.add(escapeLiteral(currentLiteral));
-        }
+        flushCurrentLiteral(literals, currentLiteral, needToBeLocalized);
         return literals;
     }
 
@@ -3352,8 +3344,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         return source.length() > pos && source.charAt(pos) == cmp;
     }
 
-    private String escapeLiteral(String value) {
-        return value != null ? ('\'' + value.replace("'", "\\'").replace("\r", "\\r").replace("\n", "\\n") + '\'') : null;
+    private String flushCurrentLiteral(List<String> literals, String currentLiteral, boolean needToBeLocalized) {
+        if (!currentLiteral.isEmpty()) {
+            literals.add(escapeLiteral(currentLiteral, needToBeLocalized));
+        }
+        return "";
+    }
+
+    private String escapeLiteral(String value, boolean needToBeLocalized) {
+        //todo: optimize
+        if (value == null) {
+            return null;
+        }
+        if (!needToBeLocalized) {
+            value = value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}");
+        }
+        return '\'' + value.replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + '\'';
     }
 
     private LP addNumericConst(BigDecimal value) {
