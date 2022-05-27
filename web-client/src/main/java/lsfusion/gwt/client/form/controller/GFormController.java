@@ -1011,18 +1011,32 @@ public class GFormController implements EditManager {
     }
 
     public void executePropertyEventActionConfirmed(ExecuteEditContext editContext, String actionSID, Event event) {
-        executePropertyEventAction(event, editContext, editContext, actionSID, requestIndex -> setLoading(editContext, requestIndex));
+        executePropertyEventAction(event, editContext, editContext, actionSID, null, false, requestIndex -> setLoading(editContext, requestIndex));
     }
 
-    public void executePropertyEventAction(Event event, EditContext editContext, ExecContext execContext, String actionSID, Consumer<Long> onExec) {
-        executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), event, editContext, execContext, actionSID, null, false, onExec);
+    public void executePropertyEventAction(GPropertyDraw property, GGroupObjectValue fullKey, String actionSID, GPushAsyncInput pushAsyncInput, boolean externalChange, Consumer<Long> onExec) {
+        executePropertyEventAction(null, null, new ExecContext() {
+            @Override
+            public GPropertyDraw getProperty() {
+                return property;
+            }
+
+            @Override
+            public GGroupObjectValue getFullKey() {
+                return fullKey;
+            }
+        }, actionSID, pushAsyncInput, externalChange, onExec);
     }
 
-    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, Event event, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+    public void executePropertyEventAction(Event event, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, boolean externalChange, Consumer<Long> onExec) {
+        executePropertyEventAction(execContext.getProperty().getAsyncEventExec(actionSID), event, editContext, execContext, actionSID, pushAsyncInput, externalChange, onExec);
+    }
+
+    private void executePropertyEventAction(GAsyncEventExec asyncEventExec, Event event, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncInput, boolean externalChange, Consumer<Long> onExec) {
         if (asyncEventExec != null)
-            asyncEventExec.exec(this, event, editContext, execContext, actionSID, pushAsyncResult, externalChange, onExec);
+            asyncEventExec.exec(this, event, editContext, execContext, actionSID, pushAsyncInput, externalChange, onExec);
         else
-            syncExecutePropertyEventAction(editContext, event, execContext.getProperty(), execContext.getFullKey(), pushAsyncResult, actionSID, onExec);
+            syncExecutePropertyEventAction(editContext, event, execContext.getProperty(), execContext.getFullKey(), pushAsyncInput, actionSID, onExec);
     }
 
     public void asyncExecutePropertyEventAction(String actionSID, EditContext editContext, ExecContext execContext, Event editEvent, GPushAsyncResult pushAsyncResult, boolean externaChange, Consumer<Long> onRequestExec, Consumer<Long> onExec) {

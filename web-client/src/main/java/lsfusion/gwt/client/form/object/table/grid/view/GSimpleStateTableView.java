@@ -39,6 +39,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -276,6 +277,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeProperties(new String[]{column}, new JavaScriptObject[]{object}, new Serializable[]{newValue});
     }
 
+    private static final String UNDEFINED = "undefined";
+
     protected void changeProperties(String[] columns, JavaScriptObject[] objects, Serializable[] newValues) {
         int length = columns.length;
         GPropertyDraw[] properties = new GPropertyDraw[length];
@@ -288,18 +291,24 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             properties[i] = column.property;
             fullKeys[i] = GGroupObjectValue.getFullKey(getChangeKey(objects[i]), column.columnKey);
             externalChanges[i] = true;
-            pushAsyncResults[i] = new GPushAsyncInput(new GUserInputResult(newValues[i]));
+            Serializable newValue = newValues[i];
+            pushAsyncResults[i] = newValue == UNDEFINED ? null : new GPushAsyncInput(new GUserInputResult(newValue));
         }
 
-        long changeRequestIndex = form.asyncExecutePropertyEventAction(GEditBindingMap.CHANGE, null, null, properties, externalChanges, fullKeys, pushAsyncResults);
-
-        for (int i = 0; i < length; i++) {
-            GPropertyDraw property = properties[i];
-            if(property.canUseChangeValueForRendering(property.getExternalChangeType())) { // or use the old value instead of the new value in that case
-                GGroupObjectValue fullKey = fullKeys[i];
-                form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
+        Consumer<Long> onExec = changeRequestIndex -> {
+            for (int i = 0; i < length; i++) {
+                GPropertyDraw property = properties[i];
+                if(newValues[i] != UNDEFINED && property.canUseChangeValueForRendering(property.getExternalChangeType())) { // or use the old value instead of the new value in that case
+                    GGroupObjectValue fullKey = fullKeys[i];
+                    form.pendingChangeProperty(property, fullKey, newValues[i], getValue(property, fullKey), changeRequestIndex);
+                }
             }
-        }
+        };
+        String actionSID = GEditBindingMap.CHANGE;
+        if(length == 1)
+            form.executePropertyEventAction(properties[0], fullKeys[0], actionSID, (GPushAsyncInput) pushAsyncResults[0], externalChanges[0], onExec);
+        else
+            onExec.accept(form.asyncExecutePropertyEventAction(actionSID, null, null, properties, externalChanges, fullKeys, pushAsyncResults));
     }
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
@@ -462,8 +471,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             changeProperty: function (property, object, newValue) {
                 if(object === undefined)
                     object = null;
-                if(newValue === undefined)
-                    newValue = true;
+                if(newValue === undefined) // not passed
+                    newValue = @GSimpleStateTableView::UNDEFINED;
                 return thisObj.@GSimpleStateTableView::changeJSProperty(*)(property, object, newValue);
             },
             changeDateTimeProperty: function (property, object, year, month, day, hour, minute, second) {
