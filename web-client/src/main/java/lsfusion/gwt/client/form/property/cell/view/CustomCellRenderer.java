@@ -62,6 +62,10 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     protected void changeValue(Element element, Consumer<Object> valueChangeConsumer, JavaScriptObject value) {
         GType externalChangeType = property.getExternalChangeType();
 
+        boolean canUseChangeValueForRendering = property.canUseChangeValueForRendering(externalChangeType);
+        if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
+            rerenderState(element, false);
+
         valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSValue(externalChangeType, value));
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)
@@ -69,10 +73,10 @@ public class CustomCellRenderer extends CellRenderer<Object> {
         // disabling caching at all will lead to dropping state after, for example, refresh
 
         // it's important to do it after changeProperty
-        // 1. to break recursion execute -> setLoading -> update -> change -> execute (if there is a change in update)
+        // 1. to break a recursion execute -> setLoading -> update -> change -> execute (if there is a change in update)
         // 2. to avoid dropping custom element state
-        if(!property.canUseChangeValueForRendering(externalChangeType))
-            rerenderState(element);
+        if(!canUseChangeValueForRendering)
+            rerenderState(element, true);
     }
 
     protected native JavaScriptObject getController(Consumer<Object> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
