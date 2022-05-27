@@ -58,17 +58,25 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     public String format(Object value) {
         return value == null ? "" : value.toString();
     }
-    
+
+    // execute -> setLoading -> update -> change -> execute
+    private boolean changeUpdateRecursionGuard = false;
+
     protected void changeValue(Element element, Consumer<Object> valueChangeConsumer, JavaScriptObject value) {
         GType externalChangeType = property.getExternalChangeType();
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)
         // there might be a problem that this change might be grouped with the another change that will change the state to the previous value, but update won't be called (because of caching), which is usually an "unexpected behaviour"
         // disabling caching at all will lead to dropping state after, for example, refresh
-        if(!property.canUseChangeValueForRendering(externalChangeType))
+        if(!property.canUseChangeValueForRendering(externalChangeType) && !changeUpdateRecursionGuard)
             rerenderState(element);
 
-        valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSValue(externalChangeType, value));
+        changeUpdateRecursionGuard = true;
+        try {
+            valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSValue(externalChangeType, value));
+        } finally {
+            changeUpdateRecursionGuard = false;
+        }
     }
 
     protected native JavaScriptObject getController(Consumer<Object> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
