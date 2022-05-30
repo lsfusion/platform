@@ -3291,6 +3291,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String currentLiteral = "";
         boolean fMode = false;
         boolean iMode = false;
+        boolean dollarMode = false;
         while (pos < source.length()) {
             char c = source.charAt(pos);
 
@@ -3311,20 +3312,22 @@ public class ScriptingLogicsModule extends LogicsModule {
                 if(bracketsCount == 0) {
                     pos += 1;
                     currentLiteral = flushCurrentLiteral(literals, currentLiteral, needToBeLocalized);
+                    dollarMode = true;
                 } else {
                     currentLiteral += c;
                 }
                 bracketsCount++;
-            } else if (c == '}') {
+            } else if (c == '}' && (fMode || iMode || dollarMode)) {
                 bracketsCount--;
                 if (bracketsCount == 0) {
                     if (fMode) {
                         fMode = false;
-                        literals.add(inlineFileSeparator + currentLiteral + inlineFileSeparator);
+                        literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
                     } else if (iMode) {
                         iMode = false;
-                        literals.add("$I{" + currentLiteral + "}");
+                        literals.add(quote("$I{" + currentLiteral + "}"));
                     } else {
+                        dollarMode = false;
                         literals.add("(" + currentLiteral + ")");
                     }
                     currentLiteral = "";
@@ -3359,7 +3362,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (!needToBeLocalized) {
             value = value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}");
         }
-        return '\'' + value.replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t") + '\'';
+        return quote(value.replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"));
+    }
+
+    private String quote(String value) {
+        return '\'' + value + '\'';
     }
 
     private LP addNumericConst(BigDecimal value) {

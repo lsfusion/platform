@@ -101,9 +101,10 @@ public class GFormChanges {
         for (int i = 0; i < values.length; i++) {
             Serializable value = values[i];
             if (value instanceof GStringWithFiles) {
+                GStringWithFiles stringWithFiles = (GStringWithFiles) value;
                 String result = "";
-                for (int j = 0; j < ((GStringWithFiles) value).prefixes.length; j++) {
-                    result += ((GStringWithFiles) value).prefixes[j] + (j + 1 < ((GStringWithFiles) value).urls.length ? getAppStaticImageURL(((GStringWithFiles) value).urls[j]) : "");
+                for (int j = 0; j < stringWithFiles.prefixes.length; j++) {
+                    result += stringWithFiles.prefixes[j] + (j < stringWithFiles.urls.length ? getAppStaticImageURL(stringWithFiles.urls[j]) : "");
                 }
                 values[i] = result;
             }

@@ -186,25 +186,22 @@ public class FormChanges {
                 Object value = rows.getValue(j).getValue();
 
                 if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
-
                     String[] parts = ((String) value).split(inlineFileSeparator);
 
-                    MList<String> prefixes = ListFact.mList();
-                    MList<String> names = ListFact.mList();
-                    MList<RawFileData> files = ListFact.mList();
-                    for (int p = 0; p < parts.length; p = p + 2) {
-                        prefixes.add(parts[p]);
-                        String name = p + 1 < parts.length ? parts[p + 1] : null;
-                        if(name != null) {
-                            names.add(name);
-                            files.add(ResourceUtils.findResourceAsFileData(name, true, false, new Result<>(), null));
+                    int length = parts.length / 2;
+                    String[] prefixes = new String[length + 1];
+                    String[] names = new String[length];
+                    RawFileData[] files = new RawFileData[length];
+                    for (int k = 0; k < length + 1; k++) {
+                        prefixes[k] = parts[k * 2];
+                        if (k * 2 + 1 < parts.length) {
+                            String name = parts[k * 2 + 1];
+                            names[k] = name;
+                            files[k] = ResourceUtils.findResourceAsFileData(name, true, false, new Result<>(), null);
                         }
                     }
 
-                    value = new StringWithFiles(
-                            prefixes.immutableList().toArray(new String[0]),
-                            names.immutableList().toArray(new String[0]),
-                            files.immutableList().toArray(new RawFileData[0]));
+                    value = new StringWithFiles(prefixes, names, files);
                 }
 
                 BaseUtils.serializeObject(outStream, value);

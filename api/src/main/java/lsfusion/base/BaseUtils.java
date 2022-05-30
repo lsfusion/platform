@@ -667,7 +667,7 @@ public class BaseUtils {
         if (objectType == 15) {
             int size = inStream.readInt();
             String[] prefixes = new String[size + 1];
-            for(int i = 0; i < size; i++) {
+            for(int i = 0; i < size + 1; i++) {
                 prefixes[i] = inStream.readUTF();
             }
             String[] names = new String[size];
