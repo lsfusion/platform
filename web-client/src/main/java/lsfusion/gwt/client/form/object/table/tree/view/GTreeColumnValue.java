@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
-import java.util.HashMap;
-import java.util.Map;
+import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class GTreeColumnValue {
     private int level;
@@ -9,11 +8,13 @@ public class GTreeColumnValue {
     private boolean openDotBottom = true;
     private boolean closedDotBottom;
     private String sID;
-    private Map<Integer, Boolean> lastInLevelMap = new HashMap<>();
+    private boolean[] lastInLevelMap;
 
-    public GTreeColumnValue(int level, String sID) {
+    public GTreeColumnValue(int level, boolean[] lastInLevelMap, String sID) {
         this.level = level;
         this.sID = sID;
+        this.lastInLevelMap = lastInLevelMap;
+        assert lastInLevelMap.length == level;
     }
 
     public int getLevel() {
@@ -56,20 +57,30 @@ public class GTreeColumnValue {
         this.sID = sID;
     }
 
-    public Map<Integer, Boolean> getLastInLevelMap() {
+    public boolean[] getLastInLevelMap() {
         return lastInLevelMap;
     }
 
-    public void setLastInLevelMap(Map<Integer, Boolean> lastInLevelMap) {
-        this.lastInLevelMap = new HashMap<>(lastInLevelMap);
-    }
-
-    public void addLastInLevel(int level, boolean last) {
-        lastInLevelMap.put(level, last);
+    public void setLastInLevelMap(boolean[] lastInLevelMap) {
+        this.lastInLevelMap = lastInLevelMap;
     }
 
     public boolean isLastInLevel(int level) {
-        Boolean last = lastInLevelMap.get(level);
-        return last != null && last;
+        return lastInLevelMap[level];
+    }
+
+    public boolean equalsValue(GTreeColumnValue that) {
+        if(!(level == that.level &&
+                openDotBottom == that.openDotBottom &&
+                closedDotBottom == that.closedDotBottom &&
+                GwtClientUtils.nullEquals(open, that.open) &&
+                sID.equals(that.sID)))
+            return false;
+
+        for (int i=0; i<lastInLevelMap.length; i++)
+            if (lastInLevelMap[i] != that.lastInLevelMap[i])
+                return false;
+
+        return true;
     }
 }

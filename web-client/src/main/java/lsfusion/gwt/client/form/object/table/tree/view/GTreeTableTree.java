@@ -280,8 +280,13 @@ public class GTreeTableTree {
                 child.setOpen(true);
             }
 
-            GTreeColumnValue treeValue = generateTreeCellValue(child, parentValue, level);
-            treeValue.addLastInLevel(level - 1, node.isLast(child));
+            boolean[] lastInLevelMap = new boolean[level];
+            assert level > 0 == (parentValue != null);
+            if(parentValue != null) {
+                System.arraycopy(parentValue.getLastInLevelMap(), 0, lastInLevelMap, 0, level - 1);
+                lastInLevelMap[level - 1] = node.isLast(child);
+            }
+            GTreeColumnValue treeValue = generateTreeCellValue(child, level, lastInLevelMap);
             record.setTreeValue(treeValue);
             result.add(record);
             if (child.isOpen()) {
@@ -291,15 +296,12 @@ public class GTreeTableTree {
         return result;
     }
 
-    private GTreeColumnValue generateTreeCellValue(GTreeTableNode node, GTreeColumnValue parentValue, int level) {
-        GTreeColumnValue value = new GTreeColumnValue(level, objectsToString(node.getGroup()) + nodeCounter);
+    private GTreeColumnValue generateTreeCellValue(GTreeTableNode node, int level, boolean[] lastInLevelMap) {
+        GTreeColumnValue value = new GTreeColumnValue(level, lastInLevelMap, objectsToString(node.getGroup()) + nodeCounter);
         if (node.isOpen()) {
             value.setOpen(true);
         } else {
             value.setOpen(!node.getChildren().isEmpty() ? false : null);
-        }
-        if (parentValue != null) {
-            value.setLastInLevelMap(parentValue.getLastInLevelMap());
         }
         nodeCounter++;
         return value;

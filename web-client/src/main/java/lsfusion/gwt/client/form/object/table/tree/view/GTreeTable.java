@@ -317,6 +317,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
+    private static class RenderedState {
+        public GTreeColumnValue value;
+
+        public String foreground;
+        public String background;
+    }
+
     // actually singleton
     private class ExpandTreeColumn extends Column<GTreeGridRecord, Object> implements TreeGridColumn {
 
@@ -370,11 +377,46 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
         }
 
+        private static final String RENDERED = "renderedTree";
+
         @Override
         public void updateDom(Cell cell, TableCellElement cellElement) {
 
-            GTreeColumnValue treeValue = getTreeValue(cell);
+            RenderedState renderedState = (RenderedState) cellElement.getPropertyObject(RENDERED);
+            boolean isNew = false;
+            if(renderedState == null) {
+                renderedState = new RenderedState();
+                cellElement.setPropertyObject(RENDERED, renderedState);
 
+                isNew = true;
+            }
+
+            GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
+            String background = DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground());
+            String foreground = rowValue.getRowForeground();
+            if(isNew || !equalsColorState(renderedState, background, foreground)) {
+                renderedState.background = background;
+                renderedState.foreground = foreground;
+
+                AbstractDataGridBuilder.updateColors(cellElement, background, foreground);
+            }
+
+            GTreeColumnValue treeValue = getTreeValue(cell);
+            if(isNew || !equalsDynamicState(renderedState, treeValue)) {
+                renderedState.value = treeValue;
+
+                renderDynamicContent(cellElement, treeValue);
+            }
+        }
+
+        private boolean equalsDynamicState(RenderedState state, GTreeColumnValue value) {
+            return state.value.equalsValue(value);
+        }
+        private boolean equalsColorState(RenderedState state, String background, String foreground) {
+            return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
+        }
+
+        private void renderDynamicContent(TableCellElement cellElement, GTreeColumnValue treeValue) {
             while (cellElement.getChildCount() > treeValue.getLevel() + 1) {
                 cellElement.getLastChild().removeFromParent();
             }
@@ -389,9 +431,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                 updateIndentElement(img, treeValue, i);
             }
-
-            GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
-            AbstractDataGridBuilder.updateColors(cellElement, DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground()), rowValue.getRowForeground());
         }
 
         @Override

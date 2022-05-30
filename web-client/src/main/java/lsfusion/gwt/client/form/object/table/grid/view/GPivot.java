@@ -1107,18 +1107,18 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, boolean closedDotBottom, JsArrayBoolean isLastChildList) {
-        GTreeColumnValue treeColumnValue = new GTreeColumnValue(level, "level" + level);
+        boolean[] lastInLevelMap;
+        if(isLastChildList != null) {
+            lastInLevelMap = new boolean[isLastChildList.length() - 1];
+            for (int i = 1; i < isLastChildList.length(); i++) {
+                lastInLevelMap[i - 1] = isLastChildList.get(i);
+            }
+        } else
+            lastInLevelMap = new boolean[0];
+        GTreeColumnValue treeColumnValue = new GTreeColumnValue(level, lastInLevelMap, "level" + level);
         treeColumnValue.setOpen(isExpanded);
         treeColumnValue.setOpenDotBottom(openDotBottom);
         treeColumnValue.setClosedDotBottom(closedDotBottom);
-
-        HashMap<Integer, Boolean> lastInLevelMap = new HashMap<>();
-        if(isLastChildList != null) {
-            for (int i = 1; i < isLastChildList.length(); i++) {
-                lastInLevelMap.put(i - 1, isLastChildList.get(i));
-            }
-        }
-        treeColumnValue.setLastInLevelMap(lastInLevelMap);
         return treeColumnValue;
     }
 
