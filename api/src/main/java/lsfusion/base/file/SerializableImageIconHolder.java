@@ -1,10 +1,11 @@
 package lsfusion.base.file;
 
+import lsfusion.base.ApiResourceBundle;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.interop.base.view.ColorTheme;
 
-import javax.swing.*;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,11 @@ public class SerializableImageIconHolder implements Serializable {
             RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), false, true, fullPath, "images");
             if(themedImageFile != null)
                 themedImageFile.getID(); // to calculate the cache
+            else {
+                if (colorTheme.isDefault()) {
+                    throw new RuntimeException(ApiResourceBundle.getString("exceptions.image.file.not.found", imagePath));
+                }
+            }
             images.put(colorTheme, themedImageFile);
             imagePathes.put(colorTheme, fullPath.result);
         }
@@ -34,6 +40,10 @@ public class SerializableImageIconHolder implements Serializable {
 
     public String getImagePath(ColorTheme colorTheme) {
         return imagePathes.get(colorTheme);
+    }
+    
+    public boolean isGif(ColorTheme colorTheme) {
+        return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
     }
 
 //    private void readObject(ObjectInputStream s) throws ClassNotFoundException, IOException {

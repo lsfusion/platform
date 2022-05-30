@@ -77,6 +77,7 @@
         <jstl.version>1.2</jstl.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <url.rewriter.version>4.0.3</url.rewriter.version>
+        <scrimage.version>4.0.31</scrimage.version>
 
         <httpcomponents.httpmime.version>4.5.7</httpcomponents.httpmime.version>
         <httpcomponents.httpclient.version>4.5.7</httpcomponents.httpclient.version>
@@ -488,6 +489,21 @@
                 <groupId>org.tuckey</groupId>
                 <artifactId>urlrewritefilter</artifactId>
                 <version>${url.rewriter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sksamuel.scrimage</groupId>
+                <artifactId>scrimage-core</artifactId>
+                <version>${scrimage.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-classic</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
