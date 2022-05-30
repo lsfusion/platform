@@ -12,18 +12,6 @@ public class GGroupObjectValueBuilder {
     public GGroupObjectValueBuilder() {
     }
 
-    public GGroupObjectValueBuilder(GGroupObjectValueBuilder... builders) {
-        for (GGroupObjectValueBuilder builder : builders) {
-            key.putAll(builder.key);
-        }
-    }
-
-    public GGroupObjectValueBuilder(GGroupObjectValue... values) {
-        for (GGroupObjectValue value : values) {
-            putAll(value);
-        }
-    }
-
     public GGroupObjectValueBuilder removeAll(Collection<GObject> objects) {
         for (GObject obj : objects) {
             key.remove(obj.ID);

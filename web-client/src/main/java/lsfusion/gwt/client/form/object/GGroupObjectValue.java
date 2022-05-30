@@ -1,12 +1,10 @@
 package lsfusion.gwt.client.form.object;
 
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GGroupObjectValue implements Serializable {
     public static final GGroupObjectValue EMPTY = new GGroupObjectValue();
@@ -65,7 +63,48 @@ public class GGroupObjectValue implements Serializable {
     }
 
     public static GGroupObjectValue getFullKey(GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        return columnKey.isEmpty() ? rowKey : new GGroupObjectValueBuilder(rowKey, columnKey).toGroupObjectValue();
+        if(columnKey.isEmpty())
+            return rowKey;
+        if(rowKey.isEmpty())
+            return columnKey;
+
+        return GGroupObjectValue.checkTwins(new GGroupObjectValueBuilder()
+                    .putAll(rowKey)
+                    .putAll(columnKey).toGroupObjectValue());
+    }
+
+    private transient static NativeHashMap<GGroupObjectValue, GGroupObjectValue> twins = new NativeHashMap<>();
+
+    public static GGroupObjectValue checkTwins(GGroupObjectValue value) {
+        GGroupObjectValue twinValue = twins.get(value);
+        if(twinValue == null) {
+            twinValue = value;
+            NativeHashMap<GGroupObjectValue, GGroupObjectValue> myTwins = GGroupObjectValue.twins;
+            myTwins.put(value, value);
+
+            if(GGroupObjectValue.twins.size() > 10000)
+                GGroupObjectValue.twins = new NativeHashMap<>();
+        }
+        return twinValue;
+    }
+
+    public static ArrayList<GGroupObjectValue> checkTwins(ArrayList<GGroupObjectValue> values) {
+        ArrayList<GGroupObjectValue> checked = null;
+        for (int i = 0, valuesSize = values.size(); i < valuesSize; i++) {
+            GGroupObjectValue value = values.get(i);
+            GGroupObjectValue twinValue = checkTwins(value);
+            if (checked == null) {
+                if (twinValue != value) {
+                    checked = new ArrayList<>();
+                    for (int j = 0; j < i; j++)
+                        checked.add(values.get(j));
+                    checked.add(twinValue);
+                }
+            } else
+                checked.add(twinValue);
+        }
+
+        return checked != null ? checked : values;
     }
 
     private void initSingle(Integer key, Object value) {
@@ -96,17 +135,25 @@ public class GGroupObjectValue implements Serializable {
         if (!(o instanceof GGroupObjectValue)) return false;
 
         GGroupObjectValue oth = (GGroupObjectValue) o;
-        if (size != oth.size) {
+        if (size != oth.size)
             return false;
+
+        switch (size) {
+            case 1:
+                return singleKey == oth.singleKey && Objects.equals(singleValue, oth.singleValue);
+            case 0:
+                return true;
         }
 
-        if (size == 1) {
-            return singleKey == oth.singleKey &&
-                    (singleValue == oth.singleValue
-                            || (singleValue != null && singleValue.equals(oth.singleValue)));
-        }
+        for (int i = 0; i < size; i++)
+            if (keys[i] != oth.keys[i])
+                return false;
 
-        return size == 0 || (Arrays.equals(keys, oth.keys) && Arrays.equals(values, oth.values));
+        for (int i=0; i < size; i++)
+            if (!Objects.equals(values[i], oth.values[i]))
+                return false;
+
+        return true;
     }
 
     transient private int hash;
@@ -120,8 +167,16 @@ public class GGroupObjectValue implements Serializable {
                 hash = 31 * (31 + singleKey) + (singleValue == null ? 0 : singleValue.hashCode());
             } else {
                 hash = size;
-                hash = 31 * hash + Arrays.hashCode(keys);
-                hash = 31 * hash + Arrays.hashCode(values);
+                hash = 31 * hash;
+                int colHash = 1;
+                for (int element : keys)
+                    colHash = 31 * colHash + element;
+                hash += colHash;
+                hash = 31 * hash;
+                colHash = 1;
+                for (Serializable element : values)
+                    colHash = 31 * colHash + (element == null ? 0 : element.hashCode());
+                hash += colHash;
             }
             hashComputed = true;
         }

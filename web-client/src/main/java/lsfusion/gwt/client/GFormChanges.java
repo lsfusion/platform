@@ -13,6 +13,8 @@ import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import static lsfusion.gwt.client.form.object.GGroupObjectValue.checkTwins;
+
 public class GFormChanges {
     public final NativeSIDMap<GGroupObject, GGroupObjectValue> objects = new NativeSIDMap<>();
     public final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new NativeSIDMap<>();
@@ -37,11 +39,11 @@ public class GFormChanges {
         GFormChanges remapped = new GFormChanges();
 
         for (int i = 0; i < dto.objectsGroupIds.length; i++) {
-            remapped.objects.put(form.getGroupObject(dto.objectsGroupIds[i]), dto.objects[i]);
+            remapped.objects.put(form.getGroupObject(dto.objectsGroupIds[i]), checkTwins(dto.objects[i]));
         }
 
         for (int i = 0; i < dto.gridObjectsGroupIds.length; i++) {
-            remapped.gridObjects.put(form.getGroupObject(dto.gridObjectsGroupIds[i]), dto.gridObjects[i]);
+            remapped.gridObjects.put(form.getGroupObject(dto.gridObjectsGroupIds[i]), checkTwins(dto.gridObjects[i]));
         }
 
         for (int i = 0; i < dto.parentObjectsGroupIds.length; i++) {
@@ -49,11 +51,11 @@ public class GFormChanges {
         }
 
         for (int i = 0; i < dto.expandablesGroupIds.length; i++) {
-            remapped.expandables.put(form.getGroupObject(dto.expandablesGroupIds[i]), remap(dto.expandableKeys[i], dto.expandableValues[i]));
+            remapped.expandables.put(form.getGroupObject(dto.expandablesGroupIds[i]), remapAndCheckTwins(dto.expandableKeys[i], dto.expandableValues[i]));
         }
 
         for (int i = 0; i < dto.properties.length; i++) {
-            remapped.properties.put(remapPropertyReader(form, dto.properties[i]), remap(dto.propertiesValueKeys[i], dto.propertiesValueValues[i]));
+            remapped.properties.put(remapPropertyReader(form, dto.properties[i]), remapAndCheckTwins(dto.propertiesValueKeys[i], dto.propertiesValueValues[i]));
         }
 
         for (Integer propertyID : dto.dropPropertiesIds) {
@@ -85,10 +87,10 @@ public class GFormChanges {
         return remapped;
     }
 
-    private static <K,V> NativeHashMap<K, V> remap(K[] keys, V[] values) {
-        NativeHashMap<K, V> result = new NativeHashMap<>();
+    private static <V> NativeHashMap<GGroupObjectValue, V> remapAndCheckTwins(GGroupObjectValue[] keys, V[] values) {
+        NativeHashMap<GGroupObjectValue, V> result = new NativeHashMap<>();
         for(int i=0;i<keys.length;i++)
-            result.put(keys[i], values[i]);
+            result.put(checkTwins(keys[i]), values[i]);
         return result;
     }
 

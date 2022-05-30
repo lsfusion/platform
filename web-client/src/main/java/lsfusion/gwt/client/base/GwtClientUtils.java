@@ -994,6 +994,17 @@ public class GwtClientUtils {
         return obj == null ? 0 : obj.hashCode();
     }
 
+    public static boolean hashEquals(Object obj1, Object obj2) {
+        return obj1 == obj2 || (obj1.hashCode() == obj2.hashCode() && obj1.equals(obj2));
+    }
+
+    public static <T> ArrayList<T> newArrayList(T[] array) {
+        ArrayList<T> list = new ArrayList<T>(array.length);
+        for(T element : array)
+            list.add(element);
+        return list;
+    }
+
     public static Element getElement(Node node) {
         if(node == null)
             return null;

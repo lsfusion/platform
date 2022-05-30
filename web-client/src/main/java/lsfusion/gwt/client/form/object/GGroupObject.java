@@ -123,34 +123,32 @@ public class GGroupObject implements Serializable, HasNativeSID {
         return parent != null && last;
     }
 
-    public static ArrayList<GGroupObjectValue> mergeGroupValues(LinkedHashMap<GGroupObject, ArrayList<GGroupObjectValue>> groupColumnKeys) {
-        if (groupColumnKeys.isEmpty()) {
+    public static ArrayList<GGroupObjectValue> mergeGroupValues(LinkedHashMap<GGroupObject, ArrayList<GGroupObjectValue>> groupObjectColumnKeys) {
+        if (groupObjectColumnKeys.isEmpty()) {
             return GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
-        } else if (groupColumnKeys.size() == 1) {
-            return groupColumnKeys.values().iterator().next();
+        } else if (groupObjectColumnKeys.size() == 1) {
+            return groupObjectColumnKeys.values().iterator().next();
         }
 
         //находим декартово произведение ключей колонок
-        ArrayList<GGroupObjectValueBuilder> propColumnKeys = new ArrayList<>();
-        propColumnKeys.add(new GGroupObjectValueBuilder());
-        for (Map.Entry<GGroupObject, ArrayList<GGroupObjectValue>> entry : groupColumnKeys.entrySet()) {
-            List<GGroupObjectValue> groupObjectKeys = entry.getValue();
+        ArrayList<GGroupObjectValue> propColumnKeys = GGroupObjectValue.SINGLE_EMPTY_KEY_LIST;
+        for (Map.Entry<GGroupObject, ArrayList<GGroupObjectValue>> entry : groupObjectColumnKeys.entrySet()) {
+            ArrayList<GGroupObjectValue> groupColumnKeys = entry.getValue(); // mutable
 
-            ArrayList<GGroupObjectValueBuilder> newPropColumnKeys = new ArrayList<>();
-            for (GGroupObjectValueBuilder propColumnKey : propColumnKeys) {
-                for (GGroupObjectValue groupObjectKey : groupObjectKeys) {
-                    newPropColumnKeys.add(new GGroupObjectValueBuilder(propColumnKey).putAll(groupObjectKey));
+            if(propColumnKeys.isEmpty()) {
+                propColumnKeys = new ArrayList<>(groupColumnKeys);
+            } else {
+                ArrayList<GGroupObjectValue> newPropColumnKeys = new ArrayList<>();
+                for (GGroupObjectValue propColumnKey : propColumnKeys) {
+                    for (GGroupObjectValue groupObjectKey : groupColumnKeys) {
+                        newPropColumnKeys.add(GGroupObjectValue.getFullKey(propColumnKey, groupObjectKey));
+                    }
                 }
+                propColumnKeys = newPropColumnKeys;
             }
-            propColumnKeys = newPropColumnKeys;
         }
 
-        ArrayList<GGroupObjectValue> result = new ArrayList<>();
-        for (GGroupObjectValueBuilder builder : propColumnKeys) {
-            result.add(builder.toGroupObjectValue());
-        }
-
-        return result;
+        return propColumnKeys;
     }
 
     public GGroupObjectValue filterRowKeys(GGroupObjectValue fullCurrentKey) {

@@ -833,7 +833,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns(GGroupObject selectedGroupObject) {
-        List<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
+        ArrayList<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
         if (properties != null) {
             return properties.stream().map(property ->
                     getSelectedColumn(property, GGroupObjectValue.EMPTY)

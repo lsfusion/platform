@@ -4,13 +4,12 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class GTreeTableNode {
     private GGroupObject group;
     private GGroupObjectValue key;
     private GTreeTableNode parent;
-    private List<GTreeTableNode> children;
+    private ArrayList<GTreeTableNode> children;
     private boolean open = false;
     private boolean expandable = true;
 
@@ -36,7 +35,7 @@ public class GTreeTableNode {
         return parent;
     }
 
-    public List<GTreeTableNode> getChildren() {
+    public ArrayList<GTreeTableNode> getChildren() {
         return children;
     }
 
@@ -48,30 +47,23 @@ public class GTreeTableNode {
         this.parent = parent;
     }
 
-    public void addNode(GTreeTableNode child) {
-        children.add(child);
+    public void addNode(int index, GTreeTableNode child) {
+        children.add(index, child);
         child.setParent(this);
     }
 
-    public int indexOf(GTreeTableNode child) {
-        return children.indexOf(child);
+    public void setChildren(ArrayList<GTreeTableNode> newChildren) {
+        children = newChildren;
+        for(GTreeTableNode child : newChildren)
+            child.setParent(this);
     }
 
-    public void removeNode(GTreeTableNode child) {
-        int index = indexOf(child);
-        if (index > -1) {
-            removeNode(index);
-        }
+    public boolean isLast(GTreeTableNode child) {
+        return children.get(children.size() - 1).equals(child);
     }
 
     public void removeNode(int index) {
         children.remove(index);
-    }
-
-    public void removeFromParent() {
-        if (parent != null) {
-            parent.removeNode(this);
-        }
     }
 
     public boolean isOpen() {
