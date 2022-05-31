@@ -3242,7 +3242,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
                 if(source.startsWith("$I{") && source.endsWith("}")) {
                     lp = addStringInlineProp(source, lineNumber, context, dynamic);
-                } else if(containsUnescaped(source, "${")) {
+                } else if(containsUnescaped(source, "${") || containsUnescaped(source, "$I{") || containsUnescaped(source, "$F{")) {
                     lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
                 } else {
                     lp = addUnsafeCProp(getStringConstClass(str), value);
