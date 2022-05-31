@@ -3,70 +3,21 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class GTreeColumnValue {
-    private int level;
-    private Boolean open;
-    private boolean openDotBottom = true;
-    private boolean closedDotBottom;
-    private String sID;
-    private boolean[] lastInLevelMap;
+    public final int level;
+    public final Boolean open;
+    public final boolean openDotBottom;
+    public final boolean closedDotBottom;
+    public final String sID;
+    public final boolean[] lastInLevelMap;
 
-    public GTreeColumnValue(int level, boolean[] lastInLevelMap, String sID) {
+    public GTreeColumnValue(int level, boolean[] lastInLevelMap, Boolean open, String sID, boolean openDotBottom, boolean closedDotBottom) {
         this.level = level;
         this.sID = sID;
         this.lastInLevelMap = lastInLevelMap;
-        assert lastInLevelMap.length == level;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    public Boolean getOpen() {
-        return open;
-    }
-
-    public void setOpen(Boolean open) {
         this.open = open;
-    }
-
-    public boolean isOpenDotBottom() {
-        return openDotBottom;
-    }
-
-    public void setOpenDotBottom(boolean openDotBottom) {
         this.openDotBottom = openDotBottom;
-    }
-
-    public boolean isClosedDotBottom() {
-        return closedDotBottom;
-    }
-
-    public void setClosedDotBottom(boolean closedDotBottom) {
         this.closedDotBottom = closedDotBottom;
-    }
-
-    public String getSID() {
-        return sID;
-    }
-
-    public void setSID(String sID) {
-        this.sID = sID;
-    }
-
-    public boolean[] getLastInLevelMap() {
-        return lastInLevelMap;
-    }
-
-    public void setLastInLevelMap(boolean[] lastInLevelMap) {
-        this.lastInLevelMap = lastInLevelMap;
-    }
-
-    public boolean isLastInLevel(int level) {
-        return lastInLevelMap[level];
+        assert lastInLevelMap.length == level;
     }
 
     public boolean equalsValue(GTreeColumnValue that) {

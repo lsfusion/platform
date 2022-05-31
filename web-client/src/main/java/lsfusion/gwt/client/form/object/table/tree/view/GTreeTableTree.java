@@ -4,7 +4,6 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.jsni.Function;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -259,7 +258,7 @@ public class GTreeTableTree {
         return result;
     }
 
-    private List<GTreeGridRecord> getNodeChildrenRecords(int columnCount, GTreeTableNode node, int level, GTreeColumnValue parentValue) {
+    private List<GTreeGridRecord> getNodeChildrenRecords(int columnCount, GTreeTableNode node, int level, boolean[] parentLastInLevelMap) {
         List<GTreeGridRecord> result = new ArrayList<>();
         for (GTreeTableNode child : node.getChildren()) {
             HashMap<GPropertyDraw, Pair<Object, Boolean>> valueMap = new HashMap<>();
@@ -281,30 +280,18 @@ public class GTreeTableTree {
             }
 
             boolean[] lastInLevelMap = new boolean[level];
-            assert level > 0 == (parentValue != null);
-            if(parentValue != null) {
-                System.arraycopy(parentValue.getLastInLevelMap(), 0, lastInLevelMap, 0, level - 1);
+            assert level > 0 == (parentLastInLevelMap != null);
+            if(parentLastInLevelMap != null) {
+                System.arraycopy(parentLastInLevelMap, 0, lastInLevelMap, 0, level - 1);
                 lastInLevelMap[level - 1] = node.isLast(child);
             }
-            GTreeColumnValue treeValue = generateTreeCellValue(child, level, lastInLevelMap);
-            record.setTreeValue(treeValue);
+            record.setTreeValue(new GTreeColumnValue(level, lastInLevelMap, child.isOpen() ? (Boolean)true : (child.getChildren().isEmpty() ? null : false),
+                    objectsToString(child.getGroup()) + (nodeCounter++), true, false));
             result.add(record);
-            if (child.isOpen()) {
-                result.addAll(getNodeChildrenRecords(columnCount, child, level + 1, treeValue));
-            }
+            if (child.isOpen())
+                result.addAll(getNodeChildrenRecords(columnCount, child, level + 1, lastInLevelMap));
         }
         return result;
-    }
-
-    private GTreeColumnValue generateTreeCellValue(GTreeTableNode node, int level, boolean[] lastInLevelMap) {
-        GTreeColumnValue value = new GTreeColumnValue(level, lastInLevelMap, objectsToString(node.getGroup()) + nodeCounter);
-        if (node.isOpen()) {
-            value.setOpen(true);
-        } else {
-            value.setOpen(!node.getChildren().isEmpty() ? false : null);
-        }
-        nodeCounter++;
-        return value;
     }
 
     private String objectsToString(GGroupObject groupObject) {

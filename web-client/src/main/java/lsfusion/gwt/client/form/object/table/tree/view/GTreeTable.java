@@ -192,7 +192,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
         GPropertyTableBuilder.setRowHeight(cellElement, 0, false); // somewhy it's needed for proper indent showing
-        for (int i = 0; i <= treeValue.getLevel(); i++) {
+        for (int i = 0; i <= treeValue.level; i++) {
             DivElement img = createIndentElement(cellElement);
             updateIndentElement(img, treeValue, i);
         }
@@ -225,23 +225,23 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
         String indentIcon;
         ImageElement img = element.getElementsByTagName("img").getItem(0).cast();
-        int nodeLevel = treeValue.getLevel();
+        int nodeLevel = treeValue.level;
         if (indentLevel < nodeLevel - 1) {
-            indentIcon = treeValue.isLastInLevel(indentLevel) ? ICON_EMPTY : ICON_PASSBY;
+            indentIcon = treeValue.lastInLevelMap[indentLevel] ? ICON_EMPTY : ICON_PASSBY;
             img.removeAttribute(TREE_NODE_ATTRIBUTE);
         } else if (indentLevel == nodeLevel - 1) {
             indentIcon = ICON_BRANCH;
             img.removeAttribute(TREE_NODE_ATTRIBUTE);
         } else {
             assert indentLevel == nodeLevel;
-            img.setAttribute(TREE_NODE_ATTRIBUTE, treeValue.getSID());
+            img.setAttribute(TREE_NODE_ATTRIBUTE, treeValue.sID);
             indentIcon = getNodeIcon(treeValue);
         }
 
         if (ICON_PASSBY.equals(indentIcon)) {
             changeDots(element, true, true);
         } else if (ICON_BRANCH.equals(indentIcon)) {
-            if (treeValue.isLastInLevel(indentLevel)) {
+            if (treeValue.lastInLevelMap[indentLevel]) {
                 changeDots(element, true, false); //end
             } else {
                 changeDots(element, true, true); //branch
@@ -249,9 +249,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon)) {
             changeDots(element, false, false);
         } else if (ICON_CLOSED.equals(indentIcon)) {
-            changeDots(element, false, treeValue.isClosedDotBottom());
+            changeDots(element, false, treeValue.closedDotBottom);
         }else if (ICON_OPEN.equals(indentIcon)) {
-            changeDots(element, false, treeValue.isOpenDotBottom());
+            changeDots(element, false, treeValue.openDotBottom);
         }
 
         if(ICON_CLOSED.equals(indentIcon)) {
@@ -308,9 +308,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     private static String getNodeIcon(GTreeColumnValue treeValue) {
-        if (treeValue.getOpen() == null) {
+        if (treeValue.open == null) {
             return ICON_LEAF;
-        } else if (treeValue.getOpen()) {
+        } else if (treeValue.open) {
             return ICON_OPEN;
         } else {
             return ICON_CLOSED;
@@ -361,7 +361,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         private void changeTreeState(Cell cell, Object value, NativeEvent event) {
-            Boolean open = ((GTreeColumnValue) value).getOpen();
+            Boolean open = ((GTreeColumnValue) value).open;
             if (open != null) {
                 GTreeGridRecord record = getTreeGridRow(cell);
                 if (!open) {
@@ -417,11 +417,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         private void renderDynamicContent(TableCellElement cellElement, GTreeColumnValue treeValue) {
-            while (cellElement.getChildCount() > treeValue.getLevel() + 1) {
+            while (cellElement.getChildCount() > treeValue.level + 1) {
                 cellElement.getLastChild().removeFromParent();
             }
 
-            for (int i = 0; i <= treeValue.getLevel(); i++) {
+            for (int i = 0; i <= treeValue.level; i++) {
                 DivElement img;
                 if (i >= cellElement.getChildCount()) {
                     img = createIndentElement(cellElement);

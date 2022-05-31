@@ -1115,11 +1115,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
             }
         } else
             lastInLevelMap = new boolean[0];
-        GTreeColumnValue treeColumnValue = new GTreeColumnValue(level, lastInLevelMap, "level" + level);
-        treeColumnValue.setOpen(isExpanded);
-        treeColumnValue.setOpenDotBottom(openDotBottom);
-        treeColumnValue.setClosedDotBottom(closedDotBottom);
-        return treeColumnValue;
+        return new GTreeColumnValue(level, lastInLevelMap, isExpanded, "level" + level, openDotBottom, closedDotBottom);
     }
 
     public void renderAttrCell(Element th, JavaScriptObject value, String columnName) {
@@ -1458,7 +1454,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private void renderArrow(Element jsElement, GTreeColumnValue treeColumnValue) {
         jsElement.removeAllChildren();
-        if (treeColumnValue.getLevel() > 0) {
+        if (treeColumnValue.level > 0) {
             jsElement.getStyle().setPaddingLeft(5, Style.Unit.PX);
         }
         GTreeTable.renderExpandDom(jsElement, treeColumnValue);
