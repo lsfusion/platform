@@ -3235,13 +3235,17 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
-                String source = ((LocalizedString)value).getSourceString();
+                LocalizedString str = (LocalizedString) value;
+                String source = str.getSourceString();
+                if (!str.needToBeLocalized()) {
+                    source = removeOptimization(source);
+                }
                 if(source.startsWith("$I{") && source.endsWith("}")) {
                     lp = addStringInlineProp(source, lineNumber, context, dynamic);
                 } else if(source.contains("${")) {
-                    lp = addStringInterpolateProp(source, ((LocalizedString) value).needToBeLocalized(), lineNumber, context, dynamic);
+                    lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
                 } else {
-                    lp = addUnsafeCProp(getStringConstClass((LocalizedString) value), value);
+                    lp = addUnsafeCProp(getStringConstClass(str), value);
                 }
                 break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
@@ -3275,92 +3279,94 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        return escapeLiteral(result, false);
+        return escapeLiteral(result);
     }
 
-    protected LP addStringInterpolateProp(String source, boolean needToBeLocalized, int lineNumber, List<TypedParameter> context, boolean dynamic) {
-        String code = StringUtils.join(parseStringInterpolateProp(source, needToBeLocalized), " + ");
+    protected LP<?> addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) {
+        String code = StringUtils.join(parseStringInterpolateProp(source), " + ");
         return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
     }
 
-    private List<String> parseStringInterpolateProp(String source, boolean needToBeLocalized) {
+    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, FILE };
+
+    private List<String> parseStringInterpolateProp(String source) {
         List<String> literals = new ArrayList<>();
 
         int pos = 0;
         int bracketsCount = 0;
         String currentLiteral = "";
-        boolean fMode = false;
-        boolean iMode = false;
-        boolean dollarMode = false;
+        StringInterpolateState state = StringInterpolateState.PLAIN;
+        StringInterpolateState newState;
+
         while (pos < source.length()) {
             char c = source.charAt(pos);
-
-            if(bracketsCount == 0) {
-                boolean nextF = compareChar(source, pos + 1, 'F');
-                boolean nextI = compareChar(source, pos + 1, 'I');
-                if (c == '$' && (nextF || nextI) && compareChar(source, pos + 2, '{')) {
-                    pos += 3;
-                    currentLiteral = flushCurrentLiteral(literals, currentLiteral, needToBeLocalized);
-                    fMode = nextF;
-                    iMode = nextI;
-                    bracketsCount++;
-                    continue;
-                }
-            }
-
-            if (c == '$' && compareChar(source, pos + 1, '{')) {
-                if(bracketsCount == 0) {
-                    pos += 1;
-                    currentLiteral = flushCurrentLiteral(literals, currentLiteral, needToBeLocalized);
-                    dollarMode = true;
-                } else {
-                    currentLiteral += c;
-                }
-                bracketsCount++;
-            } else if (c == '}' && (fMode || iMode || dollarMode)) {
-                bracketsCount--;
-                if (bracketsCount == 0) {
-                    if (fMode) {
-                        fMode = false;
-                        literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
-                    } else if (iMode) {
-                        iMode = false;
-                        literals.add(quote("$I{" + currentLiteral + "}"));
-                    } else {
-                        dollarMode = false;
-                        literals.add("(" + currentLiteral + ")");
-                    }
-                    currentLiteral = "";
+            if (c == '\\') {
+                currentLiteral += '\\';
+                currentLiteral += source.charAt(pos + 1);
+                pos += 2;
+            } else if (bracketsCount == 0 && (newState = prefixState(source, pos)) != StringInterpolateState.PLAIN) {
+                currentLiteral = flushCurrentLiteral(literals, currentLiteral);
+                ++bracketsCount;
+                state = newState;
+                pos += (state == StringInterpolateState.INTERPOLATION ? 2 : 3);
+            } else if (c == '{') {
+                ++bracketsCount;
+                currentLiteral += c;
+            } else if (c == '}') {
+                --bracketsCount;
+                if (bracketsCount == 0 && state != StringInterpolateState.PLAIN) {
+                    addToLiterals(currentLiteral, state, literals);
+                    state = StringInterpolateState.PLAIN;
                 } else {
                     currentLiteral += c;
                 }
             } else {
                 currentLiteral += c;
             }
-            pos++;
         }
-        flushCurrentLiteral(literals, currentLiteral, needToBeLocalized);
+
+        flushCurrentLiteral(literals, currentLiteral);
         return literals;
+    }
+
+    private void addToLiterals(String currentLiteral, StringInterpolateState state, List<String> literals) {
+        if (state == StringInterpolateState.INTERPOLATION) {
+            literals.add("(" + currentLiteral + ")");
+        } else if (state == StringInterpolateState.INLINE) {
+            literals.add(quote("$I{" + currentLiteral + "}"));
+        } else if (state == StringInterpolateState.FILE) {
+            literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
+        } else assert false;
+    }
+
+    private StringInterpolateState prefixState(String s, int pos) {
+        if (!compareChar(s, pos, '$')) return StringInterpolateState.PLAIN;
+        if (compareChar(s, pos + 1, '{')) return StringInterpolateState.INTERPOLATION;
+        if (compareChar(s, pos + 1, 'I') && compareChar(s, pos + 2, '{')) return StringInterpolateState.INLINE;
+        if (compareChar(s, pos + 1, 'F') && compareChar(s, pos + 2, '{')) return StringInterpolateState.FILE;
+        return StringInterpolateState.PLAIN;
     }
 
     private boolean compareChar(String source, int pos, char cmp) {
         return source.length() > pos && source.charAt(pos) == cmp;
     }
 
-    private String flushCurrentLiteral(List<String> literals, String currentLiteral, boolean needToBeLocalized) {
+    private String flushCurrentLiteral(List<String> literals, String currentLiteral) {
         if (!currentLiteral.isEmpty()) {
-            literals.add(escapeLiteral(currentLiteral, needToBeLocalized));
+            literals.add(escapeLiteral(currentLiteral));
         }
         return "";
     }
 
-    private String escapeLiteral(String value, boolean needToBeLocalized) {
+    private String removeOptimization(String value) {
+        if (value == null) return null;
+        return value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}");
+    }
+
+    private String escapeLiteral(String value) {
         //todo: optimize
         if (value == null) {
             return null;
-        }
-        if (!needToBeLocalized) {
-            value = value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}");
         }
         return quote(value.replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"));
     }

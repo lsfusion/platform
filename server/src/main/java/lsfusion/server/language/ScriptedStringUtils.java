@@ -152,7 +152,7 @@ public class ScriptedStringUtils {
         
         LocalizedString.checkLocalizedStringFormat(sourceString);
         
-        if (hasNoLocalizationFeatures(sourceString, false) && getIdFromReversedI18NDictionary != null) {
+        if (getIdFromReversedI18NDictionary != null && hasNoLocalizationFeatures(sourceString, false)) {
             String propertyFileValue = transformAnyStringLiteralToPropertyFileValue(literal);
             // hadSpecialSequence condition is needed to prevent second addition of metacode literal to the bundle file
             if (!hadSpecialSequence && System.getProperty("generateBundleFile") != null) {
@@ -193,6 +193,7 @@ public class ScriptedStringUtils {
                     case 't': b.append('\t'); break;
                     case OPEN_CH: b.append("\\" + OPEN_CH); break;
                     case CLOSE_CH: b.append("\\" + CLOSE_CH); break;
+                    case '$': b.append("\\$");
                     default: {
                         throw new TransformationError(String.format(wrongEscapeSeqFormat, nextCh));
                     }
