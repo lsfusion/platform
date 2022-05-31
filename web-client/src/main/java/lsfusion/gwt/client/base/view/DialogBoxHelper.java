@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -100,11 +99,6 @@ public class DialogBoxHelper {
         private CloseCallback closeCallback;
         private HorizontalPanel buttonPane;
         private Button activeButton;
-
-        @Override
-        protected void onLoad() {
-            ScriptInjector.fromUrl("static/js/clipboard.js").inject();
-        }
 
         private MessageBox(String caption, String message, int timeout, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
             this(caption, new HTML(message), timeout, closeCallback, activeOption, options);

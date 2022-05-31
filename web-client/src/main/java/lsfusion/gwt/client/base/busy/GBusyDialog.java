@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.busy;
 
-import com.google.gwt.core.client.ScriptInjector;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
@@ -41,11 +40,6 @@ public class GBusyDialog extends WindowBox {
 
     private int latestWindowHeight;
     private int latestWindowWidth;
-
-    @Override
-    protected void onLoad() {
-        ScriptInjector.fromUrl("static/js/clipboard.js").inject();
-    }
 
     public GBusyDialog() {
         super(false, false, inDevMode());
