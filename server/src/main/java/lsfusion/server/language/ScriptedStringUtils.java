@@ -193,7 +193,7 @@ public class ScriptedStringUtils {
                     case 't': b.append('\t'); break;
                     case OPEN_CH: b.append("\\" + OPEN_CH); break;
                     case CLOSE_CH: b.append("\\" + CLOSE_CH); break;
-                    case '$': b.append("\\$");
+                    case '$': b.append("\\$"); break;
                     default: {
                         throw new TransformationError(String.format(wrongEscapeSeqFormat, nextCh));
                     }
