@@ -3316,6 +3316,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 --bracketsCount;
                 if (bracketsCount == 0 && state != StringInterpolateState.PLAIN) {
                     addToLiterals(currentLiteral, state, literals);
+                    currentLiteral = "";
                     state = StringInterpolateState.PLAIN;
                 } else {
                     currentLiteral += c;
