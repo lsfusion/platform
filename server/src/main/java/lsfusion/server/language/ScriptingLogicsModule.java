@@ -3242,7 +3242,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
                 if(source.startsWith("$I{") && source.endsWith("}")) {
                     lp = addStringInlineProp(source, lineNumber, context, dynamic);
-                } else if(source.contains("${")) {
+                } else if(containsUnescaped(source, "${")) {
                     lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
                 } else {
                     lp = addUnsafeCProp(getStringConstClass(str), value);
@@ -3303,12 +3303,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (c == '\\') {
                 currentLiteral += '\\';
                 currentLiteral += source.charAt(pos + 1);
-                pos += 2;
+                ++pos;
             } else if (bracketsCount == 0 && (newState = prefixState(source, pos)) != StringInterpolateState.PLAIN) {
                 currentLiteral = flushCurrentLiteral(literals, currentLiteral);
                 ++bracketsCount;
                 state = newState;
-                pos += (state == StringInterpolateState.INTERPOLATION ? 2 : 3);
+                pos += (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
             } else if (c == '{') {
                 ++bracketsCount;
                 currentLiteral += c;
@@ -3323,6 +3323,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             } else {
                 currentLiteral += c;
             }
+            ++pos;
         }
 
         flushCurrentLiteral(literals, currentLiteral);
@@ -3337,6 +3338,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (state == StringInterpolateState.FILE) {
             literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
         } else assert false;
+    }
+
+    private static boolean containsUnescaped(String s, String target) {
+        for (int i = 0; i + target.length() - 1 < s.length(); ++i) {
+            if (s.charAt(i) == '\\') {
+                ++i;
+            } else if (target.equals(s.substring(i, i + target.length()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private StringInterpolateState prefixState(String s, int pos) {
