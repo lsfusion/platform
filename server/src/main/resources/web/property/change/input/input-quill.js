@@ -53,7 +53,7 @@ function inputQuill(json) {
             element.quill.root.onblur = function (event) {
                 if (! (event.relatedTarget && element.inputEditor.contains(event.relatedTarget)) &&
                     value !== element.quill.root.innerHTML)
-                    controller.changeValue(json ? JSON.stringify({ action : 'change', value : element.quill.root.innerHTML }) : element.quill.root.innerHTML);
+                    controller.change(json ? { action : 'change', value : element.quill.root.innerHTML } : element.quill.root.innerHTML);
             }
         }
     }
@@ -78,7 +78,7 @@ function uploadFiles(items, controller, event) {
             }
 
             if (file.name !== 'image.png')
-                controller.changeValue(JSON.stringify({ action : 'upload', name : file.name, data : encoded }));
+                controller.change({ action : 'upload', name : file.name, data : encoded });
 
             readFile(index+1);
         }
