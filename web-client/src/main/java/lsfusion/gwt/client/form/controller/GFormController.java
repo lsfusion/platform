@@ -1288,24 +1288,14 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList));
     }
 
-    public void expandGroupObjectRecursive(GGroupObject group, boolean current) {
+    public void expandGroupObjectRecursive(GGroupObject group, boolean current, boolean open) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new ExpandGroupObjectRecursive(group.ID, current));
+        syncResponseDispatch(open ? new ExpandGroupObjectRecursive(group.ID, current) : new CollapseGroupObjectRecursive(group.ID, current));
     }
 
-    public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
+    public void expandGroupObject(GGroupObject group, GGroupObjectValue value, boolean open) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new ExpandGroupObject(group.ID, value));
-    }
-
-    public void collapseGroupObjectRecursive(GGroupObject group, boolean current) {
-        DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new CollapseGroupObjectRecursive(group.ID, current));
-    }
-
-    public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
-        DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new CollapseGroupObject(group.ID, value));
+        syncResponseDispatch(open ? new ExpandGroupObject(group.ID, value) : new CollapseGroupObject(group.ID, value));
     }
 
     public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {

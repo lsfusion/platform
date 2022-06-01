@@ -44,8 +44,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeTableTree tree;
 
-    private Set<GTreeTableNode> expandedNodes;
-
     private TreeTableSelectionHandler treeSelectionHandler;
 
     private GTreeGroupController treeGroupController;
@@ -110,21 +108,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         if(treeGroupController.isExpandOnClick())
             form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null, null, null),
-                    () -> isSelectedNodeExpandable(tree.getNodeByRecord(getSelectedRowValue())),
+                    () -> {
+                        GTreeTableNode node = getSelectedNode();
+                        return node != null && node.isExpandable();
+                    },
                     event -> {
-                        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-                        if (isSelectedNodeExpandable(node)) {
-                            if (!node.isOpen()) {
-                                fireExpandNode(node);
-                            } else {
-                                fireCollapseNode(node);
-                            }
-                        }
+                        fireExpandSelectedNode(null);
                     }, this, groupObject);
-    }
-
-    private static boolean isSelectedNodeExpandable(GTreeTableNode node) {
-        return node != null && node.isExpandable();
     }
 
     private static GGroupObject lastGroupObject(GTreeGroup treeGroup) {
@@ -353,23 +343,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
                 String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
                 if (attrID != null) {
+                    boolean consumed = false;
                     if(changeEvent)
-                        changeTreeState(editCell, getTreeValue(editCell), event);
-                    handler.consume();
+                        consumed = changeTreeState(editCell);
+                    if(consumed)
+                        handler.consume();
                 }
             }
         }
 
-        private void changeTreeState(Cell cell, Object value, NativeEvent event) {
-            Boolean open = ((GTreeColumnValue) value).open;
-            if (open != null) {
-                GTreeGridRecord record = getTreeGridRow(cell);
-                if (!open) {
-                    expandNodeByRecord(record);
-                } else {
-                    collapseNodeByRecord(record);
-                }
-            }
+        private boolean changeTreeState(Cell cell) {
+            return fireExpandNode(tree.getNodeByRecord(getTreeGridRow(cell)), null);
         }
 
         @Override
@@ -669,15 +653,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void updateData() {
         if (dataUpdated) {
-            restoreVisualState();
-
             checkUpdateCurrentRow();
 
 //            checkSelectedRowVisible();
 
             rows = tree.updateRows(getColumnCount());
             updatePropertyReaders();
-            treeSelectionHandler.dataUpdated();
+//            treeSelectionHandler.dataUpdated();
 
             rowsChanged();
 
@@ -749,99 +731,35 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    public void expandNodeByRecord(GTreeGridRecord record) {
-        fireExpandNode(tree.getNodeByRecord(record));
-    }
-
-    public void fireExpandNodeRecursive(boolean current) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
+    public void fireExpandNodeRecursive(boolean current, boolean open) {
+        GTreeTableNode node = getSelectedNode();
         if (node != null) {
-            saveVisualState();
-            addExpandedNodes(current ? node : tree.root);
-            form.expandGroupObjectRecursive(node.getGroup(), current);
+            expandNode(current ? node : tree.root, open, true);
+            form.expandGroupObjectRecursive(node.getGroup(), current, open);
         }
     }
 
-    private void addExpandedNodes(GTreeTableNode node) {
-        expandedNodes.add(node);
-        for(GTreeTableNode child : node.getChildren()) {
-            addExpandedNodes(child);
-        }
+    public void expandNode(GTreeTableNode node, boolean open, boolean recursive) {
+//        node.setOpen(open);
+//        // adding virtual "expandable" node
+//        if (allChildren.length == 0 && node.isExpandable()) {
+//            allChildren = new GTreeTableNode[] { new GTreeTableTree.ExpandingTreeTableNode() };
+//            node.setOpen(false);
+//        }
+//
+//
+//        if(recursive)
+//            for(GTreeTableNode child : node.getChildren()) {
+//                expandNode(child, open, recursive);
+//            }
     }
 
-    public void fireExpandNode(GTreeTableNode node) {
-        if (node != null) {
-            saveVisualState();
-            expandedNodes.add(node);
-            form.expandGroupObject(node.getGroup(), node.getKey());
-        }
+    private GTreeTableNode getSelectedNode() {
+        return tree.getNodeByRecord(getSelectedRowValue());
     }
-
-    public void collapseNodeByRecord(GTreeGridRecord record) {
-        fireCollapseNode(tree.getNodeByRecord(record));
-    }
-
-    public void fireCollapseNodeRecursive(boolean current) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-        if (node != null) {
-            saveVisualState();
-            removeExpandedNodes(current ? node : tree.root);
-            form.collapseGroupObjectRecursive(node.getGroup(), current);
-        }
-    }
-
-    private void removeExpandedNodes(GTreeTableNode node) {
-        expandedNodes.remove(node);
-        for(GTreeTableNode child : node.getChildren()) {
-            removeExpandedNodes(child);
-        }
-    }
-
     public boolean isCurrentPathExpanded() {
         GTreeTableNode node;
-        GTreeGridRecord selectedRecord = getSelectedRowValue();
-        return selectedRecord != null && (node = tree.getNodeByRecord(selectedRecord)) != null && node.isOpen();
-    }
-
-    private void fireCollapseNode(GTreeTableNode node) {
-        if (node != null) {
-            saveVisualState();
-            expandedNodes.remove(node);
-            form.collapseGroupObject(node.getGroup(), node.getKey());
-        }
-    }
-
-    public void saveVisualState() {
-        expandedNodes = new HashSet<>();
-        expandedNodes.addAll(getExpandedChildren(tree.root));
-    }
-
-    private List<GTreeTableNode> getExpandedChildren(GTreeTableNode node) {
-        List<GTreeTableNode> exChildren = new ArrayList<>();
-        for (GTreeTableNode child : node.getChildren()) {
-            if (child.isOpen()) {
-                exChildren.add(child);
-                exChildren.addAll(getExpandedChildren(child));
-            }
-        }
-        return exChildren;
-    }
-
-    public void restoreVisualState() {
-        for (GTreeTableNode node : tree.root.getChildren()) {
-            expandNode(node);
-        }
-    }
-
-    private void expandNode(GTreeTableNode node) {
-        if (expandedNodes != null && expandedNodes.contains(node) && !tree.hasOnlyExpandingNodeAsChild(node)) {
-            node.setOpen(true);
-            for (GTreeTableNode child : node.getChildren()) {
-                expandNode(child);
-            }
-        } else {
-            node.setOpen(false);
-        }
+        return (node = getSelectedNode()) != null && node.isExpandable() && node.hasChildren();
     }
 
     public GGroupObjectValue getSelectedKey() {
@@ -956,38 +874,44 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public boolean keyboardNodeChangeState(boolean open) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-        if (node == null || !node.isExpandable()) {
+        return fireExpandSelectedNode(open);
+    }
+
+    public boolean fireExpandSelectedNode(Boolean open) {
+        return fireExpandNode(getSelectedNode(), open);
+    }
+
+    // open = null - toggle
+    public boolean fireExpandNode(GTreeTableNode node, Boolean open) {
+        if(node == null || !node.isExpandable())
             return false;
-        }
-        if (open) {
-            if (!node.isOpen()) {
-                treeSelectionHandler.nodeTryingToExpand = node;
-                fireExpandNode(node);
-                return true;
-            }
-        } else if (node.isOpen()) {
-            fireCollapseNode(node);
+
+        boolean nodeIsOpen = node.hasChildren();
+        if (open == null || !open.equals(nodeIsOpen)) {
+            open = !nodeIsOpen;
+            expandNode(node, open, false);
+//                treeSelectionHandler.nodeTryingToExpand = node;
+            form.expandGroupObject(node.getGroup(), node.getKey(), open);
             return true;
         }
         return false;
     }
 
     public class TreeTableSelectionHandler extends GridPropertyTableSelectionHandler<GTreeGridRecord> {
-        public GTreeTableNode nodeTryingToExpand = null;
+//        public GTreeTableNode nodeTryingToExpand = null;
 
         public TreeTableSelectionHandler(DataGrid<GTreeGridRecord> table) {
             super(table);
         }
 
-        public void dataUpdated() {
-            if (nodeTryingToExpand != null) {
-                if (!nodeTryingToExpand.isOpen()) {
-                    nextColumn(true);
-                }
-                nodeTryingToExpand = null;
-            }
-        }
+//        public void dataUpdated() {
+//            if (nodeTryingToExpand != null) {
+//                if (!nodeTryingToExpand.isOpen()) {
+//                    nextColumn(true);
+//                }
+//                nodeTryingToExpand = null;
+//            }
+//        }
 
         @Override
         public boolean handleKeyEvent(Event event) {

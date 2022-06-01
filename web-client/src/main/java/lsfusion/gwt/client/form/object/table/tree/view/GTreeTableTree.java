@@ -128,7 +128,8 @@ public class GTreeTableTree {
 
     // we're assuming that recursive "this" groups goes first (before down groups)
     private void synchronize(GTreeTableNode node, GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Boolean> expandables) {
-        if (hasOnlyExpandingNodeAsChild(node)) {
+        if (node.getChildren().size() >= 1 && node.getChild(0) instanceof ExpandingTreeTableNode) {
+            assert node.getChildren().size() == 1;
             node.removeNode(0);
         }
 
@@ -198,12 +199,6 @@ public class GTreeTableTree {
             System.arraycopy(downGroupChildren, childrenSize - downGroups, allChildren, thisGroups, downGroups);
         }
 
-        // adding virtual "expandable" node
-        if (allChildren.length == 0 && node.isExpandable()) {
-            allChildren = new GTreeTableNode[] { new ExpandingTreeTableNode() };
-            node.setOpen(false);
-        }
-
         node.setChildren(GwtClientUtils.newArrayList(allChildren));
     }
 
@@ -214,10 +209,6 @@ public class GTreeTableTree {
             expandable = e == null || e;
         }
         child.setExpandable(expandable);
-    }
-
-    public boolean hasOnlyExpandingNodeAsChild(GTreeTableNode node) {
-        return node.getChildren().size() == 1 && node.getChild(0) instanceof ExpandingTreeTableNode;
     }
 
     private void removeChildrenFromGroupNodes(GTreeTableNode node) {
@@ -252,13 +243,11 @@ public class GTreeTableTree {
     public ArrayList<GTreeGridRecord> updateRows(int columnCount) {
         nodeCounter = 0;
         ArrayList<GTreeGridRecord> result = new ArrayList<>();
-        if (!hasOnlyExpandingNodeAsChild(root)) {
-            result.addAll(getNodeChildrenRecords(columnCount, root, 0, null));
-        }
+        updateRows(result, columnCount, root, 0, null);
         return result;
     }
 
-    private List<GTreeGridRecord> getNodeChildrenRecords(int columnCount, GTreeTableNode node, int level, boolean[] parentLastInLevelMap) {
+    private List<GTreeGridRecord> updateRows(ArrayList<GTreeGridRecord> rows, int columnCount, GTreeTableNode node, int level, boolean[] parentLastInLevelMap) {
         List<GTreeGridRecord> result = new ArrayList<>();
         for (GTreeTableNode child : node.getChildren()) {
             HashMap<GPropertyDraw, Pair<Object, Boolean>> valueMap = new HashMap<>();
@@ -275,21 +264,16 @@ public class GTreeTableTree {
             }
             GTreeGridRecord record = new GTreeGridRecord(child.getGroup(), child.getKey(), valueMap);
 
-            if (child.isExpandable() && (child.getChildren().size() > 1 || !hasOnlyExpandingNodeAsChild(child))) {
-                child.setOpen(true);
-            }
-
             boolean[] lastInLevelMap = new boolean[level];
             assert level > 0 == (parentLastInLevelMap != null);
             if(parentLastInLevelMap != null) {
                 System.arraycopy(parentLastInLevelMap, 0, lastInLevelMap, 0, level - 1);
                 lastInLevelMap[level - 1] = node.isLast(child);
             }
-            record.setTreeValue(new GTreeColumnValue(level, lastInLevelMap, child.isOpen() ? (Boolean)true : (child.getChildren().isEmpty() ? null : false),
+            record.setTreeValue(new GTreeColumnValue(level, lastInLevelMap, child.isExpandable() ? (Boolean)child.hasChildren() : null,
                     objectsToString(child.getGroup()) + (nodeCounter++), true, false));
-            result.add(record);
-            if (child.isOpen())
-                result.addAll(getNodeChildrenRecords(columnCount, child, level + 1, lastInLevelMap));
+            rows.add(record);
+            updateRows(rows, columnCount, child, level + 1, lastInLevelMap);
         }
         return result;
     }

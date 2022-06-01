@@ -10,7 +10,6 @@ public class GTreeTableNode {
     private GGroupObjectValue key;
     private GTreeTableNode parent;
     private ArrayList<GTreeTableNode> children;
-    private boolean open = false;
     private boolean expandable = true;
 
     public GTreeTableNode() {
@@ -66,14 +65,9 @@ public class GTreeTableNode {
         children.remove(index);
     }
 
-    public boolean isOpen() {
-        return open;
-    }
-
-    public void setOpen(boolean open) {
-        if (expandable) {
-            this.open = open;
-        }
+    public boolean hasChildren() {
+        assert isExpandable();
+        return !children.isEmpty();
     }
 
     public boolean isExpandable() {
@@ -82,8 +76,5 @@ public class GTreeTableNode {
 
     public void setExpandable(boolean expandable) {
         this.expandable = expandable;
-        if (!expandable) {
-            open = false;
-        }
     }
 }

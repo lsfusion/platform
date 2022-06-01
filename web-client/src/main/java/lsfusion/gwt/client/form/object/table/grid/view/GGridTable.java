@@ -32,7 +32,6 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.*;
 
@@ -166,7 +165,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             dataUpdated = true;
         }
 
-        updateDataImpl();
+        updateData();
     }
 
     private void updateRows(boolean modifyGroupObject) {
@@ -363,7 +362,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         dataUpdated = true;
 
         updateColumns();
-        updateDataImpl();
+        updateData();
 //
 //        final ArrayList<GFontWidthString> fonts = new ArrayList<>();
 //        for(GPropertyDraw property : properties)
@@ -419,7 +418,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return result;
     }
 
-    private void updateDataImpl() {
+    private void updateData() {
         if (dataUpdated) {
             boolean firstRow = true;
             ArrayList<GridColumn> updatedColumns = new ArrayList<>();

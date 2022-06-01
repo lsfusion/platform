@@ -103,8 +103,6 @@ public class GTreeGroupController extends GAbstractTableController {
     public void update() {
         tree.update();
 
-        tree.restoreVisualState();
-
         boolean isTreeVisible = tree.getColumnCount() > 1;
 
         gridView.setVisible(isTreeVisible);
@@ -266,10 +264,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     public void fireExpandNodeRecursive(boolean current) {
-        tree.fireExpandNodeRecursive(current);
+        tree.fireExpandNodeRecursive(current, true);
     }
 
     public void fireCollapseNodeRecursive(boolean current) {
-        tree.fireCollapseNodeRecursive(current);
+        tree.fireExpandNodeRecursive(current, false);
     }
 }
