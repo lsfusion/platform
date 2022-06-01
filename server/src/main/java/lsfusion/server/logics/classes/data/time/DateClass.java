@@ -165,9 +165,12 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         return "DATE";
     }
 
+    //Using LocalDate.MIN or any date with negative year causes pgsql error 'time zone displacement out of range'
+    static LocalDate minDate = LocalDate.of(1, 1, 1);
+
     @Override
     public LocalDate getInfiniteValue(boolean min) {
-        return min ? LocalDate.MIN : LocalDate.MAX;
+        return min ? minDate : LocalDate.MAX;
     }
 
     @Override
