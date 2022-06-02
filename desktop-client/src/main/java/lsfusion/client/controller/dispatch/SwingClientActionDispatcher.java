@@ -2,6 +2,7 @@ package lsfusion.client.controller.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileDialogUtils;
 import lsfusion.base.file.RawFileData;
@@ -695,12 +696,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     @Override
     public void execute(ClientWebAction action) {
         if (action.isFont()) {
-            try {
-                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-                ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream()));
-            } catch (FontFormatException | IOException e) {
-                throw Throwables.propagate(e);
-            }
+            ResourceUtils.registerFont(action);
         }
     }
 

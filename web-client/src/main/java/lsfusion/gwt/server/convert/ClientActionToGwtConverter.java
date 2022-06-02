@@ -2,6 +2,7 @@ package lsfusion.gwt.server.convert;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -276,7 +277,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             if(action.isFont()) {
                 String fontFamily = fontFamilyMap.get(action.resourceName);
                 if(fontFamily == null) {
-                    fontFamily = registerFont(action);
+                    fontFamily = ResourceUtils.registerFont(action);
                     fontFamilyMap.put(action.resourceName, fontFamily);
                 }
                 action.originalResourceName = fontFamily;
@@ -284,16 +285,5 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         } else
             resourcePath = (String) resource;
         return new GClientWebAction(resourcePath, action.resourceName, action.originalResourceName, values, types, returnType, action.isFile, action.syncType);
-    }
-
-    private String registerFont(ClientWebAction action) {
-        try {
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
-            ge.registerFont(font);
-            return font.getFamily();
-        } catch (FontFormatException | IOException e) {
-            throw Throwables.propagate(e);
-        }
     }
 }

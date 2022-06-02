@@ -410,9 +410,19 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 $wnd.document.head.appendChild(link);
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
             } else if(resourceName.endsWith('ttf') || resourceName.endsWith('otf')) {
-                var fontFace = new FontFace(originalResourceName, 'url(' + resourcePath + ')');
-                fontFace.load();
-                document.fonts.add(fontFace);
+                if(document.loadedFonts == null) {
+                    document.loadedFonts = [];
+                }
+                if (document.loadedFonts.includes(originalResourceName)) {
+                    thisObj.@JSExecutor::onFileExecuted(*)(action);
+                } else {
+                    var fontFace = new FontFace(originalResourceName, 'url(' + resourcePath + ')');
+                    fontFace.load().then(function (loaded_face) {
+                        document.fonts.add(fontFace);
+                        thisObj.@JSExecutor::onFileExecuted(*)(action);
+                    });
+                    document.loadedFonts.push(originalResourceName);
+                }
             } else {
                 $wnd.lsfFiles[originalResourceName] = resourcePath;
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
