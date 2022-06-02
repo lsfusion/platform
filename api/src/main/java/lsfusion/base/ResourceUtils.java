@@ -219,9 +219,13 @@ public class ResourceUtils {
     }
 
     public static List<String> findInClassPath(String endpoint) {
+        return findInClassPath(endpoint, true);
+    }
+
+    public static List<String> findInClassPath(String findString, boolean endpoint) {
         return Arrays.stream(ResourceUtils.getClassPathElements())
-                .filter(path -> Files.exists(Paths.get(path, endpoint)))
-                .map(path -> FilenameUtils.separatorsToUnix(Paths.get(path, endpoint).toString()))
+                .map(path -> FilenameUtils.separatorsToUnix(endpoint ? Paths.get(path, findString).toString() : path))
+                .filter(path -> endpoint ? Files.exists(Paths.get(path, findString)) : path.contains(findString))
                 .collect(Collectors.toList());
     }
 

@@ -22,7 +22,6 @@ import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
-import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleAdapter;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -66,7 +65,6 @@ import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveOrObjectClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
-import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -120,7 +118,6 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -2007,7 +2004,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.addAll(resetCustomReportsCacheTasks(scheduler));
             result.add(getProcessDumpTask(scheduler));
         } else {
-            result.add(getSynchronizeWebDirectoriesTask(scheduler));
+            result.add(getSynchronizeSourceTask(scheduler));
         }
         return result;
     }
@@ -2107,15 +2104,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }, false, Settings.get().getPeriodProcessDump(), false, "Process Dump");
     }
 
-    // for reports SavingThread is used
-    private Scheduler.SchedulerTask getSynchronizeWebDirectoriesTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(stack -> {
-            for (String path : ResourceUtils.findInClassPath("web")) {
-                int endIndex = path.indexOf("/target/classes");
-                FileUtils.synchronizeDirectories(Paths
-                        .get(path.substring(0, endIndex != -1 ? endIndex : path.indexOf("out/production")), "src/main/resources/web").toString(), path);
-            }
-        }, false, 1, false, "Copy files from 'resources/web' into target. Only for debug");
+    private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
+        return scheduler.createSystemTask(stack -> FileUtils.synchronizeDirectories(), false,
+                1, false, "Synchronize reports, 'resources' and 'lsfusion' dirs with target. Only for debug");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {
