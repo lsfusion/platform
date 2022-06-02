@@ -374,8 +374,18 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
 
         private void executeFile(GClientWebAction action) {
-            executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName, action.originalResourceName);
+            if(action.fontFamily != null) {
+                loadFont(action.resource, action.fontFamily);
+            } else {
+                executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName, action.originalResourceName);
+            }
         }
+
+        private native void loadFont(String url, String family) /*-{
+            var fontFace = new FontFace(family, 'url(' + url + ')');
+            fontFace.load();
+            document.fonts.add(fontFace);
+        }-*/;
 
         private native void executeFile(GClientWebAction action, String resourcePath, String resourceName, String originalResourceName)/*-{
             var thisObj = this;

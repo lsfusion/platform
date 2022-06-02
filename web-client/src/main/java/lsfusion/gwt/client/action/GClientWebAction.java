@@ -14,13 +14,14 @@ public class GClientWebAction implements GAction {
     public GType returnType;
     public boolean isFile;
     public boolean syncType;
+    public String fontFamily;
 
     public transient Object execResult;
 
     @SuppressWarnings("UnusedDeclaration")
     public GClientWebAction() {}
 
-    public GClientWebAction(String resource, String resourceName, String originalResourceName, ArrayList<Object> values, ArrayList<Object> types, GType returnType, boolean isFile, boolean syncType) {
+    public GClientWebAction(String resource, String resourceName, String originalResourceName, ArrayList<Object> values, ArrayList<Object> types, GType returnType, boolean isFile, boolean syncType, String fontFamily) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.originalResourceName = originalResourceName;
@@ -29,6 +30,7 @@ public class GClientWebAction implements GAction {
         this.returnType = returnType;
         this.isFile = isFile;
         this.syncType = syncType;
+        this.fontFamily = fontFamily;
     }
 
     @Override

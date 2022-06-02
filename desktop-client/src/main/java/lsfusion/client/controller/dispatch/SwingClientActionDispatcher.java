@@ -694,7 +694,14 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(ClientWebAction action) {
-        //desktop stub. do nothing
+        if (action.isFont()) {
+            try {
+                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream()));
+            } catch (FontFormatException | IOException e) {
+                throw Throwables.propagate(e);
+            }
+        }
     }
 
     @Override

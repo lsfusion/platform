@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
@@ -30,6 +31,7 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
 
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -265,10 +267,21 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object resource = action.resource;
         String resourcePath;
-        if(action.isFile)
-            resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData)resource);
-        else
+        String fontFamily = null;
+        if(action.isFile) {
+            resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData) resource);
+            if(action.isFont()) {
+                try {
+                    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                    Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
+                    fontFamily = font.getFamily();
+                    ge.registerFont(font);
+                } catch (FontFormatException | IOException e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+        } else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName, action.originalResourceName, values, types, returnType, action.isFile, action.syncType);
+        return new GClientWebAction(resourcePath, action.resourceName, action.originalResourceName, values, types, returnType, action.isFile, action.syncType, fontFamily);
     }
 }
