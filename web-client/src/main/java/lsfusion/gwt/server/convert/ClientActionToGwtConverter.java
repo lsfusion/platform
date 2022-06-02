@@ -36,7 +36,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 
@@ -250,6 +252,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GResetWindowsLayoutAction();
     }
 
+    Map<String, String> fontFamilyMap = new HashMap<>();
+
     @Converter(from = ClientWebAction.class)
     public GClientWebAction convertAction(ClientWebAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         ArrayList<Object> values = new ArrayList<>();
@@ -267,21 +271,29 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object resource = action.resource;
         String resourcePath;
-        String fontFamily = null;
         if(action.isFile) {
             resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData) resource);
             if(action.isFont()) {
-                try {
-                    GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-                    Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
-                    fontFamily = font.getFamily();
-                    ge.registerFont(font);
-                } catch (FontFormatException | IOException e) {
-                    throw Throwables.propagate(e);
+                String fontFamily = fontFamilyMap.get(action.resourceName);
+                if(fontFamily == null) {
+                    fontFamily = registerFont(action);
+                    fontFamilyMap.put(action.resourceName, fontFamily);
                 }
+                action.originalResourceName = fontFamily;
             }
         } else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName, action.originalResourceName, values, types, returnType, action.isFile, action.syncType, fontFamily);
+        return new GClientWebAction(resourcePath, action.resourceName, action.originalResourceName, values, types, returnType, action.isFile, action.syncType);
+    }
+
+    private String registerFont(ClientWebAction action) {
+        try {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
+            ge.registerFont(font);
+            return font.getFamily();
+        } catch (FontFormatException | IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

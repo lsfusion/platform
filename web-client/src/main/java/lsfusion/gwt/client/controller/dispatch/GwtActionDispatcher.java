@@ -374,18 +374,8 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
         }
 
         private void executeFile(GClientWebAction action) {
-            if(action.fontFamily != null) {
-                loadFont(action.resource, action.fontFamily);
-            } else {
-                executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName, action.originalResourceName);
-            }
+            executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName, action.originalResourceName);
         }
-
-        private native void loadFont(String url, String family) /*-{
-            var fontFace = new FontFace(family, 'url(' + url + ')');
-            fontFace.load();
-            document.fonts.add(fontFace);
-        }-*/;
 
         private native void executeFile(GClientWebAction action, String resourcePath, String resourceName, String originalResourceName)/*-{
             var thisObj = this;
@@ -419,6 +409,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
                 link.rel = "stylesheet";
                 $wnd.document.head.appendChild(link);
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
+            } else if(resourceName.endsWith('ttf') || resourceName.endsWith('otf')) {
+                var fontFace = new FontFace(originalResourceName, 'url(' + resourcePath + ')');
+                fontFace.load();
+                document.fonts.add(fontFace);
             } else {
                 $wnd.lsfFiles[originalResourceName] = resourcePath;
                 thisObj.@JSExecutor::onFileExecuted(*)(action);

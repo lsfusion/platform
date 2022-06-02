@@ -7,7 +7,7 @@ public class ClientWebAction extends ExecuteClientAction {
 
     public Object resource;
     public final String resourceName;
-    public final String originalResourceName;
+    public String originalResourceName;
     public ArrayList<byte[]> values;
     public ArrayList<byte[]> types;
     public byte[] returnType;
