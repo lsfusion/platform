@@ -558,13 +558,14 @@ public class ScriptingFormEntity {
         }
 
         Boolean isSelector = options.getSelector();
-        if(isSelector != null && isSelector)
+        boolean hasSelector = isSelector != null && isSelector;
+        if (hasSelector)
             property.setEventAction(ServerResponse.CHANGE, property::getSelectorAction, true);
 
         Map<String, ActionObjectEntity> eventActions = options.getEventActions();
         if (eventActions != null) {
             for (Map.Entry<String, ActionObjectEntity> e : eventActions.entrySet()) {
-                property.setEventAction(e.getKey(), e.getValue(), false);
+                property.setEventAction(e.getKey(), e.getValue(), hasSelector);
             }
         }
 
