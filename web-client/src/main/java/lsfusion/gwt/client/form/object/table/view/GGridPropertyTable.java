@@ -202,7 +202,15 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getTableBodyElement().getOffsetHeight();
     }
     
-    protected abstract GGroupObjectValue getSelectedKey();
+    public GGroupObjectValue getSelectedKey() {
+        GridDataRecord selectedRowValue = getSelectedRowValue();
+        return selectedRowValue != null ? selectedRowValue.getKey() : null;
+    }
+
+    protected String getSelectedVirtualKey() {
+        GridDataRecord selectedRowValue = getSelectedRowValue();
+        return selectedRowValue != null ? selectedRowValue.getVirtualKey() : null;
+    }
 
     // there is a contract if there are keys there should be current object
     // but for example modifyFormChangesWithChangeCurrentObjectAsyncs removes object change (+ when there are no keys nothing is also send)
@@ -216,7 +224,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     private boolean currentRowUpdated = false;
     public void updateCurrentRow() {
         if (currentRowUpdated) {
-            setSelectedRow(currentKey != null ? getRowByKeyOptimistic(currentKey) : -1);
+            setSelectedRow(currentKey != null ? getRowByKey(currentKey, null) : -1);
 
             currentKey = null;
             currentRowUpdated = false;
@@ -467,7 +475,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if(columnIndex < 0)
             return null;
 
-        int rowIndex = getRowByKeyOptimistic(propertyRowKey);
+        int rowIndex = getRowByKey(propertyRowKey, GridDataRecord.objectVirtualKey);
         if(rowIndex < 0)
             return null;
 
@@ -664,13 +672,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             @Override
             public String getBackground(String baseColor) {
-                String background = column.getBackground(property, (T) cell.getRow());
-                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), background != null ? background : baseColor);
+                T row = (T) cell.getRow();
+                String background = column.getBackground(property, row);
+                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), background != null ? background : (baseColor != null ? baseColor : row.getRowBackground()));
             }
 
             @Override
             public String getForeground() {
-                return getThemedColor(column.getForeground(property, (T) cell.getRow()));
+                T row = (T) cell.getRow();
+                String foreground = column.getForeground(property, row);
+                return getThemedColor(foreground != null ? foreground : row.getRowForeground());
             }
         };
     }

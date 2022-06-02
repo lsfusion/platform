@@ -138,11 +138,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         getElement().setPropertyObject("groupObject", groupObject);
     }
 
-    @Override
-    public GGroupObjectValue getCurrentKey() {
-        return getSelectedKey();
-    }
-
     public void update(Boolean updateState) {
         updateModify(false);
         if(updateState != null)
@@ -497,11 +492,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private void removeGridColumn(GridColumn column) {
         removeColumn(column);
-    }
-
-    public GGroupObjectValue getSelectedKey() {
-        GridDataRecord selectedRowValue = getSelectedRowValue();
-        return selectedRowValue != null ? selectedRowValue.getKey() : null;
     }
 
     @Override
@@ -894,11 +884,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     // editing set value (in EditContext), changes model and value itself
     public void setValueAt(Cell cell, Object value) {
         GridColumn gridColumn = getGridColumn(cell);
-        GridDataRecord gridRow = getGridRow(cell);
 
-        gridColumn.setValue(gridRow, value); // updating inner model
+        gridColumn.setValue(getGridRow(cell), value); // updating inner model
 
-        values.get(gridColumn.property).put(gridRow.getKey(), value); // updating outer model - controller
+        values.get(gridColumn.property).put(getRowKey(cell), value); // updating outer model - controller
     }
 
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
@@ -910,10 +899,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public void setLoadingAt(Cell cell) {
-        GridDataRecord rowRecord = getGridRow(cell);
         GridColumn column = getGridColumn(cell);
 
-        column.setLoading(rowRecord, true); // updating inner model
+        column.setLoading(getGridRow(cell), true); // updating inner model
 
         // updating outer model - controller
         NativeHashMap<GGroupObjectValue, Object> loadingMap = loadings.get(column.property);
@@ -921,7 +909,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             loadingMap = new NativeHashMap<>();
             loadings.put(column.property, loadingMap);
         }
-        loadingMap.put(rowRecord.getKey(), true);
+        loadingMap.put(getRowKey(cell), true);
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {

@@ -214,7 +214,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             eventsToUpdate.put(key, this::removeSingleCalendarEvent);
         });
 
-        GGroupObjectValue currentKey = getCurrentKey();
+        GGroupObjectValue currentKey = getSelectedKey();
 
         if (eventsToAdd.size() + eventsToUpdate.size() > fullUpdateLimit) {
             events.clear();

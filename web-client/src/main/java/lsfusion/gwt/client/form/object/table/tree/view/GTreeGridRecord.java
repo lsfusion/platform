@@ -11,23 +11,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-public class GTreeGridRecord extends GridDataRecord {
+public abstract class GTreeGridRecord extends GridDataRecord {
     private GGroupObject group;
 
-    public GTreeGridRecord(GGroupObject group, GGroupObjectValue key, HashMap<GPropertyDraw, Pair<Object, Boolean>> values) {
+    public GTreeGridRecord(GGroupObject group, GGroupObjectValue key, GTreeColumnValue treeValue) {
         super(key);
-        this.group = group;
 
-        for (Map.Entry<GPropertyDraw, Pair<Object, Boolean>> e : values.entrySet()) {
-            GPropertyDraw vKey = e.getKey();
-            Pair<Object, Boolean> value = e.getValue();
-            setValue(vKey, value.first);
-            setLoading(vKey, value.second);
-        }
+        setTreeValue(treeValue);
+
+        this.group = group;
     }
 
     private final String treeColumn = "treeColumn";
-    public void setTreeValue(GTreeColumnValue value) {
+    private void setTreeValue(GTreeColumnValue value) {
         setAttribute(treeColumn, value);
     }
     public GTreeColumnValue getTreeValue() {

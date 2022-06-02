@@ -20,14 +20,9 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.async.GPushAsyncInput;
-import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
-import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -352,12 +347,12 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
-    public GGroupObjectValue getCurrentKey() {
+    public GGroupObjectValue getSelectedKey() {
         return currentKey; // for executing actions used for wysiwyg
     }
 
     protected boolean isCurrentKey(GGroupObjectValue object){
-        return Objects.equals(object, getCurrentKey());
+        return Objects.equals(object, getSelectedKey());
     }
 
     @Override

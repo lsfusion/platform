@@ -66,8 +66,8 @@ public class GTreeGroupController extends GAbstractTableController {
         return treeGroup.font;
     }
 
-    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc) {
-        tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group));
+    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
+        tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group), requestIndex);
     }
 
     @Override
@@ -184,7 +184,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public GGroupObjectValue getCurrentKey() {
+    public GGroupObjectValue getSelectedKey() {
         return tree.getSelectedKey();
     }
 
@@ -193,6 +193,7 @@ public class GTreeGroupController extends GAbstractTableController {
         return tree.changeOrders(groupObject, value, alreadySet);
     }
 
+    // used in filters and user preferences
     @Override
     public GGroupObject getSelectedGroupObject() {
         GTreeGridRecord record = tree.getSelectedRowValue();

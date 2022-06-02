@@ -31,6 +31,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -120,16 +121,19 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     int renderedSelectedCol = -1;
     int renderedLeftStickyCol = -1;
     Object renderedSelectedKey = null; // needed for saving scroll position when keys are update
+    Object renderedSelectedVirtualKey = null; // needed for saving scroll position when keys are update
 
     protected abstract Object getSelectedKey();
-    protected int getRowByKeyOptimistic(Object key) {
+    protected abstract Object getSelectedVirtualKey();
+    // virtualKey - null means that we're looking for any selected key but object other key
+    protected int getRowByKey(Object key, Object virtualKey) {
         Object selectedKey = getSelectedKey();
-        if(selectedKey != null && selectedKey.equals(key)) // optimization the most common case
+        if(selectedKey != null && (selectedKey.equals(key) && (virtualKey == null || getSelectedVirtualKey().equals(virtualKey)))) // optimization the most common case
             return getSelectedRow();
 
-        return getRowByKey(key);
+        return findRowByKey(key, virtualKey == null ? GridDataRecord.objectVirtualKey : virtualKey);
     }
-    protected abstract int getRowByKey(Object key);
+    protected abstract int findRowByKey(Object key, Object virtualKey);
 
     private int pageIncrement = 30;
 
@@ -1173,6 +1177,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         onResizeChanged = false;
 
         renderedSelectedKey = getSelectedKey();
+        renderedSelectedVirtualKey = getSelectedVirtualKey();
         renderedSelectedRow = getSelectedRow();
         renderedSelectedCol = getSelectedColumn();
 
@@ -1320,7 +1325,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
         // we're trying to keep viewport the same after rerendering
         int rerenderedSelectedRow;
-        if(pendingState.renderedSelectedScrollTop != null && (rerenderedSelectedRow = getRowByKeyOptimistic(renderedSelectedKey)) >= 0) {
+        if(pendingState.renderedSelectedScrollTop != null && (rerenderedSelectedRow = getRowByKey(renderedSelectedKey, renderedSelectedVirtualKey)) >= 0) {
             scrollTop = getChildElement(rerenderedSelectedRow).getOffsetTop() - pendingState.renderedSelectedScrollTop;
 
             if(scrollTop < 0) // upper than top

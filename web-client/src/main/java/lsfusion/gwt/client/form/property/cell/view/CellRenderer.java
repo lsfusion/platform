@@ -13,7 +13,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class CellRenderer<T> {
 
-    protected static final String ICON_LOADING = "loading.gif";
+    public static final String ICON_LOADING = "loading.gif";
 
     protected final GPropertyDraw property;
 

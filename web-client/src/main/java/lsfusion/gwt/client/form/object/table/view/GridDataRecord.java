@@ -123,6 +123,11 @@ public class GridDataRecord {
         return key;
     }
 
+    public static final String objectVirtualKey = "OBJECT";
+    public String getVirtualKey() {
+        return objectVirtualKey;
+    }
+
     private NativeStringMap<Object> createValues() {
         if (values == null) {
             values = new NativeStringMap<>();

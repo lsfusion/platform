@@ -68,10 +68,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract void pasteData(Cell cell, TableCellElement parent, List<List<String>> table);
 
     @Override
-    protected int getRowByKey(Object key) {
+    protected int findRowByKey(Object key, Object virtualKey) {
         ArrayList<T> rows = getRows();
         for (int i = 0; i < rows.size(); i++) {
-            if(rows.get(i).getKey().equals(key))
+            T row = rows.get(i);
+            if(row.getKey().equals(key) && row.getVirtualKey().equals(virtualKey))
                 return i;
         }
         return -1;

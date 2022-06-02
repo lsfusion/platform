@@ -3,13 +3,11 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
-import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.*;
@@ -18,17 +16,13 @@ public class GTreeTableTree {
     private GForm form;
 
     public NativeSIDMap<GGroupObject, ArrayList<GPropertyDraw>> groupProperties = new NativeSIDMap<>();
-    private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, GTreeTableNode>> groupNodes = new NativeSIDMap<>();
+    private final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, GTreeObjectTableNode>> groupNodes = new NativeSIDMap<>();
 
-    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeSIDMap<>();
-    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> loadings = new NativeSIDMap<>();
-    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> readOnly = new NativeSIDMap<>();
-
-    public GTreeTableNode root;
+    public GTreeRootTableNode root;
 
     public GTreeTableTree(GForm iForm) {
         form = iForm;
-        root = new GTreeTableNode();
+        root = new GTreeRootTableNode();
     }
 
     public int getPropertyIndex(GPropertyDraw propertyDraw) {
@@ -49,9 +43,6 @@ public class GTreeTableTree {
     }
 
     public int removeProperty(GPropertyDraw property) {
-        values.remove(property);
-        loadings.remove(property);
-
         GGroupObject group = property.groupObject;
         ArrayList<GPropertyDraw> properties = groupProperties.get(group);
         int ind = properties.indexOf(property);
@@ -88,7 +79,7 @@ public class GTreeTableTree {
             return list;
         }
     }
-    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Boolean> expandable) {
+    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Boolean> expandable, int requestIndex) {
         NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> childTree = new NativeHashMap<>();
 
         for (int i = 0; i < keys.size(); i++) {
@@ -106,10 +97,10 @@ public class GTreeTableTree {
 
         GGroupObject upGroup = group.getUpTreeGroup();
         if(upGroup == null)
-            synchronize(root, group, childTree, expandable);
+            synchronize(root, group, childTree, expandable, requestIndex);
         else
             getGroupNodes(upGroup).foreachValue(groupNode ->
-                    synchronize(groupNode, group, childTree, expandable));
+                    synchronize(groupNode, group, childTree, expandable, requestIndex));
     }
 
     public GGroupObjectValue getParentPath(GGroupObject group, GGroupObjectValue key, GGroupObjectValue parent) {
@@ -127,31 +118,45 @@ public class GTreeTableTree {
     }
 
     // we're assuming that recursive "this" groups goes first (before down groups)
-    private void synchronize(GTreeTableNode node, GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Boolean> expandables) {
-        if (node.getChildren().size() >= 1 && node.getChild(0) instanceof ExpandingTreeTableNode) {
-            assert node.getChildren().size() == 1;
-            node.removeNode(0);
+    private void synchronize(GTreeContainerTableNode node, GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Boolean> expandables, int requestIndex) {
+        OptimizedIndexOfArrayList<GGroupObjectValue> syncChilds = tree.get(node.getKey());
+
+        if (node.pendingExpanding != null) {
+            if (node.pendingExpanding) {
+                assert node.hasOnlyExpandingTreeTableNodes();
+            } else { // collapsing
+                assert !node.hasExpandableChildren();
+            }
+
+            if (node.pendingExpandingRequestIndex > requestIndex)
+                return;
+
+            if (node.pendingExpanding) // removing expanding nodes
+                node.removeNodes();
+
+            node.setPendingExpanding(null, -1);
         }
 
-        OptimizedIndexOfArrayList<GGroupObjectValue> syncChilds = tree.get(node.getKey());
-        if (syncChilds == null)
+        ArrayList<GTreeChildTableNode> children = node.getChildren();
+
+        if (syncChilds == null) // collapsed (considering empty)
             syncChilds = new OptimizedIndexOfArrayList<>();
 
-        ArrayList<GTreeTableNode> children = node.getChildren();
+        ArrayList<GGroupObjectValue> thisGroupsList = syncChilds.getList();
 
         int downGroups = 0;
-        ArrayList<GGroupObjectValue> thisGroupsList = syncChilds.getList();
         int thisGroups = thisGroupsList.size();
         int childrenSize = children.size();
-        GTreeTableNode[] downGroupChildren = new GTreeTableNode[childrenSize]; // we need to preserve the order
-        GTreeTableNode[] thisGroupChildren = new GTreeTableNode[thisGroups];
+
+        GTreeObjectTableNode[] downGroupChildren = new GTreeObjectTableNode[childrenSize]; // we need to preserve the order
+        GTreeObjectTableNode[] thisGroupChildren = new GTreeObjectTableNode[thisGroups];
 
         boolean isUpperGroup = !GwtClientUtils.nullEquals(node.getGroup(), syncGroup);
 
         // removing "obsolete" nodes
         // if it is an upper group, down groups are at the list beginning, otherwise at the end
         for (int i = childrenSize - 1; i >= 0; i--) {
-            GTreeTableNode child = children.get(i);
+            GTreeObjectTableNode child = (GTreeObjectTableNode) children.get(i); // since expandingTableNode already removed
 
             if (child.getGroup().equals(syncGroup)) {
                 GGroupObjectValue childKey = child.getKey();
@@ -172,24 +177,24 @@ public class GTreeTableTree {
         // adding missing nodes, recursive call
         for (int i = 0; i < thisGroups; ++i) {
             GGroupObjectValue key = thisGroupsList.get(i);
-            GTreeTableNode child = thisGroupChildren[i];
+            GTreeObjectTableNode child = thisGroupChildren[i];
 
             if (child == null) {
-                thisGroupChildren[i] = child = new GTreeTableNode(syncGroup, key);
+                thisGroupChildren[i] = child = new GTreeObjectTableNode(syncGroup, key);
 
                 // if it is an upper group, there are down groups at the beginning
                 int offset = (isUpperGroup ? downGroups : 0) + i;
                 node.addNode(offset, child);
-                GTreeTableNode result = getGroupNodes(syncGroup).put(child.getKey(), child);
+                GTreeObjectTableNode result = getGroupNodes(syncGroup).put(child.getKey(), child);
                 assert result == null;
             }
 
             updateExpandable(syncGroup, expandables, key, child);
 
-            synchronize(child, syncGroup, tree, expandables);
+            synchronize(child, syncGroup, tree, expandables, requestIndex);
         }
 
-        GTreeTableNode[] allChildren = new GTreeTableNode[downGroups + thisGroups];
+        GTreeObjectTableNode[] allChildren = new GTreeObjectTableNode[downGroups + thisGroups];
         // if we're synchronizing "upper" group, then we should put downGroups up, otherwise down
         if (isUpperGroup) {
             System.arraycopy(downGroupChildren, 0, allChildren, 0, downGroups);
@@ -202,7 +207,7 @@ public class GTreeTableTree {
         node.setChildren(GwtClientUtils.newArrayList(allChildren));
     }
 
-    private void updateExpandable(GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, Boolean> expandables, GGroupObjectValue key, GTreeTableNode child) {
+    private void updateExpandable(GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, Boolean> expandables, GGroupObjectValue key, GTreeObjectTableNode child) {
         boolean expandable = false;
         if (syncGroup.mayHaveChildren()) {
             Boolean e = expandables.get(key);
@@ -211,79 +216,60 @@ public class GTreeTableTree {
         child.setExpandable(expandable);
     }
 
-    private void removeChildrenFromGroupNodes(GTreeTableNode node) {
-        for (GTreeTableNode child : node.getChildren()) {
-            if (!(child instanceof ExpandingTreeTableNode)) {
-                getGroupNodes(child.getGroup()).remove(child.getKey());
+    public void removeChildrenFromGroupNodes(GTreeContainerTableNode node) {
+        for (GTreeChildTableNode child : node.getChildren()) {
+            if(child instanceof GTreeObjectTableNode) {
+                GTreeObjectTableNode childObject = (GTreeObjectTableNode) child;
+                getGroupNodes(childObject.getGroup()).remove(childObject.getKey());
 
-                removeChildrenFromGroupNodes(child);
+                removeChildrenFromGroupNodes(childObject);
             }
         }
     }
 
-    public NativeHashMap<GGroupObjectValue, GTreeTableNode> getGroupNodes(GGroupObject group) {
+    public NativeHashMap<GGroupObjectValue, GTreeObjectTableNode> getGroupNodes(GGroupObject group) {
         return groupNodes.computeIfAbsent(group, k -> new NativeHashMap<>());
     }
 
-    public void setLoadings(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propLoadings) {
-        // here can be leaks because of nulls (so in theory nulls better to be removed)
-        GwtSharedUtils.putUpdate(loadings, property, propLoadings, true);
-    }
-
-    public void setPropertyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propValues, boolean updateKeys) {
-        GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
-    }
-
-    public void setReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> readOnlyValues) {
-        GwtSharedUtils.putUpdate(readOnly, property, readOnlyValues, false);
-    }
-
-    private int nodeCounter;
-
-    public ArrayList<GTreeGridRecord> updateRows(int columnCount) {
-        nodeCounter = 0;
+    public ArrayList<GTreeGridRecord> updateRows() {
         ArrayList<GTreeGridRecord> result = new ArrayList<>();
-        updateRows(result, columnCount, root, 0, null);
+        updateRows(result, root, 0, null);
         return result;
     }
 
-    private List<GTreeGridRecord> updateRows(ArrayList<GTreeGridRecord> rows, int columnCount, GTreeTableNode node, int level, boolean[] parentLastInLevelMap) {
+    private List<GTreeGridRecord> updateRows(ArrayList<GTreeGridRecord> rows, GTreeContainerTableNode node, int level, boolean[] parentLastInLevelMap) {
         List<GTreeGridRecord> result = new ArrayList<>();
-        for (GTreeTableNode child : node.getChildren()) {
-            HashMap<GPropertyDraw, Pair<Object, Boolean>> valueMap = new HashMap<>();
-            for (int i = 1; i < columnCount; i++) {
-                GPropertyDraw property = getProperty(child.getGroup(), i);
-                if (property != null) {
-                    GGroupObjectValue key = child.getKey();
-                    Object value = values.get(property).get(key);
-                    NativeHashMap<GGroupObjectValue, Object> loadingMap = loadings.get(property);
-                    boolean loading = loadingMap != null && loadingMap.get(key) != null;
+        for (GTreeChildTableNode child : node.getChildren()) {
+            GTreeColumnValue treeValue = createTreeColumnValue(child, node, level, parentLastInLevelMap);
 
-                    valueMap.put(property, new Pair<>(value, loading));
-                }
-            }
-            GTreeGridRecord record = new GTreeGridRecord(child.getGroup(), child.getKey(), valueMap);
+            GTreeGridRecord treeRecord;
+            if(child instanceof GTreeObjectTableNode) {
+                GTreeObjectTableNode childObject = (GTreeObjectTableNode) child;
 
-            boolean[] lastInLevelMap = new boolean[level];
-            assert level > 0 == (parentLastInLevelMap != null);
-            if(parentLastInLevelMap != null) {
-                System.arraycopy(parentLastInLevelMap, 0, lastInLevelMap, 0, level - 1);
-                lastInLevelMap[level - 1] = node.isLast(child);
+                treeRecord = new GTreeObjectGridRecord(childObject.getGroup(), childObject.getKey(), treeValue);
+
+                rows.add(treeRecord);
+
+                updateRows(rows, childObject, level + 1, treeValue.lastInLevelMap);
+            } else {
+                assert node.pendingExpanding;
+                assert node.hasOnlyExpandingTreeTableNodes();
+                assert node instanceof GTreeObjectTableNode;
+
+                rows.add(new GTreeExpandingGridRecord(node.getGroup(), node.getKey(), treeValue));
             }
-            record.setTreeValue(new GTreeColumnValue(level, lastInLevelMap, child.isExpandable() ? (Boolean)child.hasChildren() : null,
-                    objectsToString(child.getGroup()) + (nodeCounter++), true, false));
-            rows.add(record);
-            updateRows(rows, columnCount, child, level + 1, lastInLevelMap);
         }
         return result;
     }
 
-    private String objectsToString(GGroupObject groupObject) {
-        String result = "";
-        for (GObject object : groupObject.objects) {
-            result += object.sID;
+    private GTreeColumnValue createTreeColumnValue(GTreeChildTableNode child, GTreeContainerTableNode parent, int level, boolean[] parentLastInLevelMap) {
+        boolean[] lastInLevelMap = new boolean[level];
+        assert level > 0 == (parentLastInLevelMap != null);
+        if(parentLastInLevelMap != null) {
+            System.arraycopy(parentLastInLevelMap, 0, lastInLevelMap, 0, level - 1);
+            lastInLevelMap[level - 1] = parent.isLast(child);
         }
-        return result;
+        return new GTreeColumnValue(level, lastInLevelMap, child.getColumnValueType(), true, false);
     }
 
     public ArrayList<GPropertyDraw> getProperties(GGroupObject group) {
@@ -300,26 +286,11 @@ public class GTreeTableTree {
         return groupProperties.get(column);
     }
 
-    public boolean isReadOnly(GGroupObject group, int column, GGroupObjectValue key) {
-        if (column >= 1) {
-            GPropertyDraw property = getProperty(group, column);
-            if (property != null && !property.isReadOnly()) {
-                NativeHashMap<GGroupObjectValue, Object> propReadOnly = readOnly.get(property);
-                return propReadOnly != null && propReadOnly.get(key) != null;
-            }
-        }
-        return true;
-    }
-
-    public GTreeTableNode getNodeByRecord(GTreeGridRecord record) {
+    // needed for expand functionality, so assert that after there is an isExpandableCheck
+    public GTreeObjectTableNode getExpandNodeByRecord(GTreeGridRecord record) {
         if (record != null)
             return getGroupNodes(record.getGroup()).get(record.getKey());
         return null;
     }
 
-    private class ExpandingTreeTableNode extends GTreeTableNode {
-        public ExpandingTreeTableNode() {
-            super();
-        }
-    }
 }
