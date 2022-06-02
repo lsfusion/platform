@@ -118,7 +118,7 @@ public final class LocalizedString {
                     throw new FormatError("wrong escape sequence at the end of the string");
                 }
                 char nextCh = s.charAt(i + 1);
-                if (nextCh != '\\' && nextCh != OPEN_CH && nextCh != CLOSE_CH) {
+                if (nextCh != '\\' && nextCh != OPEN_CH && nextCh != CLOSE_CH && nextCh != '$') {
                     throw new FormatError(String.format("wrong escape sequence: '%s'", nextCh));
                 }
                 if (insideKey) {
@@ -246,7 +246,7 @@ public final class LocalizedString {
             char cur = s.charAt(i);
             if (cur == '\\' && i+1 < s.length()) {
                 char next = s.charAt(i+1);
-                if (next == '\\' || next == OPEN_CH || next == CLOSE_CH) {
+                if (next == '\\' || next == OPEN_CH || next == CLOSE_CH || next == '$') {
                     builder.append(next);
                     ++i;
                     continue;

@@ -1,7 +1,9 @@
 package lsfusion.server.language;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -10,6 +12,7 @@ import org.antlr.runtime.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.function.Consumer;
 
 public class ScriptParser {
     public enum State {PRE, META_CLASS_TABLE, MAIN, METADECL, GENMETA}
@@ -67,8 +70,62 @@ public class ScriptParser {
 
     public void runMetaCode(ScriptingLogicsModule LM, String code, int metaLineNumber, String metaModuleName, String callString, 
                             int lineNumberBefore, int lineNumberAfter, boolean enabledMeta) throws RecognitionException {
-        assert !insideMetaDecl;
+        runCode(LM, code, metaLineNumber, metaModuleName, callString, lineNumberBefore, parser -> {
+            try {
+                assert !insideMetaDecl;
 
+                //lineNumber is 1-based
+                currentExpansionLine += lineNumberAfter - 1;
+
+                boolean isTopParser = parsers.size() == 1; // for meta decl parsing it doesn't matter
+                boolean needOffset = parser.inMainParseState(); // in theory we might also need offset in class step
+
+                if (!enabledMeta && isTopParser) {
+                    insideNonEnabledMeta = true;
+                }
+
+                parser.metaCodeParsingStatement();
+
+                int codeLinesCnt = 0;
+                if (needOffset) {
+                    codeLinesCnt = linesCount(code);
+                    globalExpandedLines += codeLinesCnt - 1;
+                }
+
+                if (isTopParser) {
+                    currentExpandedLines = 0;
+                } else if (needOffset) {
+                    currentExpandedLines += codeLinesCnt - 1;
+                }
+
+                if (!enabledMeta && isTopParser) {
+                    insideNonEnabledMeta = false;
+                }
+
+                currentExpansionLine -= lineNumberAfter - 1;
+
+            } catch (RecognitionException e) {
+                throw Throwables.propagate(e);
+            }
+        });
+    }
+
+    public ScriptingLogicsModule.LPWithParams runStringInterpolateCode(ScriptingLogicsModule LM, String code, String moduleName, int lineNumber, List<ScriptingLogicsModule.TypedParameter> context, boolean dynamic) {
+        Result<ScriptingLogicsModule.LPWithParams> result = new Result();
+
+        runCode(LM, code, 0, moduleName, "", lineNumber, parser -> {
+            try {
+                result.set(parser.propertyExpression(context, dynamic));
+            } catch (RecognitionException e) {
+                throw Throwables.propagate(e);
+            }
+        });
+
+        return result.result;
+    }
+
+    public void runCode(ScriptingLogicsModule LM ,String code, int metaLineNumber, String metaModuleName, String callString,
+                            int lineNumberBefore, Consumer<LsfLogicsParser> consumer) {
         LsfLogicsLexer lexer = new LsfLogicsLexer(new ANTLRStringStream(code));
         LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
 
@@ -78,39 +135,11 @@ public class ScriptParser {
         parser.self = LM;
         parser.parseState = currentState;
 
-        //lineNumber is 1-based
-        currentExpansionLine += lineNumberAfter - 1;
-        
         ParserInfo lastParser = new ParserInfo(parser, metaLineNumber, metaModuleName, callString, lineNumberBefore);
 
-        boolean isTopParser = parsers.size() == 1; // for meta decl parsing it doesn't matter
-        boolean needOffset = parser.inMainParseState(); // in theory we might also need offset in class step
-
-        if (!enabledMeta && isTopParser) {
-            insideNonEnabledMeta = true;
-        }
-        
         parsers.push(lastParser);
-        parser.metaCodeParsingStatement();
+        consumer.accept(parser);
         parsers.pop();
-
-        int codeLinesCnt = 0;
-        if (needOffset) {
-            codeLinesCnt = linesCount(code);
-            globalExpandedLines += codeLinesCnt - 1;
-        }
-        
-        if (isTopParser) {
-            currentExpandedLines = 0;
-        } else if (needOffset) {
-            currentExpandedLines += codeLinesCnt - 1; 
-        }
-
-        if (!enabledMeta && isTopParser) {
-            insideNonEnabledMeta = false;
-        }
-
-        currentExpansionLine -= lineNumberAfter - 1;
     }
     
     private int linesCount(String code) {

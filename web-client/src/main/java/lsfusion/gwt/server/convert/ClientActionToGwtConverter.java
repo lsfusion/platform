@@ -83,7 +83,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
-        return new GFormAction(modalityType, servlet.getFormProvider().createForm(action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
+        return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
                 action.forbidDuplicate);
     }
 
@@ -120,10 +120,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ProcessFormChangesClientAction.class)
-    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form) throws IOException {
+    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form, MainDispatchServlet servlet) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(action.formChanges, form.clientForm);
 
-        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form);
+        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form, servlet);
 
         return new GProcessFormChangesAction(changesDTO);
     }

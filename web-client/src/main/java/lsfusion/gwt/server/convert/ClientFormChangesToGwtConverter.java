@@ -3,6 +3,7 @@ package lsfusion.gwt.server.convert;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.StringWithFiles;
 import lsfusion.client.classes.data.ClientImageClass;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
@@ -20,9 +21,12 @@ import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
+import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
 
 import java.awt.*;
+import java.io.IOException;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -46,7 +50,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientFormChanges.class)
-    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex, FormSessionObject sessionObject) {
+    public GFormChangesDTO convertFormChanges(ClientFormChanges changes, Integer requestIndex, FormSessionObject sessionObject, MainDispatchServlet servlet) throws IOException {
         GFormChangesDTO dto = new GFormChangesDTO();
 
         dto.requestIndex = requestIndex;
@@ -127,8 +131,8 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
                 Object propValue = convertOrCast(clientValues.getValue());
-                if (propValue instanceof NamedFileData || propValue instanceof FileData || propValue instanceof RawFileData) {
-                    propValue = convertFileValue(reader, propValue, sessionObject);
+                if (propValue instanceof NamedFileData || propValue instanceof FileData || propValue instanceof RawFileData || propValue instanceof StringWithFiles) {
+                    propValue = convertFileValue(reader, propValue, sessionObject, servlet);
                 }
                 propValueKeys[j] = groupObjectValue;
                 propValueValues[j] = (Serializable) propValue;
@@ -184,10 +188,17 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return dto;
     }
 
-    private Object convertFileValue(ClientPropertyReader reader, Object value, FormSessionObject sessionObject) {
+    private Object convertFileValue(ClientPropertyReader reader, Object value, FormSessionObject sessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
         if ((reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass)
                 || reader instanceof ClientPropertyDraw.ImageReader) {
             return FileUtils.saveFormFile((RawFileData) value, sessionObject);
+        } else if (value instanceof StringWithFiles) {
+            StringWithFiles stringWithFiles = (StringWithFiles) value;
+            String[] urls = new String[stringWithFiles.names.length];
+            for (int k = 0; k < stringWithFiles.names.length; k++) {
+                urls[k] = servlet.getFormProvider().getWebFile(sessionObject.navigatorID, stringWithFiles.names[k], stringWithFiles.files[k]);
+            }
+            return new GStringWithFiles(stringWithFiles.prefixes, urls);
         } else {
             return value == null ? null : true;
         }

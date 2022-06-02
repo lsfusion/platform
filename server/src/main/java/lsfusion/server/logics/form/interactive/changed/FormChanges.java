@@ -2,6 +2,9 @@ package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.ResourceUtils;
+import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -10,6 +13,9 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.StringWithFiles;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -32,7 +38,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.util.List;
 
+import static lsfusion.base.BaseUtils.inlineFileSeparator;
 import static lsfusion.base.BaseUtils.serializeObject;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
@@ -175,7 +183,28 @@ public class FormChanges {
 
                 serializeGroupObjectValue(outStream, objectValues);
 
-                BaseUtils.serializeObject(outStream, rows.getValue(j).getValue());
+                Object value = rows.getValue(j).getValue();
+
+                if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
+                    String[] parts = ((String) value).split(inlineFileSeparator);
+
+                    int length = parts.length / 2;
+                    String[] prefixes = new String[length + 1];
+                    String[] names = new String[length];
+                    RawFileData[] files = new RawFileData[length];
+                    for (int k = 0; k < length + 1; k++) {
+                        prefixes[k] = parts[k * 2];
+                        if (k * 2 + 1 < parts.length) {
+                            String name = parts[k * 2 + 1];
+                            names[k] = name;
+                            files[k] = ResourceUtils.findResourceAsFileData(name, true, false, new Result<>(), null);
+                        }
+                    }
+
+                    value = new StringWithFiles(prefixes, names, files);
+                }
+
+                BaseUtils.serializeObject(outStream, value);
             }
         }
 
