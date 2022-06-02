@@ -3333,7 +3333,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void addToLiterals(String currentLiteral, StringInterpolateState state, List<String> literals) {
         if (state == StringInterpolateState.INTERPOLATION) {
-            literals.add("(" + currentLiteral + ")");
+            literals.add("STRING(" + currentLiteral + ")");
         } else if (state == StringInterpolateState.INLINE) {
             literals.add(quote("$I{" + currentLiteral + "}"));
         } else if (state == StringInterpolateState.FILE) {
