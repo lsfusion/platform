@@ -1,4 +1,5 @@
 :root {
+
     --focus-color: #0489BA; /* after changing, synchronize the appropriate value in StyleDefaults.getFocusColor() */
     --selection-color: #D3E5E8; /* also hardcoded in StyleDefaults.java */
     --scrollbar-color: #DCDCDC;
@@ -28,11 +29,10 @@
     --component-active-background-color: #DEDEDE;
     --leaflet-control-transparent-background: rgba(255, 255, 255, 0.7);
     
-    --date-picker-day-is-weekend-background-color: #f7f7f7;
-    --date-picker-day-is-filler-color: #999;
-    --date-picker-day-is-value-background-color: #d7dfe8;
-    --date-picker-day-is-today-background-color: #497bc5;
-    --date-picker-day-is-highlighted-background-color: #F0E68C;
+    --date-picker-next-prev-month-day-background-color: #f7f7f7;
+    --date-picker-next-prev-month-day-color: #999;
+    --date-picker-selection-background-color: #08c;
+    --date-picker-selection-color: #fff;
 
     --option-selected-hover-color: #99c3ca;
 

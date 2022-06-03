@@ -28,11 +28,10 @@
     --component-active-background-color: #505355;
     --leaflet-control-transparent-background: rgba(43, 43, 43, 0.85);
 
-    --date-picker-day-is-weekend-background-color: #3e3e3e;
-    --date-picker-day-is-filler-color: #8e8e8e;
-    --date-picker-day-is-value-background-color: #416946;
-    --date-picker-day-is-today-background-color: #497bc5;
-    --date-picker-day-is-highlighted-background-color: #716817;
+    --date-picker-next-prev-month-day-background-color: #3e3e3e;
+    --date-picker-next-prev-month-day-color: #8e8e8e;
+    --date-picker-selection-background-color: #00527a;
+    --date-picker-selection-color: var(--text-color);
 
     --option-selected-hover-color: #19282e;
 
