@@ -136,6 +136,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static lsfusion.base.BaseUtils.*;
 import static lsfusion.server.physics.dev.id.resolve.BusinessLogicsResolvingUtils.findElementByCanonicalName;
@@ -2105,22 +2106,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
-        List<FileAlterationObserver> fileAlterationObservers = getFileAlterationObservers("src/main/resources", "src/main/lsfusion");
-        return scheduler.createSystemTask(stack -> fileAlterationObservers.forEach(org.apache.commons.io.monitor.FileAlterationObserver::checkAndNotify),
-                false, 1, false, "Synchronize reports, 'resources' and 'lsfusion' dirs with target. Only for debug");
-    }
+        List<FileAlterationObserver> fileAlterationObservers = ResourceUtils.getSourceToBuildDirs().entrySet()
+                .stream().map(entry -> new FileAlterationObserver(entry.getKey(), entry.getValue())).collect(Collectors.toList());
 
-    private static List<FileAlterationObserver> getFileAlterationObservers(String... dirs) {
-        List<FileAlterationObserver> fileAlterationObservers = new ArrayList<>();
-        for (String classPathElement : ResourceUtils.getClassPaths()) {
-            int endIndex = classPathElement.indexOf("/target/classes");
-            for (String dir : dirs) {
-                java.nio.file.Path path = Paths.get(classPathElement.substring(0, endIndex != -1 ? endIndex : classPathElement.indexOf("out/production")), dir);
-                if (path.toFile().exists())
-                    fileAlterationObservers.add(new FileAlterationObserver(path.toString(), classPathElement));
-            }
-        }
-        return fileAlterationObservers;
+        return scheduler.createSystemTask(stack -> fileAlterationObservers.forEach(org.apache.commons.io.monitor.FileAlterationObserver::checkAndNotify),
+                false, 1, false, "Synchronizing resources from sources to build. Only for debug");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {
