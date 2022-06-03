@@ -272,6 +272,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object resource = action.resource;
         String resourcePath;
+        String originalResourceName = action.originalResourceName;
         if(action.isFile) {
             resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData) resource);
             if(action.isFont()) {
@@ -280,10 +281,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
                     fontFamily = ResourceUtils.registerFont(action);
                     fontFamilyMap.put(action.resourceName, fontFamily);
                 }
-                action.originalResourceName = fontFamily;
+                originalResourceName = fontFamily;
             }
         } else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName, action.originalResourceName, values, types, returnType, action.isFile, action.syncType);
+        return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType, action.isFile, action.syncType);
     }
 }
