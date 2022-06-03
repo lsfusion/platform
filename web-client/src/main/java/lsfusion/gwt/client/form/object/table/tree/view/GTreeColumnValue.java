@@ -18,6 +18,10 @@ public class GTreeColumnValue {
         assert lastInLevelMap.length == level;
     }
 
+    public GTreeColumnValue override(GTreeColumnValueType type) {
+        return new GTreeColumnValue(level, lastInLevelMap, type, openDotBottom, closedDotBottom);
+    }
+
     public boolean equalsValue(GTreeColumnValue that) {
         if(!(level == that.level &&
                 openDotBottom == that.openDotBottom &&

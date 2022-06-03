@@ -179,8 +179,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     // incremental records update
     private void updateGridRows(boolean modifyGroupObject) {
-        if(rows == null)
-            rows = new ArrayList<>();
         int currentSize = rows.size();
         int newSize = rowKeys.size();
 
@@ -193,9 +191,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     }
                 }
             } else {
-                for (int i = currentSize - 1; i >= newSize; --i) {
-                    rows.remove(i);
-                }
+                rows.removeRange(newSize, currentSize);
+//                for (int i = currentSize - 1; i >= newSize; --i) {
+//                    rows.remove(i);
+//                }
             }
         } else if (currentSize < newSize) {
             for (int i = currentSize; i < newSize; ++i) {

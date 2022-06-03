@@ -3,6 +3,8 @@ package lsfusion.gwt.client.form.object.table.tree.view;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -231,38 +233,69 @@ public class GTreeTableTree {
         return groupNodes.computeIfAbsent(group, k -> new NativeHashMap<>());
     }
 
-    public ArrayList<GTreeGridRecord> updateRows() {
-        ArrayList<GTreeGridRecord> result = new ArrayList<>();
-        updateRows(result, root, 0, null);
-        return result;
+    // should correspond getIndexRange
+    public void updateRows(ArrayList<GTreeGridRecord> rows) {
+        updateRows(rows, root, null);
     }
 
-    private List<GTreeGridRecord> updateRows(ArrayList<GTreeGridRecord> rows, GTreeContainerTableNode node, int level, boolean[] parentLastInLevelMap) {
-        List<GTreeGridRecord> result = new ArrayList<>();
+    private void updateRows(ArrayList<GTreeGridRecord> rows, GTreeContainerTableNode node, GTreeObjectGridRecord record) {
         for (GTreeChildTableNode child : node.getChildren()) {
-            GTreeColumnValue treeValue = createTreeColumnValue(child, node, level, parentLastInLevelMap);
+            GTreeColumnValue treeValue = createTreeColumnValue(child, node, record);
 
-            GTreeGridRecord treeRecord;
             if(child instanceof GTreeObjectTableNode) {
                 GTreeObjectTableNode childObject = (GTreeObjectTableNode) child;
 
-                treeRecord = new GTreeObjectGridRecord(childObject.getGroup(), childObject.getKey(), treeValue);
+                GTreeObjectGridRecord treeRecord = new GTreeObjectGridRecord(rows.size(), childObject, treeValue);
 
                 rows.add(treeRecord);
 
-                updateRows(rows, childObject, level + 1, treeValue.lastInLevelMap);
+                updateRows(rows, childObject, treeRecord);
             } else {
                 assert node.pendingExpanding;
                 assert node.hasOnlyExpandingTreeTableNodes();
                 assert node instanceof GTreeObjectTableNode;
 
-                rows.add(new GTreeExpandingGridRecord(node.getGroup(), node.getKey(), treeValue));
+                rows.add(new GTreeExpandingGridRecord(rows.size(), node, treeValue));
             }
         }
-        return result;
     }
 
-    private GTreeColumnValue createTreeColumnValue(GTreeChildTableNode child, GTreeContainerTableNode parent, int level, boolean[] parentLastInLevelMap) {
+    // should correspond updateRows
+    // index from first child (if any) till next sibling
+    public Pair<Integer, Integer> incGetIndexRange(GTreeContainerTableNode findNode) {
+        return incGetIndexRange(new Result<>(0), root, findNode);
+    }
+    private Pair<Integer, Integer> incGetIndexRange(Result<Integer> counter, GTreeContainerTableNode node, GTreeContainerTableNode findNode) {
+        for (GTreeChildTableNode child : node.getChildren()) {
+            if(child instanceof GTreeObjectTableNode) {
+                GTreeObjectTableNode childObject = (GTreeObjectTableNode) child;
+
+                counter.set(counter.result + 1);
+
+                Integer startIndex = null;
+                if(childObject.equals(findNode))
+                    startIndex = counter.result;
+
+                Pair<Integer, Integer> result = incGetIndexRange(counter, childObject, findNode);
+
+                if(startIndex != null) {
+                    assert result == null;
+                    return new Pair<>(startIndex, counter.result);
+                } else {
+                    if(result != null)
+                        return result;
+                }
+            } else
+                counter.set(counter.result + 1);
+        }
+        return null;
+    }
+
+    public GTreeColumnValue createTreeColumnValue(GTreeChildTableNode child, GTreeContainerTableNode parent, GTreeObjectGridRecord parentRecord) {
+        GTreeColumnValue parentTreeValue = parentRecord != null ? parentRecord.getTreeValue() : null;
+        int level = parentTreeValue != null ? parentTreeValue.level + 1 : 0;
+        boolean[] parentLastInLevelMap = parentTreeValue != null ? parentTreeValue.lastInLevelMap : null;
+
         boolean[] lastInLevelMap = new boolean[level];
         assert level > 0 == (parentLastInLevelMap != null);
         if(parentLastInLevelMap != null) {
@@ -288,7 +321,7 @@ public class GTreeTableTree {
 
     // needed for expand functionality, so assert that after there is an isExpandableCheck
     public GTreeObjectTableNode getExpandNodeByRecord(GTreeGridRecord record) {
-        if (record != null)
+        if (record instanceof GTreeObjectGridRecord)
             return getGroupNodes(record.getGroup()).get(record.getKey());
         return null;
     }

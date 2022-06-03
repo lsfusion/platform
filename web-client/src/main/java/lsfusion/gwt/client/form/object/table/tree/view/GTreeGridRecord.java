@@ -1,29 +1,23 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
-import com.google.gwt.core.client.GWT;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 public abstract class GTreeGridRecord extends GridDataRecord {
     private GGroupObject group;
 
-    public GTreeGridRecord(GGroupObject group, GGroupObjectValue key, GTreeColumnValue treeValue) {
-        super(key);
+    public GTreeGridRecord(int rowIndex, GTreeContainerTableNode node, GTreeColumnValue treeValue) {
+        super(rowIndex, node.getKey());
 
         setTreeValue(treeValue);
 
-        this.group = group;
+        this.group = node.getGroup();
     }
 
     private final String treeColumn = "treeColumn";
-    private void setTreeValue(GTreeColumnValue value) {
+    public void setTreeValue(GTreeColumnValue value) {
         setAttribute(treeColumn, value);
     }
     public GTreeColumnValue getTreeValue() {

@@ -46,7 +46,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected boolean captionsUpdated = false;
     protected boolean footersUpdated = false;
 
-    protected ArrayList<T> rows = new ArrayList<>();
+    public static class RangeArrayList<T> extends ArrayList<T> {
+        public void removeRange(int fromIndex, int toIndex) {
+            super.removeRange(fromIndex, toIndex);
+        }
+    }
+    protected RangeArrayList<T> rows = new RangeArrayList<>();
 
     // we have to keep it until updateDataImpl to have rows order
     // plus what's more important we shouldn't change selectedRow, before update'in rows, otherwise we'll have inconsistent selectedRow - rows state

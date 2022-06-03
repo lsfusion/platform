@@ -5,7 +5,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 public class GTreeObjectGridRecord extends GTreeGridRecord {
 
-    public GTreeObjectGridRecord(GGroupObject group, GGroupObjectValue key, GTreeColumnValue treeValue) {
-        super(group, key, treeValue);
+    public GTreeObjectGridRecord(int rowIndex, GTreeContainerTableNode node, GTreeColumnValue treeValue) {
+        super(rowIndex, node, treeValue);
     }
 }

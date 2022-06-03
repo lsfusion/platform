@@ -3,10 +3,7 @@ package lsfusion.gwt.client.form.property.table.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
-import lsfusion.gwt.client.base.view.grid.Column;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.GridStyle;
+import lsfusion.gwt.client.base.view.grid.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -122,6 +119,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     @Override
     public void buildRowImpl(int rowIndex, T rowValue, TableRowElement tr) {
 
+        setRowValueIndex(tr, rowIndex, (RowIndexHolder) rowValue);
         tr.setClassName(rowStyle);
 
         // Build the columns.
@@ -139,12 +137,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 tdClasses.append(lastColumnStyle);
             }
 
-            TableCellElement td = tr.insertCell(columnIndex);
+            TableCellElement td = tr.insertCell(-1); //columnIndex
             td.setClassName(tdClasses.toString());
 
             renderTD(td, false);
 
-            Cell cell = new Cell(rowIndex, columnIndex, column, rowValue);
+            Cell cell = new Cell(rowIndex, columnIndex, column, (RowIndexHolder) rowValue);
 
             renderCell(td, cell, column);
 
@@ -154,6 +152,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     @Override
     public void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr, BiPredicate<Column<T, ?>, Cell> filter) {
+        setRowValueIndex(tr, rowIndex, (RowIndexHolder) rowValue); // technically for updateSelectedCells it's not needed, but just in case
+
         int columnCount = cellTable.getColumnCount();
 
         assert columnCount == tr.getCells().getLength();
@@ -183,7 +183,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     private void updateCellImpl(int rowIndex, T rowValue, TableCellElement td, int columnIndex, BiPredicate<Column<T, ?>, Cell> filter) {
         Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-        Cell cell = new Cell(rowIndex, columnIndex, column, rowValue);
+        Cell cell = new Cell(rowIndex, columnIndex, column, (RowIndexHolder) rowValue);
 
         if(filter != null && !filter.test(column, cell))
             return;

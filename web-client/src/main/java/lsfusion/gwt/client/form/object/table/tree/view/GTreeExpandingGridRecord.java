@@ -5,8 +5,8 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 public class GTreeExpandingGridRecord extends GTreeGridRecord {
 
-    public GTreeExpandingGridRecord(GGroupObject group, GGroupObjectValue key, GTreeColumnValue treeValue) {
-        super(group, key, treeValue);
+    public GTreeExpandingGridRecord(int rowIndex, GTreeContainerTableNode node, GTreeColumnValue treeValue) {
+        super(rowIndex, node, treeValue);
     }
 
     public final static String expandingVirtualKey = "EXPANDING";

@@ -99,7 +99,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     protected GPropertyTableBuilder<T> tableBuilder;
 
-    private final TableWidget tableData;
+    protected final TableWidget tableData;
     protected TableScrollPanel tableDataScroller; // vertical scroller
 
     private FooterWidget tableFooter;
@@ -528,7 +528,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null)
-                onBrowserEvent(new Cell(row, getColumnIndex(column), column, getRowValue(row)), event, column, columnParent);
+                onBrowserEvent(new Cell(row, getColumnIndex(column), column, (RowIndexHolder) getRowValue(row)), event, column, columnParent);
         }
     }
 
@@ -1876,7 +1876,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         }
     }
 
-    private class TableWidget extends TableWrapperWidget {
+    protected class TableWidget extends TableWrapperWidget {
 //        private final DivElement containerElement;
 
         public TableWidget() {

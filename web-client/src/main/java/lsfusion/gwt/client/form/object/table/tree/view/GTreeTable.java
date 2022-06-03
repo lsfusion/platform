@@ -673,7 +673,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
 //            checkSelectedRowVisible();
 
-            rows = tree.updateRows();
+            rows.clear();
+            tree.updateRows(rows);
             updatePropertyReaders();
 //            treeSelectionHandler.dataUpdated();
 
@@ -751,14 +752,15 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
+    private static boolean incrementalUpdate = true;
+
     public void fireExpandNodeRecursive(boolean current, boolean open) {
         GTreeContainerTableNode node = getExpandSelectedNode();
         if (node != null && (!current || node.isExpandable())) {
             long requestIndex = form.expandGroupObjectRecursive(node.getGroup(), current, open);
             expandNodeRecursive(current ? node : tree.root, open, requestIndex);
 
-            dataUpdated = true;
-            updateData();
+            updateExpand();
         }
     }
 
@@ -781,12 +783,75 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public void expandNode(GTreeContainerTableNode node, boolean open, long requestIndex) {
         node.setPendingExpanding(open, requestIndex);
 
+        Pair<Integer, Integer> indexRange = null; GTreeObjectGridRecord record = null; int startFrom = 0, shift = 0;
+        if(incrementalUpdate) {
+            // finding row index and next sibling index
+            indexRange = tree.incGetIndexRange(node);
+
+            // changing expand column
+            record = incUpdateExpandColumn(indexRange, open);
+        }
+
         if(open) { // adding virtual "expandable" node
             assert !node.hasExpandableChildren();
-            node.addNode(0, new GTreeExpandingTableNode());
+
+            int addCount = 1;
+            GTreeExpandingTableNode[] expandingNodes = new GTreeExpandingTableNode[addCount];
+            for(int i=0;i<addCount;i++) {
+                GTreeExpandingTableNode expandingNode = new GTreeExpandingTableNode();
+                expandingNodes[i] = expandingNode;
+                node.addNode(i, expandingNode);
+            }
+            if(incrementalUpdate) { // adding
+                assert indexRange.first.equals(indexRange.second); // since this node should have no children
+                int index = indexRange.first;
+
+                // adding rows
+                for(int i=0;i<addCount;i++) {
+                    GTreeColumnValue treeValue = tree.createTreeColumnValue(expandingNodes[i], node, record);
+                    int addIndex = index + i;
+                    GTreeExpandingGridRecord treeRecord = new GTreeExpandingGridRecord(addIndex, node, treeValue);
+                    rows.add(addIndex, treeRecord);
+                    tableBuilder.incBuildRow(tableData.getSection(), addIndex, treeRecord);
+                }
+
+                // shifting rows (here it's better to do to avoid dom reads)
+                startFrom = index + addCount; shift = addCount;
+            }
         } else { // removing all children nodes
+            if(incrementalUpdate) {
+                // removing all rows in that tange
+                tableBuilder.incDeleteRows(tableData.getSection(), indexRange.first, indexRange.second);
+                rows.removeRange(indexRange.first, indexRange.second);
+
+                // shifting rows (here it's better to do to avoid dom reads)
+                startFrom = indexRange.first; shift = indexRange.first - indexRange.second;
+            }
+
             tree.removeChildrenFromGroupNodes(node);
             node.setChildren(new ArrayList<>());
+        }
+
+        if(incrementalUpdate)
+            incUpdateRowIndices(startFrom, shift);
+    }
+
+    private GTreeObjectGridRecord incUpdateExpandColumn(Pair<Integer, Integer> indexRange, boolean open) {
+        assert incrementalUpdate;
+
+        int index = indexRange.first - 1;
+        GTreeObjectGridRecord treeObjectRecord = (GTreeObjectGridRecord) getRowValue(index);
+        treeObjectRecord.setTreeValue(treeObjectRecord.getTreeValue().override(GTreeColumnValueType.get(open)));
+        tableBuilder.incUpdateRow(tableData.getSection(), index, new int[]{0}, treeObjectRecord);
+        return treeObjectRecord;
+    }
+    private void incUpdateRowIndices(int startFrom, int shift) {
+        assert incrementalUpdate;
+
+        for(int i=startFrom,size=rows.size();i<size;i++) {
+            GTreeGridRecord row = rows.get(i);
+            assert row.getRowIndex() + shift == i;
+            row.rowIndex = i;
         }
     }
 
@@ -922,11 +987,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             expandNode(node, open, requestIndex);
 //                treeSelectionHandler.nodeTryingToExpand = node;
 
-            dataUpdated = true;
-            updateData();
+            updateExpand();
+
             return true;
         }
         return false;
+    }
+
+    public void updateExpand() {
+        if (!incrementalUpdate) {
+            dataUpdated = true;
+            updateData();
+        }
     }
 
     public class TreeTableSelectionHandler extends GridPropertyTableSelectionHandler<GTreeGridRecord> {
