@@ -232,11 +232,21 @@ public class ResourceUtils {
         return path.toFile().getName().equals(name);
     }
 
-    public static List<String> findInClassPath(String endpoint) {
-        return Arrays.stream(ResourceUtils.getClassPathElements())
-                .filter(path -> Files.exists(Paths.get(path, endpoint)))
-                .map(path -> FilenameUtils.separatorsToUnix(Paths.get(path, endpoint).toString()))
-                .collect(Collectors.toList());
+    public static Map<String, String> getSourceToBuildDirs() {
+        Map<String, String> sourceBuildDirs = new HashMap<>();
+        String[] buildDirs = {"target/classes", "out/production"};
+        String[] srcDirs = {"src/main/resources", "src/main/lsfusion"};
+
+        Arrays.stream(getClassPathElements())
+                .map(FilenameUtils::separatorsToUnix)
+                .forEach(unixClassPath -> Arrays.stream(buildDirs).filter(buildDir -> unixClassPath.contains(buildDir))
+                        .forEach(buildDir -> Arrays.stream(srcDirs).forEach(srcDir -> {
+                            Path path = Paths.get(unixClassPath.substring(0, unixClassPath.indexOf(buildDir)), srcDir);
+                            if (path.toFile().exists())
+                                sourceBuildDirs.put(path.toString(), unixClassPath);
+                        })));
+
+        return sourceBuildDirs;
     }
 
     public static RawFileData findResourceAsFileData(String resourcePath, boolean checkExists, boolean cache, Result<String> fullPath, String optimisticFolder) {

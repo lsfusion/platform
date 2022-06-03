@@ -17,7 +17,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 import java.util.stream.Collectors;
@@ -403,26 +402,6 @@ public class FileUtils {
     public static void safeDelete(File file) {
         if (file != null && !file.delete()) {
             file.deleteOnExit();
-        }
-    }
-
-    public static void synchronizeDirectories(String srcPath, String destPath) throws IOException {
-        //add or update files
-        Collection<File> srcFiles = org.apache.commons.io.FileUtils.listFiles(new File(srcPath), null, true);
-        for (File srcFile : srcFiles) {
-            File destFile = new File(destPath, srcFile.getAbsolutePath().replace(srcPath, ""));
-            if (destFile.exists() && destFile.lastModified() < srcFile.lastModified() || !destFile.exists())
-                org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
-        }
-
-        //remove files
-        Collection<File> destFiles = org.apache.commons.io.FileUtils.listFiles(new File(destPath), null, true);
-        if (destFiles.size() != srcFiles.size()) {
-            for (File destFile : destFiles) {
-                File srcFile = new File(srcPath, destFile.getAbsolutePath().replace(destPath, ""));
-                if (!srcFile.exists())
-                    destFile.delete();
-            }
         }
     }
 
