@@ -3,6 +3,7 @@ package lsfusion.server.language;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -11,6 +12,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.file.IOUtils;
+import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
@@ -153,6 +155,7 @@ import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.codehaus.janino.SimpleCompiler;
 
@@ -3224,14 +3227,27 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value) throws ScriptingErrorLog.SemanticErrorException {
+    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
         LP lp = null;
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
             case LONG: lp =  addUnsafeCProp(LongClass.instance, value); break;
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
-            case STRING: lp =  addUnsafeCProp(getStringConstClass((LocalizedString)value), value); break;
+            case STRING:
+                LocalizedString str = (LocalizedString) value;
+                String source = str.getSourceString();
+                if (!str.needToBeLocalized()) {
+                    source = removeOptimization(source);
+                }
+                if(source.startsWith("$I{") && source.endsWith("}")) {
+                    lp = addStringInlineProp(source, lineNumber, context, dynamic);
+                } else if(containsUnescaped(source, "${") || containsUnescaped(source, "$I{") || containsUnescaped(source, "$F{")) {
+                    lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
+                } else {
+                    lp = addUnsafeCProp(getStringConstClass(str), value);
+                }
+                break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
             case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
             case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
@@ -3242,6 +3258,134 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NULL: lp =  baseLM.vnull; break;
         }
         return Pair.create(lp, new LPLiteral(value));
+    }
+
+    protected LP addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+        String resourceName = source.substring(3, source.length() - 1);
+        String code = parseStringInlineProp(resourceName);
+        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic).getLP();
+    }
+
+    private String parseStringInlineProp(String resourceName) throws ScriptingErrorLog.SemanticErrorException {
+        String result = null;
+        RawFileData resource = ResourceUtils.findResourceAsFileData(resourceName, true, false, new Result(), null);
+        if (resource == null) {
+            errLog.emitNotFoundError(parser, "file", resourceName);
+        } else {
+            try {
+                result = IOUtils.readStreamToString(resource.getInputStream());
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+
+        return escapeLiteral(result);
+    }
+
+    protected LP<?> addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) {
+        String code = StringUtils.join(parseStringInterpolateProp(source), " + ");
+        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
+    }
+
+    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, FILE };
+
+    private List<String> parseStringInterpolateProp(String source) {
+        List<String> literals = new ArrayList<>();
+
+        int pos = 0;
+        int bracketsCount = 0;
+        String currentLiteral = "";
+        StringInterpolateState state = StringInterpolateState.PLAIN;
+        StringInterpolateState newState;
+
+        while (pos < source.length()) {
+            char c = source.charAt(pos);
+            if (c == '\\') {
+                currentLiteral += '\\';
+                currentLiteral += source.charAt(pos + 1);
+                ++pos;
+            } else if (bracketsCount == 0 && (newState = prefixState(source, pos)) != StringInterpolateState.PLAIN) {
+                currentLiteral = flushCurrentLiteral(literals, currentLiteral);
+                ++bracketsCount;
+                state = newState;
+                pos += (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
+            } else if (c == '{') {
+                ++bracketsCount;
+                currentLiteral += c;
+            } else if (c == '}') {
+                --bracketsCount;
+                if (bracketsCount == 0 && state != StringInterpolateState.PLAIN) {
+                    addToLiterals(currentLiteral, state, literals);
+                    currentLiteral = "";
+                    state = StringInterpolateState.PLAIN;
+                } else {
+                    currentLiteral += c;
+                }
+            } else {
+                currentLiteral += c;
+            }
+            ++pos;
+        }
+
+        flushCurrentLiteral(literals, currentLiteral);
+        return literals;
+    }
+
+    private void addToLiterals(String currentLiteral, StringInterpolateState state, List<String> literals) {
+        if (state == StringInterpolateState.INTERPOLATION) {
+            literals.add("STRING(" + currentLiteral + ")");
+        } else if (state == StringInterpolateState.INLINE) {
+            literals.add(quote("$I{" + currentLiteral + "}"));
+        } else if (state == StringInterpolateState.FILE) {
+            literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
+        } else assert false;
+    }
+
+    private static boolean containsUnescaped(String s, String target) {
+        for (int i = 0; i + target.length() - 1 < s.length(); ++i) {
+            if (s.charAt(i) == '\\') {
+                ++i;
+            } else if (target.equals(s.substring(i, i + target.length()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private StringInterpolateState prefixState(String s, int pos) {
+        if (!compareChar(s, pos, '$')) return StringInterpolateState.PLAIN;
+        if (compareChar(s, pos + 1, '{')) return StringInterpolateState.INTERPOLATION;
+        if (compareChar(s, pos + 1, 'I') && compareChar(s, pos + 2, '{')) return StringInterpolateState.INLINE;
+        if (compareChar(s, pos + 1, 'F') && compareChar(s, pos + 2, '{')) return StringInterpolateState.FILE;
+        return StringInterpolateState.PLAIN;
+    }
+
+    private boolean compareChar(String source, int pos, char cmp) {
+        return source.length() > pos && source.charAt(pos) == cmp;
+    }
+
+    private String flushCurrentLiteral(List<String> literals, String currentLiteral) {
+        if (!currentLiteral.isEmpty()) {
+            literals.add(escapeLiteral(currentLiteral));
+        }
+        return "";
+    }
+
+    private String removeOptimization(String value) {
+        if (value == null) return null;
+        return value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}");
+    }
+
+    private String escapeLiteral(String value) {
+        //todo: optimize
+        if (value == null) {
+            return null;
+        }
+        return quote(value.replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"));
+    }
+
+    private String quote(String value) {
+        return '\'' + value + '\'';
     }
 
     private LP addNumericConst(BigDecimal value) {

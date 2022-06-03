@@ -2,8 +2,10 @@ package lsfusion.base;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.action.ClientWebAction;
 import org.apache.commons.io.FilenameUtils;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +14,7 @@ import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +35,17 @@ public class ResourceUtils {
                 retval.addAll(getResources(element, patterns));
             }
         }
+        retval.sort(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int p1 = BaseUtils.countOccurrences(o1, '/');
+                int p2 = BaseUtils.countOccurrences(o2, '/');
+                if (p1 < p2) return -1;
+                if (p1 > p2) return 1;
+                return o1.compareTo(o2);
+            }
+        });
+
         return retval;
     }
     
@@ -295,5 +309,16 @@ public class ResourceUtils {
         for (String resource : cachedResourceKeys)
             if (resource.endsWith("." + extension))
                 cachedFoundResourses.remove(resource);
+    }
+
+    public static String registerFont(ClientWebAction action) {
+        try {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
+            ge.registerFont(font);
+            return font.getFamily();
+        } catch (FontFormatException | IOException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

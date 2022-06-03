@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -14,10 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.comb.map.GlobalObject;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.IOUtils;
-import lsfusion.base.file.NamedFileData;
-import lsfusion.base.file.RawFileData;
+import lsfusion.base.file.*;
 import lsfusion.base.lambda.ArrayInstancer;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
@@ -64,7 +60,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 201;
+        return 202;
     }
 
     public static String getPlatformVersion() {
@@ -668,6 +664,24 @@ public class BaseUtils {
             return new NamedFileData(IOUtils.readBytesFromStream(inStream, len));
         }
 
+        if (objectType == 15) {
+            int size = inStream.readInt();
+            String[] prefixes = new String[size + 1];
+            for(int i = 0; i < size + 1; i++) {
+                prefixes[i] = inStream.readUTF();
+            }
+            String[] names = new String[size];
+            for(int i = 0; i < size; i++) {
+                names[i] = inStream.readUTF();
+            }
+            RawFileData[] files = new RawFileData[size];
+            for(int i = 0; i < size; i++) {
+                files[i] = new RawFileData(IOUtils.readBytesFromStream(inStream, inStream.readInt()));
+            }
+
+            return new StringWithFiles(prefixes, names, files);
+        }
+
         throw new IOException();
     }
 
@@ -799,6 +813,23 @@ public class BaseUtils {
             byte[] obj = ((NamedFileData) object).getBytes();
             outStream.writeInt(obj.length);
             outStream.write(obj);
+            return;
+        }
+
+        if (object instanceof StringWithFiles) {
+            outStream.writeByte(15);
+            outStream.writeInt(((StringWithFiles) object).names.length);
+            for(String prefix : ((StringWithFiles) object).prefixes) {
+                outStream.writeUTF(prefix);
+            }
+            for(String name : ((StringWithFiles) object).names) {
+                outStream.writeUTF(name);
+            }
+            for(RawFileData file : ((StringWithFiles) object).files) {
+                byte[] obj = file.getBytes();
+                outStream.writeInt(obj.length);
+                outStream.write(obj);
+            }
             return;
         }
 
@@ -1950,6 +1981,15 @@ public class BaseUtils {
         return count;
     }
 
+    public static int countOccurrences(String string, char character) {
+        int count = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == character)
+                count++;
+        }
+        return count;
+    }
+
     public static <K> K last(List<K> list) {
         if (list.size() > 0)
             return list.get(list.size() - 1);
@@ -2960,6 +3000,8 @@ public class BaseUtils {
     }
 
     public static final String impossibleString = "FDWREVSFFGFSDRSDR";
+
+    public static final String inlineFileSeparator = impossibleString;
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {
