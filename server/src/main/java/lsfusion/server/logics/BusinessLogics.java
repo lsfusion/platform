@@ -108,7 +108,7 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
+import lsfusion.server.physics.dev.integration.external.to.file.FileAlterationObserver;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -2105,8 +2105,22 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
-        return scheduler.createSystemTask(stack -> FileUtils.synchronizeDirectories(), false,
-                1, false, "Synchronize reports, 'resources' and 'lsfusion' dirs with target. Only for debug");
+        List<FileAlterationObserver> fileAlterationObservers = getFileAlterationObservers("src/main/resources", "src/main/lsfusion");
+        return scheduler.createSystemTask(stack -> fileAlterationObservers.forEach(org.apache.commons.io.monitor.FileAlterationObserver::checkAndNotify),
+                false, 1, false, "Synchronize reports, 'resources' and 'lsfusion' dirs with target. Only for debug");
+    }
+
+    private static List<FileAlterationObserver> getFileAlterationObservers(String... dirs) {
+        List<FileAlterationObserver> fileAlterationObservers = new ArrayList<>();
+        for (String classPathElement : ResourceUtils.getClassPaths()) {
+            int endIndex = classPathElement.indexOf("/target/classes");
+            for (String dir : dirs) {
+                java.nio.file.Path path = Paths.get(classPathElement.substring(0, endIndex != -1 ? endIndex : classPathElement.indexOf("out/production")), dir);
+                if (path.toFile().exists())
+                    fileAlterationObservers.add(new FileAlterationObserver(path.toString(), classPathElement));
+            }
+        }
+        return fileAlterationObservers;
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {

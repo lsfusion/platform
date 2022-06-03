@@ -6,7 +6,6 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.file.*;
 import org.apache.commons.net.ftp.FTPFile;
 
@@ -18,11 +17,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -408,65 +403,6 @@ public class FileUtils {
         if (file != null && !file.delete()) {
             file.deleteOnExit();
         }
-    }
-
-    private static Collection<String> previousSyncTargetPaths = new ArrayList<>();
-    public static void synchronizeDirectories() throws IOException {
-        Map<String, String> pathsToSync = getPathsToSync("src/main/resources", "src/main/lsfusion");
-
-        for (Map.Entry<String, String> entry : pathsToSync.entrySet()) {
-
-            //add or update files
-            String srcPath = entry.getKey();
-            String targetPath = entry.getValue();
-
-            File srcDir = new File(srcPath);
-            Collection<File> srcFiles = srcDir.isDirectory() ? org.apache.commons.io.FileUtils.listFiles(srcDir, null, true) : Collections.singleton(srcDir);
-            for (File srcFile : srcFiles) {
-                File destFile = new File(targetPath, srcFile.getAbsolutePath().replace(srcPath, ""));
-                if (destFile.exists() && destFile.lastModified() < srcFile.lastModified() || !destFile.exists())
-                    org.apache.commons.io.FileUtils.copyFile(srcFile, destFile);
-            }
-
-            //remove files from directories
-            File targetDir = new File(targetPath);
-            if (targetDir.exists() && targetDir.isDirectory()) {
-                Collection<File> destFiles = org.apache.commons.io.FileUtils.listFiles(targetDir, null, true);
-                if (destFiles.size() != srcFiles.size())
-                    destFiles.stream().filter(destFile -> !new File(srcPath, destFile.getAbsolutePath().replace(targetPath, "")).exists()).forEach(File::delete);
-            }
-        }
-
-        //remove dirs and standalone files
-        Collection<String> targetPaths = pathsToSync.values();
-        if (previousSyncTargetPaths.size() > targetPaths.size()) {
-            previousSyncTargetPaths.removeAll(targetPaths);
-            for (String targetPath : previousSyncTargetPaths) {
-                File file = new File(targetPath);
-                if (file.isDirectory())
-                    org.apache.commons.io.FileUtils.deleteDirectory(file);
-                else
-                    file.delete();
-            }
-        }
-        previousSyncTargetPaths = targetPaths;
-    }
-
-    private static Map<String, String> getPathsToSync(String... dirs) {
-        //collect all folders inside resources and lsfusion dirs + standalone files
-        Map<String, String> syncPaths = new HashMap<>();
-        for (String classPathElement : ResourceUtils.findInClassPath("target/classes", false)) {
-            int endIndex = classPathElement.indexOf("/target/classes");
-            for (String dir : dirs) {
-                java.nio.file.Path path = Paths.get(classPathElement.substring(0, endIndex != -1 ? endIndex : classPathElement.indexOf("out/production")), dir);
-                if (path.toFile().exists()) {
-                    File[] files = path.toFile().listFiles();
-                    if (files != null)
-                        Arrays.stream(files).forEach(file -> syncPaths.put(file.toString(), classPathElement + file.toString().replace(path.toString(), "")));
-                }
-            }
-        }
-        return syncPaths;
     }
 
     public static String runCmd(String command, String directory) throws IOException {
