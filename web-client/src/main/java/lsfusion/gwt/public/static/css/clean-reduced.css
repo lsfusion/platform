@@ -838,8 +838,6 @@ button {
 }
 
 .gwt-SuggestBoxPopup .suggestPopupButton {
-    background: var(--component-background-color);
-    border-radius: var(--button-border-radius);
     margin: 2px;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopCenterInner,

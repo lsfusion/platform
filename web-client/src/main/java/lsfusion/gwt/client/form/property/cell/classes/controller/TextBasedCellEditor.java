@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
@@ -21,6 +22,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
@@ -43,6 +45,8 @@ import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
+    private static final String LOADING_IMAGE_PATH = "loading.gif";
+    private static final String REFRESH_IMAGE_PATH = "refresh.png";
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     protected final GPropertyDraw property;
@@ -51,6 +55,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     GCompletionType completionType;
     GInputListAction[] actions;
     CustomSuggestBox suggestBox = null;
+    
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
@@ -459,7 +464,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     private class DefaultSuggestionDisplayString extends SuggestBox.DefaultSuggestionDisplay {
         private Label noResultsLabel;
         private Label emptyLabel; //for loading
-        private PushButton refreshButton;
+        private GToolbarButton refreshButton;
         private boolean refreshButtonPressed;
 
         public DefaultSuggestionDisplayString() {
@@ -495,23 +500,24 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
             HorizontalPanel buttonsPanel = new HorizontalPanel();
 
-            buttonsPanel.add(refreshButton = new SuggestPopupButton() {
+            buttonsPanel.add(refreshButton = new SuggestPopupButton(REFRESH_IMAGE_PATH) {
                 @Override
-                protected void onClickStart() {
-                    refreshButtonPressed = true;
-                    suggestBox.showSuggestionList();
+                public ClickHandler getClickHandler() {
+                    return event -> {
+                        refreshButtonPressed = true;
+                        suggestBox.showSuggestionList();
+                    };
                 }
             });
 
             for(int i = 0; i < actions.length; i++) {
                 int index = i;
-                SuggestPopupButton actionButton = new SuggestPopupButton() {
+                SuggestPopupButton actionButton = new SuggestPopupButton(actions[index].action + ".png") {
                     @Override
-                    protected void onClickStart() {
-                        validateAndCommit(suggestBox.getElement(), index, true, CommitReason.OTHER);
+                    public ClickHandler getClickHandler() {
+                        return event -> validateAndCommit(suggestBox.getElement(), index, true, CommitReason.OTHER);
                     }
                 };
-                GwtClientUtils.setThemeImage(actions[index].action + ".png", (image -> actionButton.getUpFace().setImage(new Image(image))));
                 buttonsPanel.add(actionButton);
 
                 String tooltip = property.getQuickActionTooltipText(actions[index].keyStroke);
@@ -554,7 +560,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             noResultsLabel.setVisible(showNoResult);
             emptyLabel.setVisible(showEmptyLabel);
             if (this.isLoading != isLoading) {
-                GwtClientUtils.setThemeImage(isLoading ? "loading.gif" : "refresh.png", image -> refreshButton.getUpFace().setImage(new Image(image)));
+                refreshButton.setModuleImagePath(isLoading ? LOADING_IMAGE_PATH : REFRESH_IMAGE_PATH);
                 this.isLoading = isLoading;
             }
         }
@@ -588,18 +594,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
     }
 
-    private class SuggestPopupButton extends PushButton {
-        public SuggestPopupButton() {
-            super();
-            init();
-        }
-
-        public SuggestPopupButton(Image upImage) {
-            super(upImage);
-            init();
-        }
-
-        private void init() {
+    private abstract static class SuggestPopupButton extends GToolbarButton {
+        public SuggestPopupButton(String imagePath) {
+            super(imagePath);
             getElement().addClassName("suggestPopupButton");
         }
 
