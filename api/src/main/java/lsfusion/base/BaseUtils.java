@@ -1981,6 +1981,15 @@ public class BaseUtils {
         return count;
     }
 
+    public static int countOccurrences(String string, char character) {
+        int count = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (string.charAt(i) == character)
+                count++;
+        }
+        return count;
+    }
+
     public static <K> K last(List<K> list) {
         if (list.size() > 0)
             return list.get(list.size() - 1);

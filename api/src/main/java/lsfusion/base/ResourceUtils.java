@@ -35,6 +35,17 @@ public class ResourceUtils {
                 retval.addAll(getResources(element, patterns));
             }
         }
+        retval.sort(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int p1 = BaseUtils.countOccurrences(o1, '/');
+                int p2 = BaseUtils.countOccurrences(o2, '/');
+                if (p1 < p2) return -1;
+                if (p1 > p2) return 1;
+                return o1.compareTo(o2);
+            }
+        });
+
         return retval;
     }
     
