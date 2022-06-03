@@ -65,7 +65,7 @@ public abstract class CellRenderer<T> {
         renderStaticContent(element, renderContext);
     }
 
-    private Style.TextAlign getHorzTextAlignment() {
+    public Style.TextAlign getHorzTextAlignment() {
         Style.TextAlign textAlign = property.getTextAlignStyle();
         if (textAlign == null)
             textAlign = getDefaultHorzTextAlignment();
