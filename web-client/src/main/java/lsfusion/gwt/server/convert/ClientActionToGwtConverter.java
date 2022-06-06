@@ -1,6 +1,8 @@
 package lsfusion.gwt.server.convert;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.base.ResourceUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -30,11 +32,14 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
 
+import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
 
@@ -83,7 +88,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
-        return new GFormAction(modalityType, servlet.getFormProvider().createForm(action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
+        return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
                 action.forbidDuplicate);
     }
 
@@ -120,10 +125,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ProcessFormChangesClientAction.class)
-    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form) throws IOException {
+    public GProcessFormChangesAction convertAction(ProcessFormChangesClientAction action, FormSessionObject form, MainDispatchServlet servlet) throws IOException {
         ClientFormChanges changes = new ClientFormChanges(action.formChanges, form.clientForm);
 
-        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form);
+        GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form, servlet);
 
         return new GProcessFormChangesAction(changesDTO);
     }
@@ -248,6 +253,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GResetWindowsLayoutAction();
     }
 
+    Map<String, String> fontFamilyMap = new HashMap<>();
+
     @Converter(from = ClientWebAction.class)
     public GClientWebAction convertAction(ClientWebAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         ArrayList<Object> values = new ArrayList<>();
@@ -265,10 +272,19 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object resource = action.resource;
         String resourcePath;
-        if(action.isFile)
-            resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData)resource);
-        else
+        String originalResourceName = action.originalResourceName;
+        if(action.isFile) {
+            resourcePath = servlet.getFormProvider().getWebFile(formSessionObject.navigatorID, action.resourceName, (RawFileData) resource);
+            if(action.isFont()) {
+                String fontFamily = fontFamilyMap.get(action.resourceName);
+                if(fontFamily == null) {
+                    fontFamily = ResourceUtils.registerFont(action);
+                    fontFamilyMap.put(action.resourceName, fontFamily);
+                }
+                originalResourceName = fontFamily;
+            }
+        } else
             resourcePath = (String) resource;
-        return new GClientWebAction(resourcePath, action.resourceName, action.originalResourceName, values, types, returnType, action.isFile, action.syncType);
+        return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType, action.isFile, action.syncType);
     }
 }

@@ -1798,7 +1798,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
-	|	constDef=constantProperty { $property = new LPWithParams($constDef.property); $ci = $constDef.ci; }
+	|	constDef=constantProperty[context, dynamic] { $property = new LPWithParams($constDef.property); $ci = $constDef.ci; }
 	;
 
 contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
@@ -5305,14 +5305,15 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	;
 	
-constantProperty returns [LP property, LPNotExpr ci]
+constantProperty[List<TypedParameter> context, boolean dynamic] returns [LP property, LPNotExpr ci]
 @init {
+    int lineNumber = self.getParser().getCurrentParserLineNumber();
 	ScriptingLogicsModule.ConstType cls = null;
 	Object value = null;
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value);
+		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value, lineNumber, context, dynamic);
 		$property = constantProp.first;
 		$ci = constantProp.second;
 	}

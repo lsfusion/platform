@@ -22,7 +22,6 @@ import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.ColorThemeChangeListener;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.remote.ConnectionLostManager;
-import lsfusion.client.form.print.SavingThread;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
 import lsfusion.client.logics.LogicsProvider;
 import lsfusion.client.view.MainFrame;
@@ -347,8 +346,6 @@ public class MainController {
         for (ReportPath reportPath : reportPathList) {
             Desktop.getDesktop().open(new File(reportPath.customPath));
         }
-        // не очень хорошо оставлять живой поток, но это используется только в девелопменте, поэтому не важно
-        new SavingThread(reportPathList).start();
     }
 
     public static void deleteReportPathList(List<ReportPath> reportPathList) {

@@ -77,42 +77,41 @@ function chatMessageRender() {
             element.appendChild(message);
         },
         update: function (element, controller, value) {
-            var obj = JSON.parse(value);
-            element.author.innerHTML = obj.author;
+            element.author.innerHTML = value.author || '';
 
             element.replyAction.onclick = function(event) {
-                controller.changeValue(JSON.stringify({ action : 'reply' }));
+                controller.change({ action : 'reply' });
                 $(this).closest("div[lsfusion-container='chat']").find(".ql-editor").focus(); // works only in firefox
             }
 
-            element.replyAuthor.innerHTML = obj.replyAuthor;
-            element.replyText.innerHTML = obj.replyText;
+            element.replyAuthor.innerHTML = value.replyAuthor || '';
+            element.replyText.innerHTML = value.replyText || '';
             element.replyContent.onmousedown = function(event) {
-                controller.changeValue(JSON.stringify({ action : 'goToReply' }));
+                controller.change({ action : 'goToReply' });
             }
 
-            element.text.innerHTML = obj.text;
-            element.time.innerHTML = obj.time;
-            element.status.innerHTML = obj.status;
+            element.text.innerHTML = value.text || '';
+            element.time.innerHTML = value.time || '';
+            element.status.innerHTML = value.status || '';
 
             while (element.attachments.lastElementChild) {
                 element.attachments.removeChild(element.attachments.lastElementChild);
             }
-            if (obj.attachment !== '') {
+            if (value.attachment) {
                 var attachmentA = document.createElement("a");
                 attachmentA.classList.add("chat-message-attachment");
 
                 attachmentA.onclick = function(event) {
-                    controller.changeValue(JSON.stringify({ action : 'open', id : obj.id }));
+                    controller.change({ action : 'open', id : value.id });
                 }
 
-                var attachmentCaption = document.createTextNode(obj.attachment);
+                var attachmentCaption = document.createTextNode(value.attachment);
                 attachmentA.appendChild(attachmentCaption);
 
                 element.attachments.appendChild(attachmentA);
             }
 
-            if (obj.own) {
+            if (value.own) {
                 element.message.classList.add('chat-message-own');
             } else
                 element.message.classList.remove('chat-message-own');
@@ -168,46 +167,42 @@ function chatMessageInputRender() {
             element.appendChild(input);
         },
         update: function (element, controller, value) {
-            if (value !== null) {
-                var obj = JSON.parse(value);
+            element.replyAuthor.innerHTML = value && value.replyAuthor || '';
+            element.replyText.innerHTML = value && value.replyText || '';
 
-                element.replyAuthor.innerHTML = obj.replyAuthor;
-                element.replyText.innerHTML = obj.replyText;
+            element.replyRemove.innerHTML = value && value.replyAuthor ? '❌' : '';
 
-                element.replyRemove.innerHTML = (obj.replyAuthor === '') ? '' : '❌';
+            element.replyRemove.onclick = function(event) {
+                controller.change({ action : 'replyRemove' });
+            }
 
-                element.replyRemove.onclick = function(event) {
-                    controller.changeValue(JSON.stringify({ action : 'replyRemove' }));
+            inputQuill.update(element.input, controller, value && value.text || '');
+
+            while (element.attachments.lastElementChild) {
+                element.attachments.removeChild(element.attachments.lastElementChild);
+            }
+
+            if (value && value.attachment) {
+                var attachmentA = document.createElement("a");
+                attachmentA.classList.add("chat-message-attachment");
+
+                attachmentA.onclick = function(event) {
+                    controller.change({ action : 'open' });
                 }
 
-                inputQuill.update(element.input, controller, obj.text);
+                var attachmentCaption = document.createTextNode(value.attachment);
+                attachmentA.appendChild(attachmentCaption);
 
-                while (element.attachments.lastElementChild) {
-                    element.attachments.removeChild(element.attachments.lastElementChild);
+                element.attachments.appendChild(attachmentA);
+
+                attachmentDelete = document.createElement("div")
+                attachmentDelete.classList.add("chat-message-attachment-delete");
+                attachmentDelete.innerHTML = 'x';
+                attachmentDelete.onclick = function(event) {
+                    controller.change({ action : 'remove' });
                 }
 
-                if (obj.attachment !== '') {
-                    var attachmentA = document.createElement("a");
-                    attachmentA.classList.add("chat-message-attachment");
-
-                    attachmentA.onclick = function(event) {
-                        controller.changeValue(JSON.stringify({ action : 'open' }));
-                    }
-
-                    var attachmentCaption = document.createTextNode(obj.attachment);
-                    attachmentA.appendChild(attachmentCaption);
-
-                    element.attachments.appendChild(attachmentA);
-
-                    attachmentDelete = document.createElement("div")
-                    attachmentDelete.classList.add("chat-message-attachment-delete");
-                    attachmentDelete.innerHTML = 'x';
-                    attachmentDelete.onclick = function(event) {
-                        controller.changeValue(JSON.stringify({ action : 'remove' }));
-                    }
-
-                    element.attachments.appendChild(attachmentDelete);
-                }
+                element.attachments.appendChild(attachmentDelete);
             }
         }
     }

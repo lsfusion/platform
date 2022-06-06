@@ -12,6 +12,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColumnUserPrefere
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientComponentToGwtConverter;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.http.provider.SessionInvalidatedException;
@@ -48,7 +49,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
     public FormProviderImpl() {}
 
-    public GForm createForm(String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
+    public GForm createForm(MainDispatchServlet servlet, String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException {
         // 0, 1, 3 are indices from FormClientAction.methodNames array
         byte[] formDesign = immutableMethods != null ? (byte[]) immutableMethods[1] : remoteForm.getRichDesignByteArray();
         FormUserPreferences formUP = immutableMethods != null ? (FormUserPreferences)immutableMethods[0] : remoteForm.getUserPreferences();
@@ -72,7 +73,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
             gForm.initialFormChanges = ClientFormChangesToGwtConverter.getInstance().convertOrCast(
                     new ClientFormChanges(firstChanges, clientForm),
                     -1,
-                    formSessionObject                    
+                    formSessionObject, servlet
             );
 
         if (formUP != null)

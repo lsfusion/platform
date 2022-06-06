@@ -587,28 +587,33 @@ pushNotification (CustomUser user, BOOLEAN system, BOOLEAN notificate) + {
 // web
 
 // list
-json (Message m) = [FORMULA STRING 'json_build_object(\'author\',$1,\'time\',$2,\'text\',$3,\'own\',$4,\'replyAuthor\',$5,\'replyText\',$6,\'replyMessage\',$7,\'id\',$8,\'attachment\',$9,\'status\',$10)']
-                             ((OVERRIDE nameAuthor(m), ''), dateTime(m), text(m), IF own(m) THEN 1 ELSE 0, (OVERRIDE nameAuthorReplyTo(m), ''), (OVERRIDE textReplyTo(m), ''), (OVERRIDE LONG(replyTo(m)), 0), m, (OVERRIDE attachmentName(m), ''), (OVERRIDE status(m), ''));
+json (Message m) = JSON FROM
+        author = nameAuthor(m),
+        time = dateTime(m),
+        text = text(m),
+        own = IF own(m) THEN 1 ELSE 0,
+        replyAuthor = nameAuthorReplyTo(m),
+        replyText = textReplyTo(m),
+        replyMessage = replyTo(m),
+        id = m,
+        attachment = attachmentName(m),
+        status = status(m);
 
 changeMessage (Message m) {
-    INPUT s = STRING DO {
-        stringToFile(s);
-        
-        LOCAL action = STRING();
-        LOCAL id = LONG();
-        IMPORT JSON FROM resultFile() TO() action, id;
-        
-        IF action() = 'goToReply' THEN {
-            seek(replyTo(m));
-        }
-
-        IF action() = 'reply' THEN {
-            replyTo() <- m;
-        }
-
-        IF action() = 'open' THEN {
-            FOR LONG(Message ms AS Message) = id() DO {
-                open(attachment(ms), attachmentName(ms));
+    INPUT f = JSON DO {
+        IMPORT JSON FROM f FIELDS() STRING action, LONG id DO {
+            IF action = 'goToReply' THEN {
+                seek(replyTo(m));
+            }
+    
+            IF action = 'reply' THEN {
+                replyTo() <- m;
+            }
+    
+            IF action = 'open' THEN {
+                FOR LONG(Message ms AS Message) = id DO {
+                    open(attachment(ms), attachmentName(ms));
+                }
             }
         }
     }
@@ -625,41 +630,38 @@ EXTEND FORM shortChat
 ;
 
 // send
-jsonInputMessage () = [FORMULA STRING 'json_build_object(\'replyAuthor\',$1,\'replyText\',$2,\'text\',$3,\'attachment\',$4)']
-                                ((OVERRIDE nameAuthorReplyTo(), ''), (OVERRIDE textReplyTo(), ''), (OVERRIDE message(), ''), (OVERRIDE attachmentName(), ''));
+jsonInputMessage () = JSON FROM
+        replyAuthor =  nameAuthorReplyTo(),
+        replyText = textReplyTo(),
+        text = message(),
+        attachment = attachmentName();
 
 changeInputMessage () {
-    INPUT s = TEXT DO {
-        stringToFile(s);
-        
-        LOCAL action = STRING();
-        LOCAL value = TEXT();
-        LOCAL name = STRING();
-        LOCAL data = STRING();
-        IMPORT JSON FROM resultFile() TO() action, value, name, data;
-
-        IF action() = 'replyRemove' THEN {
-            replyTo() <- NULL;
-        }
-
-        IF action() = 'change' THEN {
-            message() <- value();
-        }
-
-        IF action() = 'upload' THEN {
-            LOCAL extension = STRING ();
-            extension() <- getWord(name(), '.', wordCount(name(), '.')) IF wordCount(name(), '.') > 1;
-            attachmentName() <- left(name(), length(name()) - OVERRIDE (length(extension()) + 1), 0);
-            attachment() <- file(decode(data(), 'base64'), (OVERRIDE extension(), 'dat'));
-        }
-
-        IF action() = 'open' THEN {
-            open(attachment(), attachmentName());
-        }
-
-        IF action() = 'remove' THEN {
-            attachment() <- NULL;
-            attachmentName() <- NULL;
+    INPUT f = JSON DO {
+        IMPORT JSON FROM f FIELDS() STRING action, TEXT value, STRING name, STRING data DO {
+            IF action = 'replyRemove' THEN {
+                replyTo() <- NULL;
+            }
+    
+            IF action = 'change' THEN {
+                message() <- value;
+            }
+    
+            IF action = 'upload' THEN {
+                LOCAL extension = STRING ();
+                extension() <- getWord(name, '.', wordCount(name, '.')) IF wordCount(name, '.') > 1;
+                attachmentName() <- left(name, length(name) - OVERRIDE (length(extension()) + 1), 0);
+                attachment() <- file(decode(data, 'base64'), (OVERRIDE extension(), 'dat'));
+            }
+    
+            IF action = 'open' THEN {
+                open(attachment(), attachmentName());
+            }
+    
+            IF action = 'remove' THEN {
+                attachment() <- NULL;
+                attachmentName() <- NULL;
+            }
         }
     }
 }

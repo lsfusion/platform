@@ -25,6 +25,10 @@ public class ClientWebAction extends ExecuteClientAction {
         this.syncType = syncType;
     }
 
+    public boolean isFont() {
+       return isFile && (resourceName.endsWith(".ttf") || resourceName.endsWith(".otf"));
+    }
+
     @Override
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);

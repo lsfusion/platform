@@ -358,5 +358,9 @@
             <artifactId>uap-java</artifactId>
             <version>1.5.2</version>
         </dependency>
+        <dependency>
+            <groupId>com.sksamuel.scrimage</groupId>
+            <artifactId>scrimage-core</artifactId>
+        </dependency>
     </dependencies>
 </project>

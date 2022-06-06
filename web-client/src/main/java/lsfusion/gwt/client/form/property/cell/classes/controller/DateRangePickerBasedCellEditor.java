@@ -135,6 +135,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                 singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::thisYearStart()() : messages.@lsfusion.gwt.client.ClientMessages::thisYear()(),
                 messages.@lsfusion.gwt.client.ClientMessages::clear()()) : undefined,
             singleDatePicker: singleDatePicker,
+            drops: 'auto',
+            opens: getPickerAlign(),
             alwaysShowCalendars: true // need to use with ranges
         });
 
@@ -144,6 +146,15 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                 picker.container.find(".calendar-table").hide();
                 picker.container.find(".drp-selected").hide();
             });
+        }
+
+        //swap 'left' and 'right' because dateRangePicker library swap them inexplicably for what
+        function getPickerAlign() {
+            var propertyHorTextAlignment = thisObj.@TextBasedCellEditor::property.@GPropertyDraw::getCellRenderer()()
+                .@lsfusion.gwt.client.form.property.cell.view.CellRenderer::getHorzTextAlignment()();
+            propertyHorTextAlignment = propertyHorTextAlignment === @com.google.gwt.dom.client.Style.TextAlign::LEFT ? @com.google.gwt.dom.client.Style.TextAlign::RIGHT
+                : propertyHorTextAlignment === @com.google.gwt.dom.client.Style.TextAlign::RIGHT ? @com.google.gwt.dom.client.Style.TextAlign::LEFT : propertyHorTextAlignment;
+            return propertyHorTextAlignment.@com.google.gwt.dom.client.Style.TextAlign::getCssName()();
         }
 
         //Return focus to editElement and then we will handle the press of the esc button. Because daterangepicker does not allow to handle events

@@ -1,6 +1,11 @@
 package lsfusion.gwt.server;
 
 import com.google.common.base.Throwables;
+import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.nio.AnimatedGif;
+import com.sksamuel.scrimage.nio.AnimatedGifReader;
+import com.sksamuel.scrimage.nio.ImageSource;
+import com.sksamuel.scrimage.nio.StreamingGifWriter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
@@ -102,30 +107,53 @@ public class FileUtils {
 
                 String imagePath;
                 ImageIcon defaultImageIcon;
-                Supplier<ImageIcon> imageIcon;
+                Supplier<ImageIcon> unanimatedImageIcon = null;
                 String ID;
 
                 RawFileData imageFile = imageHolder.getImage(colorTheme);
+                
+                String enabledImageUrl = null;
+                String disabledImageUrl = null;
+
                 if (imageFile == null) {
                     RawFileData defaultImageFile = imageHolder.getImage(ColorTheme.DEFAULT);
                     String defaultImagePath = imageHolder.getImagePath(ColorTheme.DEFAULT);
 
                     defaultImageIcon = defaultImageFile.getImageIcon();
-                    imageIcon = () -> ClientColorUtils.createFilteredImageIcon(defaultImageIcon,
-                            ServerColorUtils.getDefaultThemePanelBackground(servletContext),
-                            ServerColorUtils.getPanelBackground(servletContext, colorTheme),
-                            ServerColorUtils.getComponentForeground(servletContext, colorTheme));
                     ID = colorTheme.getID(defaultImageFile.getID());
                     imagePath = colorTheme.getImagePath(defaultImagePath);
+
+                    if (imageHolder.isGif(ColorTheme.DEFAULT)) {
+                        enabledImageUrl = saveImageFile(imagePath, 
+                                getGifIconSaver(defaultImageFile.getBytes(), true, servletContext, colorTheme), 
+                                ID, settings, false);
+                    } else {
+                        unanimatedImageIcon = () -> ClientColorUtils.createFilteredImageIcon(defaultImageIcon,
+                                ServerColorUtils.getDefaultThemePanelBackground(servletContext),
+                                ServerColorUtils.getPanelBackground(servletContext, colorTheme),
+                                ServerColorUtils.getComponentForeground(servletContext, colorTheme));
+                    }
                 } else {
                     defaultImageIcon = imageFile.getImageIcon();
-                    imageIcon = () -> defaultImageIcon;
                     ID = imageFile.getID();
                     imagePath = imageHolder.getImagePath(colorTheme);
+                    if (imageHolder.isGif(colorTheme)) {
+                        enabledImageUrl = saveImageFile(imagePath, 
+                                getGifIconSaver(imageFile.getBytes(), false, servletContext, colorTheme), 
+                                ID, settings, false);
+                    } else {
+                        unanimatedImageIcon = () -> defaultImageIcon;
+                    }
+                }
+                
+                if (unanimatedImageIcon != null) { // not gif
+                    enabledImageUrl = saveImageFile(imagePath, unanimatedImageIcon, ID, settings, false);
+                    if (canBeDisabled) {
+                        disabledImageUrl = saveImageFile(imagePath, unanimatedImageIcon, ID, settings, true);
+                    }
                 }
 
-                imageDescription.addImage(gColorTheme, saveImageFile(imagePath, imageIcon, ID, settings, false),
-                                        canBeDisabled ? saveImageFile(imagePath, imageIcon, ID, settings, true) : null,
+                imageDescription.addImage(gColorTheme, enabledImageUrl, disabledImageUrl, 
                         defaultImageIcon.getIconWidth(), defaultImageIcon.getIconHeight());
             }
             return imageDescription;
@@ -134,12 +162,16 @@ public class FileUtils {
     }
 
     public static String saveImageFile(String imagePath, Supplier<ImageIcon> imageIcon, String ID, ServerSettings settings, boolean disabled) {
+        return saveImageFile(imagePath, getIconSaver(imageIcon, BaseUtils.getFileExtension(imagePath), disabled), ID, settings, disabled);
+    }
+
+    public static String saveImageFile(String imagePath, EConsumer<OutputStream, IOException> iconSaver, String ID, ServerSettings settings, boolean disabled) {
         if(disabled) {
             String disabledSuffix = "_Disabled";
             ID = ColorTheme.addIDSuffix(ID, disabledSuffix);
             imagePath = BaseUtils.addSuffix(imagePath, disabledSuffix);
         }
-        return saveImageFile(getIconSaver(imageIcon, BaseUtils.getFileExtension(imagePath), disabled), ID, false, getStaticPath(settings), imagePath, null);
+        return saveImageFile(iconSaver, ID, false, getStaticPath(settings), imagePath, null);
     }
 
     private final static boolean useDownloadForAppResources = true;
@@ -206,14 +238,21 @@ public class FileUtils {
                     if (!gColorTheme.isDefault()) {
                         String themedImagePath = gColorTheme.getImagePath(imagePath);
                         if (!imagePaths.contains(imageResourcePath + themedImagePath)) {
-                            if(icon == null)
-                                icon = new ImageIcon(IOUtils.toByteArray(servletContext.getResource(fullImagePath)));
                             ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
-                            ImageIcon filteredImageIcon = ClientColorUtils.createFilteredImageIcon(icon,
-                                    ServerColorUtils.getDefaultThemePanelBackground(servletContext),
-                                    ServerColorUtils.getPanelBackground(servletContext, colorTheme),
-                                    ServerColorUtils.getComponentForeground(servletContext, colorTheme));
-                            saveImageFile(getIconSaver(() -> filteredImageIcon, imageType, false), themedImagePath, rUrl);
+                            byte[] imageData = IOUtils.toByteArray(servletContext.getResource(fullImagePath));
+                            
+                            if ("gif".equalsIgnoreCase(imageType)) {
+                                saveImageFile(getGifIconSaver(imageData, true, servletContext, colorTheme), themedImagePath, rUrl);
+                            } else {
+                                if(icon == null) {
+                                    icon = new ImageIcon(imageData);
+                                }
+                                ImageIcon filteredImageIcon = ClientColorUtils.createFilteredImageIcon(icon,
+                                        ServerColorUtils.getDefaultThemePanelBackground(servletContext),
+                                        ServerColorUtils.getPanelBackground(servletContext, colorTheme),
+                                        ServerColorUtils.getComponentForeground(servletContext, colorTheme));
+                                saveImageFile(getIconSaver(() -> filteredImageIcon, imageType, false), themedImagePath, rUrl);
+                            }
                         }
                     }
                 }
@@ -231,6 +270,33 @@ public class FileUtils {
         return fos -> {
             Image image = icon.get().getImage();
             ImageIO.write((RenderedImage) (image instanceof RenderedImage ? image : getBufferedImage(image, gray)), iconFileType, fos);
+        };
+    }
+
+    private static EConsumer<OutputStream, IOException> getGifIconSaver(byte[] imageBytes, boolean filter, ServletContext servletContext, ColorTheme colorTheme) {
+        return outputStream -> {
+            AnimatedGif gif = AnimatedGifReader.read(ImageSource.of(imageBytes));
+            StreamingGifWriter writer = new StreamingGifWriter(gif.getDelay(0), gif.getLoopCount() == 0);
+            StreamingGifWriter.GifStream gifStream = writer.prepareStream(outputStream, gif.getFrame(0).getType());
+            for (int i = 0; i < gif.getFrameCount(); i++) {
+                ImmutableImage frame = gif.getFrame(i);
+                if (filter && !colorTheme.isDefault()) {
+                    frame = frame.filter(image -> {
+                        for (int x = 0; x < image.width; x++) {
+                            for (int y = 0; y < image.height; y++) {
+                                image.awt().setRGB(x, y, ClientColorUtils.filterColor(image.color(x, y).toARGBInt(),
+                                        ServerColorUtils.getDefaultThemePanelBackground(servletContext),
+                                        ServerColorUtils.getPanelBackground(servletContext, colorTheme),
+                                        ServerColorUtils.getComponentForeground(servletContext, colorTheme)));
+                            }
+                        }
+                    });
+                }
+                gifStream.writeFrame(frame, gif.getDisposeMethod(i));
+            }
+            try {
+                gifStream.close();
+            } catch (Exception ignored) {}
         };
     }
 

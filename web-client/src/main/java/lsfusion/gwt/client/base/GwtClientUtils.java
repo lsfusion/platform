@@ -3,10 +3,8 @@ package lsfusion.gwt.client.base;
 import com.google.gwt.core.client.*;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
-import com.google.gwt.http.client.*;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -125,64 +123,14 @@ public class GwtClientUtils {
         return getURL("uploadFile" + (fileName != null ? "?sid=" + fileName : ""));
     }
 
-    private static Map<String, Boolean> imagePathCache = new HashMap<>();
-
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
         if (imagePath != null && !colorTheme.isDefault()) {
-            String colorThemeImagePath = MainFrame.colorTheme.getImagePath(imagePath);
-            GwtClientUtils.ensureImage(colorThemeImagePath, new Callback() {
-                @Override
-                public void onFailure() {
-                    modifier.accept(getStaticImageURL(imagePath));
-                }
-
-                @Override
-                public void onSuccess() {
-                    modifier.accept(getStaticImageURL(colorThemeImagePath));
-                }
-            });
+            modifier.accept(getStaticImageURL(colorTheme.getImagePath(imagePath)));
         } else {
             modifier.accept(getStaticImageURL(imagePath));
 
             if(MainFrame.staticImagesURL == null)
                 MainFrame.staticImagesURLListeners.add(() -> setThemeImage(imagePath, modifier));
-        }
-    }
-
-
-    public static void ensureImage(String imagePath, Callback callback) {
-        Boolean cachedResult = imagePathCache.get(imagePath);
-        if (cachedResult != null) {
-            if (cachedResult) {
-                callback.onSuccess();
-            } else {
-                callback.onFailure();
-            }
-        } else {
-            try {
-                RequestBuilder rb = new RequestBuilder(RequestBuilder.HEAD, getStaticImageURL(imagePath));
-                rb.setCallback(new RequestCallback() {
-                    @Override
-                    public void onResponseReceived(Request request, Response response) {
-                        if (response.getStatusCode() > 199 && response.getStatusCode() < 300) {
-                            imagePathCache.put(imagePath, true);
-                            callback.onSuccess();
-                        } else {
-                            imagePathCache.put(imagePath, false);
-                            callback.onFailure();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Request request, Throwable exception) {
-                        imagePathCache.put(imagePath, false);
-                        callback.onFailure();
-                    }
-                });
-                rb.send();
-            } catch (RequestException ignored) {
-                callback.onFailure();
-            }
         }
     }
 

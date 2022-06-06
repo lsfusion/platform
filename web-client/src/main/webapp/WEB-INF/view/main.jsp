@@ -133,8 +133,9 @@
 
                 <!-- dateRangePicker -->
                 'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js',
-                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js',
-                'https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css',
+                'https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js',
+                'https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css',
+                'static/css/datePicker.css',
 
                 <!-- Quill -->
                 'https://cdn.quilljs.com/1.3.6/quill.js',
