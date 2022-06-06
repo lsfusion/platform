@@ -92,15 +92,15 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
         dto.expandablesGroupIds = new int[changes.expandables.size()];
         dto.expandableKeys = new GGroupObjectValue[changes.expandables.size()][];
-        dto.expandableValues = new Boolean[changes.expandables.size()][];
+        dto.expandableValues = new Integer[changes.expandables.size()][];
         i = 0;
-        for (Map.Entry<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> entry : changes.expandables.entrySet()) {
-            Map<ClientGroupObjectValue, java.lang.Boolean> values = entry.getValue();
+        for (Map.Entry<ClientGroupObject, Map<ClientGroupObjectValue, Integer>> entry : changes.expandables.entrySet()) {
+            Map<ClientGroupObjectValue, Integer> values = entry.getValue();
 
             int j = 0;
             GGroupObjectValue[] expandableKeys = new GGroupObjectValue[values.size()];
-            Boolean[] expandableValues = new Boolean[values.size()];
-            for (Map.Entry<ClientGroupObjectValue, Boolean> expandable : values.entrySet()) {
+            Integer[] expandableValues = new Integer[values.size()];
+            for (Map.Entry<ClientGroupObjectValue, Integer> expandable : values.entrySet()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(expandable.getKey());
                 expandableKeys[j] = groupObjectValue;
                 expandableValues[j] = expandable.getValue();
@@ -180,6 +180,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         }
 
         dto.needConfirm = changes.needConfirm;
+        dto.size = changes.size;
 
         return dto;
     }

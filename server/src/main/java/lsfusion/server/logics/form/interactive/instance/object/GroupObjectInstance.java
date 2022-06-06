@@ -33,7 +33,6 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.RecursiveExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
-import lsfusion.server.data.expr.where.ifs.IfExpr;
 import lsfusion.server.data.query.MapKeysInterface;
 import lsfusion.server.data.query.Query;
 import lsfusion.server.data.query.modify.Modify;
@@ -80,7 +79,6 @@ import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
-import lsfusion.server.physics.exec.hint.AutoHintsAspect;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -106,6 +104,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     public RowForegroundReaderInstance rowForegroundReader = new RowForegroundReaderInstance();
 
     public final GroupObjectEntity entity;
+
+    private boolean countTreeSubElements = true;
 
     public static ImSet<ObjectInstance> getObjects(ImSet<GroupObjectInstance> groups) {
         MExclSet<ObjectInstance> mResult = SetFact.mExclSet();
@@ -808,6 +808,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
 
+        Where filterWhere = getWhere(mapKeys, modifier, reallyChanged);
+
         MExclMap<Object, Expr> mPropertyExprs = MapFact.mExclMap();
 
         Where expandWhere;
@@ -819,50 +821,54 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if (parent != null) {
             ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx((ThrowingFunction<PropertyObjectInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
-            Where nullWhere = Where.FALSE();
-            for (Expr parentExpr : parentExprs.valueIt()) {
-                nullWhere = nullWhere.or(parentExpr.getWhere().not());
-            }
-            expandWhere = expandWhere.and(nullWhere).or(getExpandWhere(MapFact.override(mapKeys, parentExprs))); // если есть parent, то те, чей parent равен null или expanded
-
             mPropertyExprs.exclAddAll(parentExprs);
 
-            mPropertyExprs.exclAdd("expandable", GroupExpr.create(parentExprs, ValueExpr.TRUE, GroupType.LOGICAL(), mapKeys.filter(parentExprs.keys()))); // boolean
-            if (treeGroup != null) {
-                GroupObjectInstance subGroup = treeGroup.getDownTreeGroup(this);
-                if (subGroup != null) {
-                    mPropertyExprs.exclAdd("expandable2", subGroup.getHasSubElementsExpr(mapKeys, modifier, reallyChanged));
-                }
-            }
+            expandWhere = expandWhere.and(getNullParentWhere(parentExprs)).or(getExpandWhere(MapFact.override(mapKeys, parentExprs))); // если есть parent, то те, чей parent равен null или expanded
+
+            mPropertyExprs.exclAdd("expandableParent", getSubElementsExpr(filterWhere, parentExprs, mapKeys.filter(parentExprs.keys()), countTreeSubElements)); // boolean
+        }
+
+        if (treeGroup != null) {
+            GroupObjectInstance subGroup = treeGroup.getDownTreeGroup(this);
+            if (subGroup != null)
+                mPropertyExprs.exclAdd("expandableDown", subGroup.getSubElementsExpr(mapKeys, modifier, reallyChanged, countTreeSubElements));
         }
 
         ImOrderMap<Expr, Boolean> orderExprs = orders.mapMergeOrderKeysEx((ThrowingFunction<OrderInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
-        return castExecuteObjects(new Query<>(mapKeys, mPropertyExprs.immutable(), getWhere(mapKeys, modifier, reallyChanged).and(expandWhere)).
+        return castExecuteObjects(new Query<>(mapKeys, mPropertyExprs.immutable(), filterWhere.and(expandWhere)).
                     executeClasses(session, env, baseClass, orderExprs));
     }
 
-    private Expr getHasSubElementsExpr(final ImRevMap<ObjectInstance, KeyExpr> outerMapKeys, final Modifier modifier, final ReallyChanged reallyChanged) throws SQLException, SQLHandledException {
+    private Expr getSubElementsExpr(Where filterWhere, ImMap<ObjectInstance, ? extends Expr> parentExprs, ImMap<ObjectInstance, KeyExpr> parentKeys, boolean countTreeSubElements) {
+        if(countTreeSubElements)
+            return GroupExpr.create(parentExprs, ValueExpr.COUNT, filterWhere, GroupType.SUM, parentKeys);
+
+        return GroupExpr.create(parentExprs, ValueExpr.get(filterWhere), GroupType.LOGICAL(), parentKeys);
+    }
+
+    private Where getNullParentWhere(ImMap<ObjectInstance, Expr> parentExprs) {
+        Where nullWhere = Where.FALSE();
+        for (Expr parentExpr : parentExprs.valueIt()) {
+            nullWhere = nullWhere.or(parentExpr.getWhere().not());
+        }
+        return nullWhere;
+    }
+
+    private Expr getSubElementsExpr(final ImRevMap<ObjectInstance, KeyExpr> outerMapKeys, final Modifier modifier, final ReallyChanged reallyChanged, boolean countTreeSubElements) throws SQLException, SQLHandledException {
         final ImRevMap<ObjectInstance, KeyExpr> mapKeys = KeyExpr.getMapKeys(GroupObjectInstance.getObjects(getUpTreeGroups()));
+
+        Where filterWhere = getWhere(mapKeys, modifier, reallyChanged);
 
         Where subGroupWhere = Where.TRUE();
 
         if (parent != null) {
             ImMap<ObjectInstance, Expr> parentExprs = parent.mapValuesEx((ThrowingFunction<PropertyObjectInstance, Expr, SQLException, SQLHandledException>) value -> value.getExpr(mapKeys, modifier));
 
-            Where nullWhere = Where.FALSE();
-            for (Expr parentExpr : parentExprs.valueIt()) {
-                nullWhere = nullWhere.or(parentExpr.getWhere().not());
-            }
-            subGroupWhere = subGroupWhere.and(nullWhere);
+            subGroupWhere = subGroupWhere.and(getNullParentWhere(parentExprs));
         }
 
-        subGroupWhere = subGroupWhere.and(getWhere(mapKeys, modifier, reallyChanged));
-
-        Expr validSubElementExpr = IfExpr.create(subGroupWhere, ValueExpr.TRUE, ValueExpr.NULL());
-
-        final ImMap<ObjectInstance, KeyExpr> upKeys = mapKeys.remove(objects);
-        return GroupExpr.create(upKeys, validSubElementExpr, GroupType.LOGICAL(), outerMapKeys); // boolean
+        return getSubElementsExpr(subGroupWhere.and(filterWhere), mapKeys.remove(objects), outerMapKeys, countTreeSubElements); // boolean
     }
 
     public void change(SessionChanges session, ImMap<ObjectInstance, ? extends ObjectValue> value, FormInstance eventForm, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -1229,14 +1235,19 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
                                         (key, value1) -> key instanceof ObjectInstance && value1 instanceof DataObject)));
                 keys = treeElements.mapOrderValues(MapFact::EMPTY);
 
-                ImOrderMap<ImMap<ObjectInstance, DataObject>, Boolean> groupExpandables =
+                ImOrderMap<ImMap<ObjectInstance, DataObject>, Integer> groupExpandables =
                         treeElements
-                                .filterOrderValuesMap(element -> element.containsKey("expandable") || element.containsKey("expandable2"))
                                 .mapOrderValues(
-                                        (Function<ImMap<Object, ObjectValue>, Boolean>) value -> {
-                                            ObjectValue expandable1 = value.get("expandable");
-                                            ObjectValue expandable2 = value.get("expandable2");
-                                            return expandable1 instanceof DataObject || expandable2 instanceof DataObject;
+                                        (Function<ImMap<Object, ObjectValue>, Integer>) value -> {
+                                            ObjectValue expandableParent = value.get("expandableParent");
+                                            ObjectValue expandableDown = value.get("expandableDown");
+                                            if(countTreeSubElements)
+                                                return (expandableParent instanceof DataObject ? (Integer)((DataObject) expandableParent).object : 0) +
+                                                        (expandableDown instanceof DataObject ? (Integer)((DataObject) expandableDown).object : 0);
+
+                                            if(expandableParent instanceof DataObject || expandableDown instanceof DataObject)
+                                                return 1;
+                                            return 0;
                                         });
 
                 result.expandables.exclAdd(this, groupExpandables.getMap());

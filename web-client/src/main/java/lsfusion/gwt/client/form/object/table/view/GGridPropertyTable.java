@@ -56,9 +56,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     // we have to keep it until updateDataImpl to have rows order
     // plus what's more important we shouldn't change selectedRow, before update'in rows, otherwise we'll have inconsistent selectedRow - rows state
     protected GGroupObjectValue currentKey;
+    protected Integer currentExpandingIndex;
 
     public void setCurrentKey(GGroupObjectValue currentKey) {
+        // we're counting on the checkUpdateCurrentRow to handle that case (otherwise there will be problems with the expandingIndex)
+        if(!(GwtClientUtils.nullHashEquals(getSelectedKey(), currentKey) && this.currentKey == null))
+            setCurrentKey(currentKey, null);
+    }
+    public void setCurrentKey(GGroupObjectValue currentKey, Integer currentExpandingIndex) {
         this.currentKey = currentKey;
+        this.currentExpandingIndex = currentExpandingIndex;
 
         this.currentRowUpdated = true;
     }
@@ -212,9 +219,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return selectedRowValue != null ? selectedRowValue.getKey() : null;
     }
 
-    protected String getSelectedVirtualKey() {
+    protected Integer getSelectedExpandingIndex() {
         GridDataRecord selectedRowValue = getSelectedRowValue();
-        return selectedRowValue != null ? selectedRowValue.getVirtualKey() : null;
+        return selectedRowValue != null ? selectedRowValue.getExpandingIndex() : null;
     }
 
     // there is a contract if there are keys there should be current object
@@ -223,15 +230,27 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected void checkUpdateCurrentRow() {
         // assert rowUpdated AND ! it's important to do this before update rows to have relevant selectedKey
         if(!currentRowUpdated)
-            setCurrentKey(getSelectedKey());
+            setCurrentKey(getSelectedKey(), getSelectedExpandingIndex());
     }
 
     private boolean currentRowUpdated = false;
     public void updateCurrentRow() {
         if (currentRowUpdated) {
-            setSelectedRow(currentKey != null ? getRowByKey(currentKey, null) : -1);
+            int row = currentKey != null ? getRowByKey(currentKey, currentExpandingIndex) : -1;
+
+            // if we didn't find currentKey with that expandingIndex, it can be because the currentKey has become unexpanded
+            // so we're just looking for the object record and then shifting this index with the expanding index
+            if(currentExpandingIndex != null && !currentExpandingIndex.equals(GridDataRecord.objectExpandingIndex) &&
+                    row < 0) {
+                int objectRow = getRowByKey(currentKey, GridDataRecord.objectExpandingIndex);
+                if(objectRow >= 0)
+                    row = Math.min(objectRow + currentExpandingIndex + 1, getRowCount() - 1);
+            }
+
+            setSelectedRow(row);
 
             currentKey = null;
+            currentExpandingIndex = null;
             currentRowUpdated = false;
         }
 
@@ -480,7 +499,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if(columnIndex < 0)
             return null;
 
-        int rowIndex = getRowByKey(propertyRowKey, GridDataRecord.objectVirtualKey);
+        int rowIndex = getRowByKey(propertyRowKey, GridDataRecord.objectExpandingIndex);
         if(rowIndex < 0)
             return null;
 

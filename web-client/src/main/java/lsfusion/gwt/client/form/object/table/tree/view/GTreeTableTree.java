@@ -81,7 +81,7 @@ public class GTreeTableTree {
             return list;
         }
     }
-    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Boolean> expandable, int requestIndex) {
+    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Integer> expandable, int requestIndex) {
         NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> childTree = new NativeHashMap<>();
 
         for (int i = 0; i < keys.size(); i++) {
@@ -120,7 +120,7 @@ public class GTreeTableTree {
     }
 
     // we're assuming that recursive "this" groups goes first (before down groups)
-    private void synchronize(GTreeContainerTableNode node, GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Boolean> expandables, int requestIndex) {
+    private void synchronize(GTreeContainerTableNode node, GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, OptimizedIndexOfArrayList<GGroupObjectValue>> tree, NativeHashMap<GGroupObjectValue, Integer> expandables, int requestIndex) {
         OptimizedIndexOfArrayList<GGroupObjectValue> syncChilds = tree.get(node.getKey());
 
         if (node.pendingExpanding != null) {
@@ -209,11 +209,12 @@ public class GTreeTableTree {
         node.setChildren(GwtClientUtils.newArrayList(allChildren));
     }
 
-    private void updateExpandable(GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, Boolean> expandables, GGroupObjectValue key, GTreeObjectTableNode child) {
-        boolean expandable = false;
+    private void updateExpandable(GGroupObject syncGroup, NativeHashMap<GGroupObjectValue, Integer> expandables, GGroupObjectValue key, GTreeObjectTableNode child) {
+        int expandable = 0;
         if (syncGroup.mayHaveChildren()) {
-            Boolean e = expandables.get(key);
-            expandable = e == null || e;
+            Integer e = expandables.get(key);
+            if(e != null)
+                expandable = e;
         }
         child.setExpandable(expandable);
     }
@@ -242,7 +243,7 @@ public class GTreeTableTree {
         for (GTreeChildTableNode child : node.getChildren()) {
             GTreeColumnValue treeValue = createTreeColumnValue(child, node, record);
 
-            if(child instanceof GTreeObjectTableNode) {
+            if (child instanceof GTreeObjectTableNode) {
                 GTreeObjectTableNode childObject = (GTreeObjectTableNode) child;
 
                 GTreeObjectGridRecord treeRecord = new GTreeObjectGridRecord(rows.size(), childObject, treeValue);
@@ -255,7 +256,7 @@ public class GTreeTableTree {
                 assert node.hasOnlyExpandingTreeTableNodes();
                 assert node instanceof GTreeObjectTableNode;
 
-                rows.add(new GTreeExpandingGridRecord(rows.size(), node, treeValue));
+                rows.add(new GTreeExpandingGridRecord(rows.size(), node, treeValue, ((GTreeExpandingTableNode)child)));
             }
         }
     }

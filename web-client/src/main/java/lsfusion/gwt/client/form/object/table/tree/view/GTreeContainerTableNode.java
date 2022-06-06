@@ -49,7 +49,19 @@ public abstract class GTreeContainerTableNode implements GTreeTableNode {
         return !children.isEmpty();
     }
 
-    public abstract boolean isExpandable();
+    private int expandableChildren;
+
+    public boolean isExpandable() {
+        return expandableChildren > 0;
+    }
+
+    public int getExpandableChildren() {
+        return expandableChildren;
+    }
+
+    public void setExpandable(int expandable) {
+        this.expandableChildren = expandable;
+    }
 
     public void setPendingExpanding(Boolean open, long requestIndex) {
         pendingExpanding = open;
@@ -57,6 +69,13 @@ public abstract class GTreeContainerTableNode implements GTreeTableNode {
     }
 
     public boolean hasOnlyExpandingTreeTableNodes() {
-        return children.size() == 1 && children.get(0) instanceof GTreeExpandingTableNode;
+        int size = children.size();
+        if(size != expandableChildren)
+            return false;
+
+        for(int i=0;i<size;i++)
+            if(!(children.get(i) instanceof GTreeExpandingTableNode))
+                return false;
+        return true;
     }
 }

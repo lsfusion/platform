@@ -1,17 +1,17 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
-import lsfusion.gwt.client.form.object.GGroupObject;
-import lsfusion.gwt.client.form.object.GGroupObjectValue;
-
 public class GTreeExpandingGridRecord extends GTreeGridRecord {
 
-    public GTreeExpandingGridRecord(int rowIndex, GTreeContainerTableNode node, GTreeColumnValue treeValue) {
+    private final int index;
+
+    public GTreeExpandingGridRecord(int rowIndex, GTreeContainerTableNode node, GTreeColumnValue treeValue, GTreeExpandingTableNode expandNode) {
         super(rowIndex, node, treeValue);
+
+        index = expandNode.index;
     }
 
-    public final static String expandingVirtualKey = "EXPANDING";
     @Override
-    public String getVirtualKey() {
-        return expandingVirtualKey;
+    public int getExpandingIndex() {
+        return index;
     }
 }

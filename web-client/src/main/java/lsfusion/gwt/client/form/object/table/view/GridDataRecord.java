@@ -1,13 +1,8 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-
-import java.util.HashMap;
-import java.util.Optional;
 
 public class GridDataRecord implements RowIndexHolder {
     public int rowIndex;
@@ -125,9 +120,9 @@ public class GridDataRecord implements RowIndexHolder {
         return key;
     }
 
-    public static final String objectVirtualKey = "OBJECT";
-    public String getVirtualKey() {
-        return objectVirtualKey;
+    public static final int objectExpandingIndex = -1;
+    public int getExpandingIndex() {
+        return objectExpandingIndex;
     }
 
     private NativeStringMap<Object> createValues() {

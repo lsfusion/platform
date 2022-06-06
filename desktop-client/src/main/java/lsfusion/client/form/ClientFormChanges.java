@@ -25,7 +25,7 @@ public class ClientFormChanges {
     // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
     public Map<ClientGroupObject, List<ClientGroupObjectValue>> parentObjects;
 
-    public final Map<ClientGroupObject, Map<ClientGroupObjectValue, Boolean>> expandables;
+    public final Map<ClientGroupObject, Map<ClientGroupObjectValue, Integer>> expandables;
 
     public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties; // keys of the values in that map are "grid" objects (for panelProperties there are no "grid" objects) + "group-columns" objects 
     public final Set<ClientPropertyDraw> updateProperties; // needed for async changes, that check means that property was not changed, so async change should be dropped (old value need to be set)
@@ -41,6 +41,8 @@ public class ClientFormChanges {
     public final List<ClientContainer> expandContainers;
 
     public final boolean needConfirm;
+
+    public final int size;
 
     public ClientFormChanges(byte[] formChanges, ClientForm clientForm) throws IOException {
         DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(formChanges));
@@ -59,11 +61,11 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; ++i) {
             ClientGroupObject groupObject = clientForm.getGroupObject(inStream.readInt());
-            Map<ClientGroupObjectValue, Boolean> groupExpandables = new HashMap<>();
+            Map<ClientGroupObjectValue, Integer> groupExpandables = new HashMap<>();
             int cnt = inStream.readInt();
             for (int j = 0; j < cnt; ++j) {
                 ClientGroupObjectValue key = new ClientGroupObjectValue(inStream, clientForm);
-                boolean expandable = inStream.readBoolean();
+                int expandable = inStream.readInt();
                 groupExpandables.put(key, expandable);
             }
 
@@ -130,6 +132,7 @@ public class ClientFormChanges {
         }
 
         needConfirm = inStream.readBoolean();
+        size = formChanges.length;
     }
 
     private ClientPropertyReader deserializePropertyReader(ClientForm clientForm, DataInputStream inStream) throws IOException {

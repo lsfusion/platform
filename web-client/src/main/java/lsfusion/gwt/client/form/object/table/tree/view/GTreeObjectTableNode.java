@@ -8,8 +8,6 @@ public class GTreeObjectTableNode extends GTreeContainerTableNode implements GTr
     private GGroupObject group;
     private GGroupObjectValue key;
 
-    private boolean expandable = true;
-
     public GTreeObjectTableNode(GGroupObject group, GGroupObjectValue key) {
         this.group = group;
         this.key = key;
@@ -21,14 +19,6 @@ public class GTreeObjectTableNode extends GTreeContainerTableNode implements GTr
 
     public GGroupObjectValue getKey() {
         return key;
-    }
-
-    public boolean isExpandable() {
-        return expandable;
-    }
-
-    public void setExpandable(boolean expandable) {
-        this.expandable = expandable;
     }
 
     @Override

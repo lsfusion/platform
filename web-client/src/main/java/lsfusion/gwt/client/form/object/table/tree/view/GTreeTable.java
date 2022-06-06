@@ -520,7 +520,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Boolean> expandable, int requestIndex) {
+    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Integer> expandable, int requestIndex) {
         tree.setKeys(group, keys, parents, expandable, requestIndex);
 
         dataUpdated = true;
@@ -795,10 +795,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         if(open) { // adding virtual "expandable" node
             assert !node.hasExpandableChildren();
 
-            int addCount = 1;
+            int addCount = node.getExpandableChildren();
             GTreeExpandingTableNode[] expandingNodes = new GTreeExpandingTableNode[addCount];
             for(int i=0;i<addCount;i++) {
-                GTreeExpandingTableNode expandingNode = new GTreeExpandingTableNode();
+                GTreeExpandingTableNode expandingNode = new GTreeExpandingTableNode(i);
                 expandingNodes[i] = expandingNode;
                 node.addNode(i, expandingNode);
             }
@@ -808,9 +808,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                 // adding rows
                 for(int i=0;i<addCount;i++) {
-                    GTreeColumnValue treeValue = tree.createTreeColumnValue(expandingNodes[i], node, record);
+                    GTreeExpandingTableNode expandingNode = expandingNodes[i];
+                    GTreeColumnValue treeValue = tree.createTreeColumnValue(expandingNode, node, record);
                     int addIndex = index + i;
-                    GTreeExpandingGridRecord treeRecord = new GTreeExpandingGridRecord(addIndex, node, treeValue);
+                    GTreeExpandingGridRecord treeRecord = new GTreeExpandingGridRecord(addIndex, node, treeValue, expandingNode);
                     rows.add(addIndex, treeRecord);
                     tableBuilder.incBuildRow(tableData.getSection(), addIndex, treeRecord);
                 }

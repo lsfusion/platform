@@ -19,7 +19,7 @@ public class GFormChanges {
     public final NativeSIDMap<GGroupObject, GGroupObjectValue> objects = new NativeSIDMap<>();
     public final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new NativeSIDMap<>();
     public final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new NativeSIDMap<>();
-    public final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Boolean>> expandables = new NativeSIDMap<>();
+    public final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Integer>> expandables = new NativeSIDMap<>();
     public final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Object>> properties = new NativeSIDMap<>();
     public final HashSet<GPropertyDraw> dropProperties = new HashSet<>();
 
