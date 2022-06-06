@@ -70,8 +70,9 @@ public abstract class GTreeContainerTableNode implements GTreeTableNode {
 
     public boolean hasOnlyExpandingTreeTableNodes() {
         int size = children.size();
-        if(size != expandableChildren)
-            return false;
+        // can be broken if the filters / or data are changed
+//        if(size != expandableChildren)
+//            return false;
 
         for(int i=0;i<size;i++)
             if(!(children.get(i) instanceof GTreeExpandingTableNode))
