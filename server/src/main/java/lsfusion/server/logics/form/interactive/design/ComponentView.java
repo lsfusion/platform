@@ -17,6 +17,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -48,6 +49,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private FlexAlignment alignment = null;
     protected Boolean shrink = null;
     protected Boolean alignShrink = null;
+
+    public PropertyObjectEntity<?> showIf;
 
     public int getWidth(FormEntity entity) {
         if(width != null)
@@ -147,6 +150,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return false;
     }
 
+    public PropertyObjectEntity<?> getShowIf() {
+        return showIf;
+    }
+
     public int marginTop;
     public int marginBottom;
     public int marginLeft;
@@ -229,6 +236,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         setMarginRight(margin);
     }
 
+    public void setShowIf(PropertyObjectEntity<?> showIf) {
+        this.showIf = showIf;
+    }
+
     public ComponentView findById(int id) {
         if(ID==id)
             return this;
@@ -283,12 +294,12 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     @IdentityLazy
-    public ContainerView getShowIfHidableContainer() {
+    public ComponentView getShowIfHidableContainer() {
         if (isMain())
             return null;
 
         if(isShowIfHidable())
-            return (ContainerView) this;
+            return this;
 
         return getHiddenContainer().getShowIfHidableContainer();
     }
@@ -302,7 +313,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     public boolean isShowIfHidable() {
-        return this instanceof ContainerView && ((ContainerView) this).showIf != null;
+        return this.showIf != null;
     }
 
     public boolean isUserHidable() {

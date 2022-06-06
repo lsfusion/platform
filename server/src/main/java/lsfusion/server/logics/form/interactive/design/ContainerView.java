@@ -51,8 +51,6 @@ public class ContainerView extends ComponentView {
     public Boolean lineShrink = null;
     private String customDesign = null;
 
-    public PropertyObjectEntity<?> showIf;
-
     // temp hack ???
     public GridView recordContainer;
     @Override
@@ -301,14 +299,6 @@ public class ContainerView extends ComponentView {
         return customDesign != null;
     }
 
-    public PropertyObjectEntity<?> getShowIf() {
-        return showIf;
-    }
-
-    public void setShowIf(PropertyObjectEntity<?> showIf) {
-        this.showIf = showIf;
-    }
-
     @Override
     public ComponentView findById(int id) {
         ComponentView result = super.findById(id);
@@ -351,13 +341,18 @@ public class ContainerView extends ComponentView {
         children.addIfNotExistsToThenLast(comp, compAfter, true, version);
     }
 
-    public void fillPropertyContainers(MExclSet<ContainerView> mContainers) {
-        if(showIf != null || propertyCaption != null || propertyCustomDesign != null)
-            mContainers.exclAdd(this);
+    public void fillPropertyContainers(MExclSet<ComponentView> mComponents) {
+        if (showIf != null || propertyCaption != null || propertyCustomDesign != null) {
+            mComponents.exclAdd(this);
+        }
 
-        for(ComponentView child : getChildrenIt())
-            if(child instanceof ContainerView)
-                ((ContainerView)child).fillPropertyContainers(mContainers);
+        for (ComponentView child : getChildrenIt()) {
+            if (child instanceof ContainerView) {
+                ((ContainerView) child).fillPropertyContainers(mComponents);
+            } else if (child.showIf != null) {
+                mComponents.exclAdd(child);
+            }
+        }
     }
 
     public boolean isAncestorOf(ComponentView container) {

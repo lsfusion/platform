@@ -4,6 +4,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;
@@ -138,5 +139,9 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
 
     public void setImagePath(LocalizedString imagePath) {
         target.design.setImage(imagePath.getSourceString());
+    }
+
+    public void setShowIf(PropertyObjectEntity<?> showIf) {
+        target.setShowIf(showIf);
     }
 }
