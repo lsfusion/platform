@@ -32,7 +32,6 @@ import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.*;
 
@@ -139,11 +138,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         getElement().setPropertyObject("groupObject", groupObject);
     }
 
-    @Override
-    public GGroupObjectValue getCurrentKey() {
-        return getSelectedKey();
-    }
-
     public void update(Boolean updateState) {
         updateModify(false);
         if(updateState != null)
@@ -166,7 +160,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             dataUpdated = true;
         }
 
-        updateDataImpl();
+        updateData();
     }
 
     private void updateRows(boolean modifyGroupObject) {
@@ -185,8 +179,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     // incremental records update
     private void updateGridRows(boolean modifyGroupObject) {
-        if(rows == null)
-            rows = new ArrayList<>();
         int currentSize = rows.size();
         int newSize = rowKeys.size();
 
@@ -199,9 +191,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     }
                 }
             } else {
-                for (int i = currentSize - 1; i >= newSize; --i) {
-                    rows.remove(i);
-                }
+                rows.removeRange(newSize, currentSize);
+//                for (int i = currentSize - 1; i >= newSize; --i) {
+//                    rows.remove(i);
+//                }
             }
         } else if (currentSize < newSize) {
             for (int i = currentSize; i < newSize; ++i) {
@@ -363,7 +356,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         dataUpdated = true;
 
         updateColumns();
-        updateDataImpl();
+        updateData();
 //
 //        final ArrayList<GFontWidthString> fonts = new ArrayList<>();
 //        for(GPropertyDraw property : properties)
@@ -419,7 +412,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return result;
     }
 
-    private void updateDataImpl() {
+    private void updateData() {
         if (dataUpdated) {
             boolean firstRow = true;
             ArrayList<GridColumn> updatedColumns = new ArrayList<>();
@@ -498,11 +491,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private void removeGridColumn(GridColumn column) {
         removeColumn(column);
-    }
-
-    public GGroupObjectValue getSelectedKey() {
-        GridDataRecord selectedRowValue = getSelectedRowValue();
-        return selectedRowValue != null ? selectedRowValue.getKey() : null;
     }
 
     @Override
@@ -895,11 +883,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     // editing set value (in EditContext), changes model and value itself
     public void setValueAt(Cell cell, Object value) {
         GridColumn gridColumn = getGridColumn(cell);
-        GridDataRecord gridRow = getGridRow(cell);
 
-        gridColumn.setValue(gridRow, value); // updating inner model
+        gridColumn.setValue(getGridRow(cell), value); // updating inner model
 
-        values.get(gridColumn.property).put(gridRow.getKey(), value); // updating outer model - controller
+        values.get(gridColumn.property).put(getRowKey(cell), value); // updating outer model - controller
     }
 
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
@@ -911,10 +898,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public void setLoadingAt(Cell cell) {
-        GridDataRecord rowRecord = getGridRow(cell);
         GridColumn column = getGridColumn(cell);
 
-        column.setLoading(rowRecord, true); // updating inner model
+        column.setLoading(getGridRow(cell), true); // updating inner model
 
         // updating outer model - controller
         NativeHashMap<GGroupObjectValue, Object> loadingMap = loadings.get(column.property);
@@ -922,7 +908,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             loadingMap = new NativeHashMap<>();
             loadings.put(column.property, loadingMap);
         }
-        loadingMap.put(rowRecord.getKey(), true);
+        loadingMap.put(getRowKey(cell), true);
     }
 
     public Map<Map<GPropertyDraw, GGroupObjectValue>, Boolean> getOrderDirections() {

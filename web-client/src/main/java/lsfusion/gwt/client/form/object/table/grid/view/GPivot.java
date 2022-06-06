@@ -27,6 +27,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValue;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeColumnValueType;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
@@ -1107,19 +1108,15 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private GTreeColumnValue getTreeColumnValue(int level, Boolean isExpanded, boolean openDotBottom, boolean closedDotBottom, JsArrayBoolean isLastChildList) {
-        GTreeColumnValue treeColumnValue = new GTreeColumnValue(level, "level" + level);
-        treeColumnValue.setOpen(isExpanded);
-        treeColumnValue.setOpenDotBottom(openDotBottom);
-        treeColumnValue.setClosedDotBottom(closedDotBottom);
-
-        HashMap<Integer, Boolean> lastInLevelMap = new HashMap<>();
+        boolean[] lastInLevelMap;
         if(isLastChildList != null) {
+            lastInLevelMap = new boolean[isLastChildList.length() - 1];
             for (int i = 1; i < isLastChildList.length(); i++) {
-                lastInLevelMap.put(i - 1, isLastChildList.get(i));
+                lastInLevelMap[i - 1] = isLastChildList.get(i);
             }
-        }
-        treeColumnValue.setLastInLevelMap(lastInLevelMap);
-        return treeColumnValue;
+        } else
+            lastInLevelMap = new boolean[0];
+        return new GTreeColumnValue(level, lastInLevelMap, GTreeColumnValueType.get(isExpanded), openDotBottom, closedDotBottom);
     }
 
     public void renderAttrCell(Element th, JavaScriptObject value, String columnName) {
@@ -1458,7 +1455,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private void renderArrow(Element jsElement, GTreeColumnValue treeColumnValue) {
         jsElement.removeAllChildren();
-        if (treeColumnValue.getLevel() > 0) {
+        if (treeColumnValue.level > 0) {
             jsElement.getStyle().setPaddingLeft(5, Style.Unit.PX);
         }
         GTreeTable.renderExpandDom(jsElement, treeColumnValue);

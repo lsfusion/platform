@@ -62,7 +62,7 @@ public abstract class CallDBAction extends CallAction {
         exec = ScriptingLogicsModule.transformFormulaText(exec, getParamName("$1"));
         if(isFile) {
             try {
-                RawFileData resourceFile = ResourceUtils.findResourceAsFileData(exec, false, false, null, null);
+                RawFileData resourceFile = ResourceUtils.findResourceAsFileData(exec, false, true, null, null);
                 if(resourceFile != null) {
                     exec = IOUtils.readStreamToString(resourceFile.getInputStream());
                 }

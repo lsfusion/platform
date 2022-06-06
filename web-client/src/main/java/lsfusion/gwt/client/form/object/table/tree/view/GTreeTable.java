@@ -6,6 +6,7 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -31,6 +32,7 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
@@ -44,11 +46,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeTableTree tree;
 
-    private Set<GTreeTableNode> expandedNodes;
-
     private TreeTableSelectionHandler treeSelectionHandler;
 
     private GTreeGroupController treeGroupController;
+
+    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> values = new NativeSIDMap<>();
+    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> loadings = new NativeSIDMap<>();
+    public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> readOnly = new NativeSIDMap<>();
 
     private GTreeGroup treeGroup;
     
@@ -110,21 +114,13 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         if(treeGroupController.isExpandOnClick())
             form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null, null, null),
-                    () -> isSelectedNodeExpandable(tree.getNodeByRecord(getSelectedRowValue())),
+                    () -> {
+                        GTreeObjectTableNode node = getExpandSelectedNode();
+                        return node != null && node.isExpandable();
+                    },
                     event -> {
-                        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-                        if (isSelectedNodeExpandable(node)) {
-                            if (!node.isOpen()) {
-                                fireExpandNode(node);
-                            } else {
-                                fireCollapseNode(node);
-                            }
-                        }
+                        fireExpandSelectedNode(null);
                     }, this, groupObject);
-    }
-
-    private static boolean isSelectedNodeExpandable(GTreeTableNode node) {
-        return node != null && node.isExpandable();
     }
 
     private static GGroupObject lastGroupObject(GTreeGroup treeGroup) {
@@ -138,6 +134,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public void removeProperty(GPropertyDraw property) {
         dataUpdated = true;
 
+        values.remove(property);
+        loadings.remove(property);
         int index = tree.removeProperty(property);
         if(index > -1) // we need only last group, just like everywhere
             removeColumn(index);
@@ -192,7 +190,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
         GPropertyTableBuilder.setRowHeight(cellElement, 0, false); // somewhy it's needed for proper indent showing
-        for (int i = 0; i <= treeValue.getLevel(); i++) {
+        for (int i = 0; i <= treeValue.level; i++) {
             DivElement img = createIndentElement(cellElement);
             updateIndentElement(img, treeValue, i);
         }
@@ -225,23 +223,23 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
         String indentIcon;
         ImageElement img = element.getElementsByTagName("img").getItem(0).cast();
-        int nodeLevel = treeValue.getLevel();
+        int nodeLevel = treeValue.level;
         if (indentLevel < nodeLevel - 1) {
-            indentIcon = treeValue.isLastInLevel(indentLevel) ? ICON_EMPTY : ICON_PASSBY;
+            indentIcon = treeValue.lastInLevelMap[indentLevel] ? ICON_EMPTY : ICON_PASSBY;
             img.removeAttribute(TREE_NODE_ATTRIBUTE);
         } else if (indentLevel == nodeLevel - 1) {
             indentIcon = ICON_BRANCH;
             img.removeAttribute(TREE_NODE_ATTRIBUTE);
         } else {
             assert indentLevel == nodeLevel;
-            img.setAttribute(TREE_NODE_ATTRIBUTE, treeValue.getSID());
+            img.setAttribute(TREE_NODE_ATTRIBUTE, "true");
             indentIcon = getNodeIcon(treeValue);
         }
 
         if (ICON_PASSBY.equals(indentIcon)) {
             changeDots(element, true, true);
         } else if (ICON_BRANCH.equals(indentIcon)) {
-            if (treeValue.isLastInLevel(indentLevel)) {
+            if (treeValue.lastInLevelMap[indentLevel]) {
                 changeDots(element, true, false); //end
             } else {
                 changeDots(element, true, true); //branch
@@ -249,9 +247,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon)) {
             changeDots(element, false, false);
         } else if (ICON_CLOSED.equals(indentIcon)) {
-            changeDots(element, false, treeValue.isClosedDotBottom());
+            changeDots(element, false, treeValue.closedDotBottom);
         }else if (ICON_OPEN.equals(indentIcon)) {
-            changeDots(element, false, treeValue.isOpenDotBottom());
+            changeDots(element, false, treeValue.openDotBottom);
         }
 
         if(ICON_CLOSED.equals(indentIcon)) {
@@ -308,13 +306,24 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     private static String getNodeIcon(GTreeColumnValue treeValue) {
-        if (treeValue.getOpen() == null) {
-            return ICON_LEAF;
-        } else if (treeValue.getOpen()) {
-            return ICON_OPEN;
-        } else {
-            return ICON_CLOSED;
+        switch (treeValue.type) {
+            case LEAF:
+                return ICON_LEAF;
+            case OPEN:
+                return ICON_OPEN;
+            case CLOSED:
+                return ICON_CLOSED;
+            case LOADING:
+                return CellRenderer.ICON_LOADING;
         }
+        throw new UnsupportedOperationException();
+    }
+
+    private static class RenderedState {
+        public GTreeColumnValue value;
+
+        public String foreground;
+        public String background;
     }
 
     // actually singleton
@@ -346,23 +355,17 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
                 String attrID = JSNIHelper.getAttributeOrNull(Element.as(event.getEventTarget()), TREE_NODE_ATTRIBUTE);
                 if (attrID != null) {
+                    boolean consumed = false;
                     if(changeEvent)
-                        changeTreeState(editCell, getTreeValue(editCell), event);
-                    handler.consume();
+                        consumed = changeTreeState(editCell);
+                    if(consumed)
+                        handler.consume();
                 }
             }
         }
 
-        private void changeTreeState(Cell cell, Object value, NativeEvent event) {
-            Boolean open = ((GTreeColumnValue) value).getOpen();
-            if (open != null) {
-                GTreeGridRecord record = getTreeGridRow(cell);
-                if (!open) {
-                    expandNodeByRecord(record);
-                } else {
-                    collapseNodeByRecord(record);
-                }
-            }
+        private boolean changeTreeState(Cell cell) {
+            return fireExpandNode(tree.getExpandNodeByRecord(getTreeGridRow(cell)), null);
         }
 
         @Override
@@ -370,16 +373,51 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
         }
 
+        private static final String RENDERED = "renderedTree";
+
         @Override
         public void updateDom(Cell cell, TableCellElement cellElement) {
 
-            GTreeColumnValue treeValue = getTreeValue(cell);
+            RenderedState renderedState = (RenderedState) cellElement.getPropertyObject(RENDERED);
+            boolean isNew = false;
+            if(renderedState == null) {
+                renderedState = new RenderedState();
+                cellElement.setPropertyObject(RENDERED, renderedState);
 
-            while (cellElement.getChildCount() > treeValue.getLevel() + 1) {
+                isNew = true;
+            }
+
+            GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
+            String background = DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground());
+            String foreground = rowValue.getRowForeground();
+            if(isNew || !equalsColorState(renderedState, background, foreground)) {
+                renderedState.background = background;
+                renderedState.foreground = foreground;
+
+                AbstractDataGridBuilder.updateColors(cellElement, background, foreground);
+            }
+
+            GTreeColumnValue treeValue = getTreeValue(cell);
+            if(isNew || !equalsDynamicState(renderedState, treeValue)) {
+                renderedState.value = treeValue;
+
+                renderDynamicContent(cellElement, treeValue);
+            }
+        }
+
+        private boolean equalsDynamicState(RenderedState state, GTreeColumnValue value) {
+            return state.value.equalsValue(value);
+        }
+        private boolean equalsColorState(RenderedState state, String background, String foreground) {
+            return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
+        }
+
+        private void renderDynamicContent(TableCellElement cellElement, GTreeColumnValue treeValue) {
+            while (cellElement.getChildCount() > treeValue.level + 1) {
                 cellElement.getLastChild().removeFromParent();
             }
 
-            for (int i = 0; i <= treeValue.getLevel(); i++) {
+            for (int i = 0; i <= treeValue.level; i++) {
                 DivElement img;
                 if (i >= cellElement.getChildCount()) {
                     img = createIndentElement(cellElement);
@@ -389,9 +427,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
                 updateIndentElement(img, treeValue, i);
             }
-
-            GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
-            AbstractDataGridBuilder.updateColors(cellElement, DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground()), rowValue.getRowForeground());
         }
 
         @Override
@@ -485,24 +520,28 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Boolean> expandable) {
-        tree.setKeys(group, keys, parents, expandable);
+    public void setKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, ArrayList<GGroupObjectValue> parents, NativeHashMap<GGroupObjectValue, Integer> expandable, int requestIndex) {
+        tree.setKeys(group, keys, parents, expandable, requestIndex);
 
         dataUpdated = true;
     }
 
     public void updateLoadings(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propLoadings) {
-        tree.setLoadings(property, propLoadings);
+        // here can be leaks because of nulls (so in theory nulls better to be removed)
+        GwtSharedUtils.putUpdate(loadings, property, propLoadings, true);
+
         dataUpdated = true;
     }
 
     public void updatePropertyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> propValues, boolean updateKeys) {
-        tree.setPropertyValues(property, propValues, updateKeys);
+        GwtSharedUtils.putUpdate(values, property, propValues, updateKeys);
+
         dataUpdated = true;
     }
 
     public void updateReadOnlyValues(GPropertyDraw property, NativeHashMap<GGroupObjectValue, Object> readOnlyValues) {
-        tree.setReadOnlyValues(property, readOnlyValues);
+        GwtSharedUtils.putUpdate(readOnly, property, readOnlyValues, false);
+
         dataUpdated = true;
     }
 
@@ -630,15 +669,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public void updateData() {
         if (dataUpdated) {
-            restoreVisualState();
-
             checkUpdateCurrentRow();
 
 //            checkSelectedRowVisible();
 
-            rows = tree.updateRows(getColumnCount());
+            rows.clear();
+            tree.updateRows(rows);
             updatePropertyReaders();
-            treeSelectionHandler.dataUpdated();
+//            treeSelectionHandler.dataUpdated();
 
             rowsChanged();
 
@@ -676,138 +714,154 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         for (GTreeGridRecord record : rows) {
             GGroupObjectValue key = record.getKey();
 
-            Object rBackground = rowBackgroundValues.get(key);
-            Object rForeground = rowForegroundValues.get(key);
+            record.setRowBackground(rowBackgroundValues.get(key));
+            record.setRowForeground(rowForegroundValues.get(key));
 
-            for (int i = 1, size = getColumnCount(); i < size; i++) {
-                GPropertyDraw readerProperty = tree.getProperty(record.getGroup(), i);
-                if(readerProperty != null) {
+            if(record instanceof GTreeObjectGridRecord) {
+                GTreeObjectGridRecord objectRecord = (GTreeObjectGridRecord)record;
 
-                    Object background = rBackground;
-                    if (background == null) {
-                        NativeHashMap<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(readerProperty);
-                        if (propBackgrounds != null) {
+                for (int i = 1, size = getColumnCount(); i < size; i++) {
+                    GPropertyDraw property = getProperty(objectRecord, i);
+                    if (property != null) {
+                        Object value = values.get(property).get(key);
+                        objectRecord.setValue(property, value);
+
+                        NativeHashMap<GGroupObjectValue, Object> loadingMap = loadings.get(property);
+                        boolean loading = loadingMap != null && loadingMap.get(key) != null;
+                        objectRecord.setLoading(property, loading);
+
+                        Object background = null;
+                        NativeHashMap<GGroupObjectValue, Object> propBackgrounds = cellBackgroundValues.get(property);
+                        if (propBackgrounds != null)
                             background = propBackgrounds.get(key);
-                        }
-                    }
+                        objectRecord.setBackground(property, background == null ? property.background : background);
 
-                    Object foreground = rForeground;
-                    if (foreground == null) {
-                        NativeHashMap<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(readerProperty);
-                        if (propForegrounds != null) {
+                        Object foreground = null;
+                        NativeHashMap<GGroupObjectValue, Object> propForegrounds = cellForegroundValues.get(property);
+                        if (propForegrounds != null)
                             foreground = propForegrounds.get(key);
-                        }
-                    }
+                        objectRecord.setForeground(property, foreground == null ? property.foreground : foreground);
 
-                    record.setBackground(readerProperty, background == null ? readerProperty.background : background);
-                    record.setForeground(readerProperty, foreground == null ? readerProperty.foreground : foreground);
-                    if (readerProperty.hasDynamicImage()) {
-                        NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(readerProperty);
-                        record.setImage(readerProperty, actionImages == null ? null : actionImages.get(key));
+                        if (property.hasDynamicImage()) {
+                            NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(property);
+                            objectRecord.setImage(property, actionImages == null ? null : actionImages.get(key));
+                        }
                     }
                 }
             }
         }
     }
 
-    public void expandNodeByRecord(GTreeGridRecord record) {
-        fireExpandNode(tree.getNodeByRecord(record));
-    }
+    private static boolean incrementalUpdate = true;
 
-    public void fireExpandNodeRecursive(boolean current) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-        if (node != null) {
-            saveVisualState();
-            addExpandedNodes(current ? node : tree.root);
-            form.expandGroupObjectRecursive(node.getGroup(), current);
+    public void fireExpandNodeRecursive(boolean current, boolean open) {
+        GTreeContainerTableNode node = getExpandSelectedNode();
+        if (node != null && (!current || node.isExpandable())) {
+            long requestIndex = form.expandGroupObjectRecursive(node.getGroup(), current, open);
+            expandNodeRecursive(current ? node : tree.root, open, requestIndex);
+
+            updateExpand();
         }
     }
 
-    private void addExpandedNodes(GTreeTableNode node) {
-        expandedNodes.add(node);
-        for(GTreeTableNode child : node.getChildren()) {
-            addExpandedNodes(child);
-        }
-    }
-
-    public void fireExpandNode(GTreeTableNode node) {
-        if (node != null) {
-            saveVisualState();
-            expandedNodes.add(node);
-            form.expandGroupObject(node.getGroup(), node.getKey());
-        }
-    }
-
-    public void collapseNodeByRecord(GTreeGridRecord record) {
-        fireCollapseNode(tree.getNodeByRecord(record));
-    }
-
-    public void fireCollapseNodeRecursive(boolean current) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-        if (node != null) {
-            saveVisualState();
-            removeExpandedNodes(current ? node : tree.root);
-            form.collapseGroupObjectRecursive(node.getGroup(), current);
-        }
-    }
-
-    private void removeExpandedNodes(GTreeTableNode node) {
-        expandedNodes.remove(node);
-        for(GTreeTableNode child : node.getChildren()) {
-            removeExpandedNodes(child);
-        }
-    }
-
-    public boolean isCurrentPathExpanded() {
-        GTreeTableNode node;
-        GTreeGridRecord selectedRecord = getSelectedRowValue();
-        return selectedRecord != null && (node = tree.getNodeByRecord(selectedRecord)) != null && node.isOpen();
-    }
-
-    private void fireCollapseNode(GTreeTableNode node) {
-        if (node != null) {
-            saveVisualState();
-            expandedNodes.remove(node);
-            form.collapseGroupObject(node.getGroup(), node.getKey());
-        }
-    }
-
-    public void saveVisualState() {
-        expandedNodes = new HashSet<>();
-        expandedNodes.addAll(getExpandedChildren(tree.root));
-    }
-
-    private List<GTreeTableNode> getExpandedChildren(GTreeTableNode node) {
-        List<GTreeTableNode> exChildren = new ArrayList<>();
-        for (GTreeTableNode child : node.getChildren()) {
-            if (child.isOpen()) {
-                exChildren.add(child);
-                exChildren.addAll(getExpandedChildren(child));
-            }
-        }
-        return exChildren;
-    }
-
-    public void restoreVisualState() {
-        for (GTreeTableNode node : tree.root.getChildren()) {
-            expandNode(node);
-        }
-    }
-
-    private void expandNode(GTreeTableNode node) {
-        if (expandedNodes != null && expandedNodes.contains(node) && !tree.hasOnlyExpandingNodeAsChild(node)) {
-            node.setOpen(true);
-            for (GTreeTableNode child : node.getChildren()) {
-                expandNode(child);
-            }
+    public void expandNodeRecursive(GTreeContainerTableNode node, boolean open, long requestIndex) {
+        if(open) {
+            for(GTreeChildTableNode child : node.getChildren())
+                if(child instanceof GTreeObjectTableNode)
+                    expandNodeRecursive((GTreeObjectTableNode)child, true, requestIndex);
+            if(node.isExpandable() && !node.hasExpandableChildren())
+                expandNode(node, true, requestIndex); // because it is expandable
         } else {
-            node.setOpen(false);
+            if(node == tree.root) { // in that case we should collapse all root elements
+                for (GTreeChildTableNode child : node.getChildren())
+                    if (child instanceof GTreeObjectTableNode)
+                        expandNode((GTreeObjectTableNode) child, false, requestIndex);
+            } else
+                expandNode(node, false, requestIndex);
+        }
+    }
+    public void expandNode(GTreeContainerTableNode node, boolean open, long requestIndex) {
+        node.setPendingExpanding(open, requestIndex);
+
+        Pair<Integer, Integer> indexRange = null; GTreeObjectGridRecord record = null; int startFrom = 0, shift = 0;
+        if(incrementalUpdate) {
+            // finding row index and next sibling index
+            indexRange = tree.incGetIndexRange(node);
+
+            // changing expand column
+            record = incUpdateExpandColumn(indexRange, open);
+        }
+
+        if(open) { // adding virtual "expandable" node
+            assert !node.hasExpandableChildren();
+
+            int addCount = node.getExpandableChildren();
+            GTreeExpandingTableNode[] expandingNodes = new GTreeExpandingTableNode[addCount];
+            for(int i=0;i<addCount;i++) {
+                GTreeExpandingTableNode expandingNode = new GTreeExpandingTableNode(i);
+                expandingNodes[i] = expandingNode;
+                node.addNode(i, expandingNode);
+            }
+            if(incrementalUpdate) { // adding
+                assert indexRange.first.equals(indexRange.second); // since this node should have no children
+                int index = indexRange.first;
+
+                // adding rows
+                for(int i=0;i<addCount;i++) {
+                    GTreeExpandingTableNode expandingNode = expandingNodes[i];
+                    GTreeColumnValue treeValue = tree.createTreeColumnValue(expandingNode, node, record);
+                    int addIndex = index + i;
+                    GTreeExpandingGridRecord treeRecord = new GTreeExpandingGridRecord(addIndex, node, treeValue, expandingNode);
+                    rows.add(addIndex, treeRecord);
+                    tableBuilder.incBuildRow(tableData.getSection(), addIndex, treeRecord);
+                }
+
+                // shifting rows (here it's better to do to avoid dom reads)
+                startFrom = index + addCount; shift = addCount;
+            }
+        } else { // removing all children nodes
+            if(incrementalUpdate) {
+                // removing all rows in that tange
+                tableBuilder.incDeleteRows(tableData.getSection(), indexRange.first, indexRange.second);
+                rows.removeRange(indexRange.first, indexRange.second);
+
+                // shifting rows (here it's better to do to avoid dom reads)
+                startFrom = indexRange.first; shift = indexRange.first - indexRange.second;
+            }
+
+            tree.removeChildrenFromGroupNodes(node);
+            node.setChildren(new ArrayList<>());
+        }
+
+        if(incrementalUpdate)
+            incUpdateRowIndices(startFrom, shift);
+    }
+
+    private GTreeObjectGridRecord incUpdateExpandColumn(Pair<Integer, Integer> indexRange, boolean open) {
+        assert incrementalUpdate;
+
+        int index = indexRange.first - 1;
+        GTreeObjectGridRecord treeObjectRecord = (GTreeObjectGridRecord) getRowValue(index);
+        treeObjectRecord.setTreeValue(treeObjectRecord.getTreeValue().override(GTreeColumnValueType.get(open)));
+        tableBuilder.incUpdateRow(tableData.getSection(), index, new int[]{0}, treeObjectRecord);
+        return treeObjectRecord;
+    }
+    private void incUpdateRowIndices(int startFrom, int shift) {
+        assert incrementalUpdate;
+
+        for(int i=startFrom,size=rows.size();i<size;i++) {
+            GTreeGridRecord row = rows.get(i);
+            assert row.getRowIndex() + shift == i;
+            row.rowIndex = i;
         }
     }
 
-    public GGroupObjectValue getSelectedKey() {
-        GTreeGridRecord selectedRecord = getSelectedRowValue();
-        return selectedRecord == null ? GGroupObjectValue.EMPTY : selectedRecord.getKey();
+    private GTreeObjectTableNode getExpandSelectedNode() {
+        return tree.getExpandNodeByRecord(getSelectedRowValue());
+    }
+    public boolean isCurrentPathExpanded() {
+        GTreeObjectTableNode node;
+        return (node = getExpandSelectedNode()) != null && node.isExpandable() && node.hasExpandableChildren();
     }
 
     public GGroupObject getGroupObject() {
@@ -833,7 +887,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns(GGroupObject selectedGroupObject) {
-        List<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
+        ArrayList<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
         if (properties != null) {
             return properties.stream().map(property ->
                     getSelectedColumn(property, GGroupObjectValue.EMPTY)
@@ -845,7 +899,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     @Override
     public GPropertyDraw getProperty(Cell cell) {
         GTreeGridRecord rowValue = getTreeGridRow(cell);
-        return rowValue == null ? null : tree.getProperty(rowValue.getGroup(), cell.getColumnIndex());
+        return rowValue == null ? null : getProperty(rowValue, cell.getColumnIndex());
+    }
+
+    public GPropertyDraw getProperty(GTreeGridRecord rowValue, int columnIndex) {
+        return tree.getProperty(rowValue.getGroup(), columnIndex);
     }
 
     @Override
@@ -860,8 +918,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     public boolean isReadOnly(Cell cell) {
-        GTreeGridRecord record = getTreeGridRow(cell);
-        return record == null || tree.isReadOnly(record.getGroup(), cell.getColumnIndex(), record.getKey());
+        GPropertyDraw property = getProperty(cell);
+        if (property != null && !property.isReadOnly()) {
+            NativeHashMap<GGroupObjectValue, Object> propReadOnly = readOnly.get(property);
+            return propReadOnly != null && propReadOnly.get(getRowKey(cell)) != null;
+        }
+        return true;
     }
 
     @Override
@@ -876,40 +938,30 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     public void setValueAt(Cell cell, Object value) {
-        GTreeGridRecord rowRecord = getTreeGridRow(cell);
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
-        setValueAt(property, rowRecord, value);
+        getTreeGridRow(cell).setValue(property, value);
+
+        values.get(property).put(getRowKey(cell), value);
     }
 
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
         return setLoadingValueAt(property, treeGroup.filterRowKeys(property.groupObject, fullCurrentKey), tree.getPropertyIndex(property), GGroupObjectValue.EMPTY, value);
     }
 
-    private void setValueAt(GPropertyDraw property, GTreeGridRecord rowRecord, Object value) {
-        rowRecord.setValue(property, value);
-
-        tree.values.get(property).put(rowRecord.getKey(), value);
-    }
-
     @Override
     public void setLoadingAt(Cell cell) {
-        GTreeGridRecord rowRecord = getTreeGridRow(cell);
         GPropertyDraw property = getProperty(cell);
         // assert property is not null since we want get here if property is null
 
-        setLoadingAt(property, rowRecord);
-    }
-
-    private void setLoadingAt(GPropertyDraw property, GTreeGridRecord rowRecord) {
-        rowRecord.setLoading(property, true);
-        NativeHashMap<GGroupObjectValue, Object> loadingMap = tree.loadings.get(property);
+        getTreeGridRow(cell).setLoading(property, true);
+        NativeHashMap<GGroupObjectValue, Object> loadingMap = loadings.get(property);
         if(loadingMap == null) {
             loadingMap = new NativeHashMap<>();
-            tree.loadings.put(property, loadingMap);
+            loadings.put(property, loadingMap);
         }
-        loadingMap.put(rowRecord.getKey(), true);
+        loadingMap.put(getRowKey(cell), true);
     }
 
     public boolean changeOrders(GGroupObject groupObject, LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
@@ -917,38 +969,54 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public boolean keyboardNodeChangeState(boolean open) {
-        GTreeTableNode node = tree.getNodeByRecord(getSelectedRowValue());
-        if (node == null || !node.isExpandable()) {
+        return fireExpandSelectedNode(open);
+    }
+
+    public boolean fireExpandSelectedNode(Boolean open) {
+        return fireExpandNode(getExpandSelectedNode(), open);
+    }
+
+    // open = null - toggle
+    public boolean fireExpandNode(GTreeObjectTableNode node, Boolean open) {
+        if(node == null || !node.isExpandable())
             return false;
-        }
-        if (open) {
-            if (!node.isOpen()) {
-                treeSelectionHandler.nodeTryingToExpand = node;
-                fireExpandNode(node);
-                return true;
-            }
-        } else if (node.isOpen()) {
-            fireCollapseNode(node);
+
+        boolean nodeIsOpen = node.hasExpandableChildren();
+        if (open == null || !open.equals(nodeIsOpen)) {
+            open = !nodeIsOpen;
+            long requestIndex = form.expandGroupObject(node.getGroup(), node.getKey(), open);
+            expandNode(node, open, requestIndex);
+//                treeSelectionHandler.nodeTryingToExpand = node;
+
+            updateExpand();
+
             return true;
         }
         return false;
     }
 
+    public void updateExpand() {
+        if (!incrementalUpdate) {
+            dataUpdated = true;
+            updateData();
+        }
+    }
+
     public class TreeTableSelectionHandler extends GridPropertyTableSelectionHandler<GTreeGridRecord> {
-        public GTreeTableNode nodeTryingToExpand = null;
+//        public GTreeTableNode nodeTryingToExpand = null;
 
         public TreeTableSelectionHandler(DataGrid<GTreeGridRecord> table) {
             super(table);
         }
 
-        public void dataUpdated() {
-            if (nodeTryingToExpand != null) {
-                if (!nodeTryingToExpand.isOpen()) {
-                    nextColumn(true);
-                }
-                nodeTryingToExpand = null;
-            }
-        }
+//        public void dataUpdated() {
+//            if (nodeTryingToExpand != null) {
+//                if (!nodeTryingToExpand.isOpen()) {
+//                    nextColumn(true);
+//                }
+//                nodeTryingToExpand = null;
+//            }
+//        }
 
         @Override
         public boolean handleKeyEvent(Event event) {

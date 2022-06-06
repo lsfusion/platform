@@ -13,7 +13,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class CellRenderer<T> {
 
-    protected static final String ICON_LOADING = "loading.gif";
+    public static final String ICON_LOADING = "loading.gif";
 
     protected final GPropertyDraw property;
 
@@ -154,12 +154,18 @@ public abstract class CellRenderer<T> {
         public boolean loading;
         public GColorTheme colorTheme; // for action and color cell renderer
 
+        public String foreground;
+        public String background;
+
         public boolean rerender;
 
         public ToolbarState toolbar;
     }
     private boolean equalsDynamicState(RenderedState state, Object value, boolean isLoading, GColorTheme colorTheme) {
         return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading && state.colorTheme == colorTheme && !state.rerender;
+    }
+    private boolean equalsColorState(RenderedState state, String background, String foreground) {
+        return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
     }
 
     private static final String RENDERED = "rendered";
@@ -185,10 +191,6 @@ public abstract class CellRenderer<T> {
         Object value = updateContext.getValue();
         boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
 
-        // already themed colors expected
-        String background = getBackground(updateContext);
-        AbstractDataGridBuilder.updateColors(element, background, updateContext.getForeground());
-
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
         boolean isNew = false;
         if(renderedState == null) {
@@ -197,6 +199,17 @@ public abstract class CellRenderer<T> {
 
             isNew = true;
         }
+
+        // already themed colors expected
+        String background = getBackground(updateContext);
+        String foreground = updateContext.getForeground();
+        if(isNew || !equalsColorState(renderedState, background, foreground)) {
+            renderedState.background = background;
+            renderedState.foreground = foreground;
+
+            AbstractDataGridBuilder.updateColors(element, background, foreground);
+        }
+
         boolean cleared = false;
         if(isNew || !equalsDynamicState(renderedState, value, loading, MainFrame.colorTheme)) {
             // there might be stack overflow, if this is done after renderDynamicContent, and this is a custom cell render, which calls changeProperty in its update method

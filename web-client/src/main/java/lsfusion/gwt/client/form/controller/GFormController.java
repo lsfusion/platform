@@ -644,7 +644,7 @@ public class GFormController implements EditManager {
 
         applyLoadingFilterAsyncs(requestIndex, fc);
 
-        applyKeyChanges(fc);
+        applyKeyChanges(fc, requestIndex);
 
         applyPropertyChanges(fc);
 
@@ -659,9 +659,9 @@ public class GFormController implements EditManager {
         formLayout.update(requestIndex);
     }
 
-    public void applyKeyChanges(GFormChanges fc) {
+    public void applyKeyChanges(GFormChanges fc, int requestIndex) {
         fc.gridObjects.foreachEntry((key, value) ->
-            getGroupObjectController(key).updateKeys(key, value, fc));
+            getGroupObjectController(key).updateKeys(key, value, fc, requestIndex));
 
         fc.objects.foreachEntry((key, value) ->
             getGroupObjectController(key).updateCurrentKey(value));
@@ -1174,11 +1174,11 @@ public class GFormController implements EditManager {
 //        property.groupObject isList isEmpty() ??
 
         for (GGridController group : controllers.values()) {
-            fullCurrentKey.putAll(group.getCurrentKey());
+            fullCurrentKey.putAll(group.getSelectedKey());
         }
 
         for (GTreeGroupController tree : treeControllers.values()) {
-            GGroupObjectValue currentPath = tree.getCurrentKey();
+            GGroupObjectValue currentPath = tree.getSelectedKey();
             if (currentPath != null) {
                 fullCurrentKey.putAll(currentPath);
             }
@@ -1264,7 +1264,7 @@ public class GFormController implements EditManager {
         } else {
             DeferredRunner.get().commitDelayedGroupObjectChange(object.groupObject);
 
-            final GGroupObjectValue value = controllers.get(object.groupObject).getCurrentKey();
+            final GGroupObjectValue value = controllers.get(object.groupObject).getSelectedKey();
             if(value.isEmpty())
                 return;
             asyncAddRemove(editContext, execContext, editEvent, actionSID, object, add, pushAsyncResult, value, position, externalChange, onExec);
@@ -1288,24 +1288,14 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList));
     }
 
-    public void expandGroupObjectRecursive(GGroupObject group, boolean current) {
+    public long expandGroupObjectRecursive(GGroupObject group, boolean current, boolean open) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new ExpandGroupObjectRecursive(group.ID, current));
+        return asyncResponseDispatch(open ? new ExpandGroupObjectRecursive(group.ID, current) : new CollapseGroupObjectRecursive(group.ID, current));
     }
 
-    public void expandGroupObject(GGroupObject group, GGroupObjectValue value) {
+    public long expandGroupObject(GGroupObject group, GGroupObjectValue value, boolean open) {
         DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new ExpandGroupObject(group.ID, value));
-    }
-
-    public void collapseGroupObjectRecursive(GGroupObject group, boolean current) {
-        DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new CollapseGroupObjectRecursive(group.ID, current));
-    }
-
-    public void collapseGroupObject(GGroupObject group, GGroupObjectValue value) {
-        DeferredRunner.get().commitDelayedGroupObjectChange(group);
-        syncResponseDispatch(new CollapseGroupObject(group.ID, value));
+        return asyncResponseDispatch(open ? new ExpandGroupObject(group.ID, value) : new CollapseGroupObject(group.ID, value));
     }
 
     public void setTabActive(GContainer tabbedPane, GComponent visibleComponent) {

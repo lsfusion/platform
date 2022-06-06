@@ -283,6 +283,6 @@ public abstract class GAbstractTableController extends GPropertyController imple
         }
     }
 
-    public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc);
+    public abstract void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex);
     public abstract void updateCurrentKey(GGroupObjectValue currentKey);
 }

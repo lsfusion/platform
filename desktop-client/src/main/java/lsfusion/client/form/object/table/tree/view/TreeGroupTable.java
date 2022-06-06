@@ -382,7 +382,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         }
     }
 
-    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents, Map<ClientGroupObjectValue, Boolean> expandables) {
+    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> parents, Map<ClientGroupObjectValue, Integer> expandables) {
         model.updateKeys(group, keys, parents, expandables);
     }
 

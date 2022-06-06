@@ -66,8 +66,8 @@ public class GTreeGroupController extends GAbstractTableController {
         return treeGroup.font;
     }
 
-    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc) {
-        tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group));
+    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
+        tree.setKeys(group, fc.gridObjects.get(group), fc.parentObjects.get(group), fc.expandables.get(group), requestIndex);
     }
 
     @Override
@@ -102,8 +102,6 @@ public class GTreeGroupController extends GAbstractTableController {
 
     public void update() {
         tree.update();
-
-        tree.restoreVisualState();
 
         boolean isTreeVisible = tree.getColumnCount() > 1;
 
@@ -186,7 +184,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public GGroupObjectValue getCurrentKey() {
+    public GGroupObjectValue getSelectedKey() {
         return tree.getSelectedKey();
     }
 
@@ -195,6 +193,7 @@ public class GTreeGroupController extends GAbstractTableController {
         return tree.changeOrders(groupObject, value, alreadySet);
     }
 
+    // used in filters and user preferences
     @Override
     public GGroupObject getSelectedGroupObject() {
         GTreeGridRecord record = tree.getSelectedRowValue();
@@ -266,10 +265,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     public void fireExpandNodeRecursive(boolean current) {
-        tree.fireExpandNodeRecursive(current);
+        tree.fireExpandNodeRecursive(current, true);
     }
 
     public void fireCollapseNodeRecursive(boolean current) {
-        tree.fireCollapseNodeRecursive(current);
+        tree.fireExpandNodeRecursive(current, false);
     }
 }

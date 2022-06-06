@@ -281,10 +281,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
 
-            if (logger.isTraceEnabled()) {
-                GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                logger.trace(String.format("expandGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
-            }
+            if (logger.isTraceEnabled())
+                logger.trace(String.format("expandGroupObjectRecursive: [ID: %1$d]", group.getID()));
+
             group.expandCollapseAll(form, current, true);
         });
     }
