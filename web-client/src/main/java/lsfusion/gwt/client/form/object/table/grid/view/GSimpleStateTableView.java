@@ -313,6 +313,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
         Column column = columnMap.get(property);
+        if(column == null)
+            return false;
         return isReadOnly(column.property, object, column.columnKey);
     }
 
