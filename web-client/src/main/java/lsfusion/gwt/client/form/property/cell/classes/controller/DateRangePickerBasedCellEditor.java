@@ -63,16 +63,18 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         return $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').container.get(0);
     }-*/;
 
-    protected native JsDate getPickerStartDate(boolean rawDate)/*-{
+    protected native JsDate getPickerStartDate()/*-{
         var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').startDate;
-        return pickerDate.isValid() ? rawDate ? pickerDate : pickerDate.toDate() : null; // toDate because it is "Moment js" object
+        return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
-    protected native JsDate getPickerEndDate(boolean rawDate)/*-{
+    protected native JsDate getPickerEndDate()/*-{
         var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').endDate;
         // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
-        pickerDate = pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)(true) : pickerDate;
-        return pickerDate.isValid() ? rawDate ? pickerDate : pickerDate.toDate() : null; // toDate because it is "Moment js" object
+        pickerDate = pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate;
+        //instanceof Date will fail if objects are passed across frame boundaries
+        //https://stackoverflow.com/questions/643782/how-to-check-whether-an-object-is-a-date
+        return Object.prototype.toString.call(pickerDate) === '[object Date]' ? pickerDate : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
@@ -177,15 +179,9 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
         //update input element
         $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup change.daterangepicker', function (e) {
-            if (e.target.tagName !== 'SELECT' || e.type !== 'mouseup') {
-                if (singleDatePicker) {
-                    editElement.val(thisObj.@DateRangePickerBasedCellEditor::getPickerStartDate(*)(true).format(format));
-                } else {
-                    var startDate = thisObj.@DateRangePickerBasedCellEditor::getPickerStartDate(*)(true);
-                    var endDate = thisObj.@DateRangePickerBasedCellEditor::getPickerEndDate(*)(true);
-                    editElement.val(startDate.format(format) + (endDate != null ? ' - ' + endDate.format(format) : ''));
-                }
-            }
+            if (e.target.tagName !== 'SELECT' || e.type !== 'mouseup')
+                thisObj.@TextBasedCellEditor::setInputValue(*)(thisObj.@TextBasedCellEditor::getInputElement(*)(parent),
+                    thisObj.@TextBasedCellEditor::tryFormatInputText(*)(thisObj.@DateRangePickerBasedCellEditor::getInputValue()()));
         });
 
         editElement.on('cancel.daterangepicker', function () {

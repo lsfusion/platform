@@ -52,7 +52,7 @@ public class IntervalCellEditor  extends DateRangePickerBasedCellEditor {
 
     @Override
     protected Object getInputValue() {
-        return type.fromDate(GwtClientUtils.fromJsDate(getPickerStartDate(false)), GwtClientUtils.fromJsDate(getPickerEndDate(false)));
+        return type.fromDate(GwtClientUtils.fromJsDate(getPickerStartDate()), GwtClientUtils.fromJsDate(getPickerEndDate()));
     }
 
     @Override
