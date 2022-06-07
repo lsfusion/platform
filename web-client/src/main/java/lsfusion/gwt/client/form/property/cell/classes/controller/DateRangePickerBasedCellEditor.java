@@ -53,6 +53,10 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected abstract Object getInputValue();
     protected abstract boolean isSinglePicker();
 
+    private void setInputValue(Element parent) {
+        setInputValue(getInputElement(parent), tryFormatInputText(getInputValue()));
+    }
+
     protected native void removePicker()/*-{
         $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').remove();
         //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
@@ -71,10 +75,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected native JsDate getPickerEndDate()/*-{
         var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').endDate;
         // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
-        pickerDate = pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate;
-        //instanceof Date will fail if objects are passed across frame boundaries
-        //https://stackoverflow.com/questions/643782/how-to-check-whether-an-object-is-a-date
-        return Object.prototype.toString.call(pickerDate) === '[object Date]' ? pickerDate : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
+        return pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
@@ -180,8 +181,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         //update input element
         $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup change.daterangepicker', function (e) {
             if (e.target.tagName !== 'SELECT' || e.type !== 'mouseup')
-                thisObj.@TextBasedCellEditor::setInputValue(*)(thisObj.@TextBasedCellEditor::getInputElement(*)(parent),
-                    thisObj.@TextBasedCellEditor::tryFormatInputText(*)(thisObj.@DateRangePickerBasedCellEditor::getInputValue()()));
+                thisObj.@DateRangePickerBasedCellEditor::setInputValue(Lcom/google/gwt/dom/client/Element;)(parent);
         });
 
         editElement.on('cancel.daterangepicker', function () {
