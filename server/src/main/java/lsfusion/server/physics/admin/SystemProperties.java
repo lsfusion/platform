@@ -1,5 +1,7 @@
 package lsfusion.server.physics.admin;
 
+import lsfusion.base.ResourceUtils;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,6 +24,7 @@ public class SystemProperties {
 
         lightStart = lightStartValue == null ? false : "true".equals(lightStartValue.toLowerCase());
         inDevMode  = devModePropertyValue == null ? isPluginEnabled : "true".equals(devModePropertyValue.toLowerCase());
+        ResourceUtils.inDevMode = inDevMode;
         inTestMode = testModePropertyValue == null ? getAssertsStatus() : "true".equals(testModePropertyValue.toLowerCase());
         projectLSFDir = inDevMode ? getProjectLSFDir() : null;
     }

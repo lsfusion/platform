@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.changed;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
@@ -196,8 +197,9 @@ public class FormChanges {
                         prefixes[k] = parts[k * 2];
                         if (k * 2 + 1 < parts.length) {
                             String name = parts[k * 2 + 1];
-                            names[k] = name;
-                            files[k] = ResourceUtils.findResourceAsFileData(name, true, false, new Result<>(), null);
+                            Result<String> fullPath = new Result<>();
+                            files[k] = ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null);
+                            names[k] = fullPath.result;
                         }
                     }
 

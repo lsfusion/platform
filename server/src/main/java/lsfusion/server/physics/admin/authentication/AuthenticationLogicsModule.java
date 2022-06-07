@@ -112,7 +112,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LA<?> syncUsers;
 
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(AuthenticationLogicsModule.class.getResourceAsStream("/system/Authentication.lsf"), "/system/Authentication.lsf", baseLM, BL);
+        super(baseLM, BL, "/system/Authentication.lsf");
     }
 
     @Override

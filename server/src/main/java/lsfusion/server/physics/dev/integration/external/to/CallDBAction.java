@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -60,16 +61,8 @@ public abstract class CallDBAction extends CallAction {
         String exec = (String) context.getKeyObject(this.exec);
         boolean isFile = exec.endsWith(".sql");
         exec = ScriptingLogicsModule.transformFormulaText(exec, getParamName("$1"));
-        if(isFile) {
-            try {
-                RawFileData resourceFile = ResourceUtils.findResourceAsFileData(exec, false, true, null, null);
-                if(resourceFile != null) {
-                    exec = IOUtils.readStreamToString(resourceFile.getInputStream());
-                }
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
-        }
+        if(isFile)
+            exec = ResourceUtils.findResourceAsString(exec, false, true, null, null);
 
         List<Object> results = readJDBC(context.getKeys(), replacedParams, exec, context.getDbManager());
 

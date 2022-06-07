@@ -239,7 +239,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     private final BusinessLogics BL;
 
     public BaseLogicsModule(BusinessLogics BL) throws IOException {
-        super(BaseLogicsModule.class.getResourceAsStream("/system/System.lsf"), "/system/System.lsf", null, BL);
+        super(null, BL, "/system/System.lsf");
         setBaseLogicsModule(this);
         this.BL = BL;
         namedProperties = NFFact.simpleMap(namedProperties);

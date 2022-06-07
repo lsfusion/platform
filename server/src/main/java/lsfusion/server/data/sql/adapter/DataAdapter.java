@@ -174,7 +174,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
     protected void executeEnsure(List<String> functions) {
         functions.forEach(command -> {
             try {
-                executeEnsureWithException(IOUtils.readStreamToString(ResourceUtils.getResourceAsStream(command)));
+                executeEnsureWithException(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream(command)));
             } catch (IOException | SQLException e) {
                 String name = new File(command).getName();
                 if (name.endsWith("_opt.sql")) {
