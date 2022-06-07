@@ -1,6 +1,7 @@
 .daterangepicker {
     border: 1px solid var(--dialog-outer-border-color);
     font-family: inherit;
+    background: var(--background-color);
 }
 
 .daterangepicker:after {
@@ -23,8 +24,6 @@
     border: 3px solid transparent;
     font-weight: bold;
     border-radius: unset;
-    border-right: 1px solid var(--grid-separator-border-color);
-    border-bottom: 1px solid var(--grid-separator-border-color);
     white-space: unset;
 }
 
@@ -58,8 +57,6 @@
     color: var(--text-color);
     background: var(--selection-color);
     border-radius: unset;
-    border-right: 1px solid var(--grid-separator-border-color);
-    border-bottom: 1px solid var(--grid-separator-border-color);
 }
 
 .daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
@@ -106,7 +103,7 @@
 
 .daterangepicker select.hourselect, .daterangepicker select.minuteselect, .daterangepicker select.secondselect, .daterangepicker select.ampmselect {
     background: inherit;
-    border: none;
+    border: 1px solid var(--component-border-color);
 }
 
 .daterangepicker .calendar-time {
@@ -155,12 +152,16 @@
     color: var(--date-picker-selection-color);
 }
 
+.daterangepicker.drop-up:after {
+    top: initial;
+    bottom: -6px;
+    border-top: 6px solid var(--background-color);
+}
+
 /*  Larger Screen Styling */
 @media (min-width: 564px) {
     .daterangepicker {
-        border: 1px solid var(--dialog-outer-border-color);
         border-radius: var(--panel-border-radius);
-        background: var(--background-color);
     }
 
     .daterangepicker .drp-calendar.left .calendar-table {
