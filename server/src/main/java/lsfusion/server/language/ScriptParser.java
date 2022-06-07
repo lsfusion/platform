@@ -77,7 +77,7 @@ public class ScriptParser {
                 //lineNumber is 1-based
                 currentExpansionLine += lineNumberAfter - 1;
 
-                boolean isTopParser = parsers.size() == 1; // for meta decl parsing it doesn't matter
+                boolean isTopParser = parsers.size() == 2; // for meta decl parsing it doesn't matter; 2 because we already pushed lastParser
                 boolean needOffset = parser.inMainParseState(); // in theory we might also need offset in class step
 
                 if (!enabledMeta && isTopParser) {
