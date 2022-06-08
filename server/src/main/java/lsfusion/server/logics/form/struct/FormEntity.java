@@ -38,6 +38,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
@@ -1408,9 +1409,16 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     @IdentityLazy
-    public ImSet<ComponentView> getPropertyComponents() {
-        MExclSet<ComponentView> mContainers = SetFact.mExclSet();
+    public ImSet<ContainerView> getPropertyContainers() {
+        MExclSet<ContainerView> mContainers = SetFact.mExclSet();
         getRichDesign().mainContainer.fillPropertyContainers(mContainers);
+        return mContainers.immutable();
+    }
+
+    @IdentityLazy
+    public ImSet<ComponentView> getBaseComponents() {
+        MExclSet<ComponentView> mContainers = SetFact.mExclSet();
+        getRichDesign().mainContainer.fillBaseComponents(mContainers);
         return mContainers.immutable();
     }
 

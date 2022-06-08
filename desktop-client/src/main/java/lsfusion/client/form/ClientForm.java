@@ -7,6 +7,7 @@ import lsfusion.base.context.ContextIdentityObject;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.controller.remote.serialization.ClientCustomSerializable;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
+import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
@@ -258,6 +259,10 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
 
     public ClientContainer findContainerByID(int id) {
         return mainContainer.findContainerByID(id);
+    }
+
+    public ClientComponent findComponentByID(int id) {
+        return mainContainer.findComponentByID(id);
     }
 
     public ClientContainer findParentContainerBySID(String sID) {

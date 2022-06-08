@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -350,7 +351,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     public void setVisible(boolean visible) {
         for(GFilterConditionView conditionView : conditionViews.values())
-            conditionView.setVisible(visible);
+            GwtClientUtils.setUpdateVisible(conditionView, visible);
     }
     
     public boolean hasConditions() {

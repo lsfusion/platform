@@ -1,11 +1,11 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.server.logics.form.interactive.design.BaseExtraComponentView;
+import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
 
-public abstract class GridPropertyView extends BaseExtraComponentView {
+public abstract class GridPropertyView extends BaseComponentView {
 
     public final static int DEFAULT_HEADER_HEIGHT = 34;
 

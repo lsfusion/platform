@@ -1,10 +1,7 @@
 package lsfusion.gwt.client;
 
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GFontWidthString;
-import lsfusion.gwt.client.form.design.GWidthStringProcessor;
+import lsfusion.gwt.client.form.design.*;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GObject;
@@ -109,6 +106,10 @@ public class GForm implements Serializable, GWidthStringProcessor {
     
     public GContainer findContainerByID(int id) {
         return mainContainer.findContainerByID(id);
+    }
+
+    public GComponent findComponentByID(int id) {
+        return mainContainer.findComponentByID(id);
     }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getDefaultOrders(GGroupObject group) {

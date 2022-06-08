@@ -180,6 +180,13 @@ public class ClientFormLayout extends PanelWidget {
         add(component, view, focusReceiver);
     }
 
+    public void setBaseComponentVisible(ClientComponent component, boolean visible) {
+        Widget widget = baseComponentViews.get(component);
+        if(widget != null) {
+            widget.setVisible(visible);
+        }
+    }
+
     // добавляем визуальный компонент
     public boolean add(ClientComponent key, Widget view) {
         return add(key, view, view.getComponent());

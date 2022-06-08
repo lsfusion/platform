@@ -119,6 +119,19 @@ public class GContainer extends GComponent {
         return null;
     }
 
+    public GComponent findComponentByID(int id) {
+        if (id == this.ID) return this;
+        for (GComponent comp : children) {
+            if (comp instanceof GContainer) {
+                GComponent result = ((GContainer) comp).findComponentByID(id);
+                if (result != null) return result;
+            } else {
+                if (id == comp.ID) return comp;
+            }
+        }
+        return null;
+    }
+
     public String getContainerType() {
         return "horizontal=" + horizontal + ", tabbed=" + tabbed;
     }

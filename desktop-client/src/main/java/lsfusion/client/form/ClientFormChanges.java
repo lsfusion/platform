@@ -163,6 +163,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).imageReader;
             case PropertyReadType.CUSTOM:
                 return clientForm.findContainerByID(inStream.readInt()).customPropertyDesignReader;
+            case PropertyReadType.COMPONENT_SHOWIF:
+                return clientForm.findComponentByID(inStream.readInt()).showIfReader;
             default:
                 throw new IOException();
         }

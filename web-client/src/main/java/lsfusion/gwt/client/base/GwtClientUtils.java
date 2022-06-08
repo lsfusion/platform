@@ -19,6 +19,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.lang.Math.max;
+import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class GwtClientUtils {
@@ -1139,4 +1140,24 @@ public class GwtClientUtils {
             run.@Consumer::accept(*)(event);
         }
     }-*/;
+
+    public static void setBaseComponentVisible(Widget widget, boolean visible) {
+        widget.getElement().setAttribute("baseComponentVisible", String.valueOf(visible));
+        updateVisibility(widget);
+    }
+
+    public static void setUpdateVisible(Widget widget, boolean visible) {
+        widget.getElement().setAttribute("updateVisible", String.valueOf(visible));
+        updateVisibility(widget);
+    }
+
+    private static void updateVisibility(Widget widget) {
+        String baseVisible = widget.getElement().getAttribute("baseComponentVisible");
+        String updateVisible = widget.getElement().getAttribute("updateVisible");
+        widget.setVisible(isVisible(baseVisible) && isVisible(updateVisible));
+    }
+
+    private static boolean isVisible(String value) {
+        return isRedundantString(value) || Boolean.parseBoolean(value);
+    }
 }

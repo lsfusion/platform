@@ -92,7 +92,8 @@ import lsfusion.server.logics.form.interactive.changed.*;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
-import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
@@ -156,7 +157,15 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 
 public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
-    private final Function<ComponentView, PropertyObjectInstance<?>> GET_COMPONENT_SHOWIF =
+    private final Function<ContainerView, PropertyObjectInstance<?>> GET_CONTAINER_SHOWIF =
+            new Function<ContainerView, PropertyObjectInstance<?>>() {
+                @Override
+                public PropertyObjectInstance<?> apply(ContainerView key) {
+                    return instanceFactory.getInstance(key.showIf);
+                }
+            };
+
+    private final Function<ComponentView, PropertyObjectInstance<?>> GET_BASE_COMPONENT_SHOWIF =
             new Function<ComponentView, PropertyObjectInstance<?>>() {
                 @Override
                 public PropertyObjectInstance<?> apply(ComponentView key) {
@@ -186,6 +195,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();
     protected Set<PropertyDrawInstance> isStaticShown = new HashSet<>();
     protected Set<ComponentView> isComponentHidden = new HashSet<>();
+    protected Set<ComponentView> isBaseComponentHidden = new HashSet<>();
     private static <T> boolean addShownHidden(Set<T> isShownHidden, T property, boolean shownHidden) {
         if(shownHidden)
             return !isShownHidden.add(property);
@@ -2163,9 +2173,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @StackMessage("{message.getting.visible.properties}")
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
 
-        Set<PropertyDrawInstance> newShown = new HashSet<>();
+        updateContainersShowIfs(changedProps);
 
-        updateComponentsShowIfs(changedProps);
+        updateBaseComponentsShowIfs(result);
+
+        return updatePropertiesShowIfs(changedProps, result);
+    }
+
+    private Set<PropertyDrawInstance> updatePropertiesShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
+        Set<PropertyDrawInstance> newShown = new HashSet<>();
 
         MAddSet<ComponentView> hiddenButDefinitelyShownSet = SetFact.mAddSet(); // не ComponentDownSet для оптимизации
         MAddExclMap<PropertyReaderInstance, ComponentView> hiddenNotSureShown = MapFact.mAddExclMap();
@@ -2277,19 +2293,42 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return true;
     }
 
-    private void updateComponentsShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
-        ImSet<ComponentView> changed = entity.getPropertyComponents().<SQLException, SQLHandledException>filterFnEx(
+    private void updateContainersShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
+        ImSet<ContainerView> changed = entity.getPropertyContainers().<SQLException, SQLHandledException>filterFnEx(
                 key -> key.showIf != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.showIf), SetFact.EMPTY(), changedProps, false)));
 
         if(changed.isEmpty()) // optimization
             return;
 
-        MExclMap<ComponentView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> mChangedValues = MapFact.mExclMap();
-        queryPropertyObjectValues(changed, mChangedValues, SetFact.EMPTY(), GET_COMPONENT_SHOWIF);
-        ImMap<ComponentView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> changedValues = mChangedValues.immutable();
+        MExclMap<ContainerView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> mChangedValues = MapFact.mExclMap();
+        queryPropertyObjectValues(changed, mChangedValues, SetFact.EMPTY(), GET_CONTAINER_SHOWIF);
+        ImMap<ContainerView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> changedValues = mChangedValues.immutable();
 
         for (int i = 0, size = changedValues.size() ; i < size; i++)
             addShownHidden(isComponentHidden, changedValues.getKey(i), changedValues.getValue(i).getValue(0).getValue() == null);
+    }
+
+    private void updateBaseComponentsShowIfs(MFormChanges result) throws SQLException, SQLHandledException {
+
+        ImSet<ComponentView> changed = entity.getBaseComponents();
+
+        if(changed.isEmpty()) // optimization
+            return;
+
+        MExclMap<ComponentView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> mChangedValues = MapFact.mExclMap();
+        queryPropertyObjectValues(changed, mChangedValues, SetFact.EMPTY(), GET_BASE_COMPONENT_SHOWIF);
+        ImMap<ComponentView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> changedValues = mChangedValues.immutable();
+
+        for (int i = 0, size = changedValues.size() ; i < size; i++) {
+            ComponentView component = changedValues.getKey(i);
+            boolean hidden = changedValues.getValue(i).getValue(0).getValue() == null;
+            addShownHidden(isBaseComponentHidden, changedValues.getKey(i), hidden);
+
+            BaseComponentViewInstance componentInstance = instanceFactory.getInstance(component);
+            ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> values = MapFact.EMPTY();
+            values = values.addExcl(MapFact.EMPTY(), hidden ? new DataObject(true) : NullValue.instance);
+            result.properties.exclAdd(componentInstance.showIfReader, values);
+        }
     }
 
     private ImSet<PropertyDrawInstance> forcePropertyDrawUpdates = SetFact.EMPTY();
@@ -2361,14 +2400,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
         }
 
-        for (ComponentView component : entity.getPropertyComponents()) {
-            boolean hidden = isHidden(component);
+        for (ContainerView container : entity.getPropertyContainers()) {
+            boolean hidden = isHidden(container);
             boolean update = true;
 
             ImSet<GroupObjectInstance> gridGroups = SetFact.EMPTY();
 
-            ComponentViewInstance containerInstance = instanceFactory.getInstance(component);
-
+            ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
             fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
             fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
         }
