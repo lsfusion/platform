@@ -83,140 +83,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         var thisObj = this;
         var editElement = $(thisObj.@TextBasedPopupCellEditor::editBox);
         var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
-
-        var format = pattern.replaceAll("d", "D").replaceAll("y", "Y").replaceAll("a", "A"); // dateRangePicker format - date uses capital letters, time uses small letters, AM/PM uses capital letter
-
-        //Must be called before the picker is initialised, or its events will be triggered earlier
-        //override of the datepicker.keydown method. Copied from daterangepicker.js with some changes
-        $wnd.daterangepicker.prototype.keydown = function (e) {
-            //hide on esc and prevent propagation
-            if (e.keyCode === 27) {
-                e.preventDefault();
-                e.stopPropagation();
-                thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
-            }
-        }
-
-        //override of the calculateChosenLabel and updateCalendars methods. Copied from daterangepicker.js.
-        //Need for highlighting predefined ranges when shown only one datePicker not interval.
-        $wnd.daterangepicker.prototype.calculateChosenLabel = function () {
-            var customRange = true;
-            var i = 0;
-            for (var range in this.ranges) {
-                //added this if
-                if (singleDatePicker) {
-                    if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD')) {
-                        customRange = false;
-                        this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
-                        break;
-                    }
-                } else if (this.timePicker) {
-                    var format = this.timePickerSeconds ? "YYYY-MM-DD HH:mm:ss" : "YYYY-MM-DD HH:mm";
-                    //ignore times when comparing dates if time picker seconds is not enabled
-                    if (this.startDate.format(format) == this.ranges[range][0].format(format) && this.endDate.format(format) == this.ranges[range][1].format(format)) {
-                        customRange = false;
-                        this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
-                        break;
-                    }
-                } else {
-                    //ignore times when comparing dates if time picker is not enabled
-                    if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD') && this.endDate.format('YYYY-MM-DD') == this.ranges[range][1].format('YYYY-MM-DD')) {
-                        customRange = false;
-                        this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
-                        break;
-                    }
-                }
-                i++;
-            }
-            if (customRange) {
-                if (this.showCustomRangeLabel) {
-                    this.chosenLabel = this.container.find('.ranges li:last').addClass('active').attr('data-range-key');
-                } else {
-                    this.chosenLabel = null;
-                }
-                this.showCalendars();
-            }
-        }
-
-        $wnd.daterangepicker.prototype.updateCalendars = function() {
-            if (this.timePicker) {
-                var hour, minute, second;
-                if (this.endDate) {
-                    hour = parseInt(this.container.find('.left .hourselect').val(), 10);
-                    minute = parseInt(this.container.find('.left .minuteselect').val(), 10);
-                    if (isNaN(minute)) {
-                        minute = parseInt(this.container.find('.left .minuteselect option:last').val(), 10);
-                    }
-                    second = this.timePickerSeconds ? parseInt(this.container.find('.left .secondselect').val(), 10) : 0;
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.left .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                } else {
-                    hour = parseInt(this.container.find('.right .hourselect').val(), 10);
-                    minute = parseInt(this.container.find('.right .minuteselect').val(), 10);
-                    if (isNaN(minute)) {
-                        minute = parseInt(this.container.find('.right .minuteselect option:last').val(), 10);
-                    }
-                    second = this.timePickerSeconds ? parseInt(this.container.find('.right .secondselect').val(), 10) : 0;
-                    if (!this.timePicker24Hour) {
-                        var ampm = this.container.find('.right .ampmselect').val();
-                        if (ampm === 'PM' && hour < 12)
-                            hour += 12;
-                        if (ampm === 'AM' && hour === 12)
-                            hour = 0;
-                    }
-                }
-                this.leftCalendar.month.hour(hour).minute(minute).second(second);
-                this.rightCalendar.month.hour(hour).minute(minute).second(second);
-            }
-
-            this.renderCalendar('left');
-            this.renderCalendar('right');
-
-            //highlight any predefined range matching the current start and end dates
-            this.container.find('.ranges li').removeClass('active');
-
-            //added !singleDatePicker check
-            if (!singleDatePicker && this.endDate == null) return;
-
-            this.calculateChosenLabel();
-        }
-
-        //override of the show methods. Copied from daterangepicker.js.
-        //We need to trigger 'show.daterangepicker' before container shown for determinate size of popup
-        $wnd.daterangepicker.prototype.show = function(e) {
-            if (this.isShowing) return;
-
-            // Create a click proxy that is private to this instance of datepicker, for unbinding
-            this._outsideClickProxy = $.proxy(function(e) { this.outsideClick(e); }, this);
-
-            // Bind global datepicker mousedown for hiding and
-            $(document)
-                .on('mousedown.daterangepicker', this._outsideClickProxy)
-                // also support mobile devices
-                .on('touchend.daterangepicker', this._outsideClickProxy)
-                // also explicitly play nice with Bootstrap dropdowns, which stopPropagation when clicking them
-                .on('click.daterangepicker', '[data-toggle=dropdown]', this._outsideClickProxy)
-                // and also close when focus changes to outside the picker (eg. tabbing between controls)
-                .on('focusin.daterangepicker', this._outsideClickProxy);
-
-            // Reposition the picker if the window is resized while it's open
-            $(window).on('resize.daterangepicker', $.proxy(function(e) { this.move(e); }, this));
-
-            this.oldStartDate = this.startDate.clone();
-            this.oldEndDate = this.endDate.clone();
-            this.previousRightTime = this.endDate.clone();
-
-            this.updateView();
-            this.element.trigger('show.daterangepicker', this); //moved from after this.move();
-            this.container.show();
-            this.move();
-            this.isShowing = true;
-        }
+        applyDateRangePickerPatches(); //Must be called before the picker is initialised
 
         editElement.daterangepicker({
             locale: {
@@ -247,7 +114,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                     messages.@lsfusion.gwt.client.ClientMessages::monthDecember()()
                 ],
                 "firstDay": 1,
-                format: format // need to be able to enter date from keyboard
+                format: pattern.replaceAll("d", "D").replaceAll("y", "Y").replaceAll("a", "A") // dateRangePicker format - date uses capital letters, time uses small letters, AM/PM uses capital letter. need to be able to enter date from keyboard
             },
             startDate: startDate,
             endDate: endDate,
@@ -319,7 +186,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                     thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
                 else if ((e.keyCode === 9) || (e.keyCode === 13))
                     thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
-            }).on('click.pickerpopup', function (e) {
+            }).on('click.pickerpopup', function (e) { //daterangepicker for some reason returns focus to $wnd and not to the editelement and the daterangepicker does not hide even if we open another form
                 var container = $(".daterangepicker");
                 if (!container.is(e.target) && container.has(e.target).length === 0)
                     thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
@@ -329,5 +196,160 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         editElement.on('hide.daterangepicker', function () {
             $($wnd).off('keydown.pickerpopup').off('click.pickerpopup');
         });
+
+        //THESE ARE THE PATCHES OF DATERANGEPICKER. ALL CHANGES START WITH <<<<< AND END WITH >>>>>. ALL COMMENTS WILL BE IN UPPER CASE
+        function applyDateRangePickerPatches() {
+            //OVERRIDE OF THE datepicker.keydown METHOD. COPIED FROM daterangepicker.js WITH SOME CHANGES
+            $wnd.daterangepicker.prototype.keydown = function (e) {
+                //<<<<< REMOVE THIS IF TO PREVENT HIDE PICKER ON PRESS ENTER WITH INVALID INPUT
+                //hide on tab or enter
+                //if ((e.keyCode === 9) || (e.keyCode === 13)) {
+                //    this.hide();
+                //}
+                //>>>>>
+
+                //hide on esc and prevent propagation
+                if (e.keyCode === 27) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    //<<<<< CHANGED hide() TO cancel()
+                    //this.hide();
+                    thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
+                    //>>>>>
+                }
+            }
+
+            //OVERRIDE OF THE calculateChosenLabel AND updateCalendars METHODS. COPIED FROM daterangepicker.js.
+            //NEED FOR HIGHLIGHTING PREDEFINED RANGES WHEN SHOWN ONLY ONE DATEPICKER NOT INTERVAL.
+            $wnd.daterangepicker.prototype.calculateChosenLabel = function () {
+                var customRange = true;
+                var i = 0;
+                for (var range in this.ranges) {
+                    //<<<<<
+                    //ADDED THIS IF
+                    if (singleDatePicker) {
+                        if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD')) {
+                            customRange = false;
+                            this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
+                            break;
+                        }
+                    }
+                    //>>>>>
+                    else if (this.timePicker) {
+                        var format = this.timePickerSeconds ? "YYYY-MM-DD HH:mm:ss" : "YYYY-MM-DD HH:mm";
+                        //ignore times when comparing dates if time picker seconds is not enabled
+                        if (this.startDate.format(format) == this.ranges[range][0].format(format) && this.endDate.format(format) == this.ranges[range][1].format(format)) {
+                            customRange = false;
+                            this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
+                            break;
+                        }
+                    } else {
+                        //ignore times when comparing dates if time picker is not enabled
+                        if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD') && this.endDate.format('YYYY-MM-DD') == this.ranges[range][1].format('YYYY-MM-DD')) {
+                            customRange = false;
+                            this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
+                            break;
+                        }
+                    }
+                    i++;
+                }
+                if (customRange) {
+                    if (this.showCustomRangeLabel) {
+                        this.chosenLabel = this.container.find('.ranges li:last').addClass('active').attr('data-range-key');
+                    } else {
+                        this.chosenLabel = null;
+                    }
+                    this.showCalendars();
+                }
+            }
+
+            $wnd.daterangepicker.prototype.updateCalendars = function() {
+                if (this.timePicker) {
+                    var hour, minute, second;
+                    if (this.endDate) {
+                        hour = parseInt(this.container.find('.left .hourselect').val(), 10);
+                        minute = parseInt(this.container.find('.left .minuteselect').val(), 10);
+                        if (isNaN(minute)) {
+                            minute = parseInt(this.container.find('.left .minuteselect option:last').val(), 10);
+                        }
+                        second = this.timePickerSeconds ? parseInt(this.container.find('.left .secondselect').val(), 10) : 0;
+                        if (!this.timePicker24Hour) {
+                            var ampm = this.container.find('.left .ampmselect').val();
+                            if (ampm === 'PM' && hour < 12)
+                                hour += 12;
+                            if (ampm === 'AM' && hour === 12)
+                                hour = 0;
+                        }
+                    } else {
+                        hour = parseInt(this.container.find('.right .hourselect').val(), 10);
+                        minute = parseInt(this.container.find('.right .minuteselect').val(), 10);
+                        if (isNaN(minute)) {
+                            minute = parseInt(this.container.find('.right .minuteselect option:last').val(), 10);
+                        }
+                        second = this.timePickerSeconds ? parseInt(this.container.find('.right .secondselect').val(), 10) : 0;
+                        if (!this.timePicker24Hour) {
+                            var ampm = this.container.find('.right .ampmselect').val();
+                            if (ampm === 'PM' && hour < 12)
+                                hour += 12;
+                            if (ampm === 'AM' && hour === 12)
+                                hour = 0;
+                        }
+                    }
+                    this.leftCalendar.month.hour(hour).minute(minute).second(second);
+                    this.rightCalendar.month.hour(hour).minute(minute).second(second);
+                }
+
+                this.renderCalendar('left');
+                this.renderCalendar('right');
+
+                //highlight any predefined range matching the current start and end dates
+                this.container.find('.ranges li').removeClass('active');
+
+                //<<<<<
+                //CHANGE IF STATEMENT. ADDED !singleDatePicker CHECK
+                // if (this.endDate == null) return;
+                if (!singleDatePicker && this.endDate == null) return;
+                //>>>>>
+
+                this.calculateChosenLabel();
+            }
+
+            //OVERRIDE OF THE show METHOD. COPIED FROM daterangepicker.js.
+            //WE NEED TO TRIGGER 'show.daterangepicker' BEFORE CONTAINER SHOWN FOR DETERMINATE SIZE OF POPUP
+            $wnd.daterangepicker.prototype.show = function(e) {
+                if (this.isShowing) return;
+
+                // Create a click proxy that is private to this instance of datepicker, for unbinding
+                this._outsideClickProxy = $.proxy(function(e) { this.outsideClick(e); }, this);
+
+                // Bind global datepicker mousedown for hiding and
+                $(document)
+                    .on('mousedown.daterangepicker', this._outsideClickProxy)
+                    // also support mobile devices
+                    .on('touchend.daterangepicker', this._outsideClickProxy)
+                    // also explicitly play nice with Bootstrap dropdowns, which stopPropagation when clicking them
+                    .on('click.daterangepicker', '[data-toggle=dropdown]', this._outsideClickProxy)
+                    // and also close when focus changes to outside the picker (eg. tabbing between controls)
+                    .on('focusin.daterangepicker', this._outsideClickProxy);
+
+                // Reposition the picker if the window is resized while it's open
+                $(window).on('resize.daterangepicker', $.proxy(function(e) { this.move(e); }, this));
+
+                this.oldStartDate = this.startDate.clone();
+                this.oldEndDate = this.endDate.clone();
+                this.previousRightTime = this.endDate.clone();
+
+                this.updateView();
+                //<<<<<
+                //ADD
+                this.element.trigger('show.daterangepicker', this); //MOVED FROM AFTER this.move();
+                this.container.show();
+                this.move();
+//                this.element.trigger('show.daterangepicker', this);
+                //>>>>>
+                this.isShowing = true;
+            }
+        }
     }-*/;
 }
