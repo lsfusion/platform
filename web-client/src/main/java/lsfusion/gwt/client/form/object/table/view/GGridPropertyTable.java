@@ -46,14 +46,26 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected boolean captionsUpdated = false;
     protected boolean footersUpdated = false;
 
-    protected ArrayList<T> rows = new ArrayList<>();
+    public static class RangeArrayList<T> extends ArrayList<T> {
+        public void removeRange(int fromIndex, int toIndex) {
+            super.removeRange(fromIndex, toIndex);
+        }
+    }
+    protected RangeArrayList<T> rows = new RangeArrayList<>();
 
     // we have to keep it until updateDataImpl to have rows order
     // plus what's more important we shouldn't change selectedRow, before update'in rows, otherwise we'll have inconsistent selectedRow - rows state
     protected GGroupObjectValue currentKey;
+    protected Integer currentExpandingIndex;
 
     public void setCurrentKey(GGroupObjectValue currentKey) {
+        // we're counting on the checkUpdateCurrentRow to handle that case (otherwise there will be problems with the expandingIndex)
+        if(!(GwtClientUtils.nullHashEquals(getSelectedKey(), currentKey) && this.currentKey == null))
+            setCurrentKey(currentKey, null);
+    }
+    public void setCurrentKey(GGroupObjectValue currentKey, Integer currentExpandingIndex) {
         this.currentKey = currentKey;
+        this.currentExpandingIndex = currentExpandingIndex;
 
         this.currentRowUpdated = true;
     }
@@ -202,7 +214,15 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getTableBodyElement().getOffsetHeight();
     }
     
-    protected abstract GGroupObjectValue getSelectedKey();
+    public GGroupObjectValue getSelectedKey() {
+        GridDataRecord selectedRowValue = getSelectedRowValue();
+        return selectedRowValue != null ? selectedRowValue.getKey() : null;
+    }
+
+    protected Integer getSelectedExpandingIndex() {
+        GridDataRecord selectedRowValue = getSelectedRowValue();
+        return selectedRowValue != null ? selectedRowValue.getExpandingIndex() : null;
+    }
 
     // there is a contract if there are keys there should be current object
     // but for example modifyFormChangesWithChangeCurrentObjectAsyncs removes object change (+ when there are no keys nothing is also send)
@@ -210,15 +230,27 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected void checkUpdateCurrentRow() {
         // assert rowUpdated AND ! it's important to do this before update rows to have relevant selectedKey
         if(!currentRowUpdated)
-            setCurrentKey(getSelectedKey());
+            setCurrentKey(getSelectedKey(), getSelectedExpandingIndex());
     }
 
     private boolean currentRowUpdated = false;
     public void updateCurrentRow() {
         if (currentRowUpdated) {
-            setSelectedRow(currentKey != null ? getRowByKeyOptimistic(currentKey) : -1);
+            int row = currentKey != null ? getRowByKey(currentKey, currentExpandingIndex) : -1;
+
+            // if we didn't find currentKey with that expandingIndex, it can be because the currentKey has become unexpanded
+            // so we're just looking for the object record and then shifting this index with the expanding index
+            if(currentExpandingIndex != null && !currentExpandingIndex.equals(GridDataRecord.objectExpandingIndex) &&
+                    row < 0) {
+                int objectRow = getRowByKey(currentKey, GridDataRecord.objectExpandingIndex);
+                if(objectRow >= 0)
+                    row = Math.min(objectRow + currentExpandingIndex + 1, getRowCount() - 1);
+            }
+
+            setSelectedRow(row);
 
             currentKey = null;
+            currentExpandingIndex = null;
             currentRowUpdated = false;
         }
 
@@ -467,7 +499,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         if(columnIndex < 0)
             return null;
 
-        int rowIndex = getRowByKeyOptimistic(propertyRowKey);
+        int rowIndex = getRowByKey(propertyRowKey, GridDataRecord.objectExpandingIndex);
         if(rowIndex < 0)
             return null;
 
@@ -664,13 +696,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             @Override
             public String getBackground(String baseColor) {
-                String background = column.getBackground(property, (T) cell.getRow());
-                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), background != null ? background : baseColor);
+                T row = (T) cell.getRow();
+                String background = column.getBackground(property, row);
+                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), background != null ? background : (baseColor != null ? baseColor : row.getRowBackground()));
             }
 
             @Override
             public String getForeground() {
-                return getThemedColor(column.getForeground(property, (T) cell.getRow()));
+                T row = (T) cell.getRow();
+                String foreground = column.getForeground(property, row);
+                return getThemedColor(foreground != null ? foreground : row.getRowForeground());
             }
         };
     }

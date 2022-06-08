@@ -48,7 +48,7 @@ public interface GTableView {
 
     // GETTERS (editing / toolbar features)
     // keys
-    GGroupObjectValue getCurrentKey(); // editing
+    GGroupObjectValue getSelectedKey(); // editing
 
     // columns
     GPropertyDraw getCurrentProperty(); // calculate sum / filtering default value

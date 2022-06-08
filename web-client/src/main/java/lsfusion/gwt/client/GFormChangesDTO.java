@@ -20,7 +20,7 @@ public class GFormChangesDTO implements Serializable {
 
     public int[] expandablesGroupIds;
     public GGroupObjectValue[][] expandableKeys;
-    public Boolean[][] expandableValues;
+    public Integer[][] expandableValues;
 
     public GPropertyReaderDTO[] properties;
     public GGroupObjectValue[][] propertiesValueKeys;
@@ -38,4 +38,5 @@ public class GFormChangesDTO implements Serializable {
     public int[] expandContainerIds;
 
     public boolean needConfirm;
+    public int size;
 }

@@ -942,6 +942,28 @@ public class GwtClientUtils {
         return obj == null ? 0 : obj.hashCode();
     }
 
+    private static ArrayList emptyList = new ArrayList();
+    public static <K> ArrayList<K> EMPTYARRAYLIST() {
+        return emptyList;
+    }
+
+    public static boolean hashEquals(Object obj1, Object obj2) {
+        return obj1 == obj2 || (obj1.hashCode() == obj2.hashCode() && obj1.equals(obj2));
+    }
+
+    public static boolean nullHashEquals(Object obj1, Object obj2) {
+        if (obj1 == null)
+            return obj2 == null;
+        return obj2 != null && hashEquals(obj1, obj2);
+    }
+
+    public static <T> ArrayList<T> newArrayList(T[] array) {
+        ArrayList<T> list = new ArrayList<T>(array.length);
+        for(T element : array)
+            list.add(element);
+        return list;
+    }
+
     public static Element getElement(Node node) {
         if(node == null)
             return null;

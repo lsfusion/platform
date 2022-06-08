@@ -31,6 +31,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -98,7 +99,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     protected GPropertyTableBuilder<T> tableBuilder;
 
-    private final TableWidget tableData;
+    protected final TableWidget tableData;
     protected TableScrollPanel tableDataScroller; // vertical scroller
 
     private FooterWidget tableFooter;
@@ -120,16 +121,19 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     int renderedSelectedCol = -1;
     int renderedLeftStickyCol = -1;
     Object renderedSelectedKey = null; // needed for saving scroll position when keys are update
+    Integer renderedSelectedExpandingIndex = null; // needed for saving scroll position when keys are update
 
     protected abstract Object getSelectedKey();
-    protected int getRowByKeyOptimistic(Object key) {
+    protected abstract Integer getSelectedExpandingIndex();
+    // virtualKey - null means that we're looking for any selected key but object other key
+    protected int getRowByKey(Object key, Integer expandingIndex) {
         Object selectedKey = getSelectedKey();
-        if(selectedKey != null && selectedKey.equals(key)) // optimization the most common case
+        if(selectedKey != null && (selectedKey.equals(key) && (expandingIndex == null || expandingIndex.equals(getSelectedExpandingIndex())))) // optimization the most common case
             return getSelectedRow();
 
-        return getRowByKey(key);
+        return findRowByKey(key, expandingIndex == null ? GridDataRecord.objectExpandingIndex : expandingIndex);
     }
-    protected abstract int getRowByKey(Object key);
+    protected abstract int findRowByKey(Object key, int expandingIndex);
 
     private int pageIncrement = 30;
 
@@ -524,7 +528,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null)
-                onBrowserEvent(new Cell(row, getColumnIndex(column), column, getRowValue(row)), event, column, columnParent);
+                onBrowserEvent(new Cell(row, getColumnIndex(column), column, (RowIndexHolder) getRowValue(row)), event, column, columnParent);
         }
     }
 
@@ -1173,6 +1177,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         onResizeChanged = false;
 
         renderedSelectedKey = getSelectedKey();
+        renderedSelectedExpandingIndex = getSelectedExpandingIndex();
         renderedSelectedRow = getSelectedRow();
         renderedSelectedCol = getSelectedColumn();
 
@@ -1320,7 +1325,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
         // we're trying to keep viewport the same after rerendering
         int rerenderedSelectedRow;
-        if(pendingState.renderedSelectedScrollTop != null && (rerenderedSelectedRow = getRowByKeyOptimistic(renderedSelectedKey)) >= 0) {
+        if(pendingState.renderedSelectedScrollTop != null && (rerenderedSelectedRow = getRowByKey(renderedSelectedKey, renderedSelectedExpandingIndex)) >= 0) {
             scrollTop = getChildElement(rerenderedSelectedRow).getOffsetTop() - pendingState.renderedSelectedScrollTop;
 
             if(scrollTop < 0) // upper than top
@@ -1871,7 +1876,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         }
     }
 
-    private class TableWidget extends TableWrapperWidget {
+    protected class TableWidget extends TableWrapperWidget {
 //        private final DivElement containerElement;
 
         public TableWidget() {

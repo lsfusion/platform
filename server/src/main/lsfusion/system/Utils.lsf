@@ -90,11 +90,13 @@ unzipping '{utils.unzipping}' = DATA LOCAL FILE ();
 unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (STRING[100]);
 makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeUnzipFileAction' ();
 
-resourceFile '{utils.resource.file}' = DATA LOCAL FILE ();
+resource '{utils.resource.file}' = DATA LOCAL FILE ();
 readResource '{utils.read.resource}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction' (STRING[100]);
 
-resourceFiles = DATA LOCAL RAWFILE (STRING);
-readResources  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcesAction' (STRING);
+resourcePaths = DATA LOCAL STRING (STRING);
+readResourcePaths  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourcePathsAction' (STRING);
+
+resourceFile '{utils.resource.file}' = resource(); // deprecated
 
 // ---------------------------------- Выполнение cmd  ---------------------------------- //
 cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';

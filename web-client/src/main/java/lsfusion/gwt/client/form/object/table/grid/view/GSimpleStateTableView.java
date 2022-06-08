@@ -313,6 +313,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
         Column column = columnMap.get(property);
+        if(column == null)
+            return false;
         return isReadOnly(column.property, object, column.columnKey);
     }
 
@@ -327,7 +329,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
     // change key can be outside view window, and can be obtained from getAsyncValues for example
     protected GGroupObjectValue getChangeKey(JavaScriptObject object) {
         if(object == null)
-            return getCurrentKey();
+            return getSelectedKey();
         if(hasKey(object, keysFieldName))
             object = getValue(object, keysFieldName);
         return toObject(object);
@@ -383,7 +385,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     private String getPropertyValue(String property) {
         Column column = columnMap.get(property);
-        Object value = column != null ? getValue(column.property, getCurrentKey(), column.columnKey) : null;
+        Object value = column != null ? getValue(column.property, getSelectedKey(), column.columnKey) : null;
         return value != null ? value.toString() : null;
     }
 

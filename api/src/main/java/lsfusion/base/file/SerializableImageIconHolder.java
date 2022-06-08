@@ -21,16 +21,12 @@ public class SerializableImageIconHolder implements Serializable {
     public void setImage(String imagePath) {
         for (ColorTheme colorTheme : ColorTheme.values()) {
             Result<String> fullPath = new Result<>();
-            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), false, true, fullPath, "images");
-            if(themedImageFile != null)
+            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !colorTheme.isDefault(), false, fullPath, "images");
+            if(themedImageFile != null) {
                 themedImageFile.getID(); // to calculate the cache
-            else {
-                if (colorTheme.isDefault()) {
-                    throw new RuntimeException(ApiResourceBundle.getString("exceptions.image.file.not.found", imagePath));
-                }
+                images.put(colorTheme, themedImageFile);
+                imagePathes.put(colorTheme, fullPath.result);
             }
-            images.put(colorTheme, themedImageFile);
-            imagePathes.put(colorTheme, fullPath.result);
         }
     }
 

@@ -30,7 +30,7 @@ public class MFormChanges {
     // value.keySet() из key, или пустой если root
     public MExclMap<GroupObjectInstance, ImList<ImMap<ObjectInstance, DataObject>>> parentObjects = MapFact.mExclMap();
 
-    public MExclMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Boolean>> expandables = MapFact.mExclMap();
+    public MExclMap<GroupObjectInstance, ImMap<ImMap<ObjectInstance, DataObject>, Integer>> expandables = MapFact.mExclMap();
 
     public MExclMap<PropertyReaderInstance, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties = MapFact.mExclMap();
 

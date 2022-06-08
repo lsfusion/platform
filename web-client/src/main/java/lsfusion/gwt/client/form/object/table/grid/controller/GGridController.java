@@ -383,7 +383,7 @@ public class GGridController extends GAbstractTableController {
         sumButton.showPopup(sum, property, clientX, clientY);
     }
 
-    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc) {
+    public void updateKeys(GGroupObject group, ArrayList<GGroupObjectValue> keys, GFormChanges fc, int requestIndex) {
         if(isList())
             table.setKeys(keys);
     }
@@ -461,10 +461,10 @@ public class GGridController extends GAbstractTableController {
         }
     }
 
-    public GGroupObjectValue getCurrentKey() {
+    public GGroupObjectValue getSelectedKey() {
         GGroupObjectValue result = null;
         if (isList()) {
-            result = table.getCurrentKey();
+            result = table.getSelectedKey();
         }
         return result == null ? GGroupObjectValue.EMPTY : result;
     }

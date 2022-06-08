@@ -13,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface GTableController {
-    GGroupObjectValue getCurrentKey();
+    GGroupObjectValue getSelectedKey();
     GGroupObject getSelectedGroupObject();
     List<GPropertyDraw> getGroupObjectProperties();
     List<GObject> getObjects();

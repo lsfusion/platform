@@ -43,6 +43,7 @@ lsFusion **4** Server & Client (+ OpenJDK **1.8**, PostgreSQL **13**, Tomcat **9
 
 | ОС                            | Команда / Скрипт |
 |-------------------------------| -----------------|
+| RHEL 8 / CentOS 8             | `source <(curl -s https://download.lsfusion.org/dnf/install-lsfusion4)` |
 | RHEL 7 / CentOS 7 / Fedora 29 | `source <(curl -s https://download.lsfusion.org/yum/install-lsfusion4)` |
 | Ubuntu 18 / Debian 9          | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion4)` <br/>PostgreSQL устанавливается версии 10, так как только он есть в репозитории. |
 

@@ -61,9 +61,7 @@ public abstract class AbstractDataGridBuilder<T> {
         assert columnsToRedraw == null || newRowCount == rowCount;
 
         if (rowCount > newRowCount) {
-            for (int i = rowCount - 1; i >= newRowCount; --i) {
-                tbodyElement.deleteRow(i);
-            }
+            deleteRows(tbodyElement, newRowCount, rowCount);
             rowCount = newRowCount;
         }
 
@@ -95,25 +93,58 @@ public abstract class AbstractDataGridBuilder<T> {
         }
     }
 
+    public void deleteRows(TableSectionElement tbodyElement, int from, int to) {
+        for (int i = to - 1; i >= from; --i)
+            deleteRow(tbodyElement, i);
+    }
+
     private void rebuildRow(int rowIndex, T rowValue, TableRowElement tr) {
         removeAllChildren(tr);
-        setRowValueIndex(tr, rowIndex);
+
+        checkRowValueIndex(tr, rowIndex);
+
         buildRowImpl(rowIndex, rowValue, tr);
     }
 
     private void buildRow(TableSectionElement tbodyElement, int rowIndex, T rowValue) {
         TableRowElement tr = tbodyElement.insertRow(-1);
-        setRowValueIndex(tr, rowIndex);
 
         buildRowImpl(rowIndex, rowValue, tr);
     }
 
-    private void setRowValueIndex(TableRowElement tr, int rowIndex) {
-        tr.setPropertyInt(ROW_ATTRIBUTE, rowIndex + 1);
+    public void deleteRow(TableSectionElement tbodyElement, int i) {
+        tbodyElement.deleteRow(i);
     }
 
-    public final int getRowValueIndex(Element row) {
-        return row.getPropertyInt(ROW_ATTRIBUTE) - 1;
+    public void incBuildRow(TableSectionElement tbodyElement, int rowIndex, T rowValue) {
+        TableRowElement tr = tbodyElement.insertRow(rowIndex);
+
+        buildRowImpl(rowIndex, rowValue, tr);
+
+        // indexes will be shifted in the model
+    }
+    public void incUpdateRow(TableSectionElement tbodyElement, int rowIndex, int[] columnsToRedraw, T rowValue) {
+        updateRow(rowIndex, rowValue, columnsToRedraw, tbodyElement.getRows().getItem(rowIndex));
+    }
+    public void incDeleteRows(TableSectionElement tbodyElement, int fromIndex, int toIndex) {
+        deleteRows(tbodyElement, fromIndex, toIndex);
+
+        // indexes will be shifted in the model
+    }
+
+    protected void checkRowValueIndex(TableRowElement tr, int rowIndex) {
+        assert getRowValueIndex(tr) == rowIndex;
+    }
+    protected void setRowValueIndex(TableRowElement tr, int rowIndex, RowIndexHolder rowIndexHolder) {
+        tr.setPropertyObject(ROW_ATTRIBUTE, rowIndexHolder);
+        checkRowValueIndex(tr, rowIndex);
+    }
+
+    protected int getRowValueIndex(Element row) {
+        RowIndexHolder rowIndexHolder = (RowIndexHolder) row.getPropertyObject(ROW_ATTRIBUTE);
+        if(rowIndexHolder != null)
+            return rowIndexHolder.getRowIndex();
+        return -1;
     }
 
     /**
@@ -133,7 +164,8 @@ public abstract class AbstractDataGridBuilder<T> {
      * @param tr
      */
     public void updateRow(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr) {
-        setRowValueIndex(tr, rowIndex);
+        checkRowValueIndex(tr, rowIndex);
+
         updateRowImpl(rowIndex, rowValue, columnsToRedraw, tr, null);
     }
 

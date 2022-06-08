@@ -6,6 +6,15 @@ BEGIN
 		ext = ext || 'x';
 	end if;
 
+	if ((ext = 'jpg') and (length(file) > 1)) then
+		if (get_byte(file, 0) = 137 and get_byte(file, 1) = 80) then
+		    ext = 'png';
+        end if;
+        if (get_byte(file, 0) = 66 and get_byte(file, 1) = 77) then
+            ext = 'bmp';
+        end if;
+    end if;
+
 	RETURN chr(octet_length(ext))::bytea || convert_to(ext, 'UTF-8') || file;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;

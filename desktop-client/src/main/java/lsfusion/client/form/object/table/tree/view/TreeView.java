@@ -28,7 +28,7 @@ public class TreeView extends FlexPanel {
         return groupTree;
     }
 
-    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> keysTreePathes, Map<ClientGroupObjectValue, Boolean> expandables) {
+    public void updateKeys(ClientGroupObject group, List<ClientGroupObjectValue> keys, List<ClientGroupObjectValue> keysTreePathes, Map<ClientGroupObjectValue, Integer> expandables) {
         groupTree.updateKeys(group, keys, keysTreePathes, expandables);
     }
 

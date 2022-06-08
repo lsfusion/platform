@@ -1,75 +1,38 @@
 package lsfusion.gwt.client.form.object.table.tree.view;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class GTreeColumnValue {
-    private int level;
-    private Boolean open;
-    private boolean openDotBottom = true;
-    private boolean closedDotBottom;
-    private String sID;
-    private Map<Integer, Boolean> lastInLevelMap = new HashMap<>();
+    public final int level;
 
-    public GTreeColumnValue(int level, String sID) {
+    public final GTreeColumnValueType type;
+
+    public final boolean openDotBottom;
+    public final boolean closedDotBottom;
+    public final boolean[] lastInLevelMap;
+
+    public GTreeColumnValue(int level, boolean[] lastInLevelMap, GTreeColumnValueType type, boolean openDotBottom, boolean closedDotBottom) {
         this.level = level;
-        this.sID = sID;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    public Boolean getOpen() {
-        return open;
-    }
-
-    public void setOpen(Boolean open) {
-        this.open = open;
-    }
-
-    public boolean isOpenDotBottom() {
-        return openDotBottom;
-    }
-
-    public void setOpenDotBottom(boolean openDotBottom) {
+        this.lastInLevelMap = lastInLevelMap;
+        this.type = type;
         this.openDotBottom = openDotBottom;
-    }
-
-    public boolean isClosedDotBottom() {
-        return closedDotBottom;
-    }
-
-    public void setClosedDotBottom(boolean closedDotBottom) {
         this.closedDotBottom = closedDotBottom;
+        assert lastInLevelMap.length == level;
     }
 
-    public String getSID() {
-        return sID;
+    public GTreeColumnValue override(GTreeColumnValueType type) {
+        return new GTreeColumnValue(level, lastInLevelMap, type, openDotBottom, closedDotBottom);
     }
 
-    public void setSID(String sID) {
-        this.sID = sID;
-    }
+    public boolean equalsValue(GTreeColumnValue that) {
+        if(!(level == that.level &&
+                openDotBottom == that.openDotBottom &&
+                closedDotBottom == that.closedDotBottom &&
+                type == that.type))
+            return false;
 
-    public Map<Integer, Boolean> getLastInLevelMap() {
-        return lastInLevelMap;
-    }
+        for (int i=0; i<lastInLevelMap.length; i++)
+            if (lastInLevelMap[i] != that.lastInLevelMap[i])
+                return false;
 
-    public void setLastInLevelMap(Map<Integer, Boolean> lastInLevelMap) {
-        this.lastInLevelMap = new HashMap<>(lastInLevelMap);
-    }
-
-    public void addLastInLevel(int level, boolean last) {
-        lastInLevelMap.put(level, last);
-    }
-
-    public boolean isLastInLevel(int level) {
-        Boolean last = lastInLevelMap.get(level);
-        return last != null && last;
+        return true;
     }
 }

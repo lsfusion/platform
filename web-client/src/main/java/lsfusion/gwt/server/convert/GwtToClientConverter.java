@@ -158,7 +158,7 @@ public class GwtToClientConverter extends ObjectConverter {
 
     @Converter(from = GCustomObjectValue.class)
     public ClientCustomObjectValue convertCustomObjectValue(GCustomObjectValue gValue) {
-        return new ClientCustomObjectValue(gValue.id, gValue.idClass);
+        return new ClientCustomObjectValue(gValue.id, gValue.getIdClass());
     }
 
     public void serializeGroupObjectValue(DataOutputStream dataStream, GGroupObjectValue groupObjectValue) {

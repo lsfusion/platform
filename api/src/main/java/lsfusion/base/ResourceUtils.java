@@ -1,7 +1,9 @@
 package lsfusion.base;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
+import lsfusion.base.lambda.EFunction;
 import lsfusion.interop.action.ClientWebAction;
 import org.apache.commons.io.FilenameUtils;
 
@@ -18,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -173,14 +174,6 @@ public class ResourceUtils {
         }
     }
 
-    public static URL getResource(String path) {
-        return ResourceUtils.class.getResource(path);
-    }
-
-    public static InputStream getResourceAsStream(String path) {
-        return ResourceUtils.class.getResourceAsStream(path);
-    }
-
     public static Path getTargetDir(String projDir) {
         Path targetDir = Paths.get(projDir, "target/classes");
         if(!Files.exists(targetDir)) { // if not maven then idea-project
@@ -249,24 +242,59 @@ public class ResourceUtils {
         return sourceBuildDirs;
     }
 
-    public static RawFileData findResourceAsFileData(String resourcePath, boolean checkExists, boolean cache, Result<String> fullPath, String optimisticFolder) {
-        resourcePath = findResource(resourcePath, checkExists, cache, optimisticFolder);
+    private final static ConcurrentHashMap<String, Pair<List<String>, Map<String, String>>> cachedFoundResourcePathes = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, Pair<String, String>> cachedFoundResourcesAsStrings = new ConcurrentHashMap<>();
+    private final static ConcurrentHashMap<String, Pair<RawFileData, String>> cachedFoundResourcesAsFileDatas = new ConcurrentHashMap<>();
+
+    public static <T> T findResourceAs(String resourcePath, EFunction<InputStream, T, IOException> result, ConcurrentHashMap<String, Pair<T, String>> cacheMap, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
+        if(multipleUsages && !inDevMode) { // caching, more to save memory, rather than improve speed
+            Pair<T, String> cachedResult = cacheMap.get(resourcePath);
+            if(cachedResult == null) {
+                Result<String> cacheFullPath = new Result<>();
+                cachedResult = new Pair<>(calcFindResourceAs(resourcePath, result, nullIfNotExists, multipleUsages, cacheFullPath, optimisticFolder), cacheFullPath.result);
+                cacheMap.put(resourcePath, cachedResult);
+            }
+            if(fullPath != null)
+                fullPath.set(cachedResult.second);
+            return cachedResult.first;
+        }
+
+        return calcFindResourceAs(resourcePath, result, nullIfNotExists, multipleUsages, fullPath, optimisticFolder);
+    }
+
+    public static <T> T calcFindResourceAs(String resourcePath, EFunction<InputStream, T, IOException> result, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
+        resourcePath = findResourcePath(resourcePath, nullIfNotExists, multipleUsages, optimisticFolder);
         if (resourcePath == null)
             return null;
         if(fullPath != null)
-            fullPath.set(resourcePath.substring(1)); // remov
+            fullPath.set(resourcePath.substring(1));
         try {
-            return new RawFileData(resourcePath, true);
+            return result.apply(ResourceUtils.getResourceAsStream(resourcePath, multipleUsages));
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private final static ConcurrentHashMap<String, Pair<List<String>, Map<String, String>>> cachedFoundResourses = new ConcurrentHashMap<>();
-    public static String findResource(String fileName, boolean checkExists, boolean cache, String optimisticFolder) {
+    public static String findResourceAsString(String resourcePath, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
+        return findResourceAs(resourcePath, stream -> IOUtils.readStreamToString(stream, "UTF-8"), cachedFoundResourcesAsStrings, nullIfNotExists, multipleUsages, fullPath, optimisticFolder);
+    }
+    public static RawFileData findResourceAsFileData(String resourcePath, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
+        return findResourceAs(resourcePath, RawFileData::new, cachedFoundResourcesAsFileDatas, nullIfNotExists, multipleUsages, fullPath, optimisticFolder);
+    }
+
+    public static URL getResource(String path) {
+        return ResourceUtils.class.getResource(path);
+    }
+
+    public static InputStream getResourceAsStream(String path, boolean multipleUsages) {
+        return ResourceUtils.class.getResourceAsStream(path);
+    }
+
+    public static boolean inDevMode = false;
+    public static String findResourcePath(String fileName, boolean nullIfNotExists, boolean multipleUsages, String optimisticFolder) {
         if(fileName.startsWith("/")) {
             //absolute path
-            if(!checkExists || ResourceUtils.getResource(fileName) != null)
+            if(ResourceUtils.getResource(fileName) != null)
                 return fileName;
         } else {
             // we can't use optimistic folder, since it will break the classpath precedence
@@ -276,17 +304,17 @@ public class ResourceUtils {
 //                    return optimisticPath;
 //            }
 
-            if(cache) {
+            if(!(multipleUsages && inDevMode)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
                 boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
 
                 String template = BaseUtils.replaceFileName(fileName, ".*", true);
 
-                Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourses.get(template);
+                Pair<List<String>, Map<String, String>> cachedResources = cachedFoundResourcePathes.get(template);
                 if(cachedResources == null) {
                     Pattern pattern = Pattern.compile(".*/" + template);
                     List<String> resources = ResourceUtils.getResources(pattern);
                     cachedResources = new Pair<>(resources, simpleFile ? BaseUtils.groupListFirst(BaseUtils::getFileNameAndExtension, resources) : null);
-                    cachedFoundResourses.put(template, cachedResources);
+                    cachedFoundResourcePathes.put(template, cachedResources);
                 }
 
                 if(simpleFile)
@@ -302,13 +330,26 @@ public class ResourceUtils {
                     return result.get(0);
             }
         }
+        if(!nullIfNotExists) {
+            throw new RuntimeException(ApiResourceBundle.getString("exceptions.file.not.found", fileName));
+        }
         return null;
     }
-    public static void clearResourceFileCaches(String extension) {
-        Collection<String> cachedResourceKeys = new HashSet<>(cachedFoundResourses.keySet());
+    public static void clearResourceCaches(String extension, boolean pathesChanged, boolean dataChanged) {
+        if(pathesChanged)
+            clearResourceCaches(cachedFoundResourcePathes, extension);
+
+        if(dataChanged) {
+            clearResourceCaches(cachedFoundResourcesAsStrings, extension);
+            clearResourceCaches(cachedFoundResourcesAsFileDatas, extension);
+        }
+    }
+
+    private static <T> void clearResourceCaches(ConcurrentHashMap<String, T> cache, String extension) {
+        Collection<String> cachedResourceKeys = new HashSet<>(cache.keySet());
         for (String resource : cachedResourceKeys)
             if (resource.endsWith("." + extension))
-                cachedFoundResourses.remove(resource);
+                cache.remove(resource);
     }
 
     public static String registerFont(ClientWebAction action) {

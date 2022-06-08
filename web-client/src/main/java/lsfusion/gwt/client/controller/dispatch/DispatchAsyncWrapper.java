@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.controller.dispatch;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
@@ -12,6 +13,7 @@ import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import net.customware.gwt.dispatch.client.AbstractDispatchAsync;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchService;
@@ -88,12 +90,23 @@ public class DispatchAsyncWrapper extends AbstractDispatchAsync {
                 }
             }
 
-            public void onSuccess(Result result) {
+            private boolean isTooBigResult(Result result) {
+                return (result instanceof ServerResponseResult && ((ServerResponseResult) result).getSize() > 20000);
+            }
+            public void onSuccess(Result result, boolean resultDeferred) {
+                if(!resultDeferred && isTooBigResult(result)) {
+                    Scheduler.get().scheduleDeferred(() -> onSuccess(result, true));
+                    return;
+                }
                 DispatchAsyncWrapper.this.onSuccess(action, (R) result, callback);
                 if(finalRequestTry > 1) //had retries
                     GConnectionLostManager.unregisterFailedRmiRequest();
                 requestTries.remove(action);
                 GExceptionManager.flushFailedNotFatalRequests(action);
+            }
+
+            public void onSuccess(Result result) {
+                onSuccess(result, false);
             }
         });
     }

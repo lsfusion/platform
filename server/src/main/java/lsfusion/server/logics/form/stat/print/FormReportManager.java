@@ -193,7 +193,7 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     private String findCustomReport(String fileName) {
-        return ResourceUtils.findResource(fileName, true, !SystemProperties.inDevMode, "reports");
+        return ResourceUtils.findResourcePath(fileName, true, true, "reports");
     }
 
     private String getReportFileName(GroupObjectHierarchy.ReportNode reportNode, String reportPrefix) {
@@ -306,7 +306,7 @@ public abstract class FormReportManager extends FormDataManager {
         }
 
         public InputStream getInputStream() {
-            return getClass().getResourceAsStream(fileName);
+            return ResourceUtils.getResourceAsStream(fileName, true);
         }
     }
 
