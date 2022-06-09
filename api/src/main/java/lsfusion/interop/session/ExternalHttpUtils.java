@@ -1,6 +1,7 @@
 package lsfusion.interop.session;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -14,6 +15,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 
+import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -46,8 +48,7 @@ public class ExternalHttpUtils {
         for (Map.Entry<String, String> headerEntry : headers.entrySet())
             httpRequest.addHeader(headerEntry.getKey(), headerEntry.getValue());
         for (Map.Entry<String, String> cookieEntry : cookies.entrySet()) {
-            BasicClientCookie cookie = parseRawCookie(cookieEntry.getKey(), cookieEntry.getValue());
-            cookieStore.addCookie(cookie);
+            cookieStore.addCookie(parseACookie(cookieEntry.getKey(), cookieEntry.getValue()));
         }
 
         HttpClientBuilder requestBuilder = HttpClientBuilder.create().setDefaultCookieStore(cookieStore).useSystemProperties();
@@ -78,13 +79,61 @@ public class ExternalHttpUtils {
         return responseHeaders;
     }
 
-    private static BasicClientCookie parseRawCookie(String cookieName, String rawCookie) {
-        BasicClientCookie cookie;
+    public static void formatCookie(OrderedMap<String, String> result, Cookie cookie) {
+        result.put(cookie.getName(), ExternalUtils.decodeCookie(cookie.getValue(), cookie.getVersion()));
+    }
+    public static void formatCookie(OrderedMap<String, String> result, org.apache.http.cookie.Cookie cookie) {
+        result.put(cookie.getName(), ExternalUtils.decodeCookie(cookie.getValue(), cookie.getVersion()));
+    }
+    public static Cookie parseCookie(String cookieName, String rawCookie) {
+//        int version = ExternalUtils.DEFAULT_COOKIE_VERSION;
+//
+//        Cookie cookie = new Cookie(cookieName, ExternalUtils.encodeCookie(rawCookie, version));
+//        cookie.setVersion(version);
+//
+//        return cookie;
+
         String[] rawCookieParams = rawCookie.split(";");
 
-        String cookieValue = rawCookieParams[0];
+        int version = ExternalUtils.DEFAULT_COOKIE_VERSION;
+        String cookieValue = ExternalUtils.encodeCookie(rawCookieParams[0], version);
 
-        cookie = new BasicClientCookie(cookieName, cookieValue);
+        Cookie cookie = new Cookie(cookieName, cookieValue);
+        cookie.setVersion(version);
+
+        for (int i = 1; i < rawCookieParams.length; i++) {
+
+            String[] rawCookieParam = rawCookieParams[i].split("=");
+            String paramName = rawCookieParam[0].trim();
+
+            if (paramName.equalsIgnoreCase("secure")) {
+                cookie.setSecure(true);
+            } else if (rawCookieParam.length == 2) {
+                String paramValue = rawCookieParam[1].trim();
+
+                if (paramName.equalsIgnoreCase("expires")) {
+                    cookie.setMaxAge((int) (parseDate(paramValue).getTime() - System.currentTimeMillis()));
+                } else if (paramName.equalsIgnoreCase("max-age")) {
+                    cookie.setMaxAge(Integer.parseInt(paramValue));
+                } else if (paramName.equalsIgnoreCase("domain")) {
+                    cookie.setDomain(paramValue);
+                } else if (paramName.equalsIgnoreCase("path")) {
+                    cookie.setPath(paramValue);
+                } else if (paramName.equalsIgnoreCase("comment")) {
+                    cookie.setPath(paramValue);
+                }
+            }
+        }
+        return cookie;
+    }
+    public static org.apache.http.cookie.Cookie parseACookie(String cookieName, String rawCookie) {
+        String[] rawCookieParams = rawCookie.split(";");
+
+        int version = ExternalUtils.DEFAULT_COOKIE_VERSION;
+        String cookieValue = ExternalUtils.encodeCookie(rawCookieParams[0], version);
+
+        BasicClientCookie cookie = new BasicClientCookie(cookieName, cookieValue);
+        cookie.setVersion(version);
 
         for (int i = 1; i < rawCookieParams.length; i++) {
 

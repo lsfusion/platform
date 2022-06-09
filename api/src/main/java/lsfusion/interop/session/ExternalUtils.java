@@ -1,5 +1,6 @@
 package lsfusion.interop.session;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.MIMETypeUtils;
 import lsfusion.base.Result;
@@ -28,10 +29,7 @@ import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.rmi.RemoteException;
@@ -75,6 +73,28 @@ public class ExternalUtils {
                 return remoteLogics.eval(token, sessionInfo, action, paramScript, request);
             }
         };
+    }
+
+    public static int DEFAULT_COOKIE_VERSION = 0;
+    public static String encodeCookie(String cookie, int version) {
+        if(version == 0) {
+            try {
+                return URLEncoder.encode(cookie, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+        return cookie;
+    }
+    public static String decodeCookie(String cookie, int version) {
+        if(version == 0) {
+            try {
+                return URLDecoder.decode(cookie, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw Throwables.propagate(e);
+            }
+        }
+        return cookie;
     }
 
     public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,

@@ -7,6 +7,7 @@ import lsfusion.http.provider.session.SessionProvider;
 import lsfusion.http.provider.session.SessionSessionObject;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.session.ExecInterface;
+import lsfusion.interop.session.ExternalHttpUtils;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.NameValuePair;
@@ -15,6 +16,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -138,17 +140,12 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
         return headerValuesArray;
     }
 
-    private OrderedMap<String, String> getRequestCookies(HttpServletRequest request) {
+    public static OrderedMap<String, String> getRequestCookies(HttpServletRequest request) {
         OrderedMap<String, String> cookiesMap = new OrderedMap<>();
-        String cookies = request.getHeader("Cookie");
-        if (cookies != null) {
-            for (String cookie : cookies.split(";")) {
-                String[] splittedCookie = cookie.split("=");
-                if (splittedCookie.length == 2) {
-                    cookiesMap.put(splittedCookie[0], splittedCookie[1]);
-                }
-            }
-        }
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null)
+            for (Cookie cookie : cookies)
+                ExternalHttpUtils.formatCookie(cookiesMap, cookie);
         return cookiesMap;
     }
 }

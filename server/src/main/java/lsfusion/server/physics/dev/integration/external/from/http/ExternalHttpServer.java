@@ -83,6 +83,7 @@ public class ExternalHttpServer extends MonitorServer {
 
     // should be equal to ServerUtils.HOSTNAME_COOKIE_NAME
     public static final String HOSTNAME_COOKIE_NAME = "LSFUSION_HOSTNAME";
+    private static final int COOKIE_VERSION = ExternalUtils.DEFAULT_COOKIE_VERSION;
 
     public class HttpRequestHandler implements HttpHandler {
 
@@ -104,7 +105,7 @@ public class ExternalHttpServer extends MonitorServer {
                         for (String cookie : cookies.split(";")) {
                             String[] splittedCookie = cookie.split("=");
                             if (splittedCookie.length == 2) {
-                                cookiesMap.put(splittedCookie[0], splittedCookie[1]);
+                                cookiesMap.put(splittedCookie[0], ExternalUtils.decodeCookie(splittedCookie[1], 0));
                             }
                         }
                     }
@@ -223,7 +224,7 @@ public class ExternalHttpServer extends MonitorServer {
             for(int i=0;i<cookieNames.length;i++) {
                 String cookieName = cookieNames[i];
                 String cookieValue = cookieValues[i];
-                cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + cookieValue;
+                cookie += (cookie.isEmpty() ? "" : ";") + cookieName + "=" + ExternalUtils.encodeCookie(cookieValue, COOKIE_VERSION);
             }
             response.getResponseHeaders().add("Cookie", cookie);
 

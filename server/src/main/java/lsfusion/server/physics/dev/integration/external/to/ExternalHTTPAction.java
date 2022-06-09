@@ -5,6 +5,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -79,11 +80,10 @@ public class ExternalHTTPAction extends CallAction {
         return headerValuesArray;
     }
 
-    private Map<String, String> getResponseCookies(CookieStore cookieStore) {
-        Map<String, String> responseCookies = new HashMap<>();
-        for(Cookie cookie : cookieStore.getCookies()) {
-            responseCookies.put(cookie.getName(), cookie.getValue());
-        }
+    private OrderedMap<String, String> getResponseCookies(CookieStore cookieStore) {
+        OrderedMap<String, String> responseCookies = new OrderedMap<>();
+        for(Cookie cookie : cookieStore.getCookies())
+            ExternalHttpUtils.formatCookie(responseCookies, cookie);
         return responseCookies;
     }
 
@@ -123,7 +123,6 @@ public class ExternalHTTPAction extends CallAction {
                 Object[] paramList = new Object[rNotUsedParams.result.size()];
                 for (int i=0,size=rNotUsedParams.result.size();i<size;i++)
                     paramList[i] = format(context, rNotUsedParams.result.get(i), null); // пока в body ничего не кодируем (так как content-type'ы другие)
-
 
                 byte[] body = null;
                 if (method.hasBody()) {

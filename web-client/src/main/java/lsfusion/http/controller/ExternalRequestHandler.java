@@ -7,6 +7,7 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteInternalException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.logics.LogicsSessionObject;
+import lsfusion.interop.session.ExternalHttpUtils;
 import lsfusion.interop.session.ExternalUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -103,9 +104,8 @@ public abstract class ExternalRequestHandler extends LogicsRequestHandler implem
         }
 
         if(cookieNames != null) {
-            for (int i = 0; i < cookieNames.length; i++) {
-                response.addCookie(new Cookie(cookieNames[i], cookieValues[i]));
-            }
+            for (int i = 0; i < cookieNames.length; i++)
+                response.addCookie(ExternalHttpUtils.parseCookie(cookieNames[i], cookieValues[i]));
         }
 
         if(contentType != null && !hasContentType)

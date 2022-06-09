@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
+import lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler;
 import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -46,8 +47,9 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
-        Cookie hostNameCookie = WebUtils.getCookie(request, ServerUtils.HOSTNAME_COOKIE_NAME);
-        String hostName = hostNameCookie != null ? hostNameCookie.getValue() : request.getRemoteHost();
+        String hostName = ExternalLogicsAndSessionRequestHandler.getRequestCookies(request).get(ServerUtils.HOSTNAME_COOKIE_NAME);
+        if(hostName == null)
+            hostName = request.getRemoteHost();
 
         return new SessionInfo(hostName, request.getRemoteAddr(), null, null, null, null, // we don't need client language and country because they were already provided when authenticating (see method above)
                 MainController.getExternalRequest(new Object[0], request));
