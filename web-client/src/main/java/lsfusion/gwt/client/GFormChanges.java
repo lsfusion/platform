@@ -17,11 +17,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import static lsfusion.gwt.client.form.object.GGroupObjectValue.checkTwins;
-import static lsfusion.gwt.client.base.GwtClientUtils.getAppStaticImageURL;
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
-import static lsfusion.gwt.client.base.GwtClientUtils.getAppStaticImageURL;
-
-import static lsfusion.gwt.client.form.object.GGroupObjectValue.checkTwins;
 
 public class GFormChanges {
     public final NativeSIDMap<GGroupObject, GGroupObjectValue> objects = new NativeSIDMap<>();
