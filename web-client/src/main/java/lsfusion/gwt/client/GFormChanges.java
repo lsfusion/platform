@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.getAppStaticImageURL;
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
 import static lsfusion.gwt.client.form.object.GGroupObjectValue.checkTwins;
 
@@ -147,7 +146,7 @@ public class GFormChanges {
             case GPropertyReadType.CUSTOM:
                 return form.findContainerByID(readerId).customDesignCaptionReader;
             case GPropertyReadType.COMPONENT_SHOWIF:
-                return form.findComponentByID(readerId).customDesignCaptionReader;
+                return form.findComponentByID(readerId).showIfReader;
             default:
                 return null;
         }

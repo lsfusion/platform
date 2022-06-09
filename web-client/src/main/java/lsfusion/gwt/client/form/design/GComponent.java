@@ -129,10 +129,10 @@ public class GComponent implements Serializable {
         @Override
         public String getNativeSID() {
             if(sID == null) {
-                sID = "_CONTAINER_" + "SHOWIFREADER" + "_" + GComponent.this.sID;
+                sID = "_COMPONENT_" + "SHOWIFREADER" + "_" + GComponent.this.sID;
             }
             return sID;
         }
     }
-    public final GPropertyReader customDesignCaptionReader = new GShowIfReader();
+    public final GPropertyReader showIfReader = new GShowIfReader();
 }

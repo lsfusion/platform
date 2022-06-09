@@ -2313,8 +2313,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
             if(newIsHidden != oldIsHidden) {
                 BaseComponentViewInstance componentInstance = instanceFactory.getInstance(component);
-                ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> values = MapFact.EMPTY();
-                values = values.addExcl(MapFact.EMPTY(), newIsHidden ? new DataObject(true) : NullValue.instance);
+                ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> values = MapFact.singleton(MapFact.EMPTY(), newIsHidden ? new DataObject(true) : NullValue.instance);
                 result.properties.exclAdd(componentInstance.showIfReader, values);
             }
         }
@@ -2398,9 +2397,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
                 ImSet<GroupObjectInstance> gridGroups = SetFact.EMPTY();
 
-                ContainerViewInstance componentInstance = instanceFactory.getInstance(container);
-                fillChangedReader(componentInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-                fillChangedReader(componentInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+                ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
+                fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
             }
         }
         return mReadProperties.immutable();
