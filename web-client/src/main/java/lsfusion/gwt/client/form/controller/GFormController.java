@@ -433,7 +433,7 @@ public class GFormController implements EditManager {
         List<Widget> groupFilters = filterViews.get(groupObject);
         if (groupFilters != null)
             for (Widget filterView : groupFilters)
-                GwtClientUtils.setUpdateVisible(filterView, visible);
+                GwtClientUtils.setGridVisible(filterView, visible);
     }
 
     private void setRegularFilter(GRegularFilterGroup filterGroup, int index) {

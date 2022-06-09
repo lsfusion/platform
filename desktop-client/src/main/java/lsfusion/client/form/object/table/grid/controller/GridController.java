@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.FlatRolloverButton;
 import lsfusion.client.base.view.ThemedFlatRolloverButton;
 import lsfusion.client.classes.data.ClientIntegralClass;
@@ -593,18 +594,19 @@ public class GridController extends AbstractTableController {
                 forceUpdateTableButton.setEnabled(updateState);
             updateTable(updateState);
 
+            boolean isVisible  = isVisible();
             if (toolbarView != null) {
-                toolbarView.setVisible(isVisible());
+                SwingUtils.setGridVisible(toolbarView, isVisible);
             }
 
             filter.update();
-            filter.setVisible(isVisible());
+            filter.setVisible(isVisible);
 
             if (calculationsView != null) {
-                calculationsView.setVisible(isVisible());
+                SwingUtils.setGridVisible(calculationsView, isVisible);
             }
 
-            formController.setFiltersVisible(groupObject, isVisible());
+            formController.setFiltersVisible(groupObject, isVisible);
         }
 
         panel.update();

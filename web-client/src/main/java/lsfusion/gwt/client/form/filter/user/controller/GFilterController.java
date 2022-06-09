@@ -351,7 +351,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     public void setVisible(boolean visible) {
         for(GFilterConditionView conditionView : conditionViews.values())
-            GwtClientUtils.setUpdateVisible(conditionView, visible);
+            GwtClientUtils.setGridVisible(conditionView, visible);
     }
     
     public boolean hasConditions() {

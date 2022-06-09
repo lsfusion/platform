@@ -341,19 +341,13 @@ public class ContainerView extends ComponentView {
         children.addIfNotExistsToThenLast(comp, compAfter, true, version);
     }
 
-    public void fillPropertyContainers(MExclSet<ContainerView> mContainers) {
+    public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
         if(showIf != null || propertyCaption != null || propertyCustomDesign != null)
-            mContainers.exclAdd(this);
+            mComponents.exclAdd(this);
 
-        for(ComponentView child : getChildrenIt())
-            if(child instanceof ContainerView)
-                ((ContainerView)child).fillPropertyContainers(mContainers);
-    }
-
-    public void fillBaseComponents(MExclSet<ComponentView> mComponents) {
         for (ComponentView child : getChildrenIt()) {
             if (child instanceof ContainerView) {
-                ((ContainerView) child).fillBaseComponents(mComponents);
+                ((ContainerView) child).fillPropertyComponents(mComponents);
             } else if (child.showIf != null) {
                 mComponents.exclAdd(child);
             }

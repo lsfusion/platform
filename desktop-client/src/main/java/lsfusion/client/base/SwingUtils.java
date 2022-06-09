@@ -27,6 +27,7 @@ import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.client.base.view.SwingDefaults.getSingleCellTableIntercellSpacing;
 
 public class SwingUtils {
@@ -797,5 +798,26 @@ public class SwingUtils {
         calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
 
         adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
+    }
+
+    private static String showIfVisible = "showIfVisible";
+    public static void setShowIfVisible(JComponent component, boolean visible) {
+        component.putClientProperty(showIfVisible, String.valueOf(visible));
+        updateVisibility(component);
+    }
+
+    private static String gridVisible = "gridVisible";
+    public static void setGridVisible(JComponent component, boolean visible) {
+        component.putClientProperty(gridVisible, String.valueOf(visible));
+        updateVisibility(component);
+    }
+
+    private static void updateVisibility(JComponent component) {
+        component.setVisible(isVisible(component, showIfVisible) && isVisible(component, gridVisible));
+    }
+
+    private static boolean isVisible(JComponent component, String key) {
+        Object value = component.getClientProperty(key);
+        return isRedundantString(value) || Boolean.parseBoolean((String) value);
     }
 }

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.tree.controller;
 
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -105,10 +106,10 @@ public class GTreeGroupController extends GAbstractTableController {
 
         boolean isTreeVisible = tree.getColumnCount() > 1;
 
-        gridView.setVisible(isTreeVisible);
+        GwtClientUtils.setGridVisible(gridView, isTreeVisible);
 
         if (toolbarView != null)
-            toolbarView.setVisible(isTreeVisible);
+            GwtClientUtils.setGridVisible(toolbarView, isTreeVisible);
 
         for (GGroupObject groupObject : treeGroup.groups)
             formController.setFiltersVisible(groupObject, isTreeVisible);

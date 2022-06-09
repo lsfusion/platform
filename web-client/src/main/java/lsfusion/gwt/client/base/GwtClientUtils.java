@@ -1141,23 +1141,24 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    public static void setBaseComponentVisible(Widget widget, boolean visible) {
-        widget.getElement().setAttribute("baseComponentVisible", String.valueOf(visible));
+    private static String showIfVisible = "showIfVisible";
+    public static void setShowIfVisible(Widget widget, boolean visible) {
+        widget.getElement().setAttribute(showIfVisible, String.valueOf(visible));
         updateVisibility(widget);
     }
 
-    public static void setUpdateVisible(Widget widget, boolean visible) {
-        widget.getElement().setAttribute("updateVisible", String.valueOf(visible));
+    private static String gridVisible = "gridVisible";
+    public static void setGridVisible(Widget widget, boolean visible) {
+        widget.getElement().setAttribute(gridVisible, String.valueOf(visible));
         updateVisibility(widget);
     }
 
     private static void updateVisibility(Widget widget) {
-        String baseVisible = widget.getElement().getAttribute("baseComponentVisible");
-        String updateVisible = widget.getElement().getAttribute("updateVisible");
-        widget.setVisible(isVisible(baseVisible) && isVisible(updateVisible));
+        widget.setVisible(isVisible(widget, showIfVisible) && isVisible(widget, gridVisible));
     }
 
-    private static boolean isVisible(String value) {
+    private static boolean isVisible(Widget widget, String key) {
+        String value = widget.getElement().getAttribute(key);
         return isRedundantString(value) || Boolean.parseBoolean(value);
     }
 }

@@ -1,6 +1,7 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.base.Pair;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.view.Filler;
 import lsfusion.client.form.design.view.FlexPanel;
@@ -313,10 +314,10 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     }
 
     @Override
-    public void setVisible(boolean aFlag) {
-        super.setVisible(aFlag);
+    public void setVisible(boolean isVisible) {
+        SwingUtils.setGridVisible(this, isVisible);
         
-        if (aFlag) {
+        if (isVisible) {
             propertyLabel.setText(columnsProvider.getColumns().get(new Column(condition.property, condition.columnKey != null ? condition.columnKey : EMPTY)));
         }
     }

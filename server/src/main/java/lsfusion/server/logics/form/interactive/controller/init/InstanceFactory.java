@@ -9,7 +9,7 @@ import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
-import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
@@ -44,7 +44,7 @@ public class InstanceFactory {
     private final MAddExclMap<TreeGroupEntity, TreeGroupInstance> treeInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<ActionOrPropertyObjectEntity, ActionOrPropertyObjectInstance> actionOrPropertyObjectInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = MapFact.mSmallStrongMap();
-    private final MAddExclMap<ContainerView, ContainerViewInstance> containerViewInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<ComponentView, ComponentViewInstance> componentViewInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<ComponentView, BaseComponentViewInstance> baseComponentViewInstances = MapFact.mSmallStrongMap();
 
 
@@ -159,22 +159,22 @@ public class InstanceFactory {
         return propertyDrawInstance;
     }
 
-    public ContainerViewInstance getInstance(ContainerView entity) {
-        ContainerViewInstance containerViewInstance = containerViewInstances.get(entity);
-        if (containerViewInstance == null) {
-            containerViewInstance = new ContainerViewInstance(
+    public ComponentViewInstance getInstance(ComponentView entity) {
+        ComponentViewInstance componentViewInstance = componentViewInstances.get(entity);
+        if (componentViewInstance == null) {
+            componentViewInstance = new ComponentViewInstance(
                     entity,
                     ContainerViewExtraType.extras.mapValues((ContainerViewExtraType type) -> {
-                        PropertyObjectEntity<?> extra = entity.getExtra(type);
+                        PropertyObjectEntity<?> extra = entity instanceof ContainerView ? ((ContainerView) entity).getExtra(type) : null;
                         return extra != null ? getInstance(extra) : null;
                     })
             );
-            containerViewInstances.exclAdd(entity, containerViewInstance);
+            componentViewInstances.exclAdd(entity, componentViewInstance);
         }
-        return containerViewInstance;
+        return componentViewInstance;
     }
 
-    public BaseComponentViewInstance getInstance(ComponentView entity) {
+    public BaseComponentViewInstance getBaseInstance(ComponentView entity) {
         BaseComponentViewInstance baseComponentViewInstance = baseComponentViewInstances.get(entity);
         if (baseComponentViewInstance == null) {
             baseComponentViewInstance = new BaseComponentViewInstance(entity);
