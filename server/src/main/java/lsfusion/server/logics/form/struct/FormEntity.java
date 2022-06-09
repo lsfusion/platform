@@ -1414,6 +1414,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return mComponents.immutable();
     }
 
+    @IdentityLazy
+    public ImSet<ComponentView> getBaseComponents() {
+        MExclSet<ComponentView> mContainers = SetFact.mExclSet();
+        getRichDesign().mainContainer.fillBaseComponents(mContainers, false);
+        return mContainers.immutable();
+    }
+
     public String getAsyncCaption() {
         return ThreadLocalContext.localize(getRichDesign().mainContainer.caption);
     }

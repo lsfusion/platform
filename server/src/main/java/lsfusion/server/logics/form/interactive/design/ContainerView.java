@@ -354,6 +354,16 @@ public class ContainerView extends ComponentView {
         }
     }
 
+    public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean parentShowIf) {
+        for (ComponentView child : getChildrenIt()) {
+            if (child instanceof ContainerView) {
+                ((ContainerView) child).fillBaseComponents(mComponents, parentShowIf || child.showIf != null);
+            } else if (child.showIf != null || (parentShowIf && !(child instanceof PropertyDrawView))) {
+                mComponents.exclAdd(child);
+            }
+        }
+    }
+
     public boolean isAncestorOf(ComponentView container) {
         return container != null && (super.isAncestorOf(container) || isAncestorOf(container.getHiddenContainer()));
     }

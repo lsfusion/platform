@@ -118,7 +118,7 @@ public class GFormLayout extends ResizableComplexPanel {
         add(component, view, focusReceiver);
     }
 
-    public void setBaseComponentVisible(GComponent component, boolean visible) {
+    public void setShowIfVisible(GComponent component, boolean visible) {
         Widget widget = baseComponentViews.get(component);
         if(widget != null) {
             GwtClientUtils.setShowIfVisible(widget, visible);

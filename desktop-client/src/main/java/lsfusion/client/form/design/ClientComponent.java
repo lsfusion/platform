@@ -216,7 +216,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         }
 
         public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
-            controller.getFormController().getLayout().setBaseComponentVisible(ClientComponent.this, values.get(ClientGroupObjectValue.EMPTY) == null);
+            controller.getFormController().getLayout().setShowIfVisible(ClientComponent.this, values.get(ClientGroupObjectValue.EMPTY) == null);
         }
 
         public int getID() {

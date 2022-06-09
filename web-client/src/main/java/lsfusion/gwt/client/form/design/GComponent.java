@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.form.design;
 
-import lsfusion.client.form.design.ClientComponent;
-import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -125,7 +123,7 @@ public class GComponent implements Serializable {
 
         @Override
         public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
-            controller.getFormLayout().setBaseComponentVisible(GComponent.this, values.get(GGroupObjectValue.EMPTY) == null);
+            controller.getFormLayout().setShowIfVisible(GComponent.this, values.get(GGroupObjectValue.EMPTY) == null);
         }
 
         @Override

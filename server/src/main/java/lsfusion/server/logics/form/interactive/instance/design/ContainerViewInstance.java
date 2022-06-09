@@ -1,16 +1,15 @@
 package lsfusion.server.logics.form.interactive.instance.design;
 
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 
-public class ComponentViewInstance extends CellInstance<ComponentView> {
+public class ContainerViewInstance extends CellInstance<ContainerView> {
 
-    public ComponentViewInstance(ComponentView entity, ImMap<ContainerViewExtraType, PropertyObjectInstance<?>> extras) {
+    public ContainerViewInstance(ContainerView entity, ImMap<ContainerViewExtraType, PropertyObjectInstance<?>> extras) {
         super(entity);
 
         propertyCaption = extras.get(ContainerViewExtraType.CAPTION);
@@ -47,7 +46,7 @@ public class ComponentViewInstance extends CellInstance<ComponentView> {
 
         @Override
         public int getID() {
-            return ComponentViewInstance.this.getID();
+            return ContainerViewInstance.this.getID();
         }
 
         @Override

@@ -181,7 +181,7 @@ public class ClientFormLayout extends PanelWidget {
         add(component, view, focusReceiver);
     }
 
-    public void setBaseComponentVisible(ClientComponent component, boolean visible) {
+    public void setShowIfVisible(ClientComponent component, boolean visible) {
         Widget widget = baseComponentViews.get(component);
         if(widget != null) {
             SwingUtils.setShowIfVisible(widget.getComponent(), visible);
