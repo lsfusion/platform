@@ -2,6 +2,7 @@ package lsfusion.client.form.filter.user.controller;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.ClientContainerView;
@@ -391,7 +392,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
     public void setVisible(boolean visible) {
         for (FilterConditionView conditionView : conditionViews.values()) {
-            conditionView.setVisible(visible);
+            SwingUtils.setGridVisible(conditionView, visible);
         }
     }
 }

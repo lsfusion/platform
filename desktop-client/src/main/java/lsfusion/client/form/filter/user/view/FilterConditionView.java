@@ -315,7 +315,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
     @Override
     public void setVisible(boolean isVisible) {
-        SwingUtils.setGridVisible(this, isVisible);
+        super.setVisible(isVisible);
         
         if (isVisible) {
             propertyLabel.setText(columnsProvider.getColumns().get(new Column(condition.property, condition.columnKey != null ? condition.columnKey : EMPTY)));
