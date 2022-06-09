@@ -69,9 +69,14 @@ public abstract class GIntervalType extends GFormatType {
         if(s.isEmpty())
             return null;
 
-        Object parsedObject = GwtClientUtils.parseInterval(s, date -> GIntervalType.this.parse(date, pattern));
-        if (parsedObject == null)
-            throw new ParseException(" 'interval_to' is less then 'interval_from' ", 0);
+        Object parsedObject;
+        try {
+            parsedObject = GwtClientUtils.parseInterval(s, date -> GIntervalType.this.parse(date, pattern));
+            if (parsedObject == null)
+                throw new Exception();
+        } catch (Exception e) {
+            throw new ParseException(e.getMessage(), 0);
+        }
 
         return parsedObject;
     }
