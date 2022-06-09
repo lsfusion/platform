@@ -54,7 +54,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP inDevMode;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(ServiceLogicsModule.class.getResourceAsStream("/system/Service.lsf"), "/system/Service.lsf", baseLM, BL);
+        super(baseLM, BL, "/system/Service.lsf");
     }
 
     @Override

@@ -203,7 +203,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP currentForm;
 
     public ReflectionLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(ReflectionLogicsModule.class.getResourceAsStream("/system/Reflection.lsf"), "/system/Reflection.lsf", baseLM, BL);
+        super(baseLM, BL, "/system/Reflection.lsf");
     }
 
     @Override

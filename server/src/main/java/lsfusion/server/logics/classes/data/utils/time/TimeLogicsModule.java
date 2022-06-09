@@ -17,7 +17,7 @@ public class TimeLogicsModule extends ScriptingLogicsModule{
     public LP currentDate;
 
     public TimeLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(TimeLogicsModule.class.getResourceAsStream("/system/Time.lsf"), "/system/Time.lsf", baseLM, BL);
+        super(baseLM, BL, "/system/Time.lsf");
     }
 
     @Override

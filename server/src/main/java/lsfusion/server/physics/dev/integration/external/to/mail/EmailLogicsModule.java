@@ -43,7 +43,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LP unpackAccount;
 
     public EmailLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(EmailLogicsModule.class.getResourceAsStream("/system/Email.lsf"), "/system/Email.lsf", baseLM, BL);
+        super(baseLM, BL, "/system/Email.lsf");
     }
 
     @Override

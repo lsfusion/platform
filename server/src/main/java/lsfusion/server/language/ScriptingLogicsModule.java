@@ -202,13 +202,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
-    public ScriptingLogicsModule(InputStream stream, String path, BaseLogicsModule baseModule, BusinessLogics BL) throws IOException {
-        this(stream, path, "utf-8", baseModule, BL);
-    }
-
-    public ScriptingLogicsModule(InputStream stream, String path, String charsetName, BaseLogicsModule baseModule, BusinessLogics BL) throws IOException {
-        this(IOUtils.readStreamToString(stream, charsetName), baseModule, BL);
-        this.path = path;
+   public ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String lsfPath) {
+        this(ResourceUtils.findResourceAsString(lsfPath, false, false, null, null), baseModule, BL);
+        this.path = lsfPath;
     }
 
     protected ScriptingLogicsModule(String code, BaseLogicsModule baseModule, BusinessLogics BL) {
@@ -3267,17 +3263,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private String parseStringInlineProp(String resourceName) throws ScriptingErrorLog.SemanticErrorException {
-        String result = null;
-        RawFileData resource = ResourceUtils.findResourceAsFileData(resourceName, true, false, new Result(), null);
-        if (resource == null) {
+        String result = ResourceUtils.findResourceAsString(resourceName, true, false, null, "web");
+        if (result == null)
             errLog.emitNotFoundError(parser, "file", resourceName);
-        } else {
-            try {
-                result = IOUtils.readStreamToString(resource.getInputStream());
-            } catch (IOException e) {
-                throw Throwables.propagate(e);
-            }
-        }
 
         return escapeLiteral(result);
     }

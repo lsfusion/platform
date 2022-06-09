@@ -51,7 +51,7 @@ public class SchedulerLogicsModule extends ScriptingLogicsModule {
     public LA evalScript;
 
     public SchedulerLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(SchedulerLogicsModule.class.getResourceAsStream("/system/Scheduler.lsf"), "/system/Scheduler.lsf", baseLM, BL);
+        super(baseLM, BL, "/system/Scheduler.lsf");
     }
 
     @Override

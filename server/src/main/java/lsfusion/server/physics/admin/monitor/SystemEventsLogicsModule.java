@@ -106,7 +106,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP maxUsedMemoryComputerDateTimeFromDateTimeTo;
 
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
-        super(SystemEventsLogicsModule.class.getResourceAsStream("/system/SystemEvents.lsf"), "/system/SystemEvents.lsf", baseLM, BL);
+        super(baseLM, BL, "/system/SystemEvents.lsf");
         this.authenticationLM = BL.authenticationLM;
     }
 

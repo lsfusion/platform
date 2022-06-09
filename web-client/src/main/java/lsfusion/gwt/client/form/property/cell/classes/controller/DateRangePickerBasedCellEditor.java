@@ -53,8 +53,14 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected abstract Object getInputValue();
     protected abstract boolean isSinglePicker();
 
+    private void setInputValue(Element parent) {
+        setInputValue(getInputElement(parent), tryFormatInputText(getInputValue()));
+    }
+
     protected native void removePicker()/*-{
         $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').remove();
+        //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
+        $($wnd).off('keydown.pickerpopup').off('click.pickerpopup');
     }-*/;
 
     protected native Element getPickerElement()/*-{
@@ -68,7 +74,8 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
     protected native JsDate getPickerEndDate()/*-{
         var pickerDate = $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').endDate;
-        return pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
+        // pickerDate may be null because we update the input field and on select 'date_from' - 'date_to' will be null
+        return pickerDate == null ? this.@DateRangePickerBasedCellEditor::getPickerStartDate(*)() : pickerDate.isValid() ? pickerDate.toDate() : null; // toDate because it is "Moment js" object
     }-*/;
 
     protected native void createPicker(Element parent, JsDate startDate, JsDate endDate, String pattern, boolean singleDatePicker, boolean time, boolean date)/*-{
@@ -76,18 +83,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         var thisObj = this;
         var editElement = $(thisObj.@TextBasedPopupCellEditor::editBox);
         var messages = @lsfusion.gwt.client.ClientMessages.Instance::get()();
-
-        var format = pattern.replaceAll("d", "D").replaceAll("y", "Y").replaceAll("a", "A"); // dateRangePicker format - date uses capital letters, time uses small letters, AM/PM uses capital letter
-
-        //Must be called before the picker is initialised, or its events will be triggered earlier
-        editElement.on('keydown', function (e) {
-            if (e.keyCode === 27) {
-                thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
-            } else if ((e.keyCode === 9) || (e.keyCode === 13)) {
-                //For picker does not close on pressing enter. We will close it ourselves in the commit method. stopPropagation() and preventDefault() does not work;
-                e.keyCode = 0;
-            }
-        });
+        applyDateRangePickerPatches(); //Must be called before the picker is initialised
 
         editElement.daterangepicker({
             locale: {
@@ -118,7 +114,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                     messages.@lsfusion.gwt.client.ClientMessages::monthDecember()()
                 ],
                 "firstDay": 1,
-                format: format // need to be able to enter date from keyboard
+                format: pattern.replaceAll("d", "D").replaceAll("y", "Y").replaceAll("a", "A") // dateRangePicker format - date uses capital letters, time uses small letters, AM/PM uses capital letter. need to be able to enter date from keyboard
             },
             startDate: startDate,
             endDate: endDate,
@@ -143,8 +139,21 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         //show only time picker
         if (time) {
             editElement.on('show.daterangepicker', function (ev, picker) {
-                picker.container.find(".calendar-table").hide();
-                picker.container.find(".drp-selected").hide();
+                var pickerContainer = picker.container;
+                var calendarTables = pickerContainer.find(".calendar-table");
+                var offsetHeight = calendarTables.get(0).offsetHeight;
+
+                //determinate horizontal or vertical(for small screen size) interval picker
+                var calendarTablesOffsetHeight = pickerContainer.height() < offsetHeight * 2 ? offsetHeight : offsetHeight * 2;
+
+                calendarTables.hide();
+                pickerContainer.find(".drp-selected").hide();
+
+                //because we hide calendar tables when shown "drop-up" only timepicker it is shown in wrong place
+                if (pickerContainer.hasClass("drop-up")) {
+                    var pickerElement = pickerContainer.get(0);
+                    pickerElement.style.top = (pickerElement.offsetTop + calendarTablesOffsetHeight - parseInt(window.getComputedStyle(pickerElement).marginTop)) + "px";
+                }
             });
         }
 
@@ -157,20 +166,11 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
             return propertyHorTextAlignment.@com.google.gwt.dom.client.Style.TextAlign::getCssName()();
         }
 
-        //Return focus to editElement and then we will handle the press of the esc button. Because daterangepicker does not allow to handle events
-        var pickerEl = $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()());
-        pickerEl.on('keyup change.daterangepicker', function () {
-            returnFocus()}
-        );
-        pickerEl.on('mouseup', function (e) {
-            if (e.target.tagName !== 'SELECT')
-                returnFocus()
+        //update input element
+        $(thisObj.@DateRangePickerBasedCellEditor::getPickerElement()()).on('mouseup keyup change.daterangepicker', function (e) {
+            if (e.target.tagName !== 'SELECT' || e.type !== 'mouseup')
+                thisObj.@DateRangePickerBasedCellEditor::setInputValue(Lcom/google/gwt/dom/client/Element;)(parent);
         });
-        function returnFocus() {
-            editElement.focus();
-            var input = editElement.get(0);
-            input.selectionStart = input.selectionEnd = input.value.length; //To place the cursor at the very end
-        }
 
         editElement.on('cancel.daterangepicker', function () {
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::cancel(Lcom/google/gwt/dom/client/Element;)(parent);
@@ -179,5 +179,177 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         editElement.on('apply.daterangepicker', function () {
             thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
         });
+
+        editElement.on('show.daterangepicker', function () {
+            $($wnd).on('keydown.pickerpopup', function (e) {
+                if (e.keyCode === 27)
+                    thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
+                else if ((e.keyCode === 9) || (e.keyCode === 13))
+                    thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
+            }).on('click.pickerpopup', function (e) { //daterangepicker for some reason returns focus to $wnd and not to the editelement and the daterangepicker does not hide even if we open another form
+                var container = $(".daterangepicker");
+                if (!container.is(e.target) && container.has(e.target).length === 0)
+                    thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
+            });
+        });
+
+        editElement.on('hide.daterangepicker', function () {
+            $($wnd).off('keydown.pickerpopup').off('click.pickerpopup');
+        });
+
+        //THESE ARE THE PATCHES OF DATERANGEPICKER. ALL CHANGES START WITH <<<<< AND END WITH >>>>>. ALL COMMENTS WILL BE IN UPPER CASE
+        function applyDateRangePickerPatches() {
+            //OVERRIDE OF THE datepicker.keydown METHOD. COPIED FROM daterangepicker.js WITH SOME CHANGES
+            $wnd.daterangepicker.prototype.keydown = function (e) {
+                //<<<<< REMOVE THIS IF TO PREVENT HIDE PICKER ON PRESS ENTER WITH INVALID INPUT
+                //hide on tab or enter
+                //if ((e.keyCode === 9) || (e.keyCode === 13)) {
+                //    this.hide();
+                //}
+                //>>>>>
+
+                //hide on esc and prevent propagation
+                if (e.keyCode === 27) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    //<<<<< CHANGED hide() TO cancel()
+                    //this.hide();
+                    thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
+                    //>>>>>
+                }
+            }
+
+            //OVERRIDE OF THE calculateChosenLabel AND updateCalendars METHODS. COPIED FROM daterangepicker.js.
+            //NEED FOR HIGHLIGHTING PREDEFINED RANGES WHEN SHOWN ONLY ONE DATEPICKER NOT INTERVAL.
+            $wnd.daterangepicker.prototype.calculateChosenLabel = function () {
+                var customRange = true;
+                var i = 0;
+                for (var range in this.ranges) {
+                    //<<<<<
+                    //ADDED THIS IF
+                    if (singleDatePicker) {
+                        if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD')) {
+                            customRange = false;
+                            this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
+                            break;
+                        }
+                    }
+                    //>>>>>
+                    else if (this.timePicker) {
+                        var format = this.timePickerSeconds ? "YYYY-MM-DD HH:mm:ss" : "YYYY-MM-DD HH:mm";
+                        //ignore times when comparing dates if time picker seconds is not enabled
+                        if (this.startDate.format(format) == this.ranges[range][0].format(format) && this.endDate.format(format) == this.ranges[range][1].format(format)) {
+                            customRange = false;
+                            this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
+                            break;
+                        }
+                    } else {
+                        //ignore times when comparing dates if time picker is not enabled
+                        if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD') && this.endDate.format('YYYY-MM-DD') == this.ranges[range][1].format('YYYY-MM-DD')) {
+                            customRange = false;
+                            this.chosenLabel = this.container.find('.ranges li:eq(' + i + ')').addClass('active').attr('data-range-key');
+                            break;
+                        }
+                    }
+                    i++;
+                }
+                if (customRange) {
+                    if (this.showCustomRangeLabel) {
+                        this.chosenLabel = this.container.find('.ranges li:last').addClass('active').attr('data-range-key');
+                    } else {
+                        this.chosenLabel = null;
+                    }
+                    this.showCalendars();
+                }
+            }
+
+            $wnd.daterangepicker.prototype.updateCalendars = function() {
+                if (this.timePicker) {
+                    var hour, minute, second;
+                    if (this.endDate) {
+                        hour = parseInt(this.container.find('.left .hourselect').val(), 10);
+                        minute = parseInt(this.container.find('.left .minuteselect').val(), 10);
+                        if (isNaN(minute)) {
+                            minute = parseInt(this.container.find('.left .minuteselect option:last').val(), 10);
+                        }
+                        second = this.timePickerSeconds ? parseInt(this.container.find('.left .secondselect').val(), 10) : 0;
+                        if (!this.timePicker24Hour) {
+                            var ampm = this.container.find('.left .ampmselect').val();
+                            if (ampm === 'PM' && hour < 12)
+                                hour += 12;
+                            if (ampm === 'AM' && hour === 12)
+                                hour = 0;
+                        }
+                    } else {
+                        hour = parseInt(this.container.find('.right .hourselect').val(), 10);
+                        minute = parseInt(this.container.find('.right .minuteselect').val(), 10);
+                        if (isNaN(minute)) {
+                            minute = parseInt(this.container.find('.right .minuteselect option:last').val(), 10);
+                        }
+                        second = this.timePickerSeconds ? parseInt(this.container.find('.right .secondselect').val(), 10) : 0;
+                        if (!this.timePicker24Hour) {
+                            var ampm = this.container.find('.right .ampmselect').val();
+                            if (ampm === 'PM' && hour < 12)
+                                hour += 12;
+                            if (ampm === 'AM' && hour === 12)
+                                hour = 0;
+                        }
+                    }
+                    this.leftCalendar.month.hour(hour).minute(minute).second(second);
+                    this.rightCalendar.month.hour(hour).minute(minute).second(second);
+                }
+
+                this.renderCalendar('left');
+                this.renderCalendar('right');
+
+                //highlight any predefined range matching the current start and end dates
+                this.container.find('.ranges li').removeClass('active');
+
+                //<<<<<
+                //CHANGE IF STATEMENT. ADDED !singleDatePicker CHECK
+                // if (this.endDate == null) return;
+                if (!singleDatePicker && this.endDate == null) return;
+                //>>>>>
+
+                this.calculateChosenLabel();
+            }
+
+            //OVERRIDE OF THE show METHOD. COPIED FROM daterangepicker.js.
+            //WE NEED TO TRIGGER 'show.daterangepicker' BEFORE CONTAINER SHOWN FOR DETERMINATE SIZE OF POPUP
+            $wnd.daterangepicker.prototype.show = function(e) {
+                if (this.isShowing) return;
+
+                // Create a click proxy that is private to this instance of datepicker, for unbinding
+                this._outsideClickProxy = $.proxy(function(e) { this.outsideClick(e); }, this);
+
+                // Bind global datepicker mousedown for hiding and
+                $(document)
+                    .on('mousedown.daterangepicker', this._outsideClickProxy)
+                    // also support mobile devices
+                    .on('touchend.daterangepicker', this._outsideClickProxy)
+                    // also explicitly play nice with Bootstrap dropdowns, which stopPropagation when clicking them
+                    .on('click.daterangepicker', '[data-toggle=dropdown]', this._outsideClickProxy)
+                    // and also close when focus changes to outside the picker (eg. tabbing between controls)
+                    .on('focusin.daterangepicker', this._outsideClickProxy);
+
+                // Reposition the picker if the window is resized while it's open
+                $(window).on('resize.daterangepicker', $.proxy(function(e) { this.move(e); }, this));
+
+                this.oldStartDate = this.startDate.clone();
+                this.oldEndDate = this.endDate.clone();
+                this.previousRightTime = this.endDate.clone();
+
+                this.updateView();
+                //<<<<<
+                //ADD
+                this.element.trigger('show.daterangepicker', this); //MOVED FROM AFTER this.move();
+                this.container.show();
+                this.move();
+//                this.element.trigger('show.daterangepicker', this);
+                //>>>>>
+                this.isShowing = true;
+            }
+        }
     }-*/;
 }

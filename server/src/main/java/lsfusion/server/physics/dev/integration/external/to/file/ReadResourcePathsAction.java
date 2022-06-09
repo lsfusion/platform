@@ -20,10 +20,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class ReadResourcesAction extends InternalAction {
+public class ReadResourcePathsAction extends InternalAction {
     private final ClassPropertyInterface resourcePathInterface;
 
-    public ReadResourcesAction(UtilsLogicsModule LM, ValueClass... classes) {
+    public ReadResourcePathsAction(UtilsLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = getOrderInterfaces().iterator();
@@ -37,8 +37,8 @@ public class ReadResourcesAction extends InternalAction {
         allResources
                 .forEach(r -> {
                     try {
-                        findProperty("resourceFiles[STRING]").change(new RawFileData(r, true), context, new DataObject(r, StringClass.text));
-                    } catch (ScriptingErrorLog.SemanticErrorException | IOException | SQLException | SQLHandledException e) {
+                        findProperty("resourcePaths[STRING]").change(r, context, new DataObject(r, StringClass.text));
+                    } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
                         throw Throwables.propagate(e);
                     }
                 });

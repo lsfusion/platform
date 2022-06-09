@@ -119,7 +119,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -441,10 +440,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
     
     private void addModuleFromResource(String path) throws IOException {
-        InputStream is = getClass().getResourceAsStream(path);
-        if (is == null)
-            throw new RuntimeException(String.format("[error]:\tmodule '%s' cannot be found", path));
-        addModule(new ScriptingLogicsModule(is, path, LM, this));
+        addModule(new ScriptingLogicsModule(LM, this, path));
     }
     
     public void initObjectClass() {
@@ -1992,6 +1988,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getChangeDataCurrentDateTimeTask(scheduler));
         }
         result.add(getFlushAsyncValuesCachesTask(scheduler));
+        result.addAll(resetCustomReportsCacheTasks(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2002,7 +1999,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getFlushPendingTransactionCleanersTask(scheduler));
             result.add(getRestartConnectionsTask(scheduler));
             result.add(getUpdateSavePointsInfoTask(scheduler));
-            result.addAll(resetCustomReportsCacheTasks(scheduler));
             result.add(getProcessDumpTask(scheduler));
         } else {
             result.add(getSynchronizeSourceTask(scheduler));
@@ -2130,7 +2126,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                             logger.info("Reset reports cache: run scheduler task for " + path);
                             ResourceUtils.watchPathForChange(path, () -> {
                                 logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
-                                ResourceUtils.clearResourceFileCaches("jrxml");
+                                ResourceUtils.clearResourceCaches("jrxml", true, true);
                             }, Pattern.compile(".*\\.jrxml"));
                         }, true, null, false, "Custom Reports"));
                     }
