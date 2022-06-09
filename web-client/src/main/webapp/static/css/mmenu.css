@@ -70,3 +70,18 @@
 .mm-spn ul.mm-spn--parent {
     left: -130%;
 }
+
+.mm-ocd__content {
+    /* hack for mmenu-light issue: https://github.com/FrDH/mmenu-light/issues/73 */
+    -webkit-transition-property: none;
+    transition-property: none;
+    -o-transition-property: none;
+    transition-property: none;
+    transition-property: none;
+    -webkit-transition-duration: unset;
+    -o-transition-duration: unset;
+    transition-duration: unset;
+    -webkit-transition-timing-function: unset;
+    -o-transition-timing-function: unset;
+    transition-timing-function: unset;
+}
