@@ -539,8 +539,8 @@ public class ClientFormController implements AsyncListener {
     public void setFiltersVisible(ClientGroupObject groupObject, boolean visible) {
         List<FlexPanel> groupFilters = filterViews.get(groupObject);
         if (groupFilters != null) {
-            for (JComponent filterView : groupFilters) {
-                filterView.setVisible(visible);
+            for (FlexPanel filterView : groupFilters) {
+                SwingUtils.setGridVisible(filterView, visible);
             }
         }
     }

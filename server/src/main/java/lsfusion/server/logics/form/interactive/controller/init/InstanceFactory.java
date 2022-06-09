@@ -5,8 +5,10 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
+import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterGroupInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.RegularFilterInstance;
@@ -43,6 +45,7 @@ public class InstanceFactory {
     private final MAddExclMap<ActionOrPropertyObjectEntity, ActionOrPropertyObjectInstance> actionOrPropertyObjectInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<PropertyDrawEntity, PropertyDrawInstance> propertyDrawInstances = MapFact.mSmallStrongMap();
     private final MAddExclMap<ContainerView, ContainerViewInstance> containerViewInstances = MapFact.mSmallStrongMap();
+    private final MAddExclMap<ComponentView, BaseComponentViewInstance> baseComponentViewInstances = MapFact.mSmallStrongMap();
 
 
     public ObjectInstance getInstance(ObjectEntity entity) {
@@ -169,6 +172,15 @@ public class InstanceFactory {
             containerViewInstances.exclAdd(entity, containerViewInstance);
         }
         return containerViewInstance;
+    }
+
+    public BaseComponentViewInstance getInstance(ComponentView entity) {
+        BaseComponentViewInstance baseComponentViewInstance = baseComponentViewInstances.get(entity);
+        if (baseComponentViewInstance == null) {
+            baseComponentViewInstance = new BaseComponentViewInstance(entity);
+            baseComponentViewInstances.exclAdd(entity, baseComponentViewInstance);
+        }
+        return baseComponentViewInstance;
     }
 
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {

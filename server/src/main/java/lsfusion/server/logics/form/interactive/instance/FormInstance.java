@@ -92,6 +92,7 @@ import lsfusion.server.logics.form.interactive.changed.*;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
@@ -156,14 +157,13 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 
 public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
 
-    private final Function<ContainerView, PropertyObjectInstance<?>> GET_CONTAINER_SHOWIF =
-            new Function<ContainerView, PropertyObjectInstance<?>>() {
+    private final Function<ComponentView, PropertyObjectInstance<?>> GET_COMPONENT_SHOWIF =
+            new Function<ComponentView, PropertyObjectInstance<?>>() {
                 @Override
-                public PropertyObjectInstance<?> apply(ContainerView key) {
+                public PropertyObjectInstance<?> apply(ComponentView key) {
                     return instanceFactory.getInstance(key.showIf);
                 }
             };
-
 
     public final LogicsInstance logicsInstance;
 
@@ -185,7 +185,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     // "закэшированная" проверка присутствия в интерфейсе, отличается от кэша тем что по сути функция от mutable объекта
     protected Set<PropertyDrawInstance> isShown = new HashSet<>();
     protected Set<PropertyDrawInstance> isStaticShown = new HashSet<>();
-    protected Set<ContainerView> isContainerHidden = new HashSet<>();
+    protected Set<ComponentView> isComponentHidden = new HashSet<>();
+    protected Set<ComponentView> isBaseComponentHidden = new HashSet<>();
     private static <T> boolean addShownHidden(Set<T> isShownHidden, T property, boolean shownHidden) {
         if(shownHidden)
             return !isShownHidden.add(property);
@@ -1722,17 +1723,17 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return isUserHidden(drawComponent);
     }
 
-    private boolean isHidden(ContainerView container) { // is Tab or showIfHidden or designHidden
-        if(container.isMain()) // form container
+    private boolean isHidden(ComponentView component) { // is Tab or showIfHidden or designHidden
+        if(component.isMain()) // form container
             return false;
 
-        if(isStaticHidden(container))
+        if(isStaticHidden(component))
             return true;
 
         // if this is a tab / collapsible container - use it's parent, since we want it's caption to be updated too (however maybe later we'll have to distinguish caption from other attributes)
-        ComponentView dynamicHidableContainer = container.getDynamicHidableContainer();
-        if(dynamicHidableContainer == container && container.isUserHidable())
-            dynamicHidableContainer = container.getHiddenContainer().getDynamicHidableContainer();
+        ComponentView dynamicHidableContainer = component.getDynamicHidableContainer();
+        if(dynamicHidableContainer == component && component.isUserHidable())
+            dynamicHidableContainer = component.getHiddenContainer().getDynamicHidableContainer();
 
         return dynamicHidableContainer != null && isDynamicHidden(dynamicHidableContainer);
     }
@@ -1770,13 +1771,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     private boolean isShowIfHidden(ComponentView component) { // dynamic
         assert !isStaticHidden(component);
 
-        ContainerView showIfHidableContainer = component.getShowIfHidableContainer();
+        ComponentView showIfHidableContainer = component.getShowIfHidableContainer();
         if(showIfHidableContainer == null)
             return false;
         assert !isStaticHidden(showIfHidableContainer);
         assert showIfHidableContainer.isShowIfHidable();
 
-        if(isContainerHidden.contains(showIfHidableContainer))
+        if(isComponentHidden.contains(showIfHidableContainer))
             return true;
 
         return isShowIfHidden(showIfHidableContainer.getHiddenContainer());
@@ -2163,9 +2164,15 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     @StackMessage("{message.getting.visible.properties}")
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
 
-        Set<PropertyDrawInstance> newShown = new HashSet<>();
-
         updateContainersShowIfs(changedProps);
+
+        updateBaseComponentsShowIfs(result);
+
+        return updatePropertiesShowIfs(changedProps, result);
+    }
+
+    private Set<PropertyDrawInstance> updatePropertiesShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
+        Set<PropertyDrawInstance> newShown = new HashSet<>();
 
         MAddSet<ComponentView> hiddenButDefinitelyShownSet = SetFact.mAddSet(); // не ComponentDownSet для оптимизации
         MAddExclMap<PropertyReaderInstance, ComponentView> hiddenNotSureShown = MapFact.mAddExclMap();
@@ -2278,18 +2285,38 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private void updateContainersShowIfs(ChangedData changedProps) throws SQLException, SQLHandledException {
-        ImSet<ContainerView> changed = entity.getPropertyContainers().<SQLException, SQLHandledException>filterFnEx(
+        ImSet<ComponentView> changed = entity.getPropertyComponents().<SQLException, SQLHandledException>filterFnEx(
                 key -> key.showIf != null && (refresh || propertyUpdated(instanceFactory.getInstance(key.showIf), SetFact.EMPTY(), changedProps, false)));
 
         if(changed.isEmpty()) // optimization
             return;
 
-        MExclMap<ContainerView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> mChangedValues = MapFact.mExclMap();
-        queryPropertyObjectValues(changed, mChangedValues, SetFact.EMPTY(), GET_CONTAINER_SHOWIF);
-        ImMap<ContainerView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> changedValues = mChangedValues.immutable();
+        MExclMap<ComponentView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> mChangedValues = MapFact.mExclMap();
+        queryPropertyObjectValues(changed, mChangedValues, SetFact.EMPTY(), GET_COMPONENT_SHOWIF);
+        ImMap<ComponentView, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> changedValues = mChangedValues.immutable();
 
-        for (int i = 0, size = changedValues.size() ; i < size; i++)
-            addShownHidden(isContainerHidden, changedValues.getKey(i), changedValues.getValue(i).getValue(0).getValue() == null);
+        for (int i = 0, size = changedValues.size() ; i < size; i++) {
+            addShownHidden(isComponentHidden, changedValues.getKey(i), changedValues.getValue(i).getValue(0).getValue() == null);
+        }
+    }
+
+    private void updateBaseComponentsShowIfs(MFormChanges result) {
+        ImSet<ComponentView> changed = entity.getBaseComponents();
+
+        if(changed.isEmpty()) // optimization
+            return;
+
+        for (int i = 0; i < changed.size(); i++) {
+            ComponentView component = changed.get(i);
+            boolean newIsHidden = isNoUserHidden(component);
+            boolean oldIsHidden = addShownHidden(isBaseComponentHidden, component, newIsHidden);
+
+            if(newIsHidden != oldIsHidden) {
+                BaseComponentViewInstance componentInstance = instanceFactory.getInstance(component);
+                ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue> values = MapFact.singleton(MapFact.EMPTY(), newIsHidden ? new DataObject(true) : NullValue.instance);
+                result.properties.exclAdd(componentInstance.showIfReader, values);
+            }
+        }
     }
 
     private ImSet<PropertyDrawInstance> forcePropertyDrawUpdates = SetFact.EMPTY();
@@ -2361,15 +2388,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             fillChangedReader(group.rowForegroundReader, group, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
         }
 
-        for (ContainerView container : entity.getPropertyContainers()) {
-            boolean hidden = isHidden(container);
-            boolean update = true;
+        for (ComponentView component : entity.getPropertyComponents()) {
+            if(component instanceof ContainerView) {
+                ContainerView container = (ContainerView) component;
 
-            ImSet<GroupObjectInstance> gridGroups = SetFact.EMPTY();
+                boolean hidden = isHidden(container);
+                boolean update = true;
 
-            ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
-            fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-            fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+                ImSet<GroupObjectInstance> gridGroups = SetFact.EMPTY();
+
+                ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
+                fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
+            }
         }
         return mReadProperties.immutable();
     }

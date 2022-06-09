@@ -85,10 +85,6 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     public void setCaptionLineSize(int lineSize) {
         target.captionLineSize = lineSize;
     }
-
-    public void setShowIf(PropertyObjectEntity<?> showIf) {
-        target.setShowIf(showIf);
-    }
     
     
     // should not be here. added for USERFILTER component backward compatibility

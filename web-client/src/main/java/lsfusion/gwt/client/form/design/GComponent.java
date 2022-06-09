@@ -1,6 +1,10 @@
 package lsfusion.gwt.client.form.design;
 
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import java.io.Serializable;
@@ -110,4 +114,25 @@ public class GComponent implements Serializable {
     public int getSpan() {
         return span;
     }
+
+    private class GShowIfReader implements GPropertyReader {
+        private String sID;
+
+        public GShowIfReader() {
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+            controller.getFormLayout().setShowIfVisible(GComponent.this, values.get(GGroupObjectValue.EMPTY) == null);
+        }
+
+        @Override
+        public String getNativeSID() {
+            if(sID == null) {
+                sID = "_COMPONENT_" + "SHOWIFREADER" + "_" + GComponent.this.sID;
+            }
+            return sID;
+        }
+    }
+    public final GPropertyReader showIfReader = new GShowIfReader();
 }

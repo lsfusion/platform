@@ -189,6 +189,19 @@ public class ClientContainer extends ClientComponent {
         return null;
     }
 
+    public ClientComponent findComponentByID(int id) {
+        if (id == this.ID) return this;
+        for (ClientComponent comp : children) {
+            if (comp instanceof ClientContainer) {
+                ClientComponent result = ((ClientContainer) comp).findComponentByID(id);
+                if (result != null) return result;
+            } else if(id == comp.ID)
+                return comp;
+        }
+        return null;
+
+    }
+
     public ClientContainer findParentContainerBySID(ClientContainer parent, String sID) {
         if (sID.equals(this.sID)) return parent;
         for (ClientComponent comp : children) {

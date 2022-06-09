@@ -1,5 +1,6 @@
 package lsfusion.client.form.design.view;
 
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.focus.ContainerFocusListener;
 import lsfusion.client.base.focus.FormFocusTraversalPolicy;
 import lsfusion.client.form.controller.ClientFormController;
@@ -178,6 +179,13 @@ public class ClientFormLayout extends PanelWidget {
         assert !(component instanceof ClientContainer);
         baseComponentViews.put(component, view);
         add(component, view, focusReceiver);
+    }
+
+    public void setShowIfVisible(ClientComponent component, boolean visible) {
+        Widget widget = baseComponentViews.get(component);
+        if(widget != null) {
+            SwingUtils.setShowIfVisible(widget.getComponent(), visible);
+        }
     }
 
     // добавляем визуальный компонент

@@ -528,10 +528,10 @@ public class GGridController extends GAbstractTableController {
             table.update(updateState);
 
             boolean isVisible = !(table.isNoColumns() && requestIndex >= table.getSetRequestIndex());
-            gridView.setVisible(isVisible);
+            GwtClientUtils.setGridVisible(gridView, isVisible);
 
             if (toolbarView != null)
-                toolbarView.setVisible(isVisible);
+                GwtClientUtils.setGridVisible(toolbarView, isVisible);
 
             formController.setFiltersVisible(groupObject, isVisible);
             

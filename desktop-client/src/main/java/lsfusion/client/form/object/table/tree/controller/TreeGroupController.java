@@ -3,6 +3,7 @@ package lsfusion.client.form.object.table.tree.controller;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.client.ClientResourceBundle;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.ClientFormController;
@@ -144,11 +145,11 @@ public class TreeGroupController extends AbstractTableController {
         tree.updateTable();
 
         boolean isTreeVisible = tree.getColumnCount() > 1;
-        
-        view.setVisible(isTreeVisible);
+
+        SwingUtils.setGridVisible(view, isTreeVisible);
         
         if (toolbarView != null) {
-            toolbarView.setVisible(isTreeVisible);
+            SwingUtils.setGridVisible(toolbarView, isTreeVisible);
         }
 
         filter.update();
