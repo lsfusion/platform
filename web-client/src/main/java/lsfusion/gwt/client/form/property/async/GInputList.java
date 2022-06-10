@@ -8,12 +8,14 @@ public class GInputList implements Serializable {
 
     public GInputListAction[] actions; // null if there is no list
     public GCompletionType completionType;
+    public boolean escapeComma;
 
     public GInputList() {
     }
 
-    public GInputList(GInputListAction[] actions, GCompletionType completionType) {
+    public GInputList(GInputListAction[] actions, GCompletionType completionType, boolean escapeComma) {
         this.actions = actions;
         this.completionType = completionType;
+        this.escapeComma = escapeComma;
     }
 }

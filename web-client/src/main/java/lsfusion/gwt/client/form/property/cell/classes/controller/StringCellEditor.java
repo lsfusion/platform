@@ -10,11 +10,11 @@ public class StringCellEditor extends TextBasedCellEditor {
     private int stringLength; 
 
     public StringCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength) {
-        this(editManager, property, isVarString, stringLength, null, false);
+        this(editManager, property, isVarString, stringLength, null);
     }
 
-    public StringCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength, GInputList inputList, boolean escapeComma) {
-        super(editManager, property, inputList, escapeComma);
+    public StringCellEditor(EditManager editManager, GPropertyDraw property, boolean isVarString, int stringLength, GInputList inputList) {
+        super(editManager, property, inputList);
         this.isVarString = isVarString;
         this.stringLength = stringLength;
     }

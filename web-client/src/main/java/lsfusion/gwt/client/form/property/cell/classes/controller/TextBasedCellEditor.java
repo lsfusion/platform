@@ -62,16 +62,12 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     }
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
-        this(editManager, property, inputList, false);
-    }
-
-    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, boolean escapeComma) {
         super(editManager);
         this.property = property;
         this.hasList = inputList != null && !disableSuggest();
         this.completionType = inputList != null ? inputList.completionType : GCompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
-        this.escapeComma = escapeComma;
+        this.escapeComma = inputList != null && inputList.escapeComma;
     }
 
     protected boolean disableSuggest() {
