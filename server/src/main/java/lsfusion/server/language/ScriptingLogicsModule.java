@@ -11,8 +11,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.file.IOUtils;
-import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.ModalityType;
@@ -163,8 +161,6 @@ import javax.mail.Message;
 import javax.swing.*;
 import java.awt.*;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -3238,7 +3234,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }
                 if(source.startsWith("$I{") && source.endsWith("}")) {
                     lp = addStringInlineProp(source, lineNumber, context, dynamic);
-                } else if(containsUnescaped(source, "${") || containsUnescaped(source, "$I{") || containsUnescaped(source, "$F{")) {
+                } else if(containsUnescaped(source, "${") || containsUnescaped(source, "$I{") || containsUnescaped(source, "$R{")) {
                     lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
                 } else {
                     lp = addUnsafeCProp(getStringConstClass(str), value);
@@ -3275,7 +3271,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
     }
 
-    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, FILE };
+    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE };
 
     private List<String> parseStringInterpolateProp(String source) {
         List<String> literals = new ArrayList<>();
@@ -3324,7 +3320,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             literals.add("STRING(" + currentLiteral + ")");
         } else if (state == StringInterpolateState.INLINE) {
             literals.add(quote("$I{" + currentLiteral + "}"));
-        } else if (state == StringInterpolateState.FILE) {
+        } else if (state == StringInterpolateState.RESOURCE) {
             literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
         } else assert false;
     }
@@ -3344,7 +3340,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (!compareChar(s, pos, '$')) return StringInterpolateState.PLAIN;
         if (compareChar(s, pos + 1, '{')) return StringInterpolateState.INTERPOLATION;
         if (compareChar(s, pos + 1, 'I') && compareChar(s, pos + 2, '{')) return StringInterpolateState.INLINE;
-        if (compareChar(s, pos + 1, 'F') && compareChar(s, pos + 2, '{')) return StringInterpolateState.FILE;
+        if (compareChar(s, pos + 1, 'R') && compareChar(s, pos + 2, '{')) return StringInterpolateState.RESOURCE;
         return StringInterpolateState.PLAIN;
     }
 
