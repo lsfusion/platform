@@ -28,9 +28,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
 
     @Override
     public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
-        setRendererValue(customRenderer, element,
-                getController(updateContext::changeProperty, element, updateContext.isPropertyReadOnly()),
-                GSimpleStateTableView.convertToJSValue(property, value));
+        setRendererValue(customRenderer, element, getController(property, updateContext, element), GSimpleStateTableView.convertToJSValue(property, value));
 
         return false;
     }
@@ -59,7 +57,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
         return value == null ? "" : value.toString();
     }
 
-    protected void changeValue(Element element, Consumer<Object> valueChangeConsumer, JavaScriptObject value) {
+    protected static void changeValue(Element element, Consumer<Object> valueChangeConsumer, JavaScriptObject value, GPropertyDraw property) {
         GType externalChangeType = property.getExternalChangeType();
 
         boolean canUseChangeValueForRendering = property.canUseChangeValueForRendering(externalChangeType);
@@ -79,14 +77,21 @@ public class CustomCellRenderer extends CellRenderer<Object> {
             rerenderState(element, true);
     }
 
-    protected native JavaScriptObject getController(Consumer<Object> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
-        var thisObj = this;
+    public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
+        return getController(property, updateContext::changeProperty, element, updateContext.isPropertyReadOnly());
+    }
+
+    private static native JavaScriptObject getController(GPropertyDraw property, Consumer<Object> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
         return {
             change: function (value) {
-                return thisObj.@CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value);
+                if(value === undefined) // not passed
+                    value = @GSimpleStateTableView::UNDEFINED;
+                return @CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value, property);
             },
             changeValue: function (value) { // deprecated
-                return thisObj.@CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value);
+                if(value === undefined) // not passed
+                    value = @GSimpleStateTableView::UNDEFINED;
+                return @CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value, property);
             },
             isReadOnly: function () {
                 return isReadOnly;

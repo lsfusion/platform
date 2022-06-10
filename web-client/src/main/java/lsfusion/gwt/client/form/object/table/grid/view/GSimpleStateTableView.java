@@ -277,7 +277,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         changeProperties(new String[]{column}, new JavaScriptObject[]{object}, new Serializable[]{newValue});
     }
 
-    private static final String UNDEFINED = "undefined";
+    public static final String UNDEFINED = "undefined";
 
     protected void changeProperties(String[] columns, JavaScriptObject[] objects, Serializable[] newValues) {
         int length = columns.length;
