@@ -60,7 +60,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected native void removePicker()/*-{
         $(this.@TextBasedPopupCellEditor::editBox).data('daterangepicker').remove();
         //we need to remove the keydown listener because it is a global($wnd) listener that is only used when the picker popup opens
-        $($wnd).off('keydown.pickerpopup').off('click.pickerpopup');
+        $($wnd).off('keydown.pickerpopup').off('mousedown.pickerpopup');
     }-*/;
 
     protected native Element getPickerElement()/*-{
@@ -186,7 +186,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                     thisObj.@ARequestValueCellEditor::cancel(Lcom/google/gwt/dom/client/Element;Llsfusion/gwt/client/form/property/cell/controller/CancelReason;)(parent, @lsfusion.gwt.client.form.property.cell.controller.CancelReason::ESCAPE_PRESSED);
                 else if ((e.keyCode === 9) || (e.keyCode === 13))
                     thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
-            }).on('click.pickerpopup', function (e) { //daterangepicker for some reason returns focus to $wnd and not to the editelement and the daterangepicker does not hide even if we open another form
+            }).on('mousedown.pickerpopup', function (e) { //daterangepicker for some reason returns focus to $wnd and not to the editelement and the daterangepicker does not hide even if we open another form
                 var container = $(".daterangepicker");
                 if (!container.is(e.target) && container.has(e.target).length === 0)
                     thisObj.@lsfusion.gwt.client.form.property.cell.classes.controller.DateRangePickerBasedCellEditor::pickerApply(*)(parent);
@@ -194,7 +194,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         });
 
         editElement.on('hide.daterangepicker', function () {
-            $($wnd).off('keydown.pickerpopup').off('click.pickerpopup');
+            $($wnd).off('keydown.pickerpopup').off('mousedown.pickerpopup');
         });
 
         //THESE ARE THE PATCHES OF DATERANGEPICKER. ALL CHANGES START WITH <<<<< AND END WITH >>>>>. ALL COMMENTS WILL BE IN UPPER CASE
