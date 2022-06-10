@@ -38,14 +38,14 @@ threadStackTraceSQLProcess '{process.monitor.thread.stack.trace.sql.process}' = 
 
 nameComputerJavaProcess '{process.monitor.name.computer.java.process}' = DATA LOCAL STRING[100] (STRING[10]);
 computerProcess '{process.monitor.computer.process}' = DATA LOCAL LONG (STRING[10]);
-objValue (Computer i) = INTEGER(i AS Computer);
+objValue (Computer i) = LONG (i AS Computer);
 computerObject (value) = GROUP AGGR Computer computer BY objValue(computer);
 nameComputerSQL '{process.monitor.name.computer.sql}' (STRING[10] process) = hostname(computerObject(computerProcess(process)));
 nameComputer '{process.monitor.name.computer}' (STRING[10] process) = OVERRIDE nameComputerSQL(process), nameComputerJavaProcess(process);
   
 nameUserJavaProcess '{process.monitor.name.user.java.process}' = DATA LOCAL STRING[100] (STRING[10]);
 userProcess '{process.monitor.user.process}' = DATA LOCAL LONG (STRING[10]);
-objValue (User i) = INTEGER(i AS User);
+objValue (User i) = LONG (i AS User);
 userObject (value) = GROUP AGGR User user BY objValue(user);
 nameUserSQL '{process.monitor.name.user.process.sql}' (STRING[10] process) = name(userObject(userProcess(process)));
 nameUser '{process.monitor.name.user}' (STRING[10] process) = OVERRIDE nameUserSQL(process), nameUserJavaProcess(process);
