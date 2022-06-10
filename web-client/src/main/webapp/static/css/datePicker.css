@@ -2,6 +2,7 @@
     border: 1px solid var(--dialog-outer-border-color);
     font-family: inherit;
     background: var(--background-color);
+    width: unset;
 }
 
 .daterangepicker:after {
@@ -104,12 +105,10 @@
 .daterangepicker select.hourselect, .daterangepicker select.minuteselect, .daterangepicker select.secondselect, .daterangepicker select.ampmselect {
     background: inherit;
     border: 1px solid var(--component-border-color);
+    background-color: var(--component-background-color);
 }
 
 .daterangepicker .calendar-time {
-    border: 1px solid var(--component-border-color);
-    border-radius: var(--combobox-border-radius);
-    background-color: var(--component-background-color);
     line-height: unset;
 }
 
@@ -143,6 +142,14 @@
     border-top: 1px solid var(--dialog-outer-border-color);
 }
 
+.daterangepicker.show-calendar .ranges {
+    margin-top: 0;
+}
+
+.daterangepicker.show-calendar .ranges ul {
+    margin-top: 8px;
+}
+
 .daterangepicker .ranges li {
     padding: 5px 12px;
 }
@@ -156,10 +163,12 @@
     color: var(--date-picker-selection-color);
 }
 
+.daterangepicker.drop-up:before {
+    border-top-color: var(--dialog-outer-border-color);
+}
+
 .daterangepicker.drop-up:after {
-    top: initial;
-    bottom: -6px;
-    border-top: 6px solid var(--background-color);
+    border-top-color: var(--background-color);
 }
 
 /*  Larger Screen Styling */
