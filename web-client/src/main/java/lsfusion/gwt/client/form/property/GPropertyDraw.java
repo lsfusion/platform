@@ -13,6 +13,7 @@ import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.classes.data.GFormatType;
+import lsfusion.gwt.client.classes.data.GHTMLTextType;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
@@ -248,6 +249,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(!hasChangeAction)
             return false;
 
+        if (isHtmlText())
+            return externalChangeType instanceof GHTMLTextType;
+
         // if custom render change is the input of some type, then probably it is a programmatic change (i.e. custom renderer uses changeValue to set this value, and should not be replaced with the input)
         return customRenderFunction == null || externalChangeType == null;
     }
@@ -413,6 +417,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean isAction() {
         return baseType instanceof GActionType;
+    }
+
+    public boolean isHtmlText() {
+        return baseType instanceof GHTMLTextType;
     }
 
     public CellRenderer getCellRenderer() {

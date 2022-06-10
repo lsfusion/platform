@@ -2,18 +2,16 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
+import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
-    private final EditManager editManager;
+public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     private final String colorThemeName;
 
     public HTMLTextCellEditor(EditManager editManager) {
-        this.editManager = editManager;
+        super(editManager);
         this.colorThemeName = MainFrame.colorTheme.name();
     }
 
@@ -23,18 +21,8 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
     }-*/;
 
     @Override
-    public void commit(Element parent, CommitReason commitReason) {
-        editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), commitReason);
-    }
-
-    @Override
-    public void cancel(Element parent, CancelReason cancelReason) {
-        editManager.cancelEditing(cancelReason);
-    }
-
-    @Override
     public boolean checkEnterEvent(Event event) {
-        return false;
+        return event.getShiftKey();
     }
 
     @Override
@@ -45,6 +33,16 @@ public class HTMLTextCellEditor implements RequestEmbeddedCellEditor {
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
         stop(parent);
+    }
+
+    @Override
+    public Object getValue(Element parent, Integer contextAction) {
+        return getEditorValue(parent);
+    }
+
+    @Override
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+
     }
 
     protected native void stop(Element element)/*-{

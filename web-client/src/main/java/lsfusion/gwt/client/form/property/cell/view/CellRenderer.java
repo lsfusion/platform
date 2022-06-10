@@ -175,7 +175,7 @@ public abstract class CellRenderer<T> {
         return updateContext.getBackground(baseBackground); // converted (with getDisplayColor)
     }
 
-    protected void rerenderState(Element element, boolean set) {
+    protected static void rerenderState(Element element, boolean set) {
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
         if(renderedState != null) // since element can be already dead
             renderedState.rerender = set;

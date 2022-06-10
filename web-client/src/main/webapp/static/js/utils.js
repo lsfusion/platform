@@ -54,3 +54,35 @@ function setCookie(name, value, options) {
 
     document.cookie = updatedCookie;
 }
+
+function lsfController(callerElement) {
+    let controller;
+    while (!controller) {
+        controller = callerElement.controller;
+        callerElement = callerElement.parentElement;
+    }
+
+    return {
+        change: function (value) {
+            return controller.change(value);
+        },
+        changeValue: function (value) { // deprecated
+            return controller.changeValue(value);
+        },
+        isReadOnly: function () {
+            return controller.isReadOnly;
+        },
+        toDateDTO: function (year, month, day) {
+            return controller.toDateDTO(year, month, day);
+        },
+        toTimeDTO: function (hour, minute, second) {
+            return controller.toTimeDTO(hour, minute, second);
+        },
+        toDateTimeDTO: function (year, month, day, hour, minute, second) {
+            return controller.toDateTimeDTO(year, month, day, hour, minute, second);
+        },
+        getColorThemeName: function () {
+            return controller.getColorThemeName();
+        }
+    }
+}

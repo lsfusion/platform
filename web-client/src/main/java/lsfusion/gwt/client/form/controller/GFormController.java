@@ -65,6 +65,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferenc
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
+import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.order.user.GOrder;
@@ -1113,9 +1114,9 @@ public class GFormController implements EditManager {
     private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
     private void executePropertyEventAction(Event event, EditContext editContext, GInputList inputList, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        Integer contextAction = value.getContextAction();
+        Integer contextAction = value != null ? value.getContextAction() : null;
         executePropertyEventAction(contextAction != null ? inputList.actions[contextAction].asyncExec : asyncExec,
-                event, editContext, editContext, actionSID, new GPushAsyncInput(value), externalChange, onExec);
+                event, editContext, editContext, actionSID, value != null ? new GPushAsyncInput(value) : null, externalChange, onExec);
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
@@ -1191,8 +1192,8 @@ public class GFormController implements EditManager {
 
     // for custom renderer, paste
     public void changeProperty(ExecuteEditContext editContext, Object value) {
-        lsfusion.gwt.client.base.Result<Object> oldValue = setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), value);
-        executePropertyEventAction(null, editContext, new GUserInputResult(value), requestIndex -> {
+        lsfusion.gwt.client.base.Result<Object> oldValue = value != GSimpleStateTableView.UNDEFINED ? setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), value) : null;
+        executePropertyEventAction(null, editContext, value == GSimpleStateTableView.UNDEFINED ? null : new GUserInputResult(value), requestIndex -> {
             setRemoteValue(editContext, oldValue, value, requestIndex);
         });
     }
