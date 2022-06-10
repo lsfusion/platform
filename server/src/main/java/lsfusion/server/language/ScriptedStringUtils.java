@@ -173,6 +173,14 @@ public class ScriptedStringUtils {
     }
 
     public static String transformLocalizedStringLiteralToSourceString(String s) throws TransformationError {
+        return transformStringLiteral(s, true, "$" + QUOTE, "\\" + OPEN_CH + CLOSE_CH);
+    }
+
+    public static String transformExpressionStringLiteral(String s) throws TransformationError {
+        return transformStringLiteral(s, true, String.valueOf(QUOTE), "$\\" + OPEN_CH + CLOSE_CH);
+    }
+
+    private static String transformStringLiteral(String s, boolean replaceSpecial, String removeEscaping, String keepEscaping) throws TransformationError {
         if (s == null) {
             return null;
         }
@@ -185,18 +193,15 @@ public class ScriptedStringUtils {
                 }
 
                 char nextCh = s.charAt(i+1);
-                switch (nextCh) {
-                    case '\\': b.append("\\\\"); break;
-                    case QUOTE: b.append(QUOTE); break;
-                    case 'n': b.append('\n'); break;
-                    case 'r': b.append('\r'); break;
-                    case 't': b.append('\t'); break;
-                    case OPEN_CH: b.append("\\" + OPEN_CH); break;
-                    case CLOSE_CH: b.append("\\" + CLOSE_CH); break;
-                    case '$': b.append("\\$"); break;
-                    default: {
-                        throw new TransformationError(String.format(wrongEscapeSeqFormat, nextCh));
-                    }
+                if (replaceSpecial && "nrt".indexOf(nextCh) != -1) {
+                    b.append(toSpecialCharacter(nextCh));
+                } else if (removeEscaping.indexOf(nextCh) != -1) {
+                    b.append(nextCh);
+                } else if (keepEscaping == null || keepEscaping.indexOf(nextCh) != -1) {
+                    b.append('\\');
+                    b.append(nextCh);
+                } else {
+                    throw new TransformationError(String.format(wrongEscapeSeqFormat, nextCh));
                 }
                 ++i;
             } else {
@@ -206,25 +211,18 @@ public class ScriptedStringUtils {
         return b.toString();
     }
 
-    public static String transformAnyStringLiteralToPropertyFileValue(final String literal) throws TransformationError {
-        StringBuilder b = new StringBuilder();
-        for (int i = 1; i+1 < literal.length(); i++) {
-            if (literal.charAt(i) == '\\') {
-                if (i+2 == literal.length()) {
-                    throw new TransformationError("wrong escape sequence at the end of the string");
-                }
-
-                char nextCh = literal.charAt(i+1);
-                if (nextCh != OPEN_CH && nextCh != CLOSE_CH && nextCh != QUOTE) {
-                    b.append("\\");
-                } 
-                b.append(nextCh);
-                ++i;
-            } else {
-                b.append(literal.charAt(i));
-            }
+    private static char toSpecialCharacter(char ch) {
+        switch (ch) {
+            case 'n': return '\n';
+            case 'r': return '\r';
+            case 't': return '\t';
         }
-        return b.toString();
+        assert false;
+        return ch;
+    }
+
+    public static String transformAnyStringLiteralToPropertyFileValue(final String literal) throws TransformationError {
+        return transformStringLiteral(literal, false, "'" + OPEN_CH + CLOSE_CH, null);
     }
     
     public static Pair<Integer, Integer> getSpaces(String s) {

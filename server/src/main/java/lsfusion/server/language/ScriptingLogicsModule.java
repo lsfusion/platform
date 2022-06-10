@@ -361,6 +361,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
+    public String transformExpressionStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
+        try {
+            return ScriptedStringUtils.transformExpressionStringLiteral(s);
+        } catch (ScriptedStringUtils.TransformationError e) {
+            errLog.emitSimpleError(parser, e.getMessage());
+        }
+        return null;
+    }
+
     public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
@@ -3227,19 +3236,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
-                LocalizedString str = (LocalizedString) value;
-                String source = str.getSourceString();
-                if (!str.needToBeLocalized()) {
-                    source = removeOptimization(source);
-                }
-                if(source.startsWith("$I{") && source.endsWith("}")) {
-                    lp = addStringInlineProp(source, lineNumber, context, dynamic);
-                } else if(containsUnescaped(source, "${") || containsUnescaped(source, "$I{") || containsUnescaped(source, "$R{")) {
-                    lp = addStringInterpolateProp(source, lineNumber, context, dynamic);
+                String str = transformExpressionStringLiteral((String) value);
+                if (str.startsWith("$I{") && str.endsWith("}")) {
+                    return Pair.create(addStringInlineProp(str, lineNumber, context, dynamic), null);
+                } else if (containsUnescaped(str, "${") || containsUnescaped(str, "$I{") || containsUnescaped(str, "$R{")) {
+                    return Pair.create(addStringInterpolateProp(str, lineNumber, context, dynamic), null);
                 } else {
-                    lp = addUnsafeCProp(getStringConstClass(str), value);
+                    LocalizedString lstr = transformLocalizedStringLiteral((String) value);
+                    lp = addUnsafeCProp(getStringConstClass(lstr), lstr);
+                    return Pair.create(lp, new LPLiteral(transformLocalizedStringLiteral((String) value)));
                 }
-                break;
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
             case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
             case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
@@ -3353,11 +3359,6 @@ public class ScriptingLogicsModule extends LogicsModule {
             literals.add(escapeLiteral(currentLiteral));
         }
         return "";
-    }
-
-    private String removeOptimization(String value) {
-        if (value == null) return null;
-        return value.replace("\\", "\\\\").replace("{", "\\{").replace("}", "\\}");
     }
 
     private String escapeLiteral(String value) {
