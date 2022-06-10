@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -15,24 +15,15 @@ public class HTMLTextCellRenderer extends StringBasedCellRenderer {
 
     @Override
     public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
-        setControllerField(element, CustomCellRenderer.getController(property, updateContext, element));
+        GwtClientUtils.setField(element, "controller", CustomCellRenderer.getController(property, updateContext, element));
         return super.renderDynamicContent(element, value, loading, updateContext);
     }
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
-        removeControllerField(element);
+        GwtClientUtils.removeField(element, "controller");
         super.clearRenderContent(element, renderContext);
     }
-
-    private static native void setControllerField(Element element, JavaScriptObject controller)/*-{
-        element.controller = controller;
-    }-*/;
-
-    private static native void removeControllerField(Element element)/*-{
-        if (element.controller)
-            delete element.controller;
-    }-*/;
 
     @Override
     protected void setInnerContent(Element element, String innerText) {

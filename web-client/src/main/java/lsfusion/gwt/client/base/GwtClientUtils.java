@@ -1071,6 +1071,11 @@ public class GwtClientUtils {
         return object[field] = value;
     }-*/;
 
+    public static native void removeField(JavaScriptObject object, String field)/*-{
+        if (object[field])
+            delete object[field];
+    }-*/;
+
     public static JsDate toJsDate(Date date) {
         if(date == null)
             return null;
