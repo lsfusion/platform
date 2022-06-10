@@ -516,10 +516,12 @@ FORM shortChat '{chat.new.message}'
 ;
 
 DESIGN shortChat {
+    size = (800, 600);
     OBJECTS {
         NEW chat {
             fill = 1;
             MOVE BOX(m) {
+                GRID(m) { height = 200; }
                 fill = 0.7;
             }
             MOVE PROPERTY(message()) {
