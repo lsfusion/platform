@@ -219,7 +219,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         prepareTextEditor();
 
         if (editorComp instanceof AsyncInputComponent) {
-            ((AsyncInputComponent) editorComp).initEditor();
+            ((AsyncInputComponent) editorComp).initEditor(false);
         }
 
         editorComp.requestFocusInWindow();

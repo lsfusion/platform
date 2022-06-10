@@ -55,18 +55,23 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     GCompletionType completionType;
     GInputListAction[] actions;
     CustomSuggestBox suggestBox = null;
-    
+    boolean escapeComma;
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
     }
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
+        this(editManager, property, inputList, false);
+    }
+
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, boolean escapeComma) {
         super(editManager);
         this.property = property;
         this.hasList = inputList != null && !disableSuggest();
         this.completionType = inputList != null ? inputList.completionType : GCompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
+        this.escapeComma = escapeComma;
     }
 
     protected boolean disableSuggest() {
@@ -75,7 +80,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     @Override
     public void start(Event event, Element parent, Object oldValue) {
-        String value = property.clearText ? "" : tryFormatInputText(oldValue);
+        String value = property.clearText ? "" : escapeComma(tryFormatInputText(oldValue), GMouseStroke.isEvent(event));
         if(hasList) {
             suggestBox.showSuggestionList();
             suggestBox.setValue(value);
@@ -426,6 +431,10 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         return value.toString();
     }
 
+    private String escapeComma(String value, boolean ignoreEscape) {
+        return escapeComma && !ignoreEscape ? value.replace(",", "\\,") : value;
+    }
+
     private class CustomSuggestBox extends SuggestBox {
         private DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
@@ -473,7 +482,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         public String getReplacementString() {
             SuggestOracle.Suggestion selection = getCurrentSelection();
-            return selection != null ? selection.getReplacementString() : null;
+            return selection != null ? escapeComma(selection.getReplacementString(), false) : null;
         }
 
         @Override

@@ -22,7 +22,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
         this(property, null, value, length, isVarString, matchRegexp);
     }
     public StringPropertyEditor(ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value, final int length, boolean isVarString, boolean matchRegexp) {
-        super(property, asyncChange, value);
+        super(property, asyncChange, value, !matchRegexp);
         this.isVarString = isVarString;
         this.matchRegexp = matchRegexp;
         this.property = property;

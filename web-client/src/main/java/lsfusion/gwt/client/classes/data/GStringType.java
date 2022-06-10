@@ -63,8 +63,13 @@ public class GStringType extends GDataType {
     }
 
     @Override
+    public CellEditor createFilterGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+        return new StringCellEditor(editManager, editProperty, !blankPadded, length.isUnlimited() ? Integer.MAX_VALUE : length.getValue(), inputList, true);
+    }
+
+    @Override
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
-        return new StringCellEditor(editManager, editProperty, !blankPadded, length.isUnlimited() ? Integer.MAX_VALUE : length.getValue(), inputList);
+        return new StringCellEditor(editManager, editProperty, !blankPadded, length.isUnlimited() ? Integer.MAX_VALUE : length.getValue(), inputList, false);
     }
 
     private final static GStringType text = new GStringType(GExtInt.UNLIMITED, false, false);

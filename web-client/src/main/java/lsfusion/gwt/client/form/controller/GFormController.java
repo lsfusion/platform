@@ -2086,19 +2086,22 @@ public class GFormController implements EditManager {
         edit(type, event, hasOldValue, setOldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
                 (inputResult, commitReason) -> oldValue.set(setLocalValue(editContext, type, inputResult.getValue())),
                 (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, oldValue.result, inputResult.getValue(), requestIndex)),
-                cancel, editContext, actionSID, customChangeFunction);
+                cancel, editContext, actionSID, customChangeFunction, false);
     }
 
     public void edit(GType type, Event event, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
-                     Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
+                     Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction, boolean isFilter) {
         GPropertyDraw property = editContext.getProperty();
 
         CellEditor cellEditor;
         boolean hasCustomEditor = customChangeFunction != null && !customChangeFunction.equals("DEFAULT");
         if (hasCustomEditor) // see LsfLogics.g propertyCustomView rule
             cellEditor = CustomReplaceCellEditor.create(this, property, type, customChangeFunction);
-        else
+        else if(isFilter) {
+            cellEditor = type.createFilterGridCellEditor(this, property, inputList);
+        } else {
             cellEditor = type.createGridCellEditor(this, property, inputList);
+        }
 
         if (cellEditor != null) {
             if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors

@@ -57,11 +57,13 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     private SuggestPopupButton refreshButton;
 
+    private boolean escapeComma;
+
     TextFieldPropertyEditor(ClientPropertyDraw property) {
-        this(property, null, null);
+        this(property, null, null, false);
     }
 
-    TextFieldPropertyEditor(ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
+    TextFieldPropertyEditor(ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value, boolean escapeComma) {
         super();
         this.asyncChange = asyncChange;
         this.property = property;
@@ -77,6 +79,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         if (hasList) {
             suggestBox = new SuggestBox((String) value);
+            this.escapeComma = escapeComma;
         } else {
             setBorder(this);
             setDesign(this);
@@ -409,16 +412,16 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         public boolean disableUpdate;
-        public void setComboBoxEditorText(String value) {
+        public void setComboBoxEditorText(String value, boolean ignoreEscape) {
             disableUpdate = true;
-            comboBoxEditorComponent.setText(value);
+            comboBoxEditorComponent.setText((String) escapeComma(value, ignoreEscape));
             disableUpdate = false;
         }
 
         private void updateSelectedEditorText() {
             ClientAsync selectedItem = (ClientAsync) comboBox.getSelectedItem();
             if(selectedItem != null)
-                setComboBoxEditorText(selectedItem.rawString);
+                setComboBoxEditorText(selectedItem.rawString, false);
         }
 
         public void updateItems(List<ClientAsync> result, boolean selectFirst) {
@@ -448,7 +451,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBox.setEditor(new AutoCompleteComboBoxEditor(new BasicComboBoxEditor() {
                 @Override
                 public void setItem(Object anObject) {
-                    super.setItem(anObject);
+                    super.setItem(escapeComma(anObject, false));
                     tableEditor.stopCellEditing();
                 }
             }, new ObjectToStringConverter() {
@@ -563,6 +566,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
     }
 
+    private Object escapeComma(Object value, boolean ignoreEscape) {
+        return escapeComma && !ignoreEscape ? ((String) value).replace(",", "\\,") : value;
+    }
+
     private class SuggestPopupButton extends JButton {
 
         public SuggestPopupButton(Icon icon, ActionListener actionListener) {
@@ -585,7 +592,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         @Override
-        public void initEditor() {
+        public void initEditor(boolean ignoreEscape) {
             //need because we extend JComboBox
             suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  BasicComboBoxUI.HIDE_POPUP_KEY());
 
@@ -604,7 +611,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
             requestSuggestions();
 
-            suggestBox.setComboBoxEditorText(initValue);
+            suggestBox.setComboBoxEditorText(initValue, ignoreEscape);
             suggestBox.comboBoxEditorComponent.selectAll();
         }
     }

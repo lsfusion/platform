@@ -114,7 +114,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 (result, commitReason) -> acceptCommit(getValue(result), commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
-                ServerResponse.VALUES, null);
+                ServerResponse.VALUES, null, true);
     }
 
     private void acceptCommit(Object result, boolean enterPressed) {
