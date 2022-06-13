@@ -1,7 +1,6 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.base.Pair;
-import lsfusion.client.base.SwingUtils;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.view.Filler;
 import lsfusion.client.form.design.view.FlexPanel;
@@ -264,7 +263,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     }
 
     void propertyChanged() {
-        valueView.changeProperty(condition.property, condition.columnKey);
+        valueView.changeProperty(condition);
 
         Compare oldCompare = condition.compare;
         List<Compare> filterCompares = Arrays.asList(condition.property.getFilterCompares());

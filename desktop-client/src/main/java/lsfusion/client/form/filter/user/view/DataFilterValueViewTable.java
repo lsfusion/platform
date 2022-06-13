@@ -111,7 +111,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
             }
 
             if (editorComp instanceof AsyncInputComponent) {
-                ((AsyncInputComponent) editorComp).initEditor(e instanceof MouseEvent);
+                ((AsyncInputComponent) editorComp).initEditor();
             }
         }
 
@@ -314,7 +314,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
 
     public void changeInputList(Compare compare) {
         inputList = new ClientInputList(new ClientInputListAction[0],
-                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT);
+                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT, compare);
     }
 
     private static final class Model extends AbstractTableModel {

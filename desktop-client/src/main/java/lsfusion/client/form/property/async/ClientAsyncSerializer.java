@@ -50,7 +50,7 @@ public class ClientAsyncSerializer {
             actions[i] = new ClientInputListAction(action, asyncExec, keyStroke, editingBindingMode, quickAccessList);
         }
 
-        return new ClientInputList(actions, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT);
+        return new ClientInputList(actions, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT, null);
     }
 
     public static ClientInputList deserializeInputList(byte[] array) throws IOException {

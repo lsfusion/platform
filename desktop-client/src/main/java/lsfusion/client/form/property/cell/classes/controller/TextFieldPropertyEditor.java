@@ -5,6 +5,7 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.DefaultEventComboBoxModel;
 import lsfusion.base.Pair;
 import lsfusion.base.lambda.AsyncCallback;
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
@@ -19,6 +20,7 @@ import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.interop.form.property.Compare;
 import org.jdesktop.swingx.autocomplete.AutoCompleteComboBoxEditor;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
@@ -50,6 +52,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
     private boolean hasList;
     private CompletionType completionType;
     private ClientInputListAction[] actions;
+    private Compare compare;
 
     private EventObject editEvent;
 
@@ -57,13 +60,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
     private SuggestPopupButton refreshButton;
 
-    private boolean escapeComma;
-
     TextFieldPropertyEditor(ClientPropertyDraw property) {
-        this(property, null, null, false);
+        this(property, null, null);
     }
 
-    TextFieldPropertyEditor(ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value, boolean escapeComma) {
+    TextFieldPropertyEditor(ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
         super();
         this.asyncChange = asyncChange;
         this.property = property;
@@ -76,10 +77,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         this.hasList = inputList != null && !disableSuggest();
         this.completionType = inputList != null ? inputList.completionType : CompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
+        this.compare = inputList != null ? inputList.compare : null;
 
         if (hasList) {
             suggestBox = new SuggestBox((String) value);
-            this.escapeComma = escapeComma;
         } else {
             setBorder(this);
             setDesign(this);
@@ -412,23 +413,23 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         public boolean disableUpdate;
-        public void setComboBoxEditorText(String value, boolean ignoreEscape) {
+        public void setComboBoxEditorText(String value) {
             disableUpdate = true;
-            comboBoxEditorComponent.setText((String) escapeComma(value, ignoreEscape));
+            comboBoxEditorComponent.setText(value);
             disableUpdate = false;
         }
 
         private void updateSelectedEditorText() {
             ClientAsync selectedItem = (ClientAsync) comboBox.getSelectedItem();
             if(selectedItem != null)
-                setComboBoxEditorText(selectedItem.rawString, false);
+                setComboBoxEditorText((String) SwingUtils.escapeComma(selectedItem.rawString, compare));
         }
 
         public void updateItems(List<ClientAsync> result, boolean selectFirst) {
             items.clear();
             comboBox.getModel().setSelectedItem(null);
             items.addAll(GlazedLists.eventList(result));
-            latestSuggestions = result.stream().map(async -> async.rawString).collect(Collectors.toList());;
+            latestSuggestions = result.stream().map(async -> async.rawString).collect(Collectors.toList());
             comboBox.setMaximumRowCount(result.size());
             //hide and show to call computePopupBounds
             suggestBox.comboBox.hidePopup();
@@ -451,7 +452,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBox.setEditor(new AutoCompleteComboBoxEditor(new BasicComboBoxEditor() {
                 @Override
                 public void setItem(Object anObject) {
-                    super.setItem(escapeComma(anObject, false));
+                    super.setItem(SwingUtils.escapeComma(anObject, compare));
                     tableEditor.stopCellEditing();
                 }
             }, new ObjectToStringConverter() {
@@ -566,10 +567,6 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
     }
 
-    private Object escapeComma(Object value, boolean ignoreEscape) {
-        return escapeComma && !ignoreEscape ? ((String) value).replace(",", "\\,") : value;
-    }
-
     private class SuggestPopupButton extends JButton {
 
         public SuggestPopupButton(Icon icon, ActionListener actionListener) {
@@ -592,7 +589,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         @Override
-        public void initEditor(boolean ignoreEscape) {
+        public void initEditor() {
             //need because we extend JComboBox
             suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  BasicComboBoxUI.HIDE_POPUP_KEY());
 
@@ -611,7 +608,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
             requestSuggestions();
 
-            suggestBox.setComboBoxEditorText(initValue, ignoreEscape);
+            suggestBox.setComboBoxEditorText(initValue);
             suggestBox.comboBoxEditorComponent.selectAll();
         }
     }
