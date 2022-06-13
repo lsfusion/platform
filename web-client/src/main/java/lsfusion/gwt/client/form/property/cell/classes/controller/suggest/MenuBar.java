@@ -717,6 +717,10 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
     }
   }
 
+  //ignore selections by mouseOver before first mouseMove
+  boolean delayedMouseOver = false;
+  boolean mouseMoved = false;
+
   @Override
   public void onBrowserEvent(Event event) {
     MenuItem item = findItem(DOM.eventGetTarget(event));
@@ -733,8 +737,21 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
       }
 
       case Event.ONMOUSEOVER: {
-        if (item != null) {
-          itemOver(item, true);
+        if(mouseMoved) {
+          if (item != null) {
+            itemOver(item, true);
+          }
+        } else {
+          delayedMouseOver = true;
+        }
+        break;
+      }
+
+      case Event.ONMOUSEMOVE: {
+        mouseMoved = true;
+        if(delayedMouseOver) {
+          selectItem(item);
+          delayedMouseOver = false;
         }
         break;
       }
@@ -1221,7 +1238,7 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
 
     //todo: replaced ONCLICK to ONMOUSEDOWN
     sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEOVER | Event.ONMOUSEOUT
-        | Event.ONFOCUS | Event.ONKEYDOWN);
+        | Event.ONFOCUS | Event.ONKEYDOWN | Event.ONMOUSEMOVE);
 
     setStyleName(STYLENAME_DEFAULT);
     if (vertical) {
