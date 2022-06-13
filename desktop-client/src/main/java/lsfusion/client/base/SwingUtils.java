@@ -11,6 +11,7 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
 import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.property.Compare;
 import org.jdesktop.swingx.SwingXUtilities;
 
 import javax.swing.Timer;
@@ -819,5 +820,9 @@ public class SwingUtils {
     private static boolean isVisible(JComponent component, String key) {
         Object value = component.getClientProperty(key);
         return isRedundantString(value) || Boolean.parseBoolean((String) value);
+    }
+
+    public static Object escapeComma(Object value, Compare compare) {
+        return value instanceof String && compare == Compare.MATCH ? ((String) value).replace(",", "\\,") : value;
     }
 }

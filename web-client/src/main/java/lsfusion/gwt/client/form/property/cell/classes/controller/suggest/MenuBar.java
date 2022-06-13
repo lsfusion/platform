@@ -721,18 +721,19 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
   public void onBrowserEvent(Event event) {
     MenuItem item = findItem(DOM.eventGetTarget(event));
     switch (DOM.eventGetType(event)) {
-      //todo: replaced ONCLICK to ONMOUSEDOWN
+      //replaced ONCLICK to ONMOUSEDOWN
       case Event.ONMOUSEDOWN: {
         focus();
         // Fire an item's command when the user clicks on it.
         if (item != null) {
           doItemAction(item, true, true);
-          eatEvent(event); //todo: added to save focus on element
+          eatEvent(event); //added to save focus on element
         }
         break;
       }
 
-      case Event.ONMOUSEOVER: {
+      //replaced ONMOUSEOVER to ONMOUSEMOVE
+      case Event.ONMOUSEMOVE: {
         if (item != null) {
           itemOver(item, true);
         }
@@ -1219,8 +1220,8 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
 
     Roles.getMenubarRole().set(getElement());
 
-    //todo: replaced ONCLICK to ONMOUSEDOWN
-    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEOVER | Event.ONMOUSEOUT
+    //replaced ONCLICK to ONMOUSEDOWN, ONMOUSEOVER to ONMOUSEMOVE
+    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEMOVE | Event.ONMOUSEOUT
         | Event.ONFOCUS | Event.ONKEYDOWN);
 
     setStyleName(STYLENAME_DEFAULT);

@@ -5,23 +5,20 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GAsync;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
@@ -55,7 +52,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     GCompletionType completionType;
     GInputListAction[] actions;
     CustomSuggestBox suggestBox = null;
-    
+    GCompare compare;
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
@@ -67,6 +64,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         this.hasList = inputList != null && !disableSuggest();
         this.completionType = inputList != null ? inputList.completionType : GCompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
+        this.compare = inputList != null ? inputList.compare : null;
     }
 
     protected boolean disableSuggest() {
@@ -473,7 +471,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         public String getReplacementString() {
             SuggestOracle.Suggestion selection = getCurrentSelection();
-            return selection != null ? selection.getReplacementString() : null;
+            return selection != null ? (String) GwtClientUtils.escapeComma(selection.getReplacementString(), compare) : null;
         }
 
         @Override

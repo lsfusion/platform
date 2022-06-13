@@ -1,14 +1,13 @@
 package lsfusion.client.form.filter.user.view;
 
+import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.FlexPanel;
-import lsfusion.client.form.design.view.widget.PanelWidget;
 import lsfusion.client.form.filter.user.ClientDataFilterValue;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
-import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 import lsfusion.interop.form.property.Compare;
 
@@ -37,7 +36,7 @@ public abstract class DataFilterValueView extends FlexPanel {
 
         addFill(valueTable);
         
-        changeProperty(condition.property, columnKey, readSelectedValue);
+        changeProperty(condition, readSelectedValue);
     }
 
     public boolean requestFocusInWindow() {
@@ -54,19 +53,19 @@ public abstract class DataFilterValueView extends FlexPanel {
         return getPreferredSize();
     }
     
-    public void changeProperty(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    public void changeProperty(ClientPropertyFilter condition) {
         filterValue.setValue(null);
         TableCellEditor cellEditor = valueTable.getCellEditor();
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
         }
-        changeProperty(property, columnKey, true);
+        changeProperty(condition, true);
     }
 
-    public void changeProperty(ClientPropertyDraw property, ClientGroupObjectValue columnKey, boolean readSelectedValue) {
-        valueTable.setProperty(property);
+    public void changeProperty(ClientPropertyFilter condition, boolean readSelectedValue) {
+        valueTable.setProperty(condition.property);
         if (readSelectedValue) {
-            setValue(logicsSupplier.getSelectedValue(property, columnKey));
+            setValue(SwingUtils.escapeComma(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare));
         } else {
             setValue(filterValue.value);
         }

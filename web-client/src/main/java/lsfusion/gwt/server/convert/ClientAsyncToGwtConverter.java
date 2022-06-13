@@ -37,7 +37,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         for(int i = 0; i < inputList.actions.length;i++) {
             inputListActions[i] = convertOrCast(inputList.actions[i]);
         }
-        return new GInputList(inputListActions, convertOrCast(inputList.completionType));
+        return new GInputList(inputListActions, convertOrCast(inputList.completionType), null);
     }
 
     @Cached

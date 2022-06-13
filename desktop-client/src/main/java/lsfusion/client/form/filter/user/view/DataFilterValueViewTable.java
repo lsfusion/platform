@@ -29,6 +29,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.util.EventObject;
 import java.util.List;
@@ -78,7 +79,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
             List<String> row = table.get(0);
             if (!row.isEmpty()) {
                 try {
-                    setValueAt(getProperty().parseBasePaste(row.get(0)), 0, 0);
+                    setValueAt(SwingUtils.escapeComma(getProperty().parseBasePaste(row.get(0)), inputList.compare), 0, 0);
                 } catch (ParseException ignored) {
                 }
             }
@@ -313,7 +314,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
 
     public void changeInputList(Compare compare) {
         inputList = new ClientInputList(new ClientInputListAction[0],
-                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT);
+                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT : CompletionType.NON_STRICT, compare);
     }
 
     private static final class Model extends AbstractTableModel {
