@@ -717,41 +717,25 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
     }
   }
 
-  //ignore selections by mouseOver before first mouseMove
-  boolean delayedMouseOver = false;
-  boolean mouseMoved = false;
-
   @Override
   public void onBrowserEvent(Event event) {
     MenuItem item = findItem(DOM.eventGetTarget(event));
     switch (DOM.eventGetType(event)) {
-      //todo: replaced ONCLICK to ONMOUSEDOWN
+      //replaced ONCLICK to ONMOUSEDOWN
       case Event.ONMOUSEDOWN: {
         focus();
         // Fire an item's command when the user clicks on it.
         if (item != null) {
           doItemAction(item, true, true);
-          eatEvent(event); //todo: added to save focus on element
+          eatEvent(event); //added to save focus on element
         }
         break;
       }
 
-      case Event.ONMOUSEOVER: {
-        if(mouseMoved) {
-          if (item != null) {
-            itemOver(item, true);
-          }
-        } else {
-          delayedMouseOver = true;
-        }
-        break;
-      }
-
+      //replaced ONMOUSEOVER to ONMOUSEMOVE
       case Event.ONMOUSEMOVE: {
-        mouseMoved = true;
-        if(delayedMouseOver) {
-          selectItem(item);
-          delayedMouseOver = false;
+        if (item != null) {
+          itemOver(item, true);
         }
         break;
       }
@@ -1236,9 +1220,9 @@ public class MenuBar extends Widget implements PopupListener, HasAnimation,
 
     Roles.getMenubarRole().set(getElement());
 
-    //todo: replaced ONCLICK to ONMOUSEDOWN
-    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEOVER | Event.ONMOUSEOUT
-        | Event.ONFOCUS | Event.ONKEYDOWN | Event.ONMOUSEMOVE);
+    //replaced ONCLICK to ONMOUSEDOWN, ONMOUSEOVER to ONMOUSEMOVE
+    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEMOVE | Event.ONMOUSEOUT
+        | Event.ONFOCUS | Event.ONKEYDOWN);
 
     setStyleName(STYLENAME_DEFAULT);
     if (vertical) {
