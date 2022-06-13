@@ -14,7 +14,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +22,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static java.nio.file.StandardWatchEventKinds.*;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ResourceUtils {
@@ -140,38 +138,6 @@ public class ResourceUtils {
 
     public static String[] getClassPathElements() {
         return getClassPath().split(System.getProperty("path.separator"));
-    }
-
-    public static void watchPathForChange(Path path, Runnable callback, Pattern pattern) throws IOException {
-        final WatchService watchService = FileSystems.getDefault().newWatchService();
-//        path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE});
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
-                return FileVisitResult.CONTINUE;
-            }
-        });
-
-        WatchKey key;
-        while (true) {
-            try {
-                // wait for key to be signaled
-                key = watchService.take();
-            } catch (InterruptedException x) {
-                return;
-            }
-
-            for (WatchEvent<?> event : key.pollEvents()) {
-                WatchEvent.Kind<?> kind = event.kind();
-                if (kind == ENTRY_CREATE || kind == ENTRY_DELETE || kind == OVERFLOW) {
-                    Path eventPath = (Path)event.context();
-                    if(eventPath != null && pattern.matcher(eventPath.toString()).matches())
-                        callback.run();
-                }
-            }
-            key.reset();
-        }
     }
 
     public static Path getTargetDir(String projDir) {

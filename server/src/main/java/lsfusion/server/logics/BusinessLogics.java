@@ -1988,7 +1988,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getChangeDataCurrentDateTimeTask(scheduler));
         }
         result.add(getFlushAsyncValuesCachesTask(scheduler));
-        result.addAll(resetCustomReportsCacheTasks(scheduler));
+        result.addAll(resetResourcesCacheTasks(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2113,22 +2113,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return scheduler.createSystemTask(stack -> updateThreadAllocatedBytesMap(), false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
 
-    private List<Scheduler.SchedulerTask> resetCustomReportsCacheTasks(Scheduler scheduler) {
+    private List<Scheduler.SchedulerTask> resetResourcesCacheTasks(Scheduler scheduler) {
         List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
                 if(!element.endsWith("*")) {
                     final Path path = Paths.get(element + "/");
-//                logger.info("Reset reports cache: processing path : " + path);
                     if (Files.isDirectory(path)) {
-//                    logger.info("Reset reports cache: path is directory: " + path);
-                        tasks.add(scheduler.createSystemTask(stack -> {
-                            logger.info("Reset reports cache: run scheduler task for " + path);
-                            ResourceUtils.watchPathForChange(path, () -> {
-                                logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
-                                ResourceUtils.clearResourceCaches("jrxml", true, true);
-                            }, Pattern.compile(".*\\.jrxml"));
-                        }, true, null, false, "Custom Reports"));
+                        FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(path.toString(), null, "jrxml");
+                        tasks.add(scheduler.createSystemTask(stack -> fileAlterationObserver.checkAndNotify(), true, 1, false, "Custom Reports"));
                     }
                 }
             }
