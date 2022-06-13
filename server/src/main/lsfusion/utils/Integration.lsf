@@ -18,8 +18,8 @@ META defineExternalizableAbstract (object, type)
 END
 
 META defineExternalizableAbstract (object, type, prefix)
-    id '{integration.id}' = ABSTRACT type (###object) MATERIALIZED INDEXED CHARWIDTH 10;
-    object (id) = GROUP AGGR ###object object BY id (object);
+    prefix###id '{integration.id}' = ABSTRACT type (###object) MATERIALIZED INDEXED CHARWIDTH 10;
+    prefix###object (id) = GROUP AGGR ###object object BY prefix###id (object);
 END
 
 EXTEND FORM options PROPERTIES() showIDs;
