@@ -52,7 +52,7 @@ public class GDataFilterValueView extends FlexPanel {
 
         Object value;
         if (readSelectedValue) {
-            value = logicsSupplier.getSelectedValue(property, condition.columnKey);
+            value = GwtClientUtils.escapeComma(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
         } else {
             value = filterValue.value;
         }

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
@@ -134,6 +135,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     private void updateAndCommit(Object value) {
+        value = GwtClientUtils.escapeComma(value, inputList.compare);
         updateValue(value);
         afterCommit.accept(value);
     }
@@ -149,7 +151,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     public void changeInputList(GCompare compare) {
         inputList = new GInputList(new GInputListAction[]{new GInputListAction("reset", null, null, null, null)},
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT : GCompletionType.NON_STRICT,
-                true);
+                compare);
     }
 
     private static final CellRenderer.ToolbarAction dropAction = new CellRenderer.ToolbarAction() {

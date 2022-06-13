@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
+import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.math.BigDecimal;
@@ -1160,5 +1161,9 @@ public class GwtClientUtils {
     private static boolean isVisible(Widget widget, String key) {
         String value = widget.getElement().getAttribute(key);
         return isRedundantString(value) || Boolean.parseBoolean(value);
+    }
+
+    public static Object escapeComma(Object value, GCompare compare) {
+        return value instanceof String && compare == GCompare.MATCH ? ((String) value).replace(",", "\\,") : value;
     }
 }
