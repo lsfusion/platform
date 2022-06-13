@@ -72,7 +72,6 @@ public abstract class DataFilterValueView extends FlexPanel {
     }
 
     public void valueChanged(Object newValue) {
-        newValue = SwingUtils.escapeComma(newValue, valueTable.getCurrentInputList().compare);
         filterValue.setValue(newValue);
         setValue(newValue);
     }
