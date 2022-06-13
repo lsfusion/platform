@@ -1,5 +1,6 @@
 package lsfusion.server.data.type;
 
+import com.google.common.base.Throwables;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
@@ -25,6 +26,7 @@ import org.json.JSONObject;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
@@ -148,14 +150,18 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public RawFileData readProp(T value) {
+    public RawFileData readProp(T value, String charset) {
         if(value == null)
             return null;
-        return readPropNotNull(value);
+        return readPropNotNull(value, charset);
     }
 
-    public RawFileData readPropNotNull(T value) {
-        return new RawFileData(formatString(value).getBytes());
+    public RawFileData readPropNotNull(T value, String charset) {
+        try {
+            return new RawFileData(formatString(value).getBytes(charset));
+        } catch (UnsupportedEncodingException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     public T parseNullableString(String string, boolean emptyIsNull) throws ParseException {

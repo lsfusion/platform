@@ -102,7 +102,7 @@ public class DynamicFormatFileClass extends AbstractDynamicFormatFileClass<FileD
     }
 
     @Override
-    public RawFileData readPropNotNull(FileData value) {
+    public RawFileData readPropNotNull(FileData value, String charset) {
         return value.getRawFile();
     }
 

@@ -84,7 +84,7 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
     }
 
     @Override
-    public RawFileData readPropNotNull(RawFileData value) {
+    public RawFileData readPropNotNull(RawFileData value, String charset) {
         return value;
     }
 

@@ -101,7 +101,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T writeProp(RawFileData value, String extension);
 
-    RawFileData readProp(T value);
+    RawFileData readProp(T value, String charset);
 
     AndClassSet getBaseClassSet(BaseClass baseClass);
 

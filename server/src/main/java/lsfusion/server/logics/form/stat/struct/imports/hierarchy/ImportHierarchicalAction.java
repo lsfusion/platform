@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.stat.struct.imports.hierarchy;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.open.stat.ImportAction;
@@ -24,7 +25,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
     public abstract T getRootNode(RawFileData fileData, String root);
 
     public ImportHierarchicalAction(int paramsCount, FormEntity formEntity, String charset, boolean hasRoot, boolean hasWhere) {
-        super(paramsCount, formEntity, charset);
+        super(paramsCount, formEntity, charset!= null ? charset : ExternalUtils.defaultXMLJSONCharset);
 
         int shift = 0;
         ImOrderSet<PropertyInterface> interfaces = getOrderInterfaces();
@@ -40,7 +41,7 @@ public abstract class ImportHierarchicalAction<T extends Node<T>> extends Import
 
         ImportHierarchicalIterator iterator = new ImportHierarchicalIterator(wheres);
 
-        RawFileData file = readFile(context.getKeyValue(fileInterface));
+        RawFileData file = readFile(context.getKeyValue(fileInterface), charset);
 
         StaticDataGenerator.Hierarchy hierarchy = formEntity.getImportHierarchy();
         FormImportData importData = new FormImportData(formEntity, context);
