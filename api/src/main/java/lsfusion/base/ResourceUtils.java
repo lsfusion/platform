@@ -13,10 +13,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -301,21 +311,18 @@ public class ResourceUtils {
         }
         return null;
     }
-    public static void clearResourceCaches(String extension, boolean pathesChanged, boolean dataChanged) {
+    public static void clearResourceCaches(boolean pathesChanged, boolean dataChanged, Predicate<String> checkExtension) {
         if(pathesChanged)
-            clearResourceCaches(cachedFoundResourcePathes, extension);
+            clearResourceCaches(cachedFoundResourcePathes, checkExtension);
 
         if(dataChanged) {
-            clearResourceCaches(cachedFoundResourcesAsStrings, extension);
-            clearResourceCaches(cachedFoundResourcesAsFileDatas, extension);
+            clearResourceCaches(cachedFoundResourcesAsStrings, checkExtension);
+            clearResourceCaches(cachedFoundResourcesAsFileDatas, checkExtension);
         }
     }
 
-    private static <T> void clearResourceCaches(ConcurrentHashMap<String, T> cache, String extension) {
-        Collection<String> cachedResourceKeys = new HashSet<>(cache.keySet());
-        for (String resource : cachedResourceKeys)
-            if (resource.endsWith("." + extension))
-                cache.remove(resource);
+    private static <T> void clearResourceCaches(ConcurrentHashMap<String, T> cache, Predicate<String> checkExtension) {
+        cache.keySet().stream().filter(checkExtension).forEach(cache::remove);
     }
 
     public static String registerFont(ClientWebAction action) {

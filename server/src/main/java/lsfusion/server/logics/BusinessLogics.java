@@ -108,7 +108,9 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
+import lsfusion.server.physics.dev.integration.external.to.file.ClasspathChangeListener;
 import lsfusion.server.physics.dev.integration.external.to.file.FileAlterationObserver;
+import lsfusion.server.physics.dev.integration.external.to.file.SourcesChangeListener;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -2103,7 +2105,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
         List<FileAlterationObserver> fileAlterationObservers = ResourceUtils.getSourceToBuildDirs().entrySet()
-                .stream().map(entry -> new FileAlterationObserver(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+                .stream().map(entry -> new FileAlterationObserver(new SourcesChangeListener(entry.getKey(), entry.getValue()))).collect(Collectors.toList());
 
         return scheduler.createSystemTask(stack -> fileAlterationObservers.forEach(org.apache.commons.io.monitor.FileAlterationObserver::checkAndNotify),
                 false, 1, false, "Synchronizing resources from sources to build. Only for debug");
@@ -2120,8 +2122,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 if(!element.endsWith("*")) {
                     final Path path = Paths.get(element + "/");
                     if (Files.isDirectory(path)) {
-                        FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(path.toString(), null, "jrxml");
-                        tasks.add(scheduler.createSystemTask(stack -> fileAlterationObserver.checkAndNotify(), true, 1, false, "Custom Reports"));
+                        FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(new ClasspathChangeListener(path.toString()));
+                        tasks.add(scheduler.createSystemTask(stack -> fileAlterationObserver.checkAndNotify(), true, 1, false, "Reset resources cache"));
                     }
                 }
             }
