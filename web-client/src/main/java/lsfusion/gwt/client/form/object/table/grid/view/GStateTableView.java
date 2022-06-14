@@ -431,9 +431,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return form.changeGroupObject(grid.groupObject, value);
     }
 
-    protected Object getValue(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
-        return getValue(property, GGroupObjectValue.getFullKey(rowKey, columnKey));
+    protected Object getJsValue(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return GSimpleStateTableView.convertToJSValue(property, getValue(property, GGroupObjectValue.getFullKey(rowKey, columnKey)));
     }
+
     protected Object getValue(GPropertyDraw property, GGroupObjectValue fullKey) {
         return values.get(properties.indexOf(property)).get(fullKey);
     }

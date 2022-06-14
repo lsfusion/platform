@@ -383,9 +383,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         setPageSize(pageSize);
     }
 
-    private String getPropertyValue(String property) {
+    private String getPropertyJsValue(String property) {
         Column column = columnMap.get(property);
-        Object value = column != null ? getValue(column.property, getSelectedKey(), column.columnKey) : null;
+        Object value = column != null ? getJsValue(column.property, getSelectedKey(), column.columnKey) : null;
         return value != null ? value.toString() : null;
     }
 
@@ -512,7 +512,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 thisObj.@GSimpleStateTableView::setBooleanViewFilter(*)(property, pageSize);
             },
             getCurrentDay: function (propertyName) {
-                return thisObj.@GSimpleStateTableView::getPropertyValue(*)(propertyName);
+                return thisObj.@GSimpleStateTableView::getPropertyJsValue(*)(propertyName);
             },
             getGroupObjectBackgroundColor: function(object) {
                 var color = object.color;
