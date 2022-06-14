@@ -30,9 +30,9 @@
          Раскомментить при разработке для быстрой компиляции.
          При этом будет работать только в firefox и только с английской локалью
      -->
-<!--    <set-property name="user.agent" value="safari" />-->
+<set-property name="user.agent" value="safari" />
 <!--    <set-property name="user.agent" value="gecko1_8" />-->
-    <!--<set-property name="locale" value="ru" />-->
+    <set-property name="locale" value="ru" />
 
     <!-- выключить обфускацию стилей -->
     <set-configuration-property name="CssResource.style" value="pretty" />
@@ -59,8 +59,6 @@
     <set-property name="log_WindowLogger" value="DISABLED"/>
 
     <!-- - - - - - - - - - - BASE - - - - - - - - - - - - - - - - -->
-
-    <stylesheet src="static/css/WindowBox.css" />
 
     <!-- GIN configuration -->
     <inherits name="com.google.gwt.inject.Inject"/>
@@ -136,18 +134,12 @@
     <!-- GWT DnD -->
     <inherits name='com.allen_sauer.gwt.dnd.gwt-dnd'/>
 
-    <!-- GWT modified theme -->
-    <stylesheet src="static/css/clean-reduced.css"/>
-
     <!-- GWT file upload -->
     <inherits name="org.moxieapps.gwt.uploader.Uploader"/>
 
     <!-- GWT browser selection -->
     <inherits name='com.bfr.client.Selection'/>
     <inherits name="org.vectomatic.libgwtsvg"/>
-
-    <stylesheet src="static/css/MainFrame.css"/>
-    <stylesheet src="static/css/DataGrid.css"/>
 
     <define-property name="is.user.agent.ie11" values="true,false" />
     <property-provider name="is.user.agent.ie11">

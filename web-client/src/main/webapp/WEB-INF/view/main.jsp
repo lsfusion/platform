@@ -12,12 +12,12 @@
 
         <title>${title}</title>
         <link rel="shortcut icon" href="${logicsIcon}" />
-        <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/light.css"/>
+        <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/theme/light.css"/>
 
         <style>
             @import url('static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
         </style>
-        
+
         <style type="text/css">
             #loading {
                 border: 1px solid #ccc;
@@ -54,6 +54,27 @@
         <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
         <script>
             loadResources([
+                'static/css/main.css',
+
+                'static/css/lsf/button.css',
+                'static/css/lsf/check-box.css',
+                'static/css/lsf/decorated-popup-panel.css',
+                'static/css/lsf/decorator-panel.css',
+                'static/css/lsf/dialog-box.css',
+                'static/css/lsf/menu-bar.css',
+                'static/css/lsf/popup-panel.css',
+                'static/css/lsf/progress-bar.css',
+                'static/css/lsf/radio-button.css',
+                'static/css/lsf/resizable-window.css',
+                'static/css/lsf/split-panel.css',
+                'static/css/lsf/suggest-box.css',
+                'static/css/lsf/tab-panel.css',
+                'static/css/lsf/text-area.css',
+                'static/css/lsf/text-box.css',
+                'static/css/lsf/tree.css',
+                'static/css/lsf/window-box.css',
+                'static/css/DataGrid.css',
+                'static/css/user-preferences.css',
 
                 <!-- need jquery for pivot table -->
                 <!-- version jquery above 2.2.4 causes to errors in the pivot table -->
@@ -152,7 +173,7 @@
                 'static/js/ace/src/ext-language_tools.js',
                 'static/js/ace/src/theme-chrome.js',
                 'static/js/ace/src/theme-ambiance.js',
-                
+
                 <!-- MMenuLight -->
                 'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.js',
                 'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.css',

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
-import lsfusion.gwt.client.form.property.cell.classes.controller.rich.RichTextCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.RichTextCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.RichTextCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;

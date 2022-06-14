@@ -1,0 +1,62 @@
+.dragdrop-selected, .dragdrop-dragging {
+    filter: none;
+    opacity: 1;
+}
+
+.ResizableWindow {
+    position: absolute;
+    border: 1px solid var(--dialog-outer-border-color);
+}
+
+.ResizableWindow .ResizableWindow-header {
+    background: var(--dialog-border-color);
+    padding: 0 0 4px 0;
+    cursor: default;
+    font-weight: bold;
+    border-bottom: 1px solid var(--dialog-outer-border-color);
+    overflow: hidden;
+}
+
+@sprite .ResizableWindow .resize-edge {
+    line-height: 1px;
+    width: auto;
+    height: auto;
+}
+.ResizableWindow .resize-edge {
+    background: var(--dialog-border-color);
+}
+
+.ResizableWindow .resize-edge-nw .dragdrop-handle {
+    cursor: nw-resize;
+}
+
+.ResizableWindow .resize-edge-n .dragdrop-handle {
+    cursor: n-resize;
+}
+
+.ResizableWindow .resize-edge-ne .dragdrop-handle {
+    cursor: ne-resize;
+}
+
+.ResizableWindow .resize-edge-w .dragdrop-handle {
+    cursor: w-resize;
+}
+
+.ResizableWindow .resize-edge-e .dragdrop-handle {
+    cursor: e-resize;
+}
+
+.ResizableWindow .resize-edge-sw .dragdrop-handle {
+    cursor: sw-resize;
+}
+
+.ResizableWindow .resize-edge-s .dragdrop-handle {
+    cursor: s-resize;
+}
+
+.ResizableWindow .resize-edge-se .dragdrop-handle {
+    cursor: se-resize;
+}
+
+.ResizableWindow .dragdrop-handle {
+}

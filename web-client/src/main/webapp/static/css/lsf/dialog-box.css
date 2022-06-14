@@ -1,0 +1,74 @@
+.gwt-DialogBox {
+    border: 1px solid var(--dialog-outer-border-color);
+}
+
+.gwt-DialogBox .Caption {
+    background: var(--dialog-border-color);
+    padding: 5px 8px 4px 0;
+    cursor: default;
+    font-weight: bold;
+    border-bottom: 1px solid var(--dialog-outer-border-color);
+}
+.gwt-DialogBox .dialogContent {
+}
+.gwt-DialogBox .dialogMiddleCenter {
+    padding: 5px;
+    background: var(--background-color);
+}
+.gwt-DialogBox .dialogBottomCenter {
+    background: var(--dialog-border-color);
+}
+.gwt-DialogBox .dialogMiddleLeft {
+    background: var(--dialog-border-color);
+}
+.gwt-DialogBox .dialogMiddleRight {
+    background: var(--dialog-border-color);
+}
+.gwt-DialogBox .dialogTopLeftInner {
+    width: 5px;
+    zoom: 1;
+}
+.gwt-DialogBox .dialogTopRightInner {
+    width: 5px;
+    zoom: 1;
+}
+.gwt-DialogBox .dialogBottomLeftInner {
+    width: 5px;
+    height: 5px;
+    zoom: 1;
+}
+.gwt-DialogBox .dialogBottomRightInner {
+    width: 5px;
+    height: 5px;
+    zoom: 1;
+}
+.gwt-DialogBox .dialogTopLeft {
+    background: var(--dialog-border-color);
+}
+.gwt-DialogBox .dialogTopRight {
+    background: var(--dialog-border-color);
+}
+.gwt-DialogBox .dialogBottomLeft {
+    background: var(--dialog-border-color);
+}
+.gwt-DialogBox .dialogBottomRight {
+    background: var(--dialog-border-color);
+}
+* html .gwt-DialogBox .dialogTopLeftInner {
+    width: 5px;
+    overflow: hidden;
+}
+* html .gwt-DialogBox .dialogTopRightInner {
+    width: 5px;
+    overflow: hidden;
+}
+* html .gwt-DialogBox .dialogBottomLeftInner {
+    width: 5px;
+    height: 4px;
+    overflow: hidden;
+}
+* html .gwt-DialogBox .dialogBottomRightInner {
+    width: 5px;
+    height: 5px;
+    overflow: hidden;
+}

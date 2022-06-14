@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 public class FileUtils {
     // not that pretty with statics, in theory it's better to autowire LogicsHandlerProvider (or get it from servlet) and pass as a parameter here
     public static String STATIC_CSS_RESOURCE_PATH = "static/css/"; // all files has to be prefixed with logicsName
+    public static String THEME_CSS_FOLDER_PATH = STATIC_CSS_RESOURCE_PATH + "theme/"; // all files has to be prefixed with logicsName
     public static String STATIC_GWT_IMAGE_RESOURCE_PATH = "main/static/images"; // getStaticImageURL
 
     // static app files

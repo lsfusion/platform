@@ -1,0 +1,60 @@
+.gwt-MenuBar {
+    cursor: default;
+}
+.gwt-MenuBar .gwt-MenuItem {
+    cursor: default;
+}
+.gwt-MenuBar .gwt-MenuItem-selected {
+    background: var(--selection-color);
+}
+.gwt-MenuBar-horizontal {
+    background: var(--background-color);
+    border: 1px solid #e0e0e0;
+}
+.gwt-MenuBar-horizontal .gwt-MenuItem {
+    padding: 5px 10px;
+    vertical-align: bottom;
+    color: var(--text-color);
+    font-weight: bold;
+}
+.gwt-MenuBar-horizontal .gwt-MenuItemSeparator {
+    width: 1px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-left: 1px solid var(--component-border-color);
+    background: white;
+}
+.gwt-MenuBar-horizontal .gwt-MenuItemSeparator .menuSeparatorInner {
+    width: 1px;
+    height: 1px;
+    background: var(--background-color);
+}
+.gwt-MenuBar-vertical {
+    margin-top: 0;
+    margin-left: 0;
+    background: var(--background-color);
+}
+.gwt-MenuBar-vertical table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.gwt-MenuBar-vertical .gwt-MenuItem {
+    padding: 2px 40px 2px 1px;
+}
+.gwt-MenuBar-vertical .gwt-MenuItemSeparator {
+    padding: 2px 0;
+}
+.gwt-MenuBar-vertical .gwt-MenuItemSeparator .menuSeparatorInner {
+    height: 1px;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--component-border-color);
+    overflow: hidden;
+}
+.gwt-MenuBar-vertical .subMenuIcon {
+    padding-right: 4px;
+}
+.gwt-MenuBar-vertical .subMenuIcon-selected {
+    background: #E3E8F3;
+}

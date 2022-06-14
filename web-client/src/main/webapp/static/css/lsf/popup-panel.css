@@ -1,0 +1,16 @@
+.gwt-PopupPanel {
+    border: 1px solid var(--dialog-outer-border-color);
+    border-radius: var(--panel-border-radius);
+    background: var(--background-color);
+}
+
+.gwt-PopupPanel .popupContent {
+    /*border: 3px solid var(--dialog-border-color);*/
+    padding: var(--border-padding);
+}
+
+.gwt-PopupPanelGlass {
+    background-color: #000;
+    opacity: 0.3;
+    filter: alpha(opacity=30);
+}

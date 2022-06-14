@@ -37,6 +37,8 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
     }
 
     public ImageButton(String caption, String imagePath, boolean vertical, boolean alignCenter) {
+//        setStyleName("btn");
+//        addStyleName("btn-primary");
         this.vertical = vertical;
 
         panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();

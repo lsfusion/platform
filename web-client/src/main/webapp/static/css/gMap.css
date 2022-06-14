@@ -16,3 +16,82 @@
     border: none;
     white-space: unset;
 }
+
+.leaflet-container {
+    /*border: 1px solid var(--component-border-color);*/
+}
+
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: var(--background-color);
+    color: var(--text-color);
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: unset;
+}
+
+.leaflet-bar {
+    border-radius: 0;
+}
+
+.leaflet-popup-content {
+    margin: 17px;
+}
+
+.leaflet-popup-scrolled {
+    border-bottom: 1px solid var(--component-border-color);
+    border-top: 1px solid var(--component-border-color);
+}
+
+.leaflet-bar a, .leaflet-bar a:first-child:hover {
+    border-bottom: 1px solid var(--component-border-color);
+}
+
+.leaflet-bar a:hover {
+    background-color: var(--component-hover-background-color) !important;
+}
+
+.leaflet-control-zoom-in, .leaflet-control-zoom-out {
+    color: var(--text-color) !important;
+    background-color: var(--background-color) !important;
+}
+
+.leaflet-container .leaflet-control-attribution {
+    background-color: var(--leaflet-control-transparent-background);
+    color: var(--text-color);
+}
+
+.leaflet-bar a {
+    border-radius: unset !important;
+}
+
+.leaflet-marker-icon img {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.leaflet-edit-marker-selected {
+    border-color: transparent;
+    background: none;
+}
+
+.leaflet-marker-cluster {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: -15px; /* -half size + margin marker icon (6) - border */
+    top: -15px; /* -half size + margin marker icon (6) - border */
+    border: 1px solid var(--component-border-color);
+}
+
+.leaflet-marker-cluster-text {
+    padding: 10px 0;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 5px black;
+    text-align: center;
+}

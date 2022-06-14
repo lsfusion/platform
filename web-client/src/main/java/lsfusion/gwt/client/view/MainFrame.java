@@ -391,7 +391,7 @@ public class MainFrame implements EntryPoint {
             colorTheme = newColorTheme;
 
             Element cssLink = Document.get().getElementById("themeCss");
-            cssLink.setAttribute("href", "static/css/" + colorTheme.getSid() + ".css");
+            cssLink.setAttribute("href", "static/css/theme/" + colorTheme.getSid() + ".css");
             
             StyleDefaults.reset();
 

@@ -1,0 +1,646 @@
+:root {
+    --button-border-radius: 4px;
+    --combobox-border-radius: 3px;
+    --textfield-border-radius: var(--combobox-border-radius);
+    --table-border-radius: var(--combobox-border-radius);
+    --panel-border-radius: var(--combobox-border-radius);
+    --tab-border-radius-vert: 0 0 var(--combobox-border-radius) var(--combobox-border-radius);
+    --tab-border-radius-horz: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
+    --border-padding: 2px;
+    --border-width: 1px;
+}
+
+body, textarea, input, button, select, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
+.messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
+.filterDialogHeader, .gwt-ProgressBar-shell .gwt-ProgressBar-text,
+.pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], 
+table.pvtTable, table.pvtTable tbody tr th, table.pvtTable thead tr th {
+    font-size: 9pt;
+}
+
+body, textarea, select, button, input, .ResizableWindow-header, .gwt-DialogBox .Caption, .gwt-ListBox, .gwt-Label, .gwt-MenuBar .gwt-MenuItem,
+.gwt-SuggestBox, .gwt-TextArea, .gwt-TextBox, .textBasedGridCellEditor, .leaflet-container {
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
+}
+
+body, html {
+    margin: 0;
+}
+
+pre {
+    font-family: "courier new", courier, sans-serif;
+    font-size: small;
+}
+body {
+    color: var(--text-color);
+    margin: 10px;
+    border: 0px;
+    padding: 0px;
+    direction: ltr;
+}
+
+/* this is is a hack class, when we want to inherit background-color but not the immediate parent, but the first non-transparent parent */
+.background-inherit {
+}
+
+body, body .background-inherit {
+    background-color: var(--background-color);
+}
+
+a, a:visited {
+    color: var(--focus-color);
+    text-decoration:none;
+}
+
+a:hover {
+    color: var(--focus-color);
+    text-decoration:underline;
+}
+
+select {
+    background: var(--component-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--combobox-border-radius);
+}
+
+select option {
+    background: var(--component-background-color);
+}
+
+select:focus {
+    border: 1px solid var(--focus-color);
+}
+
+input, textarea {
+    background-color: var(--component-background-color);
+    color: var(--text-color);
+
+    border-width: 0;
+}
+
+/* ------------ Scrollbars ------------ */
+body {
+    /*firefox*/
+    scrollbar-color: var(--scrollbar-color) var(--component-background-color);
+    scrollbar-width: thin;
+    /*ie*/
+    scrollbar-face-color: var(--scrollbar-color);
+    scrollbar-arrow-color: var(--component-border-color);
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--component-border-color);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+.gwt-HTML {
+    padding: 0 0;
+}
+
+/* ------------ Default gwt overrides ------------ */
+:focus {
+    outline: 0;
+}
+
+.mobileFormsTabPanel > .gwt-TabBar-horz {
+    padding-top: 0;
+    padding-bottom: var(--border-padding);
+}
+
+.mobileFormsTabPanel > .gwt-TabBar-horz .tabBarItemsWrapper {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    
+    scrollbar-width: none;  /* hide scrollbars in Firefox */
+}
+.mobileFormsTabPanel > .gwt-TabBar-horz .tabBarItemsWrapper::-webkit-scrollbar {
+    display: none;  /* hide scrollbars in Safari and Chrome */
+}
+
+.mobileFormsTabPanel > .gwt-TabBar-horz .gwt-TabBarItem {
+    border-top: none;
+    border-bottom: 1px solid var(--panel-border-color);
+    border-radius: var(--tab-border-radius-vert);
+}
+
+.mobileFormsTabPanel > .gwt-TabBar-horz .gwt-TabBarItem:hover {
+    border-bottom: 1px solid var(--component-hover-border-color);
+}
+
+.mobileFormsTabPanel > .gwt-TabPanelBottom {
+    padding-top: 0;
+    padding-bottom: var(--border-padding);
+    border-top: none;
+    border-bottom: 1px solid var(--panel-border-color);
+}
+
+
+/* ------------ Message box styles ------------ */
+.messageBox-button {
+    width: 90px;
+}
+
+.messageBox-messageContainer {
+    height: auto;
+    overflow: auto;
+    padding: 5px 5px 7px 5px;
+}
+
+/* ------------ Error box styles ------------ */
+.errorBox-button {
+    margin: 3px 3px 5px;
+}
+
+.errorBox-stackBox {
+    resize: none;
+    white-space: nowrap;
+}
+
+.errorBox-message {
+    padding: 5px;
+}
+
+
+/* ------------ Cell Renderer related styles ------------ */
+
+.logicalRendererCheckBox {
+    /*margin: 0;*/
+    pointer-events: none;
+}
+
+/* needed for paddings + mask */
+.formDockableContainerPanel {
+    padding: var(--border-padding);
+}
+
+/* ------------ Panel Renderer related styles ------------ */
+.dataPanelRendererPanel {
+    white-space: nowrap;
+
+    cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
+}
+
+.propertyContainerPanel {
+}
+
+.notEmptyPanelLabel {
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
+}
+
+.alignPanelLabel {
+    margin-top: var(--border-padding);
+    margin-bottom: var(--border-padding);
+}
+
+.panelRendererValue {
+    margin: var(--border-padding);
+}
+
+.property-toolbar-on-hover .hide {
+    width:0;
+    transition:width 200ms linear;
+}
+
+.property-toolbar-on-hover:hover .hide {
+    width:100%;
+    transition:width 200ms linear;
+}
+
+.panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
+    background: var(--component-background-color);
+}
+
+.panelRendererValueBoxed {
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
+}
+
+.propertyPanelRendererValue {
+}
+
+.propertyPanelRendererValue.panelRendererValueBoxed {
+    border-radius: var(--textfield-border-radius);
+    overflow: hidden; /* to hide inner corners */
+}
+
+.actionPanelRendererValue.panelRendererValueBoxed {
+    border-radius: var(--button-border-radius);
+}
+
+
+.panelRendererValueEdited {
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited),
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited) .background-inherit, button:focus {
+    background-color: var(--selection-color);
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed, button:focus {
+    border: 1px solid var(--focus-color);
+}
+
+.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), button:hover:not(focus) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.panelRendererValueBinding, .panelRendererValueBinding .background-inherit {
+    background-color: var(--button-active-background-color);
+}
+
+/* ------------ Caption panel ------------ */
+
+.oppositeStretchNoShrinkPanel {
+}
+
+.oppositeNoStretchShrinkPanel {
+}
+
+.leftBorder {
+    border-left: var(--border-width) solid var(--panel-border-color);
+
+    margin-left: calc(0px - var(--border-width) - var(--border-padding));
+    padding-left: var(--border-padding);
+}
+.topBorder {
+    border-top: 1px solid var(--panel-border-color);
+
+    padding-top: var(--border-padding);
+}
+/* margin and not padding because we want the opposite borders to respect this padding */
+/* also to have correct size / scroll when right component is wrapped */
+.rightBorderNoWrap {
+    margin-right: calc(var(--border-padding) + var(--border-padding));
+}
+.flexHorzBorderWrap {
+    column-gap : calc(var(--border-padding) + var(--border-padding));
+}
+.bottomBorder {
+    margin-bottom: var(--border-padding);
+}
+
+/* we can't use topborder because it is removed in autoDrawBorders */
+.captionPanelNotNullLegend {
+    border-top: 1px solid var(--panel-border-color);
+}
+
+.captionPanel {
+    position: relative;
+}
+
+.captionLegendContainerPanel {
+    position: relative;
+}
+.captionPanelLegend {
+    white-space: nowrap;
+    /*background-color: var(--background-color);*/
+    color: var(--caption-panel-legend-color);
+}
+
+.notNullCaptionPanelLegend {
+    padding-top: var(--border-padding);
+    padding-bottom: var(--border-padding);
+}
+
+.notEmptyCaptionPanelLegend {
+    /*margin-left: 4px;*/
+    /*margin-right: 4px;*/
+
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.captionCenteredLine {
+    /*position: absolute;*/
+    /*top : 50%;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*right: 0;*/
+    /*z-index: -1;*/
+
+    border-top: 1px solid var(--panel-border-color);
+}
+
+.rightCaptionCenteredLine {
+    flex-grow : 1 !important;
+}
+
+.collapsePanelImage {
+    cursor: default;
+    /*margin-top: var(--border-padding);*/
+    /*background: var(--background-color);*/
+}
+
+/* ------------ Navigator windows  ------------ */
+
+.verticalToolbar {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.horizontalToolbar {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.toolbarNavigatorButton {
+    border: solid 1px transparent;
+    background: transparent;
+    border-radius: var(--button-border-radius);
+}
+
+.toolbarSelectedNavigatorButton {
+    border: solid 1px var(--component-border-color);
+    background-color: var(--selection-color);
+}
+
+.toolbarNavigatorButton:hover {
+    border: 1px solid var(--component-hover-border-color);
+    background-color: var(--component-hover-background-color);
+}
+
+.toolbarSelectedNavigatorButton:hover {
+    background-color: var(--selection-color);
+}
+
+.toolbarNavigatorButton:active { /* should come after ':hover' */
+    background-color: var(--component-active-background-color);
+}
+
+.panelNavigatorView {
+    display: block;
+}
+
+/* ------------ Form "dockables"  ------------ */
+.dockableBlockingMask {
+    background: black;
+    opacity: 0.3;
+    z-index: 10000;
+}
+
+/* ------------ Filters ------------ */
+.checkBoxFilter {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 0 2px;
+}
+
+.checkBoxFilter label, .userFilterNegationCheckBox label {
+    vertical-align: middle;
+}
+
+.comboBoxFilter {
+    margin: auto 2px;
+}
+
+.userFilterLabel {
+    cursor: default;
+    margin: 0 3px 0 5px;
+}
+
+.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
+    margin-left: var(--border-padding);
+}
+
+/* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
+.userFilterSelector {
+    cursor : default;
+    border: 1px solid var(--component-border-color);
+    margin: var(--border-padding);
+    border-radius: var(--textfield-border-radius);
+
+    padding-left: 3px;
+    padding-right: 3px;
+
+    /* aligning text vertically (the other way with line-height) */
+    display : flex;
+    align-items : center;
+}
+
+.userFilterSelector, .userFilterSelector .background-inherit {
+    background-color: var(--component-background-color);
+}
+
+.userFilerValueCellApplied, .userFilerValueCellApplied .background-inherit {
+    background-color: var(--selection-color);
+}
+
+.userFilterNegationCheckBox input {
+    margin-left: 3px;
+}
+
+.userFilterJunctionSeparator {
+    margin: 0 7px 0 12px;
+}
+
+
+/* ------------ Loading blocker  ------------ */
+.messageCanvas {
+    position: absolute;
+    background-color: rgba(226, 226, 226, 0.74);
+    padding: 8px;
+    overflow: hidden;
+}
+
+.messageLabel {
+    word-wrap: break-word;
+}
+
+.busyDialog {
+    text-align: center;
+}
+
+.stackMessage {
+    margin: 5px 5px 5px 5px;
+    border: 1px solid var(--panel-border-color);
+    padding: 5px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    /*!* Умный разбор длинных строк без пробелов по словам *!*/
+    word-break: break-word;
+}
+
+
+/* ------------ Colored corner triangles  ------------ */
+.notNullCornerTriangle {
+    border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
+}
+
+.changeActionCornerTriangle {
+    border-color: transparent transparent var(--focus-color) transparent;
+}
+
+.rightBottomCornerTriangle {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 5px 5px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+/* ------------ Other components  ------------ */
+.gridSizePanel{
+}
+
+.gridContainerPanel{
+    margin: var(--border-padding);
+}
+
+.gridContainerPanelBoxed, .gridContainerPanelBoxed .background-inherit {
+    background: var(--component-background-color);
+}
+.gridContainerPanelBoxed {
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
+}
+
+.gridContainerPanelFocused {
+}
+.gridContainerPanelBoxed.gridContainerPanelFocused {
+    /*background-color: var(--selection-color);*/
+    border: 1px solid var(--focus-color);
+}
+.gridContainerPanelBoxed:hover:not(.gridContainerPanelFocused) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.gridToolbarContainerPanel {
+    margin-top: var(--border-padding);
+    margin-bottom: var(--border-padding);
+}
+
+.toolbarButtonNoBorder {
+}
+
+.toolbarButton {
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: var(--button-border-radius);
+}
+
+.toolbarButton:hover {
+    background-color: var(--component-hover-background-color);
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.toolbarButton:active { /* should come after ':hover' */
+    background-color: var(--component-active-background-color);
+}
+
+.toolbarItem {
+    /*margin: 0 4px 0 0;*/
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
+}
+
+.logPanel {
+    white-space: nowrap;
+}
+
+.errorLogMessage {
+    color: #ff4500;
+}
+
+.boxSized {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.displayBlock {
+    display: block;
+}
+
+.noOutline {
+    outline: none;
+}
+
+.nullValueString {
+    color: var(--null-value-string-color);
+}
+
+.requiredValueString {
+    color: var(--required-value-string-color);
+
+    /* need this for notNullLine absolute positioning (see below) */
+    position: relative;
+}
+
+.notNullLine {
+    background: var(--not-null-line-color);
+    height: 1px;
+    bottom: 2px;
+    right:0;
+    left:0;
+    margin: 0 5px;
+    position:absolute;
+}
+
+.floatRight {
+    float: right;
+}
+
+.filterDialogButton {
+    margin: 0;
+    height: 21px;
+    width: 21px;
+}
+
+.imageButtonWithoutCaption {
+    padding: 1px;
+}
+
+.verticalStretchSeparator {
+    border-left: 1px solid var(--panel-border-color);
+    margin: 3px 0;
+    padding: 0 2px;
+    align-self: stretch;
+}
+
+.verticalSeparator {
+    border-left: 1px solid var(--panel-border-color);
+}
+
+.horizontalSeparator {
+    width: 100%;
+    border-bottom: 1px solid var(--panel-border-color);
+}
+
+.js-plotly-plot {
+    width: 100%;
+    height: 100%;
+}
+
+/* we want to turn cell to hyper link*/
+.linkEditMode .selectedCellHasEdit {
+    color: var(--link-color) !important;
+    cursor: pointer !important;
+}
+
+.linkEditMode .selectedCellHasEdit:hover {
+    text-decoration: underline;
+}
+
+.linkEditMode .selectedFileCellHasEdit {
+    border: 1px solid var(--link-color);
+}

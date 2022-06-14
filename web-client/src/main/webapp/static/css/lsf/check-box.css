@@ -1,0 +1,15 @@
+input[type=checkbox] {
+    vertical-align: middle;
+    position: relative;
+}
+
+input[type=checkbox]:focus {
+    outline: 1px solid var(--focus-color);
+}
+
+.gwt-CheckBox {
+}
+.gwt-CheckBox-disabled {
+    color: var(--disabled-text-color);
+}
+

@@ -1,0 +1,38 @@
+button {
+    /*margin: 0;*/
+    padding: 2px 14px;
+    /*text-decoration: none;*/
+    /*font-size: small;*/
+    border-radius: var(--button-border-radius);
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
+}
+
+/*Fix buttons paddings and margins in FF*/
+button::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.gwt-Button, button {
+    cursor: pointer;
+    color: var(--text-color);
+    white-space: nowrap;
+}
+
+.gwt-Button:hover, .gwt-Button:hover .background-inherit, button:hover {
+    background-color: var(--button-hover-background-color);
+}
+
+.gwt-Button:active, .gwt-Button:active .background-inherit, button:active { /* should come after ':hover' and ':focus' */
+    background-color: var(--button-active-background-color);
+}
+.gwt-Button-disabled, button[disabled] {
+    cursor: default;
+    color: var(--disabled-text-color);
+}
+.gwt-Button-disabled:hover, button[disabled]:hover {
+    border: 1px outset var(--button-disabled-hover-border-color);
+    background: var(--background-color);
+}
