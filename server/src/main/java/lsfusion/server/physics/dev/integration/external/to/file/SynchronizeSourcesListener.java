@@ -7,10 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 
-public class SourcesChangeListener extends FileAlterationListener {
+public class SynchronizeSourcesListener extends FileAlterationListener {
     private final String target;
 
-    public SourcesChangeListener(String src, String target) {
+    public SynchronizeSourcesListener(String src, String target) {
         super(src);
         this.target = target;
     }
