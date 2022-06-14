@@ -223,7 +223,7 @@ public class ResourceUtils {
     private final static ConcurrentHashMap<String, Pair<RawFileData, String>> cachedFoundResourcesAsFileDatas = new ConcurrentHashMap<>();
 
     public static <T> T findResourceAs(String resourcePath, EFunction<InputStream, T, IOException> result, ConcurrentHashMap<String, Pair<T, String>> cacheMap, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
-        if(multipleUsages && !inDevMode) { // caching, more to save memory, rather than improve speed
+        if(multipleUsages) { // caching, more to save memory, rather than improve speed
             Pair<T, String> cachedResult = cacheMap.get(resourcePath);
             if(cachedResult == null) {
                 Result<String> cacheFullPath = new Result<>();
@@ -266,7 +266,6 @@ public class ResourceUtils {
         return ResourceUtils.class.getResourceAsStream(path);
     }
 
-    public static boolean inDevMode = false;
     public static String findResourcePath(String fileName, boolean nullIfNotExists, boolean multipleUsages, String optimisticFolder) {
         if(fileName.startsWith("/")) {
             //absolute path
@@ -280,7 +279,7 @@ public class ResourceUtils {
 //                    return optimisticPath;
 //            }
 
-            if(!(multipleUsages && inDevMode)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
+            if(!(multipleUsages)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
                 boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
 
                 String template = BaseUtils.replaceFileName(fileName, ".*", true);
