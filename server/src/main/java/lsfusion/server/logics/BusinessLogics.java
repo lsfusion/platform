@@ -108,7 +108,9 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
+import lsfusion.server.physics.dev.integration.external.to.file.ClearCashListener;
 import lsfusion.server.physics.dev.integration.external.to.file.FileAlterationObserver;
+import lsfusion.server.physics.dev.integration.external.to.file.SynchronizeSourcesListener;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -1988,7 +1990,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getChangeDataCurrentDateTimeTask(scheduler));
         }
         result.add(getFlushAsyncValuesCachesTask(scheduler));
-        result.addAll(resetCustomReportsCacheTasks(scheduler));
+        result.addAll(resetResourcesCacheTasks(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2103,7 +2105,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
         List<FileAlterationObserver> fileAlterationObservers = ResourceUtils.getSourceToBuildDirs().entrySet()
-                .stream().map(entry -> new FileAlterationObserver(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+                .stream().map(entry -> new FileAlterationObserver(new SynchronizeSourcesListener(entry.getKey(), entry.getValue()))).collect(Collectors.toList());
 
         return scheduler.createSystemTask(stack -> fileAlterationObservers.forEach(org.apache.commons.io.monitor.FileAlterationObserver::checkAndNotify),
                 false, 1, false, "Synchronizing resources from sources to build. Only for debug");
@@ -2113,22 +2115,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return scheduler.createSystemTask(stack -> updateThreadAllocatedBytesMap(), false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
 
-    private List<Scheduler.SchedulerTask> resetCustomReportsCacheTasks(Scheduler scheduler) {
+    private List<Scheduler.SchedulerTask> resetResourcesCacheTasks(Scheduler scheduler) {
         List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
         for (String element : ResourceUtils.getClassPathElements()) {
             if (!isRedundantString(element)) {
                 if(!element.endsWith("*")) {
                     final Path path = Paths.get(element + "/");
-//                logger.info("Reset reports cache: processing path : " + path);
                     if (Files.isDirectory(path)) {
-//                    logger.info("Reset reports cache: path is directory: " + path);
-                        tasks.add(scheduler.createSystemTask(stack -> {
-                            logger.info("Reset reports cache: run scheduler task for " + path);
-                            ResourceUtils.watchPathForChange(path, () -> {
-                                logger.info("Reset reports cache: directory changed: " + path + " - reset cache");
-                                ResourceUtils.clearResourceCaches("jrxml", true, true);
-                            }, Pattern.compile(".*\\.jrxml"));
-                        }, true, null, false, "Custom Reports"));
+                        FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(new ClearCashListener(path.toString()));
+                        tasks.add(scheduler.createSystemTask(stack -> fileAlterationObserver.checkAndNotify(), true, 1, false, "Reset resources cache"));
                     }
                 }
             }

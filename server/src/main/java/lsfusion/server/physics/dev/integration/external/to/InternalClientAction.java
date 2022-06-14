@@ -1,14 +1,12 @@
 package lsfusion.server.physics.dev.integration.external.to;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ClientWebAction;
-import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -71,9 +69,12 @@ public class InternalClientAction extends CallAction {
         Object resource;
         String resourceName;
         if(isFile) {
-            Pair<Object, String> resourceData = findResourceAsFileData(exec);
-            resource = resourceData.first;
-            resourceName = resourceData.second;
+            Result<String> fullPath = new Result<>();
+            RawFileData fileData = ResourceUtils.findResourceAsFileData(exec, false, true, fullPath, "web");
+            fileData.getID(); // to calculate the cache
+
+            resource = fileData;
+            resourceName = fullPath.result;
         } else {
             resource = exec;
             resourceName = exec;
@@ -88,14 +89,6 @@ public class InternalClientAction extends CallAction {
             context.delayUserInteraction(clientWebAction);
 
         return FlowResult.FINISH;
-    }
-
-    @IdentityInstanceLazy
-    public Pair<Object, String> findResourceAsFileData(String exec) {
-        Result<String> fullPath = new Result<>();
-        RawFileData fileData = ResourceUtils.findResourceAsFileData(exec, false, true, fullPath, "web");
-        fileData.getID(); // to calculate the cache
-        return Pair.create(fileData, fullPath.result);
     }
 
     @Override

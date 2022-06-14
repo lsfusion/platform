@@ -13,17 +13,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static java.nio.file.StandardWatchEventKinds.*;
 import static lsfusion.base.BaseUtils.isRedundantString;
 
 public class ResourceUtils {
@@ -142,38 +150,6 @@ public class ResourceUtils {
         return getClassPath().split(System.getProperty("path.separator"));
     }
 
-    public static void watchPathForChange(Path path, Runnable callback, Pattern pattern) throws IOException {
-        final WatchService watchService = FileSystems.getDefault().newWatchService();
-//        path.register(watchService, new WatchEvent.Kind[]{ENTRY_CREATE, ENTRY_DELETE});
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE);
-                return FileVisitResult.CONTINUE;
-            }
-        });
-
-        WatchKey key;
-        while (true) {
-            try {
-                // wait for key to be signaled
-                key = watchService.take();
-            } catch (InterruptedException x) {
-                return;
-            }
-
-            for (WatchEvent<?> event : key.pollEvents()) {
-                WatchEvent.Kind<?> kind = event.kind();
-                if (kind == ENTRY_CREATE || kind == ENTRY_DELETE || kind == OVERFLOW) {
-                    Path eventPath = (Path)event.context();
-                    if(eventPath != null && pattern.matcher(eventPath.toString()).matches())
-                        callback.run();
-                }
-            }
-            key.reset();
-        }
-    }
-
     public static Path getTargetDir(String projDir) {
         Path targetDir = Paths.get(projDir, "target/classes");
         if(!Files.exists(targetDir)) { // if not maven then idea-project
@@ -247,7 +223,7 @@ public class ResourceUtils {
     private final static ConcurrentHashMap<String, Pair<RawFileData, String>> cachedFoundResourcesAsFileDatas = new ConcurrentHashMap<>();
 
     public static <T> T findResourceAs(String resourcePath, EFunction<InputStream, T, IOException> result, ConcurrentHashMap<String, Pair<T, String>> cacheMap, boolean nullIfNotExists, boolean multipleUsages, Result<String> fullPath, String optimisticFolder) {
-        if(multipleUsages && !inDevMode) { // caching, more to save memory, rather than improve speed
+        if(multipleUsages) { // caching, more to save memory, rather than improve speed
             Pair<T, String> cachedResult = cacheMap.get(resourcePath);
             if(cachedResult == null) {
                 Result<String> cacheFullPath = new Result<>();
@@ -290,7 +266,6 @@ public class ResourceUtils {
         return ResourceUtils.class.getResourceAsStream(path);
     }
 
-    public static boolean inDevMode = false;
     public static String findResourcePath(String fileName, boolean nullIfNotExists, boolean multipleUsages, String optimisticFolder) {
         if(fileName.startsWith("/")) {
             //absolute path
@@ -304,7 +279,7 @@ public class ResourceUtils {
 //                    return optimisticPath;
 //            }
 
-            if(!(multipleUsages && inDevMode)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
+            if(!(multipleUsages)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
                 boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
 
                 String template = BaseUtils.replaceFileName(fileName, ".*", true);
@@ -335,21 +310,18 @@ public class ResourceUtils {
         }
         return null;
     }
-    public static void clearResourceCaches(String extension, boolean pathesChanged, boolean dataChanged) {
+    public static void clearResourceCaches(boolean pathesChanged, boolean dataChanged, Predicate<String> checkExtension) {
         if(pathesChanged)
-            clearResourceCaches(cachedFoundResourcePathes, extension);
+            clearResourceCaches(cachedFoundResourcePathes, checkExtension);
 
         if(dataChanged) {
-            clearResourceCaches(cachedFoundResourcesAsStrings, extension);
-            clearResourceCaches(cachedFoundResourcesAsFileDatas, extension);
+            clearResourceCaches(cachedFoundResourcesAsStrings, checkExtension);
+            clearResourceCaches(cachedFoundResourcesAsFileDatas, checkExtension);
         }
     }
 
-    private static <T> void clearResourceCaches(ConcurrentHashMap<String, T> cache, String extension) {
-        Collection<String> cachedResourceKeys = new HashSet<>(cache.keySet());
-        for (String resource : cachedResourceKeys)
-            if (resource.endsWith("." + extension))
-                cache.remove(resource);
+    private static <T> void clearResourceCaches(ConcurrentHashMap<String, T> cache, Predicate<String> checkExtension) {
+        cache.keySet().stream().filter(checkExtension).forEach(cache::remove);
     }
 
     public static String registerFont(ClientWebAction action) {
