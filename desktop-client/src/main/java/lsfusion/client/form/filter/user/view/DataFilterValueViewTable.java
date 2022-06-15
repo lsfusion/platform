@@ -29,7 +29,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.util.EventObject;
 import java.util.List;
@@ -111,7 +110,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
             }
 
             if (editorComp instanceof AsyncInputComponent) {
-                ((AsyncInputComponent) editorComp).initEditor();
+                ((AsyncInputComponent) editorComp).initEditor(true);
             }
         }
 

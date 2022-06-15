@@ -80,7 +80,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
         InputElement inputElement = getInputElement(parent);
         String startEventValue = checkStartEvent(event, parent, this::checkInputValidity);
-        boolean selectAll = startEventValue == null;
+        boolean selectAll = startEventValue == null && !GKeyStroke.isChangeAppendKeyEvent(event);
         value = startEventValue != null ? startEventValue : value;
 
         //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)

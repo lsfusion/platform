@@ -2,11 +2,9 @@ package lsfusion.client.form.property.table.view;
 
 import com.google.common.base.Preconditions;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.SystemUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientType;
-import lsfusion.client.classes.data.ClientTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -32,10 +30,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.text.ParseException;
 import java.util.EventObject;
 
@@ -219,7 +214,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         prepareTextEditor();
 
         if (editorComp instanceof AsyncInputComponent) {
-            ((AsyncInputComponent) editorComp).initEditor();
+            ((AsyncInputComponent) editorComp).initEditor(!KeyStrokes.isChangeAppendKeyEvent(editEvent));
         }
 
         editorComp.requestFocusInWindow();

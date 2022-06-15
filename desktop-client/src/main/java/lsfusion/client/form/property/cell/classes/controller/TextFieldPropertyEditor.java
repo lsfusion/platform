@@ -501,7 +501,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBoxEditorComponent.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
-                    if (!KeyStrokes.isSuitableStartFilteringEvent(editEvent)) {
+                    if (!KeyStrokes.isSuitableStartFilteringEvent(editEvent) && !(editEvent instanceof ActionEvent)) {
                         comboBoxEditorComponent.selectAll();
                     }
                 }
@@ -589,7 +589,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         @Override
-        public void initEditor() {
+        public void initEditor(boolean selectAll) {
             //need because we extend JComboBox
             suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  BasicComboBoxUI.HIDE_POPUP_KEY());
 
@@ -609,7 +609,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             requestSuggestions();
 
             suggestBox.setComboBoxEditorText(initValue);
-            suggestBox.comboBoxEditorComponent.selectAll();
+            if (selectAll)
+                suggestBox.comboBoxEditorComponent.selectAll();
         }
     }
 }
