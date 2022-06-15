@@ -54,6 +54,9 @@
         <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
         <script>
             loadResources([
+                // 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',
+                // 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js',
+
                 'static/css/main.css',
 
                 'static/css/lsf/button.css',
