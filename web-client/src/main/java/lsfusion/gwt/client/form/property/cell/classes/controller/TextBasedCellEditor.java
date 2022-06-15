@@ -123,7 +123,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         } else {
             Integer inputActionIndex = property.getInputActionIndex(event, true);
             if(inputActionIndex != null) {
-                validateAndCommit(suggestBox.getElement(), inputActionIndex, true, CommitReason.OTHER);
+                validateAndCommit(parent, inputActionIndex, true, CommitReason.OTHER);
                 return;
             }
         }
@@ -151,8 +151,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
     }
 
-    protected Element setupInputElement(RenderContext renderContext){
-        Element inputElement = createInputElement();
+    protected Element setupInputElement(RenderContext renderContext, Element parent){
+        Element inputElement = createInputElement(parent);
 
         Style.TextAlign textAlign = property.getTextAlignStyle();
         if(textAlign != null)
@@ -168,18 +168,19 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     @Override
     public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+        Element parent = cellParent;
         if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
             // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
             // actually it seems that we can avoid wrapping asserting that upper element is div set with setPercentMain, but for now it's not that important
             Element div = Document.get().createDivElement();
             div.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
             div.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
-            cellParent.appendChild(div);
+            parent.appendChild(div);
 
-            cellParent = div;
+            parent = div;
         }
 
-        cellParent.appendChild(setupInputElement(renderContext));
+        parent.appendChild(setupInputElement(renderContext, cellParent)); //cellParent is only used in DefaultSuggestionDisplayString validateAndCommit methods
     }
 
     protected boolean isMultiLine() {
@@ -219,7 +220,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         return showing;
     }
 
-    public Element createInputElement() {
+    public Element createInputElement(Element parent) {
         if(hasList) {
             suggestBox = new CustomSuggestBox(new SuggestOracle() {
                 private Timer delayTimer;
@@ -366,7 +367,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 public boolean isDisplayStringHTML() {
                     return true;
                 }
-            }, createTextBoxBase(), new DefaultSuggestionDisplayString()) {
+            }, createTextBoxBase(), new DefaultSuggestionDisplayString(parent)) {
                 @Override
                 public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                     // canceling query
@@ -464,8 +465,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         private Label emptyLabel; //for loading
         private GToolbarButton refreshButton;
         private boolean refreshButtonPressed;
-
-        public DefaultSuggestionDisplayString() {
+        private final Element parent;
+        public DefaultSuggestionDisplayString(Element parent) {
+            this.parent = parent;
             setSuggestionListHiddenWhenEmpty(false);
         }
 
@@ -513,7 +515,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 SuggestPopupButton actionButton = new SuggestPopupButton(actions[index].action + ".png") {
                     @Override
                     public ClickHandler getClickHandler() {
-                        return event -> validateAndCommit(suggestBox.getElement(), index, true, CommitReason.OTHER);
+                        return event -> validateAndCommit(parent, index, true, CommitReason.OTHER);
                     }
                 };
                 buttonsPanel.add(actionButton);
@@ -549,7 +551,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         protected void showSuggestions(SuggestBox suggestBox, Collection<? extends SuggestOracle.Suggestion> suggestions, boolean isDisplayStringHTML, boolean isAutoSelectEnabled, SuggestBox.SuggestionCallback callback) {
             super.showSuggestions(suggestBox, suggestions, isDisplayStringHTML, isAutoSelectEnabled, suggestion -> {
                 callback.onSuggestionSelected(suggestion);
-                validateAndCommit(suggestBox.getElement().getParentElement(),  true);
+                validateAndCommit(parent,  true);
             });
         }
 
