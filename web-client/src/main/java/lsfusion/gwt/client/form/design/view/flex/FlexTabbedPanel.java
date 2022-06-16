@@ -31,7 +31,7 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
         this.tabBar = tabBar;
 
-        setStyleName("gwt-TabPanel");
+        setStyleName("tab-panel");
     }
 
     private void onBeforeTabSelected(Integer index) {

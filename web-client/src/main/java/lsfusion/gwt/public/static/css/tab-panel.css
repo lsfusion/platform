@@ -7,11 +7,11 @@
     margin-right: var(--border-padding);
 }
 
-.nav-tabs-vert .gwt-TabBarFirst {
+.nav-tabs-vert .nav-item-first {
     height: 3px;  /* first tab distance from the top */
     width: 0;  /* to make it invisible when all tabs are wrapped */
 }
-.nav-tabs-vert .gwt-TabBarRest {
+.nav-tabs-vert .nav-item-rest {
     width: 0;  /* to make it invisible when all tabs are wrapped */
 }
 
@@ -23,11 +23,11 @@
     margin-bottom: var(--border-padding);
 }
 
-.nav-tabs .gwt-TabBarFirst {
+.nav-tabs .nav-item-first {
     width: 3px;  /* first tab distance from the left */
     height: 0;  /* to make it invisible when all tabs are wrapped */
 }
-.nav-tabs .gwt-TabBarRest {
+.nav-tabs .nav-item-rest {
     height: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .nav-tabs .nav-item {
@@ -90,7 +90,7 @@
     /*background: var(--selection-color); */
 }
 
-.gwt-TabPanel {
+.tab-panel {
     /*margin: 0 1px 1px;*/
 }
 

@@ -57,8 +57,8 @@ public class FlexTabBar extends Composite implements TabBar {
         first.setText("\u00A0");
         rest.setText("\u00A0");
 
-        first.setStyleName("gwt-TabBarFirst");
-        rest.setStyleName("gwt-TabBarRest");
+        first.setStyleName("nav-item-first");
+        rest.setStyleName("nav-item-rest");
 
         panel.add(first, GFlexAlignment.STRETCH);
         panel.addFill(rest);
