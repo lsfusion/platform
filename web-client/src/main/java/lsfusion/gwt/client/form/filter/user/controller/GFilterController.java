@@ -111,7 +111,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     @Override
     public void addEnterBinding(Widget widget) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
-                new GBindingEnv(null, null, null, null, null, null, GBindingMode.ONLY, null),
+                new GBindingEnv(null, GBindingMode.ALL, null, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null),
                 event -> processBinding(event, () -> applyFilters(true, null)),
                 widget);
     }
