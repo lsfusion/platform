@@ -31,29 +31,29 @@
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-close {
-    background: transparent url(images/WindowBox_close.png) left top no-repeat;
+    background: transparent url(../images/WindowBox_close.png) left top no-repeat;
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-close:hover {
-    background: transparent url(images/WindowBox_close.png) right top no-repeat;
+    background: transparent url(../images/WindowBox_close.png) right top no-repeat;
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-minimize {
-    background: transparent url(images/WindowBox_minmax.png) left top no-repeat;
+    background: transparent url(../images/WindowBox_minmax.png) left top no-repeat;
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-minimize:hover {
-    background: transparent url(images/WindowBox_minmax.png) left top no-repeat;
+    background: transparent url(../images/WindowBox_minmax.png) left top no-repeat;
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-minimize:hover {
-    background: transparent url(images/WindowBox_minmax.png) right top no-repeat;
+    background: transparent url(../images/WindowBox_minmax.png) right top no-repeat;
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-maximize {
-    background: transparent url(images/WindowBox_minmax.png) left bottom no-repeat;
+    background: transparent url(../images/WindowBox_minmax.png) left bottom no-repeat;
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-maximize:hover {
-    background: transparent url(images/WindowBox_minmax.png) right bottom no-repeat;
+    background: transparent url(../images/WindowBox_minmax.png) right bottom no-repeat;
 }

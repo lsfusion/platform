@@ -37,19 +37,19 @@
 }
 .gwt-DecoratorPanel .topLeft {
     line-height: 0;
-    background: url(images/circles.png) no-repeat 0 -6px;
+    background: url(../images/circles.png) no-repeat 0 -6px;
 }
 .gwt-DecoratorPanel .topRight {
     line-height: 0;
-    background: url(images/circles.png) no-repeat -5px -6px;
+    background: url(../images/circles.png) no-repeat -5px -6px;
 }
 .gwt-DecoratorPanel .bottomLeft {
     line-height: 0;
-    background: url(images/circles.png) no-repeat 0 -11px;
+    background: url(../images/circles.png) no-repeat 0 -11px;
 }
 .gwt-DecoratorPanel .bottomRight {
     line-height: 0;
-    background: url(images/circles.png) no-repeat -5px -11px;
+    background: url(../images/circles.png) no-repeat -5px -11px;
 }
 * html .gwt-DecoratorPanel .topLeftInner,
 * html .gwt-DecoratorPanel .topRightInner,

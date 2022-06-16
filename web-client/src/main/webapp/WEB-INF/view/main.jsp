@@ -54,30 +54,8 @@
         <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
         <script>
             loadResources([
-                // 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',
-                // 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js',
-
-                'static/css/main.css',
-
-                'static/css/lsf/button.css',
-                'static/css/lsf/check-box.css',
-                'static/css/lsf/decorated-popup-panel.css',
-                'static/css/lsf/decorator-panel.css',
-                'static/css/lsf/dialog-box.css',
-                'static/css/lsf/menu-bar.css',
-                'static/css/lsf/popup-panel.css',
-                'static/css/lsf/progress-bar.css',
-                'static/css/lsf/radio-button.css',
-                'static/css/lsf/resizable-window.css',
-                'static/css/lsf/split-panel.css',
-                'static/css/lsf/suggest-box.css',
-                'static/css/lsf/tab-panel.css',
-                'static/css/lsf/text-area.css',
-                'static/css/lsf/text-box.css',
-                'static/css/lsf/tree.css',
-                'static/css/lsf/window-box.css',
-                'static/css/DataGrid.css',
-                'static/css/user-preferences.css',
+                'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',
+                'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js',
 
                 <!-- need jquery for pivot table -->
                 <!-- version jquery above 2.2.4 causes to errors in the pivot table -->
