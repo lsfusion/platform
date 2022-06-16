@@ -5,6 +5,7 @@ import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.EFunction;
 import lsfusion.interop.action.ClientWebAction;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.awt.*;
@@ -332,6 +333,32 @@ public class ResourceUtils {
             return font.getFamily();
         } catch (FontFormatException | IOException e) {
             throw Throwables.propagate(e);
+        }
+    }
+
+    public static void registerLibrary(ClientWebAction action) {
+        try {
+            byte[] serverBytes = ((RawFileData) action.resource).getBytes();
+            File clientFile = SystemUtils.getUserFile(action.resourceName);
+
+            if (!clientFile.exists() || !Arrays.equals(serverBytes, FileUtils.readFileToByteArray(clientFile))) {
+                SystemUtils.writeUserFile(action.resourceName, serverBytes);
+            }
+
+            String libraryPath = clientFile.getParentFile().getAbsolutePath();
+            setLibraryPath(libraryPath, "jna.library.path");
+            setLibraryPath(libraryPath, "java.library.path");
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private static void setLibraryPath(String path, String property) {
+        String libraryPath = System.getProperty(property);
+        if (libraryPath == null) {
+            System.setProperty(property, path);
+        } else if (!libraryPath.contains(path)) {
+            System.setProperty(property, path + ";" + libraryPath);
         }
     }
 }
