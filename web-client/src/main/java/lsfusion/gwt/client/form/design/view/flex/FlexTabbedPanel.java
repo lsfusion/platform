@@ -84,8 +84,15 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
     public interface AddToDeck {
         void add(FlexPanel deck, int beforeIndex);
     }
+
+    private Label createTab(String tabText, boolean wordWrap) {
+        Label label = new Label(tabText, false);
+        label.setStyleName("nav-link");
+        return label;
+    }
+
     public void addTab(Widget w, String tabText) {
-        addTab(w, new Label(tabText, false));
+        addTab(w, createTab(tabText, false));
     }
 
     public void addTab(Widget w, Widget tabWidget) {
@@ -93,12 +100,12 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
     }
 
     public void addTab(Widget w, Integer index, Widget tabWidget) {
-        w.addStyleName("gwt-TabPanelBottom");
+        w.addStyleName("tab-pane");
         insertTab(tabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFill(w, beforeIndex));
     }
 
     public void insertTab(String tabText, int beforeIndex, AddToDeck addToDeck) {
-        insertTab(new Label(tabText, false), beforeIndex, addToDeck);
+        insertTab(createTab(tabText, false), beforeIndex, addToDeck);
     }
 
     public void insertTab(Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {

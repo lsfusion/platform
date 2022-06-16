@@ -41,8 +41,10 @@ public class FlexTabBar extends Composite implements TabBar {
 
         sinkEvents(Event.ONMOUSEDOWN);
 
-        setStyleName("gwt-TabBar");
-        addStyleName("gwt-TabBar-" + (vertical ? "vert" : "horz"));
+        setStyleName("nav");
+        addStyleName("nav-tabs");
+
+        addStyleName("nav-tabs-" + (vertical ? "vert" : "horz"));
         panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
         // first is to have an offset on the left, rest not sure what for
@@ -87,11 +89,11 @@ public class FlexTabBar extends Composite implements TabBar {
         checkInsertBeforeTabIndex(beforeIndex);
 
         ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
-        delWidget.setStyleName("gwt-TabBarItem");
-        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
-        final Style delWidgetStyle = delWidget.getElement().getStyle();
-        delWidgetStyle.setDisplay(Style.Display.FLEX);
-        delWidgetStyle.setProperty("alignItems", "center");
+        delWidget.setStyleName("nav-item");
+//        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
+//        final Style delWidgetStyle = delWidget.getElement().getStyle();
+//        delWidgetStyle.setDisplay(Style.Display.FLEX);
+//        delWidgetStyle.setProperty("alignItems", "center");
 
         panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH);
         delWidget.getElement().scrollIntoView();
@@ -148,7 +150,7 @@ public class FlexTabBar extends Composite implements TabBar {
         // Style the wrapper
         ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
         delPanel.setEnabled(enabled);
-        setStyleName(delPanel.getElement(), "gwt-TabBarItem-disabled", !enabled);
+        setStyleName(delPanel.getElement(), "nav-item-disabled", !enabled);
     }
 
     /**
@@ -230,9 +232,9 @@ public class FlexTabBar extends Composite implements TabBar {
     private void setSelectionStyle(Widget item, boolean selected) {
         if (item != null) {
             if (selected) {
-                item.addStyleName("gwt-TabBarItem-selected");
+                ((ClickDelegatePanel) item).getFocusablePanel().getWidget().addStyleName("active");
             } else {
-                item.removeStyleName("gwt-TabBarItem-selected");
+                ((ClickDelegatePanel) item).getFocusablePanel().getWidget().removeStyleName("active");
             }
         }
     }

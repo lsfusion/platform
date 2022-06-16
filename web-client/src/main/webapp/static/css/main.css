@@ -10,7 +10,7 @@
     --border-width: 1px;
 }
 
-body, textarea, input, button, select, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .gwt-TabBarItem, .gwt-DialogBox .Caption,
+body, textarea, input, button, select, .gwt-Button, .gwt-Label, .gwt-TextBox, .gwt-TreeItem, .nav-link, .gwt-DialogBox .Caption,
 .messageBox-messageContainer, .ResizableWindow-header, .captionPanelLegend, .checkBoxFilter, .comboBoxFilter,
 .filterDialogHeader, .gwt-ProgressBar-shell .gwt-ProgressBar-text,
 .pvtRenderer, .pvtAggregator, .pvtCheckContainer, .pvtFilterBox input[type=text], 
@@ -119,32 +119,32 @@ body {
     outline: 0;
 }
 
-.mobileFormsTabPanel > .gwt-TabBar-horz {
+.mobileFormsTabPanel > .nav-tabs-horz {
     padding-top: 0;
     padding-bottom: var(--border-padding);
 }
 
-.mobileFormsTabPanel > .gwt-TabBar-horz .tabBarItemsWrapper {
+.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper {
     flex-wrap: nowrap !important;
     overflow-x: auto;
     
     scrollbar-width: none;  /* hide scrollbars in Firefox */
 }
-.mobileFormsTabPanel > .gwt-TabBar-horz .tabBarItemsWrapper::-webkit-scrollbar {
+.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper::-webkit-scrollbar {
     display: none;  /* hide scrollbars in Safari and Chrome */
 }
 
-.mobileFormsTabPanel > .gwt-TabBar-horz .gwt-TabBarItem {
+.mobileFormsTabPanel > .nav-tabs-horz .nav-item {
     border-top: none;
     border-bottom: 1px solid var(--panel-border-color);
     border-radius: var(--tab-border-radius-vert);
 }
 
-.mobileFormsTabPanel > .gwt-TabBar-horz .gwt-TabBarItem:hover {
+.mobileFormsTabPanel > .nav-tabs-horz .nav-item:hover {
     border-bottom: 1px solid var(--component-hover-border-color);
 }
 
-.mobileFormsTabPanel > .gwt-TabPanelBottom {
+.mobileFormsTabPanel > .tab-pane {
     padding-top: 0;
     padding-bottom: var(--border-padding);
     border-top: none;
@@ -183,11 +183,6 @@ body {
 .logicalRendererCheckBox {
     /*margin: 0;*/
     pointer-events: none;
-}
-
-/* needed for paddings + mask */
-.formDockableContainerPanel {
-    padding: var(--border-padding);
 }
 
 /* ------------ Panel Renderer related styles ------------ */
@@ -253,11 +248,11 @@ body {
     background-color: var(--selection-color);
 }
 
-.panelRendererValueFocused.panelRendererValueBoxed, button:focus {
+.panelRendererValueFocused.panelRendererValueBoxed, .actionPanelRendererValue:focus {
     border: 1px solid var(--focus-color);
 }
 
-.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), button:hover:not(focus) { /* we want focus to have higher priority than hover*/
+.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
     border: 1px solid var(--component-hover-border-color);
 }
 

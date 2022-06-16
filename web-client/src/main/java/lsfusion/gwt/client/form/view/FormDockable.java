@@ -97,8 +97,6 @@ public final class FormDockable extends FormContainer {
 
         // need this wrapper for paddings / margins (since content is )
         private ContentWidget() {
-            setStyleName("formDockableContainerPanel");
-
             initBlockedMask();
         }
 
@@ -153,35 +151,9 @@ public final class FormDockable extends FormContainer {
         private String tooltip;
 
         public TabWidget(String title) {
-            addStyleName("tabLayoutPanelTabWidget");
-            
-            label = new Label(title);
+            addStyleName("nav-link");
 
-            closeButton = new Button() {
-                @Override
-                protected void onAttach() {
-                    super.onAttach();
-                    setTabIndex(-1);
-                }
-            };
-            closeButton.setText(EscapeUtils.UNICODE_CROSS);
-            closeButton.setStyleName("closeTabButton");
-            int closeTabButtonWidth = VALUE_HEIGHT - 2;
-            closeButton.setSize(VALUE_HEIGHT - 2 + "px", closeTabButtonWidth + "px");
-            closeButton.getElement().getStyle().setLineHeight(VALUE_HEIGHT - 4, Style.Unit.PX);
-
-            FlexPanel labelWrapper = new FlexPanel();
-            labelWrapper.getElement().addClassName("tabLayoutPanelTabTitleWrapper");
-            labelWrapper.add(label);
-            add(labelWrapper, GFlexAlignment.CENTER);
-            
-            add(closeButton, GFlexAlignment.CENTER, 0, false, closeTabButtonWidth);
-
-            closeButton.addClickHandler(event -> {
-                event.stopPropagation();
-                event.preventDefault();
-                closePressed();
-            });
+            setTitle(title);
 
             TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {
                 @Override
@@ -200,8 +172,28 @@ public final class FormDockable extends FormContainer {
             closeButton.setEnabled(!blocked);
         }
 
+        private void addCloseButton () {
+            closeButton = new Button() {
+                @Override
+                protected void onAttach() {
+                    super.onAttach();
+                    setTabIndex(-1);
+                }
+            };
+            closeButton.setStyleName("btn-close");
+
+            add(closeButton, GFlexAlignment.CENTER); //, 0, false, closeTabButtonWidth);
+
+            closeButton.addClickHandler(event -> {
+                event.stopPropagation();
+                event.preventDefault();
+                closePressed();
+            });
+        }
+
         public void setTitle(String title) {
-            label.setText(title);
+            getElement().setInnerText(title);
+            addCloseButton();
         }
         public void setTooltip(String tooltip) {
             this.tooltip = tooltip;
