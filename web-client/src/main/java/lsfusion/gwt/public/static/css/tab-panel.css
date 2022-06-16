@@ -8,7 +8,7 @@
 }
 
 .nav-tabs-vert .nav-item-first {
-    height: 3px;  /* first tab distance from the top */
+    height: 0.1875rem;  /* first tab distance from the top */
     width: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .nav-tabs-vert .nav-item-rest {
@@ -24,7 +24,7 @@
 }
 
 .nav-tabs .nav-item-first {
-    width: 3px;  /* first tab distance from the left */
+    width: 0.1875rem;  /* first tab distance from the left */
     height: 0;  /* to make it invisible when all tabs are wrapped */
 }
 .nav-tabs .nav-item-rest {
@@ -40,17 +40,17 @@
 }
 .nav-link {
     cursor: pointer;
-    padding: 2px 10px;
+    padding: 0.125rem 0.625rem;
 }
 
 .nav-tabs-vert .nav-link {
     border-bottom: 1px solid var(--panel-border-color);
-    margin-top: 3px;
+    margin-top: 0.1875rem;
     border-radius: var(--tab-border-radius-vert);
 }
 .nav-tabs-horz .nav-link {
     border-right: 1px solid var(--panel-border-color);
-    margin-left: 3px;
+    margin-left: 0.1875rem;
     border-radius: var(--tab-border-radius-horz);
 }
 .nav-tabs .nav-link.active {
@@ -112,8 +112,8 @@
     border-top: 1px solid transparent;
 }
 .gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
-    margin: 0 2px;
-    padding: 0 3px 1px 5px;
+    margin: 0 0.125rem;
+    padding: 0 0.1875rem 0.0625rem 0.3125rem;
     cursor: pointer;
     cursor: hand;
     font-weight: normal;
@@ -154,8 +154,8 @@
 
 .btn-close {
     box-sizing: content-box;
-    width: 10px;
-    height: 10px;
+    width: 0.625rem;
+    height: 0.625rem;
     padding: var(--border-padding);
     background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e") center/0.5em auto no-repeat;
     border: 0;

@@ -1,5 +1,5 @@
 .gwt-Tree .gwt-TreeItem {
-    padding: 1px 0px;
+    padding: 0.0625rem 0px;
     margin: 0px;
     white-space: nowrap;
     cursor: hand;
@@ -14,5 +14,5 @@
 }
 * html .gwt-TreeItem .gwt-RadioButton input,
 * html .gwt-TreeItem .gwt-CheckBox input {
-    margin-left: -4px;
+    margin-left: -0.25rem;
 }

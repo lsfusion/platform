@@ -1,6 +1,6 @@
 button {
     /*margin: 0;*/
-    padding: 2px 14px;
+    padding: 0.125rem 0.875rem;
     /*text-decoration: none;*/
     /*font-size: small;*/
     border-radius: var(--button-border-radius);

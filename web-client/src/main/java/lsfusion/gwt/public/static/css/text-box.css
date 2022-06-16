@@ -1,5 +1,5 @@
 .gwt-TextBox {
-    padding: 5px 4px;
+    padding: 0.3125rem 0.25rem;
     border: 1px solid var(--component-border-color);
     border-radius: var(--textfield-border-radius);
     font-size: small;

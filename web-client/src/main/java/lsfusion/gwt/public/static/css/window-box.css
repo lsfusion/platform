@@ -26,8 +26,8 @@
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a {
     cursor: pointer;
     display: block;
-    height: 12px;
-    width: 12px;
+    height: 0.75rem;
+    width: 0.75rem;
 }
 
 .gwt-extras-WindowBox .gwt-extras-dialog-controls a.gwt-extras-dialog-close {

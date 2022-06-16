@@ -4,7 +4,7 @@
 
 .gwt-DialogBox .Caption {
     background: var(--dialog-border-color);
-    padding: 5px 8px 4px 0;
+    padding: 0.3125rem 0.5rem 0.25rem 0;
     cursor: default;
     font-weight: bold;
     border-bottom: 1px solid var(--dialog-outer-border-color);
@@ -12,7 +12,7 @@
 .gwt-DialogBox .dialogContent {
 }
 .gwt-DialogBox .dialogMiddleCenter {
-    padding: 5px;
+    padding: 0.3125rem;
     background: var(--background-color);
 }
 .gwt-DialogBox .dialogBottomCenter {

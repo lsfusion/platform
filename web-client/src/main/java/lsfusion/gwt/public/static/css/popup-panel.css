@@ -5,7 +5,7 @@
 }
 
 .gwt-PopupPanel .popupContent {
-    /*border: 3px solid var(--dialog-border-color);*/
+    /*border: 0.1875rem solid var(--dialog-border-color);*/
     padding: var(--border-padding);
 }
 

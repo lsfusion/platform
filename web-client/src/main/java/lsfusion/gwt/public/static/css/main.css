@@ -1,12 +1,12 @@
 :root {
-    --button-border-radius: 4px;
-    --combobox-border-radius: 3px;
+    --button-border-radius: 0.25rem;
+    --combobox-border-radius: 0.1875rem;
     --textfield-border-radius: var(--combobox-border-radius);
     --table-border-radius: var(--combobox-border-radius);
     --panel-border-radius: var(--combobox-border-radius);
     --tab-border-radius-vert: 0 0 var(--combobox-border-radius) var(--combobox-border-radius);
     --tab-border-radius-horz: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
-    --border-padding: 2px;
+    --border-padding: 0.125rem;
     --border-width: 1px;
 }
 
@@ -95,8 +95,8 @@ body {
 }
 
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 0.5rem;
+    height: 0.5rem;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -128,7 +128,7 @@ body {
 .mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper {
     flex-wrap: nowrap !important;
     overflow-x: auto;
-    
+
     scrollbar-width: none;  /* hide scrollbars in Firefox */
 }
 .mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper::-webkit-scrollbar {
@@ -155,18 +155,18 @@ body {
 
 /* ------------ Message box styles ------------ */
 .messageBox-button {
-    width: 90px;
+    width: 5.625rem;
 }
 
 .messageBox-messageContainer {
     height: auto;
     overflow: auto;
-    padding: 5px 5px 7px 5px;
+    padding: 0.3125rem 0.3125rem 0.4375rem 0.3125rem;
 }
 
 /* ------------ Error box styles ------------ */
 .errorBox-button {
-    margin: 3px 3px 5px;
+    margin: 0.1875rem 0.1875rem 0.3125rem;
 }
 
 .errorBox-stackBox {
@@ -175,7 +175,7 @@ body {
 }
 
 .errorBox-message {
-    padding: 5px;
+    padding: 0.3125rem;
 }
 
 
@@ -316,11 +316,11 @@ body {
 }
 
 .notEmptyCaptionPanelLegend {
-    /*margin-left: 4px;*/
-    /*margin-right: 4px;*/
+    /*margin-left: 0.25rem;*/
+    /*margin-right: 0.25rem;*/
 
-    padding-left: 4px;
-    padding-right: 4px;
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
 }
 
 .captionCenteredLine {
@@ -397,7 +397,7 @@ body {
     align-items: center;
     white-space: nowrap;
     overflow: hidden;
-    margin: 0 2px;
+    margin: 0 0.125rem;
 }
 
 .checkBoxFilter label, .userFilterNegationCheckBox label {
@@ -405,12 +405,12 @@ body {
 }
 
 .comboBoxFilter {
-    margin: auto 2px;
+    margin: auto 0.125rem;
 }
 
 .userFilterLabel {
     cursor: default;
-    margin: 0 3px 0 5px;
+    margin: 0 0.1875rem 0 0.3125rem;
 }
 
 .userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
@@ -424,8 +424,8 @@ body {
     margin: var(--border-padding);
     border-radius: var(--textfield-border-radius);
 
-    padding-left: 3px;
-    padding-right: 3px;
+    padding-left: 0.1875rem;
+    padding-right: 0.1875rem;
 
     /* aligning text vertically (the other way with line-height) */
     display : flex;
@@ -441,11 +441,11 @@ body {
 }
 
 .userFilterNegationCheckBox input {
-    margin-left: 3px;
+    margin-left: 0.1875rem;
 }
 
 .userFilterJunctionSeparator {
-    margin: 0 7px 0 12px;
+    margin: 0 0.4375rem 0 0.75rem;
 }
 
 
@@ -453,7 +453,7 @@ body {
 .messageCanvas {
     position: absolute;
     background-color: rgba(226, 226, 226, 0.74);
-    padding: 8px;
+    padding: 0.5rem;
     overflow: hidden;
 }
 
@@ -466,9 +466,9 @@ body {
 }
 
 .stackMessage {
-    margin: 5px 5px 5px 5px;
+    margin: 0.3125rem 0.3125rem 0.3125rem 0.3125rem;
     border: 1px solid var(--panel-border-color);
-    padding: 5px;
+    padding: 0.3125rem;
     overflow-wrap: break-word;
     word-wrap: break-word;
     /*!* Умный разбор длинных строк без пробелов по словам *!*/
@@ -489,7 +489,7 @@ body {
     width: 0;
     height: 0;
     border-style: solid;
-    border-width: 0 0 5px 5px;
+    border-width: 0 0 0.3125rem 0.3125rem;
     position: absolute;
     right: 0;
     bottom: 0;
@@ -545,7 +545,7 @@ body {
 }
 
 .toolbarItem {
-    /*margin: 0 4px 0 0;*/
+    /*margin: 0 0.25rem 0 0;*/
     margin-left: var(--border-padding);
     margin-right: var(--border-padding);
 }
@@ -588,7 +588,7 @@ body {
     bottom: 2px;
     right:0;
     left:0;
-    margin: 0 5px;
+    margin: 0 0.3125rem;
     position:absolute;
 }
 
@@ -598,18 +598,18 @@ body {
 
 .filterDialogButton {
     margin: 0;
-    height: 21px;
-    width: 21px;
+    height: 1.3125rem;
+    width: 1.3125rem;
 }
 
 .imageButtonWithoutCaption {
-    padding: 1px;
+    padding: 0.0625rem;
 }
 
 .verticalStretchSeparator {
     border-left: 1px solid var(--panel-border-color);
-    margin: 3px 0;
-    padding: 0 2px;
+    margin: 0.1875rem 0;
+    padding: 0 0.125rem;
     align-self: stretch;
 }
 

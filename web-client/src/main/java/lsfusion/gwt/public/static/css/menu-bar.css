@@ -12,7 +12,7 @@
     border: 1px solid #e0e0e0;
 }
 .gwt-MenuBar-horizontal .gwt-MenuItem {
-    padding: 5px 10px;
+    padding: 0.3125rem 0.625rem;
     vertical-align: bottom;
     color: var(--text-color);
     font-weight: bold;
@@ -40,10 +40,10 @@
     width: 100%;
 }
 .gwt-MenuBar-vertical .gwt-MenuItem {
-    padding: 2px 40px 2px 1px;
+    padding: 0.125rem 40px 0.125rem 0.0625rem;
 }
 .gwt-MenuBar-vertical .gwt-MenuItemSeparator {
-    padding: 2px 0;
+    padding: 0.125rem 0;
 }
 .gwt-MenuBar-vertical .gwt-MenuItemSeparator .menuSeparatorInner {
     height: 1px;
@@ -53,7 +53,7 @@
     overflow: hidden;
 }
 .gwt-MenuBar-vertical .subMenuIcon {
-    padding-right: 4px;
+    padding-right: 0.25rem;
 }
 .gwt-MenuBar-vertical .subMenuIcon-selected {
     background: #E3E8F3;

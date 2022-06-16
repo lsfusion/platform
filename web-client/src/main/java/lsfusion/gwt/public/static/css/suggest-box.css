@@ -1,5 +1,5 @@
 .gwt-SuggestBox {
-    padding: 5px 4px;
+    padding: 0.3125rem 0.25rem;
     border: 1px solid var(--component-border-color);
     border-top: 1px solid #999;
     font-size: 100%;
@@ -21,7 +21,7 @@
     background: var(--component-background-color);
 }
 .gwt-SuggestBoxPopup .noResultsLabel {
-    margin: 3px 2px;
+    margin: 0.1875rem 0.125rem;
 }
 
 .gwt-SuggestBoxPopup .suggestPopupBottomPanel {
@@ -31,7 +31,7 @@
 .gwt-SuggestBoxPopup .suggestPopupButton {
     background: var(--component-background-color);
     border-radius: var(--button-border-radius);
-    margin: 2px;
+    margin: 0.125rem;
 }
 .gwt-SuggestBoxPopup .suggestPopupTopCenterInner,
 .gwt-SuggestBoxPopup .suggestPopupBottomCenterInner {
