@@ -48,7 +48,7 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
         });
 
         if (innerText != null)
-            quill.root.innerHTML = innerText.includes('div') ? innerText.replaceAll('div', 'p') : innerText;
+            quill.root.innerHTML = innerText.includes('<div>') ? innerText.replaceAll('<div>', '<p>').replaceAll('</div>', '</p>') : innerText;
 
         element.quill = quill;
     }-*/;
