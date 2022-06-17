@@ -12,9 +12,11 @@ import java.util.Map;
 public class ResizableModalWindow extends ResizableWindow {
 
     private static ModalMask modalMask;
+    //This scheme is necessary when one modal window is started before the second one, but is displayed later due to delays.
+    //In this case, the order in which the windows are displayed must be maintained according to the order of request indexes.
     private static Map<Widget, Pair<ModalForm, Long>> formRequestIndexMap = new HashMap<>();
 
-    public void showModal(Pair<ModalForm, Long> formRequestIndex, Integer insertIndex) {
+    public void show(Pair<ModalForm, Long> formRequestIndex, Integer insertIndex) {
         showModalMask(formRequestIndex);
         super.show(insertIndex);
     }
@@ -31,7 +33,7 @@ public class ResizableModalWindow extends ResizableWindow {
         return null;
     }
 
-    public void hideModal() {
+    public void hide() {
         super.hide();
         hideModalMask();
     }

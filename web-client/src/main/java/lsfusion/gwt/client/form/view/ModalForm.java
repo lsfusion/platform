@@ -66,7 +66,7 @@ public class ModalForm extends FormContainer {
     @Override
     public void onAsyncInitialized() {
         // actually it's already shown, but we want to update preferred sizes after setting the content
-        contentWidget.showModal(null, null);
+        contentWidget.show(null, null);
 
         super.onAsyncInitialized();
     }
@@ -83,7 +83,7 @@ public class ModalForm extends FormContainer {
             formInsertIndex.first.prevForm = this;
         }
 
-        contentWidget.showModal(new Pair(this, requestIndex), formInsertIndex != null ? formInsertIndex.second : null);
+        contentWidget.show(new Pair(this, requestIndex), formInsertIndex != null ? formInsertIndex.second : null);
 
         if(formInsertIndex == null) {
             onFocus(true);
@@ -96,7 +96,7 @@ public class ModalForm extends FormContainer {
     public void hide(EndReason editFormCloseReason) {
         onBlur(true);
 
-        contentWidget.hideModal();
+        contentWidget.hide();
 
         if(prevForm != null)
             prevForm.onFocus(false);

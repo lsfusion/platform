@@ -133,7 +133,7 @@ public abstract class FormsController {
         if (asyncFormController.onServerInvocationCloseResponse()) {
             if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GHideFormAction)) {
                 Pair<FormContainer, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
-                asyncClosedForm.first.show(null, asyncClosedForm.second);
+                asyncClosedForm.first.show(asyncFormController.getEditRequestIndex(), asyncClosedForm.second);
             }
         }
     }
