@@ -80,7 +80,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     private boolean globalCaptionIsDrawn;
 
     public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
-        setElement(Document.get().createDivElement());
+        if (property.isAction())
+            setElement(Document.get().createButtonElement());
+        else
+            setElement(Document.get().createDivElement());
 
         DataGrid.initSinkEvents(this);
         DataGrid.initSinkFocusEvents(this);

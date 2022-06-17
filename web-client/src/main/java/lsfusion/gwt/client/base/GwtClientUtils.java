@@ -917,19 +917,17 @@ public class GwtClientUtils {
         return wrappedTh;
     }
 
-    public static Element wrapAlignedFlexImg(Element th, Consumer<ImageElement> imgProcessor) {
+    public static JavaScriptObject wrapAlignedFlexImg(Element th, Consumer<ImageElement> imgProcessor) {
         assert isAlignedFlexModifiableDiv(th) || isTDorTH(th); // has vertical and text align
 
-        Element wrappedTh = Document.get().createDivElement();
+        th.setInnerText("...");
 
         ImageElement img = Document.get().createImageElement();
         img.addClassName("wrap-img-margins");
         imgProcessor.accept(img);
-        th.appendChild(img);
+        th.insertFirst(img);
 
-        th.appendChild(wrappedTh);
-
-        return wrappedTh;
+        return th.getLastChild();
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {
