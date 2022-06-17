@@ -77,7 +77,7 @@ public class PopupForm extends EditingForm {
     private FormContainer prevForm;
 
     @Override
-    public void show(Integer index) {
+    public void show(Long requestIndex, Integer index) {
         prevForm = MainFrame.getAssertCurrentForm();
         if(prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);
