@@ -115,8 +115,6 @@ public class PostgreDataAdapter extends DataAdapter {
 
     @Override
     protected void ensureSqlFuncs() throws IOException, SQLException {
-        super.ensureSqlFuncs();
-
         recursionString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/recursion.tsql"));
         safeCastString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecast.tsql"));
         safeCastIntString = IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sql/postgres/safecastint.tsql"));
@@ -436,7 +434,7 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected String getDBName() {
+    public String getDBName() {
         return DB_NAME;
     }
 }

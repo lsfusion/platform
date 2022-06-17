@@ -1,7 +1,6 @@
 package lsfusion.server.data.sql.adapter;
 
 import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
@@ -33,8 +32,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements TypePool {
     public final static SQLSyntax debugSyntax = PostgreSQLSyntax.instance;
@@ -73,28 +70,13 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         ensureSqlFuncs();
     }
 
-    private static List<String> getAllDBNames() {
+    public static List<String> getAllDBNames() {
         return new ArrayList<>(Arrays.asList(PostgreDataAdapter.DB_NAME, MySQLDataAdapter.DB_NAME));
     }
 
-    private List<String> findSQLScripts() {
-        List<String> allDBNames = getAllDBNames();
-        allDBNames.remove(getDBName());
-        return ResourceUtils.getResources(Pattern.compile("/sql/.*")).stream().filter(resource -> {
-            if (resource.contains(".tsql"))
-                return false;
-            for (String key : allDBNames) {
-                if (resource.contains("/" + key + "/"))
-                    return false;
-            }
-            return true;
-        }).collect(Collectors.toList());
-    }
-
-    protected abstract String getDBName();
+    public abstract String getDBName();
 
     protected void ensureSqlFuncs() throws IOException, SQLException {
-        executeEnsure(findSQLScripts());
     }
 
     public void ensureLogLevel() {

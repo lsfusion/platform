@@ -10,14 +10,36 @@ onWebClientStarted  ABSTRACT LIST ( );
 onWebClientLoad ABSTRACT LIST ();
 onWebClientStarted () +{ 
     onWebClientLoad();
+}
 
-    INTERNAL CLIENT 'input-quill.js';
-    INTERNAL CLIENT 'input-quill.css';
-    
-    INTERNAL CLIENT 'input.js';
+readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
+currentDBName = DATA LOCAL STRING ();
+unusedDBNames = DATA LOCAL STRING (STRING);
+onStarted() + {
+    readDBNames();    
+    readResourcePaths('/onStarted/.*\\.sql'); // get only .sql files
+    FOR STRING s = resourcePaths(s) DO {
+        LOCAL unused = BOOLEAN();
+        unused() <- NULL;
+        FOR STRING t = unusedDBNames(t) DO {
+            IF isSubstring(resourcePaths(s), '/' + unusedDBNames(t) + '/') THEN {
+                unused() <- TRUE;
+            }
+        } 
+        
+        IF NOT unused() THEN {
+            INTERNAL DB resourcePaths(s);
+        }
+    }
+}
 
-    INTERNAL CLIENT 'option.js';
-    INTERNAL CLIENT WAIT 'option.css';
+onWebClientLoad() + {
+    readResourcePaths('/onStarted/.*');
+    FOR STRING s = resourcePaths(s) DO {
+        IF NOT endsWith(resourcePaths(s), '.sql') THEN {
+            INTERNAL CLIENT resourcePaths(s);
+        }
+    }
 }
 
 CLASS ABSTRACT Exception '{system.events.exception}';
