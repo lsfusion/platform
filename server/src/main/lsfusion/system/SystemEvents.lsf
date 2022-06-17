@@ -19,15 +19,15 @@ onStarted() + {
     readDBNames();    
     readResourcePaths('/onStarted/.*\\.sql'); // get only .sql files
     FOR STRING s = resourcePaths(s) DO {
-        LOCAL q = BOOLEAN();
-        q() <- NULL;
+        LOCAL unused = BOOLEAN();
+        unused() <- NULL;
         FOR STRING t = unusedDBNames(t) DO {
             IF isSubstring(resourcePaths(s), '/' + unusedDBNames(t) + '/') THEN {
-                q() <- TRUE;
+                unused() <- TRUE;
             }
         } 
         
-        IF NOT q() THEN {
+        IF NOT unused() THEN {
             INTERNAL DB resourcePaths(s);
         }
     }
