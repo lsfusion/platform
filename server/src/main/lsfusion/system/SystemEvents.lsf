@@ -20,6 +20,28 @@ onWebClientStarted () +{
     INTERNAL CLIENT WAIT 'option.css';
 }
 
+readDBName INTERNAL 'lsfusion.server.logics.action.ReadDBNameAction' ();
+dataBaseName = DATA LOCAL STRING ();
+onStarted() + {
+    readDBName();
+    printToLog(dataBaseName());
+    readResourcePaths('/onStarted/.*\\.sql'); // get only .sql files
+    FOR STRING s = resourcePaths(s) DO {
+        IF isSubstring(resourcePaths(s), dataBaseName()) THEN {
+            INTERNAL DB resourcePaths(s);    
+        }
+    }
+}
+
+onWebClientLoad() + {
+    readResourcePaths('/onStarted/.*');
+    FOR STRING s = resourcePaths(s) DO {
+        IF NOT isSubstring(resourcePaths(s), '.sql') THEN {
+            INTERNAL CLIENT resourcePaths(s);   
+        }
+    }
+}
+
 CLASS ABSTRACT Exception '{system.events.exception}';
 CLASS ClientException '{system.events.client.exception}' : Exception;
 CLASS WebClientException '{system.events.web.client.exception}' : ClientException;
