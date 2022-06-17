@@ -70,6 +70,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         ensureSqlFuncs();
     }
 
+    public static List<String> getAllDBNames() {
+        return new ArrayList<>(Arrays.asList(PostgreDataAdapter.DB_NAME, MySQLDataAdapter.DB_NAME));
+    }
+
     public abstract String getDBName();
 
     protected void ensureSqlFuncs() throws IOException, SQLException {
