@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -26,7 +27,7 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
         return getFullWidthString("0000000", font);
     }
 

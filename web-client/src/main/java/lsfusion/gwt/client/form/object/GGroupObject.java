@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -53,25 +54,25 @@ public class GGroupObject implements Serializable, HasNativeSID {
     public GRowForegroundReader rowForegroundReader;
 
     // transient
-    public int columnSumWidth;
-    public int columnCount;
-    public int rowMaxHeight;
+    public transient GSize columnSumWidth = GSize.ZERO;
+    public transient int columnCount;
+    public transient GSize rowMaxHeight = GSize.ZERO;
 
-    public int getWidth(int lines) {
+    public GSize getWidth(int columns) {
         int columnCount = this.columnCount;
-        if(lines == -1)
-            lines = Math.min(columnCount <= 3 ? columnCount : (int) round(3 + pow(columnCount - 6, 0.7)), 6);
+        if(columns == -1)
+            columns = Math.min(columnCount <= 3 ? columnCount : (int) round(3 + pow(columnCount - 6, 0.7)), 6);
 
-        return columnCount > 0 ? lines * columnSumWidth / columnCount : 0;
+        return columnCount > 0 ? columnSumWidth.scale(columns).div(columnCount) : GSize.ZERO;
     }
 
-    public int getHeight(int lines, int headerHeight) {
+    public GSize getHeight(int lines, GSize headerHeight) {
         if(lines == -1)
             lines = 5;
 
-        return (lines * (rowMaxHeight + DataGrid.BORDER_VERT_SIZE)) +
-                + 3 * DataGrid.BORDER_VERT_SIZE // borders around grid + header border
-                + (headerHeight >= 0 ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT);
+        return (rowMaxHeight.add(DataGrid.BORDER_VERT_SIZE).scale(lines)).add(
+                3 * DataGrid.BORDER_VERT_SIZE).add( // borders around grid + header border
+                (headerHeight != null ? headerHeight : GGridPropertyTableHeader.DEFAULT_HEADER_HEIGHT));
     }
 
     public String getCaption() {

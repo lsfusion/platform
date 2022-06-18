@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -58,7 +59,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     
     private boolean autoSize;
 
-    private int hierarchicalWidth;
+    private GSize hierarchicalWidth;
 
     public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, boolean autoSize) {
         super(iformController, lastGroupObject(treeGroup), treeGroupController.getFont());
@@ -189,7 +190,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
-        GPropertyTableBuilder.setRowHeight(cellElement, 0, false); // somewhy it's needed for proper indent showing
+        GPropertyTableBuilder.setRowHeight(cellElement, GSize.ZERO, false); // somewhy it's needed for proper indent showing
         for (int i = 0; i <= treeValue.level; i++) {
             DivElement img = createIndentElement(cellElement);
             updateIndentElement(img, treeValue, i);
@@ -640,8 +641,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public int getHeaderHeight() {
-        return treeGroup.headerHeight;
+    public GSize getHeaderHeight() {
+        return treeGroup.getHeaderHeight();
     }
 
     @Override
@@ -652,7 +653,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected int getColumnBaseWidth(int i) {
+    protected GSize getColumnBaseWidth(int i) {
         if(i==0)
             return hierarchicalWidth;
         return super.getColumnBaseWidth(i);

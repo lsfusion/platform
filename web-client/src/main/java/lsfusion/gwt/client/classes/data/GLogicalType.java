@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -38,8 +39,8 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        return 30;
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+        return GSize.CONST(30);
     }
 
     @Override

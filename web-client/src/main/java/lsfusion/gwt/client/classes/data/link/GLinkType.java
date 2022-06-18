@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data.link;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -48,8 +49,8 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        return 18;
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+        return GSize.CONST(18);
     }
 
 }

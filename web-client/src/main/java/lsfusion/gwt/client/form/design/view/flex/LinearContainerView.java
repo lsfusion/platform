@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -24,7 +25,7 @@ public class LinearContainerView extends LayoutContainerView {
     protected FlexPanel[] lines;
     protected List<AlignCaptionPanel> childrenCaptions;
 
-    public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, Integer lineSize, Integer captionLineSize, int linesCount, boolean wrap, boolean lineShrink) {
+    public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, GSize lineSize, GSize captionLineSize, int linesCount, boolean wrap, boolean lineShrink) {
         FlexPanel.FlexLayoutData valueLine = new FlexPanel.FlexLayoutData(1, lineSize, lineShrink);
 
         if(wrap) {
@@ -63,8 +64,8 @@ public class LinearContainerView extends LayoutContainerView {
         if(alignCaptions)
             childrenCaptions = new ArrayList<>();
 
-        Integer lineSize = container.getLineSize();
-        Integer captionLineSize = container.getCaptionLineSize();
+        GSize lineSize = container.getLineSize();
+        GSize captionLineSize = container.getCaptionLineSize();
         boolean lineShrink = container.isLineShrink();
 
         if(isSingleLine()) {

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.ImageHolder;
@@ -20,12 +21,12 @@ public class NavigatorImageButton extends ImageButton {
     public void setImage(ImageDescription imageDescription) {
         if (imageDescription != null) {
             setAbsoluteImagePath(GwtClientUtils.getAppStaticImageURL(imageDescription.getUrl()));
-            if (imageDescription.width != -1) {
-                image.setWidth(imageDescription.width + "px");
-            }
-            if (imageDescription.height != -1) {
-                image.setHeight(imageDescription.height + "px");
-            }
+            GSize width = imageDescription.getWidth();
+            if (width != null)
+                image.setWidth(width.getString());
+            GSize height = imageDescription.getHeight();
+            if (height != null)
+                image.setHeight(height.getString());
         }
     }
     

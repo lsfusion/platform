@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 
 import java.util.HashMap;
@@ -122,7 +123,7 @@ public class GFontMetrics {
             int delta = 1;
 
             while (delta >= 1) {
-                while (getCalcMeasure(new GFontWidthString(font, GwtSharedUtils.replicate('0', charWidth + delta * 2))).width < pixelWidth) {
+                while (getCalcMeasure(new GFontWidthString(font, GwtSharedUtils.replicate('0', charWidth + delta * 2))).width.getPivotSize() < pixelWidth) {
                     delta = delta * 2;
                 }
                 charWidth += delta;
@@ -163,7 +164,10 @@ public class GFontMetrics {
             final int width = element.getOffsetWidth();
             final int height = element.getOffsetHeight();
 
-            measure = new FontMeasure((int) Math.round((double) width), (int) Math.round((double) height));
+            GSize widthSize = GSize.getValueSize((int) Math.round((double) width)).add(GSize.TEMP_PADDING_ADJ);
+            GSize heightSize = GSize.getValueSize((int) Math.round((double) height)).add(GSize.TEMP_PADDING_ADJ);
+
+            measure = new FontMeasure(widthSize, heightSize);
         } finally {
             element.getParentElement().removeChild(element);
         }
@@ -171,25 +175,23 @@ public class GFontMetrics {
         return measure;
     }
 
-    public static int getStringWidth(GFontWidthString fontWidthString) {
+    public static GSize getStringWidth(GFontWidthString fontWidthString) {
         return getCalcMeasure(fontWidthString).width;
     }
 
-    public static int getSymbolHeight(GFont font) {
-        FontMeasure measure = getCalcMeasure(font == null ? GFontWidthString.DEFAULT_FONT : new GFontWidthString(font));
-        return measure != null ? measure.height : 0;
+    public static GSize getSymbolHeight(GFont font) {
+        return getCalcMeasure(font == null ? GFontWidthString.DEFAULT_FONT : new GFontWidthString(font)).height;
     }
 
-    public static int getSymbolWidth(GFont font) {
-        FontMeasure measure = getCalcMeasure(font == null ? GFontWidthString.DEFAULT_FONT : new GFontWidthString(font));
-        return measure != null ? measure.width : 0;
+    public static GSize getSymbolWidth(GFont font) {
+        return getCalcMeasure(font == null ? GFontWidthString.DEFAULT_FONT : new GFontWidthString(font)).width;
     }
 
     private static class FontMeasure {
-        final int width;
-        final int height;
+        final GSize width;
+        final GSize height;
 
-        private FontMeasure(int width, int height) {
+        private FontMeasure(GSize width, GSize height) {
             this.width = width;
             this.height = height;
         }

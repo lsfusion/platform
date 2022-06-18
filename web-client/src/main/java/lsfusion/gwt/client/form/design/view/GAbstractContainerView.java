@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -100,8 +101,8 @@ public abstract class GAbstractContainerView {
         // else
         //      overflow: auto
 
-        Integer size = child.getSize(vertical);
-        Integer oppositeSize = child.getSize(!vertical);
+        GSize size = child.getSize(vertical);
+        GSize oppositeSize = child.getSize(!vertical);
 
         boolean shrink = child.isShrink();
         boolean oppositeShrink = child.isAlignShrink();
@@ -119,7 +120,7 @@ public abstract class GAbstractContainerView {
         GFlexAlignment alignment = child.getAlignment();
         boolean isStretch = alignment == GFlexAlignment.STRETCH;
 
-        boolean incorrectOppositeShrink = isStretch != oppositeShrink && !(oppositeSize != null && oppositeSize == 0); // if size is 0 we don't care about the shrink
+        boolean incorrectOppositeShrink = isStretch != oppositeShrink && !(oppositeSize != null && oppositeSize.isZero()); // if size is 0 we don't care about the shrink
 
         FlexPanel wrapPanel = wrapBorderImpl(child);
 

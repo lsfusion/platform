@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -35,12 +36,14 @@ public abstract class GType implements Serializable {
         return GCompare.EQUALS;
     }
 
-    public static int getFullWidthString(String widthString, GFont font) {
+    // not null
+    public static GSize getFullWidthString(String widthString, GFont font) {
         GFontWidthString fontWidthString = new GFontWidthString(font == null ? GFont.DEFAULT_FONT : font, widthString);
         return GFontMetrics.getStringWidth(fontWidthString); //  + StyleDefaults.CELL_HORIZONTAL_PADDING * 2; min-width doesnt' include padding, so we don't need to add it
     }
 
-    public abstract int getDefaultWidth(GFont font, GPropertyDraw propertyDraw);
+    // not null
+    public abstract GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw);
     
     public int getDefaultCharHeight() {
         return 1;

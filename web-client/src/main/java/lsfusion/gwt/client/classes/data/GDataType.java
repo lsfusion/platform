@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.classes.GClass;
 import lsfusion.gwt.client.classes.GType;
@@ -20,7 +21,7 @@ public abstract class GDataType extends GType implements GClass {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
         return getFullWidthString(getDefaultWidthString(propertyDraw), font);
     }
 

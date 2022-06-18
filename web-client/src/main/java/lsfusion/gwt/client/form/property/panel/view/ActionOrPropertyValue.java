@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -139,8 +140,8 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         setBorderStyles();
 
-        Integer width;
-        Integer height;
+        GSize width;
+        GSize height;
         if(!autoSize) {
             assert panel != null;
             width = property.getValueWidthWithPadding(null);

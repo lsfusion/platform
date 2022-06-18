@@ -16,9 +16,9 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.size.GSize;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Default implementation of {@link HeaderBuilder} that renders columns.
@@ -86,11 +86,11 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     protected abstract void updateHeaderImpl(TableRowElement tr);
 
     @Override
-    public void updateStickyLeft(List<Integer> stickyColumns, List<Integer> stickyLefts) {
+    public void updateStickyLeft(List<Integer> stickyColumns, List<GSize> stickyLefts) {
         updateHeaderStickyLeftImpl(getHeaderRow(), stickyColumns, stickyLefts);
     }
 
-    protected abstract void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts);
+    protected abstract void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts);
 
     /**
      * Get the header or footer at the specified index.

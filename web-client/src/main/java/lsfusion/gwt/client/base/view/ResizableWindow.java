@@ -92,8 +92,8 @@ public class ResizableWindow extends Composite {
     }
 
     public void setInnerContentSize(Dimension size) {
-        innerContentWidget.setWidth(size.width + "px");
-        innerContentWidget.setHeight(size.height + "px");
+        innerContentWidget.setWidth(size.width.getString());
+        innerContentWidget.setHeight(size.height.getString());
     }
 
     private void initLayout() {

@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -108,8 +109,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GGridSortableHeaderManager sortableHeaderManager;
     
     public GFont font;
-
-    protected int preferredWidth;
 
     public GGridPropertyTable(GFormController form, GGroupObject groupObject, GFont font) {
         super(form, groupObject, getDefaultStyle(), !groupObject.hasHeaders, !groupObject.hasFooters, false);
@@ -361,25 +360,34 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     private void updateLayoutWidthColumns() {
+        GSize totalPref = GSize.ZERO;
+        double totalDoublePref = 0.0;
+
         List<Column> flexColumns = new ArrayList<>();
         List<Double> flexValues = new ArrayList<>();
-        double totalPref = 0.0;
         double totalFlexValues = 0;
 
         for (int i = 0, columnCount = getColumnCount(); i < columnCount; ++i) {
             Column column = getColumn(i);
 
-            double pref = prefs[i];
+            double flexPref;
+            GSize pref;
+            if(resized) {
+                flexPref = doublePrefs[i];
+                pref = GSize.getResizeSize(flexPref);
+                totalDoublePref += flexPref;
+            } else {
+                pref = prefs[i];
+                flexPref = pref.getValueFlexSize();
+                totalPref = totalPref.add(pref);
+            }
             if(flexes[i]) {
                 flexColumns.add(column);
-                flexValues.add(pref);
-                totalFlexValues += pref;
+                flexValues.add(flexPref);
+                totalFlexValues += flexPref;
             } else {
-                int intPref = (int) Math.round(prefs[i]);
-                assert intPref == basePrefs[i];
-                setColumnWidth(column, intPref + "px");
+                setColumnWidth(column, pref.getString());
             }
-            totalPref += pref;
         }
 
         // поправка для округлений (чтобы не дрожало)
@@ -399,16 +407,45 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             totalFlexValues -= flexValue;
             setColumnWidth(flexColumn, ((double)flexPercent / (double)precision)  + "%");
         }
-        preferredWidth = (int) Math.round(totalPref);
-        setMinimumTableWidth(totalPref, com.google.gwt.dom.client.Style.Unit.PX);
+        if(resized)
+            totalPref = GSize.getResizeSize(totalDoublePref);
+        setMinimumTableWidth(totalPref);
     }
 
     public double resizeColumn(int column, int delta) {
 //        int body = ;
         int viewWidth = getViewportWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
-        double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
-        for (int i = 0; i < prefs.length; i++)
-            setUserWidth(i, (int) Math.round(prefs[i]));
+        if(!resized) {
+            resized = true;
+            doublePrefs = new double[prefs.length];
+            intBasePrefs = new int[basePrefs.length];
+            for (int i = 0; i < prefs.length; i++) {
+                Double pxPref = prefs[i].getResizeSize();
+                Integer pxBasePref = basePrefs[i].getIntResizeSize();
+                if(pxPref == null || pxBasePref == null)
+                    setColumnWidth(getColumn(i), basePrefs[i].getString()); // it will be restored in updateLayoutWidthColumns
+                doublePrefs[i] = pxPref != null ? pxPref : -1.0;
+                intBasePrefs[i] = pxBasePref != null ? pxBasePref : -1;
+            }
+            prefs = null;
+            basePrefs = null;
+
+            for (int i = 0; i < doublePrefs.length; i++) {
+                if(doublePrefs[i] < -0.5 || intBasePrefs[i] < 0) {
+                    int actualSize = getOffsetColumnWidth(i);
+                    if(doublePrefs[i] < -0.5)
+                        doublePrefs[i] = actualSize;
+                    if(intBasePrefs[i] < 0)
+                        intBasePrefs[i] = actualSize;
+                }
+            }
+        }
+        double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, doublePrefs, intBasePrefs, flexes);
+        for (int i = 0; i < doublePrefs.length; i++) {
+            int pref = (int) Math.round(doublePrefs[i]);
+            setUserWidth(i, pref);
+        }
+
         updateLayoutWidthColumns();
 
         widthsChanged();
@@ -443,23 +480,34 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
-    private double[] prefs;  // mutable
-    private int[] basePrefs;
+    private boolean resized;
+    private double[] doublePrefs;  // mutable, should be equal to prefs
+    private int[] intBasePrefs;
+    private GSize[] prefs;
+    private GSize[] basePrefs;
+
     private boolean[] flexes;
     public void updateLayoutWidth() {
         int columnsCount = getColumnCount();
-        prefs = new double[columnsCount];
-        basePrefs = new int[columnsCount];
+
         flexes = new boolean[columnsCount];
+
+        resized = false;
+        prefs = new GSize[columnsCount];
+        doublePrefs = null;
+        basePrefs = new GSize[columnsCount];
+        intBasePrefs = null;
         for (int i = 0; i < columnsCount; ++i) {
             boolean flex = isColumnFlex(i);
             flexes[i] = flex;
 
-            int basePref = getColumnBaseWidth(i);
+            GSize basePref = getColumnBaseWidth(i);
             basePrefs[i] = basePref;
 
+            GSize pref = basePref;
             Integer userWidth = getUserWidth(i);
-            int pref = flex && userWidth != null ? Math.max(userWidth, basePref) : basePref;
+            if(flex && userWidth != null)
+                pref = pref.max(GSize.getResizeSize(userWidth));
             prefs[i] = pref;
         }
         updateLayoutWidthColumns();
@@ -538,7 +586,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
-    public abstract int getHeaderHeight();
+    public abstract GSize getHeaderHeight();
 
     protected String getUserCaption(GPropertyDraw propertyDraw) {
         return null;
@@ -556,7 +604,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getUserWidth(getColumnPropertyDraw(i));
     }
     
-    protected int getColumnBaseWidth(int i) {
+    protected GSize getColumnBaseWidth(int i) {
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 

@@ -7,6 +7,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GActionType;
 import lsfusion.gwt.client.classes.GClass;
@@ -35,7 +36,6 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.view.StyleDefaults;
 import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
@@ -571,7 +571,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public double getFlex() {
         if (flex == -2) {
-            return getValueWidth(null);
+            return getValueWidth(null).getValueFlexSize();
         }
         return flex;
     }
@@ -624,14 +624,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         controller.getPropertyController(this).updateProperty(this, getColumnKeys(this, controller.getCurrentGridObjects()), updateKeys, values);
     }
 
+    // not null
     // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
-    public int getValueWidthWithPadding(GFont parentFont) {
-        return getValueWidth(parentFont) + getCellRenderer().getWidthPadding() * 2;
+    public GSize getValueWidthWithPadding(GFont parentFont) {
+        return getValueWidth(parentFont).add(getCellRenderer().getWidthPadding() * 2);
     }
-    public int getValueHeightWithPadding(GFont parentFont) {
-        return getValueHeight(parentFont) + getCellRenderer().getHeightPadding() * 2;
+    public GSize getValueHeightWithPadding(GFont parentFont) {
+        return getValueHeight(parentFont).add(getCellRenderer().getHeightPadding() * 2);
     }
-    public Integer getAutoSizeValueWidth(GFont parentFont) {
+
+    // nullable
+    public GSize getAutoSizeValueWidth(GFont parentFont) {
         assert autoSize;
         if(valueWidth == -1)
             return null;
@@ -639,9 +642,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return getValueWidth(parentFont);
     }
 
-    public int getValueWidth(GFont parentFont) {
+    // not null
+    public GSize getValueWidth(GFont parentFont) {
         if (valueWidth >= 0) {
-            return valueWidth;
+            return GSize.getValueSize(valueWidth);
         }
 
         GFont font = this.font != null ? this.font : parentFont;
@@ -652,34 +656,34 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.getDefaultWidth(font, this);
     }
 
-    public Integer getCaptionWidth() {
+    public GSize getCaptionWidth() {
         if(captionWidth >= 0)
-            return captionWidth;
+            return GSize.getValueSize(captionWidth);
 
         return null;
     }
 
-    public Integer getCaptionHeight() {
+    public GSize getCaptionHeight() {
         if(captionHeight >= 0)
-            return captionHeight;
+            return GSize.getValueSize(captionHeight);
 
         return null;
     }
 
-    public Integer getHeaderCaptionHeight(GGridPropertyTable table) {
-        int headerHeight = table.getHeaderHeight();
-        if(headerHeight >= 0)
+    public GSize getHeaderCaptionHeight(GGridPropertyTable table) {
+        GSize headerHeight = table.getHeaderHeight();
+        if(headerHeight != null)
             return headerHeight;
 
-        Integer captionHeight = getCaptionHeight();
-        return captionHeight != null ? captionHeight : -1;
+        return getCaptionHeight();
     }
 
     public GFormatType getFormatType() {
         return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType));
     }
 
-    public Integer getAutoSizeValueHeight(GFont parentFont) {
+    // nullable
+    public GSize getAutoSizeValueHeight(GFont parentFont) {
         assert autoSize;
         if(valueHeight == -1)
             return null;
@@ -687,24 +691,22 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return getValueHeight(parentFont);
     }
 
-    public int getValueHeight(GFont parentFont) {
+    // not null
+    public GSize getValueHeight(GFont parentFont) {
         if (valueHeight >= 0) {
-            return valueHeight;
+            return GSize.getValueSize(valueHeight);
         }
 
-        int lineHeight;
-        GFont usedFont = font != null ? font : parentFont;
-        if (usedFont != null && usedFont.size > 0)
-            lineHeight = GFontMetrics.getSymbolHeight(usedFont);
-        else
-            lineHeight = StyleDefaults.VALUE_HEIGHT;
+        GSize lineHeight;
+        lineHeight = GFontMetrics.getSymbolHeight(font != null ? font : parentFont);
         int lines = charHeight > 0 ? charHeight : baseType.getDefaultCharHeight();
 
-        int height = lineHeight * lines;
+        GSize height = lineHeight.scale(lines);
 
         final ImageDescription image = getImage();
-        if (image != null && image.height >= 0) {
-            height = Math.max(image.height, height);
+        GSize imageHeight;
+        if (image != null && (imageHeight = image.getHeight()) != null) {
+            height = height.max(imageHeight);
         }
         return height;
     }

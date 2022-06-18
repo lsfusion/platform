@@ -25,6 +25,7 @@ import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.*;
@@ -202,7 +203,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             tableDataContainer = TableScrollPanel.noScroll(tableData);
 
         // for scrollers we need 0 basis (since that is the point of scroller)
-        addFillFlex(tableDataContainer, !noScrollers ? 0 : null);
+        addFillFlex(tableDataContainer, !noScrollers ? GSize.ZERO : null);
         // however it seems that addFillShrink would also do
 //        addFillShrink(tableDataContainer);
 
@@ -786,6 +787,11 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         columnWidths.put(column, width);
     }
 
+    public int getOffsetColumnWidth(int index) {
+        return getHeaderElement(index).getOffsetWidth();
+//        return impl.getFullSize(getHeaderElement(index), false);
+    }
+
     // when row or column are changed by keypress in grid (KEYUP, PAGEUP, etc), no focus is lost
     // so to handle this there are to ways of doing that, either with GFormController.checkCommitEditing, or moving focus to grid
     // so far will do it with checkCommitEditing (like in form bindings)
@@ -865,13 +871,11 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
      * @param unit  the unit of the width
      * @see #setTableWidth(double, Unit)
      */
-    private double minWidthValue = 0.0;
-    private Unit minWidthUnit = null;
-    public void setMinimumTableWidth(double value, Unit unit) {
-        minWidthValue = value;
-        minWidthUnit = unit;
+    private GSize minWidth;
+    public void setMinimumTableWidth(GSize width) {
+        this.minWidth = width;
 
-        setBlockMinWidth(value, tableData);
+        setBlockMinWidth(0, tableData);
         if(!noHeaders)
             updateHeaderTableMinimumWidth(tableHeader);
         if(!noFooters)
@@ -880,7 +884,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     @Override
     public void setPreferredSize(boolean set, Result<Integer> grids) {
-        if(minWidthUnit != null) {
+        if(minWidth != null) {
             // we have only minWidth, but during auto sizing this grid will get 100000 pixels width, which is not what we expect
             // so we're setting max width
             setMaxBlockWidth(set, tableData);
@@ -898,17 +902,17 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     private void setMaxBlockWidth(boolean set, Widget tableData) {
         if(set)
-            setMaxWidth(tableData, minWidthValue, minWidthUnit);
+            setMaxWidth(tableData, minWidth);
         else
             clearMaxWidth(tableData);
     }
 
-    public static void setMaxWidth(Widget widget, double width, Unit widthUnit) {
-        widget.getElement().getStyle().setProperty("maxWidth", width, widthUnit);
+    public static void setMaxWidth(Widget widget, GSize size) {
+        widget.getElement().getStyle().setProperty("maxWidth", size.getString());
     }
 
-    public static void setMaxHeight(Widget widget, double height, Unit widthUnit) {
-        widget.getElement().getStyle().setProperty("maxHeight", height, widthUnit);
+    public static void setMaxHeight(Widget widget, GSize size) {
+        widget.getElement().getStyle().setProperty("maxHeight", size.getString());
     }
 
     public static void clearMaxWidth(Widget widget) {
@@ -919,8 +923,11 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         widget.getElement().getStyle().clearProperty("maxHeight");
     }
 
-    public void setBlockMinWidth(double value, Widget tableData) {
-        tableData.getElement().getStyle().setProperty("minWidth", value, minWidthUnit);
+    public void setBlockMinWidth(int offset, Widget tableData) {
+        GSize width = this.minWidth;
+        if(offset > 0)
+            width = width.add(offset);
+        tableData.getElement().getStyle().setProperty("minWidth", width.getString());
     }
 
     private void updateHeaderTablePadding(TableWrapperWidget headerWidget, TableScrollPanel tableHeaderScroller) {
@@ -951,8 +958,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     private void updateHeaderTableMinimumWidth(TableWrapperWidget headerWidget) {
-        if(minWidthUnit != null)
-            setBlockMinWidth(minWidthValue + (hasVerticalScroll ? nativeScrollbarWidth + 1 : 0), headerWidget); // 1 for right outer border margin
+        if(minWidth != null)
+            setBlockMinWidth((hasVerticalScroll ? nativeScrollbarWidth + 1 : 0), headerWidget); // 1 for right outer border margin
     }
 
     private void updateTableMargins() {
@@ -1291,17 +1298,19 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
         //calculate left for sticky properties
         if (columnsChanged || headersChanged || dataChanged || widthsChanged || onResizeChanged) {
-            int left = 0;
+            GSize left = GSize.ZERO;
             TableRowElement tr = rows.getItem(0);
             if(tr != null) {
                 pendingState.stickyLefts = new ArrayList<>();
                 List<Integer> stickyColumns = getStickyColumns();
                 for (int i = 0; i < stickyColumns.size(); i++) {
                     Element cell = tr.getCells().getItem(stickyColumns.get(i));
-                    int cellLeft = cell.getOffsetWidth();
+                    GSize cellLeft = GwtClientUtils.getOffsetWidth(cell);
                     //protect from too much sticky columns
-                    pendingState.stickyLefts.add(left + cellLeft <= viewportWidth * 0.67 ? left : null);
-                    left += cellLeft;
+                    GSize nextLeft = left.add(cellLeft);
+                    // assert that nextLeft is Fixed PX, so the resize size is not null
+                    pendingState.stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.67 ? left : null);
+                    left = nextLeft;
                 }
             }
         }
@@ -1424,7 +1433,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         }
     }
 
-    private void updateStickyLeftDOM(List<Integer> stickyLefts) {
+    private void updateStickyLeftDOM(List<GSize> stickyLefts) {
         List<Integer> stickyColumns = getStickyColumns();
         if (!noHeaders)
             headerBuilder.updateStickyLeft(stickyColumns, stickyLefts);
@@ -1702,7 +1711,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         private Boolean hasVertical;
 
         private LeftNeighbourRightBorder leftNeighbourRightBorder;
-        private List<Integer> stickyLefts;
+        private List<GSize> stickyLefts;
     }
 
     private static class LeftNeighbourRightBorder {

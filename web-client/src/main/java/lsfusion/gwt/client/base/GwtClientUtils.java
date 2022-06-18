@@ -9,6 +9,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.lambda.EFunction;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.view.MainFrame;
@@ -407,14 +408,6 @@ public class GwtClientUtils {
         }
     }
 
-    public static Dimension getOffsetSize(Widget widget) {
-        return getOffsetSize(widget, 0, 0);
-    }
-
-    public static Dimension getOffsetSize(Widget widget, int widthExtra, int heightExtra) {
-        return new Dimension(widget.getOffsetWidth() + widthExtra, widget.getOffsetHeight() + heightExtra);
-    }
-
     public static void showPopupInWindow(PopupDialogPanel popup, Widget widget, int mouseX, int mouseY) {
         popup.setWidget(widget);
 
@@ -448,6 +441,17 @@ public class GwtClientUtils {
         } else {
             popup.setPopupPosition(mouseX, mouseY);
         }
+    }
+
+    public static GSize getOffsetWidth(Element element) {
+        final int width = element.getOffsetWidth();
+
+        return GSize.getOffsetSize((int) Math.round((double) width));
+    }
+    public static GSize getOffsetHeight(Element element) {
+        final int height = element.getOffsetHeight();
+
+        return GSize.getOffsetSize((int) Math.round((double) height));
     }
 
     /**
@@ -850,7 +854,7 @@ public class GwtClientUtils {
         return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 
-    public static Element wrapCenteredImg(Element th, Integer height, Consumer<ImageElement> imgProcessor) {
+    public static Element wrapCenteredImg(Element th, GSize height, Consumer<ImageElement> imgProcessor) {
         th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
 
         // since it's a header we want to align it to the center (vertically and horizontally)
@@ -861,7 +865,7 @@ public class GwtClientUtils {
         // we don't want that container to be larger than the upper one
         // it seems it is needed because in wrapDiv we use auto sizing
         if(height != null)
-            th.getStyle().setProperty("maxHeight", height + "px");
+            th.getStyle().setProperty("maxHeight", height.getString());
 
         if(imgProcessor != null)
             th = wrapImg(th, imgProcessor);

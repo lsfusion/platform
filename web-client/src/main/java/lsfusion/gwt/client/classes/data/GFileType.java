@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -53,8 +54,8 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        return 18;
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+        return GSize.CONST(18);
     }
 
 }

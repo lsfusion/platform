@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -38,9 +39,9 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public int getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
         ImageDescription image = propertyDraw.getImage();
-        return image != null ? image.width : 0;
+        return image != null ? image.getWidth() : GSize.ZERO;
         // in theory we should add propertyDraw.caption when it's a panel, but a property panel renderer doesn't do that for label, so don't see why it should be done for action
     }
 

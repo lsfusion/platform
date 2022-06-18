@@ -1,10 +1,11 @@
 package lsfusion.gwt.client.form.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -44,12 +45,12 @@ public class ModalForm extends FormContainer {
     }
 
     protected void initPreferredSize() {
-        int maxWidth = Window.getClientWidth() - 20;
-        int maxHeight = Window.getClientHeight() - 100;
+        GSize maxWidth = GwtClientUtils.getOffsetWidth(Document.get().getBody()).subtract(GSize.CONST(20));
+        GSize maxHeight = GwtClientUtils.getOffsetWidth(Document.get().getBody()).subtract(GSize.CONST(100));
 
         Dimension size;
         if(async)
-            size = new Dimension(Math.min(790, maxWidth), Math.min(580, maxHeight));
+            size = new Dimension(maxWidth.min(GSize.CONST(790)), maxHeight.min(GSize.CONST(580)));
         else
             size = form.getPreferredSize(maxWidth, maxHeight);
 
