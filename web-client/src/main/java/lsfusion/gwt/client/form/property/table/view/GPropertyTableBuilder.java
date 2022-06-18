@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.grid.*;
@@ -38,19 +39,18 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
 
         boolean autoSize = property.autoSize && !isSimpleText;
-        int height = property.getValueHeightWithPadding(renderContext.getFont());
 
         // the thing is that td ignores min-height (it matters only for not auto sized elements)
         // however height in td works just like min-height, but only in Chrome
         if(!autoSize) // it's not possible to do it for not auto sized element, since they have position absolute, and td doesn't respect their size
-            FlexPanel.setBaseSize(element, true, height, isTDorTH);
+            FlexPanel.setBaseSize(element, true, property.getValueHeightWithPadding(renderContext.getFont()), isTDorTH);
 
         if(!isSimpleText) {
             element = wrapSized(element);
             GwtClientUtils.setupSizedParent(element, autoSize);
 
             if(autoSize)
-                FlexPanel.setBaseSize(element, true, height, false);
+                FlexPanel.setBaseSize(element, true, property.getAutoSizeValueHeight(renderContext.getFont()), false);
         }
         return element;
     }
@@ -192,17 +192,17 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     @Override
-    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+    public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts) {
         updateStickyLeft(tr, stickyColumns, stickyLefts);
     }
 
-    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<Integer> stickyLefts) {
+    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts) {
         for (int i = 0; i < stickyColumns.size(); i++) {
             Integer stickyColumn = stickyColumns.get(i);
-            Integer left = stickyLefts.get(i);
+            GSize left = stickyLefts.get(i);
             TableCellElement cell = tr.getCells().getItem(stickyColumn);
             if (left != null) {
-                cell.getStyle().setProperty("left", left + "px");
+                cell.getStyle().setProperty("left", left.getString());
                 cell.removeClassName("dataGridStickyOverflow");
             } else {
                 cell.getStyle().clearProperty("left");
@@ -230,11 +230,11 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         element.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
     }
 
-    public static void setRowHeight(Element td, int height, boolean tableToExcel) {
+    public static void setRowHeight(Element td, GSize height, boolean tableToExcel) {
         if(tableToExcel) {
             GPivot.setTableToExcelRowHeight(td, height);
         }
-        td.getStyle().setHeight(height, Style.Unit.PX);
+        td.getStyle().setProperty("height", height.getString());
     }
 }
 

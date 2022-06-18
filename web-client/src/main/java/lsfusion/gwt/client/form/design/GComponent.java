@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -36,20 +37,20 @@ public class GComponent implements Serializable {
     public GFont font;
     public GFont captionFont;
 
-    public Integer getSize(boolean vertical) {
+    public GSize getSize(boolean vertical) {
         int size = vertical ? height : width;
         if(size == -2)
             return vertical ? getDefaultHeight() : getDefaultWidth();
         if (size == -1)
             return null;
-        return size;
+        return GSize.getComponentSize(size);
     }
 
-    protected Integer getDefaultWidth() {
+    protected GSize getDefaultWidth() {
         throw new UnsupportedOperationException();
     }
 
-    protected Integer getDefaultHeight() {
+    protected GSize getDefaultHeight() {
         throw new UnsupportedOperationException();
     }
 

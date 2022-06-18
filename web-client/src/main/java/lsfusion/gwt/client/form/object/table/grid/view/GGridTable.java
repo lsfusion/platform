@@ -14,6 +14,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
@@ -377,12 +378,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 //        });
     }
     
-    public int getHeaderHeight() {
+    public GSize getHeaderHeight() {
         Integer headerHeight = currentGridPreferences.headerHeight;
-        if (headerHeight == null || headerHeight <= 0) {
-            headerHeight = groupObject.grid.headerHeight;
-        }
-        return headerHeight;
+        if (headerHeight != null && headerHeight >= 0)
+            return GSize.getResizeSize(headerHeight);
+
+        return groupObject.grid.getHeaderHeight();
     }
     
     public GFont getDesignFont() {

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.design;
 
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -185,12 +186,12 @@ public class GContainer extends GComponent {
         return false;
     }
     
-    public Integer getLineSize() {
-        return lineSize;
+    public GSize getLineSize() {
+        return GSize.getContainerNSize(lineSize);
     }
 
-    public Integer getCaptionLineSize() {
-        return captionLineSize;
+    public GSize getCaptionLineSize() {
+        return GSize.getContainerNSize(captionLineSize);
     }
 
     public boolean isLineShrink() {

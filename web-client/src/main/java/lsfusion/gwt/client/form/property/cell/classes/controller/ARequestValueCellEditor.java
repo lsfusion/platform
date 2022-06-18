@@ -18,7 +18,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
 
     // force commit with the current value
     public void commit(Element parent, CommitReason commitReason) {
-        validateAndCommit(parent,  commitReason != CommitReason.ENTERPRESSED, commitReason);
+        validateAndCommit(parent, null, commitReason != CommitReason.ENTERPRESSED, commitReason);
     }
 
     // force commit with the specified value

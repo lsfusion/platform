@@ -15,8 +15,6 @@ import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
-
 public class PropertyPanelRenderer extends PanelRenderer {
 
     private SizedWidget sizedView;

@@ -1,10 +1,12 @@
 package lsfusion.gwt.client.base;
 
-public class Dimension {
-    public int width;
-    public int height;
+import lsfusion.gwt.client.base.size.GSize;
 
-    public Dimension(int width, int height) {
+public class Dimension {
+    public GSize width;
+    public GSize height;
+
+    public Dimension(GSize width, GSize height) {
         this.width = width;
         this.height = height;
     }

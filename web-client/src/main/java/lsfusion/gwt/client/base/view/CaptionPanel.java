@@ -3,7 +3,7 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.size.GSize;
 
 public class CaptionPanel extends FlexPanel {
 
@@ -22,9 +22,11 @@ public class CaptionPanel extends FlexPanel {
         legendWrapper.setStyleName("captionLegendContainerPanel");
 //        GwtClientUtils.setZeroZIndex(legendWrapper.getElement()); // since in captionCenteredLine we're using -1 z-index (we can't set captionPanelLegend z-index 1 since it will be above dialogs blocking masks)
 
+        GSize flexBasis = GSize.CONST(4);
+
         leftCenteredLine = new DivWidget();
         leftCenteredLine.setStyleName("captionCenteredLine");
-        legendWrapper.add(leftCenteredLine, GFlexAlignment.CENTER, 0, false, 4);
+        legendWrapper.add(leftCenteredLine, GFlexAlignment.CENTER, 0, false, flexBasis);
 
         legend = new Label();
         legend.setStyleName("captionPanelLegend");
@@ -34,7 +36,7 @@ public class CaptionPanel extends FlexPanel {
         rightCenteredLine.setStyleName("captionCenteredLine");
 
         // it's a tricky hack we emulate flex 0 to make updatePanels stretch this whole panel if needed (this hack makes stretching this line not important)
-        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 0, false, 4);
+        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 0, false, flexBasis);
         rightCenteredLine.addStyleName("rightCaptionCenteredLine");
 //        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 1, false, 4);
 

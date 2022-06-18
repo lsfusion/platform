@@ -6,8 +6,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
 import lsfusion.gwt.client.view.StyleDefaults;
 
-import static lsfusion.gwt.client.base.GwtClientUtils.getOffsetSize;
-
 public class GToolbarView extends ResizableHorizontalPanel {
     private boolean isEmpty = true;
     

@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.TooltipManager;
@@ -33,7 +34,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     private boolean notNull;
     private boolean hasChangeAction;
 
-    private int headerHeight;
+    private GSize headerHeight;
 
     private boolean sticky;
 
@@ -81,7 +82,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.toolTip = toolTip;
     }
 
-    public void setHeaderHeight(int headerHeight) {
+    public void setHeaderHeight(GSize headerHeight) {
         this.headerHeight = headerHeight;
     }
 
@@ -103,8 +104,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderAndUpdateDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
-        int headerHeight = this.headerHeight;
-        renderedCaptionElement = renderTD(th, headerHeight >= 0 ? headerHeight : null, sortDir, caption, false);
+        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, false);
         renderedSortDir = sortDir;
         renderedCaption = caption;
 
@@ -127,13 +127,13 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
     }
 
-    public final static int DEFAULT_HEADER_HEIGHT = 34;
+    public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34).add(GSize.TEMP_PADDING_ADJ);
 
     public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
         return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, true);
     }
 
-    public static Element renderTD(Element th, Integer height, Boolean sortDir, String caption, boolean tableToExcel) {
+    public static Element renderTD(Element th, GSize height, Boolean sortDir, String caption, boolean tableToExcel) {
         if(height != null)
             GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);
 

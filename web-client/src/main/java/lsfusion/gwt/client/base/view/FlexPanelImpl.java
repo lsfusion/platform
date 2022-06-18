@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 
@@ -83,7 +84,7 @@ public class FlexPanelImpl {
         parent.getStyle().setProperty("display", visible ? getDisplayValue(grid) : "none");
     }
 
-    public FlexPanel.WidgetLayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, Integer flexBasis, boolean vertical, boolean grid) {
+    public FlexPanel.WidgetLayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, GSize flexBasis, boolean vertical, boolean grid) {
         FlexPanel.WidgetLayoutData layoutData = new FlexPanel.WidgetLayoutData(new FlexPanel.FlexLayoutData(flex, flexBasis, shrink), new FlexPanel.AlignmentLayoutData(alignment));
 
         updateFlex(layoutData.flex, child, vertical, grid);
@@ -97,12 +98,12 @@ public class FlexPanelImpl {
     public String getFlexString(double flex) {
         return flex + "";
     }
-    public String getFlexBasisString(Integer flexBasis) {
-        return flexBasis == null ? "auto" : flexBasis + "px";
+    public String getFlexBasisString(GSize flexBasis) {
+        return flexBasis == null ? "auto" : flexBasis.getString();
     }
 
-    public void setAutoSizeFlex(Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
-        setFlex(child, 0, null, layoutData.gridLine, vertical, grid, false);
+    public void setNoFlex(Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
+        setFlex(child, 0, layoutData.flexBasis, layoutData.gridLine, vertical, grid, false);
     }
 
     public void setPreferredSize(boolean set, Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
@@ -167,9 +168,9 @@ public class FlexPanelImpl {
     }
 
     //    private static String DROPCOLUMNSTRING = "-1px";
-    public static String getLineSizeString(double flex, Integer flexBasis, boolean shrink) {
+    public static String getLineSizeString(double flex, GSize flexBasis, boolean shrink) {
         // it seems that  min-content is equivalent to auto in flex (and auto in grid layout for example often does not respect margins somewhy)
-        String flexBasisString = flexBasis == null ? "min-content" : flexBasis + "px";
+        String flexBasisString = flexBasis == null ? "min-content" : flexBasis.getString();
         if(shrink)
             return "minmax(0px," + (flex > 0 ? flex + "fr" : flexBasisString) + ")";
         if(flex > 0)
@@ -177,17 +178,17 @@ public class FlexPanelImpl {
         return flexBasisString;
     }
 
-    public void setFlex(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
+    public void setFlex(Element child, double flex, GSize flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
         setFlexParams(child, flex, flexBasis, gridLine, vertical, grid, shrink);
 
         // otherwise min-width won't let the container to shrink
-        FlexPanel.setBaseSize(child, vertical, shrink ? 0 : null, false);
+        FlexPanel.setBaseSize(child, vertical, shrink ? GSize.ZERO : null, false);
 
         // it's important to set min-width, min-height, because flex-basis is automatically set to min-height if it's smaller (test case in LinearContainerView)
         FlexPanel.setBaseSize(child, vertical, flexBasis, true); // last parameter is false because we're setting main size
     }
 
-    private void setFlexParams(Element child, double flex, Integer flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
+    private void setFlexParams(Element child, double flex, GSize flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
         if(grid) {
             if(gridLine != null)
                 updateGridLineSize(child, gridLine, vertical, getLineSizeString(flex, flexBasis, shrink));
@@ -204,7 +205,10 @@ public class FlexPanelImpl {
 //        return child.getPropertyInt(vertical ? "offsetHeight" : "offsetWidth");
     }
 
-    public int getSize(Element child, boolean vertical) {
+    public GSize getOffsetSize(Element child, boolean vertical) {
+        return vertical ? GwtClientUtils.getOffsetHeight(child) : GwtClientUtils.getOffsetWidth(child);
+    }
+    public int getActualSize(Element child, boolean vertical) {
         return vertical ? GwtClientUtils.getHeight(child) : GwtClientUtils.getWidth(child);
 //        return child.getPropertyInt(vertical ? "clientHeight" : "clientWidth") -
 //                (child.getPropertyInt(vertical ? "paddingTop" : "paddingLeft") +
@@ -224,11 +228,11 @@ public class FlexPanelImpl {
         child.getStyle().setProperty(!grid || !vertical ? "alignSelf" : "justifySelf", getAlignmentValue(layoutData.alignment, grid));
     }
 
-    public void setFlexBasis(FlexPanel.FlexLayoutData layoutData, Element child, int flexBasis, boolean vertical, boolean grid) {
+    public void setFlexBasis(FlexPanel.FlexLayoutData layoutData, Element child, GSize flexBasis, boolean vertical, boolean grid) {
         layoutData.setFlexBasis(flexBasis); // also sets base flex basis
         updateFlex(layoutData, child, vertical, grid);
     }
-    public void setFlex(FlexPanel.FlexLayoutData layoutData, Element child, double flex, Integer flexBasis, boolean vertical, boolean grid) {
+    public void setFlex(FlexPanel.FlexLayoutData layoutData, Element child, double flex, GSize flexBasis, boolean vertical, boolean grid) {
         layoutData.flex = flex;
         layoutData.flexBasis = flexBasis;
         updateFlex(layoutData, child, vertical, grid);
@@ -253,13 +257,13 @@ public class FlexPanelImpl {
         // фиксируем явную ширину composite'а (ставим базис равный ширине, flex - 0)
 
         if(!layoutData.isFlex()) // оптимизация если flex'а нет, этот размер и фиксируем
-            layoutData.setFlexBasis(getSize(element, vertical));
+            layoutData.setFlexBasis(getOffsetSize(element, vertical));
         else {
-            setAutoSizeFlex(element, layoutData, vertical, grid);
+            setNoFlex(element, layoutData, vertical, grid);
 //            setAlignment(childWidgetElement, GFlexAlignment.START);
 
             // измеряем ширину, запоминаем в базис
-            int calcSize = getSize(element, vertical);
+            GSize calcSize = getOffsetSize(element, vertical);
 
             // выставляем расчитанный базис (возвращаем flex)
             setFlexBasis(layoutData, element, calcSize, vertical, grid);

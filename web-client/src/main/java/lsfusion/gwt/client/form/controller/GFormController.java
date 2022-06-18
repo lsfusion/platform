@@ -23,6 +23,7 @@ import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CollapsiblePanel;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -469,9 +470,9 @@ public class GFormController implements EditManager {
             GGroupObject groupObject = property.groupObject;
             if(groupObject != null && property.isList && !property.hide && groupObject.columnCount < 10) {
                 GFont font = groupObject.grid.font;
-                groupObject.columnSumWidth += property.getValueWidthWithPadding(font);
+                groupObject.columnSumWidth = groupObject.columnSumWidth.add(property.getValueWidthWithPadding(font));
                 groupObject.columnCount++;
-                groupObject.rowMaxHeight = Math.max(groupObject.rowMaxHeight, property.getValueHeightWithPadding(font));
+                groupObject.rowMaxHeight = groupObject.rowMaxHeight.max(property.getValueHeightWithPadding(font));
             }
         }
     }
@@ -1602,7 +1603,7 @@ public class GFormController implements EditManager {
         DialogBoxHelper.showMessageBox(isError, caption, message, callback);
     }
 
-    public Dimension getPreferredSize(int maxWidth, int maxHeight) {
+    public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight) {
         return formLayout.getPreferredSize(maxWidth, maxHeight);
     }
 

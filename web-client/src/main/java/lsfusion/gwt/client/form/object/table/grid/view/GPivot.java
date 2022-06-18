@@ -8,6 +8,7 @@ import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -1233,8 +1234,8 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         setTableToExcelColorAttributes(jsElement, null);
     }
 
-    public static void setTableToExcelRowHeight(Element element, Integer rowHeight) {
-        element.setAttribute("data-height", String.valueOf(rowHeight * 0.75)); //convert pixels to points
+    public static void setTableToExcelRowHeight(Element element, GSize rowHeight) {
+        element.setAttribute("data-height", String.valueOf(rowHeight.getPivotSize() * 0.75)); //convert pixels to points
     }
 
     public static void setTableToExcelPropertyAttributes(Element element, JavaScriptObject value, GPropertyDraw property) {
@@ -1510,7 +1511,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private int getColumnMapWidth(String column) {
-        return columnMap.get(column).property.getValueWidthWithPadding(font);
+        return columnMap.get(column).property.getValueWidthWithPadding(font).getPivotSize();
     }
 
     public int getColumnWidth(boolean isValueColumn, JsArrayMixed colKeyValues, JsArrayString axisValues, boolean isArrow, int arrowLevels) {

@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.base;
 
+import lsfusion.gwt.client.base.size.GSize;
+
 import java.io.Serializable;
 
 public class ImageDescription implements Serializable {
@@ -7,6 +9,17 @@ public class ImageDescription implements Serializable {
     public String disabledUrl;
     public int width = -1;
     public int height = -1;
+
+    public GSize getWidth() {
+        if(width == -1)
+            return null;
+        return GSize.getImageSize(width);
+    }
+    public GSize getHeight() {
+        if(height == -1)
+            return null;
+        return GSize.getImageSize(height);
+    }
 
     public ImageDescription() {
     }

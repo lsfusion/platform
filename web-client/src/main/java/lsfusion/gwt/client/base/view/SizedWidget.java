@@ -1,17 +1,18 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.size.GSize;
 
 public class SizedWidget {
     public final Widget widget;
-    public final Integer width;
-    public final Integer height;
+    public final GSize width;
+    public final GSize height;
 
     public SizedWidget(Widget widget) {
         this(widget, null, null);
     }
 
-    public SizedWidget(Widget widget, Integer width, Integer height) {
+    public SizedWidget(Widget widget, GSize width, GSize height) {
         this.widget = widget;
         this.width = width;
         this.height = height;
