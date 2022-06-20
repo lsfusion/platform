@@ -27,7 +27,6 @@ public abstract class GCountQuantityButton extends GToolbarButton {
         };
 
         TooltipManager tooltipManager = TooltipManager.get();
-        tooltipManager.hideTooltip(tooltipHelper);
         tooltipManager.showTooltip(clientX, clientY, tooltipHelper, true);
     }
 }

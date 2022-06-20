@@ -39,7 +39,6 @@ public abstract class GCalculateSumButton extends GToolbarButton {
         };
 
         TooltipManager tooltipManager = TooltipManager.get();
-        tooltipManager.hideTooltip(tooltipHelper);
         tooltipManager.showTooltip(clientX, clientY, tooltipHelper, true);
     }
 }
