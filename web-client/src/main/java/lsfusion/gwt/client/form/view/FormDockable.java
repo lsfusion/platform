@@ -56,7 +56,7 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    public void show(Integer index) {
+    public void show(Long requestIndex, Integer index) {
         formsController.addDockable(this, index);
     }
 

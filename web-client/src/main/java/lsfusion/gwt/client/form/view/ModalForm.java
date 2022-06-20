@@ -5,7 +5,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
@@ -66,22 +66,30 @@ public class ModalForm extends FormContainer {
     @Override
     public void onAsyncInitialized() {
         // actually it's already shown, but we want to update preferred sizes after setting the content
-        contentWidget.show();
+        contentWidget.show(null, null);
 
         super.onAsyncInitialized();
     }
 
     @Override
-    public void show(Integer index) {
-        prevForm = MainFrame.getAssertCurrentForm();
-        if(prevForm != null) // if there were no currentForm
-            prevForm.onBlur(false);
+    public void show(Long requestIndex, Integer index) {
+        Pair<ModalForm, Integer> formInsertIndex = contentWidget.getFormInsertIndex(requestIndex);
+        if(formInsertIndex == null) {
+            prevForm = MainFrame.getAssertCurrentForm();
+            if (prevForm != null) // if there were no currentForm
+                prevForm.onBlur(false);
+        } else {
+            prevForm = formInsertIndex.first.prevForm;
+            formInsertIndex.first.prevForm = this;
+        }
 
-        contentWidget.show();
+        contentWidget.show(new Pair(this, requestIndex), formInsertIndex != null ? formInsertIndex.second : null);
 
-        onFocus(true);
-        if(async)
-            contentWidget.focus();
+        if(formInsertIndex == null) {
+            onFocus(true);
+            if(async)
+                contentWidget.focus();
+        }
     }
 
     @Override

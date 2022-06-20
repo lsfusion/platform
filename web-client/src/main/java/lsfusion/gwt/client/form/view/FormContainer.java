@@ -79,11 +79,11 @@ public abstract class FormContainer {
         }
     }
 
-    public void show() {
-        show(null);
+    public void show(Long requestIndex) {
+        show(requestIndex, null);
     }
 
-    public abstract void show(Integer index);
+    public abstract void show(Long requestIndex, Integer index);
 
     // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
     public void queryHide(EndReason editFormCloseReason) {
