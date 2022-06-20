@@ -69,8 +69,6 @@ public class GToolbarNavigatorView extends GNavigatorView {
         button.getElement().setAttribute("lsfusion-container", element.canonicalName);
 
         button.addClickHandler(event -> {
-            TooltipManager.get().hideTooltip(null); // not sure if this is needed
-
             selected = element;
             navigatorController.update();
             navigatorController.openElement(element, event.getNativeEvent());

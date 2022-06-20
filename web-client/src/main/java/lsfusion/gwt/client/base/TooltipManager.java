@@ -38,7 +38,7 @@ public class TooltipManager {
             if (closeOnClick && !mouseIn && tooltip != null) {
                 hide();
             }
-        }, ClickEvent.getType());
+        }, MouseDownEvent.getType());
     }
 
     public static TooltipManager get() {
@@ -100,13 +100,12 @@ public class TooltipManager {
 
                                         addDomHandler(ev -> {
                                             tooltipFocused = false;
-                                            hide();
+                                            hideTooltip(null);
                                         }, MouseOutEvent.getType());
 
                                         super.onAttach();
                                     }
                                 };
-                                tooltip.addHandler(event -> get().hideTooltip(null), MouseOutEvent.getType());
                             }
 
                             tooltipHtml = new HTML(tooltipText, false);
