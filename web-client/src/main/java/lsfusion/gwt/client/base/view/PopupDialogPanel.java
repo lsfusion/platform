@@ -10,7 +10,7 @@ import lsfusion.gwt.client.view.MainFrame;
 public class PopupDialogPanel extends PopupPanel {
 
     public PopupDialogPanel() {
-        this(false);
+        this(true);
     }
 
     public PopupDialogPanel(boolean autoHide) {

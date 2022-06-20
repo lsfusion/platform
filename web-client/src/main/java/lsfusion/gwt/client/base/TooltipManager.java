@@ -32,10 +32,10 @@ public class TooltipManager {
 
     private String currentText = "";
 
-    private boolean toolbarButtonTooltip;
+    private boolean closeOnClick;
     public TooltipManager() {
         RootPanel.get().addDomHandler(ev -> {
-            if(toolbarButtonTooltip && !mouseIn && tooltip != null) {
+            if (closeOnClick && !mouseIn && tooltip != null) {
                 hide();
             }
         }, ClickEvent.getType());
@@ -61,12 +61,12 @@ public class TooltipManager {
         else if (MOUSEMOVE.equals(eventType)) get().updateMousePosition(event.getClientX(), event.getClientY());
     }
 
-    public void showTooltip(final int offsetX, final int offsetY, final TooltipHelper tooltipHelper, boolean toolbarButtonTooltip) {
+    public void showTooltip(final int offsetX, final int offsetY, final TooltipHelper tooltipHelper, boolean closeOnClick) {
         final String tooltipText = tooltipHelper.getTooltip();
         mouseX = offsetX;
         mouseY = offsetY;
         currentText = tooltipText;
-        this.toolbarButtonTooltip = toolbarButtonTooltip;
+        this.closeOnClick = closeOnClick;
 
         if (tooltipText != null) {
             mouseIn = true;
@@ -78,33 +78,42 @@ public class TooltipManager {
                             tooltipHtml.setHTML(tooltipText);
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
-                            tooltip = new PopupDialogPanel(!toolbarButtonTooltip) {
-                                //if the previous focused element goes outside the visible area, the page will scroll to it when the tooltip is closed
-                                @Override
-                                public void setFocusedElement(Element focusedElement) {
-                                    super.setFocusedElement(null);
-                                }
+                            if(closeOnClick) {
+                                tooltip = new PopupDialogPanel(false) {
+                                    @Override
+                                    protected void onAttach() {
+                                        addDomHandler(ev -> mouseIn = false, MouseOutEvent.getType());
+                                        super.onAttach();
+                                    }
+                                };
+                            } else {
+                                tooltip = new PopupDialogPanel() {
+                                    //if the previous focused element goes outside the visible area, the page will scroll to it when the tooltip is closed
+                                    @Override
+                                    public void setFocusedElement(Element focusedElement) {
+                                        super.setFocusedElement(null);
+                                    }
 
-                                @Override
-                                protected void onAttach() {
-                                    addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
+                                    @Override
+                                    protected void onAttach() {
+                                        addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
 
-                                    addDomHandler(ev -> {
-                                        tooltipFocused = false;
-                                        if(!toolbarButtonTooltip) {
+                                        addDomHandler(ev -> {
+                                            tooltipFocused = false;
                                             hide();
-                                        }
-                                    }, MouseOutEvent.getType());
+                                        }, MouseOutEvent.getType());
 
-                                    super.onAttach();
-                                }
-                            };
-                            tooltip.addHandler(event -> get().hideTooltip(null), MouseOutEvent.getType());
+                                        super.onAttach();
+                                    }
+                                };
+                                tooltip.addHandler(event -> get().hideTooltip(null), MouseOutEvent.getType());
+                            }
+
                             tooltipHtml = new HTML(tooltipText, false);
 
                             VerticalPanel panel = new VerticalPanel();
                             panel.add(new FocusPanel(tooltipHtml));
-                            if (!toolbarButtonTooltip)
+                            if (!closeOnClick)
                                 addDebugLink(tooltipHelper, panel);
 
                             //to prevent the cursor hovering over the top left of the tooltip
@@ -123,7 +132,7 @@ public class TooltipManager {
                     }
                 }
                 return false;
-            }, toolbarButtonTooltip ? 0 : DELAY_SHOW);
+            }, closeOnClick ? 0 : DELAY_SHOW);
         }
     }
 
@@ -191,16 +200,17 @@ public class TooltipManager {
     }
 
     public void hideTooltip(final TooltipHelper tooltipHelper) {
-        mouseIn = false;
-        currentText = "";
+        if (!closeOnClick) {
+            mouseIn = false;
+            currentText = "";
 
-        Scheduler.get().scheduleDeferred(() -> {
-            if (!toolbarButtonTooltip &&
-                    ((!(mouseIn && tooltipHelper != null && GwtClientUtils.nullEquals(tooltipHelper.getTooltip(), currentText)) && tooltip != null && !tooltip.tooltipFocused) ||
-                    tooltip != null && !tooltip.tooltipFocused)) {
-                hide();
-            }
-        });
+            Scheduler.get().scheduleDeferred(() -> {
+                if ((!(mouseIn && tooltipHelper != null && GwtClientUtils.nullEquals(tooltipHelper.getTooltip(), currentText)) && tooltip != null && !tooltip.tooltipFocused) ||
+                        tooltip != null && !tooltip.tooltipFocused) {
+                    hide();
+                }
+            });
+        }
     }
 
     // за время ожидания курсор может переместиться далеко от места, где вызвался showTooltip()
