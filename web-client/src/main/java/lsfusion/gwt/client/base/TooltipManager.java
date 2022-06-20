@@ -6,16 +6,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FocusPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -40,6 +31,15 @@ public class TooltipManager {
     private boolean mouseIn;
 
     private String currentText = "";
+
+    private boolean toolbarButtonTooltip;
+    public TooltipManager() {
+        RootPanel.get().addDomHandler(ev -> {
+            if(toolbarButtonTooltip && !mouseIn && tooltip != null) {
+                hide();
+            }
+        }, ClickEvent.getType());
+    }
 
     public static TooltipManager get() {
         return instance;
@@ -66,6 +66,7 @@ public class TooltipManager {
         mouseX = offsetX;
         mouseY = offsetY;
         currentText = tooltipText;
+        this.toolbarButtonTooltip = toolbarButtonTooltip;
 
         if (tooltipText != null) {
             mouseIn = true;
@@ -77,7 +78,7 @@ public class TooltipManager {
                             tooltipHtml.setHTML(tooltipText);
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
-                            tooltip = new PopupDialogPanel() {
+                            tooltip = new PopupDialogPanel(!toolbarButtonTooltip) {
                                 //if the previous focused element goes outside the visible area, the page will scroll to it when the tooltip is closed
                                 @Override
                                 public void setFocusedElement(Element focusedElement) {
@@ -90,7 +91,9 @@ public class TooltipManager {
 
                                     addDomHandler(ev -> {
                                         tooltipFocused = false;
-                                        hide();
+                                        if(!toolbarButtonTooltip) {
+                                            hide();
+                                        }
                                     }, MouseOutEvent.getType());
 
                                     super.onAttach();
@@ -192,8 +195,9 @@ public class TooltipManager {
         currentText = "";
 
         Scheduler.get().scheduleDeferred(() -> {
-            if ((!(mouseIn && tooltipHelper != null && GwtClientUtils.nullEquals(tooltipHelper.getTooltip(), currentText)) && tooltip != null && !tooltip.tooltipFocused) ||
-                    tooltip != null && !tooltip.tooltipFocused) {
+            if (!toolbarButtonTooltip &&
+                    ((!(mouseIn && tooltipHelper != null && GwtClientUtils.nullEquals(tooltipHelper.getTooltip(), currentText)) && tooltip != null && !tooltip.tooltipFocused) ||
+                    tooltip != null && !tooltip.tooltipFocused)) {
                 hide();
             }
         });
