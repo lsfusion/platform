@@ -44,24 +44,6 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
         return new GToolbarNavigatorView(this, navigatorController);
     }
 
-    public HasVerticalAlignment.VerticalAlignmentConstant getAlignmentY() {
-        if (alignmentY == CENTER_ALIGNMENT) {
-            return HasVerticalAlignment.ALIGN_MIDDLE;
-        } else if (alignmentY == BOTTOM_ALIGNMENT) {
-            return HasVerticalAlignment.ALIGN_BOTTOM;
-        }
-        return HasVerticalAlignment.ALIGN_TOP;
-    }
-
-    public HasAlignment.HorizontalAlignmentConstant getAlignmentX() {
-        if (alignmentX == CENTER_ALIGNMENT) {
-            return HasAlignment.ALIGN_CENTER;
-        } else if (alignmentX == RIGHT_ALIGNMENT) {
-            return HasAlignment.ALIGN_RIGHT;
-        }
-        return HasAlignment.ALIGN_LEFT;
-    }
-
     public boolean hasVerticalTextPosition() {
         return verticalTextPosition == BOTTOM;
     }

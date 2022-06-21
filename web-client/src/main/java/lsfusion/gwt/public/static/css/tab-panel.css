@@ -42,6 +42,9 @@
     cursor: pointer;
     padding: 0.125rem 0.625rem;
 }
+.nav-link img {
+    margin-right: 0.25rem;
+}
 
 .nav-tabs-vert .nav-link {
     border-bottom: 1px solid var(--panel-border-color);

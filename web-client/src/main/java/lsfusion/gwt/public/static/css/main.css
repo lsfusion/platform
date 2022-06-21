@@ -80,6 +80,11 @@ input, textarea {
     border-width: 0;
 }
 
+img,
+svg {
+    vertical-align: middle;
+}
+
 /* ------------ Scrollbars ------------ */
 body {
     /*firefox*/
@@ -113,6 +118,19 @@ body {
 
 .gwt-HTML {
     padding: 0 0;
+}
+
+/* ------------ Align ----------------- */
+.align-items-start {
+    align-items: flex-start !important;
+}
+
+.align-items-end {
+    align-items: flex-end !important;
+}
+
+.align-items-center {
+    align-items: center !important;
 }
 
 /* ------------ Default gwt overrides ------------ */
@@ -342,46 +360,6 @@ body {
     cursor: default;
     /*margin-top: var(--border-padding);*/
     /*background: var(--background-color);*/
-}
-
-/* ------------ Navigator windows  ------------ */
-
-.verticalToolbar {
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-.horizontalToolbar {
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
-.toolbarNavigatorButton {
-    border: solid 1px transparent;
-    background: transparent;
-    border-radius: var(--button-border-radius);
-}
-
-.toolbarSelectedNavigatorButton {
-    border: solid 1px var(--component-border-color);
-    background-color: var(--selection-color);
-}
-
-.toolbarNavigatorButton:hover {
-    border: 1px solid var(--component-hover-border-color);
-    background-color: var(--component-hover-background-color);
-}
-
-.toolbarSelectedNavigatorButton:hover {
-    background-color: var(--selection-color);
-}
-
-.toolbarNavigatorButton:active { /* should come after ':hover' */
-    background-color: var(--component-active-background-color);
-}
-
-.panelNavigatorView {
-    display: block;
 }
 
 /* ------------ Form "dockables"  ------------ */

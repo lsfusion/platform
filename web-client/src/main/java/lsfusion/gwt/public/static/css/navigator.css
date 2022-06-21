@@ -1,0 +1,59 @@
+.nav-toolbar {
+    display: flex;
+}
+
+.nav-toolbar-horz {
+    flex-direction: row;
+}
+
+.nav.nav-toolbar-horz {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.nav-toolbar-vert {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.nav-link.nav-link-vert {
+    display: inline-grid;
+    justify-items: center;
+    align-self: center;
+}
+
+.nav-link.nav-link-horz-1 {
+    margin-left: 1rem;
+}
+.nav-link.nav-link-horz-2 {
+    margin-left: 2rem;
+}
+
+.nav-pills .nav-link {
+    background: none;
+    border: 0;
+}
+
+.nav-toolbar .nav-link {
+    border-radius: var(--button-border-radius);
+}
+
+.nav-toolbar .nav-link.active {
+    background-color: var(--selection-color);
+}
+
+.nav-toolbar .nav-link:hover {
+    background-color: var(--component-hover-background-color);
+}
+
+/*.nav-toolbar .nav-link.active:hover {*/
+/*    background-color: var(--selection-color);*/
+/*}*/
+
+.nav-toolbar .nav-link:active { /* should come after ':hover' */
+    background-color: var(--component-active-background-color);
+}
+
+.panelNavigatorView {
+    display: block;
+}

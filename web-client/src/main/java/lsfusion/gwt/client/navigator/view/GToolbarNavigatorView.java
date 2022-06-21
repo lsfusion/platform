@@ -1,16 +1,10 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.user.client.ui.CellPanel;
-import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.ImageElement;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.ImageButton;
-import lsfusion.gwt.client.base.view.NavigatorImageButton;
-import lsfusion.gwt.client.base.view.ResizableHorizontalPanel;
-import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
@@ -19,31 +13,33 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import java.util.Set;
 
 public class GToolbarNavigatorView extends GNavigatorView {
-    private static final int PADDING_H = 7;
-    private static final int PADDING_STEP = 15;
-    private CellPanel panel;
-    private boolean vertical;
-    private HasVerticalAlignment.VerticalAlignmentConstant alignmentY;
-    private HasAlignment.HorizontalAlignmentConstant alignmentX;
-    private boolean verticalTextAlign;
+    private final Panel panel;
+    private final boolean verticalTextAlign;
 
     public GToolbarNavigatorView(GToolbarNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, navigatorController);
-        alignmentX = window.getAlignmentX();
-        alignmentY = window.getAlignmentY();
+
         verticalTextAlign = window.hasVerticalTextPosition();
 
-        vertical = window.isVertical();
-        panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
-        SimplePanel toolbarContainer = new SimplePanel(panel);
+        boolean vertical = window.isVertical();
+        panel = new ResizableComplexPanel();
+        panel.addStyleName("nav");
+        panel.addStyleName("nav-pills");
+
+        panel.addStyleName("nav-toolbar");
+        panel.addStyleName("nav-toolbar-" + (vertical ? "vert" : "horz"));
+
         if (vertical) {
-            toolbarContainer.setStyleName("verticalToolbar");
-            panel.setWidth("100%");
+            panel.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
+                              (window.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "align-items-end" :
+                                                                                               "align-items-start"));
         } else {
-            toolbarContainer.setStyleName("horizontalToolbar");
-            panel.setHeight("100%");
+            panel.addStyleName(window.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
+                              (window.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
+                                                                                               "align-items-start"));
         }
-        setComponent(toolbarContainer);
+
+        setComponent(panel);
     }
 
     @Override
@@ -58,12 +54,18 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        final ImageButton button = new NavigatorImageButton(element.image, element.caption, verticalTextAlign, !vertical);
-        Style buttonStyle = button.getElement().getStyle();
-        buttonStyle.setPaddingTop(5, Style.Unit.PX);
-        buttonStyle.setPaddingBottom(5, Style.Unit.PX);
-        buttonStyle.setPaddingLeft(PADDING_H, Style.Unit.PX);
-        buttonStyle.setPaddingRight(PADDING_H, Style.Unit.PX);
+        final Button button = new Button();
+        button.setStyleName("nav-item");
+        button.addStyleName("nav-link");
+
+        button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
+        button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);
+
+        button.setText(element.caption);
+
+        ImageElement image = Document.get().createImageElement();
+        image.setSrc(element.image.getImage().getUrl());
+        button.getElement().insertFirst(image);
 
         // debug info
         button.getElement().setAttribute("lsfusion-container", element.canonicalName);
@@ -99,19 +101,11 @@ public class GToolbarNavigatorView extends GNavigatorView {
         };
         TooltipManager.registerWidget(button, tooltipHelper);
 
-        button.setHeight("auto");
-        button.addStyleName("toolbarNavigatorButton");
         if (element instanceof GNavigatorFolder && element.equals(selected)) {
-            button.addStyleName("toolbarSelectedNavigatorButton");
-        }
-        if (vertical) {
-            button.setWidth("100%");
-            button.getElement().getStyle().setPaddingLeft(PADDING_H + PADDING_STEP * step, Style.Unit.PX);
+            button.addStyleName("active");
         }
 
         panel.add(button);
-        panel.setCellVerticalAlignment(button, alignmentY);
-        panel.setCellHorizontalAlignment(button, alignmentX);
 
         if ((element.window != null) && (!element.window.equals(window))) {
             return;

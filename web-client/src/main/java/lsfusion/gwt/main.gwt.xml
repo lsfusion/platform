@@ -150,6 +150,7 @@
     <stylesheet src="static/css/dialog-box.css"/>
     <stylesheet src="static/css/grid.css"/>
     <stylesheet src="static/css/menu-bar.css"/>
+    <stylesheet src="static/css/navigator.css"/>
     <stylesheet src="static/css/popup-panel.css"/>
     <stylesheet src="static/css/progress-bar.css"/>
     <stylesheet src="static/css/radio-button.css"/>
