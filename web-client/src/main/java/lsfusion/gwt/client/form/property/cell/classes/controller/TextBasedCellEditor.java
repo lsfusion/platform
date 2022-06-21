@@ -311,7 +311,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
                                             @Override
                                             public String getReplacementString() {
-                                                return suggestion.rawString;
+                                                return (String) GwtClientUtils.escapeComma(suggestion.rawString, compare);
                                             }
                                         });
                                     }
@@ -473,7 +473,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         public String getReplacementString() {
             SuggestOracle.Suggestion selection = getCurrentSelection();
-            return selection != null ? (String) GwtClientUtils.escapeComma(selection.getReplacementString(), compare) : null;
+            return selection != null ? selection.getReplacementString() : null;
         }
 
         @Override
