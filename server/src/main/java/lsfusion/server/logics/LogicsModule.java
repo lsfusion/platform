@@ -2191,6 +2191,10 @@ public abstract class LogicsModule {
                 debugPoint, options, event);
     }
 
+    public <P extends PropertyInterface> void disableInputList(LP<P> lp) {
+        lp.property.disableInputList = true;
+    }
+
     public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event) {
         addFollows(property, implement, LocalizedString.create("{logics.property.violated.consequence.from}" + "(" + this + ") => (" + implement.property + ")"), debugPoint, options, event);
     }

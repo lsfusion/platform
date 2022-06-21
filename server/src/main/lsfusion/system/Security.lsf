@@ -530,7 +530,7 @@ NAVIGATOR {
 FORM propertyPolicy '{security.form.policy}'
     OBJECTS p = Property PANEL
     PROPERTIES(p) READONLY caption, canonicalName
-    PROPERTIES(p) userLoggable, isSetNotNull
+    PROPERTIES(p) userLoggable, isSetNotNull, disableInputList
     
     OBJECTS ur = UserRole
     PROPERTIES(ur) READONLY name, sid
@@ -551,6 +551,7 @@ DESIGN propertyPolicy {
             caption = '{security.form.parameters}';
             MOVE PROPERTY(userLoggable(p));
             MOVE PROPERTY(isSetNotNull(p));
+            MOVE PROPERTY(disableInputList(p));
         }
         MOVE BOX(ur);
     }

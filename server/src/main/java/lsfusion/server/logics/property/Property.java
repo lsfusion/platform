@@ -1665,7 +1665,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         } else {
             // INPUT valueCLass
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    isDefaultWYSInput(valueClass) ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
+                    isDefaultWYSInput(valueClass) && !Property.this.disableInputList ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
         }
 
         ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
@@ -1683,12 +1683,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public boolean setNotNull;
-    public boolean reflectionNotNull;
 
     @Override
     public boolean isNotNull() {
         return setNotNull;
     }
+
+    public boolean disableInputList;
 
     protected ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
         return new PropertyClassImplement<>(this, classes, mapping);

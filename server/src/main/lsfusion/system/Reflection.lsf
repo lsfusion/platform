@@ -80,6 +80,7 @@ loggable '{reflection.loggable.property}' = DATA BOOLEAN (Property);
 userLoggable '{reflection.user.loggable.property}' = DATA BOOLEAN (Property);
 stored '{reflection.stored.property}' = DATA BOOLEAN (Property);
 isSetNotNull '{reflection.is.set.not.null.property}' = DATA BOOLEAN (Property);
+disableInputList '{reflection.disable.input.list}' = DATA BOOLEAN (Property);
 return '{reflection.return.property}' = DATA STRING[100] (Property);
 complexity '{reflection.complexity.property}' = DATA LONG (Property);
 tableSID '{reflection.table.sid.property}' = DATA STRING[100] (Property);
