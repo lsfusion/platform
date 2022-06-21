@@ -62,7 +62,7 @@ public class TFormats {
         dateParser = DateTimeFormatter.ofPattern(datePattern);
         timeParser = DateTimeFormatter.ofPattern(timePattern);
         dateTimeParser = DateTimeFormatter.ofPattern(dateTimePattern);
-        zDateTimeParser = dateTimeParser; // DateTimeFormatter.ISO_DATE_TIME
+        zDateTimeParser = DateTimeFormatter.ISO_DATE_TIME;
 
         dateFormatter = dateParser;
         timeFormatter = timeParser;
