@@ -217,7 +217,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 if (getOldDBStructure(sql).version >= 34) {
                     startLogger.info("Disabling input list");
-                    disableInputListProperties(sql);
+                    setDisableInputListProperties(sql);
                 }
             }
         } catch (Exception e) {
@@ -326,7 +326,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void disableInputListProperties(SQLSession sql) throws SQLException, SQLHandledException {
+    private void setDisableInputListProperties(SQLSession sql) throws SQLException, SQLHandledException {
         ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
         KeyExpr key = keys.singleValue();
         QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
@@ -336,7 +336,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             if(prop != null)
-                LM.disableInputList(prop, ListFact.EMPTY());
+                LM.disableInputList(prop);
         }
     }
 
