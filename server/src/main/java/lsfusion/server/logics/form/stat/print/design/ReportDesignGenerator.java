@@ -31,6 +31,10 @@ import java.awt.*;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -331,10 +335,12 @@ public class ReportDesignGenerator {
     private void setPattern(JRDesignTextField dataField, ReportDrawField reportField) {
         String pattern = reportField.pattern;
         if (pattern != null && needToFixExcelSeparatorProblem(pattern, reportField)) {
-            JRDesignExpression expr = null;
             pattern = ReportUtils.createPatternExpressionForExcelSeparatorProblem(pattern, reportField.sID, reportField.valueClass);
             assert pattern != null;
             dataField.setPatternExpression(ReportUtils.createExpression(pattern, reportField.valueClass));
+        } else if (needToConvertExcelDateTime(reportField)) {
+            dataField.setExpression(ReportUtils.createConvertExcelDateTimeExpression(reportField.sID, reportField.valueClass));
+            dataField.setPattern(pattern);
         } else {
             dataField.setPattern(pattern);
         }
@@ -346,6 +352,11 @@ public class ReportDesignGenerator {
             return (cls == Double.class || cls == BigDecimal.class) && pattern.matches(ReportUtils.EXCEL_SEPARATOR_PROBLEM_REGEX);
         }
         return false;
+    }
+
+    private boolean needToConvertExcelDateTime(ReportDrawField reportField) {
+        return (printType == FormPrintType.XLS || printType == FormPrintType.XLSX)
+                && reportField.valueClass == LocalDate.class || reportField.valueClass == LocalTime.class || reportField.valueClass == LocalDateTime.class || reportField.valueClass == Instant.class;
     }
     
     private void setBackground(JRDesignTextField dataField, ReportDrawField reportField) {
