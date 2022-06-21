@@ -2191,6 +2191,15 @@ public abstract class LogicsModule {
                 debugPoint, options, event);
     }
 
+    public <P extends PropertyInterface, C extends PropertyInterface> void disableInputList(LP<P> lp, ImList<PropertyFollowsDebug> resolve) {
+        Property<P> property = lp.property;
+        PropertyMapImplement<C, P> mapClasses = (PropertyMapImplement<C, P>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.logPolicy));
+        property.disableInputList = true;
+        addFollows(mapClasses.property, new PropertyMapImplement<>(property, mapClasses.mapping.reverse()),
+                LocalizedString.concatList(LocalizedString.create("{logics.property} "), property.caption, " [" + property.getSID(), LocalizedString.create("] {logics.property.not.defined}")),
+                null, resolve, Event.APPLY);
+    }
+
     public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event) {
         addFollows(property, implement, LocalizedString.create("{logics.property.violated.consequence.from}" + "(" + this + ") => (" + implement.property + ")"), debugPoint, options, event);
     }
