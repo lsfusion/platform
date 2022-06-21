@@ -4,12 +4,9 @@ import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
-
-import java.util.function.Consumer;
 
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
@@ -20,11 +17,13 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
 
     protected Object prevValue;
     protected Object value;
+    private boolean sticky;
 
-    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, Object value, String toolTip) {
+    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, Object value, String toolTip, boolean sticky) {
         this.table = table;
         this.property = property;
         this.value = value;
+        this.sticky = sticky;
     }
 
     public void setValue(Object value) {
@@ -53,6 +52,10 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
 
     @Override
     public void renderAndUpdateDom(TableCellElement th) {
+        if (sticky) {
+            th.addClassName("dataGridStickyFooter");
+        }
+        
         GPropertyTableBuilder.renderAndUpdate(property, th, this, this);
         prevValue = value;
     }
