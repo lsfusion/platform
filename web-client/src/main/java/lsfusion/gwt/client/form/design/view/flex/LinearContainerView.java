@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -16,13 +17,13 @@ import java.util.List;
 
 public class LinearContainerView extends LayoutContainerView {
 
-    protected final FlexPanel panel;
+    protected final SizedFlexPanel panel;
 
     protected final int linesCount;
     protected final boolean alignCaptions;
     protected final boolean grid;
 
-    protected FlexPanel[] lines;
+    protected SizedFlexPanel[] lines;
     protected List<AlignCaptionPanel> childrenCaptions;
 
     public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, GSize lineSize, GSize captionLineSize, int linesCount, boolean wrap, boolean lineShrink) {
@@ -69,9 +70,9 @@ public class LinearContainerView extends LayoutContainerView {
         boolean lineShrink = container.isLineShrink();
 
         if(isSingleLine()) {
-            panel = new FlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, captionLineSize, linesCount, wrap, lineShrink) : null, wrap);
+            panel = new SizedFlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, captionLineSize, linesCount, wrap, lineShrink) : null, wrap);
         } else {
-            panel = new FlexPanel(!vertical, GFlexAlignment.START, null, vertical && wrap);
+            panel = new SizedFlexPanel(!vertical, GFlexAlignment.START, null, vertical && wrap);
 
             // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
             // however resizing inner component also causes troubles, because when you increase components base size, parent components base size also is changed which leads to immediate relayouting, and if the explicit base size is larger than auto base size, there is a leap
@@ -79,9 +80,9 @@ public class LinearContainerView extends LayoutContainerView {
             // so it seems that having childrenResizable true is the lesser evil
 //            panel.childrenResizable = false;
 
-            lines = new FlexPanel[linesCount];
+            lines = new SizedFlexPanel[linesCount];
             for (int i = 0; i < linesCount; i++) {
-                FlexPanel line = new FlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, lineSize, captionLineSize, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
+                SizedFlexPanel line = new SizedFlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, lineSize, captionLineSize, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
 
                 panel.add(line, GFlexAlignment.STRETCH, 1, lineShrink, null);
                 lines[i] = line;
@@ -96,7 +97,7 @@ public class LinearContainerView extends LayoutContainerView {
         return linesCount == 1 || grid;
     }
 
-    private static class AlignCaptionPanel extends FlexPanel {
+    private static class AlignCaptionPanel extends SizedFlexPanel {
         public AlignCaptionPanel(boolean vertical, GFlexAlignment flexAlignment) {
             super(vertical, flexAlignment);
         }
@@ -164,9 +165,9 @@ public class LinearContainerView extends LayoutContainerView {
         return offset;
     }
 
-    private Pair<FlexPanel, Integer> getContainerPosition(int index) {
+    private Pair<SizedFlexPanel, Integer> getContainerPosition(int index) {
         int containerIndex;
-        FlexPanel container;
+        SizedFlexPanel container;
         if(isSingleLine()) {
             container = panel;
             containerIndex = index;
@@ -179,8 +180,8 @@ public class LinearContainerView extends LayoutContainerView {
     }
 
     private void addChildrenView(int index, int offset) {
-        Pair<FlexPanel, Integer> containerPosition = getContainerPosition(index + offset);
-        FlexPanel container = containerPosition.first;
+        Pair<SizedFlexPanel, Integer> containerPosition = getContainerPosition(index + offset);
+        SizedFlexPanel container = containerPosition.first;
         int containerIndex = containerPosition.second;
 
         Widget widget = addChildrenWidget(container, index, containerIndex);
@@ -204,15 +205,15 @@ public class LinearContainerView extends LayoutContainerView {
     }
 
     private void removeChildrenView(int index, int offset) {
-        Pair<FlexPanel, Integer> containerPosition = getContainerPosition(index + offset);
-        FlexPanel container = containerPosition.first;
+        Pair<SizedFlexPanel, Integer> containerPosition = getContainerPosition(index + offset);
+        SizedFlexPanel container = containerPosition.first;
         int containerIndex = containerPosition.second;
 
         if(alignCaptions)
             if(childrenCaptions.get(index) != null)
-                container.remove(containerIndex);
+                container.removeSized(containerIndex);
 
-        container.remove(containerIndex);
+        container.removeSized(containerIndex);
     }
 
     @Override

@@ -1,0 +1,12 @@
+
+.oppositeSizeCssFixPanel {
+}
+
+.shrink-width {
+    max-width: -webkit-fill-available;
+    max-width: -moz-available;
+}
+.stretch-width {
+    min-width: -webkit-fill-available;
+    min-width: -moz-available;
+}

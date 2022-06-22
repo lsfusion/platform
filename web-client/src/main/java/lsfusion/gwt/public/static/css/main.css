@@ -281,12 +281,6 @@ body {
 
 /* ------------ Caption panel ------------ */
 
-.oppositeStretchNoShrinkPanel {
-}
-
-.oppositeNoStretchShrinkPanel {
-}
-
 .leftBorder {
     border-left: var(--border-width) solid var(--panel-border-color);
 

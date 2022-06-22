@@ -18,27 +18,24 @@ public class SizedWidget {
         this.height = height;
     }
 
-    private void add(FlexPanel panel, GFlexAlignment alignment, double flex, boolean shrink) {
+    private void add(SizedFlexPanel panel, GFlexAlignment alignment, double flex, boolean shrink) {
         add(panel, panel.getWidgetCount(), alignment, flex, shrink);
     }
 
-    private void add(FlexPanel panel, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink) {
+    private void add(SizedFlexPanel panel, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink) {
         boolean vertical = panel.isVertical();
-
-        panel.setOppositeSize(widget, vertical ? width : height, alignment);
-
-        panel.add(widget, beforeIndex, alignment, flex, shrink, vertical ? height : width);
+        panel.addSized(widget, beforeIndex, flex, shrink, vertical ? height : width, alignment, alignment == GFlexAlignment.STRETCH, vertical ? width : height);
     }
 
-    public void addFill(FlexPanel panel) {
+    public void addFill(SizedFlexPanel panel) {
         add(panel, GFlexAlignment.STRETCH, 1, true);
     }
 
-    public void addFill(FlexPanel panel, int beforeIndex) {
+    public void addFill(SizedFlexPanel panel, int beforeIndex) {
         add(panel, beforeIndex, GFlexAlignment.STRETCH, 1, true);
     }
 
-    public void add(FlexPanel panel, GFlexAlignment alignment) {
+    public void add(SizedFlexPanel panel, GFlexAlignment alignment) {
         add(panel, alignment, 0, false);
     }
 }

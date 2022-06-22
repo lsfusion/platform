@@ -245,8 +245,8 @@ public class GFormLayout extends ResizableComplexPanel {
         GwtClientUtils.changePercentFillWidget(main, set);
 
         Element element = main.getElement();
-        FlexPanel.setBaseSize(element, true, height, true);
-        FlexPanel.setBaseSize(element, false, width, true);
+        FlexPanel.setHeight(element, height);
+        FlexPanel.setWidth(element, width);
 
         Result<Integer> grids = new Result<>(0);
         if(main instanceof HasMaxPreferredSize)

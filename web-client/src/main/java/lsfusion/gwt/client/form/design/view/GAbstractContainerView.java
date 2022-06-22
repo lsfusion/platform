@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -117,42 +117,14 @@ public abstract class GAbstractContainerView {
 
         // plus it's important to have auto for the view and not the flexcaptionPanel (since we don't want it to be scrolled), so there is one option left, with the same direction and 0 (or auto basis)
 
-        GFlexAlignment alignment = child.getAlignment();
-        boolean isStretch = alignment == GFlexAlignment.STRETCH;
-
-        boolean incorrectOppositeShrink = isStretch != oppositeShrink && !(oppositeSize != null && oppositeSize.isZero()); // if size is 0 we don't care about the shrink
-
         FlexPanel wrapPanel = wrapBorderImpl(child);
 
         if(wrapPanel != null) {
-            if(vertical == wrapPanel.isVertical() || !incorrectOppositeShrink) {
-                // 1 1 auto
-                wrapPanel.addFillShrink(view);
-                view = wrapPanel;
-                wrapPanel = null;
-            }
-        }
-
-        if(incorrectOppositeShrink) {
-            if(wrapPanel == null) {
-                wrapPanel = new FlexPanel(!vertical);
-                if(isStretch) // just to identify this div in dom
-                    wrapPanel.setStyleName("oppositeStretchNoShrinkPanel");
-                else
-                    wrapPanel.setStyleName("oppositeNoStretchShrinkPanel");
-            }
-            // assert wrapPanel has opposite direction
-            if(isStretch)
-                // 1 0 auto
-                // this container will have upper container size, but since the default overflow is visible, inner component will overflow if needed
-                wrapPanel.addFillFlex(view, null);
-            else {
-                // 0 1 size (flexAlignment = alignment) + when adding to the flex panel, alignment is changed to stretch (see add method in below)
-                wrapPanel.addShrinkFlex(view, oppositeSize);
-                wrapPanel.setFlexAlignment(alignment);
-            }
+            // 1 1 auto
+            wrapPanel.addFillShrink(view);
             view = wrapPanel;
         }
+
         return view;
     }
 
@@ -197,21 +169,15 @@ public abstract class GAbstractContainerView {
             updateLayoutListener.updateLayout(requestIndex);
     }
 
-    public static Widget add(FlexPanel panel, Widget widget, GComponent component, int beforeIndex) {
-        boolean vertical = panel.isVertical();
-        GFlexAlignment alignment = component.getAlignment();
-        if(alignment != GFlexAlignment.STRETCH && component.isAlignShrink())
-            alignment = GFlexAlignment.STRETCH; // it is wrapped (in wrapAndOverflowView) with 0 1 size and justify-content with right alignment
-        else
-            panel.setOppositeSize(widget, component.getSize(!vertical), alignment);
+    protected Widget addChildrenWidget(SizedFlexPanel panel, int i, int beforeIndex) {
+        Widget widget = childrenViews.get(i);
+        GComponent component = children.get(i);
 
-        panel.add(widget, beforeIndex, alignment, component.getFlex(), component.isShrink(), component.getSize(vertical));
+        // to change to sizeWidget
+        boolean vertical = panel.isVertical();
+        panel.addSized(widget, beforeIndex, component.getFlex(), component.isShrink(), component.getSize(vertical), component.getAlignment(), component.isAlignShrink(), component.getSize(!vertical));
 
         return widget;
-    }
-
-    protected Widget addChildrenWidget(FlexPanel flexPanel, int i, int beforeIndex) {
-        return add(flexPanel, childrenViews.get(i), children.get(i), beforeIndex);
     }
 
     protected abstract void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer);

@@ -6,10 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.SizedWidget;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -30,11 +27,11 @@ public class PropertyPanelRenderer extends PanelRenderer {
         // in fact in grid we always wrap into div (because element to be added is td and it has totally different behaviour)
         // however here it doesn't seem to be necessary (except when we need corners), so we won't do this
         ResizableComplexPanel valuePanel = null;
-        if(!property.autoSize || needCorners)
-            valuePanel = new ResizableComplexPanel();
+//        if(!property.autoSize)// || needCorners)
+//            valuePanel = new ResizableComplexPanel();
         SizedWidget valueWidget = value.setSized(valuePanel);
-        if (needCorners)
-            appendCorners(property.notNull, valuePanel); // it's a hack to add
+//        if (needCorners)
+//            appendCorners(property.notNull, valuePanel); // it's a hack to add
 
         sizedView = initCaption(valueWidget, property, captionContainer);
         sizedView.widget.addStyleName("dataPanelRendererPanel");
@@ -65,8 +62,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return captionLast ? sizedLabel : valuePanel;
         }
 
-        FlexPanel panel;
-        panel = new FlexPanel(property.panelCaptionVertical);
+        SizedFlexPanel panel = new SizedFlexPanel(property.panelCaptionVertical);
 
         if (!captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
