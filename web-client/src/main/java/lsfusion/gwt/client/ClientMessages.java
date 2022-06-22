@@ -217,8 +217,6 @@ public interface ClientMessages extends Messages {
     String pivotHorizontalStackedBarchartRenderer();
     String pivotTreemapRenderer();
 
-    String linkModeEnable();
-    String linkModeDisable();
     String fullScreenModeEnable();
     String fullScreenModeDisable();
 

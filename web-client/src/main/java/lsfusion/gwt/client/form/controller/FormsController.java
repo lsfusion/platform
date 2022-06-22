@@ -7,10 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.action.GFormAction;
@@ -61,7 +58,8 @@ public abstract class FormsController {
 
     private final WindowsController windowsController;
 
-    private final GToolbarButton linkModeButton;
+    private int prevModeButton;
+    private final SimplePanel modeButton;
 
     private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;
@@ -73,14 +71,16 @@ public abstract class FormsController {
 
         GToolbarView toolbarView = new GToolbarView();
 
-        linkModeButton = new GToolbarButton("linkMode.png", messages.linkModeEnable()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> updateLinkMode(!GFormController.isLinkMode(), false);
-            }
-        };
-        setCompactSize(linkModeButton);
-        toolbarView.addComponent(linkModeButton);
+        modeButton = new SimplePanel();
+        modeButton.getElement().setId("modeButton");
+        toolbarView.addComponent(modeButton);
+
+        final String[] images = new String[3];
+        GwtClientUtils.setThemeImage("hamburger.png", image -> images[0] = image);
+        GwtClientUtils.setThemeImage("linkMode.png", image -> images[1] = image);
+        GwtClientUtils.setThemeImage("grid.png", image -> images[2] = image);
+
+        setupModeButton(modeButton.getElement(), images);
 
         if (!MainFrame.mobile) {
             fullScreenButton = new GToolbarButton(null) {
@@ -124,6 +124,45 @@ public abstract class FormsController {
         });
     }
 
+    public native void setupModeButton(Element element, String[] images) /*-{
+        var instance = this;
+        var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode'}, {imageSrc: images[2], title: 'Dialog Mode'}];
+
+        $wnd.$(element).ddslick({
+            data:ddData,
+            defaultSelectedIndex:0,
+            width:16,
+            onSelected: function(selectedData){
+                instance.@FormsController::updateMode(*)(selectedData.selectedIndex, false);
+            }
+        });
+    }-*/;
+
+    public native int selectModeButton(Element element, int i) /*-{
+        var modeButton = $wnd.$('#modeButton');
+        var prevModeButton = modeButton.data('ddslick').selectedIndex;
+        modeButton.ddslick('select', {index: i });
+        return prevModeButton;
+
+    }-*/;
+
+    public void updateMode(int mode, boolean linkModeWithCtrl) {
+        boolean linkMode = mode == 1;
+        boolean dialogMode = mode == 2;
+        updateLinkMode(linkMode, linkModeWithCtrl);
+        updateDialogMode(dialogMode);
+    }
+
+    public void updateLinkModeWithCtrl(boolean set) {
+        if(set) {
+            prevModeButton = selectModeButton(modeButton.getElement(), 1);
+            updateMode(1, true);
+        } else {
+            selectModeButton(modeButton.getElement(), prevModeButton);
+            updateMode(prevModeButton, false);
+        }
+    }
+
     public void onServerInvocationResponse(ServerResponseResult response, GAsyncFormController asyncFormController) {
         if (asyncFormController.onServerInvocationOpenResponse()) {
             if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
@@ -152,17 +191,19 @@ public abstract class FormsController {
             GFormController.cancelLinkModeStylesTimer();
             setLinkModeStyles(linkMode);
         }
-        linkModeButton.showBackground(linkMode);
         GFormController.setLinkMode(linkMode, linkModeWithCtrl);
     }
 
     private void setLinkModeStyles(boolean linkMode) {
-        linkModeButton.setTitle(linkMode ? messages.linkModeDisable() : messages.linkModeEnable() + " (CTRL)");
         Element globalElement = RootPanel.get().getElement();
         if(linkMode)
             globalElement.addClassName("linkMode");
         else
             globalElement.removeClassName("linkMode");
+    }
+
+    public void updateDialogMode(boolean dialogMode) {
+        GFormController.setDialogMode(dialogMode);
     }
 
     public void updateFullScreenButton(){

@@ -279,7 +279,7 @@ public class GFormController implements EditManager {
                     if (pressedCtrl) {
                         pressedCtrl = false;
                     } else {
-                        if (GFormController.isLinkModeWithCtrl()) {
+                        if (isLinkModeWithCtrl()) {
                             formsController.updateLinkMode(false, false);
                         }
                     }
@@ -296,10 +296,10 @@ public class GFormController implements EditManager {
             Boolean altKey = eventGetAltKey(event);
             boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
             pressedCtrl = onlyCtrl;
-            if (!onlyCtrl && GFormController.isLinkModeWithCtrl())
-                formsController.updateLinkMode(false, false);
-            if (onlyCtrl && !GFormController.isLinkMode())
-                formsController.updateLinkMode(true, true);
+            if (!onlyCtrl && isLinkModeWithCtrl())
+                formsController.updateLinkModeWithCtrl(false);
+            if (onlyCtrl && !isLinkMode())
+                formsController.updateLinkModeWithCtrl(true);
         }
     }
 
@@ -336,6 +336,15 @@ public class GFormController implements EditManager {
             linkModeStylesTimer.cancel();
             linkModeStylesTimer = null;
         }
+    }
+
+    private static boolean dialogMode;
+    public static boolean isDialogMode() {
+        return dialogMode;
+    }
+
+    public static void setDialogMode(boolean enabled) {
+        dialogMode = enabled;
     }
 
     // will handle key events in upper container which will be better from UX point of view
