@@ -53,7 +53,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         if(property != null && property.changeOnSingleClick != null)
             return property.changeOnSingleClick;
         return super.isChangeOnSingleClick(cell, event, rowChanged) ||
-                (!rowChanged && GFormController.isLinkEditMode() && property != null && property.hasEditObjectAction) ||
+                (!rowChanged && GFormController.isLinkMode() && property != null && property.hasEditObjectAction) ||
                 (GMouseStroke.isChangeEvent(event) && GEditBindingMap.getToolbarAction(event) != null);
     }
 

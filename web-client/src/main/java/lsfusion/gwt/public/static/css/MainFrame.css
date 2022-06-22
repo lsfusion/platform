@@ -919,15 +919,15 @@ button {
 }
 
 /* we want to turn cell to hyper link*/
-.linkEditMode .selectedCellHasEdit {
+.linkMode .selectedCellHasEdit {
     color: var(--link-color) !important;
     cursor: pointer !important;
 }
 
-.linkEditMode .selectedCellHasEdit:hover {
+.linkMode .selectedCellHasEdit:hover {
     text-decoration: underline;
 }
 
-.linkEditMode .selectedFileCellHasEdit {
+.linkMode .selectedFileCellHasEdit {
     border: 1px solid var(--link-color);
 }

@@ -61,7 +61,7 @@ public abstract class FormsController {
 
     private final WindowsController windowsController;
 
-    private final GToolbarButton linkEditButton;
+    private final GToolbarButton linkModeButton;
 
     private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;
@@ -73,14 +73,14 @@ public abstract class FormsController {
 
         GToolbarView toolbarView = new GToolbarView();
 
-        linkEditButton = new GToolbarButton("linkEditMode.png", messages.linkEditModeEnable()) {
+        linkModeButton = new GToolbarButton("linkMode.png", messages.linkModeEnable()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> updateLinkEditMode(!GFormController.isLinkEditMode(), false);
+                return event -> updateLinkMode(!GFormController.isLinkMode(), false);
             }
         };
-        setCompactSize(linkEditButton);
-        toolbarView.addComponent(linkEditButton);
+        setCompactSize(linkModeButton);
+        toolbarView.addComponent(linkModeButton);
 
         if (!MainFrame.mobile) {
             fullScreenButton = new GToolbarButton(null) {
@@ -145,24 +145,24 @@ public abstract class FormsController {
     private boolean isRemoving = false;
     private boolean isAdding = false;
 
-    public void updateLinkEditMode(boolean linkEditMode, boolean linkEditModeWithCtrl) {
-        if(!GFormController.isLinkEditModeWithCtrl() && linkEditModeWithCtrl) {
-            GFormController.scheduleLinkEditModeStylesTimer(() -> setLinkEditModeStyles(linkEditMode));
+    public void updateLinkMode(boolean linkMode, boolean linkModeWithCtrl) {
+        if(!GFormController.isLinkModeWithCtrl() && linkModeWithCtrl) {
+            GFormController.scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
         } else {
-            GFormController.cancelLinkEditModeStylesTimer();
-            setLinkEditModeStyles(linkEditMode);
+            GFormController.cancelLinkModeStylesTimer();
+            setLinkModeStyles(linkMode);
         }
-        linkEditButton.showBackground(linkEditMode);
-        GFormController.setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
+        linkModeButton.showBackground(linkMode);
+        GFormController.setLinkMode(linkMode, linkModeWithCtrl);
     }
 
-    private void setLinkEditModeStyles(boolean linkEditMode) {
-        linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
+    private void setLinkModeStyles(boolean linkMode) {
+        linkModeButton.setTitle(linkMode ? messages.linkModeDisable() : messages.linkModeEnable() + " (CTRL)");
         Element globalElement = RootPanel.get().getElement();
-        if(linkEditMode)
-            globalElement.addClassName("linkEditMode");
+        if(linkMode)
+            globalElement.addClassName("linkMode");
         else
-            globalElement.removeClassName("linkEditMode");
+            globalElement.removeClassName("linkMode");
     }
 
     public void updateFullScreenButton(){

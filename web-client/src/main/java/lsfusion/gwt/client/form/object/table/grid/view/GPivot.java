@@ -1968,7 +1968,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private void rowAttrHeaderClickAction(JsArrayMixed rowKeyValues, String attrName, boolean dblClick) {
-        if((dblClick || GFormController.isLinkEditMode()) && rowKeyValues.length() > 0) {
+        if((dblClick || GFormController.isLinkMode()) && rowKeyValues.length() > 0) {
             Column column = columnMap.get(attrName);
             Integer rowIndex = getRowIndex(rowKeyValues, false);
             if (column != null && rowIndex != null) {
@@ -2038,7 +2038,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 updateViewLater();
             }
         } else {
-            if(GFormController.isLinkEditMode() && columnKeyValues.length() > 0) {
+            if(GFormController.isLinkMode() && columnKeyValues.length() > 0) {
                 Column column = columnMap.get(config.getArrayString("cols").get(columnKeyValues.length() - 1));
                 Integer rowIndex = getRowIndex(columnKeyValues, true);
                 if (column != null && rowIndex != null) {
