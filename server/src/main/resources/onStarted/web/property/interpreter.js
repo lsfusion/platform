@@ -67,6 +67,11 @@ function interpreter() {
             let parsedValue = JSON.parse(value);
 
             aceEditor.onBlur = function (e) {
+                //need setting $isFocused to false because we "override" onBlur, but ace used this variable in inner events handlers
+                aceEditor.$isFocused = false;
+                //disable text caret cursor blinking
+                aceEditor.renderer.hideCursor();
+
                 if (e.relatedTarget == null || !e.relatedTarget.contains(aceEditor.container))
                     controller.changeValue(JSON.stringify({text : aceEditor.getValue()}));
             }
