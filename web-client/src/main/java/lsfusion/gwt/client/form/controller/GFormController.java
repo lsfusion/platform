@@ -24,10 +24,7 @@ import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.CollapsiblePanel;
-import lsfusion.gwt.client.base.view.DialogBoxHelper;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
@@ -368,7 +365,7 @@ public class GFormController implements EditManager {
     }
 
     private void createSingleFilterComponent(final GRegularFilterGroup filterGroup, final GRegularFilter filter) {
-        final CheckBox filterCheck = new CheckBox(filter.getFullCaption());
+        final CheckBox filterCheck = new FormCheckBox(filter.getFullCaption());
         filterCheck.setValue(false);
         filterCheck.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
             @Override
@@ -376,7 +373,7 @@ public class GFormController implements EditManager {
                 setRegularFilter(filterGroup, e.getValue() != null && e.getValue() ? filter : null);
             }
         });
-        filterCheck.addStyleName("checkBoxFilter");
+        filterCheck.addStyleName("filter-group-check");
         addFilterView(filterGroup, filterCheck);
 
         if (filterGroup.defaultFilterIndex >= 0) {
@@ -414,8 +411,8 @@ public class GFormController implements EditManager {
             }
         });
 
-        filterBox.addStyleName("comboBoxFilter");
-        filterBox.setHeight(StyleDefaults.COMPONENT_HEIGHT_STRING);
+        filterBox.setStyleName("filter-group-select");
+        filterBox.addStyleName("form-select");
 
         addFilterView(filterGroup, filterBox);
         if (filterGroup.defaultFilterIndex >= 0) {

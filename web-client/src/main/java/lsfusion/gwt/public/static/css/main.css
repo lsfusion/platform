@@ -370,20 +370,22 @@ body {
 }
 
 /* ------------ Filters ------------ */
-.checkBoxFilter {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    margin: 0 0.125rem;
+.form-check .form-check-input {
+    float: left;
 }
 
-.checkBoxFilter label, .userFilterNegationCheckBox label {
+.filter-group-check.form-check {
+    margin-left: 0.25rem; /*do not clip box shadowing*/
+    margin-right: 0.125rem;
+}
+
+.userFilterNegationCheckBox label {
     vertical-align: middle;
 }
 
-.comboBoxFilter {
-    margin: auto 0.125rem;
+.filter-group-select.form-select {
+    width: auto;
+    margin: 0.25rem; /*do not clip box shadowing*/
 }
 
 .userFilterLabel {

@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.FormCheckBox;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -29,7 +30,7 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         negation = condition.negation;
         this.allowNull = allowNull;
 
-        negationCB = new CheckBox("! (" + NOT_STRING + ")");
+        negationCB = new FormCheckBox("! (" + NOT_STRING + ")");
         negationCB.setTitle(NOT_STRING);
         negationCB.addStyleName("userFilterNegationCheckBox");
         negationCB.setValue(negation);
@@ -39,7 +40,7 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
             updateText();
         });
         
-        allowNullCB = new CheckBox(ClientMessages.Instance.get().formFilterConditionAllowNull());
+        allowNullCB = new FormCheckBox(ClientMessages.Instance.get().formFilterConditionAllowNull());
         allowNullCB.addStyleName("userFilterNegationCheckBox");
         allowNullCB.setValue(this.allowNull);
         allowNullCB.addValueChangeHandler(event -> {

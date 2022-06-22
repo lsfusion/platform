@@ -130,9 +130,9 @@ public abstract class GUserPreferencesDialog extends WindowBox {
         // font settings
         sizeBox = new TextBox();
         sizeBox.addStyleName("userPreferencesIntegralTextBox");
-        boldBox = new CheckBox(messages.formGridPreferencesFontStyleBold());
+        boldBox = new FormCheckBox(messages.formGridPreferencesFontStyleBold());
         boldBox.addStyleName("userPreferencesCheckBox");
-        italicBox = new CheckBox(messages.formGridPreferencesFontStyleItalic());
+        italicBox = new FormCheckBox(messages.formGridPreferencesFontStyleItalic());
         italicBox.addStyleName("userPreferencesCheckBox");
         FlexPanel fontPanel = new FlexPanel();
         fontPanel.getElement().getStyle().setMargin(2, Style.Unit.PX);
