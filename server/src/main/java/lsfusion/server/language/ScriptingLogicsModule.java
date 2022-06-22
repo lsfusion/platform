@@ -174,9 +174,12 @@ import java.util.regex.Pattern;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static lsfusion.base.BaseUtils.*;
+import static lsfusion.server.language.ScriptedStringUtils.*;
 import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
 import static lsfusion.server.logics.classes.data.StringClass.getv;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
+import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
+import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
 public class ScriptingLogicsModule extends LogicsModule {
 
@@ -361,19 +364,19 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public String transformExpressionStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
+    public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return ScriptedStringUtils.transformExpressionStringLiteral(s);
-        } catch (ScriptedStringUtils.TransformationError e) {
+            return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
+        } catch (ScriptedStringUtils.TransformationError | LocalizedString.FormatError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
         return null;
     }
 
-    public LocalizedString transformLocalizedStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
+    private String transformToResourceName(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            return ScriptedStringUtils.transformLocalizedStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod(), BL::appendEntryToBundle);
-        } catch (ScriptedStringUtils.TransformationError | LocalizedString.FormatError e) {
+            return ScriptedStringUtils.removeEscaping(s);
+        } catch (ScriptedStringUtils.TransformationError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
         return null;
@@ -3236,15 +3239,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             case NUMERIC: lp =  addNumericConst((BigDecimal) value); break;
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
-                String str = transformExpressionStringLiteral((String) value);
-                if (str.startsWith("$I{") && str.endsWith("}")) {
+                String str = unquote((String) value);
+                if (str.startsWith(INLINE_PREFIX) && str.endsWith(String.valueOf(CLOSE_CH))) {
                     return Pair.create(addStringInlineProp(str, lineNumber, context, dynamic), null);
-                } else if (containsUnescaped(str, "${") || containsUnescaped(str, "$I{") || containsUnescaped(str, "$R{")) {
+                } else if (containsInterpolationSequence(str)) {
                     return Pair.create(addStringInterpolateProp(str, lineNumber, context, dynamic), null);
                 } else {
                     LocalizedString lstr = transformLocalizedStringLiteral((String) value);
                     lp = addUnsafeCProp(getStringConstClass(lstr), lstr);
-                    return Pair.create(lp, new LPLiteral(transformLocalizedStringLiteral((String) value)));
+                    return Pair.create(lp, new LPLiteral(lstr));
                 }
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
             case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
@@ -3259,8 +3262,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     protected LP addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
-        String resourceName = source.substring(3, source.length() - 1);
+        String resourceName = transformToResourceName(source.substring(INLINE_PREFIX.length(), source.length() - 1));
         String code = parseStringInlineProp(resourceName);
+        code = quote(escapeInlineContent(code));
         return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic).getLP();
     }
 
@@ -3269,108 +3273,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (result == null)
             errLog.emitNotFoundError(parser, "file", resourceName);
 
-        return escapeLiteral(result);
+        return result;
     }
 
-    protected LP<?> addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) {
-        String code = StringUtils.join(parseStringInterpolateProp(source), " + ");
+    protected LP<?> addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+        String code = null;
+        try {
+            code = StringUtils.join(ScriptedStringUtils.parseStringInterpolateProp(source), " + ");
+        } catch (TransformationError e) {
+            errLog.emitSimpleError(parser, e.getMessage());
+        }
         return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
-    }
-
-    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE };
-
-    private List<String> parseStringInterpolateProp(String source) {
-        List<String> literals = new ArrayList<>();
-
-        int pos = 0;
-        int bracketsCount = 0;
-        String currentLiteral = "";
-        StringInterpolateState state = StringInterpolateState.PLAIN;
-        StringInterpolateState newState;
-
-        while (pos < source.length()) {
-            char c = source.charAt(pos);
-            if (c == '\\') {
-                currentLiteral += '\\';
-                currentLiteral += source.charAt(pos + 1);
-                ++pos;
-            } else if (bracketsCount == 0 && (newState = prefixState(source, pos)) != StringInterpolateState.PLAIN) {
-                currentLiteral = flushCurrentLiteral(literals, currentLiteral);
-                ++bracketsCount;
-                state = newState;
-                pos += (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
-            } else if (c == '{') {
-                ++bracketsCount;
-                currentLiteral += c;
-            } else if (c == '}') {
-                --bracketsCount;
-                if (bracketsCount == 0 && state != StringInterpolateState.PLAIN) {
-                    addToLiterals(currentLiteral, state, literals);
-                    currentLiteral = "";
-                    state = StringInterpolateState.PLAIN;
-                } else {
-                    currentLiteral += c;
-                }
-            } else {
-                currentLiteral += c;
-            }
-            ++pos;
-        }
-
-        flushCurrentLiteral(literals, currentLiteral);
-        return literals;
-    }
-
-    private void addToLiterals(String currentLiteral, StringInterpolateState state, List<String> literals) {
-        if (state == StringInterpolateState.INTERPOLATION) {
-            literals.add("STRING(" + currentLiteral + ")");
-        } else if (state == StringInterpolateState.INLINE) {
-            literals.add(quote("$I{" + currentLiteral + "}"));
-        } else if (state == StringInterpolateState.RESOURCE) {
-            literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
-        } else assert false;
-    }
-
-    private static boolean containsUnescaped(String s, String target) {
-        for (int i = 0; i + target.length() - 1 < s.length(); ++i) {
-            if (s.charAt(i) == '\\') {
-                ++i;
-            } else if (target.equals(s.substring(i, i + target.length()))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private StringInterpolateState prefixState(String s, int pos) {
-        if (!compareChar(s, pos, '$')) return StringInterpolateState.PLAIN;
-        if (compareChar(s, pos + 1, '{')) return StringInterpolateState.INTERPOLATION;
-        if (compareChar(s, pos + 1, 'I') && compareChar(s, pos + 2, '{')) return StringInterpolateState.INLINE;
-        if (compareChar(s, pos + 1, 'R') && compareChar(s, pos + 2, '{')) return StringInterpolateState.RESOURCE;
-        return StringInterpolateState.PLAIN;
-    }
-
-    private boolean compareChar(String source, int pos, char cmp) {
-        return source.length() > pos && source.charAt(pos) == cmp;
-    }
-
-    private String flushCurrentLiteral(List<String> literals, String currentLiteral) {
-        if (!currentLiteral.isEmpty()) {
-            literals.add(escapeLiteral(currentLiteral));
-        }
-        return "";
-    }
-
-    private String escapeLiteral(String value) {
-        //todo: optimize
-        if (value == null) {
-            return null;
-        }
-        return quote(value.replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"));
-    }
-
-    private String quote(String value) {
-        return '\'' + value + '\'';
     }
 
     private LP addNumericConst(BigDecimal value) {
