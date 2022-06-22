@@ -168,6 +168,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     @Override
     public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+        TextBasedCellRenderer.setPadding(cellParent, isMultiLine());
+
         Element parent = cellParent;
         if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
             // wrapping element since otherwise it's not clear how to restore height (sometimes element has it set)
@@ -191,6 +193,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         if(hasList)
             suggestBox.hideSuggestions();
+
+        TextBasedCellRenderer.clearPadding(cellParent);
 
         super.clearRender(cellParent, renderContext, cancel);
     }

@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -175,7 +176,7 @@ public final class FormDockable extends FormContainer {
             labelWrapper.add(label);
             add(labelWrapper, GFlexAlignment.CENTER);
             
-            add(closeButton, GFlexAlignment.CENTER, 0, false, closeTabButtonWidth);
+            add(closeButton, GFlexAlignment.CENTER, 0, false, GSize.CONST(closeTabButtonWidth));
 
             closeButton.addClickHandler(event -> {
                 event.stopPropagation();

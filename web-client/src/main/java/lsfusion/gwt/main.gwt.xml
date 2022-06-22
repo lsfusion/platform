@@ -148,6 +148,7 @@
 
     <stylesheet src="static/css/MainFrame.css"/>
     <stylesheet src="static/css/DataGrid.css"/>
+    <stylesheet src="static/css/layout.css"/>
 
     <define-property name="is.user.agent.ie11" values="true,false" />
     <property-provider name="is.user.agent.ie11">

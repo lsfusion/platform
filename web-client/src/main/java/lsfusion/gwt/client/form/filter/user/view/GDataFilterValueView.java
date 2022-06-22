@@ -16,7 +16,7 @@ import java.io.Serializable;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
 
-public class GDataFilterValueView extends FlexPanel {
+public class GDataFilterValueView extends SizedFlexPanel {
     private final GDataFilterValue filterValue;
     private final GTableController logicsSupplier;
 
@@ -36,7 +36,7 @@ public class GDataFilterValueView extends FlexPanel {
 
     public void changeProperty(GPropertyFilter condition, boolean readSelectedValue) {
         if(sizedView != null)
-            remove(sizedView.widget);
+            removeSized(sizedView.widget);
 
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
 
@@ -44,8 +44,8 @@ public class GDataFilterValueView extends FlexPanel {
         // pretty similar to PropertyPanelRenderer (except that we don't need needCorners)
         // there is an extra container of course (but the same problem is for PropertyPanelRenderer)
         ResizableComplexPanel valuePanel = null;
-        if(!property.autoSize)
-            valuePanel = new ResizableComplexPanel();
+//        if(!property.autoSize)
+//            valuePanel = new ResizableComplexPanel();
         sizedView = cell.setSized(valuePanel);
         sizedView.widget.addStyleName("userFilterDataPropertyValue");
         sizedView.addFill(this);

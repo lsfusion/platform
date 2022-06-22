@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
@@ -56,7 +57,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderersPanel.setStyleName("propertyContainerPanel");
     }
 
-    public static class Panel extends FlexPanel implements CaptionContainerHolder {
+    public static class Panel extends SizedFlexPanel implements CaptionContainerHolder {
 
         public Panel(boolean vertical) {
             super(vertical);
@@ -121,7 +122,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                     PanelRenderer renderer = renderers.remove(columnKey);
                     form.removePropertyBindings(renderer.bindingEventIndices);
                     if (!property.hide) {
-                        renderersPanel.remove(renderer.getComponent());
+                        renderersPanel.removeSized(renderer.getComponent());
                     }
                 });
 

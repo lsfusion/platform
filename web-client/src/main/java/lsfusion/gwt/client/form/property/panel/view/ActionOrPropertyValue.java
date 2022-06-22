@@ -131,7 +131,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
             panel.setSizedMain(this, autoSize);
             borderWidget = panel.getPanelWidget(); // panel
         } else {
-            assert autoSize;
+//            assert autoSize;
             borderWidget = this;
         }
 
@@ -140,18 +140,18 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         GSize width;
         GSize height;
         if(!autoSize) {
-            assert panel != null;
-            width = property.getValueWidthWithPadding(null);
-            height = property.getValueHeightWithPadding(null);
+//            assert panel != null;
+            width = property.getValueWidth(null);
+            height = property.getValueHeight(null);
         } else {
             width = property.getAutoSizeValueWidth(null);
             height = property.getAutoSizeValueHeight(null);
 
-            if(panel != null) { // sort of optimization, in this case paddings will be calculated automatically
-                FlexPanel.setBaseSize(this, false, width, false);
-                FlexPanel.setBaseSize(this, true, height, false);
-                return new SizedWidget(borderWidget);
-            }
+//            if(panel != null) { // sort of optimization, in this case paddings will be calculated automatically
+//                FlexPanel.setBaseSize(this, false, width, false);
+//                FlexPanel.setBaseSize(this, true, height, false);
+//                return new SizedWidget(borderWidget);
+//            }
         }
 
         return new SizedWidget(borderWidget, width, height);

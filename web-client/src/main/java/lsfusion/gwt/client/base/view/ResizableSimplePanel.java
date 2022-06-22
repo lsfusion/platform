@@ -43,18 +43,6 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
         setupSizedParent(widget.getElement(), autoSize);
     }
 
-    // content-independent widget
-    public void setFillWidget(Widget widget) {
-        setWidget(widget);
-        setupFillParent(widget.getElement());        
-    }
-
-    // content-dependent widget
-    public void setPercentWidget(Widget widget) {
-        setWidget(widget);
-        GwtClientUtils.setupPercentParent(widget.getElement());
-    }
-
     public void changePercentFillWidget(boolean percent) {
         GwtClientUtils.changePercentFillWidget(getWidget(), percent);
     }

@@ -11,8 +11,8 @@ public abstract class GSize implements Serializable {
         return getSize(px, COMPONENT_TYPE);
     }
 
-    private static GFixedSize.Type COMPONENT_TYPE = GFixedSize.Type.REM;
-    private static GFixedSize.Type VALUE_TYPE = GFixedSize.Type.EM;
+    private static GFixedSize.Type COMPONENT_TYPE = GFixedSize.Type.PX;
+    private static GFixedSize.Type VALUE_TYPE = GFixedSize.Type.PX;
     private static GFixedSize.Type SIZE_TYPE = GFixedSize.Type.PX;
 
     // need this because there are no paddings in text fields but we want some (and somewhy calc(1em + 4px) = calc(1em) and only after 4 px works)

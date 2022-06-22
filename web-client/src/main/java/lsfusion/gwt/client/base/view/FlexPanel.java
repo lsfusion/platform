@@ -5,10 +5,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -175,23 +172,53 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         addFill(widget, beforeIndex, null);
     }
 
-    public void setOppositeSize(Widget widget, GSize size, GFlexAlignment alignment) {
-        boolean isStretch = alignment == GFlexAlignment.STRETCH;
-        if(isStretch && size != null && size.equals(0)) // for opposite direction and stretch zero does not make any sense (it is zero by default)
-            size = null;
-        setBaseSize(widget, !vertical, size, !isStretch);
-    }
-
     // we're setting min-width/height and not width/height for two reasons:
     // a) alignment STRETCH doesn't work when width is set (however for the alignment other than STRETCH min param works as max of this min size, and auto size, and this behaviour is different from flex:0 0 size what we want to get)
-    // b) flexBasis auto doesn't respect flexBasis of its descendants (!!! it's not true for vertical direction, see addFill comment !!!), but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
-    public static void setBaseSize(Widget widget, boolean vertical, GSize size, boolean fixed) {
-        setBaseSize(widget.getElement(), vertical, size, fixed);
+    // b) !!!(not relevant, because width / height could/should be used) flexBasis auto doesn't respect flexBasis of its descendants (!!! it's not true for vertical direction, see addFill comment !!!), but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
+
+    public static void setBaseSize(Element element, GSize size, boolean fixedSize) {
+        if(fixedSize) {
+            setHeight(element, size);
+        } else {
+            setMinHeight(element, size);
+        }
     }
-    public static void setBaseSize(Element element, boolean vertical, GSize size, boolean fixedSize) {
-        String propName = vertical ? (fixedSize ? "height" : "minHeight") : (fixedSize ? "width" : "minWidth");
+
+    public static void setMinSize(Element element, boolean vertical, GSize size) {
+        if(vertical)
+            setMinHeight(element, size);
+        else
+            setMinWidth(element, size);
+    }
+    public static void setSize(Element element, boolean vertical, GSize size) {
+        if(vertical)
+            setHeight(element, size);
+        else
+            setWidth(element, size);
+    }
+    public static void setWidth(Element element, GSize size) {
+        setSizeProperty(element, "width", size != null ? size.getString() : null);
+    }
+    public static void setHeight(Element element, GSize size) {
+        if(size != null && size.getString().equals("1719px"))
+            size = size;
+        setSizeProperty(element, "height", size != null ? size.getString() : null);
+    }
+    public static void setMinHeight(Element element, GSize size) {
+        setSizeProperty(element, "minHeight", size != null ? size.getString() : null);
+    }
+    public static void setMinWidth(Element element, GSize size) {
+        setMinWidth(element, size != null ? size.getString() : null);
+    }
+    public static void setMinWidth(Element element, String size) {
+        setSizeProperty(element, "minWidth", size);
+    }
+    public static void setMaxWidth(Element element, String size) {
+        setSizeProperty(element, "maxWidth", size);
+    }
+    public static void setSizeProperty(Element element, String propName, String size) {
         if(size != null)
-            element.getStyle().setProperty(propName, size.getString());
+            element.getStyle().setProperty(propName, size);
         else
             element.getStyle().clearProperty(propName);
     }
@@ -1109,5 +1136,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     ((HasMaxPreferredSize) widget).setPreferredSize(set, grids);
             }
         }
+    }
+
+    @Override
+    protected void add(Widget child, Element container) {
+        assert false;
+        super.add(child, container);
+    }
+
+    @Override
+    protected void insert(Widget child, Element container, int beforeIndex, boolean domInsert) {
+        assert false;
+        super.insert(child, container, beforeIndex, domInsert);
     }
 }

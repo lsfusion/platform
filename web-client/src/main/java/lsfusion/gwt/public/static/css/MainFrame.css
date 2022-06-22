@@ -359,12 +359,6 @@ button {
 
 /* ------------ Caption panel ------------ */
 
-.oppositeStretchNoShrinkPanel {
-}
-
-.oppositeNoStretchShrinkPanel {
-}
-
 .leftBorder {
     border-left: var(--border-width) solid var(--panel-border-color);
 
@@ -677,25 +671,6 @@ button {
 .userPreferencesRadioButton {
     display: inline-flex;
     align-items: center;
-}
-
-/* ------------ Colored corner triangles  ------------ */
-.notNullCornerTriangle {
-    border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
-}
-
-.changeActionCornerTriangle {
-    border-color: transparent transparent var(--focus-color) transparent;
-}
-
-.rightBottomCornerTriangle {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 0 5px 5px;
-    position: absolute;
-    right: 0;
-    bottom: 0;
 }
 
 /* ------------ Leaflet components  ------------ */

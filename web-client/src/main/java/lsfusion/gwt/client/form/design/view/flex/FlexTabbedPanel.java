@@ -2,12 +2,12 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
 
 import java.util.function.Consumer;
 
-public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, RequiresResize, ProvidesResize {
+public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, RequiresResize, ProvidesResize {
 
     protected TabBar tabBar;
 
@@ -82,7 +82,7 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
      */
 
     public interface AddToDeck {
-        void add(FlexPanel deck, int beforeIndex);
+        void add(SizedFlexPanel deck, int beforeIndex);
     }
     public void addTab(Widget w, String tabText) {
         addTab(w, new Label(tabText, false));
@@ -120,7 +120,7 @@ public class FlexTabbedPanel extends FlexPanel implements IndexedPanel, Requires
             if (visibleWidget == tabWidget) {
                 visibleWidget = null;
             }
-            remove(tabWidget);
+            removeSized(tabWidget);
         }
     }
 

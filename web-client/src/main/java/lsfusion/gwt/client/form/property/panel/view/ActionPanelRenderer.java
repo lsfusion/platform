@@ -23,8 +23,8 @@ public class ActionPanelRenderer extends PanelRenderer {
         super(form, controller, property, columnKey, captionContainer);
 
         ResizableComplexPanel valuePanel = null;
-        if(property.autoSize && property.hasDynamicImage()) // optimization, we don't want to create extra DOM elements, because when we have static image / text, it's size is usually calculated to fit them
-            valuePanel = new ResizableComplexPanel();
+//        if(property.autoSize && property.hasDynamicImage()) // optimization, we don't want to create extra DOM elements, because when we have static image / text, it's size is usually calculated to fit them
+//            valuePanel = new ResizableComplexPanel();
         sizedView = value.setSized(valuePanel);
 
         finalizeInit();
