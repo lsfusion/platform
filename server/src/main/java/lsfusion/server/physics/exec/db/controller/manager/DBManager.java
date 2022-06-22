@@ -214,6 +214,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 startLogger.info("Setting user not null constraints for properties");
                 setNotNullProperties(sql);
+
+                if (getOldDBStructure(sql).version >= 34) {
+                    startLogger.info("Disabling input list");
+                    setDisableInputListProperties(sql);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -316,10 +321,22 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         for (ImMap<Object, Object> values : result.valueIt()) {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
-            if(prop != null) {
-                prop.property.reflectionNotNull = true;
+            if(prop != null)
                 LM.setNotNull(prop, ListFact.EMPTY());
-            }
+        }
+    }
+
+    private void setDisableInputListProperties(SQLSession sql) throws SQLException, SQLHandledException {
+        ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
+        KeyExpr key = keys.singleValue();
+        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
+        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
+        query.and(reflectionLM.disableInputListProperty.getExpr(key).getWhere());
+
+        for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
+            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
+            if(prop != null)
+                LM.disableInputList(prop);
         }
     }
 
@@ -2528,7 +2545,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public NewDBStructure(MigrationVersion migrationVersion) {
-            version = 33; // need this for migration
+            version = 34; // need this for migration
             this.migrationVersion = migrationVersion;
 
             tables.putAll(getIndicesMap());

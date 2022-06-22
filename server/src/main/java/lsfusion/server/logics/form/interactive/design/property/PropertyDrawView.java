@@ -153,12 +153,12 @@ public class PropertyDrawView extends BaseComponentView {
         return -1;
     }
 
-    public int getValueHeight(FormEntity entity) {
+    public int getValueHeight(FormEntity form) {
         if(valueHeight != null)
             return valueHeight;
 
-        if(isAutoSize(entity)) {
-            if(!isProperty()) // we want vertical size for action to be equal to text fields
+        if(isAutoSize(form)) {
+            if(!isProperty() && !entity.hasDynamicImage) // we want vertical size for action to be equal to text fields
                 return -2;
         }
 

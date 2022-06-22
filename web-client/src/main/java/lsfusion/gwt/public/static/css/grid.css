@@ -166,15 +166,15 @@
 }
 
 .dataGridFooter {
-    background: var(--background-color);
 }
 .dataGridFooterCell {
+    background: var(--background-color);
     border-top: 1px solid var(--grid-separator-border-color);
-    border-bottom: 1px solid var(--grid-separator-border-color);
     border-right: 1px solid var(--grid-separator-border-color);
 
     padding: 0 0.125rem;
     font-weight: normal;
+    overflow: hidden;
 }
 .dataGridFirstFooterCell {
     /*border-left : none;*/
@@ -223,6 +223,11 @@
     position: sticky;
     z-index: 1000;
     background-color: var(--background-color);
+}
+
+.dataGridStickyFooter {
+    position: sticky;
+    z-index: 1000;
 }
 
 .dataGridStickyOverflow {

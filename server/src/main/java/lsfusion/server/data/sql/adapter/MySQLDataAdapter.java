@@ -30,7 +30,7 @@ public class MySQLDataAdapter extends DataAdapter {
     }
 
     @Override
-    protected String getDBName() {
+    public String getDBName() {
         return DB_NAME;
     }
 }

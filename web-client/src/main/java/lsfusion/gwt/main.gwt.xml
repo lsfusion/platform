@@ -163,6 +163,7 @@
     <stylesheet src="static/css/tree.css"/>
     <stylesheet src="static/css/user-preferences.css"/>
     <stylesheet src="static/css/window-box.css"/>
+    <stylesheet src="static/css/layout.css"/>
 
     <define-property name="is.user.agent.ie11" values="true,false" />
     <property-provider name="is.user.agent.ie11">

@@ -286,19 +286,12 @@ getExtension = getFileExtension(FILE(file)); //backward compatibility
 file(FILE file, STRING newExtension) = file(RAWFILE(file), newExtension);
 namedFile(NAMEDFILE file, STRING newName, STRING newExtension) = namedFile(RAWFILE(file), newName, newExtension);
 
-downloadFile '{system.download.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.DownloadFileAction' (STRING[100]); 
-
-loadDownloadedLibrary '{system.load.downloaded.library}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedLibraryAction' (STRING[100]);
-loadDownloadedFont '{system.load.downloaded.font}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.LoadDownloadedFontAction' (STRING[100]);
-
 loadLibrary '{system.load.library}' (path)   { 
-    downloadFile(path);
-    loadDownloadedLibrary(path);
+    INTERNAL CLIENT path;
 }
 
 loadFont '{system.load.font}' (path)   { 
-    downloadFile(path);
-    loadDownloadedFont(path);
+    INTERNAL CLIENT path;
 }
 
 beforeCanceled() = DATA LOCAL NESTED BOOLEAN ();

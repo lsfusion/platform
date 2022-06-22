@@ -160,8 +160,6 @@ changeScript(Script sc) {
     }
 }
 
-onWebClientStarted() + { INTERNAL CLIENT 'interpreter.js'; }
-
 FORM interpreter '{eval.script.form.interpreter}'
     OBJECTS st = ScriptType CUSTOM 'option'
     PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName

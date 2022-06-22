@@ -31,7 +31,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 //            valuePanel = new ResizableComplexPanel();
         SizedWidget valueWidget = value.setSized(valuePanel);
 //        if (needCorners)
-//            appendCorners(property.notNull, valuePanel); // it's a hack to add
+//            appendCorners(property.notNull, valueWidget.widget); // it's a hack to add
 
         sizedView = initCaption(valueWidget, property, captionContainer);
         sizedView.widget.addStyleName("dataPanelRendererPanel");
@@ -75,16 +75,16 @@ public class PropertyPanelRenderer extends PanelRenderer {
         return new SizedWidget(panel);
     }
 
-    public void appendCorners(boolean notNull, com.google.gwt.user.client.ui.Panel panel) {
+    public void appendCorners(boolean notNull, Widget panel) {
         Element panelElement = panel.getElement();
-        panelElement.getStyle().setPosition(Style.Position.RELATIVE); // for corners (setStatic sets position absolute, so we don't need to do this for setStatic)
-        DivElement changeEventSign = Document.get().createDivElement();
-        changeEventSign.addClassName("rightBottomCornerTriangle");
+//        panelElement.getStyle().setPosition(Style.Position.RELATIVE); // for corners (setStatic sets position absolute, so we don't need to do this for setStatic)
+//        DivElement changeEventSign = Document.get().createDivElement();
+        panelElement.addClassName("rightBottomCornerTriangle");
         if(notNull)
-            changeEventSign.addClassName("notNullCornerTriangle");
+            panelElement.addClassName("notNullCornerTriangle");
         else
-            changeEventSign.addClassName("changeActionCornerTriangle");
-        panelElement.appendChild(changeEventSign);
+            panelElement.addClassName("changeActionCornerTriangle");
+//        panelElement.appendChild(changeEventSign);
     }
 
     @Override

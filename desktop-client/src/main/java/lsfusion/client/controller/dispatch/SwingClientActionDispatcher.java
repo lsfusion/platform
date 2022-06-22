@@ -697,6 +697,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(ClientWebAction action) {
         if (action.isFont()) {
             ResourceUtils.registerFont(action);
+        } else if(action.isLibrary()) {
+            ResourceUtils.registerLibrary(action);
         }
     }
 

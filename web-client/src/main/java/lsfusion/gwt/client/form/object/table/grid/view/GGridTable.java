@@ -1,7 +1,9 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.BrowserEvents;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -477,7 +479,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
         GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, null, null, column.isSticky());
-        GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
+        GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, column.isSticky());
 
         insertColumn(index, column, header, footer);
 

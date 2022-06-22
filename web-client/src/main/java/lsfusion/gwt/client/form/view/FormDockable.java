@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -56,7 +57,7 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    public void show(Integer index) {
+    public void show(Long requestIndex, Integer index) {
         formsController.addDockable(this, index);
     }
 

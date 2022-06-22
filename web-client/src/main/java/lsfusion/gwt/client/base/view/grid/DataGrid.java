@@ -139,7 +139,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     private int pageIncrement = 30;
 
     protected final boolean noHeaders;
-    private final boolean noFooters;
+    protected final boolean noFooters;
     private final boolean noScrollers;
 
     // there are two ways to remove outer grid borders :

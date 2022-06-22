@@ -67,7 +67,7 @@ public class GEditBindingMap implements Serializable {
         }
         if (isGroupChangeKeyEvent(event))
             return GROUP_CHANGE;
-        if (isCharModifyKeyEvent(event, editEventFilter) || isDropEvent(event))
+        if (isCharModifyKeyEvent(event, editEventFilter) || isDropEvent(event) || isChangeAppendKeyEvent(event))
             return CHANGE;
         return null;
     }

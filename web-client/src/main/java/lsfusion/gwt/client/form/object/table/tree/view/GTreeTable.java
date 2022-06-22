@@ -37,7 +37,10 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
@@ -166,7 +169,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 GridColumn gridColumn = new GridColumn(property);
                 String propertyCaption = getPropertyCaption(property);
                 GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
-                GGridPropertyTableFooter footer = property.hasFooter ? new GGridPropertyTableFooter(this, property, null, null) : null;
+                GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky());
 
                 insertColumn(index, gridColumn, header, footer);
 

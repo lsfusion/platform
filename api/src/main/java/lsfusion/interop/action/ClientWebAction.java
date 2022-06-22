@@ -29,6 +29,10 @@ public class ClientWebAction extends ExecuteClientAction {
        return isFile && (resourceName.endsWith(".ttf") || resourceName.endsWith(".otf"));
     }
 
+    public boolean isLibrary() {
+        return isFile && (resourceName.endsWith(".dll") || resourceName.endsWith(".so"));
+    }
+
     @Override
     public void execute(ClientActionDispatcher dispatcher) throws IOException {
         dispatcher.execute(this);

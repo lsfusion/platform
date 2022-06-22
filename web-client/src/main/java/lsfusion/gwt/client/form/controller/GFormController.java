@@ -24,6 +24,7 @@ import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;

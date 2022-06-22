@@ -2,6 +2,7 @@ package lsfusion.interop.form.event;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.EventObject;
@@ -195,5 +196,9 @@ public class KeyStrokes {
         return e.getID() == KeyEvent.KEY_TYPED
                ? KeyStroke.getKeyStroke(e.getKeyChar())
                : KeyStroke.getKeyStroke(e.getKeyCode(), e.getModifiers(), e.getID() == KeyEvent.KEY_RELEASED);
+    }
+
+    public static boolean isChangeAppendKeyEvent(EventObject event) {
+        return event instanceof ActionEvent;
     }
 }

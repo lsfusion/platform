@@ -18,7 +18,7 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public void start(Event event, Element parent, Object oldValue) {
-        String value = oldValue == null ? "" : oldValue.toString();
+        String value = oldValue == null ? "" : oldValue.toString().replaceAll("<div>", "<p>").replaceAll("</div>", "</p>");
         this.oldValue = getEditorValue(parent);
 
         String startEventValue = checkStartEvent(event, parent, null);

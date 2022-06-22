@@ -38,19 +38,22 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     public void renderStaticContent(Element element, RenderContext renderContext) {
+        boolean isMultiLine = isMultiLine();
+        setPadding(element, isMultiLine);
+
         render(property, element, renderContext, isMultiLine());
     }
 
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine) {
-        Style style = element.getStyle();
-        setPadding(style, multiLine);
-        style.setWhiteSpace(multiLine ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
+        element.getStyle().setWhiteSpace(multiLine ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
+
         setBasedTextFonts(property, element, renderContext);
     }
 
     @Override
     public void clearRenderContent(Element element, RenderContext renderContext) {
-        element.getStyle().clearPadding();
+        clearPadding(element);
+
         clearBasedTextFonts(property, element.getStyle(), renderContext);
     }
 
@@ -67,7 +70,8 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
             return TEXT_MULTILINE_PADDING;
         return super.getHeightPadding();
     }
-    public static void setPadding(Style style, boolean multiLine) {
+    public static void setPadding(Element element, boolean multiLine) {
+        Style style = element.getStyle();
         if(multiLine) {
             style.setPaddingTop(TEXT_MULTILINE_PADDING, Style.Unit.PX);
             style.setPaddingBottom(TEXT_MULTILINE_PADDING, Style.Unit.PX);
@@ -79,6 +83,9 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
         style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
+    }
+    public static void clearPadding(Element element) {
+        element.getStyle().clearPadding();
     }
 
     public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
