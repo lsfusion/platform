@@ -338,10 +338,10 @@ public class ReportDesignGenerator {
             pattern = ReportUtils.createPatternExpressionForExcelSeparatorProblem(pattern, reportField.sID, reportField.valueClass);
             assert pattern != null;
             dataField.setPatternExpression(ReportUtils.createExpression(pattern, reportField.valueClass));
-        } else if (needToConvertExcelDateTime(reportField)) {
-            dataField.setExpression(ReportUtils.createConvertExcelDateTimeExpression(reportField.sID, reportField.valueClass));
-            dataField.setPattern(pattern);
         } else {
+            if (needToConvertExcelDateTime(reportField)) {
+                dataField.setExpression(ReportUtils.createConvertExcelDateTimeExpression(reportField.sID, reportField.valueClass));
+            }
             dataField.setPattern(pattern);
         }
     }
