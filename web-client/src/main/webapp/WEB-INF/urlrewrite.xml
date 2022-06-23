@@ -22,7 +22,7 @@
         <set type="expires">1 day</set>
     </rule>
     <!-- non static downloadFile, need for 'save as' dialog -->
-    <rule match-type="wildcard">
+    <rule match-type="regex">
         <from>.*\/temp\/.*</from>
         <set type="response-header" name="Cache-Control">public, max-age=3600</set>
         <set type="expires">1 hour</set>
