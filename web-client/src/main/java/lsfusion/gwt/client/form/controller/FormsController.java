@@ -76,9 +76,9 @@ public abstract class FormsController {
         toolbarView.addComponent(modeButton);
 
         final String[] images = new String[3];
-        GwtClientUtils.setThemeImage("hamburger.png", image -> images[0] = image);
+        GwtClientUtils.setThemeImage("defaultMode.png", image -> images[0] = image);
         GwtClientUtils.setThemeImage("linkMode.png", image -> images[1] = image);
-        GwtClientUtils.setThemeImage("grid.png", image -> images[2] = image);
+        GwtClientUtils.setThemeImage("dialogMode.png", image -> images[2] = image);
 
         setupModeButton(modeButton.getElement(), images);
 
@@ -124,45 +124,6 @@ public abstract class FormsController {
         });
     }
 
-    public native void setupModeButton(Element element, String[] images) /*-{
-        var instance = this;
-        var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode'}, {imageSrc: images[2], title: 'Dialog Mode'}];
-
-        $wnd.$(element).ddslick({
-            data:ddData,
-            defaultSelectedIndex:0,
-            width:16,
-            onSelected: function(selectedData){
-                instance.@FormsController::updateMode(*)(selectedData.selectedIndex, false);
-            }
-        });
-    }-*/;
-
-    public native int selectModeButton(Element element, int i) /*-{
-        var modeButton = $wnd.$('#modeButton');
-        var prevModeButton = modeButton.data('ddslick').selectedIndex;
-        modeButton.ddslick('select', {index: i });
-        return prevModeButton;
-
-    }-*/;
-
-    public void updateMode(int mode, boolean linkModeWithCtrl) {
-        boolean linkMode = mode == 1;
-        boolean dialogMode = mode == 2;
-        updateLinkMode(linkMode, linkModeWithCtrl);
-        updateDialogMode(dialogMode);
-    }
-
-    public void updateLinkModeWithCtrl(boolean set) {
-        if(set) {
-            prevModeButton = selectModeButton(modeButton.getElement(), 1);
-            updateMode(1, true);
-        } else {
-            selectModeButton(modeButton.getElement(), prevModeButton);
-            updateMode(prevModeButton, false);
-        }
-    }
-
     public void onServerInvocationResponse(ServerResponseResult response, GAsyncFormController asyncFormController) {
         if (asyncFormController.onServerInvocationOpenResponse()) {
             if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GFormAction)) {
@@ -184,14 +145,51 @@ public abstract class FormsController {
     private boolean isRemoving = false;
     private boolean isAdding = false;
 
-    public void updateLinkMode(boolean linkMode, boolean linkModeWithCtrl) {
+    public native void setupModeButton(Element element, String[] images) /*-{
+        var instance = this;
+        var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode'}, {imageSrc: images[2], title: 'Dialog Mode'}];
+
+        $wnd.$(element).ddslick({
+            data:ddData,
+            defaultSelectedIndex:0,
+            width:16,
+            onSelected: function(selectedData){
+                instance.@FormsController::selectMode(*)(selectedData.selectedIndex);
+            }
+        });
+    }-*/;
+
+    public native int selectModeButton(Element element, int i) /*-{
+        var modeButton = $wnd.$('#modeButton');
+        var prevModeButton = modeButton.data('ddslick').selectedIndex;
+        modeButton.ddslick('select', {index: i });
+        return prevModeButton;
+
+    }-*/;
+
+    public void updateLinkModeWithCtrl(boolean set) {
+        if(set) {
+            prevModeButton = selectModeButton(modeButton.getElement(), 1);
+            updateMode(EditMode.LINK, true);
+        } else {
+            selectModeButton(modeButton.getElement(), prevModeButton);
+            updateMode(EditMode.getMode(prevModeButton), false);
+        }
+    }
+
+    public void selectMode(int mode) {
+        updateMode(EditMode.getMode(mode), false);
+    }
+
+    public void updateMode(EditMode editMode, boolean linkModeWithCtrl) {
+        boolean linkMode = editMode == EditMode.LINK;
         if(!GFormController.isLinkModeWithCtrl() && linkModeWithCtrl) {
             GFormController.scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
         } else {
             GFormController.cancelLinkModeStylesTimer();
             setLinkModeStyles(linkMode);
         }
-        GFormController.setLinkMode(linkMode, linkModeWithCtrl);
+        GFormController.setEditMode(editMode, linkModeWithCtrl);
     }
 
     private void setLinkModeStyles(boolean linkMode) {
@@ -200,10 +198,6 @@ public abstract class FormsController {
             globalElement.addClassName("linkMode");
         else
             globalElement.removeClassName("linkMode");
-    }
-
-    public void updateDialogMode(boolean dialogMode) {
-        GFormController.setDialogMode(dialogMode);
     }
 
     public void updateFullScreenButton(){
