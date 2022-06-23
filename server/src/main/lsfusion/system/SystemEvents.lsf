@@ -40,6 +40,7 @@ onWebClientLoad() + {
             INTERNAL CLIENT resourcePaths(s);
         }
     }
+    INTERNAL CLIENT WAIT 'empty.js'; //Needed for the synchronized execution js files
 }
 
 CLASS ABSTRACT Exception '{system.events.exception}';
