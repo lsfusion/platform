@@ -296,9 +296,13 @@ public class ScriptedStringUtils {
 
     public static List<String> parseStringInterpolateProp(String source) throws TransformationError {
         List<String> literals = new ArrayList<>();
+        // We need to remove quote escaping but this limits interpolation nesting depth to 2.
+        // That means that we can't create such literal: '${pr() + \'[${pr() + \'[${pr()}]\'}]\'}'
+        // We could add an extra backslash for nested escaping, but that does not match our current
+        // definition of a string lexeme. Which, of course, we could try to change.
         source = removeQuoteEscaping(source);
         int pos = 0;
-        int bracketsCount = 0;
+        int nestingDepth = 0;
         String currentLiteral = "";
         StringInterpolateState state = StringInterpolateState.PLAIN;
         StringInterpolateState newState;
@@ -309,17 +313,17 @@ public class ScriptedStringUtils {
                 currentLiteral += '\\';
                 currentLiteral += source.charAt(pos + 1);
                 ++pos;
-            } else if (bracketsCount == 0 && (newState = prefixState(source, pos)) != StringInterpolateState.PLAIN) {
+            } else if (nestingDepth == 0 && (newState = prefixState(source, pos)) != StringInterpolateState.PLAIN) {
                 currentLiteral = flushCurrentLiteral(literals, currentLiteral);
-                ++bracketsCount;
+                ++nestingDepth;
                 state = newState;
                 pos += (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
             } else if (c == OPEN_CH) {
-                ++bracketsCount;
+                ++nestingDepth;
                 currentLiteral += c;
             } else if (c == CLOSE_CH) {
-                --bracketsCount;
-                if (bracketsCount == 0 && state != StringInterpolateState.PLAIN) {
+                --nestingDepth;
+                if (nestingDepth == 0 && state != StringInterpolateState.PLAIN) {
                     addToLiterals(currentLiteral, state, literals);
                     currentLiteral = "";
                     state = StringInterpolateState.PLAIN;
@@ -355,6 +359,10 @@ public class ScriptedStringUtils {
 
     // heuristic procedure
     // allows ${, $I{, $R{ special syntax, but not localization or escaping
+    // adds escaping to all our special characters except for ${, $I{, $R{
+    // and corresponding closing braces.
+    // This can lead to an error if content contains, for example, javascript code
+    // with ${ inside
     public static String escapeInlineContent(String content) {
         StringBuilder builder = new StringBuilder();
         Stack<Boolean> stack = new Stack<>();
@@ -379,10 +387,7 @@ public class ScriptedStringUtils {
                     }
                 } else if (("\n\r\t\\" + QUOTE + INTERP_CH).indexOf(ch) != -1) {
                     builder.append('\\');
-                    char transformedChar = fromSpecialChar(ch);
-                    if (transformedChar != ch) {
-                        ch = transformedChar;
-                    }
+                    ch = fromSpecialChar(ch);
                 }
                 builder.append(ch);
             }
