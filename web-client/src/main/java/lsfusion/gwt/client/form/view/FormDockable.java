@@ -16,8 +16,6 @@ import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
-import static lsfusion.gwt.client.view.StyleDefaults.VALUE_HEIGHT;
-
 public final class FormDockable extends FormContainer {
     private String canonicalName;
     private TabWidget tabWidget;

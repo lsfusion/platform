@@ -37,3 +37,22 @@ button[disabled]:hover {
     border: 1px outset var(--button-disabled-hover-border-color);
     background: var(--background-color);
 }
+
+.btn.active {
+    background-color: var(--selection-color);
+    --bs-btn-active-bg: var(--selection-color);
+    /*border: 1px solid var(--component-border-color);*/
+}
+
+.btn-image {
+}
+
+.btn-image img {
+    margin-bottom: 0.125em; /*center image */
+}
+
+.btn-group {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+}

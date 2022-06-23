@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.view.GExpandTreeButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeGridRecord;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
@@ -50,12 +51,13 @@ public class GTreeGroupController extends GAbstractTableController {
     protected void configureToolbar() {
         initFilters();
 
-        addToolbarSeparator();
-
+        GToolbarButtonGroup expandTreeButtonGroup = new GToolbarButtonGroup();
         expandTreeCurrentButton = new GExpandTreeButton(this, true);
-        addToToolbar(expandTreeCurrentButton);
+        expandTreeButtonGroup.add(expandTreeCurrentButton);
         expandTreeButton = new GExpandTreeButton(this, false);
-        addToToolbar(expandTreeButton);
+        expandTreeButtonGroup.add(expandTreeButton);
+
+        addToToolbar(expandTreeButtonGroup);
     }
 
     @Override

@@ -79,7 +79,6 @@ public abstract class FormsController {
                 return event -> updateLinkEditMode(!GFormController.isLinkEditMode(), false);
             }
         };
-        setCompactSize(linkEditButton);
         toolbarView.addComponent(linkEditButton);
 
         if (!MainFrame.mobile) {
@@ -89,7 +88,6 @@ public abstract class FormsController {
                     return event -> switchFullScreenMode();
                 }
             };
-            setCompactSize(fullScreenButton);
             toolbarView.addComponent(fullScreenButton);
             updateFullScreenButton();
         } else {
@@ -99,7 +97,6 @@ public abstract class FormsController {
                     return event -> MainFrame.openNavigatorMenu();
                 }
             };
-            setCompactSize(mobileMenuButton);
             toolbarView.addComponent(mobileMenuButton);
         }
 
@@ -136,10 +133,6 @@ public abstract class FormsController {
                 asyncClosedForm.first.show(asyncFormController.getEditRequestIndex(), asyncClosedForm.second);
             }
         }
-    }
-
-    private void setCompactSize(GToolbarButton button) {
-        button.setSize(StyleDefaults.VALUE_HEIGHT_STRING, StyleDefaults.VALUE_HEIGHT_STRING);
     }
 
     private boolean isRemoving = false;

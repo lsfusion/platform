@@ -556,33 +556,24 @@ body {
     border: 1px solid var(--component-hover-border-color);
 }
 
-.gridToolbarContainerPanel {
-    margin-top: var(--border-padding);
-    margin-bottom: var(--border-padding);
+.btn-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
 }
 
-.toolbarButtonNoBorder {
-}
-
-.toolbarButton {
-    border: 1px solid transparent;
+.btn-toolbar .btn {
+    border: 0;
     background: transparent;
-    border-radius: var(--button-border-radius);
-}
 
-.toolbarButton:hover {
-    background-color: var(--component-hover-background-color);
-    border: 1px solid var(--component-hover-border-color);
-}
+    padding: 0 0.25em;
 
-.toolbarButton:active { /* should come after ':hover' */
-    background-color: var(--component-active-background-color);
-}
-
-.toolbarItem {
-    /*margin: 0 0.25rem 0 0;*/
     margin-left: var(--border-padding);
     margin-right: var(--border-padding);
+}
+
+.btn-toolbar .btn:hover {
+    background-color: var(--component-hover-background-color);
 }
 
 .logPanel {
@@ -596,10 +587,6 @@ body {
 .boxSized {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-}
-
-.displayBlock {
-    display: block;
 }
 
 .noOutline {

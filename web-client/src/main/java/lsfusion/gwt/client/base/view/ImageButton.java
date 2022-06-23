@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -10,68 +12,24 @@ import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 
 public class ImageButton extends Button implements ColorThemeChangeListener {
     protected final Image image;
-    private final Label label;
-    private final Widget strut;
-    private final CellPanel panel;
 
     protected String imagePath; // default
-    private String text = "";
 
     private boolean focusable = true;
-    private boolean vertical;
-
-    public ImageButton() {
-        this(null, null, false);
-    }
-
-    public ImageButton(String caption) {
-        this(caption, null, false);
-    }
 
     public ImageButton(String caption, String imagePath) {
-        this(caption, imagePath, false);
-    }
+        setStyleName("btn-image");
 
-    public ImageButton(String caption, String imagePath, boolean vertical) {
-        this(caption, imagePath, vertical, true);
-    }
-
-    public ImageButton(String caption, String imagePath, boolean vertical, boolean alignCenter) {
-//        setStyleName("btn");
-//        addStyleName("btn-primary");
-        this.vertical = vertical;
-
-        panel = vertical ? new ResizableVerticalPanel() : new ResizableHorizontalPanel();
+        setText(caption);
+        updateStyle(caption);
 
         image = new Image();
         image.setVisible(false);
-        image.addStyleName("displayBlock");
+        image.setStyleName("btn-image-img");
 
-        strut = vertical ? null : GwtClientUtils.createHorizontalStrut(2);
+        getElement().insertFirst(image.getElement());
 
-        label = new Label();
-        label.setVisible(false);
-
-        if (!vertical) {
-            panel.add(strut);
-        }
-        panel.add(label);
-
-        if (vertical) {
-            panel.setCellHorizontalAlignment(label, HasHorizontalAlignment.ALIGN_CENTER);
-        } else {
-            panel.setCellVerticalAlignment(label, HasAlignment.ALIGN_MIDDLE);
-        }
-        if (alignCenter) {
-            panel.getElement().getStyle().setProperty("margin", "auto");
-        }
-
-        setText(caption);
         setModuleImagePath(imagePath);
-
-        updateStrut();
-        updateStyle();
-        getElement().appendChild(panel.getElement());
 
         MainFrame.addColorThemeChangeListener(this);
 
@@ -87,58 +45,28 @@ public class ImageButton extends Button implements ColorThemeChangeListener {
         GwtClientUtils.setThemeImage(imagePath, this::setAbsoluteImagePath);
     }
 
-    private String oldImagePath = null;
     protected void setAbsoluteImagePath(String imagePath) {
-        if (!GwtClientUtils.nullEquals(oldImagePath, imagePath)) {
-            image.setUrl(imagePath == null ? "" : imagePath);
-
-            if ((oldImagePath == null) == (imagePath != null)) {
-                image.setVisible(imagePath != null);
-                updateStrut();
-
-                if (imagePath == null) {
-                    image.removeFromParent();
-                } else {
-                    ((InsertPanel) panel).insert(image, 0);
-                    if (vertical) {
-                        panel.setCellHorizontalAlignment(image, HasHorizontalAlignment.ALIGN_CENTER);
-                    } else {
-                        panel.setCellVerticalAlignment(image, HasAlignment.ALIGN_MIDDLE);
-                    }
-                }
-            }
-            oldImagePath = imagePath;
-        }
-    }
-
-    public void setText(String text) {
-        if (!GwtSharedUtils.nullEquals(this.text, text)) {
-            label.setText(text);
-            if ((isRedundantString(this.text) && !isRedundantString(text)) || ((!isRedundantString(this.text) && isRedundantString(text)))) {
-                label.setVisible(text != null && !text.isEmpty());
-                updateStrut();
-                updateStyle();
-            }
-            this.text = text;
-        }
-    }
-
-    private void updateStrut() {
-        if (strut != null) {
-            strut.setVisible(image.isVisible() && label.isVisible());
-        }
-    }
-
-    private void updateStyle() {
-        if (label.isVisible()) {
-            removeStyleName("imageButtonWithoutCaption");
+        if (imagePath != null && !imagePath.equals("")) {
+            image.setVisible(true);
+            image.setUrl(imagePath);
         } else {
-            addStyleName("imageButtonWithoutCaption");
+            image.setVisible(false);
+            image.setUrl("");
         }
     }
 
-    public Label getLabel() {
-        return label;
+    @Override
+    public void setText(String text) {
+        super.setText(text);
+        updateStyle(text);
+    }
+
+    private void updateStyle(String text) {
+        if (text != null && !text.equals("")) {
+            removeStyleName("btn-image-no-caption");
+        } else {
+            addStyleName("btn-image-no-caption");
+        }
     }
 
     // call before attach

@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -149,7 +150,6 @@ public abstract class GAbstractTableController extends GPropertyController imple
             toolbarView = null;
         } else {
             toolbarView = new GToolbarView();
-            toolbarView.addStyleName("gridToolbarContainerPanel");
             getFormLayout().addBaseComponent(toolbar, toolbarView, null);
         }
     }
@@ -174,16 +174,11 @@ public abstract class GAbstractTableController extends GPropertyController imple
             toolbarView.addComponent(tool);
         }
     }
-    
-    public void addToolbarSeparator() {
-        if (toolbarView != null) {
-            toolbarView.addSeparator();
-        }
-    }
 
     public abstract List<GFilter> getFilters();
 
     public void initFilters() {
+        GToolbarButtonGroup filterButtonGroup = new GToolbarButtonGroup();
         filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer()) != null) {
             @Override
             public void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent) {
@@ -203,12 +198,14 @@ public abstract class GAbstractTableController extends GPropertyController imple
             }
         };
 
-        addToToolbar(filter.getToolbarButton());
+        filterButtonGroup.add(filter.getToolbarButton());
         GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
         if (addFilterConditionButton != null) {
-            addToToolbar(addFilterConditionButton);
+            filterButtonGroup.add(addFilterConditionButton);
         }
-        addToToolbar(filter.getResetFiltersButton());
+        filterButtonGroup.add(filter.getResetFiltersButton());
+
+        addToToolbar(filterButtonGroup);
     }
 
     @Override

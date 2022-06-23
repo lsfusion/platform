@@ -25,6 +25,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferen
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSumButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
@@ -220,6 +221,7 @@ public class GGridController extends GAbstractTableController {
     protected void configureToolbar() {
         assert isList();
 
+        GToolbarButtonGroup viewButtonGroup = new GToolbarButtonGroup();
         gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
             @Override
             public ClickHandler getClickHandler() {
@@ -228,7 +230,7 @@ public class GGridController extends GAbstractTableController {
                 };
             }
         };
-        addToToolbar(gridTableButton);
+        viewButtonGroup.add(gridTableButton);
 
         pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
             @Override
@@ -238,7 +240,7 @@ public class GGridController extends GAbstractTableController {
                 };
             }
         };
-        addToToolbar(pivotTableButton);
+        viewButtonGroup.add(pivotTableButton);
 
         if (groupObject.customRenderFunction != null){
             customViewButton = new GToolbarButton("custom_view.png", messages.formGridCustomView()) {
@@ -249,7 +251,7 @@ public class GGridController extends GAbstractTableController {
                     };
                 }
             };
-            addToToolbar(customViewButton);
+            viewButtonGroup.add(customViewButton);
         }
 
         if(groupObject.isMap) {
@@ -261,7 +263,7 @@ public class GGridController extends GAbstractTableController {
                     };
                 }
             };
-            addToToolbar(mapTableButton);
+            viewButtonGroup.add(mapTableButton);
         }
 
         if(getCalendarDateType() != null) {
@@ -273,20 +275,20 @@ public class GGridController extends GAbstractTableController {
                     };
                 }
             };
-            addToToolbar(calendarTableButton);
+            viewButtonGroup.add(calendarTableButton);
         }
 
-        addToolbarSeparator();
+        addToToolbar(viewButtonGroup);
 
         if(showFilter() || groupObject.toolbar.showGridSettings) {
 
             if (showFilter()) {
                 initFilters();
-
-                addToolbarSeparator();
             }
 
             if (groupObject.toolbar.showGridSettings) {
+                GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
+
                 settingsButton = new GToolbarButton("userPreferences.png", messages.formGridPreferences()) {
                     @Override
                     public ClickHandler getClickHandler() {
@@ -295,13 +297,15 @@ public class GGridController extends GAbstractTableController {
                         };
                     }
                 };
-                addToToolbar(settingsButton);
-            }
 
-            addToolbarSeparator();
+                settingsButtonGroup.add(settingsButton);
+                addToToolbar(settingsButtonGroup);
+            }
         }
 
         if(groupObject.toolbar.showCountQuantity || groupObject.toolbar.showCalculateSum) {
+
+            GToolbarButtonGroup calculateButtonGroup = new GToolbarButtonGroup();
 
             if (groupObject.toolbar.showCountQuantity) {
                 quantityButton = new GCountQuantityButton() {
@@ -310,7 +314,7 @@ public class GGridController extends GAbstractTableController {
                         return event -> formController.countRecords(groupObject, event.getClientX(), event.getClientY());
                     }
                 };
-                addToToolbar(quantityButton);
+                calculateButtonGroup.add(quantityButton);
             }
 
             if (groupObject.toolbar.showCalculateSum) {
@@ -331,23 +335,26 @@ public class GGridController extends GAbstractTableController {
                         };
                     }
                 };
-                addToToolbar(sumButton);
+                calculateButtonGroup.add(sumButton);
             }
 
-            addToolbarSeparator();
+            addToToolbar(calculateButtonGroup);
         }
 
         if(groupObject.toolbar.showPrintGroupXls) {
-            addToToolbar(new GToolbarButton("excelbw.png", messages.formGridExport()) {
+            GToolbarButtonGroup printButtonGroup = new GToolbarButtonGroup();
+
+            printButtonGroup.add(new GToolbarButton("excelbw.png", messages.formGridExport()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> table.runGroupReport();
                 }
             });
 
-            addToolbarSeparator();
+            addToToolbar(printButtonGroup);
         }
 
+        GToolbarButtonGroup updateButtonGroup = new GToolbarButtonGroup();
 
         manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridManualUpdate()) {
             @Override
@@ -358,7 +365,7 @@ public class GGridController extends GAbstractTableController {
                 };
             }
         };
-        addToToolbar(manualUpdateTableButton);
+        updateButtonGroup.add(manualUpdateTableButton);
 
         forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), "ok.png", messages.formGridUpdate(), false) {
             @Override
@@ -369,8 +376,9 @@ public class GGridController extends GAbstractTableController {
             }
         };
         forceUpdateTableButton.addStyleName("actionPanelRendererValue");
+        updateButtonGroup.add(forceUpdateTableButton);
 
-        addToToolbar(forceUpdateTableButton);
+        addToToolbar(updateButtonGroup);
     }
 
     public void showRecordQuantity(int quantity, int clientX, int clientY) {

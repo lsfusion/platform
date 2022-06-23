@@ -54,18 +54,12 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        final Button button = new Button();
-        button.setStyleName("nav-item");
+        final Button button = new NavigatorImageButton(element.image, element.caption);
+        button.addStyleName("nav-item");
         button.addStyleName("nav-link");
 
         button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
         button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);
-
-        button.setText(element.caption);
-
-        ImageElement image = Document.get().createImageElement();
-        image.setSrc(element.image.getImage().getUrl());
-        button.getElement().insertFirst(image);
 
         // debug info
         button.getElement().setAttribute("lsfusion-container", element.canonicalName);

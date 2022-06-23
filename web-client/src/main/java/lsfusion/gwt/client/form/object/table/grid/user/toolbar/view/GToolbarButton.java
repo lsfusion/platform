@@ -16,13 +16,8 @@ public abstract class GToolbarButton extends UnFocusableImageButton {
 
     public GToolbarButton(String caption, String imagePath, String tooltipText, boolean compact) {
         super(caption, imagePath);
+        addStyleName("btn");
 
-        addStyleName("toolbarButton");
-        if (compact) {
-            setSize(COMPONENT_HEIGHT_STRING, COMPONENT_HEIGHT_STRING);
-            addStyleName("toolbarButtonNoBorder");
-        }
-        
         setTitle(tooltipText);
         
         addClickHandler(getClickHandler());
@@ -31,7 +26,9 @@ public abstract class GToolbarButton extends UnFocusableImageButton {
     public abstract ClickHandler getClickHandler();
 
     public void showBackground(boolean showBackground) {
-        getElement().getStyle().setBackgroundColor(showBackground ? "var(--selection-color)" : "");
-        getElement().getStyle().setProperty("border", showBackground ? "1px solid var(--component-border-color)" : "");
+        if (showBackground)
+            addStyleName("active");
+        else
+            removeStyleName("active");
     }
 }
