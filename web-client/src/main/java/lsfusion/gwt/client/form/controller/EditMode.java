@@ -14,4 +14,16 @@ public enum EditMode {
                 return DIALOG;
         }
     }
+
+    public int getIndex() {
+        switch (this) {
+            case DEFAULT:
+            default:
+                return 0;
+            case LINK:
+                return 1;
+            case DIALOG:
+                return 2;
+        }
+    }
 }

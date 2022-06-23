@@ -318,6 +318,9 @@ public class GFormController implements EditManager {
         editMode = mode;
         linkModeWithCtrl = enabledWithCtrl;
     }
+    public static int getEditModeIndex() {
+        return editMode.getIndex();
+    }
 
     public static Timer linkModeStylesTimer;
 

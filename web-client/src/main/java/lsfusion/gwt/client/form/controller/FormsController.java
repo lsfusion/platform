@@ -80,7 +80,7 @@ public abstract class FormsController {
         GwtClientUtils.setThemeImage("linkMode.png", image -> images[1] = image);
         GwtClientUtils.setThemeImage("dialogMode.png", image -> images[2] = image);
 
-        setupModeButton(modeButton.getElement(), images);
+        setupModeButton(modeButton.getElement(), images, windowsController.restoreEditMode());
 
         if (!MainFrame.mobile) {
             fullScreenButton = new GToolbarButton(null) {
@@ -145,13 +145,13 @@ public abstract class FormsController {
     private boolean isRemoving = false;
     private boolean isAdding = false;
 
-    public native void setupModeButton(Element element, String[] images) /*-{
+    public native void setupModeButton(Element element, String[] images, int defaultIndex) /*-{
         var instance = this;
         var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode'}, {imageSrc: images[2], title: 'Dialog Mode'}];
 
         $wnd.$(element).ddslick({
             data:ddData,
-            defaultSelectedIndex:0,
+            defaultSelectedIndex:defaultIndex,
             width:16,
             onSelected: function(selectedData){
                 instance.@FormsController::selectMode(*)(selectedData.selectedIndex);
