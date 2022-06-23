@@ -86,10 +86,10 @@ public abstract class GridPropertyView extends BaseComponentView {
         if(lineWidth == null && isAutoSize(entity))
             return -1;
 
-        // if we have opposite direction and align shrink, setting default width to zero
-        ContainerView container = getLayoutParamContainer();
-        if(!(container != null && container.isHorizontal()) && isAlignShrink(entity))
-            return 0; // or -1 doesn't matter
+//        // if we have opposite direction and align shrink, setting default width to zero
+//        ContainerView container = getLayoutParamContainer();
+//        if(!(container != null && container.isHorizontal()) && isAlignShrink(entity))
+//            return 0; // or -1 doesn't matter
 
         return -2;
     }
