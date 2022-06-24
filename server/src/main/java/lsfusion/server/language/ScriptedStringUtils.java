@@ -296,33 +296,51 @@ public class ScriptedStringUtils {
 
     public static List<String> parseStringInterpolateProp(String source) throws TransformationError {
         List<String> literals = new ArrayList<>();
-        // We need to remove quote escaping but this limits interpolation nesting depth to 2.
-        // That means that we can't create such literal: '${pr() + \'[${pr() + \'[${pr()}]\'}]\'}'
-        // We could add an extra backslash for nested escaping, but that does not match our current
-        // definition of a string lexeme. Which, of course, we could try to change.
-        source = removeQuoteEscaping(source);
         int pos = 0;
         int nestingDepth = 0;
+        int nestingInterpolationDepth = 0;
         String currentLiteral = "";
         StringInterpolateState state = StringInterpolateState.PLAIN;
         StringInterpolateState newState;
-
+        Stack<Boolean> interpolationMarks = new Stack<>();
         while (pos < source.length()) {
             char c = source.charAt(pos);
+            newState = prefixState(source, pos);
             if (c == '\\') {
-                currentLiteral += '\\';
-                currentLiteral += source.charAt(pos + 1);
+                if (pos+1 == source.length()) {
+                    throw new TransformationError("wrong escape sequence at the end of the string");
+                }
+                char nextc = source.charAt(pos + 1);
+                // removes quote's escaping when at top level inside interpolation
+                if (nextc != QUOTE || nestingInterpolationDepth != 1) {
+                    currentLiteral += '\\';
+                }
+                currentLiteral += nextc;
                 ++pos;
-            } else if (nestingDepth == 0 && (newState = prefixState(source, pos)) != StringInterpolateState.PLAIN) {
-                currentLiteral = flushCurrentLiteral(literals, currentLiteral);
+            } else if (newState != StringInterpolateState.PLAIN) {
+                boolean isInterpolationState = newState == StringInterpolateState.INTERPOLATION;
+                if (nestingDepth == 0) {
+                    currentLiteral = flushCurrentLiteral(literals, currentLiteral);
+                    state = newState;
+                } else {
+                    currentLiteral += source.substring(pos, pos + (isInterpolationState ? 2 : 3));
+                }
+                if (isInterpolationState) {
+                    ++nestingInterpolationDepth;
+                }
                 ++nestingDepth;
-                state = newState;
-                pos += (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
+                interpolationMarks.push(isInterpolationState);
+                pos += (isInterpolationState ? 1 : 2);
             } else if (c == OPEN_CH) {
                 ++nestingDepth;
                 currentLiteral += c;
+                interpolationMarks.push(false);
             } else if (c == CLOSE_CH) {
                 --nestingDepth;
+                if (interpolationMarks.peek()) {
+                    --nestingInterpolationDepth;
+                }
+                interpolationMarks.pop();
                 if (nestingDepth == 0 && state != StringInterpolateState.PLAIN) {
                     addToLiterals(currentLiteral, state, literals);
                     currentLiteral = "";
