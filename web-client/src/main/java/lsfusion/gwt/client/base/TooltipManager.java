@@ -82,6 +82,8 @@ public class TooltipManager {
                                 tooltip = new PopupDialogPanel(false) {
                                     @Override
                                     protected void onAttach() {
+                                        mouseIn = false;
+                                        addDomHandler(ev -> mouseIn = true, MouseOverEvent.getType());
                                         addDomHandler(ev -> mouseIn = false, MouseOutEvent.getType());
                                         super.onAttach();
                                     }
