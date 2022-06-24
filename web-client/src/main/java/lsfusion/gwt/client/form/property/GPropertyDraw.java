@@ -369,7 +369,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         GType changeType = getChangeType();
-        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction());
+        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction(), this::getDialogInputActionIndex);
     }
 
     public Integer getInputActionIndex(Event editEvent, boolean isEditing) {
@@ -384,6 +384,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                     if (keyStroke.equals(action.keyStroke) && bindEditing(action.editingBindingMode, isEditing)) {
                         return i;
                     }
+                }
+            }
+        }
+        return null;
+    }
+
+    public Integer getDialogInputActionIndex() {
+        GInputList inputList = getInputList();
+        if (inputList != null) {
+            for (int i = 0; i < inputList.actions.length; i++) {
+                GInputListAction action = inputList.actions[i];
+                //addDialogInputAProp from server
+                if (action.action.equals("dialog")) {
+                    return i;
                 }
             }
         }

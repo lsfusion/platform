@@ -7,10 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.MenuBar;
-import com.google.gwt.user.client.ui.MenuItem;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.action.GFormAction;
@@ -61,7 +58,8 @@ public abstract class FormsController {
 
     private final WindowsController windowsController;
 
-    private final GToolbarButton linkEditButton;
+    private int prevModeButton;
+    private final SimplePanel modeButton;
 
     private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;
@@ -73,14 +71,16 @@ public abstract class FormsController {
 
         GToolbarView toolbarView = new GToolbarView();
 
-        linkEditButton = new GToolbarButton("linkEditMode.png", messages.linkEditModeEnable()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> updateLinkEditMode(!GFormController.isLinkEditMode(), false);
-            }
-        };
-        setCompactSize(linkEditButton);
-        toolbarView.addComponent(linkEditButton);
+        modeButton = new SimplePanel();
+        modeButton.getElement().setId("modeButton");
+        toolbarView.addComponent(modeButton);
+
+        final String[] images = new String[3];
+        GwtClientUtils.setThemeImage("defaultMode.png", image -> images[0] = image);
+        GwtClientUtils.setThemeImage("linkMode.png", image -> images[1] = image);
+        GwtClientUtils.setThemeImage("dialogMode.png", image -> images[2] = image);
+
+        setupModeButton(modeButton.getElement(), images, windowsController.restoreEditMode());
 
         if (!MainFrame.mobile) {
             fullScreenButton = new GToolbarButton(null) {
@@ -145,24 +145,59 @@ public abstract class FormsController {
     private boolean isRemoving = false;
     private boolean isAdding = false;
 
-    public void updateLinkEditMode(boolean linkEditMode, boolean linkEditModeWithCtrl) {
-        if(!GFormController.isLinkEditModeWithCtrl() && linkEditModeWithCtrl) {
-            GFormController.scheduleLinkEditModeStylesTimer(() -> setLinkEditModeStyles(linkEditMode));
+    public native void setupModeButton(Element element, String[] images, int defaultIndex) /*-{
+        var instance = this;
+        var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode'}, {imageSrc: images[2], title: 'Dialog Mode'}];
+
+        $wnd.$(element).ddslick({
+            data:ddData,
+            defaultSelectedIndex:defaultIndex,
+            width:16,
+            onSelected: function(selectedData){
+                instance.@FormsController::selectMode(*)(selectedData.selectedIndex);
+            }
+        });
+    }-*/;
+
+    public native int selectModeButton(Element element, int i) /*-{
+        var modeButton = $wnd.$('#modeButton');
+        var prevModeButton = modeButton.data('ddslick').selectedIndex;
+        modeButton.ddslick('select', {index: i });
+        return prevModeButton;
+
+    }-*/;
+
+    public void updateLinkModeWithCtrl(boolean set) {
+        if(set) {
+            prevModeButton = selectModeButton(modeButton.getElement(), 1);
+            updateMode(EditMode.LINK, true);
         } else {
-            GFormController.cancelLinkEditModeStylesTimer();
-            setLinkEditModeStyles(linkEditMode);
+            selectModeButton(modeButton.getElement(), prevModeButton);
+            updateMode(EditMode.getMode(prevModeButton), false);
         }
-        linkEditButton.showBackground(linkEditMode);
-        GFormController.setLinkEditMode(linkEditMode, linkEditModeWithCtrl);
     }
 
-    private void setLinkEditModeStyles(boolean linkEditMode) {
-        linkEditButton.setTitle(linkEditMode ? messages.linkEditModeDisable() : messages.linkEditModeEnable() + " (CTRL)");
+    public void selectMode(int mode) {
+        updateMode(EditMode.getMode(mode), false);
+    }
+
+    public void updateMode(EditMode editMode, boolean linkModeWithCtrl) {
+        boolean linkMode = editMode == EditMode.LINK;
+        if(!GFormController.isLinkModeWithCtrl() && linkModeWithCtrl) {
+            GFormController.scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
+        } else {
+            GFormController.cancelLinkModeStylesTimer();
+            setLinkModeStyles(linkMode);
+        }
+        GFormController.setEditMode(editMode, linkModeWithCtrl);
+    }
+
+    private void setLinkModeStyles(boolean linkMode) {
         Element globalElement = RootPanel.get().getElement();
-        if(linkEditMode)
-            globalElement.addClassName("linkEditMode");
+        if(linkMode)
+            globalElement.addClassName("linkMode");
         else
-            globalElement.removeClassName("linkEditMode");
+            globalElement.removeClassName("linkMode");
     }
 
     public void updateFullScreenButton(){

@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator.window.view;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 
 import java.util.*;
@@ -207,6 +208,24 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         if (storage != null) {
             rootElement.restoreWindowsSizes(storage);
         }
+    }
+
+    public void storeEditMode() {
+        Storage storage = Storage.getLocalStorageIfSupported();
+        if (storage != null) {
+            storage.setItem("editMode", String.valueOf(GFormController.getEditModeIndex()));
+        }
+    }
+
+    public int restoreEditMode() {
+        Storage storage = Storage.getLocalStorageIfSupported();
+        if (storage != null) {
+            String editMode = storage.getItem("editMode");
+            if(editMode != null) {
+                return Integer.parseInt(editMode);
+            }
+        }
+        return 0;
     }
 
     private class WindowNode {

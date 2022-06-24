@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
@@ -58,11 +60,16 @@ public class GEditBindingMap implements Serializable {
     }
 
     public static final String TOOLBAR_ACTION = "toolbarAction";
-    public static String getDefaultEventSID(Event event, Result<Integer> contextAction, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction) {
+    public static String getDefaultEventSID(Event event, Result<Integer> contextAction, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction,
+                                            Supplier<Integer> dialogActionIndexSupplier) {
         if (isEditObjectEvent(event, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return EDIT_OBJECT;
         if (GMouseStroke.isChangeEvent(event)) {
-            contextAction.set((Integer) getToolbarAction(event));
+            Integer actionIndex = (Integer) getToolbarAction(event);
+            if(actionIndex == null && GFormController.isDialogMode()) {
+                actionIndex = dialogActionIndexSupplier.get();
+            }
+            contextAction.set(actionIndex);
             return CHANGE;
         }
         if (isGroupChangeKeyEvent(event))

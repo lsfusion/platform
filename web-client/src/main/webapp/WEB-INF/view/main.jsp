@@ -156,7 +156,10 @@
                 <!-- MMenuLight -->
                 'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.js',
                 'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.css',
-                'static/css/mmenu.css'
+                'static/css/mmenu.css',
+
+                'static/js/ddslick.js'
+
             ]);
 
         </script>
