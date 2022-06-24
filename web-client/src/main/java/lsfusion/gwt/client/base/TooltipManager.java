@@ -35,7 +35,7 @@ public class TooltipManager {
     private boolean closeOnClick;
     public TooltipManager() {
         RootPanel.get().addDomHandler(ev -> {
-            if (closeOnClick && !mouseIn && tooltip != null) {
+            if (closeOnClick && tooltip != null && !tooltip.tooltipFocused) {
                 hide();
             }
         }, MouseDownEvent.getType());
@@ -82,9 +82,8 @@ public class TooltipManager {
                                 tooltip = new PopupDialogPanel(false) {
                                     @Override
                                     protected void onAttach() {
-                                        mouseIn = false;
-                                        addDomHandler(ev -> mouseIn = true, MouseOverEvent.getType());
-                                        addDomHandler(ev -> mouseIn = false, MouseOutEvent.getType());
+                                        addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
+                                        addDomHandler(ev -> tooltipFocused = false, MouseOutEvent.getType());
                                         super.onAttach();
                                     }
                                 };
