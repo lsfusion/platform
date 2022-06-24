@@ -61,6 +61,12 @@ public class GwtSharedUtils {
         Arrays.fill(chars, character);
         return new String(chars);
     }
+    public static String replicate(String str, int length) {
+        String result = "";
+        for(int i=0;i<length;i++)
+            result += str;
+        return result;
+    }
 
     public static String multiplyString(String string, int multiplier) {
         StringBuilder sb = new StringBuilder();

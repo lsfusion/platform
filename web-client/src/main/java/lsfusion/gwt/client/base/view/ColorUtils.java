@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import static java.lang.Math.max;
@@ -22,7 +23,7 @@ public class ColorUtils {
     public static String toHexString(int colorComponent) {
         String c = Integer.toHexString(colorComponent);
         if (c.length() < 2) {
-            c = GwtClientUtils.replicate('0', 2 - c.length()) + c;
+            c = GwtSharedUtils.replicate('0', 2 - c.length()) + c;
         }
         return c;
     }

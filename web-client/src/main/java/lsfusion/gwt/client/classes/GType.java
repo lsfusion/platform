@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.classes;
 
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.design.GFontWidthString;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -37,14 +37,35 @@ public abstract class GType implements Serializable {
     }
 
     // not null
-    public static GSize getFullWidthString(String widthString, GFont font) {
-        GFontWidthString fontWidthString = new GFontWidthString(font == null ? GFont.DEFAULT_FONT : font, widthString);
-        return GFontMetrics.getStringWidth(fontWidthString); //  + StyleDefaults.CELL_HORIZONTAL_PADDING * 2; min-width doesnt' include padding, so we don't need to add it
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        String widthString = getDefaultWidthString(propertyDraw);
+
+        return GFontMetrics.getStringWidth(font, widthString);
     }
 
-    // not null
-    public abstract GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw);
-    
+    public GSize getDefaultHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        String heightString = getDefaultHeightString(propertyDraw);
+
+        if(!needNotNull && !heightString.contains("\n"))
+            return null;
+
+        return GFontMetrics.getStringHeight(font, heightString);
+    }
+
+    protected String getDefaultWidthString(GPropertyDraw propertyDraw) {
+        int defaultCharWidth = propertyDraw.charWidth != 0 ? propertyDraw.charWidth : getDefaultCharWidth();
+        return GwtSharedUtils.replicate('0', defaultCharWidth);
+    }
+
+    protected String getDefaultHeightString(GPropertyDraw propertyDraw) {
+        int defaultCharHeight = propertyDraw.charHeight != 0 ? propertyDraw.charHeight : getDefaultCharHeight();
+        return "0" + GwtSharedUtils.replicate("\n0", defaultCharHeight - 1);
+    }
+
+    protected int getDefaultCharWidth() {
+        throw new UnsupportedOperationException();
+    }
+
     public int getDefaultCharHeight() {
         return 1;
     }

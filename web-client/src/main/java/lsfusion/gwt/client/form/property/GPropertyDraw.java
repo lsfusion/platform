@@ -21,7 +21,6 @@ import lsfusion.gwt.client.classes.data.GLongType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GFontMetrics;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -569,11 +568,14 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return notNull && !isReadOnly();
     }
 
+    public boolean isFlex() {
+        return flex == -2 || super.isFlex();
+    }
     public double getFlex() {
         if (flex == -2) {
-            return getValueWidth(null).getValueFlexSize();
+            return getValueWidth(null, true, false).getValueFlexSize();
         }
-        return flex;
+        return super.getFlex();
     }
 
     public boolean isPanelCaptionLast() {
@@ -627,33 +629,42 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     // not null
     // padding has to be included for grid column for example, and not for panel property (since flex, width, min-width, etc. doesn't include padding)
     public GSize getValueWidthWithPadding(GFont parentFont) {
-        return getValueWidth(parentFont).add(getCellRenderer().getWidthPadding() * 2);
+        return getValueWidth(parentFont, true, true).add(getCellRenderer().getWidthPadding() * 2);
     }
     public GSize getValueHeightWithPadding(GFont parentFont) {
-        return getValueHeight(parentFont).add(getCellRenderer().getHeightPadding() * 2);
-    }
-
-    // nullable
-    public GSize getAutoSizeValueWidth(GFont parentFont) {
-        assert autoSize;
-        if(valueWidth == -1)
-            return null;
-
-        return getValueWidth(parentFont);
+        return getValueHeight(parentFont, true, true).add(getCellRenderer().getHeightPadding() * 2);
     }
 
     // not null
-    public GSize getValueWidth(GFont parentFont) {
-        if (valueWidth >= 0) {
+    public GSize getValueWidth(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if (valueWidth >= 0)
             return GSize.getValueSize(valueWidth);
-        }
 
-        GFont font = this.font != null ? this.font : parentFont;
+        if(!needNotNull && autoSize && valueWidth == -1)
+            return null;
 
-        if(charWidth != 0)
-            return GType.getFullWidthString(GwtSharedUtils.replicate('0', charWidth), font);
+        return baseType.getDefaultWidth(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+    }
 
-        return baseType.getDefaultWidth(font, this);
+    // not null
+    public GSize getValueHeight(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if (valueHeight >= 0)
+            return GSize.getValueSize(valueHeight);
+
+        if(!needNotNull && autoSize && valueHeight == -1)
+            return null;
+
+        return baseType.getDefaultHeight(getFont(parentFont), this, needNotNull, globalCaptionIsDrawn);
+    }
+
+    private GFont getFont(GFont parentFont) {
+        if(font != null)
+            return font;
+
+        if(parentFont != null)
+            return parentFont;
+
+        return GFont.DEFAULT_FONT;
     }
 
     public GSize getCaptionWidth() {
@@ -680,35 +691,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GFormatType getFormatType() {
         return (baseType instanceof GObjectType ? GLongType.instance : ((GFormatType)baseType));
-    }
-
-    // nullable
-    public GSize getAutoSizeValueHeight(GFont parentFont) {
-        assert autoSize;
-        if(valueHeight == -1)
-            return null;
-
-        return getValueHeight(parentFont);
-    }
-
-    // not null
-    public GSize getValueHeight(GFont parentFont) {
-        if (valueHeight >= 0) {
-            return GSize.getValueSize(valueHeight);
-        }
-
-        GSize lineHeight;
-        lineHeight = GFontMetrics.getSymbolHeight(font != null ? font : parentFont);
-        int lines = charHeight > 0 ? charHeight : baseType.getDefaultCharHeight();
-
-        GSize height = lineHeight.scale(lines);
-
-        final ImageDescription image = getImage();
-        GSize imageHeight;
-        if (image != null && (imageHeight = image.getHeight()) != null) {
-            height = height.max(imageHeight);
-        }
-        return height;
     }
 
     public LinkedHashMap<String, String> getContextMenuItems() {

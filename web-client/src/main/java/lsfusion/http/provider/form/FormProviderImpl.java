@@ -121,7 +121,6 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         } else {
             userFont.family = GFont.DEFAULT_FONT_FAMILY;
         }
-        gForm.addFont(userFont); // добавляем к используемым шрифтам с целью подготовить FontMetrics
         return new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.pageSize, groupObjectUP.headerHeight, groupObjectUP.hasUserPreferences);
     }
 

@@ -21,17 +21,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         super(form, controller, property, columnKey, captionContainer);
 
-        // we need to wrap into panel to make layout independent from property value (size component - make flex-basis 0 for upper components)
-        // plus for corners and border
         boolean needCorners = property.notNull || property.hasChangeAction;
-        // in fact in grid we always wrap into div (because element to be added is td and it has totally different behaviour)
-        // however here it doesn't seem to be necessary (except when we need corners), so we won't do this
-        ResizableComplexPanel valuePanel = null;
-//        if(!property.autoSize)// || needCorners)
-//            valuePanel = new ResizableComplexPanel();
-        SizedWidget valueWidget = value.setSized(valuePanel);
-//        if (needCorners)
-//            appendCorners(property.notNull, valueWidget.widget); // it's a hack to add
+        SizedWidget valueWidget = value.setSized();
+        if (needCorners)
+            appendCorners(property.notNull, valueWidget.widget);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
         sizedView.widget.addStyleName("dataPanelRendererPanel");

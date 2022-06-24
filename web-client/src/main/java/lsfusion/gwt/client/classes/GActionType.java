@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -39,15 +40,39 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        ImageDescription image = propertyDraw.getImage();
-        return image != null ? image.getWidth() : GSize.ZERO;
-        // in theory we should add propertyDraw.caption when it's a panel, but a property panel renderer doesn't do that for label, so don't see why it should be done for action
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if(needNotNull) {
+            GSize result = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultWidth(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+
+            ImageDescription image = propertyDraw.getImage();
+            if (image != null)
+                result = result.add(image.getWidth());
+
+            return result;
+        }
+
+        return null;
+    }
+
+    @Override
+    public GSize getDefaultHeight(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if(needNotNull) {
+            GSize height = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultHeight(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
+
+            final ImageDescription image = propertyDraw.getImage();
+            GSize imageHeight;
+            if (image != null && (imageHeight = image.getHeight()) != null)
+                height = height.max(imageHeight);
+
+            return height;
+        }
+
+        return null;
     }
 
     @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        throw new UnsupportedOperationException();
+        return propertyDraw.getPanelCaption(GGridPropertyTable.getPropertyCaption(propertyDraw));
     }
 
     @Override

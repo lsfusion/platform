@@ -54,8 +54,11 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        return GSize.CONST(18);
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if(needNotNull)
+            return GSize.CONST(18);
+
+        return null;
     }
 
 }

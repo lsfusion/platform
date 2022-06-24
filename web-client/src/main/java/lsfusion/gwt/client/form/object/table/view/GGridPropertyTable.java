@@ -593,7 +593,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected boolean isColumnFlex(int i) {
-        return getColumnPropertyDraw(i).getFlex() > 0;
+        return getColumnPropertyDraw(i).isFlex();
     }
 
     protected void setUserWidth(int i, int width) {

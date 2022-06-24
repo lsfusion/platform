@@ -16,22 +16,6 @@ public abstract class GDataType extends GType implements GClass {
         return false;
     }
 
-    protected int getDefaultCharWidth() {
-        return 0;
-    }
-
-    @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        return getFullWidthString(getDefaultWidthString(propertyDraw), font);
-    }
-
-    protected String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        int defaultCharWidth = getDefaultCharWidth();
-        if(defaultCharWidth != 0)
-            return GwtSharedUtils.replicate('0', defaultCharWidth);
-        throw new UnsupportedOperationException();
-    }
-
     @Override
     public GCompare[] getFilterCompares() {
         return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};

@@ -125,7 +125,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
     }
 
-    public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34).add(GSize.TEMP_PADDING_ADJ);
+    public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);
 
     public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
         return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, true);

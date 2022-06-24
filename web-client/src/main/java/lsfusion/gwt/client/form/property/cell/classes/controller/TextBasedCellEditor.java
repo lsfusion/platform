@@ -168,7 +168,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     @Override
     public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
-        TextBasedCellRenderer.setPadding(cellParent, isMultiLine());
+        TextBasedCellRenderer.setPadding(cellParent);
 
         Element parent = cellParent;
         if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes

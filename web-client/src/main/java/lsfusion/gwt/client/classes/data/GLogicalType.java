@@ -39,8 +39,11 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        return GSize.CONST(30);
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
+        if(needNotNull)
+            return GSize.CONST(30);
+
+        return null;
     }
 
     @Override

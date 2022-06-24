@@ -15,7 +15,7 @@ import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
-public class GForm implements Serializable, GWidthStringProcessor {
+public class GForm implements Serializable {
     public String sessionID;
 
     public String sID;
@@ -153,15 +153,6 @@ public class GForm implements Serializable, GWidthStringProcessor {
             }
         }
         return result;
-    }
-
-    public void addFont(GFont font) {
-        addWidthString(new GFontWidthString(font));
-    }
-    public void addWidthString(GFontWidthString fontWidthString) {
-        if (!usedFonts.contains(fontWidthString)) {
-            usedFonts.add(fontWidthString);
-        }
     }
 
     public String getCaption() {

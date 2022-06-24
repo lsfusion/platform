@@ -13,7 +13,7 @@ public class GGrid extends GComponent {
 
     public GSize getHeaderHeight() {
         if(headerHeight >= 0)
-            return GSize.getValueSize(headerHeight).add(GSize.TEMP_PADDING_ADJ);
+            return GSize.getValueSize(headerHeight);
         return null;
     }
 

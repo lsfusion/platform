@@ -16,9 +16,8 @@ public class StyleDefaults {
     public static final int COMPONENT_HEIGHT = VALUE_HEIGHT + 2; // 2 for borders
     public static final String COMPONENT_HEIGHT_STRING = COMPONENT_HEIGHT + "px";
 
-    public static final int TEXT_MULTILINE_PADDING = 2; // since there are a lot of lines and their rendering takes a lot of space give some extra padding
-
     public static final int CELL_HORIZONTAL_PADDING = 3;
+    public static final int CELL_VERTICAL_PADDING = 2;
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
     
     public static final int DATA_PANEL_LABEL_MARGIN = 4;

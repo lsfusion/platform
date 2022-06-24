@@ -126,7 +126,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         if (font == null) {
             return null;
         }
-        form.addFont(font);
         return font;
     }
 

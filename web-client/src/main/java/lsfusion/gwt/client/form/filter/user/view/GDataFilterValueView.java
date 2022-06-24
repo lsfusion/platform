@@ -41,12 +41,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
         cell = new GDataFilterPropertyValue(condition, logicsSupplier.getForm(), this::valueChanged, this::editingCancelled);
 
         GPropertyDraw property = condition.property;
-        // pretty similar to PropertyPanelRenderer (except that we don't need needCorners)
-        // there is an extra container of course (but the same problem is for PropertyPanelRenderer)
-        ResizableComplexPanel valuePanel = null;
-//        if(!property.autoSize)
-//            valuePanel = new ResizableComplexPanel();
-        sizedView = cell.setSized(valuePanel);
+        sizedView = cell.setSized();
         sizedView.widget.addStyleName("userFilterDataPropertyValue");
         sizedView.addFill(this);
 

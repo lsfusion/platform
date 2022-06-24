@@ -68,7 +68,7 @@ public class GContainer extends GComponent {
 
         int count = 0;
         for(GComponent child : children)
-            if(child.getFlex() > 0)
+            if(child.isFlex())
                 count++;
         return count;
     }

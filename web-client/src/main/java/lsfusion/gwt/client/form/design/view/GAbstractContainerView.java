@@ -37,7 +37,7 @@ public abstract class GAbstractContainerView {
 //        child.installMargins(view);
 
         // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
-        boolean fixFlexBasis = view instanceof FlexTabbedPanel && child.getFlex() > 0 && container.getFlexCount() > 1;
+        boolean fixFlexBasis = view instanceof FlexTabbedPanel && child.isFlex() && container.getFlexCount() > 1;
         if(fixFlexBasis) {
             FlexTabbedPanel tabbedView = (FlexTabbedPanel) view;
             tabbedView.setBeforeSelectionHandler(tabIndex -> {

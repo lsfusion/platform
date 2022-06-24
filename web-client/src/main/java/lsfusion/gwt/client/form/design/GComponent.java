@@ -68,6 +68,9 @@ public class GComponent implements Serializable {
         return container != null && container.tabbed;
     }
 
+    public boolean isFlex() {
+        return flex > 0;
+    }
     public double getFlex() {
         return flex;
     }

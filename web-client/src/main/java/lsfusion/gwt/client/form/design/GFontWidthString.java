@@ -2,24 +2,16 @@ package lsfusion.gwt.client.form.design;
 
 import java.io.Serializable;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
-
 public class GFontWidthString implements Serializable {
     public GFont font;
-    public String widthString;
+    public String sampleString;
 
     public GFontWidthString() {
     }
 
-    public GFontWidthString(GFont font) {
-        this(font, null);
-    }
-
-    public static final GFontWidthString DEFAULT_FONT = new GFontWidthString(GFont.DEFAULT_FONT);
-
-    public GFontWidthString(GFont font, String widthString) {
+    public GFontWidthString(GFont font, String sampleString) {
         this.font = font;
-        this.widthString = widthString;
+        this.sampleString = sampleString;
     }
 
     transient private int hash;
@@ -29,7 +21,7 @@ public class GFontWidthString implements Serializable {
     public int hashCode() {
         if (hashComputed) {
             hash = font.hashCode();
-            hash = 31 * hash + (widthString != null ? widthString.hashCode() : 0);
+            hash = 31 * hash + sampleString.hashCode();
             hashComputed = true;
         }
         return hash;
@@ -37,11 +29,11 @@ public class GFontWidthString implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof GFontWidthString)) {
+        if (!(obj instanceof GFontWidthString)) {
             return false;
         }
         GFontWidthString fontWidthString = (GFontWidthString) obj;
         return font.equals(fontWidthString.font) &&
-                nullEquals(widthString, fontWidthString.widthString);
+                sampleString.equals(fontWidthString.sampleString);
     }
 }

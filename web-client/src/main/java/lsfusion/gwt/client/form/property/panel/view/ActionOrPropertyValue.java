@@ -125,50 +125,24 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         render();
     }
 
-    private Widget borderWidget;
-
-    // assert that panel is resizable, panel and not resizable simple panel, since we want to append corners also to that panel (and it is not needed for it to be simple)
-    public SizedWidget setSized(ResizableMainPanel panel) {
-        boolean autoSize = property.autoSize;
-        if(panel != null) {
-            panel.setSizedMain(this, autoSize);
-            borderWidget = panel.getPanelWidget(); // panel
-        } else {
-//            assert autoSize;
-            borderWidget = this;
-        }
-
+    public SizedWidget setSized() {
         setBorderStyles();
 
-        GSize width;
-        GSize height;
-        if(!autoSize) {
-//            assert panel != null;
-            width = property.getValueWidth(null);
-            height = property.getValueHeight(null);
-        } else {
-            width = property.getAutoSizeValueWidth(null);
-            height = property.getAutoSizeValueHeight(null);
-
-//            if(panel != null) { // sort of optimization, in this case paddings will be calculated automatically
-//                FlexPanel.setBaseSize(this, false, width, false);
-//                FlexPanel.setBaseSize(this, true, height, false);
-//                return new SizedWidget(borderWidget);
-//            }
-        }
-
-        return new SizedWidget(borderWidget, width, height);
+        boolean globalCaptionIsDrawn = this.globalCaptionIsDrawn;
+        return new SizedWidget(this,
+                property.getValueWidth(null, false, globalCaptionIsDrawn),
+                property.getValueHeight(null, false, globalCaptionIsDrawn));
     }
 
     private void setBorderStyles() {
         // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
-        borderWidget.addStyleName("panelRendererValue");
+        addStyleName("panelRendererValue");
         if(property.boxed)
-            borderWidget.addStyleName("panelRendererValueBoxed");
+            addStyleName("panelRendererValueBoxed");
         if(property.isAction())
-            borderWidget.addStyleName("actionPanelRendererValue");
+            addStyleName("actionPanelRendererValue");
         else
-            borderWidget.addStyleName("propertyPanelRendererValue");
+            addStyleName("propertyPanelRendererValue");
     }
 
     @Override
@@ -212,7 +186,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         DataGrid.sinkPasteEvent(getFocusElement());
 
         isFocused = true;
-        borderWidget.addStyleName("panelRendererValueFocused");
+        addStyleName("panelRendererValueFocused");
         update();
     }
 
@@ -223,7 +197,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         //if !isFocused should be replaced to assert; isFocused must be true, but sometimes is not (related to LoadingManager)
         //assert isFocused;
         isFocused = false;
-        borderWidget.removeStyleName("panelRendererValueFocused");
+        removeStyleName("panelRendererValueFocused");
         update();
     }
 
@@ -231,13 +205,13 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     @Override
     public void startEditing() {
         isEditing = true;
-        borderWidget.addStyleName("panelRendererValueEdited");
+        addStyleName("panelRendererValueEdited");
     }
 
     @Override
     public void stopEditing() {
         isEditing = false;
-        borderWidget.removeStyleName("panelRendererValueEdited");
+        removeStyleName("panelRendererValueEdited");
     }
 
     protected abstract void onEditEvent(EventHandler handler);

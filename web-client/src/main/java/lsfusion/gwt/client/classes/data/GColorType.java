@@ -27,7 +27,7 @@ public class GColorType extends GDataType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
+    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
         return GSize.CONST(40);
     }
 

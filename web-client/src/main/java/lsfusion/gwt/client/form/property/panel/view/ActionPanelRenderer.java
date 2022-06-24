@@ -22,10 +22,7 @@ public class ActionPanelRenderer extends PanelRenderer {
     public ActionPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, final GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
         super(form, controller, property, columnKey, captionContainer);
 
-        ResizableComplexPanel valuePanel = null;
-//        if(property.autoSize && property.hasDynamicImage()) // optimization, we don't want to create extra DOM elements, because when we have static image / text, it's size is usually calculated to fit them
-//            valuePanel = new ResizableComplexPanel();
-        sizedView = value.setSized(valuePanel);
+        sizedView = value.setSized();
 
         finalizeInit();
     }

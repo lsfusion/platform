@@ -762,12 +762,6 @@ public class GwtClientUtils {
         return value;
     }
 
-    public static String replicate(char character, int length) {
-        char[] chars = new char[length];
-        Arrays.fill(chars, character);
-        return new String(chars);
-    }
-    
     public static String getCurrentLocaleName() {
         return LocaleInfo.getCurrentLocale().getLocaleName();
     } 

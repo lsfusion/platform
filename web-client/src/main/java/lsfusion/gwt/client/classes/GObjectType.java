@@ -27,8 +27,8 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw) {
-        return getFullWidthString("0000000", font);
+    protected int getDefaultCharWidth() {
+        return 7;
     }
 
     public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {

@@ -12,11 +12,8 @@ public abstract class GSize implements Serializable {
     }
 
     private static GFixedSize.Type COMPONENT_TYPE = GFixedSize.Type.REM;
-    private static GFixedSize.Type VALUE_TYPE = GFixedSize.Type.EM;
+    public static GFixedSize.Type VALUE_TYPE = GFixedSize.Type.EM;
     private static GFixedSize.Type SIZE_TYPE = GFixedSize.Type.PX;
-
-    // need this because there are no paddings in text fields but we want some (and somewhy calc(1em + 4px) = calc(1em) and only after 4 px works)
-    public static GSize TEMP_PADDING_ADJ = VALUE_TYPE == GFixedSize.Type.PX ? getSize(4, SIZE_TYPE) :  getSize(8, SIZE_TYPE);
 
     public static GSize getImageSize(int pixels) {
         return getSize(pixels, SIZE_TYPE);
@@ -31,6 +28,9 @@ public abstract class GSize implements Serializable {
     }
     public static GSize getValueSize(int pixels) {
         return getSize(pixels, VALUE_TYPE);
+    }
+    public static GSize getCalcValueSize(int pixels) { // "font dependent" pixels (not explicit constants like in getValueSize)
+        return getValueSize(pixels);
     }
 
     // used for flexing values with the same value as size

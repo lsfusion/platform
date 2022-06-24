@@ -12,7 +12,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
-import static lsfusion.gwt.client.view.StyleDefaults.TEXT_MULTILINE_PADDING;
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_VERTICAL_PADDING;
 
 public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
@@ -38,8 +38,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     public void renderStaticContent(Element element, RenderContext renderContext) {
-        boolean isMultiLine = isMultiLine();
-        setPadding(element, isMultiLine);
+        setPadding(element);
 
         render(property, element, renderContext, isMultiLine());
     }
@@ -66,21 +65,12 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         return CELL_HORIZONTAL_PADDING;
     }
     public int getHeightPadding() {
-        if(isMultiLine())
-            return TEXT_MULTILINE_PADDING;
-        return super.getHeightPadding();
+        return CELL_VERTICAL_PADDING;
     }
-    public static void setPadding(Element element, boolean multiLine) {
+    public static void setPadding(Element element) {
         Style style = element.getStyle();
-        if(multiLine) {
-            style.setPaddingTop(TEXT_MULTILINE_PADDING, Style.Unit.PX);
-            style.setPaddingBottom(TEXT_MULTILINE_PADDING, Style.Unit.PX);
-        } else {
-            // since we are aligning text with lineheight set vertical padding to 0
-            style.setPaddingBottom(0, Style.Unit.PX);
-            style.setPaddingTop(0, Style.Unit.PX);
-        }
-
+        style.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
+        style.setPaddingBottom(CELL_VERTICAL_PADDING, Style.Unit.PX);
         style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
         style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
     }
@@ -134,7 +124,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     protected String getRequiredStringValue(Element element) {
-        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : "<div class=\"notNullLine\">" + EscapeUtils.UNICODE_NBSP + "</div>";
+        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : EscapeUtils.UNICODE_NBSP + "<div class=\"notNullLine\">" + EscapeUtils.UNICODE_NBSP + "</div>";
     }
 
     protected String getNullStringValue(Element element) {
