@@ -78,36 +78,25 @@ public class TooltipManager {
                             tooltipHtml.setHTML(tooltipText);
                             GwtClientUtils.setPopupPosition(tooltip, mouseX, mouseY);
                         } else {
-                            if(closeOnClick) {
-                                tooltip = new PopupDialogPanel(false) {
-                                    @Override
-                                    protected void onAttach() {
-                                        addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
-                                        addDomHandler(ev -> tooltipFocused = false, MouseOutEvent.getType());
-                                        super.onAttach();
-                                    }
-                                };
-                            } else {
-                                tooltip = new PopupDialogPanel() {
-                                    //if the previous focused element goes outside the visible area, the page will scroll to it when the tooltip is closed
-                                    @Override
-                                    public void setFocusedElement(Element focusedElement) {
-                                        super.setFocusedElement(null);
-                                    }
+                            tooltip = new PopupDialogPanel() {
+                                //if the previous focused element goes outside the visible area, the page will scroll to it when the tooltip is closed
+                                @Override
+                                public void setFocusedElement(Element focusedElement) {
+                                    super.setFocusedElement(null);
+                                }
 
-                                    @Override
-                                    protected void onAttach() {
-                                        addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
+                                @Override
+                                protected void onAttach() {
+                                    addDomHandler(ev -> tooltipFocused = true, MouseOverEvent.getType());
 
-                                        addDomHandler(ev -> {
-                                            tooltipFocused = false;
-                                            hideTooltip(null);
-                                        }, MouseOutEvent.getType());
+                                    addDomHandler(ev -> {
+                                        tooltipFocused = false;
+                                        hideTooltip(null);
+                                    }, MouseOutEvent.getType());
 
-                                        super.onAttach();
-                                    }
-                                };
-                            }
+                                    super.onAttach();
+                                }
+                            };
 
                             tooltipHtml = new HTML(tooltipText, false);
 
