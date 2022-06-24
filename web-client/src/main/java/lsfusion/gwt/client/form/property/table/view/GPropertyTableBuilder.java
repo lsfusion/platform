@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.grid.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -196,20 +196,24 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     @Override
     public void updateRowStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts) {
-        updateStickyLeft(tr, stickyColumns, stickyLefts);
+        updateStickyLeft(tr, stickyColumns, stickyLefts, false);
     }
 
-    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts) {
+    public static void updateStickyLeft(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts, boolean header) {
         for (int i = 0; i < stickyColumns.size(); i++) {
             Integer stickyColumn = stickyColumns.get(i);
             GSize left = stickyLefts.get(i);
             TableCellElement cell = tr.getCells().getItem(stickyColumn);
             if (left != null) {
                 cell.getStyle().setProperty("left", left.getString());
-                cell.removeClassName("dataGridStickyOverflow");
+                if (!header) {
+                    cell.removeClassName("dataGridStickyOverflow");
+                }
             } else {
                 cell.getStyle().clearProperty("left");
-                cell.addClassName("dataGridStickyOverflow");
+                if (!header) {
+                    cell.addClassName("dataGridStickyOverflow");
+                }
             }
         }
     }

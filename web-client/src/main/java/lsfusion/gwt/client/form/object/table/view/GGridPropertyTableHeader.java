@@ -1,17 +1,17 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.resize.ResizeHandler;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.google.gwt.dom.client.BrowserEvents.*;
+import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
@@ -113,13 +113,11 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
 
         if (notNull) {
-            th.addClassName("dataGridRelative");
             DivElement notNullSign = Document.get().createDivElement();
             notNullSign.addClassName("rightBottomCornerTriangle");
             notNullSign.addClassName("notNullCornerTriangle");
             th.appendChild(notNullSign);
         } else if (hasChangeAction) {
-            th.addClassName("dataGridRelative");
             DivElement changeActionSign = Document.get().createDivElement();
             changeActionSign.addClassName("rightBottomCornerTriangle");
             changeActionSign.addClassName("changeActionCornerTriangle");

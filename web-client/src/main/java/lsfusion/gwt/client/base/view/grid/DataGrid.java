@@ -25,10 +25,13 @@ import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -49,7 +52,7 @@ import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundCol
 // we need resizesimplepanel for "scroller" padding in headers (we don't know if there gonna be vertival scroller)
 public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorThemeChangeListener, HasMaxPreferredSize {
 
-    public static final String DATA_GRID_CLASS = "dataGridTableWrapperWidget";
+    public static final String DATA_GRID_CLASS = "table";
 
     public final static int BORDER_VERT_SIZE = 1;
 
@@ -102,12 +105,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     protected final TableWidget tableData;
     protected TableScrollPanel tableDataScroller; // vertical scroller
-
-    private FooterWidget tableFooter;
-    private TableScrollPanel tableFooterScroller;
-
-    private HeaderWidget tableHeader;
-    private TableScrollPanel tableHeaderScroller;
 
     private final FlexTable emptyTableWidgetContainer;
 
@@ -164,20 +161,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
         this.style = style;
 
-        // INITIALIZING HEADERS
-        if(!noHeaders) {
-            Widget tableHeaderContainer;
-            tableHeader = new HeaderWidget();
-            if(!noScrollers) {
-                tableHeaderScroller = new TableScrollPanel(tableHeader, Style.Overflow.HIDDEN);
-                tableHeaderContainer = tableHeaderScroller;
-            } else
-                tableHeaderContainer = TableScrollPanel.noScroll(tableHeader);
-
-            add(tableHeaderContainer, GFlexAlignment.STRETCH);
-
-            headerBuilder = new DefaultHeaderBuilder<>(this, false);
-        }
 
         // INITIALIZING MAIN DATA
         Widget tableDataContainer;
@@ -189,13 +172,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             // Synchronize the scroll positions of the three tables.
             // it's not possible to avoid this by splitting to separate horizontal and vertical scroller, since we don't want vertical scroller to be scrolled by horizontal scroller
             tableDataScroller.addScrollHandler(event -> {
-                int scrollLeft = tableDataScroller.getHorizontalScrollPosition();
-                if (tableHeaderScroller != null) {
-                    tableHeaderScroller.setHorizontalScrollPosition(scrollLeft);
-                }
-                if (tableFooterScroller != null) {
-                    tableFooterScroller.setHorizontalScrollPosition(scrollLeft);
-                }
                 setLeftNeighbourRightBorder(calcLeftNeighbourRightBorder(true));
             });
             tableDataScroller.addScrollHandler(event -> checkSelectedRowVisible());
@@ -207,18 +183,13 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         // however it seems that addFillShrink would also do
 //        addFillShrink(tableDataContainer);
 
+        // INITIALIZING HEADERS
+        if(!noHeaders) {
+            headerBuilder = new DefaultHeaderBuilder<>(this, false);
+        }
+
         // INITIALIZING FOOTERS
         if (!noFooters) { // the same as for headers
-            Widget tableFooterContainer;
-            tableFooter = new FooterWidget();
-            if(!noScrollers) {
-                tableFooterScroller = new TableScrollPanel(tableFooter, Style.Overflow.HIDDEN);
-                tableFooterContainer = tableFooterScroller;
-            } else
-                tableFooterContainer = TableScrollPanel.noScroll(tableFooter);
-
-            add(tableFooterContainer, GFlexAlignment.STRETCH);
-
             footerBuilder = new DefaultHeaderBuilder<>(this, true);
         }
 
@@ -876,10 +847,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         this.minWidth = width;
 
         setBlockMinWidth(0, tableData);
-        if(!noHeaders)
-            updateHeaderTableMinimumWidth(tableHeader);
-        if(!noFooters)
-            updateHeaderTableMinimumWidth(tableFooter);
     }
 
     @Override
@@ -888,10 +855,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             // we have only minWidth, but during auto sizing this grid will get 100000 pixels width, which is not what we expect
             // so we're setting max width
             setMaxBlockWidth(set, tableData);
-            if(!noHeaders)
-                setMaxBlockWidth(set, tableHeader);
-            if(!noFooters)
-                setMaxBlockWidth(set, tableFooter);
         }
 
         grids.set(grids.result + 1);
@@ -930,12 +893,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         tableData.getElement().getStyle().setProperty("minWidth", width.getString());
     }
 
-    private void updateHeaderTablePadding(TableWrapperWidget headerWidget, TableScrollPanel tableHeaderScroller) {
-        updateTablePadding(hasVerticalScroll, headerWidget.tableElement);
-//        updateTableMargin(hasVerticalScroll, tableHeaderScroller.getElement());
-
-        updateHeaderTableMinimumWidth(headerWidget); // padding changed, we need to reupdate minimumWidth
-    }
     private void updateTableRightOuterBorder() {
         updateTableRightOuterBorder(hasVerticalScroll, tableDataScroller.getElement());
     }
@@ -947,26 +904,11 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         else
             tableElement.getStyle().clearPaddingRight();
     }
-    public static void updateTableMargin(boolean hasVerticalScroller, Element tableElement) {
-        if(hasVerticalScroller)
-            tableElement.getStyle().setMarginRight(nativeScrollbarWidth + 1, Unit.PX); // 1 for right outer border margin
-        else
-            tableElement.getStyle().clearMarginRight();
-    }
     public static void updateTableRightOuterBorder(boolean hasVerticalScroller, Element tableElement) {
         setOuterRightGridBorder(tableElement, !hasVerticalScroller);
     }
 
-    private void updateHeaderTableMinimumWidth(TableWrapperWidget headerWidget) {
-        if(minWidth != null)
-            setBlockMinWidth((hasVerticalScroll ? nativeScrollbarWidth + 1 : 0), headerWidget); // 1 for right outer border margin
-    }
-
     private void updateTableMargins() {
-        if(!noHeaders)
-            updateHeaderTablePadding(tableHeader, tableHeaderScroller);
-        if(!noFooters)
-            updateHeaderTablePadding(tableFooter, tableFooterScroller);
         if(!noScrollers)
             updateTableRightOuterBorder();
     }
@@ -1051,15 +993,11 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     protected final TableSectionElement getTableFootElement() {
-        if(!noFooters)
-            return tableFooter.getSection();
-        return null;
+        return tableData.footerElement;
     }
 
     public final TableSectionElement getTableHeadElement() {
-        if(!noHeaders)
-            return tableHeader.getSection();
-        return null;
+        return tableData.headerElement;
     }
 
     protected abstract boolean previewEvent(Element target, Event event);
@@ -1085,7 +1023,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if(!noScrollers)
             return tableDataScroller.getElement();
 
-        return tableData.tableElement;
+        return getTableElement();
     }
 
     /**
@@ -1102,13 +1040,9 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     private void updateColumnWidthImpl(int column, String width) {
         updateColumnWidthImpl(tableData, column, width);
-        if (!noHeaders)
-            updateColumnWidthImpl(tableHeader, column, width);
-        if (!noFooters)
-            updateColumnWidthImpl(tableFooter, column, width);
     }
 
-    private void updateColumnWidthImpl(TableWrapperWidget tableData, int column, String width) {
+    private void updateColumnWidthImpl(TableWidget tableData, int column, String width) {
         Style colElementStyle = tableData.ensureTableColElement(column).getStyle();
         if (width == null)
             colElementStyle.clearWidth();
@@ -1264,7 +1198,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     private void preAfterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
 
-        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+        NodeList<TableRowElement> rows = tableData.getDataRows();
 
         int viewportWidth = getViewportWidth();
         boolean hasVerticalScroll = viewportWidth != tableDataScroller.getOffsetWidth();
@@ -1331,6 +1265,15 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         int currentScrollTop = tableDataScroller.getVerticalScrollPosition();
 
         int scrollTop = currentScrollTop;
+        
+        int headerHeight = 0;
+        if (getTableHeadElement() != null) {
+            headerHeight = getTableHeadElement().getClientHeight();
+        }
+        int footerHeight = 0;
+        if (getTableFootElement() != null) {
+            footerHeight = getTableFootElement().getClientHeight();
+        }
 
         // we're trying to keep viewport the same after rerendering
         int rerenderedSelectedRow;
@@ -1349,29 +1292,27 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             TableRowElement rowElement = getChildElement(rowToShow);
             int rowTop = rowElement.getOffsetTop();
             int rowBottom = rowTop + rowElement.getClientHeight();
-            if (rowBottom >= scrollTop + viewportHeight) // not completely visible from bottom
-                scrollTop = rowBottom - viewportHeight;
-            if (rowTop <= scrollTop) // not completely visible from top
-                scrollTop = rowTop - 1; // 1 for border
+            if (rowBottom >= scrollTop + viewportHeight - footerHeight) // not completely visible from bottom
+                scrollTop = rowBottom - viewportHeight + footerHeight;
+            if (rowTop <= scrollTop + headerHeight) // not completely visible from top
+                scrollTop = rowTop - headerHeight - 1; // 1 for border
         }
 
         if(scrollTop != currentScrollTop)
             pendingState.top = scrollTop;
-
-//        updateScrollVertical(pendingState);
     }
 
     protected int getViewportWidth() {
         if(!noScrollers)
             return tableDataScroller.getClientWidth();
 
-        return tableData.tableElement.getClientWidth();
+        return getTableElement().getClientWidth();
     }
     public int getViewportHeight() {
         if(!noScrollers)
             return tableDataScroller.getClientHeight();
 
-        return tableData.tableElement.getClientHeight();
+        return getTableElement().getClientHeight();
     }
 
     boolean hasVerticalScroll = false;
@@ -1454,7 +1395,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     private void updateSelectedDOM(ArrayList<Column> dataColumnsChanged) {
-        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+        NodeList<TableRowElement> rows = tableData.getDataRows();
         int rowCount = rows.getLength();
 
         int newLocalSelectedRow = getSelectedRow();
@@ -1490,8 +1431,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     private void updateFocusedCellDOM() {
-        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
-        NodeList<TableRowElement> headerRows = noHeaders ? null : tableHeader.tableElement.getTHead().getRows(); // we need headerRows for upper border
+        NodeList<TableRowElement> rows = tableData.getDataRows();
+        NodeList<TableRowElement> headerRows = noHeaders ? null : getTableHeadElement().getRows(); // we need headerRows for upper border
 
         int newLocalSelectedRow = getSelectedRow();
         int newLocalSelectedCol = getSelectedColumn();
@@ -1520,13 +1461,13 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         //focused is not sticky and prev cell is sticky: draw border if focused is visible
         //focused is not sticky and prev cell is not sticky: draw border if prev sticky is at the border of focused
         LeftNeighbourRightBorder leftNeighbourRightBorder = null;
-        NodeList<TableRowElement> rows = tableData.tableElement.getRows();
+        NodeList<TableRowElement> rows = tableData.getDataRows();
 
         int row = getSelectedRow();
         int column = getSelectedColumn();
 
         if (row >= 0 && row < rows.getLength() && column >= 0 && column < getColumnCount()) {
-            NodeList<TableCellElement> cells = tableData.tableElement.getRows().getItem(row).getCells();
+            NodeList<TableCellElement> cells = tableData.getDataRows().getItem(row).getCells();
             TableCellElement focusedCell = cells.getItem(column);
             TableCellElement prevCell = cells.getItem(column - 1);
             Integer prevStickyCellNum = getPrevStickyCell(cells, column);
@@ -1546,7 +1487,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     private void setLeftNeighbourRightBorder(LeftNeighbourRightBorder leftNeighbourRightBorder) {
         if (leftNeighbourRightBorder != null) {
-            setLeftNeighbourRightBorder(tableData.tableElement.getRows().getItem(leftNeighbourRightBorder.row).getCells().getItem(leftNeighbourRightBorder.column), leftNeighbourRightBorder.value);
+            setLeftNeighbourRightBorder(tableData.getDataRows().getItem(leftNeighbourRightBorder.row).getCells().getItem(leftNeighbourRightBorder.column), leftNeighbourRightBorder.value);
             if (leftNeighbourRightBorder.value) {
                 renderedLeftStickyCol = leftNeighbourRightBorder.column;
             }
@@ -1689,10 +1630,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
     private void removeUnusedColumnWidthsImpl(int columnCount) {
         tableData.removeUnusedColumns(columnCount);
-        if(!noHeaders)
-            tableHeader.removeUnusedColumns(columnCount);
-        if(!noFooters)
-            tableFooter.removeUnusedColumns(columnCount);
     }
 
     @Override
@@ -1809,12 +1746,18 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         UpdateDOMCommand.flush();
     }
 
-    private abstract static class TableWrapperWidget extends Widget {
+    protected class TableWidget extends Widget {
         protected final TableElement tableElement;
         protected final TableColElement colgroupElement;
+        protected TableSectionElement headerElement = null;
         protected final TableSectionElement sectionElement;
+        protected TableSectionElement footerElement = null;
+        
+        public TableWidget() {
+            this(null);
+        }
 
-        public TableWrapperWidget(String extraClass) {
+        public TableWidget(String extraClass) {
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName(DATA_GRID_CLASS);
@@ -1823,12 +1766,28 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
             colgroupElement = tableElement.appendChild(Document.get().createColGroupElement());
 
+            if (!noHeaders) {
+                headerElement = tableElement.createTHead();
+                headerElement.setClassName(style.dataGridHeader());
+            }
+
             sectionElement = createSectionElement();
+            
+            if (!noFooters) {
+                footerElement = tableElement.createTFoot();
+                footerElement.setClassName(style.dataGridFooter());
+            }
 
             setElement(tableElement);
         }
 
-        protected abstract TableSectionElement createSectionElement();
+        protected TableSectionElement createSectionElement() {
+            if (tableElement.getTBodies().getLength() > 0) {
+                return tableElement.getTBodies().getItem(0);
+            } else {
+                return tableElement.appendChild(Document.get().createTBodyElement());
+            }
+        }
 
         /**
          * Get the {@link TableColElement} at the specified index, creating it if
@@ -1861,46 +1820,12 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         public TableSectionElement getSection() {
             return sectionElement;
         }
+        
+        public NodeList<TableRowElement> getDataRows() {
+            return sectionElement.getRows();
+        } 
     }
 
-    private class HeaderWidget extends TableWrapperWidget {
-        public HeaderWidget() {
-            super(style.dataGridHeader());
-        }
-
-        @Override
-        protected TableSectionElement createSectionElement() {
-            return tableElement.createTHead();
-        }
-    }
-
-    private class FooterWidget extends TableWrapperWidget {
-        private FooterWidget() {
-            super(style.dataGridFooter());
-        }
-
-        @Override
-        protected TableSectionElement createSectionElement() {
-            return tableElement.createTFoot();
-        }
-    }
-
-    protected class TableWidget extends TableWrapperWidget {
-//        private final DivElement containerElement;
-
-        public TableWidget() {
-            super(null);
-        }
-
-        @Override
-        protected TableSectionElement createSectionElement() {
-            if (tableElement.getTBodies().getLength() > 0) {
-                return tableElement.getTBodies().getItem(0);
-            } else {
-                return tableElement.appendChild(Document.get().createTBodyElement());
-            }
-        }
-    }
 
     @Override
     public void onResize() {
