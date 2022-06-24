@@ -1165,13 +1165,23 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             int rowTop = rowElement.getOffsetTop();
             int rowBottom = rowTop + rowElement.getClientHeight();
 
-            int newRow = -1;
-            int scrollBottom = scrollTop + scrollHeight;
-            if (rowBottom > scrollBottom + 1) { // 1 for border
-                newRow = getLastVisibleRow(rowTop <= scrollBottom ? scrollTop : null, scrollBottom, selectedRow - 1);
+            int headerHeight = 0;
+            if (getTableHeadElement() != null) {
+                headerHeight = getTableHeadElement().getClientHeight();
             }
-            if (rowTop < scrollTop) {
-                newRow = getFirstVisibleRow(scrollTop, rowBottom >= scrollTop ? scrollBottom : null, selectedRow + 1);
+            int footerHeight = 0;
+            if (getTableFootElement() != null) {
+                footerHeight = getTableFootElement().getClientHeight();
+            }
+            int visibleTop = scrollTop + headerHeight;
+            int visibleBottom = scrollTop + scrollHeight - footerHeight;
+
+            int newRow = -1;
+            if (rowBottom > visibleBottom + 1) { // 1 for border
+                newRow = getLastVisibleRow(rowTop <= visibleBottom ? visibleTop : null, visibleBottom, selectedRow - 1);
+            }
+            if (rowTop < visibleTop) {
+                newRow = getFirstVisibleRow(visibleTop, rowBottom >= visibleTop ? visibleBottom : null, selectedRow + 1);
             }
             if (newRow != -1) {
                 changeSelectedRow(newRow);
