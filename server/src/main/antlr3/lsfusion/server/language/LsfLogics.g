@@ -5318,15 +5318,24 @@ constantProperty[List<TypedParameter> context, boolean dynamic] returns [LP prop
 		$ci = constantProp.second;
 	}
 }
-	:	lit = literal { cls = $lit.cls; value = $lit.value; }
+	:	lit = expressionLiteral { cls = $lit.cls; value = $lit.value; }
+	;
+
+expressionLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
+	:	cl=commonLiteral { $cls = $cl.cls; $value = $cl.value; } 	
+	|	str=STRING_LITERAL { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.text; }
 	;
 
 literal returns [ScriptingLogicsModule.ConstType cls, Object value]
+	:	cl=commonLiteral { $cls = $cl.cls; $value = $cl.value; } 	
+	|	str=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.val; }
+	;
+
+commonLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
 	: 	vint=uintLiteral	{ $cls = ScriptingLogicsModule.ConstType.INT; $value = $vint.val; }
 	|	vlong=ulongLiteral	{ $cls = ScriptingLogicsModule.ConstType.LONG; $value = $vlong.val; }
 	|	vnum=unumericLiteral   { $cls = ScriptingLogicsModule.ConstType.NUMERIC; $value = $vnum.val; }
 	|	vdouble=udoubleLiteral { $cls = ScriptingLogicsModule.ConstType.REAL; $value = $vdouble.val; }
-	|	vstr=localizedStringLiteralNoID	{ $cls = ScriptingLogicsModule.ConstType.STRING; $value = $vstr.val; }
 	|	vbool=booleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.LOGICAL; $value = $vbool.val; { if (inMainParseState()) self.getChecks().checkBooleanUsage($vbool.val); }}
 	|	vtbool=tbooleanLiteral	{ $cls = ScriptingLogicsModule.ConstType.TLOGICAL; $value = $vtbool.val; }
 	|	vdate=dateLiteral	{ $cls = ScriptingLogicsModule.ConstType.DATE; $value = $vdate.val; }
@@ -5429,7 +5438,7 @@ stringLiteral returns [String val]
 	;
 
 primitiveType returns [String val]
-:	    p=PRIMITIVE_TYPE | JSON_TYPE { $val = $p.text; }
+	:	p=PRIMITIVE_TYPE | JSON_TYPE { $val = $p.text; }
 	;
 
 // there are some rules where ID is not desirable (see usages), where there is an ID

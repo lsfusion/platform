@@ -118,7 +118,7 @@ public final class LocalizedString {
                     throw new FormatError("wrong escape sequence at the end of the string");
                 }
                 char nextCh = s.charAt(i + 1);
-                if (nextCh != '\\' && nextCh != OPEN_CH && nextCh != CLOSE_CH && nextCh != '$') {
+                if (nextCh != '\\' && nextCh != OPEN_CH && nextCh != CLOSE_CH) {
                     throw new FormatError(String.format("wrong escape sequence: '%s'", nextCh));
                 }
                 if (insideKey) {
@@ -200,7 +200,7 @@ public final class LocalizedString {
     }
     
     public final static LocalizedString NONAME = LocalizedString.create(""); 
-    
+
     /**
      * Создает LocalizedString без проверки на корректность
      * Если create вызывается без второго параметра, то происходит проверка (в конструкторе) на необходимость локализации
@@ -246,7 +246,7 @@ public final class LocalizedString {
             char cur = s.charAt(i);
             if (cur == '\\' && i+1 < s.length()) {
                 char next = s.charAt(i+1);
-                if (next == '\\' || next == OPEN_CH || next == CLOSE_CH || next == '$') {
+                if (next == '\\' || next == OPEN_CH || next == CLOSE_CH) {
                     builder.append(next);
                     ++i;
                     continue;
