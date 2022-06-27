@@ -10,6 +10,11 @@ TABLE chatCustomUser(Chat, CustomUser);
 
 EXTEND CLASS UserRole : Chat;
 
+onWebClientLoad() + {
+    INTERNAL CLIENT 'chat.js';
+    INTERNAL CLIENT 'chat.css';
+}
+
 @defineExternalizable(chat, STRING[100]);
 
 in '{chat.in.chat}' = DATA BOOLEAN (Chat, CustomUser);
