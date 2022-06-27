@@ -1251,11 +1251,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     private void beforeUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
-        if (areRowsChanged() && renderedSelectedRow >= 0) { // rows changed and there was some selection
-            TableRowElement childElement = getChildElement(renderedSelectedRow);
-            if (childElement != null)
-                pendingState.renderedSelectedScrollTop = childElement.getOffsetTop() - tableDataScroller.getVerticalScrollPosition();
-        }
+        if (areRowsChanged() && renderedSelectedRow >= 0 && renderedSelectedRow <= getRowCount()) // rows changed and there was some selection
+            pendingState.renderedSelectedScrollTop = getChildElement(renderedSelectedRow).getOffsetTop() - tableDataScroller.getVerticalScrollPosition();
     }
 
     //force browser-flush

@@ -191,8 +191,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 for (int i = 0; i < oldRecords.size(); i++) {
                     GridDataRecord record = oldRecords.get(i);
                     if (!rowKeys.contains(record.getKey())) {
-                        rows.remove(record);
                         tableBuilder.incDeleteRows(tableData.getSection(), i, i + 1);
+                        rows.remove(record);
                         incUpdateRowIndices(i, -1);
                     }
                 }
