@@ -1138,6 +1138,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         }
 
         @Override
+        public String getNativeSID() {
+            return columnSID;
+        }
+
+        @Override
         public boolean isCustomRenderer() {
             return property.getCellRenderer().isCustomRenderer();
         }

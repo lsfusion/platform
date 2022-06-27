@@ -333,6 +333,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     // actually singleton
     private class ExpandTreeColumn extends Column<GTreeGridRecord, Object> implements TreeGridColumn {
 
+        @Override
+        public String getNativeSID() {
+            return "_EXPAND_COLUMN";
+        }
+
         private GTreeColumnValue getTreeValue(Cell cell) {
             return getTreeGridRow(cell).getTreeValue();
         }
@@ -442,6 +447,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private class GridColumn extends GridPropertyColumn implements TreeGridColumn {
 
         private final GPropertyDraw columnProperty;
+
+        @Override
+        public String getNativeSID() {
+            return columnProperty.getNativeSID();
+        }
 
         @Override
         public boolean isFocusable() {

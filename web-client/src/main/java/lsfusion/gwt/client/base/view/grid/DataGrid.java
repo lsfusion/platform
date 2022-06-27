@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -78,8 +79,9 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
      */
     boolean isFocused;
 
-    private final List<Column<T, ?>> columns = new ArrayList<>();
-    private final Map<Column<T, ?>, String> columnWidths = new HashMap<>();
+    private final ArrayList<Column<T, ?>> columns = new ArrayList<>();
+    private final NativeSIDMap<Column<T, ?>, String> columnWidths = new NativeSIDMap<>();
+    private final NativeSIDMap<Column<T, ?>, String> columnFlexWidths = new NativeSIDMap<>();
 
     protected final GridStyle style;
 
@@ -647,10 +649,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return columns.indexOf(column);
     }
 
-    public String getColumnWidth(Column<T, ?> column) {
-        return columnWidths.get(column);
-    }
-
     public void setTableBuilder(GPropertyTableBuilder<T> tableBuilder) {
         this.tableBuilder = tableBuilder;
     }
@@ -758,6 +756,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         columnWidths.put(column, width);
     }
 
+    public void setColumnFlexWidth(Column<T, ?> column, String width) {
+        columnFlexWidths.put(column, width);
+    }
+
     public int getOffsetColumnWidth(int index) {
         return getHeaderElement(index).getOffsetWidth();
 //        return impl.getFullSize(getHeaderElement(index), false);
@@ -828,69 +830,16 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return true;
     }
 
-
-    /**
-     * Set the minimum width of the tables in this widget. If the widget become
-     * narrower than the minimum width, a horizontal scrollbar will appear so the
-     * user can scroll horizontally.
-     * <p/>
-     * <p>
-     * Note that this method is not supported in IE6 and earlier versions of IE.
-     * </p>
-     *
-     * @param value the width
-     * @param unit  the unit of the width
-     * @see #setTableWidth(double, Unit)
-     */
-    private GSize minWidth;
-    public void setMinimumTableWidth(GSize width) {
-        this.minWidth = width;
-
-        setBlockMinWidth(0, tableData);
-    }
-
     @Override
     public void setPreferredSize(boolean set, Result<Integer> grids) {
-        if(minWidth != null) {
-            // we have only minWidth, but during auto sizing this grid will get 100000 pixels width, which is not what we expect
-            // so we're setting max width
-            setMaxBlockWidth(set, tableData);
-        }
+        // max-width fit-content
+//        if(minWidth != null)
+        FlexPanel.setMaxWidth(tableData.getElement(), set ? "min-content" : null);
 
         grids.set(grids.result + 1);
 
         // super call will set tableDataScroller flex basis to auto (which is also important)
         super.setPreferredSize(set, grids);
-    }
-
-    private void setMaxBlockWidth(boolean set, Widget tableData) {
-        if(set)
-            setMaxWidth(tableData, minWidth);
-        else
-            clearMaxWidth(tableData);
-    }
-
-    public static void setMaxWidth(Widget widget, GSize size) {
-        widget.getElement().getStyle().setProperty("maxWidth", size.getString());
-    }
-
-    public static void setMaxHeight(Widget widget, GSize size) {
-        widget.getElement().getStyle().setProperty("maxHeight", size.getString());
-    }
-
-    public static void clearMaxWidth(Widget widget) {
-        widget.getElement().getStyle().clearProperty("maxWidth");
-    }
-
-    public static void clearMaxHeight(Widget widget) {
-        widget.getElement().getStyle().clearProperty("maxHeight");
-    }
-
-    public void setBlockMinWidth(int offset, Widget tableData) {
-        GSize width = this.minWidth;
-        if(offset > 0)
-            width = width.add(offset);
-        tableData.getElement().getStyle().setProperty("minWidth", width.getString());
     }
 
     private void updateTableRightOuterBorder() {
@@ -911,45 +860,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     private void updateTableMargins() {
         if(!noScrollers)
             updateTableRightOuterBorder();
-    }
-
-    /**
-     * Set the width of the tables in this widget. By default, the width is not
-     * set and the tables take the available width.
-     * <p/>
-     * <p>
-     * The table width is not the same as the width of this widget. If the tables
-     * are narrower than this widget, there will be a gap between the table and
-     * the edge of the widget. If the tables are wider than this widget, a
-     * horizontal scrollbar will appear so the user can scroll horizontally.
-     * </p>
-     * <p/>
-     * <p>
-     * If your table has many columns and you want to ensure that the columns are
-     * not truncated, you probably want to use
-     * {@link #setMinimumTableWidth(double, Unit)} instead. That will ensure that
-     * the table is wide enough, but it will still allow the table to expand to
-     * 100% if the user has a wide screen.
-     * </p>
-     * <p/>
-     * <p>
-     * Note that setting the width in percentages will not work on older versions
-     * of IE because it does not account for scrollbars when calculating the
-     * width.
-     * </p>
-     *
-     * @param value the width
-     * @param unit  the unit of the width
-     * @see #setMinimumTableWidth(double, Unit)
-     */
-    public void setTableWidth(double value, Unit unit) {
-        /*
-         * The min-width style attribute doesn't apply to tables, so we set the
-         * min-width of the element that contains the table instead. For
-         * consistency, we set the width of the container as well.
-         */
-        assert noHeaders && noScrollers && noFooters;
-        tableData.getElement().getStyle().setWidth(value, unit);
     }
 
     private TableRowElement getRowElementNoFlush(int row) {
@@ -1036,18 +946,6 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         if (col < 0 || col >= getColumnCount()) {
             throw new IndexOutOfBoundsException("Column index is out of bounds: " + col);
         }
-    }
-
-    private void updateColumnWidthImpl(int column, String width) {
-        updateColumnWidthImpl(tableData, column, width);
-    }
-
-    private void updateColumnWidthImpl(TableWidget tableData, int column, String width) {
-        Style colElementStyle = tableData.ensureTableColElement(column).getStyle();
-        if (width == null)
-            colElementStyle.clearWidth();
-        else
-            colElementStyle.setProperty("width", width);
     }
 
     /**
@@ -1629,17 +1527,20 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
     }
 
     // mechanism is slightly different - removing redundant columns, resetting others, however there is no that big difference from other updates so will leave it this way
-    private void updateWidthsDOM(boolean columnsChanged) {
+    protected void updateWidthsDOM(boolean columnsChanged) {
         int columnCount = getColumnCount();
 
         if(columnsChanged)
-            removeUnusedColumnWidthsImpl(columnCount);
-        for (int i = 0; i < columnCount; i++)
-            updateColumnWidthImpl(i, getColumnWidth(columns.get(i)));
-    }
+            tableData.removeUnusedColumns(columnCount);
+        for (int i = 0; i < columnCount; i++) {
+            TableColElement colElement = tableData.ensureTableColElement(i);
+            Column<T, ?> key = columns.get(i);
 
-    private void removeUnusedColumnWidthsImpl(int columnCount) {
-        tableData.removeUnusedColumns(columnCount);
+            String width = columnWidths.get(key);
+            String flexWidth = columnFlexWidths.get(key);
+            FlexPanel.setMinWidth(colElement, flexWidth != null ? width : null);
+            FlexPanel.setWidth(colElement, flexWidth != null ? flexWidth : width);
+        }
     }
 
     @Override

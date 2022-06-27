@@ -238,7 +238,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         if(tableToExcel) {
             GPivot.setTableToExcelRowHeight(td, height);
         }
-        td.getStyle().setProperty("height", height.getString());
+        FlexPanel.setHeight(td, height);
     }
 }
 

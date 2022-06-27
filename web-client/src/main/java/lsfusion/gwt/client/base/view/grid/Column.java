@@ -16,10 +16,11 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.TableCellElement;
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 
-public abstract class Column<T, C> {
+public abstract class Column<T, C> implements HasNativeSID {
 
   public Column() {
   }

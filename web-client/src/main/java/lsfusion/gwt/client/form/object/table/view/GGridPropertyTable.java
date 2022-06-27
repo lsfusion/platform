@@ -360,8 +360,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     private void updateLayoutWidthColumns() {
-        GSize totalPref = GSize.ZERO;
-        double totalDoublePref = 0.0;
+//        GSize totalPref = GSize.ZERO;
+//        double totalDoublePref = 0.0;
 
         List<Column> flexColumns = new ArrayList<>();
         List<Double> flexValues = new ArrayList<>();
@@ -375,19 +375,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             if(resized) {
                 flexPref = doublePrefs[i];
                 pref = GSize.getResizeSize(flexPref);
-                totalDoublePref += flexPref;
+//                totalDoublePref += flexPref;
             } else {
                 pref = prefs[i];
                 flexPref = pref.getValueFlexSize();
-                totalPref = totalPref.add(pref);
+//                totalPref = totalPref.add(pref);
             }
             if(flexes[i]) {
                 flexColumns.add(column);
                 flexValues.add(flexPref);
                 totalFlexValues += flexPref;
-            } else {
-                setColumnWidth(column, pref.getString());
             }
+            setColumnWidth(column, pref.getString());
         }
 
         // поправка для округлений (чтобы не дрожало)
@@ -405,30 +404,38 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             int flexPercent = (int) Math.round(flexValue * restPercent / totalFlexValues);
             restPercent -= flexPercent;
             totalFlexValues -= flexValue;
-            setColumnWidth(flexColumn, ((double)flexPercent / (double)precision)  + "%");
+            setColumnFlexWidth(flexColumn, ((double)flexPercent / (double)precision)  + "%");
         }
-        if(resized)
-            totalPref = GSize.getResizeSize(totalDoublePref);
-        setMinimumTableWidth(totalPref);
+//        if(resized)
+//            totalPref = GSize.getResizeSize(totalDoublePref);
+//        setMinimumTableWidth(totalPref);
     }
 
     public double resizeColumn(int column, int delta) {
 //        int body = ;
-        int viewWidth = getViewportWidth() - 1; // непонятно откуда этот один пиксель берется (судя по всему padding)
         if(!resized) {
+            boolean needCalc = false; // optimization
+
             resized = true;
             doublePrefs = new double[prefs.length];
             intBasePrefs = new int[basePrefs.length];
             for (int i = 0; i < prefs.length; i++) {
                 Double pxPref = prefs[i].getResizeSize();
                 Integer pxBasePref = basePrefs[i].getIntResizeSize();
-                if(pxPref == null || pxBasePref == null)
-                    setColumnWidth(getColumn(i), basePrefs[i].getString()); // it will be restored in updateLayoutWidthColumns
+                // we don't calc paddings, since the width is set to col, which includes paddings
+                if(pxPref == null || pxBasePref == null) {
+                    // this will set with to the fixed ones
+                    setColumnFlexWidth(getColumn(i), null); // it will be restored in updateLayoutWidthColumns
+                    needCalc = true;
+                }
                 doublePrefs[i] = pxPref != null ? pxPref : -1.0;
                 intBasePrefs[i] = pxBasePref != null ? pxBasePref : -1;
             }
             prefs = null;
             basePrefs = null;
+
+            if(needCalc)
+                updateWidthsDOM(false);
 
             for (int i = 0; i < doublePrefs.length; i++) {
                 if(doublePrefs[i] < -0.5 || intBasePrefs[i] < 0) {
@@ -440,7 +447,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 }
             }
         }
+
+        int viewWidth = getViewportWidth();
         double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, doublePrefs, intBasePrefs, flexes);
+
         for (int i = 0; i < doublePrefs.length; i++) {
             int pref = (int) Math.round(doublePrefs[i]);
             setUserWidth(i, pref);
@@ -605,6 +615,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
     
     protected GSize getColumnBaseWidth(int i) {
+        // we need not null, because table with table-layout:fixed, uses auto which just split the rest percents equally
+        // and table-layout:auto won't do for a lot of reasons
+        // plus calc(100px+3%) doesn't work (despite the css specification), however not sure that this would help
+        // plus there is a problem with paddings:
+        //      when setting width to a column, this width is set "with paddings", that could be fixed, by setting widths for the first row (however in that case we would have to create one invisible virtual row in the header)
+        //      but the main problem is that % percentage works really odd, it respects paddings, but not the way it does in divs (i.e subtract paddings, and then split the rest). This might create problems in resizing,
+        // so for now we'll use the width with padding
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
