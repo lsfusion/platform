@@ -183,7 +183,15 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             this.columnKeys.set(index, columnKeys);
         } else
             assert index >= 0;
-        this.values.set(index, values);
+
+        NativeHashMap<GGroupObjectValue, Object> valuesMap = this.values.get(index);
+        if (updateKeys && valuesMap != null) {
+            valuesMap.putAll(values);
+        } else {
+            NativeHashMap<GGroupObjectValue, Object> pvalues = new NativeHashMap<>();
+            pvalues.putAll(values);
+            this.values.set(index, pvalues);
+        }
 
         dataUpdated = true;
     }
