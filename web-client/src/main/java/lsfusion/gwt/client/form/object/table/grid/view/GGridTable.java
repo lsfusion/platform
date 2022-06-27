@@ -188,9 +188,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         if (currentSize > newSize) {
             if (modifyGroupObject) {
                 ArrayList<GridDataRecord> oldRecords = new ArrayList<>(rows);
-                for (GridDataRecord record : oldRecords) {
+                for (int i = 0; i < oldRecords.size(); i++) {
+                    GridDataRecord record = oldRecords.get(i);
                     if (!rowKeys.contains(record.getKey())) {
                         rows.remove(record);
+                        tableBuilder.incDeleteRows(tableData.getSection(), i, i + 1);
+                        incUpdateRowIndices(i, -1);
                     }
                 }
             } else {
