@@ -6,28 +6,33 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.view.ModalForm;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class ResizableModalWindow extends ResizableWindow {
 
     private static ModalMask modalMask;
+    private static int modalWindowCount;
     //This scheme is necessary when one modal window is started before the second one, but is displayed later due to delays.
     //In this case, the order in which the windows are displayed must be maintained according to the order of request indexes.
-    private static Map<Widget, Pair<ModalForm, Long>> formRequestIndexMap = new HashMap<>();
+    private FormRequestData formRequestData;
 
-    public void show(Pair<ModalForm, Long> formRequestIndex, Integer insertIndex) {
-        showModalMask(formRequestIndex);
+    public void show(FormRequestData formRequestData, Integer insertIndex) {
+        modalWindowCount++;
+        if (modalMask == null) {
+            modalMask = new ModalMask();
+            modalMask.show();
+        }
+        this.formRequestData = formRequestData;
         super.show(insertIndex);
     }
 
-    public Pair<ModalForm, Integer> getFormInsertIndex(Long requestIndex) {
+    public Pair<ModalForm, Integer> getFormInsertIndex(FormRequestData formRequestData) {
         AbsolutePanel boundaryPanel = getBoundaryPanel();
-        for(int i = 0; i < boundaryPanel.getWidgetCount(); i++) {
+        for (int i = 0; i < boundaryPanel.getWidgetCount(); i++) {
             Widget widget = boundaryPanel.getWidget(i);
-            Pair<ModalForm, Long> form = formRequestIndexMap.get(widget);
-            if(form != null && form.second != null && form.second < requestIndex) {
-                return new Pair(form.first, i);
+            if (widget instanceof ResizableModalWindow) {
+                FormRequestData widgetData = ((ResizableModalWindow) widget).formRequestData;
+                if (widgetData.isBefore(formRequestData)) {
+                    return new Pair(widgetData.modalForm, i);
+                }
             }
         }
         return null;
@@ -35,20 +40,9 @@ public class ResizableModalWindow extends ResizableWindow {
 
     public void hide() {
         super.hide();
-        hideModalMask();
-    }
-
-    public void showModalMask(Pair<ModalForm, Long> formRequestIndex) {
-        if (modalMask == null) {
-            modalMask = new ModalMask();
-            modalMask.show();
-        }
-        formRequestIndexMap.put(this, formRequestIndex);
-    }
-
-    public void hideModalMask() {
-        formRequestIndexMap.remove(this);
-        if (modalMask != null && formRequestIndexMap.isEmpty()) {
+        formRequestData = null;
+        modalWindowCount--;
+        if (modalMask != null && modalWindowCount == 0) {
             modalMask.hide();
             modalMask = null;
         }

@@ -133,7 +133,7 @@ public abstract class FormsController {
         if (asyncFormController.onServerInvocationCloseResponse()) {
             if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GHideFormAction)) {
                 Pair<FormContainer, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
-                asyncClosedForm.first.show(asyncFormController.getEditRequestIndex(), asyncClosedForm.second);
+                asyncClosedForm.first.show(asyncFormController, asyncClosedForm.second);
             }
         }
     }
@@ -257,7 +257,7 @@ public abstract class FormsController {
         if(asyncOpened)
             formContainer.onAsyncInitialized();
         else
-            formContainer.show(asyncFormController.getEditRequestIndex());
+            formContainer.show(asyncFormController);
 
         return formContainer;
     }
@@ -283,7 +283,7 @@ public abstract class FormsController {
             Scheduler.ScheduledCommand runOpenForm = () -> {
                 FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
                 formContainer.setContentLoading();
-                formContainer.show(asyncFormController.getEditRequestIndex());
+                formContainer.show(asyncFormController);
                 asyncFormController.putAsyncForm(formContainer);
             };
             // this types because for them size is unknown, so there'll be blinking
