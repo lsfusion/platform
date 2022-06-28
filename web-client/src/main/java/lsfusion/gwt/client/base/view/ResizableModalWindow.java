@@ -30,7 +30,7 @@ public class ResizableModalWindow extends ResizableWindow {
             Widget widget = boundaryPanel.getWidget(i);
             if (widget instanceof ResizableModalWindow) {
                 FormRequestData widgetData = ((ResizableModalWindow) widget).formRequestData;
-                if (widgetData != null && widgetData.isBefore(formRequestData)) {
+                if (widgetData.isBefore(formRequestData)) {
                     return new Pair(widgetData.modalForm, i);
                 }
             }
