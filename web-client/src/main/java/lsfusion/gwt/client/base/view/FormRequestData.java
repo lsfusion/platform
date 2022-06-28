@@ -4,11 +4,11 @@ import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.view.ModalForm;
 
 public class FormRequestData {
-    GwtActionDispatcher dispatcher;
-    ModalForm modalForm;
-    Long requestIndex;
+    public final GwtActionDispatcher dispatcher;
+    public final ModalForm modalForm;
+    public final long requestIndex;
 
-    public FormRequestData(GwtActionDispatcher dispatcher, ModalForm modalForm, Long requestIndex) {
+    public FormRequestData(GwtActionDispatcher dispatcher, ModalForm modalForm, long requestIndex) {
         this.dispatcher = dispatcher;
         this.modalForm = modalForm;
         this.requestIndex = requestIndex;

@@ -4,7 +4,6 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.view.ModalForm;
 
 import java.util.HashMap;
@@ -22,12 +21,12 @@ public class ResizableModalWindow extends ResizableWindow {
         super.show(insertIndex);
     }
 
-    public Pair<ModalForm, Integer> getFormInsertIndex(GwtActionDispatcher dispatcher, Long requestIndex) {
+    public Pair<ModalForm, Integer> getFormInsertIndex(FormRequestData formRequestData) {
         AbsolutePanel boundaryPanel = getBoundaryPanel();
         for(int i = 0; i < boundaryPanel.getWidgetCount(); i++) {
             Widget widget = boundaryPanel.getWidget(i);
             FormRequestData data = formRequestDataMap.get(widget);
-            if(data != null && data.dispatcher != null && data.dispatcher.equals(dispatcher) && data.requestIndex != null && data.requestIndex < requestIndex) {
+            if(data != null && data.dispatcher.equals(formRequestData.dispatcher) && data.requestIndex < formRequestData.requestIndex) {
                 return new Pair(data.modalForm, i);
             }
         }

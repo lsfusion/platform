@@ -6,13 +6,13 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.classes.controller.PopupCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -78,7 +78,7 @@ public class PopupForm extends EditingForm {
     private FormContainer prevForm;
 
     @Override
-    public void show(GwtActionDispatcher dispatcher, Long requestIndex, Integer index) {
+    public void show(GAsyncFormController asyncFormController, Integer index) {
         prevForm = MainFrame.getAssertCurrentForm();
         if(prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);

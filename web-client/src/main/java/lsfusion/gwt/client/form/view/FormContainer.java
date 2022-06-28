@@ -80,11 +80,11 @@ public abstract class FormContainer {
         }
     }
 
-    public void show(GwtActionDispatcher dispatcher, Long requestIndex) {
-        show(dispatcher, requestIndex, null);
+    public void show(GAsyncFormController asyncFormController) {
+        show(asyncFormController, null);
     }
 
-    public abstract void show(GwtActionDispatcher dispatcher, Long requestIndex, Integer index);
+    public abstract void show(GAsyncFormController asyncFormController, Integer index);
 
     // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
     public void queryHide(EndReason editFormCloseReason) {
