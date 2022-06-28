@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
@@ -57,7 +58,7 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    public void show(Long requestIndex, Integer index) {
+    public void show(GwtActionDispatcher dispatcher, Long requestIndex, Integer index) {
         formsController.addDockable(this, index);
     }
 

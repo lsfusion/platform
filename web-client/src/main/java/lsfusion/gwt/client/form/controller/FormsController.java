@@ -133,7 +133,7 @@ public abstract class FormsController {
         if (asyncFormController.onServerInvocationCloseResponse()) {
             if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GHideFormAction)) {
                 Pair<FormContainer, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
-                asyncClosedForm.first.show(asyncFormController.getEditRequestIndex(), asyncClosedForm.second);
+                asyncClosedForm.first.show(asyncFormController.getDispatcher(), asyncFormController.getEditRequestIndex(), asyncClosedForm.second);
             }
         }
     }
@@ -257,7 +257,7 @@ public abstract class FormsController {
         if(asyncOpened)
             formContainer.onAsyncInitialized();
         else
-            formContainer.show(asyncFormController.getEditRequestIndex());
+            formContainer.show(asyncFormController.getDispatcher(), asyncFormController.getEditRequestIndex());
 
         return formContainer;
     }
@@ -281,9 +281,10 @@ public abstract class FormsController {
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
+                long requestIndex = asyncFormController.getEditRequestIndex();
+                FormContainer formContainer = createFormContainer(windowType, true, requestIndex, openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
                 formContainer.setContentLoading();
-                formContainer.show(asyncFormController.getEditRequestIndex());
+                formContainer.show(asyncFormController.getDispatcher(), requestIndex);
                 asyncFormController.putAsyncForm(formContainer);
             };
             // this types because for them size is unknown, so there'll be blinking
