@@ -680,6 +680,17 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
+    protected static boolean incrementalUpdate = true;
+    protected void incUpdateRowIndices(int startFrom, int shift) {
+        assert incrementalUpdate;
+
+        for(int i=startFrom,size=rows.size();i<size;i++) {
+            GridDataRecord row = rows.get(i);
+            assert row.getRowIndex() + shift == i;
+            row.rowIndex = i;
+        }
+    }
+
     public GridPropertyColumn getGridColumn(int column) {
         return (GridPropertyColumn) getColumn(column);
     }

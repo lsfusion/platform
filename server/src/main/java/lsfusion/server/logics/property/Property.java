@@ -1682,11 +1682,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         PropertyFact.setResetAsync(action.action, new AsyncMapChange<>(new PropertyMapImplement<>(this, action.mapping.reverse()), null, null, null));
     }
 
-    public boolean setNotNull;
+    public boolean userNotNull;
+    public boolean notNull;
 
     @Override
     public boolean isNotNull() {
-        return setNotNull;
+        return notNull;
     }
 
     public boolean disableInputList;
@@ -2158,6 +2159,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return ListFact.singleton(this);
     }
 
+    public boolean userLoggable;
     private boolean loggable;
 
     public ActionMapImplement<?, T> logFormAction;

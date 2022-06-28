@@ -10,6 +10,14 @@ onWebClientStarted  ABSTRACT LIST ( );
 onWebClientLoad ABSTRACT LIST ();
 onWebClientStarted () +{ 
     onWebClientLoad();
+
+    INTERNAL CLIENT 'input-quill.js';
+    INTERNAL CLIENT 'input-quill.css';
+    
+    INTERNAL CLIENT 'input.js';
+
+    INTERNAL CLIENT 'option.js';
+    INTERNAL CLIENT WAIT 'option.css';
 }
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
@@ -40,6 +48,7 @@ onWebClientLoad() + {
             INTERNAL CLIENT resourcePaths(s);
         }
     }
+    INTERNAL CLIENT WAIT 'empty.js'; //Needed for the synchronized execution js files from /onStarted dir
 }
 
 CLASS ABSTRACT Exception '{system.events.exception}';

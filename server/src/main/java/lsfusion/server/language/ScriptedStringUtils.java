@@ -4,15 +4,25 @@ import lsfusion.base.Pair;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static lsfusion.base.BaseUtils.inlineFileSeparator;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
 public class ScriptedStringUtils {
     public static final char QUOTE = '\'';
-    
+    public static final String specialCharacters = "nrt";
+    public static final char INTERP_CH = '$';
+    public static final char INLINE_CH = 'I';
+    public static final char RESOURCE_CH = 'R';
+
+    public static final String INLINE_PREFIX = String.valueOf(INTERP_CH) + INLINE_CH + OPEN_CH; // $I{
+
     public static class TransformationError extends Exception {
         public TransformationError(String text) {
             super(text);
@@ -173,30 +183,45 @@ public class ScriptedStringUtils {
     }
 
     public static String transformLocalizedStringLiteralToSourceString(String s) throws TransformationError {
-        if (s == null) {
-            return null;
-        }
+        return transformStringLiteral(s, true, String.valueOf(QUOTE) + INTERP_CH, "\\" + OPEN_CH + CLOSE_CH);
+    }
 
+    public static String removeEscaping(String s) throws TransformationError {
+        return transformString(s, true, "\\" + QUOTE + INTERP_CH + OPEN_CH + CLOSE_CH, "");
+    }
+
+    private static String removeQuoteEscaping(String s) throws TransformationError {
+        return transformString(s, false, String.valueOf(QUOTE), null);
+    }
+
+    private static String transformString(String s, boolean replaceSpecial, String removeEscaping, String keepEscaping) throws TransformationError {
+        if (s == null) return null;
+        return transformStringPart(s, 0, s.length(), replaceSpecial, removeEscaping, keepEscaping);
+    }
+
+    private static String transformStringLiteral(String s, boolean replaceSpecial, String removeEscaping, String keepEscaping) throws TransformationError {
+        if (s == null) return null;
+        return transformStringPart(s, 1, s.length() - 1, replaceSpecial, removeEscaping, keepEscaping);
+    }
+
+    private static String transformStringPart(String s, int start, int end, boolean replaceSpecial, String removeEscaping, String keepEscaping) throws TransformationError {
         StringBuilder b = new StringBuilder();
-        for (int i = 1; i+1 < s.length(); i++) {
+        for (int i = start; i < end; i++) {
             if (s.charAt(i) == '\\') {
-                if (i+2 == s.length()) {
+                if (i+1 == end) {
                     throw new TransformationError("wrong escape sequence at the end of the string");
                 }
 
                 char nextCh = s.charAt(i+1);
-                switch (nextCh) {
-                    case '\\': b.append("\\\\"); break;
-                    case QUOTE: b.append(QUOTE); break;
-                    case 'n': b.append('\n'); break;
-                    case 'r': b.append('\r'); break;
-                    case 't': b.append('\t'); break;
-                    case OPEN_CH: b.append("\\" + OPEN_CH); break;
-                    case CLOSE_CH: b.append("\\" + CLOSE_CH); break;
-                    case '$': b.append("\\$"); break;
-                    default: {
-                        throw new TransformationError(String.format(wrongEscapeSeqFormat, nextCh));
-                    }
+                if (replaceSpecial && specialCharacters.indexOf(nextCh) != -1) {
+                    b.append(toSpecialCharacter(nextCh));
+                } else if (removeEscaping.indexOf(nextCh) != -1) {
+                    b.append(nextCh);
+                } else if (keepEscaping == null || keepEscaping.indexOf(nextCh) != -1) {
+                    b.append('\\');
+                    b.append(nextCh);
+                } else {
+                    throw new TransformationError(String.format(wrongEscapeSeqFormat, nextCh));
                 }
                 ++i;
             } else {
@@ -207,24 +232,7 @@ public class ScriptedStringUtils {
     }
 
     public static String transformAnyStringLiteralToPropertyFileValue(final String literal) throws TransformationError {
-        StringBuilder b = new StringBuilder();
-        for (int i = 1; i+1 < literal.length(); i++) {
-            if (literal.charAt(i) == '\\') {
-                if (i+2 == literal.length()) {
-                    throw new TransformationError("wrong escape sequence at the end of the string");
-                }
-
-                char nextCh = literal.charAt(i+1);
-                if (nextCh != OPEN_CH && nextCh != CLOSE_CH && nextCh != QUOTE) {
-                    b.append("\\");
-                } 
-                b.append(nextCh);
-                ++i;
-            } else {
-                b.append(literal.charAt(i));
-            }
-        }
-        return b.toString();
+        return transformStringLiteral(literal, false, String.valueOf(QUOTE) + OPEN_CH + CLOSE_CH, null);
     }
     
     public static Pair<Integer, Integer> getSpaces(String s) {
@@ -282,6 +290,168 @@ public class ScriptedStringUtils {
             }
         }
         return true;
+    }
+
+    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE };
+
+    public static List<String> parseStringInterpolateProp(String source) throws TransformationError {
+        List<String> literals = new ArrayList<>();
+        int pos = 0;
+        int nestingDepth = 0;
+        int nestingInterpolationDepth = 0;
+        String currentLiteral = "";
+        StringInterpolateState state = StringInterpolateState.PLAIN;
+        StringInterpolateState newState;
+        Stack<Boolean> interpolationMarks = new Stack<>();
+        while (pos < source.length()) {
+            char c = source.charAt(pos);
+            newState = prefixState(source, pos);
+            if (c == '\\') {
+                if (pos+1 == source.length()) {
+                    throw new TransformationError("wrong escape sequence at the end of the string");
+                }
+                char nextc = source.charAt(pos + 1);
+                // removes quote's escaping when at top level inside interpolation
+                if (nextc != QUOTE || nestingInterpolationDepth != 1) {
+                    currentLiteral += '\\';
+                }
+                currentLiteral += nextc;
+                ++pos;
+            } else if (newState != StringInterpolateState.PLAIN) {
+                boolean isInterpolationState = newState == StringInterpolateState.INTERPOLATION;
+                if (nestingDepth == 0) {
+                    currentLiteral = flushCurrentLiteral(literals, currentLiteral);
+                    state = newState;
+                } else {
+                    currentLiteral += source.substring(pos, pos + (isInterpolationState ? 2 : 3));
+                }
+                if (isInterpolationState) {
+                    ++nestingInterpolationDepth;
+                }
+                ++nestingDepth;
+                interpolationMarks.push(isInterpolationState);
+                pos += (isInterpolationState ? 1 : 2);
+            } else if (c == OPEN_CH) {
+                ++nestingDepth;
+                currentLiteral += c;
+                interpolationMarks.push(false);
+            } else if (c == CLOSE_CH) {
+                --nestingDepth;
+                if (interpolationMarks.peek()) {
+                    --nestingInterpolationDepth;
+                }
+                interpolationMarks.pop();
+                if (nestingDepth == 0 && state != StringInterpolateState.PLAIN) {
+                    addToLiterals(currentLiteral, state, literals);
+                    currentLiteral = "";
+                    state = StringInterpolateState.PLAIN;
+                } else {
+                    currentLiteral += c;
+                }
+            } else {
+                currentLiteral += c;
+            }
+            ++pos;
+        }
+
+        flushCurrentLiteral(literals, currentLiteral);
+        return literals;
+    }
+
+    private static void addToLiterals(String currentLiteral, StringInterpolateState state, List<String> literals) {
+        if (state == StringInterpolateState.INTERPOLATION) {
+            literals.add("STRING(" + currentLiteral + ")");
+        } else if (state == StringInterpolateState.INLINE) {
+            literals.add(quote(INLINE_PREFIX + currentLiteral + CLOSE_CH));
+        } else if (state == StringInterpolateState.RESOURCE) {
+            literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
+        } else assert false;
+    }
+
+    private static String flushCurrentLiteral(List<String> literals, String currentLiteral) {
+        if (!currentLiteral.isEmpty()) {
+            literals.add(quote(currentLiteral));
+        }
+        return "";
+    }
+
+    // heuristic procedure
+    // allows ${, $I{, $R{ special syntax, but not localization or escaping
+    // adds escaping to all our special characters except for ${, $I{, $R{
+    // and corresponding closing braces.
+    // This can lead to an error if content contains, for example, javascript code
+    // with ${ inside
+    public static String escapeInlineContent(String content) {
+        StringBuilder builder = new StringBuilder();
+        Stack<Boolean> stack = new Stack<>();
+        for (int i = 0; i < content.length(); ++i) {
+            StringInterpolateState state = prefixState(content, i);
+            if (state != StringInterpolateState.PLAIN) {
+                stack.push(true);
+                int end = i + (state == StringInterpolateState.INTERPOLATION ? 1 : 2);
+                builder.append(content, i, end+1);
+                i = end;
+            } else {
+                char ch = content.charAt(i);
+                if (ch == OPEN_CH) {
+                    stack.push(false);
+                    builder.append('\\');
+                } else if (ch == CLOSE_CH) {
+                    if (stack.empty() || !stack.peek()) {
+                        builder.append('\\');
+                    }
+                    if (!stack.empty()) {
+                        stack.pop();
+                    }
+                } else if (("\n\r\t\\" + QUOTE + INTERP_CH).indexOf(ch) != -1) {
+                    builder.append('\\');
+                    ch = fromSpecialChar(ch);
+                }
+                builder.append(ch);
+            }
+        }
+        return builder.toString();
+    }
+
+    public static boolean containsInterpolationSequence(String s) {
+        for (int i = 0; i < s.length(); ++i) {
+            if (s.charAt(i) == '\\') {
+                ++i;
+            } else if (prefixState(s, i) != StringInterpolateState.PLAIN) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static StringInterpolateState prefixState(String s, int pos) {
+        if (!compareChar(s, pos, INTERP_CH)) return StringInterpolateState.PLAIN;
+        if (compareChar(s, pos + 1, OPEN_CH)) return StringInterpolateState.INTERPOLATION;
+        if (compareChar(s, pos + 1, INLINE_CH) && compareChar(s, pos + 2, OPEN_CH)) return StringInterpolateState.INLINE;
+        if (compareChar(s, pos + 1, RESOURCE_CH) && compareChar(s, pos + 2, OPEN_CH)) return StringInterpolateState.RESOURCE;
+        return StringInterpolateState.PLAIN;
+    }
+
+    private static boolean compareChar(String source, int pos, char cmp) {
+        return pos < source.length() && source.charAt(pos) == cmp;
+    }
+
+    private static char toSpecialCharacter(char ch) {
+        switch (ch) {
+            case 'n': return '\n';
+            case 'r': return '\r';
+            case 't': return '\t';
+        }
+        return ch;
+    }
+
+    private static char fromSpecialChar(char ch) {
+        switch (ch) {
+            case '\n': return 'n';
+            case '\r': return 'r';
+            case '\t': return 't';
+        }
+        return ch;
     }
 
     public static String unquote(String s) {

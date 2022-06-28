@@ -2185,7 +2185,7 @@ public abstract class LogicsModule {
 
     public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(Property<T> property, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event) {
         PropertyMapImplement<L, T> mapClasses = (PropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.logPolicy));
-        property.setNotNull = true;
+        property.notNull = true;
         addFollows(mapClasses.property, new PropertyMapImplement<>(property, mapClasses.mapping.reverse()),
                 LocalizedString.concatList(LocalizedString.create("{logics.property} "), property.caption, " [" + property.getSID(), LocalizedString.create("] {logics.property.not.defined}")),
                 debugPoint, options, event);
@@ -2228,7 +2228,7 @@ public abstract class LogicsModule {
         setNotNull(lp, null, Event.APPLY, resolve);
     }
 
-    protected <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, DebugInfo.DebugPoint debugPoint, Event event, ImList<PropertyFollowsDebug> resolve) {
+    public <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, DebugInfo.DebugPoint debugPoint, Event event, ImList<PropertyFollowsDebug> resolve) {
         setNotNull(lp.property, debugPoint, resolve, event);
     }
 

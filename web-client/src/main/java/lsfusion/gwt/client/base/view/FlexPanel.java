@@ -1134,15 +1134,28 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     public void setPreferredSize(boolean set, Result<Integer> grids) {
         for(Widget widget : getChildren()) {
             if(widget.isVisible()) {
-                // flex-basis : setting to auto / restoring
+                // main direction (dropping size / shrink)
                 FlexLayoutData flex = ((WidgetLayoutData) widget.getLayoutData()).flex;
-                if (!flex.isAutoSized() || flex.shrink)
+                if (flex.baseFlexBasis != null || flex.shrink)
                     impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
+
+                // opposite direction (dropping size / shrink)
+                SizedFlexPanel.setIntrinisticPreferredWidth(set, widget);
 
                 if (widget instanceof HasMaxPreferredSize)
                     ((HasMaxPreferredSize) widget).setPreferredSize(set, grids);
             }
         }
+    }
+
+    public void setChildPreferredSize(boolean set, Widget widget) {
+        // main direction (dropping size / shrink)
+        FlexLayoutData flex = ((WidgetLayoutData) widget.getLayoutData()).flex;
+        if (flex.baseFlexBasis != null || flex.shrink)
+            impl.setPreferredSize(set, widget.getElement(), flex, vertical, isGrid());
+
+        // opposite direction (dropping size / shrink)
+        SizedFlexPanel.setIntrinisticPreferredWidth(set, widget);
     }
 
     @Override

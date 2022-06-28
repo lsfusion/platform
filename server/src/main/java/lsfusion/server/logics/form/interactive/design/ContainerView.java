@@ -244,8 +244,9 @@ public class ContainerView extends ComponentView {
 
     public void setType(ContainerType type) {
         if(type != COLUMNS && this.type == COLUMNS && lines > 1) { // temp check
-            Supplier<DebugInfo.DebugPoint> debugPoint = ViewProxyUtil.setDebugPoint.get();
-            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + lines + " lines. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
+//            Supplier<DebugInfo.DebugPoint> debugPoint = ViewProxyUtil.setDebugPoint.get();
+//            ServerLoggers.startLogger.info("WARNING! Now container " + this + "  will have " + lines + " lines. Debug point : " + (debugPoint != null ? debugPoint.get() : "unknown"));
+            lines = 1;
         }
         this.type = type;
     }

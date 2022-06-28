@@ -766,8 +766,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
-    private static boolean incrementalUpdate = true;
-
     public void fireExpandNodeRecursive(boolean current, boolean open) {
         GTreeContainerTableNode node = getExpandSelectedNode();
         if (node != null && (!current || node.isExpandable())) {
@@ -859,15 +857,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         treeObjectRecord.setTreeValue(treeObjectRecord.getTreeValue().override(GTreeColumnValueType.get(open)));
         tableBuilder.incUpdateRow(tableData.getSection(), index, new int[]{0}, treeObjectRecord);
         return treeObjectRecord;
-    }
-    private void incUpdateRowIndices(int startFrom, int shift) {
-        assert incrementalUpdate;
-
-        for(int i=startFrom,size=rows.size();i<size;i++) {
-            GTreeGridRecord row = rows.get(i);
-            assert row.getRowIndex() + shift == i;
-            row.rowIndex = i;
-        }
     }
 
     private GTreeObjectTableNode getExpandSelectedNode() {

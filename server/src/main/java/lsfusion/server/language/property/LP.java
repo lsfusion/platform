@@ -220,6 +220,7 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
 
     public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
         setupLoggable(ownerModule, systemEventsLM, namingPolicy);
+        property.userLoggable = true;
         property.setLoggable(true);
     }
 

@@ -307,6 +307,7 @@ public class MainFrame implements EntryPoint {
                     if (!mobile) {
                         windowsController.storeWindowsSizes();
                     }
+                    windowsController.storeEditMode();
                 } finally {
                     clean();
                 }

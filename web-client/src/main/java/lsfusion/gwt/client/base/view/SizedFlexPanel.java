@@ -3,7 +3,6 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
-import org.springframework.security.core.parameters.P;
 
 // extended flex panel with alignShrink, and preferred size support
 public class SizedFlexPanel extends FlexPanel {
@@ -38,7 +37,7 @@ public class SizedFlexPanel extends FlexPanel {
             if(vertical) {
                 fixed = true;
                 if(alignShrink)
-                    setIntristicWidths(element, isStretch);
+                    setIntrinisticWidths(element, isStretch, alignSize);
                 else {
                     assert isStretch;
                     if(alignSize == null) {
@@ -62,7 +61,7 @@ public class SizedFlexPanel extends FlexPanel {
                     wrapPanel.setFlexAlignment(alignment);
                 if (size != null) { // we want to use intristic widths, because otherwise (when setting the size to the wrap panel) margin/border/padding will be ignored
                     assert !vertical;
-                    setIntristicWidths(element, true);
+                    setIntrinisticWidths(element, true, size);
                     setWidth(element, size);
                     size = null;
                 }
@@ -79,12 +78,25 @@ public class SizedFlexPanel extends FlexPanel {
         add(widget, beforeIndex, alignment, flex, shrink, size);
     }
 
-    private static void setIntristicWidths(Element element, boolean isStretch) {
+    private static void setIntrinisticWidths(Element element, boolean isStretch, GSize size) {
 //        setMaxWidth(element, "fill-available");
+        element.setPropertyObject("intrinisticShrinkWidth", size);
         element.addClassName("shrink-width");
 
         if(isStretch)
             element.addClassName("stretch-width");
+    }
+
+    protected static void setIntrinisticPreferredWidth(boolean set, Widget widget) {
+        Element element = widget.getElement();
+        GSize intrinisticShrinkSize = (GSize) element.getPropertyObject("intrinisticShrinkWidth");
+        if(intrinisticShrinkSize != null) {
+            if(set)
+                element.removeClassName("shrink-width");
+            else
+                element.addClassName("shrink-width");
+            FlexPanel.setWidth(element, set ? null : intrinisticShrinkSize);
+        }
     }
 
     public void removeSized(Widget widget) {
