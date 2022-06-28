@@ -96,25 +96,23 @@ startPathPOI '{geo.start.path.poi}'= DATA LOCAL POI();
 calculatePath '{geo.calculate.path.poi}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.CalculatePathAction' ();
 
 EXTEND FORM options
-    PROPERTIES() autoSynchronizeCoordinates, nameShowUserMapProvider, useTor, recalculateAllDistances, googleAutocompleteCountry
+    PROPERTIES() googleAutocompleteCountry, autoSynchronizeCoordinates, nameShowUserMapProvider, useTor
     OBJECTS m = MapProvider
     PROPERTIES(m) provider, apiKey, isDefault
 ;
 
 DESIGN options {
-    commons {
+    pane {
         NEW coordinatesContainer {
             caption = '{geo.form.options.caption.navigation}';
-                NEW apiKeys {
-                    fill = 1;
-                    height = 130;
-                    MOVE BOX (m);
-                }
-                MOVE PROPERTY(googleAutocompleteCountry());
-                MOVE PROPERTY(autoSynchronizeCoordinates());
-                MOVE PROPERTY(nameShowUserMapProvider());
-                MOVE PROPERTY(useTor());
-                MOVE PROPERTY(recalculateAllDistances());	
+            MOVE BOX(m) {
+                fill = 0;
+                GRID(m) { autoSize = TRUE; }
+            }
+            MOVE PROPERTY(googleAutocompleteCountry());
+            MOVE PROPERTY(autoSynchronizeCoordinates());
+            MOVE PROPERTY(nameShowUserMapProvider());
+            MOVE PROPERTY(useTor());
         }
     }
 }
