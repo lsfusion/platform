@@ -13,4 +13,8 @@ public class FormRequestData {
         this.modalForm = modalForm;
         this.requestIndex = requestIndex;
     }
+
+    public boolean isBefore(FormRequestData formRequestData) {
+        return dispatcher.equals(formRequestData.dispatcher) && requestIndex < formRequestData.requestIndex;
+    }
 }
