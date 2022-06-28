@@ -23,10 +23,7 @@ public class GActionType extends GDataType {
 
     @Override
     public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
-//        if(captionContainer != null)
-//            return new PropertyPanelRenderer(form, controller, property, columnKey, captionContainer);
-
-        return new ActionPanelRenderer(form, controller, property, columnKey, captionContainer);
+        return new ActionPanelRenderer(form, controller, property, columnKey);
     }
 
     @Override

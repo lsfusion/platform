@@ -209,7 +209,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         setSizeProperty(element, "minHeight", size != null ? size.getString() : null);
     }
     public static void setMaxHeight(Element element, GSize size) {
-        setSizeProperty(element, "maxWidth", size != null ? size.getString() : null);
+        setSizeProperty(element, "maxHeight", size != null ? size.getString() : null);
     }
     public static void setMinWidth(Element element, GSize size) {
         setMinWidth(element, size != null ? size.getString() : null);

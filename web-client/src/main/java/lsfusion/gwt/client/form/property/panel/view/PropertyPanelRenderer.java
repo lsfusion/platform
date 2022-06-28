@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.*;
@@ -19,7 +16,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private Label label;
 
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
-        super(form, controller, property, columnKey, captionContainer);
+        super(form, controller, property, columnKey);
 
         boolean needCorners = property.notNull || property.hasChangeAction;
         SizedWidget valueWidget = value.setSized();

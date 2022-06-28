@@ -6,15 +6,11 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
-import java.util.Optional;
-
-import static lsfusion.gwt.client.base.GwtSharedUtils.nullEquals;
 
 public abstract class PanelRenderer {
 
@@ -27,7 +23,7 @@ public abstract class PanelRenderer {
 
     public ArrayList<Integer> bindingEventIndices;
 
-    public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
+    public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey) {
         this.form = form;
         this.property = property;
         this.columnKey = columnKey;
