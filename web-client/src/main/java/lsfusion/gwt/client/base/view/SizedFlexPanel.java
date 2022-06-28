@@ -87,9 +87,7 @@ public class SizedFlexPanel extends FlexPanel {
             element.addClassName("stretch-width");
     }
 
-    @Override
-    public void setChildPreferredSize(boolean set, Widget widget) {
-        // opposite direction (dropping size / shrink)
+    protected static void setIntrinisticPreferredWidth(boolean set, Widget widget) {
         Element element = widget.getElement();
         GSize intrinisticShrinkSize = (GSize) element.getPropertyObject("intrinisticShrinkWidth");
         if(intrinisticShrinkSize != null) {
@@ -99,8 +97,6 @@ public class SizedFlexPanel extends FlexPanel {
                 element.addClassName("shrink-width");
             FlexPanel.setWidth(element, set ? null : intrinisticShrinkSize);
         }
-
-        super.setChildPreferredSize(set, widget);
     }
 
     public void removeSized(Widget widget) {
