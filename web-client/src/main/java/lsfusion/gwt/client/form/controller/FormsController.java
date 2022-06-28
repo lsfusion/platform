@@ -147,7 +147,7 @@ public abstract class FormsController {
 
     public native void setupModeButton(Element element, String[] images, int defaultIndex) /*-{
         var instance = this;
-        var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode'}, {imageSrc: images[2], title: 'Dialog Mode'}];
+        var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode (CTRL)'}, {imageSrc: images[2], title: 'Dialog Mode (SHIFT)'}];
 
         $wnd.$(element).ddslick({
             data:ddData,
@@ -167,29 +167,34 @@ public abstract class FormsController {
 
     }-*/;
 
-    public void updateLinkModeWithCtrl(boolean set) {
-        if(set) {
-            prevModeButton = selectModeButton(modeButton.getElement(), 1);
-            updateMode(EditMode.LINK, true);
-        } else {
-            selectModeButton(modeButton.getElement(), prevModeButton);
-            updateMode(EditMode.getMode(prevModeButton), false);
-        }
+    public void setForceEditMode(EditMode mode) {
+        GFormController.setPrevEditMode();
+        prevModeButton = selectModeButton(modeButton.getElement(), mode.getIndex());
+        updateMode(mode, mode == EditMode.LINK, mode == EditMode.DIALOG);
+    }
+
+    public void removeForceEditMode() {
+        selectModeButton(modeButton.getElement(), prevModeButton);
+        updateMode(EditMode.getMode(prevModeButton), false, false);
     }
 
     public void selectMode(int mode) {
-        updateMode(EditMode.getMode(mode), false);
+        updateMode(EditMode.getMode(mode), false, false);
     }
 
-    public void updateMode(EditMode editMode, boolean linkModeWithCtrl) {
+    public void updateMode(EditMode editMode, boolean forceLinkMode, boolean forceDialogMode) {
+        updateForceLinkModeStyles(editMode, forceLinkMode);
+        GFormController.setEditMode(editMode, forceLinkMode, forceDialogMode);
+    }
+
+    private void updateForceLinkModeStyles(EditMode editMode, boolean forceLinkMode) {
         boolean linkMode = editMode == EditMode.LINK;
-        if(!GFormController.isLinkModeWithCtrl() && linkModeWithCtrl) {
+        if(!GFormController.isForceLinkMode() && forceLinkMode) {
             GFormController.scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
         } else {
             GFormController.cancelLinkModeStylesTimer();
             setLinkModeStyles(linkMode);
         }
-        GFormController.setEditMode(editMode, linkModeWithCtrl);
     }
 
     private void setLinkModeStyles(boolean linkMode) {

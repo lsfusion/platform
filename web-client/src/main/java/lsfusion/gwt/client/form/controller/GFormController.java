@@ -150,7 +150,7 @@ public class GFormController implements EditManager {
 
     private boolean hasColumnGroupObjects;
 
-    private static Timer linkModeTimer;
+    private static Timer editModeTimer;
 
     private boolean needConfirm;
 
@@ -251,7 +251,7 @@ public class GFormController implements EditManager {
 
     public static void checkKeyEvents(DomEvent event, FormsController formsController) {
         NativeEvent nativeEvent = event.getNativeEvent();
-        checkLinkModeEvents(formsController, nativeEvent);
+        checkEditModeEvents(formsController, nativeEvent);
 
         if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent) && !MainFrame.mobile) {
             formsController.switchFullScreenMode();
@@ -272,55 +272,80 @@ public class GFormController implements EditManager {
     }-*/;
 
     private static boolean pressedCtrl = false;
+    private static boolean pressedShift = false;
     private void initLinkModeTimer() {
-        if(linkModeTimer == null) {
-            linkModeTimer = new Timer() {
+        if(editModeTimer == null) {
+            editModeTimer = new Timer() {
                 @Override
                 public void run() {
                     if (pressedCtrl) {
                         pressedCtrl = false;
+                    } else if(pressedShift) {
+                        pressedShift = false;
                     } else {
-                        if (isLinkModeWithCtrl()) {
-                            formsController.updateMode(EditMode.DEFAULT, false);
+                        if (isForceLinkMode() || isForceDialogMode()) {
+                            formsController.updateMode(EditMode.DEFAULT, false, false);
                         }
                     }
                 }
             };
-            linkModeTimer.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
+            editModeTimer.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
         }
     }
 
-    public static void checkLinkModeEvents(FormsController formsController, NativeEvent event) {
+    public static void checkEditModeEvents(FormsController formsController, NativeEvent event) {
         Boolean ctrlKey = eventGetCtrlKey(event);
+        Boolean shiftKey = eventGetShiftKey(event);
+        Boolean altKey = eventGetAltKey(event);
         if(ctrlKey != null) {
-            Boolean shiftKey = eventGetShiftKey(event);
-            Boolean altKey = eventGetAltKey(event);
             boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
             pressedCtrl = onlyCtrl;
-            if (!onlyCtrl && isLinkModeWithCtrl())
-                formsController.updateLinkModeWithCtrl(false);
             if (onlyCtrl && !isLinkMode())
-                formsController.updateLinkModeWithCtrl(true);
+                formsController.setForceEditMode(EditMode.LINK);
+            if (!onlyCtrl && isForceLinkMode())
+                formsController.removeForceEditMode();
+        }
+        if(shiftKey != null) {
+            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey);
+            pressedShift = onlyShift;
+            if (onlyShift && !isDialogMode())
+                formsController.setForceEditMode(EditMode.DIALOG);
+            if (!onlyShift && isForceDialogMode())
+                formsController.removeForceEditMode();
         }
     }
 
     private static EditMode editMode;
-    private static boolean linkModeWithCtrl;
+
+    private static EditMode prevEditMode;
+    public static void setPrevEditMode() {
+        prevEditMode = editMode;
+    }
+
+    private static boolean forceLinkMode;
+    public static boolean isForceLinkMode() {
+        return forceLinkMode;
+    }
     public static boolean isLinkMode() {
         return editMode == EditMode.LINK;
+    }
+
+    private static boolean forceDialogMode;
+    public static boolean isForceDialogMode() {
+        return forceDialogMode;
     }
     public static boolean isDialogMode() {
         return editMode == EditMode.DIALOG;
     }
-    public static boolean isLinkModeWithCtrl() {
-        return linkModeWithCtrl;
-    }
-    public static void setEditMode(EditMode mode, boolean enabledWithCtrl) {
+
+    public static void setEditMode(EditMode mode, boolean setForceLinkMode, boolean setForceDialogMode) {
         editMode = mode;
-        linkModeWithCtrl = enabledWithCtrl;
+        forceLinkMode = setForceLinkMode;
+        forceDialogMode = setForceDialogMode;
     }
+
     public static int getEditModeIndex() {
-        return editMode.getIndex();
+        return forceLinkMode || forceDialogMode ? prevEditMode.getIndex() : editMode.getIndex();
     }
 
     public static Timer linkModeStylesTimer;
@@ -1546,7 +1571,7 @@ public class GFormController implements EditManager {
     public boolean previewEvent(Element target, Event event) {
         if(BrowserEvents.BLUR.equals(event.getType()))
             MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
-        checkLinkModeEvents(formsController, event);
+        checkEditModeEvents(formsController, event);
         return previewLoadingManagerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
     }
 
