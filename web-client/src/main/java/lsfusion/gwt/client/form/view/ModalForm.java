@@ -36,7 +36,7 @@ public class ModalForm extends FormContainer {
 
         ResizableModalWindow window = new ResizableModalWindow() {
             @Override
-            protected void onShow() {
+            public void onShow() {
                 initPreferredSize(); // we need to do it after attach to have correct sizes
 
                 super.onShow();
@@ -71,7 +71,7 @@ public class ModalForm extends FormContainer {
     @Override
     public void onAsyncInitialized() {
         // actually it's already shown, but we want to update preferred sizes after setting the content
-        contentWidget.show(null, null);
+        contentWidget.onShow();
 
         super.onAsyncInitialized();
     }
