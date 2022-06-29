@@ -5568,7 +5568,7 @@ multOperand
 	
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
-fragment STR_LITERAL_CHAR	: ('\\' ~('\n'|'\r')) | ~('\''|'\\');	 // overcomplicated due to bug in ANTLR Works
+fragment STR_LITERAL_CHAR	: ('\\'.) | ~('\''|'\\');
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 fragment EDIGITS	:	('0'..'9')*;
