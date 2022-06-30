@@ -35,7 +35,7 @@ public class TimeIntervalClass extends IntervalClass<LocalTime> {
     }
 
     // should correspond ClientTimeIntervalClass, GTimeDTO.toTime
-    private static final LocalDate dateEpoch = LocalDate.of(1900, 1, 1);
+    private static final LocalDate dateEpoch = LocalDate.of(1970, 1, 1); //date before 1970 year gives a negative number of milliseconds
     @Override
     protected Long parse(String date) throws ParseException {
         return localDateTimeToUTCEpoch(TimeClass.instance.parseString(date).atDate(dateEpoch));
