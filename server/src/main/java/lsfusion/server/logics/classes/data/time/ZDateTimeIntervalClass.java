@@ -4,8 +4,6 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 
 public class ZDateTimeIntervalClass extends IntervalClass<Instant> {
@@ -33,11 +31,11 @@ public class ZDateTimeIntervalClass extends IntervalClass<Instant> {
 
     @Override
     protected Long parse(String date) throws lsfusion.server.logics.classes.data.ParseException {
-        return ZDateTimeClass.instance.parseString(date).getEpochSecond();
+        return ZDateTimeClass.instance.parseString(date).toEpochMilli();
     }
 
     @Override
     protected String format(Long epoch) {
-        return ZDateTimeClass.instance.formatString(Instant.ofEpochSecond(epoch));
+        return ZDateTimeClass.instance.formatString(Instant.ofEpochMilli(epoch));
     }
 }

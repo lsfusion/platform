@@ -224,11 +224,11 @@ public class DateConverter {
     }
 
     public static Long localDateTimeToUTCEpoch(LocalDateTime dateTime) {
-        return dateTime.toEpochSecond(ZoneOffset.UTC);
+        return dateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
     }
 
     public static LocalDateTime epochToLocalDateTime(long epoch) {
-        return LocalDateTime.ofInstant(Instant.ofEpochSecond(epoch), ZoneId.of("UTC"));
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(epoch), ZoneId.of("UTC"));
     }
 
     public static <E extends Exception> Object parseInterval(String s, EFunction<String, Long, E> parseFunction) throws E {

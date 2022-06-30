@@ -109,9 +109,9 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         public Date getDate() {
             if (defaultValue != null) {
                 if (left)
-                    return new Date(getIntervalPart(defaultValue, true) * 1000);
+                    return new Date(getIntervalPart(defaultValue, true));
                 else if (right)
-                    return new Date(getIntervalPart(defaultValue, false) * 1000);
+                    return new Date(getIntervalPart(defaultValue, false));
             }
             return null;
         }
@@ -120,7 +120,7 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         public void setDate(Date date) {
             if (date != null) {
                 String s = String.valueOf(defaultValue);
-                long l = date.getTime() / 1000;
+                long l = date.getTime();
                 String[] split = s.split("\\.");
 
                 if (split.length < 2 && defaultValue == null) //there is no interval, only one date or there are some errors on input

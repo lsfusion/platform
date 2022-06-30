@@ -21,11 +21,11 @@ public class ClientZDateTimeIntervalClass extends ClientIntervalClass {
 
     @Override
     protected Long parse(String date) throws ParseException {
-        return ClientZDateTimeClass.instance.parseString(date).getEpochSecond();
+        return ClientZDateTimeClass.instance.parseString(date).toEpochMilli();
     }
 
     @Override
     protected String format(Long epoch) {
-        return ClientZDateTimeClass.instance.formatString(Instant.ofEpochSecond(epoch));
+        return ClientZDateTimeClass.instance.formatString(Instant.ofEpochMilli(epoch));
     }
 }
