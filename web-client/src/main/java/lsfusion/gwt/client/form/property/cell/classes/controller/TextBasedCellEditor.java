@@ -61,7 +61,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
         super(editManager);
         this.property = property;
-        this.hasList = inputList != null && !disableSuggest();
+        this.hasList = inputList != null && !disableSuggest() && !property.echoSymbols;
         this.completionType = inputList != null ? inputList.completionType : GCompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
         this.compare = inputList != null ? inputList.compare : null;
