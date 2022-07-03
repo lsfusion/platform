@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.controller.SmartScheduler;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestReplaceCellEditor;
@@ -111,7 +112,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public void show(Long requestIndex, Integer index) {
+    public void show(GAsyncFormController asyncFormController, Integer index) {
         // we don't need to change currentForm for embedded form, since if closes on focus lost, so we don't need notifications / global key events
         // for the same reason we don't need to do onBlur
         // however now it's hard to tell what is the right approach

@@ -9,9 +9,12 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.view.FormRequestData;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
+import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -34,7 +37,7 @@ public class ModalForm extends FormContainer {
 
         ResizableModalWindow window = new ResizableModalWindow() {
             @Override
-            protected void onShow() {
+            public void onShow() {
                 initPreferredSize(); // we need to do it after attach to have correct sizes
 
                 super.onShow();
@@ -69,14 +72,17 @@ public class ModalForm extends FormContainer {
     @Override
     public void onAsyncInitialized() {
         // actually it's already shown, but we want to update preferred sizes after setting the content
-        contentWidget.show(null, null);
+        contentWidget.onShow();
 
         super.onAsyncInitialized();
     }
 
     @Override
-    public void show(Long requestIndex, Integer index) {
-        Pair<ModalForm, Integer> formInsertIndex = contentWidget.getFormInsertIndex(requestIndex);
+    public void show(GAsyncFormController asyncFormController, Integer index) {
+        GwtActionDispatcher dispatcher = asyncFormController.getDispatcher();
+        long requestIndex = asyncFormController.getEditRequestIndex();
+        FormRequestData formRequestData = new FormRequestData(dispatcher, this, requestIndex);
+        Pair<ModalForm, Integer> formInsertIndex = contentWidget.getFormInsertIndex(formRequestData);
         if(formInsertIndex == null) {
             prevForm = MainFrame.getAssertCurrentForm();
             if (prevForm != null) // if there were no currentForm
@@ -86,7 +92,7 @@ public class ModalForm extends FormContainer {
             formInsertIndex.first.prevForm = this;
         }
 
-        contentWidget.show(new Pair(this, requestIndex), formInsertIndex != null ? formInsertIndex.second : null);
+        contentWidget.show(formRequestData, formInsertIndex != null ? formInsertIndex.second : null);
 
         if(formInsertIndex == null) {
             onFocus(true);

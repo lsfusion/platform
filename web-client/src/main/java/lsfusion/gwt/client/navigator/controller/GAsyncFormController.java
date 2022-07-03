@@ -2,6 +2,7 @@ package lsfusion.gwt.client.navigator.controller;
 
 import com.google.gwt.core.client.Scheduler;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.view.FormContainer;
 
 public interface GAsyncFormController {
@@ -21,6 +22,8 @@ public interface GAsyncFormController {
     boolean canShowDockedModal();
 
     long getEditRequestIndex(); // needed to dispatch responses after editing started (form embedding)
+
+    GwtActionDispatcher getDispatcher();
 
     void scheduleOpen(Scheduler.ScheduledCommand command);
 

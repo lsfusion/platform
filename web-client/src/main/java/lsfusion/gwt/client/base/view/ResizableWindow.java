@@ -199,10 +199,15 @@ public class ResizableWindow extends Composite {
         windowController.getBoundaryPanel().remove(this);
     }
 
-    protected void onShow() {
+    public void onShow() {
         headerWidget.setPixelSize(headerWidget.getOffsetWidth(), headerWidget.getOffsetHeight());
 
         setContentSize(innerContentWidget.getOffsetWidth(), innerContentWidget.getOffsetHeight());
+
+        // centering, has to be done after everything is calculated
+        windowController.getBoundaryPanel().setWidgetPosition(this,
+                (Window.getClientWidth() - getOffsetWidth()) / 2,
+                (Window.getClientHeight() - getOffsetHeight()) / 2);
     }
 
     public void show(Integer insertIndex) {
@@ -215,11 +220,6 @@ public class ResizableWindow extends Composite {
         }
         
         onShow(); // need it after attach to have actual sizes calculated
-
-        // centering, has to be done after everything is calculated
-        boundaryPanel.setWidgetPosition(this,
-                (Window.getClientWidth() - getOffsetWidth()) / 2,
-                (Window.getClientHeight() - getOffsetHeight()) / 2);
     }
 
     public AbsolutePanel getBoundaryPanel() {

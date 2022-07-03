@@ -575,6 +575,11 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
 
             @Override
+            public GwtActionDispatcher getDispatcher() {
+                return GwtActionDispatcher.this;
+            }
+
+            @Override
             public void scheduleOpen(Scheduler.ScheduledCommand command) {
                 Timer openFormTimer = new Timer() {
                     @Override
