@@ -1,12 +1,13 @@
 package lsfusion.gwt.client.classes;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.classes.data.GDataType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
+import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -22,7 +23,7 @@ public class GActionType extends GDataType {
     public final static GActionType instance = new GActionType();
 
     @Override
-    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
+    public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         return new ActionPanelRenderer(form, controller, property, columnKey);
     }
 

@@ -13,8 +13,8 @@ import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedWidget;
-import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
-import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
+import lsfusion.gwt.client.form.design.view.CaptionWidget;
+import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class GFilterConditionView extends FlexPanel implements CaptionContainerHolder, HasNativeSID {
+public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public interface UIHandler {
         void addEnterBinding(Widget widget);
@@ -58,8 +58,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     
     private FlexPanel leftPanel;
     private FlexPanel rightPanel; 
-    private LinearCaptionContainer captionContainer;
-    
+
     private ColumnsProvider columnsProvider;
 
     public boolean allowNull;
@@ -218,14 +217,17 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         uiHandler.applyFilters(focusFirstComponent, this);
     }
 
-    public void initView() {
-        if (captionContainer == null) {
-            addCentered(leftPanel);
-        } else {
-            captionContainer.put(new SizedWidget(leftPanel), GFlexAlignment.CENTER);
+    public ComponentWidget initView() {
+        boolean alignCaptions = condition.filter.container.isAlignCaptions();
+        if(alignCaptions) {
+            addCentered(rightPanel);
+
+            return new ComponentWidget(new SizedWidget(this), new CaptionWidget(new SizedWidget(leftPanel), GFlexAlignment.START, GFlexAlignment.CENTER));
         }
-        
+
+        addCentered(leftPanel);
         addCentered(rightPanel);
+        return new ComponentWidget(this);
     }
     
     public boolean isFixed() {
@@ -319,16 +321,6 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
 
     public void setApplied(boolean applied) {
         valueView.setApplied(applied);
-    }
-
-    @Override
-    public void setCaptionContainer(LinearCaptionContainer captionContainer) {
-        this.captionContainer = captionContainer;
-    }
-
-    @Override
-    public GFlexAlignment getCaptionHAlignment() {
-        return GFlexAlignment.START;
     }
 
     @Override

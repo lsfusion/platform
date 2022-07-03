@@ -28,6 +28,7 @@ import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.*;
@@ -119,6 +120,9 @@ public class MainFrame implements EntryPoint {
     }
 
     public void onModuleLoad() {
+        // the problem is that firefox does not support min-width for columns
+        DataGrid.useColumnMinWidth = !GwtClientUtils.isFirefoxUserAgent();
+
         hackForGwtDnd();
         
         GWT.setUncaughtExceptionHandler(t -> {

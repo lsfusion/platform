@@ -156,7 +156,7 @@ public class GFontMetrics {
         style.setMargin(0, Style.Unit.PX);
         style.setBorderWidth(0, Style.Unit.PX);
 
-        style.setProperty("lineHeight", "1");
+//        style.setProperty("lineHeight", "normal");
 
         // we're setting convertSize to get relevant pixelSize
         if(GFixedSize.VALUE_TYPE != GFixedSize.Type.PX)

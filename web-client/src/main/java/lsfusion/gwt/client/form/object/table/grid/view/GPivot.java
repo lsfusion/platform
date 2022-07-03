@@ -1195,7 +1195,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if (isLastCol && sortDir != null) { // last column may have a sortDir
                     jsElement = GwtClientUtils.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
 
-                    jsElement = GwtClientUtils.wrapImg(jsElement, GGridPropertyTableHeader.getSortImgProcesspr(sortDir));
+                    jsElement = GGridPropertyTableHeader.wrapImg(jsElement, GGridPropertyTableHeader.getSortImgProcesspr(sortDir));
                 }
 
                 GPropertyTableBuilder.renderTD(jsElement);

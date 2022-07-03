@@ -277,6 +277,11 @@ public class GwtClientUtils {
                 userAgent.contains("edge");
     }
 
+    public static boolean isFirefoxUserAgent() {
+        String userAgent = getUserAgent();
+        return userAgent.contains("firefox");
+    }
+
     public static boolean isShowing(Widget widget) {
         if (widget == null) {
             return false;
@@ -386,16 +391,18 @@ public class GwtClientUtils {
     }
 
     public static void setupPercentParent(Element element) {
-        element.getStyle().setWidth(100, Style.Unit.PCT);
-        element.getStyle().setHeight(100, Style.Unit.PCT);
-//        inputElement.addClassName("boxSized");
-        element.getStyle().setProperty("boxSizing", "border-box");
+        element.addClassName("fill-parent-perc");
+//        element.getStyle().setWidth(100, Style.Unit.PCT);
+//        element.getStyle().setHeight(100, Style.Unit.PCT);
+////        inputElement.addClassName("boxSized");
+//        element.getStyle().setProperty("boxSizing", "border-box");
     }
 
     public static void clearPercentParent(Element element) {
-        element.getStyle().clearWidth();
-        element.getStyle().clearHeight();
-        element.getStyle().clearProperty("boxSizing");
+        element.removeClassName("fill-parent-perc");
+//        element.getStyle().clearWidth();
+//        element.getStyle().clearHeight();
+//        element.getStyle().clearProperty("boxSizing");
     }
 
     public static void changePercentFillWidget(Widget widget, boolean percent) {
@@ -848,32 +855,6 @@ public class GwtClientUtils {
         return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 
-    public static Element wrapCenteredImg(Element th, GSize height, Consumer<ImageElement> imgProcessor) {
-        th = wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
-
-        // since it's a header we want to align it to the center (vertically and horizontally)
-        th = wrapCenter(th); // we have to do it after setting height (because that's the point of that centering)
-        // left works strange, plus, images are also stretched, so will leave it with extra container
-//        setAlignedFlexCenter(th, multiLine ? "stretch" : "center", multiLine ? "left" : "center"); // in theory should correspond default alignments in TextBasedCellRenderer
-
-        // we don't want that container to be larger than the upper one
-        // it seems it is needed because in wrapDiv we use auto sizing
-        if(height != null)
-            th.getStyle().setProperty("maxHeight", height.getString());
-
-        if(imgProcessor != null)
-            th = wrapImg(th, imgProcessor);
-//            th = wrapAlignedFlexImg(th, imgProcessor);
-
-        th.addClassName("wrap-caption");
-        return th;
-    }
-
-    public static void clearAlignedFlexCenter(Element th) {
-        th.removeClassName("wrap-center");
-        th.getStyle().clearProperty("alignItems");
-        th.getStyle().clearProperty("justifyContent");
-    }
     // optimization
     public static boolean isAlignedFlexModifiableDiv(Element th) {
         return th.hasClassName("wrap-center");
@@ -886,46 +867,6 @@ public class GwtClientUtils {
         th.appendChild(wrappedTh);
 
         return wrappedTh;
-    }
-
-    public static Element wrapCenter(Element th) {
-        th.addClassName("wrap-center"); // display flex : justify-content, align-items : center
-
-        Element wrappedTh = Document.get().createDivElement();
-        th.appendChild(wrappedTh);
-
-        return wrappedTh;
-    }
-
-    public static Element wrapImg(Element th, Consumer<ImageElement> imgProcessor) {
-        assert !isAlignedFlexModifiableDiv(th);
-        th.addClassName("wrap-wrapimgdiv");
-
-        Element wrappedTh = Document.get().createDivElement();
-        wrappedTh.addClassName("wrap-imgdiv");
-
-        ImageElement img = Document.get().createImageElement();
-        img.addClassName("wrap-img-margins");
-        img.addClassName("wrap-img");
-        imgProcessor.accept(img);
-        th.appendChild(img);
-
-        th.appendChild(wrappedTh);
-
-        return wrappedTh;
-    }
-
-    public static JavaScriptObject wrapAlignedFlexImg(Element th, Consumer<ImageElement> imgProcessor) {
-        assert isAlignedFlexModifiableDiv(th) || isTDorTH(th); // has vertical and text align
-
-        th.setInnerText("...");
-
-        ImageElement img = Document.get().createImageElement();
-        img.addClassName("wrap-img-margins");
-        imgProcessor.accept(img);
-        th.insertFirst(img);
-
-        return th.getLastChild();
     }
 
     public static boolean nullEquals(Object obj1, Object obj2) {

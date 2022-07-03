@@ -21,6 +21,9 @@ public class ActionPanelRenderer extends PanelRenderer {
 
         sizedView = value.setSized();
 
+        if (property.drawAsync)
+            form.setAsyncView(this);
+
         finalizeInit();
     }
 

@@ -6,8 +6,14 @@
     */
     border-spacing: 0;
 
-    table-layout: fixed;
+    table-layout: fixed; /* we want predictable (not dependant from the content) manual column sizes  */
+    width: 100%; /* it's odd but without this table-layout is switched to auto */
+    height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
+}
+
+.cell-div {
     width: 100%;
+    min-height: 100%; /* we want to stretch div in the cell even if the explicit height is set */
 }
 
 /* ----- GGridPropertyTable ----- */
@@ -43,22 +49,10 @@
 
 /* it's hard to tell why, but setting overflow:hidden, prevents getting divs bigger than their parents */
 
-.wrap-caption {
-    overflow: hidden;
-}
-
-.wrap-div {
-    /* width : 100% by default*/
-    height : 100%;
-
-    overflow: hidden;
-}
 .wrap-center {
     display: flex;
     justify-content: center;
     align-items: center;
-
-    overflow: hidden;
 }
 
 .property-toolbar-start {
@@ -79,22 +73,6 @@
 
 :not(.panelRendererValueFocused) > .property-toolbar-on-hover .property-toolbar-end {
     justify-content: end;
-}
-
-.wrap-wrapimgdiv {
-    display: flex;
-
-    overflow: hidden;
-}
-.wrap-imgdiv {
-    flex: 1 1 auto;
-    align-self: stretch;
-}
-
-.wrap-img {
-    /*overflow: hidden;*/
-    flex: 0 0 auto;
-    align-self: center;
 }
 
 .wrap-img-margins {

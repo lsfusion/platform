@@ -360,8 +360,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     private void updateLayoutWidthColumns() {
-//        GSize totalPref = GSize.ZERO;
-//        double totalDoublePref = 0.0;
+        GSize totalPref = GSize.ZERO;
+        double totalDoublePref = 0.0;
 
         List<Column> flexColumns = new ArrayList<>();
         List<Double> flexValues = new ArrayList<>();
@@ -375,11 +375,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             if(resized) {
                 flexPref = doublePrefs[i];
                 pref = GSize.getResizeSize(flexPref);
-//                totalDoublePref += flexPref;
+                totalDoublePref += flexPref;
             } else {
                 pref = prefs[i];
                 flexPref = pref.getValueFlexSize();
-//                totalPref = totalPref.add(pref);
+                totalPref = totalPref.add(pref);
             }
             if(flexes[i]) {
                 flexColumns.add(column);
@@ -406,9 +406,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             totalFlexValues -= flexValue;
             setColumnFlexWidth(flexColumn, ((double)flexPercent / (double)precision)  + "%");
         }
-//        if(resized)
-//            totalPref = GSize.getResizeSize(totalDoublePref);
-//        setMinimumTableWidth(totalPref);
+        if(resized)
+            totalPref = GSize.getResizeSize(totalDoublePref);
+        setMinimumTableWidth(totalPref);
     }
 
     public double resizeColumn(int column, int delta) {

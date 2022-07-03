@@ -37,10 +37,18 @@ public class GComponent implements Serializable {
     public GFont font;
     public GFont captionFont;
 
-    public GSize getSize(boolean vertical) {
-        int size = vertical ? height : width;
+    public GSize getWidth() {
+        int size = width;
         if(size == -2)
-            return vertical ? getDefaultHeight() : getDefaultWidth();
+            return getDefaultWidth();
+        if (size == -1)
+            return null;
+        return GSize.getComponentSize(size);
+    }
+    public GSize getHeight() {
+        int size = height;
+        if(size == -2)
+            return getDefaultHeight();
         if (size == -1)
             return null;
         return GSize.getComponentSize(size);

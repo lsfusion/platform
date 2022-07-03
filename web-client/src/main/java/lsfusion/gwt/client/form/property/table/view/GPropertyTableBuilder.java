@@ -40,14 +40,15 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
         if(!isSimpleText) {
             element = wrapSized(element);
-            GwtClientUtils.setupSizedParent(element, property.autoSize);
+//            GwtClientUtils.setupPercentParent(element);
 
-            isTDorTH = false;
+            // the thing is that td ignores min-height (however height in td works just like min-height)
+            // and we want height in table div work as min-height (i.e. to stretch)
+            element.addClassName("cell-div");
         }
 
-        // the thing is that td ignores min-height (it matters only for not auto sized elements)
-        // however height in td works just like min-height, but only in Chrome
-        FlexPanel.setBaseSize(element, property.getValueHeight(renderContext.getFont(), false, true), isTDorTH);
+        // we need to set the size to the "render" element to avoid problems with padding
+        FlexPanel.setHeight(element, property.getValueHeight(renderContext.getFont(), false, true));
 
         return element;
     }
@@ -66,22 +67,13 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         boolean isTDorTH = GwtClientUtils.isTDorTH(element);
         boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
 
-        boolean autoSize = property.autoSize && !isSimpleText;
-
-        if(!autoSize)
-            FlexPanel.setBaseSize(element, null, isTDorTH); // the thing is that td ignores min-height (however height in td works just like min-height)
-
         if(!isSimpleText) {
             GwtClientUtils.removeAllChildren(element);
 
-            if(!autoSize)
-                GwtClientUtils.clearFillParentElement(element.getParentElement());
-
-            if(autoSize)
-                FlexPanel.setMinHeight(element, null);
-
             return true;
         }
+
+        FlexPanel.setHeight(element, null, isTDorTH);
 
         return false;
     }

@@ -62,6 +62,8 @@ public abstract class CellRenderer<T> {
         } else
             renderFlexStatic(element, getFlexAlign(horzTextAlignment), vertAlignment);
 
+        element.addClassName("prop");
+
         renderStaticContent(element, renderContext);
     }
 
@@ -109,6 +111,8 @@ public abstract class CellRenderer<T> {
             clearRenderSimpleStatic(element);
         } else
             clearRenderFlexStatic(element);
+
+        element.removeClassName("prop");
 
         clearRenderContent(element, renderContext);
 

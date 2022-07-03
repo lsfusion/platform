@@ -1,0 +1,29 @@
+
+.header {
+    overflow: hidden;
+}
+
+.wrap-div {
+    width: 100%;
+    height: 100%;
+
+    /*overflow: hidden;*/
+}
+
+.wrap-wrapimgdiv {
+    display: flex;
+
+    overflow: hidden;
+}
+
+.wrap-imgdiv {
+    flex: 1 1 auto;
+    align-self: stretch;
+}
+
+.wrap-img {
+    /*overflow: hidden;*/
+    flex: 0 0 auto;
+    align-self: center;
+}
+

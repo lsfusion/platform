@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.Node;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -56,21 +53,30 @@ public class ActionCellRenderer extends CellRenderer {
         return Style.TextAlign.CENTER;
     }
 
+    private static void wrapAlignedFlexImg(Element th, Consumer<ImageElement> imgProcessor) {
+        assert GwtClientUtils.isAlignedFlexModifiableDiv(th) || GwtClientUtils.isTDorTH(th); // has vertical and text align
+
+        ImageElement img = Document.get().createImageElement();
+        img.addClassName("wrap-img-margins");
+        imgProcessor.accept(img);
+
+        th.insertFirst(img);
+    }
+
     @Override
     public void renderStaticContent(Element element, RenderContext renderContext) {
         element.addClassName("btn");
+        element.setInnerText("...");
 
         JavaScriptObject node;
-        if(!hasImage(renderContext)) { // optimization;
-            element.setInnerText("...");
-            node = element.getFirstChild();
-        } else {
+        if(hasImage(renderContext)) { // optimization;
             if(property.panelCaptionVertical)
                 element.getStyle().setProperty("flexDirection", "column");
-            node = GwtClientUtils.wrapAlignedFlexImg(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
+            wrapAlignedFlexImg(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
                 element.setPropertyObject(IMAGE, imageElement);
             });
         }
+        node = element.getLastChild();
 
         setBasedTextFonts(property, element, renderContext);
 

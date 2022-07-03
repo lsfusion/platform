@@ -179,7 +179,8 @@ public class FlexPanelImpl {
     }
 
     public void setFlex(Element child, double flex, GSize flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {
-        setFlexParams(child, flex, flexBasis, gridLine, vertical, grid, shrink);
+        // it seems that for regular flex we can set flexBasis, but for a grid there is a problem, that grid does not respect margins (see the test case below), so we always set auto (because width / height is set in this method)
+        setFlexParams(child, flex, null, gridLine, vertical, grid, shrink); // flexBasis
 
         // otherwise min-width won't let the container to shrink
         FlexPanel.setMinSize(child, vertical, shrink ? GSize.ZERO : null);
@@ -194,6 +195,25 @@ public class FlexPanelImpl {
         } else
             child.getStyle().setProperty("flex", getFlexString(flex) + " " + getFlexString(shrink ? 1 : 0) + " " + getFlexBasisString(flexBasis));
     }
+
+    //    <div style="display:flex;flex-direction:column;height:300px">
+//  <div style="flex:0 0 auto;margin:30px;background-color:blue;height:100px">
+//    AAAA
+//            </div>
+//  <div style="flex:1 0 0px;background-color:red">
+//    BBBB
+//            </div>
+//</div>
+//
+//<div style="display:grid;grid-template-rows:100px minmax(min-content, 1fr);grid-template-columns:1fr;height:300px">
+//  <div style="flex:0 0 100px;margin:30px;background-color:blue;height:100px">
+//    AAAA
+//            </div>
+//  <div style="flex:1 0 0px;background-color:red">
+//    BBBB
+//            </div>
+//</div>
+
 
     public void setSpan(Element child, int span, boolean vertical) {
         child.getStyle().setProperty(getGridSpanAttrName(vertical), "span " + span);
@@ -224,7 +244,11 @@ public class FlexPanelImpl {
     }
 
     public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
-        child.getStyle().setProperty(!grid || !vertical ? "alignSelf" : "justifySelf", getAlignmentValue(layoutData.alignment, grid));
+        child.getStyle().setProperty(grid && vertical ? "justifySelf" : "alignSelf", getAlignmentValue(layoutData.alignment, grid));
+    }
+
+    public void setGridAlignment(Element child, boolean vertical, GFlexAlignment alignment) {
+        child.getStyle().setProperty(vertical ? "alignSelf" : "justifySelf", getAlignmentValue(alignment, true));
     }
 
     public void setFlexBasis(FlexPanel.FlexLayoutData layoutData, Element child, GSize flexBasis, boolean vertical, boolean grid) {

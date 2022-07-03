@@ -830,11 +830,19 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         return true;
     }
 
+    public static boolean useColumnMinWidth = true;
+    private GSize minWidth;
+    public void setMinimumTableWidth(GSize width) {
+        if(!useColumnMinWidth) {
+            this.minWidth = width;
+
+            FlexPanel.setMinWidth(tableData.getElement(), minWidth);
+        }
+    }
+
     @Override
     public void setPreferredSize(boolean set, Result<Integer> grids) {
-        // max-width fit-content
-//        if(minWidth != null)
-        FlexPanel.setMaxWidth(tableData.getElement(), set ? "min-content" : null);
+        FlexPanel.setMaxWidth(tableData.getElement(), set ? (!useColumnMinWidth ? minWidth.getString() : "min-content") : null);
 
         grids.set(grids.result + 1);
 
@@ -1538,7 +1546,8 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
             String width = columnWidths.get(key);
             String flexWidth = columnFlexWidths.get(key);
-            FlexPanel.setMinWidth(colElement, flexWidth != null ? width : null);
+            if(useColumnMinWidth)
+                FlexPanel.setMinWidth(colElement, flexWidth != null ? width : null);
             FlexPanel.setWidth(colElement, flexWidth != null ? flexWidth : width);
         }
     }

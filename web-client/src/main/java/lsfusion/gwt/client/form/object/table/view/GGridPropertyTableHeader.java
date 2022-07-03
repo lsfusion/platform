@@ -135,11 +135,54 @@ public class GGridPropertyTableHeader extends Header<String> {
         if(height != null)
             GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);
 
-        th = GwtClientUtils.wrapCenteredImg(th, height, getSortImgProcesspr(sortDir));
+        th = GwtClientUtils.wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
+        th.addClassName("header");
+
+        // since it's a header we want to align it to the center (vertically and horizontally)
+        th = wrapCenter(th); // we have to do it after setting height (because that's the point of that centering)
+
+        // we don't want that container to be larger than the upper one
+        // it seems it is needed because in wrapDiv we use auto sizing
+        if(height != null)
+            th.getStyle().setProperty("maxHeight", height.getString());
+
+        Consumer<ImageElement> imgProcessor = getSortImgProcesspr(sortDir);
+        if(imgProcessor != null)
+            th = wrapImg(th, imgProcessor);
+//            th = wrapAlignedFlexImg(th, imgProcessor);
+
         th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers
+
         renderCaption(th, caption);
 
         return th;
+    }
+
+    public static Element wrapCenter(Element th) {
+        th.addClassName("wrap-center"); // display flex : justify-content, align-items : center
+
+        Element wrappedTh = Document.get().createDivElement();
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
+    }
+
+    public static Element wrapImg(Element th, Consumer<ImageElement> imgProcessor) {
+        assert !GwtClientUtils.isAlignedFlexModifiableDiv(th);
+        th.addClassName("wrap-wrapimgdiv");
+
+        Element wrappedTh = Document.get().createDivElement();
+        wrappedTh.addClassName("wrap-imgdiv");
+
+        ImageElement img = Document.get().createImageElement();
+        img.addClassName("wrap-img-margins");
+        img.addClassName("wrap-img");
+        imgProcessor.accept(img);
+        th.appendChild(img);
+
+        th.appendChild(wrappedTh);
+
+        return wrappedTh;
     }
 
     public static Consumer<ImageElement> getSortImgProcesspr(Boolean sortDir) {

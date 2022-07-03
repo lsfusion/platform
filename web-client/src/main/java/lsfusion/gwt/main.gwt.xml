@@ -30,7 +30,7 @@
          Раскомментить при разработке для быстрой компиляции.
          При этом будет работать только в firefox и только с английской локалью
      -->
-<set-property name="user.agent" value="safari" />
+<!--<set-property name="user.agent" value="safari" />-->
 <!--    <set-property name="user.agent" value="gecko1_8" />-->
     <set-property name="locale" value="ru" />
 
@@ -164,6 +164,8 @@
     <stylesheet src="static/css/user-preferences.css"/>
     <stylesheet src="static/css/window-box.css"/>
     <stylesheet src="static/css/layout.css"/>
+    <stylesheet src="static/css/grid-header.css"/>
+    <stylesheet src="static/css/property.css"/>
 
     <define-property name="is.user.agent.ie11" values="true,false" />
     <property-provider name="is.user.agent.ie11">

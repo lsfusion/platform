@@ -94,7 +94,7 @@ public class GFormLayout extends ResizableComplexPanel {
 
         containerViews.put(container, containerView);
         Widget viewWidget = containerView.getView();
-        add(container, viewWidget, null);
+        add(container, new ComponentWidget(viewWidget), null);
 
         // debug info
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
@@ -108,8 +108,11 @@ public class GFormLayout extends ResizableComplexPanel {
         }
     }
     public void addBaseComponent(GComponent component, Widget view, DefaultFocusReceiver focusReceiver) {
+        addBaseComponent(component, new ComponentWidget(view), focusReceiver);
+    }
+    public void addBaseComponent(GComponent component, ComponentWidget view, DefaultFocusReceiver focusReceiver) {
         assert !(component instanceof GContainer);
-        baseComponentViews.put(component, view);
+        baseComponentViews.put(component, view.getWidget());
         add(component, view, focusReceiver);
     }
 
@@ -120,14 +123,14 @@ public class GFormLayout extends ResizableComplexPanel {
         }
     }
 
-    public void add(GComponent key, Widget view, DefaultFocusReceiver focusReceiver) {
+    public void add(GComponent key, ComponentWidget view, DefaultFocusReceiver focusReceiver) {
         // debug info
         if (key.sID != null)
-            view.getElement().setAttribute("lsfusion-container", key.sID);
+            view.getWidget().getElement().setAttribute("lsfusion-container", key.sID);
 
         GAbstractContainerView containerView;
         if(key.container != null && (containerView = containerViews.get(key.container)) != null) { // container can be null when component should be layouted manually, containerView can be null when it is removed 
-            containerView.add(key, view, attachContainer);
+            containerView.add(key, view);
 
             maybeAddDefaultFocusReceiver(key, focusReceiver);
         }
@@ -219,8 +222,8 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight) {
-        GSize width = mainContainer.getSize(false);
-        GSize height = mainContainer.getSize(true);
+        GSize width = mainContainer.getWidth();
+        GSize height = mainContainer.getHeight();
 
         Pair<Integer, Integer> extraOffset = setPreferredSize(true, width, height, maxWidth, maxHeight);
         try {

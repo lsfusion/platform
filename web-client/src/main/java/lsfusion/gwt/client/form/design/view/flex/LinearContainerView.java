@@ -4,27 +4,20 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.SizedFlexPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
-
-import java.util.ArrayList;
-import java.util.List;
+import lsfusion.gwt.client.form.design.view.CaptionWidget;
 
 public class LinearContainerView extends LayoutContainerView {
 
     protected final SizedFlexPanel panel;
 
     protected final int linesCount;
-    protected final boolean alignCaptions;
     protected final boolean grid;
 
     protected SizedFlexPanel[] lines;
-    protected List<AlignCaptionPanel> childrenCaptions;
 
     public static FlexPanel.GridLines getLineGridLayouts(boolean alignCaptions, GSize lineSize, GSize captionLineSize, int linesCount, boolean wrap, boolean lineShrink) {
         FlexPanel.FlexLayoutData valueLine = new FlexPanel.FlexLayoutData(1, lineSize, lineShrink);
@@ -50,20 +43,14 @@ public class LinearContainerView extends LayoutContainerView {
     public LinearContainerView(GFormController formController, GContainer container) {
         super(container, formController);
 
-        assert !container.tabbed;
-
         linesCount = container.lines;
 
         GFlexAlignment flexAlignment = container.getFlexAlignment(); // when there is free space (there is no non-zero flex)
 
         // later containers with explicit sizes can be included
         // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
-        alignCaptions = container.isAlignCaptions();
         grid = container.isGrid();
         boolean wrap = container.isWrap();
-
-        if(alignCaptions)
-            childrenCaptions = new ArrayList<>();
 
         GSize lineSize = container.getLineSize();
         GSize captionLineSize = container.getCaptionLineSize();
@@ -97,32 +84,8 @@ public class LinearContainerView extends LayoutContainerView {
         return linesCount == 1 || grid;
     }
 
-    private static class AlignCaptionPanel extends SizedFlexPanel {
-        public AlignCaptionPanel(boolean vertical, GFlexAlignment flexAlignment) {
-            super(vertical, flexAlignment);
-        }
-    }
-
     @Override
-    protected void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer) {
-        if(alignCaptions) { // when adding GPropertyPanelController.Panel is empty, so we have to do everything wit callback
-            AlignCaptionPanel captionPanel;
-            if(child.isAlignCaption()) { // from alignCaptions
-                // need a wrapper since all elements in grid have justify-items STRETCH by default (and we want CENTERED alignment)
-                // plus captionContainer is filled later (after it has to be added to DOM)
-                captionPanel = new AlignCaptionPanel(!vertical, ((CaptionContainerHolder) view).getCaptionHAlignment());
-                captionPanel.addStyleName("dataPanelRendererPanel"); // just like in PanelRenderer for no-wrap
-
-                ((CaptionContainerHolder) view).setCaptionContainer((columnCaptionWidget, alignment) -> {
-                    assert vertical; // because of alignCaptions first check (isVertical())
-                    columnCaptionWidget.add(captionPanel, alignment);
-                });
-            } else
-                captionPanel = null;
-
-            childrenCaptions.add(index, captionPanel);
-        }
-
+    protected void addImpl(int index) {
         if(isSingleLine())
             addChildrenView(index, 0);
         else { // collections are already updated
@@ -139,9 +102,6 @@ public class LinearContainerView extends LayoutContainerView {
             removeChildrenViews(index, 0);
             addChildrenViews(index + 1,  -1);
         }
-
-        if(alignCaptions)
-            childrenCaptions.remove(index);
     }
 
     private void addChildrenViews(int startFrom, int offset) {
@@ -157,11 +117,13 @@ public class LinearContainerView extends LayoutContainerView {
     private int getCaptionOffset(FlexPanel panel, int index) {
         int offset = 0;
         int w = 0;
-        for(int i = 0; i < index; )
-            if(panel.getWidget(w++) instanceof AlignCaptionPanel)
+        for(int i = 0; i < index; ) {
+            Widget widget = panel.getWidget(w++);
+            if(((FlexPanel.WidgetLayoutData)widget.getLayoutData()).caption)
                 offset++;
             else
                 i++;
+        }
         return offset;
     }
 
@@ -176,6 +138,7 @@ public class LinearContainerView extends LayoutContainerView {
             container = lines[lineIndex];
             containerIndex = index / linesCount;
         }
+        assert container.isVertical() == vertical;
         return new Pair<>(container, containerIndex + (alignCaptions ? getCaptionOffset(container, containerIndex) : 0));
     }
 
@@ -191,11 +154,18 @@ public class LinearContainerView extends LayoutContainerView {
             span = children.get(index).getSpan();
 
         if(alignCaptions) {
+            assert container.isGrid();
             span = span * 2;
 
-            AlignCaptionPanel captionPanel = childrenCaptions.get(index);
+            CaptionWidget captionPanel = childrenCaptions.get(index);
             if(captionPanel != null) {
-                container.add(captionPanel, containerIndex, GFlexAlignment.STRETCH);
+                SizedWidget captionSizedWidget = captionPanel.widget;
+                Widget captionWidget = captionSizedWidget.widget;
+
+                boolean vertical = container.isVertical();
+                captionSizedWidget.add(container, containerIndex, vertical ? captionPanel.horzAlignment : captionPanel.vertAlignment);
+                FlexPanel.setGridAlignment(captionWidget.getElement(), vertical, vertical ? captionPanel.vertAlignment : captionPanel.horzAlignment);
+                ((FlexPanel.WidgetLayoutData)captionWidget.getLayoutData()).caption = true;
                 span--;
             }
         }

@@ -199,11 +199,14 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             resetAllConditions(false);
         }
         if (condition != null) {
-            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, () -> columns, toolsVisible, readSelectedValue);
-            conditionViews.put(condition, conditionView);
+            if (condition.filter.container == null)
+                getFiltersContainer().add(condition.filter);
 
-            addConditionView(condition, conditionView);
-            conditionView.initView();
+            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, () -> columns, toolsVisible, readSelectedValue);
+
+            logicsSupplier.getForm().getFormLayout().addBaseComponent(condition.filter, conditionView.initView(), null);
+
+            conditionViews.put(condition, conditionView);
 
             updateConditionsLastState();
 
@@ -216,15 +219,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             }
         }
     }
-    
-    private void addConditionView(GPropertyFilter condition, GFilterConditionView conditionView) {
-        if (condition.filter.container == null) {
-            getFiltersContainer().add(condition.filter);
-        }
-        GFormLayout layout = logicsSupplier.getForm().getFormLayout();
-        layout.addBaseComponent(condition.filter, conditionView, null);
-    }
-    
+
     public void addConditions(ArrayList<GPropertyFilter> conditions, boolean focusFirstComponent, boolean replace) {
         if (replace) {
             removeAllConditionsWithoutApply();

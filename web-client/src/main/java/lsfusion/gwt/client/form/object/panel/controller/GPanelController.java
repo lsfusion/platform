@@ -50,9 +50,9 @@ public class GPanelController extends GPropertyController {
         if(!updateKeys) {
             if (propertyController == null) {
                 propertyController = new GPropertyPanelController(property, formController);
-                propertyControllers.put(property, propertyController);
+                getFormLayout().addBaseComponent(property, propertyController.initView(), this::focusFirstWidget);
 
-                getFormLayout().addBaseComponent(property, propertyController.getView(), this::focusFirstWidget);
+                propertyControllers.put(property, propertyController);
             }
             propertyController.setColumnKeys(columnKeys);
         }

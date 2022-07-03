@@ -3,8 +3,10 @@ package lsfusion.gwt.client.form.property.panel.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -15,26 +17,28 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     private Label label;
 
-    public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, LinearCaptionContainer captionContainer) {
+    public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey);
 
-        boolean needCorners = property.notNull || property.hasChangeAction;
+        value.addStyleName("dataPanelRendererPanel");
+
         SizedWidget valueWidget = value.setSized();
-        if (needCorners)
+
+        if (property.notNull || property.hasChangeAction)
             appendCorners(property.notNull, valueWidget.widget);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
-        sizedView.widget.addStyleName("dataPanelRendererPanel");
 
         finalizeInit();
     }
 
-    private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, LinearCaptionContainer captionContainer) {
+    private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
         if(property.caption == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
 
         label = new Label();
         label.addStyleName("alignPanelLabel");
+        label.addStyleName("dataPanelRendererPanel");
 
         if (this.property.captionFont != null)
             this.property.captionFont.apply(label.getElement().getStyle());
@@ -47,7 +51,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             if(!panelCaptionAlignment.equals(GFlexAlignment.END))
                 captionLast = false; // it's odd having caption last for alignments other than END
 
-            captionContainer.put(captionLast ? valuePanel : sizedLabel, panelCaptionAlignment);
+            captionContainer.set(new CaptionWidget(captionLast ? valuePanel : sizedLabel, GFlexAlignment.START, panelCaptionAlignment));
 
             return captionLast ? sizedLabel : valuePanel;
         }

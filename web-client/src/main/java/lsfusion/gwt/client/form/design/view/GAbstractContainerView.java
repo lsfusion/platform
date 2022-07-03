@@ -2,10 +2,7 @@ package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.base.view.SizedFlexPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -21,25 +18,34 @@ public abstract class GAbstractContainerView {
     protected final boolean vertical;
 
     protected final List<GComponent> children = new ArrayList<>();
-    protected final List<Widget> childrenViews = new ArrayList<>();
+    protected final List<SizedWidget> childrenViews = new ArrayList<>();
+
+    protected final boolean alignCaptions;
+    protected List<CaptionWidget> childrenCaptions;
 
     protected GAbstractContainerView(GContainer container) {
         this.container = container;
 
         vertical = container.isVertical();
+
+        alignCaptions = container.isAlignCaptions();
+        if(alignCaptions)
+            childrenCaptions = new ArrayList<>();
     }
 
-    public void add(GComponent child, final Widget view, ResizableComplexPanel attachContainer) {
+    public void add(GComponent child, final ComponentWidget view) {
         assert child != null && view != null && container.children.contains(child);
 
         int index = relativePosition(child, container.children, children);
 
 //        child.installMargins(view);
 
+        Widget widget = view.getWidget();
+
         // if panel is inside linear container, and there are several dynamic components fixing tab flex basis to avoid
-        boolean fixFlexBasis = view instanceof FlexTabbedPanel && child.isFlex() && container.getFlexCount() > 1;
+        boolean fixFlexBasis = widget instanceof FlexTabbedPanel && child.isFlex() && container.getFlexCount() > 1;
         if(fixFlexBasis) {
-            FlexTabbedPanel tabbedView = (FlexTabbedPanel) view;
+            FlexTabbedPanel tabbedView = (FlexTabbedPanel) widget;
             tabbedView.setBeforeSelectionHandler(tabIndex -> {
                 if(tabIndex > 0)
                     tabbedView.fixFlexBasis(vertical);
@@ -47,9 +53,12 @@ public abstract class GAbstractContainerView {
         }
 
         children.add(index, child);
-        childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));
+        childrenViews.add(index, view.widget.override(wrapAndOverflowView(child, widget, fixFlexBasis)));
 
-        addImpl(index, child, view, attachContainer);
+        if(alignCaptions)
+            childrenCaptions.add(index, view.caption);
+
+        addImpl(index);
     }
 
     private Widget wrapAndOverflowView(GComponent child, Widget view, boolean fixFlexBasis) {
@@ -101,14 +110,13 @@ public abstract class GAbstractContainerView {
         // else
         //      overflow: auto
 
-        GSize size = child.getSize(vertical);
-        GSize oppositeSize = child.getSize(!vertical);
-
         boolean shrink = child.isShrink();
-        boolean oppositeShrink = child.isAlignShrink();
+        boolean alignShrink = child.isAlignShrink();
 
-        if(oppositeSize != null || size != null || shrink || oppositeShrink || fixFlexBasis) // child is tab, since basis is fixed, strictly speaking this all check is an optimization
-            view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+        if(child.getWidth() != null || (!vertical ? shrink : alignShrink) || fixFlexBasis)
+            view.getElement().addClassName("comp-shrink-horz");
+        if(child.getHeight() != null || (vertical ? shrink : alignShrink) || fixFlexBasis)
+            view.getElement().addClassName("comp-shrink-vert");
 
         // we need to do "caption wrapping" before auto size wrap since we want border to wrap all auto sized container
         // for auto size wrapping (below) - vertical direction and 0 (not auto (!)) flex-basis OR !vertical direction and auto (not 0 !) flex-basis will do for auto size (overflow:auto can be for panel and view itself)
@@ -133,6 +141,9 @@ public abstract class GAbstractContainerView {
 
         removeImpl(index, child);
 
+        if(alignCaptions)
+            childrenCaptions.remove(index);
+
         children.remove(index);
         childrenViews.remove(index);
     }
@@ -153,7 +164,7 @@ public abstract class GAbstractContainerView {
 
     public Widget getChildView(GComponent child) {
         int index = children.indexOf(child);
-        return index != -1 ? childrenViews.get(index) : null;
+        return index != -1 ? childrenViews.get(index).widget : null;
     }
 
     public interface UpdateLayoutListener {
@@ -170,17 +181,17 @@ public abstract class GAbstractContainerView {
     }
 
     protected Widget addChildrenWidget(SizedFlexPanel panel, int i, int beforeIndex) {
-        Widget widget = childrenViews.get(i);
+        SizedWidget widget = childrenViews.get(i);
         GComponent component = children.get(i);
 
-        // to change to sizeWidget
-        boolean vertical = panel.isVertical();
-        panel.addSized(widget, beforeIndex, component.getFlex(), component.isShrink(), component.getSize(vertical), component.getAlignment(), component.isAlignShrink(), component.getSize(!vertical));
+        widget = widget.override(component.getWidth(), component.getHeight());
 
-        return widget;
+        widget.add(panel, beforeIndex, component.getFlex(), component.isShrink(), component.getAlignment(), component.isAlignShrink());
+
+        return widget.widget;
     }
 
-    protected abstract void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer);
+    protected abstract void addImpl(int index);
     protected abstract FlexPanel wrapBorderImpl(GComponent child);
     protected abstract void removeImpl(int index, GComponent child);
     public abstract Widget getView();

@@ -1,21 +1,18 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.design.view.flex.CaptionContainerHolder;
-import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
+import lsfusion.gwt.client.form.design.view.CaptionWidget;
+import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
-import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
 import java.util.ArrayList;
@@ -33,7 +30,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, Integer> renderedColumnKeys;
     private NativeHashMap<GGroupObjectValue, PanelRenderer> renderers;
 
-    public Panel renderersPanel;
+    public SizedFlexPanel columnsPanel;
 
     private ArrayList<GGroupObjectValue> columnKeys;
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
@@ -52,33 +49,25 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         this.form = form;
         renderedColumnKeys = new NativeHashMap<>();
         renderers = new NativeHashMap<>();
-
-        renderersPanel = new Panel(property.panelColumnVertical); // needed for groups-to-columns
-        renderersPanel.setStyleName("propertyContainerPanel");
     }
 
-    public static class Panel extends SizedFlexPanel implements CaptionContainerHolder {
-
-        public Panel(boolean vertical) {
-            super(vertical);
-        }
-
-        public LinearCaptionContainer captionContainer;
-
-        @Override
-        public void setCaptionContainer(LinearCaptionContainer captionContainer) {
-            this.captionContainer = captionContainer;
-        }
-
-        @Override
-        public GFlexAlignment getCaptionHAlignment() {
-            return GFlexAlignment.START;
-        }
+    private boolean needColumnsPanel() {
+        return property.hasColumnGroupObjects() || property.hide;
     }
 
-    public Widget getView() {
-        return renderersPanel.asWidget();
-    }
+    public ComponentWidget initView() {
+        boolean alignCaption = property.isAlignCaption();
+        if(needColumnsPanel()) {
+            assert !alignCaption;
+
+            columnsPanel = new SizedFlexPanel(property.panelColumnVertical);
+            columnsPanel.setStyleName("propertyContainerPanel");
+            return new ComponentWidget(columnsPanel);
+        } else {
+            Result<CaptionWidget> captionWidget = alignCaption && property.container.isAlignCaptions() ? new Result<>() : null;
+            return new ComponentWidget(addPanelRenderer(GGroupObjectValue.EMPTY, captionWidget), captionWidget != null ? captionWidget.result : null);
+        }
+   }
 
     private Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> getDiff() {
         List<GGroupObjectValue> optionsToAdd = new ArrayList<>();
@@ -110,8 +99,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void update() {
         if (columnsUpdated) {
-
-            if (!property.hide || property.hasKeyBinding()) {
+            boolean hide = property.hide;
+            if (!hide || property.hasKeyBinding()) {
 
                 Pair<List<GGroupObjectValue>, List<GGroupObjectValue>> pair = getDiff();
                 List<GGroupObjectValue> optionsToAdd = pair.first;
@@ -119,34 +108,41 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
                 // removing old renderers
                 optionsToRemove.forEach(columnKey -> {
-                    PanelRenderer renderer = renderers.remove(columnKey);
-                    form.removePropertyBindings(renderer.bindingEventIndices);
-                    if (!property.hide) {
-                        renderersPanel.removeSized(renderer.getComponent());
+                    PanelRenderer renderer = removePanelRenderer(columnKey);
+
+                    if (!hide) {
+                        columnsPanel.removeSized(renderer.getComponent());
                     }
                 });
 
                 //adding new renderers
                 optionsToAdd.forEach(columnKey -> {
-                    PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, renderersPanel.captionContainer);
-                    SizedWidget component = newRenderer.getSizedWidget();
-                    if (!property.hide) {
-                        component.addFill(renderersPanel, renderedColumnKeys.get(columnKey));
-                    }
-                    newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
-                    renderers.put(columnKey, newRenderer);
-                });
+                    SizedWidget component = addPanelRenderer(columnKey, null);
 
+                    if (!hide) {
+                        component.addFill(columnsPanel, renderedColumnKeys.get(columnKey));
+                    }
+                });
             }
 
             columnsUpdated = false;
-
-            if (property.drawAsync && !renderers.isEmpty()) {
-                form.setAsyncView((ActionPanelRenderer)renderers.get(columnKeys.get(0)));
-            }
         }
 
         renderers.foreachEntry(this::updateRenderer);
+    }
+
+    public SizedWidget addPanelRenderer(GGroupObjectValue columnKey, Result<CaptionWidget> caption) {
+        PanelRenderer newRenderer = property.createPanelRenderer(form, GPropertyPanelController.this, columnKey, caption);
+        SizedWidget component = newRenderer.getSizedWidget();
+        newRenderer.bindingEventIndices = form.addPropertyBindings(property, newRenderer::onBinding, component.widget);
+        renderers.put(columnKey, newRenderer);
+        return component;
+    }
+
+    public PanelRenderer removePanelRenderer(GGroupObjectValue columnKey) {
+        PanelRenderer renderer = renderers.remove(columnKey);
+        form.removePropertyBindings(renderer.bindingEventIndices);
+        return renderer;
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
@@ -220,14 +216,16 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     public void setShowIfs(NativeHashMap<GGroupObjectValue, Object> showIfs) {
         if (!GwtSharedUtils.nullEquals(this.showIfs, showIfs)) {
             this.showIfs = showIfs;
-            columnsUpdated = true;
+
+            columnsUpdated = needColumnsPanel();
         }
     }
 
     public void setColumnKeys(ArrayList<GGroupObjectValue> columnKeys) {
         if (!GwtSharedUtils.nullEquals(this.columnKeys, columnKeys)) {
             this.columnKeys = columnKeys;
-            columnsUpdated = true;
+
+            columnsUpdated = needColumnsPanel();
         }
     }
 

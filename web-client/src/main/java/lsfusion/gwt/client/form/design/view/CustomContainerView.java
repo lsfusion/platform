@@ -18,8 +18,8 @@ public class CustomContainerView extends LayoutContainerView {
         panel = new ResizableComplexPanel();
     }
 
-    protected void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer) {
-        attachContainer.add(childrenViews.get(index));
+    protected void addImpl(int index) {
+        formController.getFormLayout().attachContainer.add(childrenViews.get(index).widget);
     }
 
     @Override

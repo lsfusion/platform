@@ -176,7 +176,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     // a) alignment STRETCH doesn't work when width is set (however for the alignment other than STRETCH min param works as max of this min size, and auto size, and this behaviour is different from flex:0 0 size what we want to get)
     // b) !!!(not relevant, because width / height could/should be used) flexBasis auto doesn't respect flexBasis of its descendants (!!! it's not true for vertical direction, see addFill comment !!!), but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
 
-    public static void setBaseSize(Element element, GSize size, boolean fixedSize) {
+    public static void setHeight(Element element, GSize size, boolean fixedSize) {
         if(fixedSize) {
             setHeight(element, size);
         } else {
@@ -203,7 +203,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         setSizeProperty(element, "width", size);
     }
     public static void setHeight(Element element, GSize size) {
-        setSizeProperty(element, "height", size != null ? size.getString() : null);
+        setHeight(element, size != null ? size.getString() : null);
+    }
+    public static void setHeight(Element element, String size) {
+        setSizeProperty(element, "height", size);
     }
     public static void setMinHeight(Element element, GSize size) {
         setSizeProperty(element, "minHeight", size != null ? size.getString() : null);
@@ -418,6 +421,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         public final AlignmentLayoutData aligment;
 
         public int span = 1;
+
+        public boolean caption = false;
 
         public WidgetLayoutData(FlexLayoutData flex, AlignmentLayoutData aligment) {
             this.flex = flex;
@@ -824,6 +829,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 impl.updateAlignment(layoutData, line.getStretchElement(), vertical, grid);
             }
         }
+    }
+
+    public static void setGridAlignment(Element element, boolean vertical, GFlexAlignment alignment) {
+        impl.setGridAlignment(element, vertical, alignment);
     }
 
     private interface InnerAlignment {
