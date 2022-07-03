@@ -24,7 +24,6 @@ import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GObjectClass;
@@ -89,7 +88,6 @@ import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.view.StyleDefaults;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
@@ -412,7 +410,7 @@ public class GFormController implements EditManager {
             filterCheck.setValue(true, false);
         }
 
-        filterCheck.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
+        setBindingGroupObject(filterCheck, filterGroup.groupObject);
         if (filter.key != null)
             addBinding(new GKeyInputEvent(filter.key), (event) -> filterCheck.setValue(!filterCheck.getValue(), true), filterCheck, filterGroup.groupObject);
     }
@@ -428,7 +426,7 @@ public class GFormController implements EditManager {
             filterBox.addItem(filter.getFullCaption(), "" + i);
 
             final int filterIndex = i;
-            filterBox.getElement().setPropertyObject("groupObject", filterGroup.groupObject);
+            GFormController.setBindingGroupObject(filterBox, filterGroup.groupObject);
             if (filter.key != null)
                 addBinding(new GKeyInputEvent(filter.key), (event) -> {
                     filterBox.setSelectedIndex(filterIndex + 1);
@@ -1824,9 +1822,14 @@ public class GFormController implements EditManager {
                 groupObject);
     }
 
-    private GGroupObject getGroupObject(Element elementTarget) {
+    private static final String bindingGroupObject = "groupObject";
+    public static void setBindingGroupObject(Widget widget, GGroupObject groupObject) {
+        widget.getElement().setPropertyObject(bindingGroupObject, groupObject);
+    }
+
+    private static GGroupObject getBindingGroupObject(Element elementTarget) {
         while (elementTarget != null) {     // пытаемся найти GroupObject, к которому относится элемент с фокусом
-            GGroupObject targetGO = (GGroupObject) elementTarget.getPropertyObject("groupObject");
+            GGroupObject targetGO = (GGroupObject) elementTarget.getPropertyObject(bindingGroupObject);
             if (targetGO != null)
                 return targetGO;
             elementTarget = elementTarget.getParentElement();
@@ -1848,7 +1851,7 @@ public class GFormController implements EditManager {
         boolean isMouse = GMouseStroke.isEvent(event);
         TreeMap<Integer, Binding> orderedBindings = new TreeMap<>(); // descending sorting by priority
 
-        GGroupObject groupObject = getGroupObject(Element.as(target));
+        GGroupObject groupObject = getBindingGroupObject(Element.as(target));
         for (int i = 0, size = bindingEvents.size(); i < size; i++) {
             GBindingEvent bindingEvent = bindingEvents.get(i);
             if (bindingEvent.event.check(event)) {
@@ -2180,7 +2183,7 @@ public class GFormController implements EditManager {
             CellRenderer cellRenderer = property.getCellRenderer();
             Pair<Integer, Integer> renderedSize = null;
             if(property.autoSize) // we need to do it before clearRender to have actual sizes + we need to remove paddings since we're setting width for wrapped component
-                renderedSize = new Pair<>(element.getClientWidth(), element.getClientHeight());
+                renderedSize = new Pair<>(GwtClientUtils.getWidth(element), GwtClientUtils.getHeight(element));
 
             cellRenderer.clearRender(element, renderContext); // dropping previous render
 

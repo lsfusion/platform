@@ -137,8 +137,6 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 return key;
             }
         };
-
-        getElement().setPropertyObject("groupObject", groupObject);
     }
 
     public void update(Boolean updateState) {

@@ -51,52 +51,14 @@ import com.google.gwt.user.client.ui.TextBoxBase;
 public class TextBox extends TextBoxBase {
 
   /**
-   * Creates a TextBox widget that wraps an existing &lt;input type='text'&gt;
-   * element.
-   *
-   * This element must already be attached to the document. If the element is
-   * removed from the document, you must call
-   * {@link RootPanel#detachNow(Widget)}.
-   *
-   * @param element the element to be wrapped
-   */
-  public static TextBox wrap(Element element) {
-    // Assert that the element is attached.
-    assert Document.get().getBody().isOrHasChild(element);
-
-    TextBox textBox = new TextBox(element);
-
-    // Mark it attached and remember it for cleanup.
-    textBox.onAttach();
-    RootPanel.detachOnWindowClose(textBox);
-
-    return textBox;
-  }
-
-  /**
-   * Creates an empty text box.
-   */
-  public TextBox() {
-    this(Document.get().createTextInputElement(), "gwt-TextBox");
-  }
-
-  /**
    * This constructor may be used by subclasses to explicitly use an existing
    * element. This element must be an &lt;input&gt; element whose type is
    * 'text'.
    *
    * @param element the element to be used
    */
-  protected TextBox(Element element) {
+  public TextBox(Element element) {
     super(element);
-    assert InputElement.as(element).getType().equalsIgnoreCase("text");
-  }
-
-  TextBox(Element element, String styleName) {
-    super(element);
-    if (styleName != null) {
-      setStyleName(styleName);
-    }
   }
 
   /**

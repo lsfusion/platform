@@ -777,6 +777,7 @@ public class GwtClientUtils {
         return getCurrentLocaleName().substring(0, 2);
     }
 
+    // without padding, getClient - with paddings, getOffset with paddings and borders
     public static native int getHeight(Element element) /*-{
         return parseInt($wnd.getComputedStyle(element, null).height);
     }-*/;

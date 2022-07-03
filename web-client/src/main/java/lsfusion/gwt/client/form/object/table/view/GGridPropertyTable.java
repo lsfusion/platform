@@ -117,6 +117,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
 
+        GFormController.setBindingGroupObject(this, groupObject);
+
         // ADD FILTER
         addFilterBinding(new GKeyInputEvent(ADD_USER_FILTER_KEY_STROKE),
                 event -> getGroupController().addFilter(event));

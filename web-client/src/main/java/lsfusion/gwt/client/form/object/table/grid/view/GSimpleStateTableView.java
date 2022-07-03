@@ -57,8 +57,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
         getElement().setTabIndex(0);
         initSinkEvents(this);
-
-        getElement().setPropertyObject("groupObject", grid.groupObject);
     }
 
     @Override

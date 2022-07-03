@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.FocusWidget;
@@ -79,14 +78,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     private boolean globalCaptionIsDrawn;
 
     public ActionOrPropertyValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
-        if (property.isAction())
-            setElement(Document.get().createButtonElement());
-        else
-            setElement(Document.get().createDivElement());
-
-        DataGrid.initSinkEvents(this);
-        DataGrid.initSinkFocusEvents(this);
-
         this.property = property;
         this.columnKey = columnKey;
 
@@ -95,8 +86,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
 
         this.globalCaptionIsDrawn = globalCaptionIsDrawn;
 
-        getRenderElement().setPropertyObject("groupObject", property.groupObject);
-        
         MainFrame.addColorThemeChangeListener(this);
     }
 
@@ -119,8 +108,15 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         return getElement();
     }
 
-    protected void finalizeInit() {
-        render();
+    protected void render() {
+        Element renderElement = property.getCellRenderer().createRenderElement(this);
+        this.form.render(this.property, renderElement, this);
+        setElement(renderElement);
+
+        DataGrid.initSinkEvents(this);
+        DataGrid.initSinkFocusEvents(this);
+
+        GFormController.setBindingGroupObject(this,  property.groupObject);
     }
 
     public SizedWidget setSized() {
@@ -248,10 +244,6 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     public abstract void pasteValue(final String value);
-
-    private void render() {
-        this.form.render(this.property, getRenderElement(), this);
-    }
 
     public void update(Object value, boolean loading, Object image, Object background, Object foreground, boolean readOnly) {
         this.value = value;

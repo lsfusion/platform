@@ -158,8 +158,6 @@
     <stylesheet src="static/css/split-panel.css"/>
     <stylesheet src="static/css/suggest-box.css"/>
     <stylesheet src="static/css/tab-panel.css"/>
-    <stylesheet src="static/css/text-area.css"/>
-    <stylesheet src="static/css/text-box.css"/>
     <stylesheet src="static/css/tree.css"/>
     <stylesheet src="static/css/user-preferences.css"/>
     <stylesheet src="static/css/window-box.css"/>

@@ -622,31 +622,6 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
 
   private static final String STYLENAME_DEFAULT = "gwt-SuggestBox";
 
-  /**
-   * Creates a {@link SuggestBox} widget that wraps an existing &lt;input
-   * type='text'&gt; element.
-   *
-   * This element must already be attached to the document. If the element is
-   * removed from the document, you must call
-   * {@link RootPanel#detachNow(Widget)}.
-   *
-   * @param oracle the suggest box oracle to use
-   * @param element the element to be wrapped
-   */
-  public static SuggestBox wrap(SuggestOracle oracle, Element element) {
-    // Assert that the element is attached.
-    assert Document.get().getBody().isOrHasChild(element);
-
-    TextBox textBox = new TextBox(element);
-    SuggestBox suggestBox = new SuggestBox(oracle, textBox);
-
-    // Mark it attached and remember it for cleanup.
-    suggestBox.onAttach();
-    RootPanel.detachOnWindowClose(suggestBox);
-
-    return suggestBox;
-  }
-
   private int limit = 20;
   private boolean selectsFirstItem = true;
   private SuggestOracle oracle;
@@ -674,25 +649,6 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
       setNewSelection(suggestion);
     }
   };
-
-  /**
-   * Constructor for {@link SuggestBox}. Creates a
-   * {@link MultiWordSuggestOracle} and {@link TextBox} to use with this
-   * {@link SuggestBox}.
-   */
-  public SuggestBox() {
-    this(new MultiWordSuggestOracle());
-  }
-
-  /**
-   * Constructor for {@link SuggestBox}. Creates a {@link TextBox} to use with
-   * this {@link SuggestBox}.
-   *
-   * @param oracle the oracle for this <code>SuggestBox</code>
-   */
-  public SuggestBox(SuggestOracle oracle) {
-    this(oracle, new TextBox());
-  }
 
   /**
    * Constructor for {@link SuggestBox}. The text box will be removed from it's
@@ -725,7 +681,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
     addEventsToTextBox();
 
     setOracle(oracle);
-    setStyleName(STYLENAME_DEFAULT);
+//    setStyleName(STYLENAME_DEFAULT);
   }
 
   /**

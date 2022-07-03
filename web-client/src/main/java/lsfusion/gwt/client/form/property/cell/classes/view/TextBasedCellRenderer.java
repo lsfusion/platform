@@ -22,18 +22,29 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
     @Override
     public boolean isSimpleText(RenderContext renderContext) {
-        return !isMultiLine();
+        if(isFixedMultiLine())
+            return false;
+        return true;
+    }
+
+    private boolean isFixedMultiLine() {
+        return isMultiLine() && !property.autoSize;
     }
 
     @Override
     public boolean isSimpleText(UpdateContext updateContext) {
-        return !isMultiLine();
+        if(isFixedMultiLine())
+            return false;
+        return true;
     }
 
     @Override
     protected String getDefaultVertAlignment() {
-        if(isMultiLine())
+        if(isFixedMultiLine())
             return "stretch";
+
+        if(isMultiLine())
+            return "top";
         return super.getDefaultVertAlignment();
     }
 

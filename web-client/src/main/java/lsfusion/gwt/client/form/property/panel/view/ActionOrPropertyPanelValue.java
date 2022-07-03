@@ -15,7 +15,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     public ActionOrPropertyPanelValue(GPropertyDraw property, GGroupObjectValue columnKey, GFormController form, boolean globalCaptionIsDrawn, ActionOrPropertyValueController controller) {
         super(property, columnKey, form, globalCaptionIsDrawn, controller);
 
-        finalizeInit();
+        render();
     }
 
     @Override

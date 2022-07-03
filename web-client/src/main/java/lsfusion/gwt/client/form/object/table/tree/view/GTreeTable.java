@@ -114,8 +114,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
         };
 
-        getElement().setPropertyObject("groupObject", groupObject);
-
         if(treeGroupController.isExpandOnClick())
             form.addBinding(new GMouseInputEvent(GMouseInputEvent.DBLCLK)::isEvent, new GBindingEnv(100, GBindingMode.ONLY, null, GBindingMode.ONLY, null, null, null, null),
                     () -> {

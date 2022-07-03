@@ -81,6 +81,8 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         addFill(drawWidget);
 
         initPageSizeWidget();
+
+        GFormController.setBindingGroupObject(this, grid.groupObject);
     }
 
     private final Label messageLabel = new Label();

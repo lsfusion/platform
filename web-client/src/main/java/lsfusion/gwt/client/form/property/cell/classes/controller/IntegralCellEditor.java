@@ -24,8 +24,8 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
     }
 
     @Override
-    public Element createInputElement(Element parent) {
-        Element element = super.createInputElement(parent);
+    public Element createTextInputElement() {
+        Element element = super.createTextInputElement();
         if(MainFrame.mobile) {
             element.setAttribute("type", "number");
             element.setAttribute("step", "0.01");

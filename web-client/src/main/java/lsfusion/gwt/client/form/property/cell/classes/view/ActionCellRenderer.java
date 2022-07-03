@@ -28,6 +28,10 @@ public class ActionCellRenderer extends CellRenderer {
     public static final String ASYNCIMAGE = "lsf-async-image";
 
     @Override
+    public Element createRenderElement(RenderContext renderContext) {
+        return Document.get().createButtonElement();
+    }
+    @Override
     public boolean isSimpleText(RenderContext renderContext) {
         return !hasImage(renderContext);
     }

@@ -2,16 +2,11 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
-import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextArea;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-
-import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class TextCellEditor extends TextBasedCellEditor {
 
@@ -30,8 +25,8 @@ public class TextCellEditor extends TextBasedCellEditor {
     }
 
     @Override
-    protected ValueBoxBase<String> createTextBoxBase() {
-        return new TextArea();
+    protected ValueBoxBase<String> createTextInputWidget(Element inputElement) {
+        return new TextArea(inputElement);
     }
 
     @Override

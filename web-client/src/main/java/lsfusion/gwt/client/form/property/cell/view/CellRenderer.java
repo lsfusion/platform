@@ -26,6 +26,9 @@ public abstract class CellRenderer<T> {
     protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
+    public Element createRenderElement(RenderContext renderContext) {
+        return Document.get().createDivElement();
+    }
     public boolean isSimpleText(RenderContext renderContext) {
         return false;
     }
@@ -57,7 +60,7 @@ public abstract class CellRenderer<T> {
         Style.TextAlign horzTextAlignment = getHorzTextAlignment();
         String vertAlignment = getDefaultVertAlignment();
         if(GwtClientUtils.isTDorTH(element)) {
-            assert isSimpleText(renderContext);
+            assert isSimpleText(renderContext); // see needWrap check
             renderSimpleStatic(element, horzTextAlignment, vertAlignment);
         } else
             renderFlexStatic(element, getFlexAlign(horzTextAlignment), vertAlignment);
@@ -95,11 +98,11 @@ public abstract class CellRenderer<T> {
     private static void renderSimpleStatic(Element element, Style.TextAlign horzAlignment, String vertAlignment) {
 //        if(staticHeight != null)
 //            GPropertyTableBuilder.setLineHeight(element, staticHeight);
-        assert vertAlignment.equals("center");
+        assert vertAlignment.equals("center") || vertAlignment.equals("top"); // top is used for the multi-lines text renderers
         // actually vertical-align works only for text content or td content
         // however for td line height should not be set (!) and for div should be set, god knows why
         // it seems that vertical-align is middle by default, however just in case
-        element.getStyle().setVerticalAlign(Style.VerticalAlign.MIDDLE);
+        element.getStyle().setVerticalAlign(vertAlignment.equals("center") ? Style.VerticalAlign.MIDDLE : Style.VerticalAlign.TOP);
         element.getStyle().setTextAlign(horzAlignment);
     }
 

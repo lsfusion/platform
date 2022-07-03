@@ -34,13 +34,19 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         lastColumnStyle = " " + style.dataGridLastCell();
     }
 
-    public static Element renderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
-        boolean isTDorTH = GwtClientUtils.isTDorTH(element);
-        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
+    // when we have a td and it is not a simple text, we have to wrap it, because td has a display : table-cell (and often incorrect element type in general)
+    // and thus height for example always work like min-height, so the size depends on
+    // and it can not be changed and it's behaviour is often very odd
+    private static boolean needWrap(Element element, GPropertyDraw property, RenderContext renderContext) {
+        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer().isSimpleText(renderContext);
+    }
+    private static boolean needWrap(Element element, GPropertyDraw property, UpdateContext updateContext) {
+        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer().isSimpleText(updateContext);
+    }
 
-        if(!isSimpleText) {
-            element = wrapSized(element);
-//            GwtClientUtils.setupPercentParent(element);
+    public static Element renderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
+        if(needWrap(element, property, renderContext)) {
+            element = wrapSized(element, property.getCellRenderer().createRenderElement(renderContext));
 
             // the thing is that td ignores min-height (however height in td works just like min-height)
             // and we want height in table div work as min-height (i.e. to stretch)
@@ -54,35 +60,28 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     }
 
     public static Element getRenderSizedElement(Element element, GPropertyDraw property, UpdateContext updateContext) {
-        boolean isTDorTH = GwtClientUtils.isTDorTH(element);
-        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(updateContext);
-
-        if(!isSimpleText) // there is another unwrapping in GPropertyTableBuilder, so it also should be kept consistent
+        if(needWrap(element, property, updateContext))
             element = unwrapSized(element);
 
         return element;
     }
 
     public static boolean clearRenderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
-        boolean isTDorTH = GwtClientUtils.isTDorTH(element);
-        boolean isSimpleText = isTDorTH && property.getCellRenderer().isSimpleText(renderContext);
-
-        if(!isSimpleText) {
+        if(needWrap(element, property, renderContext)) {
             GwtClientUtils.removeAllChildren(element);
 
             return true;
         }
 
-        FlexPanel.setHeight(element, null, isTDorTH);
+        FlexPanel.setHeight(element, (GSize)null);
 
         return false;
     }
 
-    private static Element wrapSized(Element element) {
+    private static Element wrapSized(Element element, Element renderElement) {
 //        assert GwtClientUtils.isTDorTH(element);
-        Element wrappedTh = Document.get().createDivElement();
-        element.appendChild(wrappedTh);
-        return wrappedTh;
+        element.appendChild(renderElement);
+        return renderElement;
     }
 
     public static Element unwrapSized(Element element) {
