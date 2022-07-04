@@ -44,12 +44,12 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new FileCellEditor(editManager, storeName, validExtensions, named);
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new FileCellRenderer(property);
     }
 

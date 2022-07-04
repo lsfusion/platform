@@ -24,7 +24,7 @@ public class GDateType extends GADateType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new DateCellEditor(this, editManager, editProperty);
     }
 

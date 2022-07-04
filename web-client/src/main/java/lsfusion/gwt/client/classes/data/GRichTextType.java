@@ -15,12 +15,12 @@ public class GRichTextType extends GTextType {
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new RichTextCellRenderer(property);
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new RichTextCellEditor(editManager);
     }
 }

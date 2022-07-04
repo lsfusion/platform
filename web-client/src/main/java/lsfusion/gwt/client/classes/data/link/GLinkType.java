@@ -39,12 +39,12 @@ public abstract class GLinkType extends GDataType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new LinkCellEditor(editManager, editProperty);
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new FileCellRenderer(property);
     }
 

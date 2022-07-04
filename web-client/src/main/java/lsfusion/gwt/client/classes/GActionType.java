@@ -28,7 +28,7 @@ public class GActionType extends GDataType {
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new ActionCellRenderer(property);
     }
 

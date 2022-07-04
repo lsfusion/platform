@@ -11,7 +11,7 @@ import java.util.Date;
 public abstract class GADateType extends GFormatType {
 
     @Override
-    public DateCellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public DateCellRenderer createCellRenderer(GPropertyDraw property) {
         return new DateCellRenderer(property);
     }
 

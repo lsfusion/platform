@@ -22,7 +22,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
-import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObject;
@@ -442,7 +441,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             if (customRenderFunction != null) {
                 cellRenderer = new CustomCellRenderer(this, customRenderFunction);
             } else {
-                cellRenderer = baseType.createGridCellRenderer(this);
+                cellRenderer = baseType.createCellRenderer(this);
             }
         }
         return cellRenderer;

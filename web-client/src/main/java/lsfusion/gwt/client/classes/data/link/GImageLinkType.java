@@ -7,7 +7,7 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class GImageLinkType extends GLinkType {
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new ImageLinkCellRenderer(property);
     }
 

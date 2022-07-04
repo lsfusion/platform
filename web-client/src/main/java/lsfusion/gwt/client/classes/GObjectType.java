@@ -22,7 +22,7 @@ public class GObjectType extends GType {
     public static final GObjectType instance = new GObjectType();
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new IntegralCellRenderer(property);
     }
 
@@ -31,7 +31,7 @@ public class GObjectType extends GType {
         return 7;
     }
 
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new LongCellEditor(editManager, editProperty);
     }
 

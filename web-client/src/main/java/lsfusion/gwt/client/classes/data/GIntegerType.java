@@ -11,7 +11,7 @@ public class GIntegerType extends GIntegralType {
     public static GIntegerType instance = new GIntegerType();
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new IntegerCellEditor(editManager, editProperty);
     }
 

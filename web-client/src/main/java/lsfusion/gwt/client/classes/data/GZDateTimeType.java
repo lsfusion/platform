@@ -14,7 +14,7 @@ public class GZDateTimeType extends GDateTimeType {
     public static GZDateTimeType instance = new GZDateTimeType();
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new ZDateTimeCellEditor(this, editManager, editProperty);
     }
 

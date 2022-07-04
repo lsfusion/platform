@@ -16,7 +16,7 @@ public abstract class GIntegralType extends GFormatType {
     public final static String UNBREAKABLE_SPACE = "\u00a0";
     
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new IntegralCellRenderer(property);
     }
 

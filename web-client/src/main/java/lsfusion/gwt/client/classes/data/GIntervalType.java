@@ -36,12 +36,12 @@ public abstract class GIntervalType extends GFormatType {
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new IntervalCellRenderer(property);
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new IntervalCellEditor(editManager, editProperty, getIntervalType(), this);
     }
 

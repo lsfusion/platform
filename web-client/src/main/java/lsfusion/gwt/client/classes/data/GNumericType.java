@@ -29,7 +29,7 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    public CellRenderer createGridCellRenderer(GPropertyDraw property) {
+    public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new IntegralCellRenderer(property);
     }
 
@@ -57,7 +57,7 @@ public class GNumericType extends GDoubleType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
         return new NumericCellEditor(this, editManager, editProperty);
     }
 
