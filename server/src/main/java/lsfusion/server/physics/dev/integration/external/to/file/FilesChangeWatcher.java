@@ -42,7 +42,7 @@ public abstract class FilesChangeWatcher {
                 key.reset();
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw Throwables.propagate(e);
         }
     }
 
