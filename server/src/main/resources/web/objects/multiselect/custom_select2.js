@@ -115,7 +115,7 @@ function _select2(updateFunction) {
             });
         },
         update: (element, controller, list) => {
-            if (!controller.booleanFilterSet) {
+            if (!controller.booleanFilterSet && list.length > 0) {
                 controller.setBooleanViewFilter('selected', 1000);
                 controller.booleanFilterSet = true;
                 return;
