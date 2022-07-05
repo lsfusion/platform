@@ -1,0 +1,19 @@
+MODULE Multiselect;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientLoad() + {
+    INTERNAL CLIENT 'select2.css';
+    INTERNAL CLIENT 'select2.js';
+
+    INTERNAL CLIENT 'custom_select2.css';
+    INTERNAL CLIENT 'custom_select2.js';
+
+    INTERNAL CLIENT 'selectize.css';
+    INTERNAL CLIENT 'selectize.js';
+
+    INTERNAL CLIENT 'custom_selectize.css';
+    INTERNAL CLIENT 'custom_selectize.js';
+}
