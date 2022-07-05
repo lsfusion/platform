@@ -29,7 +29,7 @@
 
     <scm>
         <developerConnection>scm:git:ssh://git@github.com/lsfusion/platform.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>v5</tag>
     </scm>
 
     <build>
