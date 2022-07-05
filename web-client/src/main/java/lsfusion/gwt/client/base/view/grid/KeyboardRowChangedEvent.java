@@ -2,8 +2,6 @@ package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.event.shared.HasHandlers;
 
 public class KeyboardRowChangedEvent extends GwtEvent<KeyboardRowChangedEvent.Handler> {
 
@@ -17,7 +15,7 @@ public class KeyboardRowChangedEvent extends GwtEvent<KeyboardRowChangedEvent.Ha
 
         if (TYPE != null) {
             KeyboardRowChangedEvent event = new KeyboardRowChangedEvent();
-            source.fireEvent(event);
+            source.getWidget().fireEvent(event);
         }
     }
 

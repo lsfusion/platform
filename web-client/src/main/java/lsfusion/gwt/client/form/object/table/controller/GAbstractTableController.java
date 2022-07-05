@@ -1,17 +1,12 @@
 package lsfusion.gwt.client.form.object.table.controller;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GFormChanges;
-import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
-import lsfusion.gwt.client.base.view.ResizableSimplePanel;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -25,6 +20,8 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
+import lsfusion.gwt.client.form.object.table.TableComponent;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
@@ -38,13 +35,13 @@ public abstract class GAbstractTableController extends GPropertyController imple
     protected final GToolbarView toolbarView;
     public GFilterController filter;
 
-    protected GridContainerPanel gridView;
+    protected TableContainer gridView;
 
     public void initGridView(boolean autoSize) {
 
         // we need to wrap into simple panel to make layout independent from property value (make flex-basis 0 for upper components)
         // plus we need this panel to change views
-        this.gridView = new GridContainerPanel(autoSize, formController);
+        this.gridView = new TableContainer(autoSize, formController);
 
         getFormLayout().addBaseComponent(getGridComponent(), this.gridView, getDefaultFocusReceiver());
 
@@ -53,94 +50,8 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     protected abstract void configureToolbar();
 
-    public void changeGridView(Widget widget, boolean boxed) {
-        gridView.changeWidget(widget, boxed);
-    }
-
-    public static class GridContainerPanel extends ResizableSimplePanel implements HasMaxPreferredSize {
-        private final boolean autoSize;
-        private final GFormController form;
-
-        public GridContainerPanel(boolean autoSize, GFormController form) {
-            this.autoSize = autoSize;
-
-            setStyleName("gridContainerPanel");
-
-            this.form = form;
-
-            DataGrid.initSinkFocusEvents(this);
-        }
-
-        public void changeWidget(Widget widget, boolean boxed) {
-            setSizedWidget(widget, autoSize);
-
-            if(boxed)
-                addStyleName("gridContainerPanelBoxed");
-            else
-                removeStyleName("gridContainerPanelBoxed");
-        }
-
-        @Override
-        public void onBrowserEvent(Event event) {
-            Element target = DataGrid.getTargetAndCheck(getElement(), event);
-            if(target == null)
-                return;
-            if(!form.previewEvent(target, event))
-                return;
-
-            super.onBrowserEvent(event);
-
-            if(!DataGrid.checkSinkFocusEvents(event))
-                return;
-
-            String eventType = event.getType();
-            if (BrowserEvents.FOCUS.equals(eventType))
-                onFocus(target, event);
-            else if (BrowserEvents.BLUR.equals(eventType))
-                onBlur(target, event);
-
-            form.propagateFocusEvent(event);
-        }
-
-        private boolean isFocused;
-        protected void onFocus(Element target, Event event) {
-            Widget widget = getWidget();
-            if(widget instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
-                DataGrid<?> grid = (DataGrid<?>) widget;
-                grid.onFocus();
-                grid.onGridBrowserEvent(target, event);
-            }
-
-            if(isFocused)
-                return;
-            isFocused = true;
-            addStyleName("gridContainerPanelFocused");
-        }
-
-        protected void onBlur(Element target, Event event) {
-            // should be before isFakeBlur check to propagate the event to the cell editor
-            Widget widget = getWidget();
-            if(widget instanceof DataGrid) {
-                DataGrid<?> grid = (DataGrid<?>) widget;
-                grid.onBlur(event);
-                grid.onGridBrowserEvent(target, event);
-            }
-
-            if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
-                return;
-            }
-            isFocused = false;
-            removeStyleName("gridContainerPanelFocused");
-        }
-
-        public void setPreferredSize(boolean set, Result<Integer> grids) {
-            if(!autoSize)
-                changePercentFillWidget(set);
-
-            Widget widget = getWidget();
-            if(widget instanceof HasMaxPreferredSize) // needed to setPreferredSize for grid
-                ((HasMaxPreferredSize) widget).setPreferredSize(set, grids);
-        }
+    public void changeGridView(TableComponent tableComponent, boolean boxed) {
+        gridView.changeTableComponent(tableComponent, boxed);
     }
 
     public GAbstractTableController(GFormController formController, GToolbar toolbar, boolean isList) {

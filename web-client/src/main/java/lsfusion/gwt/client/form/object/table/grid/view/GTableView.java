@@ -6,16 +6,22 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
-public interface GTableView {
+public interface GTableView extends TableComponent {
     
     // components
     default Widget getThisWidget() { return (Widget)this; }
+    default Widget getWidget() {
+        return getThisWidget();
+    }
 
     // SETTERS
     // keys
@@ -63,7 +69,7 @@ public interface GTableView {
     default void focus() {
         getFocusHolderElement().focus();
     }
-    default Element getFocusHolderElement() { return getThisWidget().getElement(); }; // protected
+    default Element getFocusHolderElement() { return getWidget().getElement(); }; // protected
 
     // add / delete
     int getSelectedRow();

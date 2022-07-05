@@ -4,7 +4,10 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -18,7 +21,9 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.flex.LinearContainerView;
 import lsfusion.gwt.client.form.object.table.grid.GGrid;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GFormLayout extends ResizableComplexPanel {
 
@@ -265,7 +270,6 @@ public class GFormLayout extends ResizableComplexPanel {
             return new Pair<>(extraHorzOffset, extraVertOffset);
         } else {
             FlexPanel.setMaxWidth(element, (GSize) null);
-            DataGrid.setMaxHeight(element, null);
             return null;
         }
     }

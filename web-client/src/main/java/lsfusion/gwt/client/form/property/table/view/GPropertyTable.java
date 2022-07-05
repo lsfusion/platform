@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -29,8 +30,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected final GFormController form;
     protected final GGroupObject groupObject;
 
-    public GPropertyTable(GFormController iform, GGroupObject groupObject, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
-        super(style, noHeaders, noFooters, groupObject.grid.autoSize);
+    public GPropertyTable(GFormController iform, GGroupObject groupObject, TableContainer tableContainer, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+        super(tableContainer, style, noHeaders, noFooters);
 
         this.form = iform;
         this.groupObject = groupObject;

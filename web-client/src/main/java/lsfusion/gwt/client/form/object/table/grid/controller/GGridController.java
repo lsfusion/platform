@@ -118,7 +118,7 @@ public class GGridController extends GAbstractTableController {
 
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
-        changeTableView(new GGridTable(formController, this, userPreferences));
+        changeTableView(new GGridTable(formController, this, gridView, userPreferences));
         gridTableButton.showBackground(true);
         pivotTableButton.showBackground(false);
         if(mapTableButton != null)
@@ -200,7 +200,7 @@ public class GGridController extends GAbstractTableController {
         if (this.table != null)
             this.table.onClear();
 
-        changeGridView(table.getThisWidget(), groupObject.grid.isBoxed(table));
+        changeGridView(table, groupObject.grid.isBoxed(table));
         table.onRender(formController.popEditEvent());
         this.table = table;
         updateSettingsButton();
@@ -612,7 +612,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     public boolean focusFirstWidget() {
-        if (table != null && GwtClientUtils.isShowing(table.getThisWidget())) {
+        if (table != null && GwtClientUtils.isShowing(table.getWidget())) {
             table.focus();
             return true;
         }

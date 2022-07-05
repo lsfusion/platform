@@ -41,9 +41,8 @@ public class GTreeGroupController extends GAbstractTableController {
         super(iFormController, iTreeGroup.toolbar, true);
         treeGroup = iTreeGroup;
 
-        tree = new GTreeTable(iFormController, iForm, this, treeGroup, treeGroup.autoSize);
-
         initGridView(treeGroup.autoSize);
+        tree = new GTreeTable(iFormController, iForm, this, treeGroup, gridView);
 
         changeGridView(tree, treeGroup.boxed == null || treeGroup.boxed);
     }
@@ -245,7 +244,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     public boolean focusFirstWidget() {
-        if (isShowing(tree)) {
+        if (isShowing(tree.getWidget())) {
             tree.focus();
             return true;
         }

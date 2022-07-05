@@ -52,7 +52,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
             @Override
             public boolean stillShowTooltip() {
-                return table.isAttached() && table.isVisible();
+                return table.getWidget().isAttached() && table.getWidget().isVisible();
             }
 
             @Override

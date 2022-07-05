@@ -5,13 +5,13 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
@@ -24,6 +24,7 @@ import lsfusion.gwt.client.form.event.GMouseInputEvent;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
@@ -60,16 +61,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private GTreeGroup treeGroup;
     
-    private boolean autoSize;
 
     private GSize hierarchicalWidth;
 
-    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, boolean autoSize) {
-        super(iformController, lastGroupObject(treeGroup), treeGroupController.getFont());
+    public GTreeTable(GFormController iformController, GForm iform, GTreeGroupController treeGroupController, GTreeGroup treeGroup, TableContainer tableContainer) {
+        super(iformController, lastGroupObject(treeGroup), tableContainer, treeGroupController.getFont());
 
         this.treeGroupController = treeGroupController;
         this.treeGroup = treeGroup;
-        this.autoSize = autoSize;
 
         tree = new GTreeTableTree(iform);
 
@@ -122,15 +121,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                     },
                     event -> {
                         fireExpandSelectedNode(null);
-                    }, this, groupObject);
+                    }, getWidget(), groupObject);
     }
 
     private static GGroupObject lastGroupObject(GTreeGroup treeGroup) {
         return treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
-    }
-
-    protected boolean isAutoSize() {
-        return autoSize;
     }
 
     public void removeProperty(GPropertyDraw property) {
@@ -717,7 +712,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     @Override
     public void onResize() {
-        if (isVisible()) {
+        if (getWidget().isVisible()) {
             super.onResize();
         }
     }
@@ -823,7 +818,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                     int addIndex = index + i;
                     GTreeExpandingGridRecord treeRecord = new GTreeExpandingGridRecord(addIndex, node, treeValue, expandingNode);
                     rows.add(addIndex, treeRecord);
-                    tableBuilder.incBuildRow(tableData.getSection(), addIndex, treeRecord);
+                    tableBuilder.incBuildRow(tableWidget.getSection(), addIndex, treeRecord);
                 }
 
                 // shifting rows (here it's better to do to avoid dom reads)
@@ -832,7 +827,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         } else { // removing all children nodes
             if(incrementalUpdate) {
                 // removing all rows in that tange
-                tableBuilder.incDeleteRows(tableData.getSection(), indexRange.first, indexRange.second);
+                tableBuilder.incDeleteRows(tableWidget.getSection(), indexRange.first, indexRange.second);
                 rows.removeRange(indexRange.first, indexRange.second);
 
                 // shifting rows (here it's better to do to avoid dom reads)
@@ -853,7 +848,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         int index = indexRange.first - 1;
         GTreeObjectGridRecord treeObjectRecord = (GTreeObjectGridRecord) getRowValue(index);
         treeObjectRecord.setTreeValue(treeObjectRecord.getTreeValue().override(GTreeColumnValueType.get(open)));
-        tableBuilder.incUpdateRow(tableData.getSection(), index, new int[]{0}, treeObjectRecord);
+        tableBuilder.incUpdateRow(tableWidget.getSection(), index, new int[]{0}, treeObjectRecord);
         return treeObjectRecord;
     }
 

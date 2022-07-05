@@ -24,6 +24,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
@@ -85,8 +86,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private long setRequestIndex;
 
-    public GGridTable(GFormController iform, GGridController igroupController, GGridUserPreferences[] iuserPreferences) {
-        super(iform, igroupController.groupObject, null);
+    public GGridTable(GFormController iform, GGridController igroupController, TableContainer tableContainer, GGridUserPreferences[] iuserPreferences) {
+        super(iform, igroupController.groupObject, tableContainer, null);
 
         this.groupObjectController = igroupController;
         this.groupObject = igroupController.groupObject;
@@ -189,7 +190,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 for (int i = 0; i < oldRecords.size(); i++) {
                     GridDataRecord record = oldRecords.get(i);
                     if (!rowKeys.contains(record.getKey())) {
-                        tableBuilder.incDeleteRows(tableData.getSection(), i, i + 1);
+                        tableBuilder.incDeleteRows(tableWidget.getSection(), i, i + 1);
                         rows.remove(record);
                         incUpdateRowIndices(i, -1);
                     }
@@ -573,7 +574,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 int newColumnIndex = GwtSharedUtils.relativePosition(property, form.getPropertyDraws(), properties);
 
                 properties.add(newColumnIndex, property);
-                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> onBinding(property, event), GGridTable.this));
+                bindingEventIndices.add(newColumnIndex, form.addPropertyBindings(property, event -> onBinding(property, event), getWidget()));
 
                 this.columnKeys.put(property, columnKeys);
 
@@ -814,7 +815,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void onResize() {
         super.onResize();
 
-        if (isVisible()) {
+        if (getWidget().isVisible()) {
             int tableHeight = getViewportHeight();
             if (tableHeight == 0) {
                 return;

@@ -6,12 +6,12 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -110,14 +111,14 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     
     public GFont font;
 
-    public GGridPropertyTable(GFormController form, GGroupObject groupObject, GFont font) {
-        super(form, groupObject, getDefaultStyle(), !groupObject.hasHeaders, !groupObject.hasFooters, false);
+    public GGridPropertyTable(GFormController form, GGroupObject groupObject, TableContainer tableContainer, GFont font) {
+        super(form, groupObject, tableContainer, DEFAULT_STYLE, !groupObject.hasHeaders, !groupObject.hasFooters, false);
         
         this.font = font;
 
         setTableBuilder(new GGridPropertyTableBuilder<T>(this));
 
-        GFormController.setBindingGroupObject(this, groupObject);
+        GFormController.setBindingGroupObject(tableContainer, groupObject);
 
         // ADD FILTER
         addFilterBinding(new GKeyInputEvent(ADD_USER_FILTER_KEY_STROKE),
@@ -196,7 +197,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         addFilterBinding(event::isEvent, pressed);
     }
     private void addFilterBinding(GFormController.BindingCheck event, GFormController.BindingExec pressed) {
-        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), pressed, GGridPropertyTable.this, groupObject);
+        form.addBinding(event, new GBindingEnv(null, null, null, GBindingMode.ONLY, GBindingMode.NO, null, null, null), pressed, tableContainer, groupObject);
     }
 
     public GFont getFont() {

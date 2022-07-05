@@ -95,7 +95,7 @@ class DataGridImpl {
     public TableSectionElement convertToSectionElement(DataGrid<?> table, String sectionTag, SafeHtml rowHtml) {
         // Attach an event listener so we can catch synchronous load events from
         // cached images.
-        DOM.setEventListener(tmpElem, table);
+        DOM.setEventListener(tmpElem, table.getWidget());
 
       /*
        * Render the rows into a table.
@@ -142,8 +142,8 @@ class DataGridImpl {
                                      SafeHtml html) {
         // If the widget is not attached, attach an event listener so we can catch
         // synchronous load events from cached images.
-        if (!table.isAttached()) {
-            DOM.setEventListener(table.getElement(), table);
+        if (!table.getWidget().isAttached()) {
+            DOM.setEventListener(table.getElement(), table.getWidget());
         }
 
         // Remove the section from the tbody.
@@ -161,7 +161,7 @@ class DataGridImpl {
         reattachSectionElement(parent, section, nextSection);
 
         // Detach the event listener.
-        if (!table.isAttached()) {
+        if (!table.getWidget().isAttached()) {
             DOM.setEventListener(table.getElement(), null);
         }
     }
