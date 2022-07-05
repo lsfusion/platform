@@ -5140,13 +5140,21 @@ metaCodeIdList returns [List<String> ids]
 metaCodeId returns [String sid]
 	:	id=compoundID 		{ $sid = $id.sid; }
 	|	ptype=primitiveType	{ $sid = $ptype.text; } 
-	|	lit=metaCodeLiteral 	{ $sid = $lit.text; }
-	|				{ $sid = ""; }
+	|	lit=metaCodeLiteral { $sid = $lit.sid; }
+	|	{ $sid = ""; }
 	;
 
-metaCodeLiteral
-	:	STRING_LITERAL 
-	| 	UINT_LITERAL
+metaCodeLiteral returns [String sid]
+	:	slit=metaCodeStringLiteral { $sid = $slit.val; }
+	|	lit=metaCodeNonStringLiteral { $sid = $lit.text; }
+	;
+
+metaCodeStringLiteral returns [String val]
+	:	slit=multilineStringLiteral { $val = $slit.val; }
+	;
+	
+metaCodeNonStringLiteral
+	:	UINT_LITERAL
 	|	UNUMERIC_LITERAL
 	|	UDOUBLE_LITERAL
 	|	ULONG_LITERAL
@@ -5323,7 +5331,7 @@ constantProperty[List<TypedParameter> context, boolean dynamic] returns [LP prop
 
 expressionLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
 	:	cl=commonLiteral { $cls = $cl.cls; $value = $cl.value; } 	
-	|	str=STRING_LITERAL { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.text; }
+	|	str=multilineStringLiteral { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.val; }
 	;
 
 literal returns [ScriptingLogicsModule.ConstType cls, Object value]
@@ -5432,9 +5440,13 @@ colorLiteral returns [Color val]
 	|	'RGB' '(' r=uintLiteral ',' g=uintLiteral ',' b=uintLiteral ')' { $val = self.createScriptedColor($r.val, $g.val, $b.val); } 
 	;
 
+multilineStringLiteral returns [String val]
+	:	s=STRING_LITERAL { $val = self.removeCarriageReturn($s.text); } 
+	;
+	
 stringLiteral returns [String val]
-	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
-    |   s=ID { $val = null; }
+	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.val); }
+    |   id=ID { $val = null; }
 	;
 
 primitiveType returns [String val]
@@ -5444,7 +5456,7 @@ primitiveType returns [String val]
 // there are some rules where ID is not desirable (see usages), where there is an ID
 // it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
 localizedStringLiteralNoID returns [LocalizedString val]
-	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); }
+	:	s=multilineStringLiteral { $val = self.transformLocalizedStringLiteral($s.val); }
 	;
 
 localizedStringLiteral returns [LocalizedString val]
