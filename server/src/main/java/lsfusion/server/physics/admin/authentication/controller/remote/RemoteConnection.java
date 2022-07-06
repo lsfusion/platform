@@ -2,6 +2,7 @@ package lsfusion.server.physics.admin.authentication.controller.remote;
 
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
 import lsfusion.interop.connection.LocalePreferences;
@@ -78,7 +79,14 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     protected void initUser(SecurityManager securityManager, AuthenticationToken token, DataSession session) throws SQLException, SQLHandledException {
         String login = securityManager.parseToken(token);
         authToken = token;
-        user = login != null ? securityManager.readUser(login, session) : (SystemProperties.inDevMode ? securityManager.getAdminUser() : securityManager.getAnonymousUser());
+        if(login != null) {
+            user = securityManager.readUser(login, session);
+            if(user == null) {
+                throw new AuthenticationException(String.format("User with login %s not found", login));
+            }
+        } else {
+            user = SystemProperties.inDevMode ? securityManager.getAdminUser() : securityManager.getAnonymousUser();
+        }
     }
 
     // in theory its possible to cache all this
