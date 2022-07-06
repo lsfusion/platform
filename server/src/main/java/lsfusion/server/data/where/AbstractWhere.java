@@ -250,11 +250,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
         MCol<GroupJoinsWhere> mResult = ListFact.mColFilter(whereJoins);
         MList<Where> mRecPacks = ListFact.mListMax(whereJoins.size());
-        long currentComplexity = 0;
-        if(!exclusive) {
-            currentComplexity = hasUnionExpr() ? getComplexity(false) : Long.MAX_VALUE;
+        long currentComplexity = hasUnionExpr() ? getComplexity(false) : Long.MAX_VALUE;
+        if(!exclusive)
             mRecPacks.add(Where.FALSE());
-        }
         for(GroupJoinsWhere innerJoin : whereJoins) {
             if(innerJoin.isComplex())
                 mResult.add(innerJoin);
@@ -264,9 +262,12 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                 if(BaseUtils.hashEquals(fullWhere, fullPackWhere))
                     mResult.add(innerJoin);
                 else {
-                    if(exclusive)
-                        mRecPacks.add(fullPackWhere); // если не exclusive
-                    else {
+                    if(exclusive) {
+                        if(fullPackWhere.getComplexity(false) < currentComplexity) // also can be infinite recursion because of union exprs
+                            mRecPacks.add(fullPackWhere);
+                        else
+                            mResult.add(innerJoin);
+                    } else {
                         int last = mRecPacks.size() - 1;
                         Where merged = mRecPacks.get(last).or(fullPackWhere);
                         if(merged.getComplexity(false) < currentComplexity) // предотвращение бесконечной рекурсии, через getCommonWhere может залазить внутрь UnionExpr потом их опять собирать и проверка на hashEquals не сработает
