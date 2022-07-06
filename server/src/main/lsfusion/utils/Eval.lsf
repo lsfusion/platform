@@ -152,7 +152,7 @@ json '{eval.script.text.script}' (Script s) = [FORMULA STRING 'json_build_object
             ((OVERRIDE text(s), ''), (OVERRIDE STRING(executionScriptTypeName(calculateScriptType())), ''));
 
 changeScript(Script sc) {
-    INPUT s = TEXT DO {
+    INPUT s = STRING DO {
         stringToFile(s);
         LOCAL text = STRING();
         IMPORT JSON FROM resultFile() TO() text;
