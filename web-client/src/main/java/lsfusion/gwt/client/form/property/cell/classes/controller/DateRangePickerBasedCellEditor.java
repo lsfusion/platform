@@ -122,7 +122,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
             timePicker24Hour: true,
             showDropdowns: true,
             autoApply: true,
-            ranges: !time ? $wnd[singleDatePicker ? 'getSingleRanges' : 'getRanges']($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
+            ranges: !time && !@lsfusion.gwt.client.view.MainFrame::mobile ? $wnd[singleDatePicker ? 'getSingleRanges' : 'getRanges']($wnd, messages.@lsfusion.gwt.client.ClientMessages::today()(),
                 messages.@lsfusion.gwt.client.ClientMessages::yesterday()(),
                 singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::sevenDaysAgo()() : messages.@lsfusion.gwt.client.ClientMessages::last7Days()(),
                 singleDatePicker ? messages.@lsfusion.gwt.client.ClientMessages::thirtyDaysAgo()() : messages.@lsfusion.gwt.client.ClientMessages::last30Days()(),
@@ -199,6 +199,14 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
         //THESE ARE THE PATCHES OF DATERANGEPICKER. ALL CHANGES START WITH <<<<< AND END WITH >>>>>. ALL COMMENTS WILL BE IN UPPER CASE
         function applyDateRangePickerPatches() {
+            $wnd.daterangepicker.prototype.move = new Proxy($wnd.daterangepicker.prototype.move, {
+                apply: function (target, thisArg, argArray) {
+                    target.apply(thisArg, argArray);
+                    if (parseInt(thisArg.container.css('top')) < 0)
+                        thisArg.container.css('top', 10);
+                }
+            });
+
             //OVERRIDE OF THE datepicker.keydown METHOD. COPIED FROM daterangepicker.js WITH SOME CHANGES
             $wnd.daterangepicker.prototype.keydown = function (e) {
                 //<<<<< REMOVE THIS IF TO PREVENT HIDE PICKER ON PRESS ENTER WITH INVALID INPUT

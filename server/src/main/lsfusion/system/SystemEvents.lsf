@@ -261,6 +261,8 @@ CLASS Session '{system.events.session}';
 TABLE session(Session);
 TABLE sessionObject(Session, Object);
 
+TABLE sessionContact (Session, Contact);
+
 currentSession = DATA LOCAL Session();
 isCurrentSession(s) = s = currentSession(); 
 
