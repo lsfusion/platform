@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 
@@ -66,7 +66,7 @@ public class GEditBindingMap implements Serializable {
             return EDIT_OBJECT;
         if (GMouseStroke.isChangeEvent(event)) {
             Integer actionIndex = (Integer) getToolbarAction(event);
-            if(actionIndex == null && GFormController.isDialogMode()) {
+            if(actionIndex == null && FormsController.isDialogMode()) {
                 actionIndex = dialogActionIndexSupplier.get();
             }
             contextAction.set(actionIndex);

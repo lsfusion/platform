@@ -150,8 +150,6 @@ public class GFormController implements EditManager {
 
     private boolean hasColumnGroupObjects;
 
-    private static Timer editModeTimer;
-
     private boolean needConfirm;
 
     public FormsController getFormsController() {
@@ -193,8 +191,6 @@ public class GFormController implements EditManager {
         initializeUserOrders();
 
         initializeFormSchedulers();
-
-        initLinkModeTimer();
     }
 
     public void checkGlobalMouseEvent(Event event) {
@@ -251,122 +247,10 @@ public class GFormController implements EditManager {
 
     public static void checkKeyEvents(DomEvent event, FormsController formsController) {
         NativeEvent nativeEvent = event.getNativeEvent();
-        checkEditModeEvents(formsController, nativeEvent);
+        formsController.checkEditModeEvents(nativeEvent);
 
         if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent) && !MainFrame.mobile) {
             formsController.switchFullScreenMode();
-        }
-    }
-
-    // we need native method and not getCtrlKey, since some events (for example focus) have ctrlKey undefined and in this case we want to ignore them
-    private static native Boolean eventGetCtrlKey(NativeEvent evt) /*-{
-        return evt.ctrlKey;
-    }-*/;
-
-    private static native Boolean eventGetShiftKey(NativeEvent evt) /*-{
-        return evt.shiftKey;
-    }-*/;
-    
-    private static native Boolean eventGetAltKey(NativeEvent evt) /*-{
-        return evt.altKey;
-    }-*/;
-
-    private static boolean pressedCtrl = false;
-    private static boolean pressedShift = false;
-    private void initLinkModeTimer() {
-        if(editModeTimer == null) {
-            editModeTimer = new Timer() {
-                @Override
-                public void run() {
-                    if (pressedCtrl) {
-                        pressedCtrl = false;
-                    } else if(pressedShift) {
-                        pressedShift = false;
-                    } else {
-                        if (isForceLinkMode() || isForceDialogMode()) {
-                            formsController.updateMode(EditMode.DEFAULT, false, false);
-                        }
-                    }
-                }
-            };
-            editModeTimer.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
-        }
-    }
-
-    public static void checkEditModeEvents(FormsController formsController, NativeEvent event) {
-        Boolean ctrlKey = eventGetCtrlKey(event);
-        Boolean shiftKey = eventGetShiftKey(event);
-        Boolean altKey = eventGetAltKey(event);
-        if(ctrlKey != null) {
-            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
-            pressedCtrl = onlyCtrl;
-            if (onlyCtrl && !isLinkMode())
-                formsController.setForceEditMode(EditMode.LINK);
-            if (!onlyCtrl && isForceLinkMode())
-                formsController.removeForceEditMode();
-        }
-        if(shiftKey != null) {
-            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey);
-            pressedShift = onlyShift;
-            if (onlyShift && !isDialogMode())
-                formsController.setForceEditMode(EditMode.DIALOG);
-            if (!onlyShift && isForceDialogMode())
-                formsController.removeForceEditMode();
-        }
-    }
-
-    private static EditMode editMode;
-
-    private static EditMode prevEditMode;
-    public static void setPrevEditMode() {
-        prevEditMode = editMode;
-    }
-
-    private static boolean forceLinkMode;
-    public static boolean isForceLinkMode() {
-        return forceLinkMode;
-    }
-    public static boolean isLinkMode() {
-        return editMode == EditMode.LINK;
-    }
-
-    private static boolean forceDialogMode;
-    public static boolean isForceDialogMode() {
-        return forceDialogMode;
-    }
-    public static boolean isDialogMode() {
-        return editMode == EditMode.DIALOG;
-    }
-
-    public static void setEditMode(EditMode mode, boolean setForceLinkMode, boolean setForceDialogMode) {
-        editMode = mode;
-        forceLinkMode = setForceLinkMode;
-        forceDialogMode = setForceDialogMode;
-    }
-
-    public static int getEditModeIndex() {
-        return forceLinkMode || forceDialogMode ? prevEditMode.getIndex() : editMode.getIndex();
-    }
-
-    public static Timer linkModeStylesTimer;
-
-    public static void scheduleLinkModeStylesTimer(Runnable setLinkModeStyles) {
-        if(linkModeStylesTimer == null) {
-            linkModeStylesTimer = new Timer() {
-                @Override
-                public void run() {
-                    setLinkModeStyles.run();
-                    linkModeStylesTimer = null;
-                }
-            };
-            linkModeStylesTimer.schedule(250);
-        }
-    }
-
-    public static void cancelLinkModeStylesTimer() {
-        if (linkModeStylesTimer != null) {
-            linkModeStylesTimer.cancel();
-            linkModeStylesTimer = null;
         }
     }
 
@@ -1571,7 +1455,7 @@ public class GFormController implements EditManager {
     public boolean previewEvent(Element target, Event event) {
         if(BrowserEvents.BLUR.equals(event.getType()))
             MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
-        checkEditModeEvents(formsController, event);
+        formsController.checkEditModeEvents(event);
         return previewLoadingManagerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
     }
 
