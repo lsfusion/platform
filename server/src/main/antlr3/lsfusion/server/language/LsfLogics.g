@@ -5441,7 +5441,13 @@ colorLiteral returns [Color val]
 	;
 
 multilineStringLiteral returns [String val]
-	:	s=STRING_LITERAL { $val = self.removeCarriageReturn($s.text); } 
+@init {
+	List<String> slist = new ArrayList<>();
+}
+@after {
+	$val = self.concatStringLiterals(slist);
+}
+	:	(s=STRING_LITERAL { slist.add(self.removeCarriageReturn($s.text)); })+ 
 	;
 	
 stringLiteral returns [String val]

@@ -170,6 +170,7 @@ import java.util.*;
 import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -358,6 +359,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return s.replace("\r\n", "\n");
     }
     
+    public static String concatStringLiterals(List<String> literals) {
+        if (literals.size() == 1) {
+            return literals.get(0);
+        }
+        return quote(literals.stream().map(ScriptedStringUtils::unquote).collect(Collectors.joining("\n")));
+    }
+
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod());
