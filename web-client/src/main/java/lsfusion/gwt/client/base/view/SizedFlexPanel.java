@@ -118,7 +118,7 @@ public class SizedFlexPanel extends FlexPanel {
 
     @Override
     public boolean remove(Widget w) {
-        assert false;
+        //assert false;
         return super.remove(w);
     }
 }

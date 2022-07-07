@@ -12,7 +12,6 @@ import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -48,16 +47,16 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             action.modalityType = GModalityType.MODAL;
         }
 
-        if (action.modalityType.isModal()) {
+        if (action.modalityType.isModal() && action.inFormCanonicalName == null) {
             pauseDispatching();
         }
         WindowHiddenHandler onClose = () -> {
-            if (action.modalityType.isModal()) {
+            if (action.modalityType.isModal() && action.inFormCanonicalName == null) {
                 continueDispatching();
             }
         };
         try {
-            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, editContext, onClose);
+            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.inFormCanonicalName, action.inComponentId, action.forbidDuplicate, editEvent, editContext, onClose);
         } catch (Throwable t) {
             onClose.onHidden();
             throw t;

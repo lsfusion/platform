@@ -3262,6 +3262,8 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
 	Boolean syncType = null;
 	WindowFormType windowType = null;
+	FormEntity inForm = null;
+    ComponentView inComponent = null;
 
     List<TypedParameter> objectsContext = null;
     List<LPWithParams> contextFilters = new ArrayList<>();
@@ -3275,7 +3277,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
+		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, inForm, inComponent, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
 		                                     objectsContext, contextFilters, context);
 	}
 }
@@ -3288,6 +3290,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		    cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); }
 		|   sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }
+		|   'IN' fc = formComponentID { inForm = $fc.form; inComponent = $fc.component; }
 
         |	ms=manageSessionClause { manageSession = $ms.result; }
 		|	nc=noCancelClause { noCancel = $nc.result; }

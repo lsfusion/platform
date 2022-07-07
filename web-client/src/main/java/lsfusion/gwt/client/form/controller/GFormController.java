@@ -39,6 +39,7 @@ import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
 import lsfusion.gwt.client.form.GUpdateMode;
+import lsfusion.gwt.client.form.InnerForm;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
@@ -764,12 +765,12 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
+    public void openForm(Long requestIndex, GForm form, GModalityType modalityType, String inFormCanonicalName, Integer inComponentId, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
         boolean isDockedModal = modalityType == GModalityType.DOCKED_MODAL;
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, forbidDuplicate, editEvent, editContext, this, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, inFormCanonicalName, inComponentId, forbidDuplicate, editEvent, editContext, this, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
@@ -1058,8 +1059,11 @@ public class GFormController implements EditManager {
     }
 
     private void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex ->
-                formsController.asyncCloseForm(getAsyncFormController(requestIndex)), onExec);
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex -> {
+            if (!(formContainer instanceof InnerForm)) {
+                formsController.asyncCloseForm(getAsyncFormController(requestIndex));
+            }
+        }, onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {

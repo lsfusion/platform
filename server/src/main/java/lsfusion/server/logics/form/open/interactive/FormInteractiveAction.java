@@ -42,7 +42,9 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     private final Boolean syncType;
     private final WindowFormType windowType;
-    
+    private final String inFormCanonicalName;
+    private final Integer inComponentId;
+
     private ModalityType getModalityType(boolean syncType) {
         WindowFormType windowType = this.windowType;
         if(windowType == null) {
@@ -90,7 +92,10 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                ManageSessionType manageSession,
                                                                Boolean noCancel,
                                                                Boolean syncType,
-                                                               WindowFormType windowType, boolean forbidDuplicate,
+                                                               WindowFormType windowType,
+                                                               String inFormCanonicalName,
+                                                               Integer inComponentId,
+                                                               boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly) {
         super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext);
@@ -102,6 +107,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
         this.syncType = syncType;
         this.windowType = windowType;
+        this.inFormCanonicalName = inFormCanonicalName;
+        this.inComponentId = inComponentId;
 
         this.forbidDuplicate = forbidDuplicate;
 
@@ -148,7 +155,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
 
         FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.getWindowType(), contextFilters, readOnly);
-        context.requestFormUserInteraction(newFormInstance, modalityType, forbidDuplicate, context.stack);
+        context.requestFormUserInteraction(newFormInstance, modalityType, inFormCanonicalName, inComponentId, forbidDuplicate, context.stack);
 
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();

@@ -251,8 +251,8 @@ public class ThreadLocalContext {
         return get().requestUserInteraction(action);
     }
 
-    public static void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        get().requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
+    public static void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, String inFormCanonicalName, Integer inComponentId, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        get().requestFormUserInteraction(remoteForm, modalityType, inFormCanonicalName, inComponentId, forbidDuplicate, stack);
     }
 
     public static boolean canBeProcessed() {

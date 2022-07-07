@@ -111,7 +111,7 @@ public class GFormLayout extends ResizableComplexPanel {
         // we wish that all base components margins, paddings and borders should be zero (since we're setting them with topBorder and others)
         // but it seems for now it's not always like that, however later it can be refactored
 //        assert GwtClientUtils.getAllMargins(view.getElement()) == 0;
-        assert !(component instanceof GContainer);
+        //assert !(component instanceof GContainer);
         baseComponentViews.put(component, view);
         add(component, view, focusReceiver);
     }

@@ -20,6 +20,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.form.EmbeddedForm;
+import lsfusion.gwt.client.form.InnerForm;
 import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -347,7 +348,7 @@ public abstract class FormsController {
         return tabsPanel;
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, String inFormCanonicalName, Integer inComponentId, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
         GWindowFormType windowType = modalityType.getWindowType();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
@@ -368,7 +369,7 @@ public abstract class FormsController {
 
         if (!asyncOpened) {
             asyncFormController.cancelScheduledOpening();
-            formContainer = createFormContainer(windowType, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
+            formContainer = createFormContainer(windowType, inFormCanonicalName, inComponentId, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
         }
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), isAutoSized(editContext, windowType));
         if(asyncOpened)
@@ -379,18 +380,22 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
-        switch (windowType) {
-            case FLOAT:
-                return new ModalForm(this, formCaption, async, editEvent);
-            case DOCKED:
-                return new FormDockable(this, formCanonicalName, formCaption, async, editEvent);
-            case EMBEDDED:
-                return new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
-            case POPUP:
-                return new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
+    private FormContainer createFormContainer(GWindowFormType windowType, String inFormCanonicalName, Integer inComponentId, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
+        if (inComponentId != null) {
+            return new InnerForm(this, async, editEvent, formController, inFormCanonicalName, inComponentId);
+        } else {
+            switch (windowType) {
+                case FLOAT:
+                    return new ModalForm(this, formCaption, async, editEvent);
+                case DOCKED:
+                    return new FormDockable(this, formCanonicalName, formCaption, async, editEvent);
+                case EMBEDDED:
+                    return new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
+                case POPUP:
+                    return new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            }
+            throw new UnsupportedOperationException();
         }
-        throw new UnsupportedOperationException();
     }
 
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
@@ -398,7 +403,7 @@ public abstract class FormsController {
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
+                FormContainer formContainer = createFormContainer(windowType, null, null, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
                 formContainer.setContentLoading();
                 formContainer.show(asyncFormController);
                 asyncFormController.putAsyncForm(formContainer);

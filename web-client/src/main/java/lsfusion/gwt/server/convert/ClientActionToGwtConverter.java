@@ -1,6 +1,5 @@
 package lsfusion.gwt.server.convert;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.file.RawFileData;
@@ -32,7 +31,6 @@ import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
 
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -88,7 +86,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
-        return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
+        return new GFormAction(modalityType, action.inFormCanonicalName, action.inComponentId, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
                 action.forbidDuplicate);
     }
 

@@ -46,12 +46,13 @@ import static lsfusion.server.data.type.TypeSerializer.serializeType;
 public abstract class RemoteUIContext extends AbstractContext {
 
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        requestFormUserInteraction(createRemoteForm(formInstance, stack), modalityType, forbidDuplicate, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, String inFormCanonicalName, Integer inComponentId, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        requestFormUserInteraction(createRemoteForm(formInstance, stack), modalityType, inFormCanonicalName, inComponentId, forbidDuplicate, stack);
     }
 
-    protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType);
+    protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, String inFormCanonicalName, Integer inComponentId, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(),
+                Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType, inFormCanonicalName, inComponentId);
         if(modalityType.isModal()) {
             requestUserInteraction(action);
             remoteForm.form.syncLikelyOnClose(true, stack);

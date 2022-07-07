@@ -3394,7 +3394,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                                                         Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
+                                                                         Boolean syncType, WindowFormType windowType, FormEntity inForm, ComponentView inComponent, ManageSessionType manageSession, FormSessionScope formSessionScope,
                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly,
                                                                          List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
@@ -3415,11 +3415,18 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
+        String inFormCanonicalName = null;
+        Integer inComponentId = null;
+        if(inComponent != null) {
+            inFormCanonicalName = inForm.getCanonicalName();
+            inComponentId = inComponent.getID();
+        }
+
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
-                syncType, windowType, false, checkOnOk,
+                syncType, windowType, inFormCanonicalName, inComponentId, false, checkOnOk,
                 readonly);
 
         for (int usedParam : contextEntities.usedParams) {
@@ -3625,7 +3632,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  inputObjects, inputProps, inputNulls, scope, contextEntities.list,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
-                                 syncType, windowType, checkOnOk,
+                                 syncType, windowType, null, null, checkOnOk,
                                  readonly, null, false);
 
         for (int usedParam : contextEntities.usedParams) {
