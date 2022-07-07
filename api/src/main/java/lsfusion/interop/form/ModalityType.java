@@ -1,30 +1,51 @@
 package lsfusion.interop.form;
 
-// временно так, потом возможно будет смысл отдельно разделить на DOCKED / FLOAT, NOWAIT / WAIT, and refactor DIALOG_MODAL to separate parameter
-public enum ModalityType {
-    DOCKED, MODAL, DOCKED_MODAL, DIALOG_MODAL, EMBEDDED, POPUP;
+import java.io.Serializable;
+
+import static lsfusion.interop.form.ShowType.*;
+
+public class ModalityType implements Serializable {
+    public ShowType showType;
+    public Integer inComponentId;
+
+    public ModalityType(ShowType showType, Integer inComponentId) {
+        this.showType = showType;
+        this.inComponentId = inComponentId;
+    }
+
+    public boolean isDockedModal () {
+        return showType == ShowType.DOCKED_MODAL;
+    }
 
     public boolean isModal() {
-        return this != DOCKED;
+        return showType != DOCKED && inComponentId == null;
+    }
+
+    public void setModal() {
+        this.showType = MODAL;
     }
 
     public boolean isWindow() {
-        return this == MODAL || this == DIALOG_MODAL;
+        return showType == MODAL || showType == DIALOG_MODAL;
     }
 
     public boolean isDialog() {
-        return this == DIALOG_MODAL || this == EMBEDDED || this == POPUP;
+        return showType == DIALOG_MODAL || showType == EMBEDDED || showType == POPUP;
     }
 
     public WindowFormType getWindowType() {
-        if(this == EMBEDDED)
+        if(showType == EMBEDDED)
             return WindowFormType.EMBEDDED;
-        if(this == POPUP)
+        if(showType == POPUP)
             return WindowFormType.POPUP;
 
         if(isWindow())
             return WindowFormType.FLOAT;
         else
             return WindowFormType.DOCKED;
+    }
+
+    public String getName() {
+        return showType.name();
     }
 }

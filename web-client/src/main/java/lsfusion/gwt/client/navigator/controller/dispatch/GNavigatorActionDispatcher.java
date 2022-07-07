@@ -9,7 +9,6 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -38,8 +37,8 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         if (action.modalityType.isModal()) {
             pauseDispatching();
         }
-        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.modalityType, action.inFormCanonicalName, action.inComponentId, action.forbidDuplicate, null, null, null, () -> {
-            if(action.modalityType == GModalityType.DOCKED || action.modalityType == GModalityType.DOCKED_MODAL)
+        formsController.openForm(getAsyncFormController(getDispatchingIndex()), action.form, action.modalityType, action.forbidDuplicate, null, null, null, () -> {
+            if(action.modalityType.isDocked() || action.modalityType.isDockedModal())
                 formsController.ensureTabSelected();
 
             if (action.modalityType.isModal()) {

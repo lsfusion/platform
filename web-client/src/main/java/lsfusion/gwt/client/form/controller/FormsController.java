@@ -348,7 +348,7 @@ public abstract class FormsController {
         return tabsPanel;
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, String inFormCanonicalName, Integer inComponentId, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
         GWindowFormType windowType = modalityType.getWindowType();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
@@ -369,7 +369,7 @@ public abstract class FormsController {
 
         if (!asyncOpened) {
             asyncFormController.cancelScheduledOpening();
-            formContainer = createFormContainer(windowType, inFormCanonicalName, inComponentId, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
+            formContainer = createFormContainer(windowType, modalityType, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
         }
         initForm(formContainer, form, hiddenHandler, modalityType.isDialog(), isAutoSized(editContext, windowType));
         if(asyncOpened)
@@ -380,9 +380,9 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    private FormContainer createFormContainer(GWindowFormType windowType, String inFormCanonicalName, Integer inComponentId, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
-        if (inComponentId != null) {
-            return new InnerForm(this, async, editEvent, formController, inFormCanonicalName, inComponentId);
+    private FormContainer createFormContainer(GWindowFormType windowType, GModalityType modalityType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
+        if (modalityType != null && modalityType.inComponentId != null) {
+            return new InnerForm(this, async, editEvent, modalityType.inComponentId);
         } else {
             switch (windowType) {
                 case FLOAT:
@@ -403,7 +403,7 @@ public abstract class FormsController {
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                FormContainer formContainer = createFormContainer(windowType, null, null, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
+                FormContainer formContainer = createFormContainer(windowType, null, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
                 formContainer.setContentLoading();
                 formContainer.show(asyncFormController);
                 asyncFormController.putAsyncForm(formContainer);

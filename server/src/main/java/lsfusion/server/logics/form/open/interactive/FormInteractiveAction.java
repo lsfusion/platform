@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.open.interactive;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.interop.form.ShowType;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -42,7 +43,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     private final Boolean syncType;
     private final WindowFormType windowType;
-    private final String inFormCanonicalName;
     private final Integer inComponentId;
 
     private ModalityType getModalityType(boolean syncType) {
@@ -54,23 +54,27 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                 windowType = WindowFormType.DOCKED;
         }
 
+        ShowType showType;
         if(syncType) {
             switch (windowType) {
                 case FLOAT:
-                    if(!inputObjects.isEmpty())
-                        return ModalityType.DIALOG_MODAL;
-                    return ModalityType.MODAL;
+                    showType = inputObjects.isEmpty() ? ShowType.MODAL : ShowType.DIALOG_MODAL;
+                    break;
                 case DOCKED:
-                    return ModalityType.DOCKED_MODAL;
+                    showType = ShowType.DOCKED_MODAL;
+                    break;
                 case EMBEDDED:
-                    return ModalityType.EMBEDDED;
+                    showType = ShowType.EMBEDDED;
+                    break;
                 case POPUP:
-                    return ModalityType.POPUP;
+                    showType = ShowType.POPUP;
+                    break;
                 default:
                     throw new UnsupportedOperationException();
             }
         } else
-            return ModalityType.DOCKED;
+            showType = ShowType.DOCKED;
+        return new ModalityType(showType, inComponentId);
     }
 
     // SYSTEM ACTIONS
@@ -93,7 +97,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                Boolean noCancel,
                                                                Boolean syncType,
                                                                WindowFormType windowType,
-                                                               String inFormCanonicalName,
                                                                Integer inComponentId,
                                                                boolean forbidDuplicate,
                                                                boolean checkOnOk,
@@ -107,7 +110,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
         this.syncType = syncType;
         this.windowType = windowType;
-        this.inFormCanonicalName = inFormCanonicalName;
         this.inComponentId = inComponentId;
 
         this.forbidDuplicate = forbidDuplicate;
@@ -155,7 +157,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
 
         FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, modalityType.getWindowType(), contextFilters, readOnly);
-        context.requestFormUserInteraction(newFormInstance, modalityType, inFormCanonicalName, inComponentId, forbidDuplicate, context.stack);
+        context.requestFormUserInteraction(newFormInstance, modalityType, forbidDuplicate, context.stack);
 
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();

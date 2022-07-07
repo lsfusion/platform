@@ -16,6 +16,7 @@ import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
+import lsfusion.gwt.client.navigator.window.GShowType;
 import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
@@ -23,8 +24,9 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowType;
 import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -86,21 +88,26 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         GModalityType modalityType = convertOrCast(action.modalityType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
-        return new GFormAction(modalityType, action.inFormCanonicalName, action.inComponentId, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
+        return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
                 action.forbidDuplicate);
+    }
+
+    @Converter(from = ShowType.class)
+    public GShowType convertShowType(ShowType showType) {
+        switch (showType) {
+            case DOCKED: return GShowType.DOCKED;
+            case MODAL: return GShowType.MODAL;
+            case DOCKED_MODAL: return GShowType.DOCKED_MODAL;
+            case DIALOG_MODAL: return GShowType.DIALOG_MODAL;
+            case EMBEDDED: return GShowType.EMBEDDED;
+            case POPUP: return GShowType.POPUP;
+        }
+        return null;
     }
 
     @Converter(from = ModalityType.class)
     public GModalityType convertModalityType(ModalityType modalityType) {
-        switch (modalityType) {
-            case DOCKED: return GModalityType.DOCKED;
-            case MODAL: return GModalityType.MODAL;
-            case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
-            case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
-            case EMBEDDED: return GModalityType.EMBEDDED;
-            case POPUP: return GModalityType.POPUP;
-        }
-        return null;
+        return new GModalityType(convertShowType(modalityType.showType),modalityType.inComponentId);
     }
 
     @Converter(from = HideFormClientAction.class)

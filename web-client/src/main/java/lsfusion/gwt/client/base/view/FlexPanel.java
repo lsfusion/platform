@@ -595,7 +595,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     (!wrap || oppositePosition == null ||
                             ResizeHandler.getAbsolutePosition(widget.getElement(), !vertical, true) <= oppositePosition &&
                             ResizeHandler.getAbsolutePosition(widget.getElement(), !vertical, false) >= oppositePosition)) {
-                int widgetSpan = ((WidgetLayoutData) widget.getLayoutData()).span;
+                WidgetLayoutData layoutData = ((WidgetLayoutData) widget.getLayoutData());
+                int widgetSpan = layoutData != null ? layoutData.span : 0;
                 if (currentLineSpan > 0 && currentLineSpan + widgetSpan > lines) { // we need a new line
                     result.add(new FlexLine(currentLine));
 

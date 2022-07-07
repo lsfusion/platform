@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.FormScheduler;
@@ -791,7 +791,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  ModalityType modalityType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
+                                                  ShowType showType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -801,7 +801,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addFormEntity(formEntity);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
-        form.setModalityType(modalityType);
+        form.setShowType(showType);
 
         if(autoRefresh > 0) {
             formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());
@@ -3394,7 +3394,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                                                         Boolean syncType, WindowFormType windowType, FormEntity inForm, ComponentView inComponent, ManageSessionType manageSession, FormSessionScope formSessionScope,
+                                                                         Boolean syncType, WindowFormType windowType, ComponentView inComponent, ManageSessionType manageSession, FormSessionScope formSessionScope,
                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly,
                                                                          List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
@@ -3415,18 +3415,13 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
-        String inFormCanonicalName = null;
-        Integer inComponentId = null;
-        if(inComponent != null) {
-            inFormCanonicalName = inForm.getCanonicalName();
-            inComponentId = inComponent.getID();
-        }
+        Integer inComponentId = inComponent != null ? inComponent.getID() : null;
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
-                syncType, windowType, inFormCanonicalName, inComponentId, false, checkOnOk,
+                syncType, windowType, inComponentId, false, checkOnOk,
                 readonly);
 
         for (int usedParam : contextEntities.usedParams) {
@@ -3632,7 +3627,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  inputObjects, inputProps, inputNulls, scope, contextEntities.list,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
-                                 syncType, windowType, null, null, checkOnOk,
+                                 syncType, windowType, null, checkOnOk,
                                  readonly, null, false);
 
         for (int usedParam : contextEntities.usedParams) {

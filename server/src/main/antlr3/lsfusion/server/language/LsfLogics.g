@@ -8,7 +8,7 @@ grammar LsfLogics;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
-    import lsfusion.interop.form.ModalityType;
+    import lsfusion.interop.form.ShowType;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
@@ -494,7 +494,7 @@ formExtIDDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	ModalityType modalityType = null;
+	ShowType showType = null;
 	int autoRefresh = 0;
 	String image = null;
 	String title = null;
@@ -503,7 +503,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, showType, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 
@@ -3262,7 +3262,6 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
 	Boolean syncType = null;
 	WindowFormType windowType = null;
-	FormEntity inForm = null;
     ComponentView inComponent = null;
 
     List<TypedParameter> objectsContext = null;
@@ -3277,7 +3276,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, inForm, inComponent, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
+		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, inComponent, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
 		                                     objectsContext, contextFilters, context);
 	}
 }
@@ -3290,7 +3289,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		    cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); }
 		|   sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }
-		|   'IN' fc = formComponentID { inForm = $fc.form; inComponent = $fc.component; }
+		|   'IN' fc = formComponentID { inComponent = $fc.component; }
 
         |	ms=manageSessionClause { manageSession = $ms.result; }
 		|	nc=noCancelClause { noCancel = $nc.result; }

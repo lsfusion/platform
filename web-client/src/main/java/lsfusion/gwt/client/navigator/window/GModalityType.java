@@ -1,24 +1,49 @@
 package lsfusion.gwt.client.navigator.window;
 
-public enum GModalityType {
-    DOCKED, DOCKED_MODAL, MODAL, DIALOG_MODAL, EMBEDDED, POPUP;
+import java.io.Serializable;
 
-    public boolean isModal() {
-        return this != DOCKED;
+import static lsfusion.gwt.client.navigator.window.GShowType.*;
+
+public class GModalityType implements Serializable {
+    public GShowType showType;
+    public Integer inComponentId;
+
+    public GModalityType() {
     }
 
-    public boolean isWindow() {
-        return this == MODAL || this == DIALOG_MODAL;
+    public GModalityType(GShowType showType, Integer inComponentId) {
+        this.showType = showType;
+        this.inComponentId = inComponentId;
+    }
+
+    public boolean isDocked() {
+        return showType == DOCKED;
+    }
+
+    public boolean isDockedModal() {
+        return showType == DOCKED_MODAL;
+    }
+
+    public boolean isModal() {
+        return showType != DOCKED && inComponentId == null;
+    }
+
+    public void setModal() {
+        showType = MODAL;
     }
 
     public boolean isDialog() {
-        return this == DIALOG_MODAL || this == EMBEDDED || this == POPUP;
+        return showType == DIALOG_MODAL || showType == EMBEDDED || showType == POPUP;
+    }
+
+    public boolean isWindow() {
+        return showType == MODAL || showType == DIALOG_MODAL;
     }
 
     public GWindowFormType getWindowType() {
-        if(this == EMBEDDED)
+        if(showType == EMBEDDED)
             return GWindowFormType.EMBEDDED;
-        if(this == POPUP)
+        if(showType == POPUP)
             return GWindowFormType.POPUP;
 
         if(isWindow())

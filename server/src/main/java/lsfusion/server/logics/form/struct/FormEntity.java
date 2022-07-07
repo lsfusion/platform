@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowType;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -250,7 +250,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getPivotMeasuresList().toOrderSet().getSet().group(key -> key.getToDraw(this));
     }
 
-    public ModalityType modalityType = ModalityType.DOCKED;
+    public ShowType showType = ShowType.DOCKED;
     public boolean localAsync = false;
 
     public PropertyObjectEntity<?> reportPathProp;

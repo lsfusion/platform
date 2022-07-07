@@ -9,8 +9,6 @@ public class FormClientAction extends ExecuteClientAction {
     public String canonicalName;
     public RemoteFormInterface remoteForm;
     public ModalityType modalityType;
-    public String inFormCanonicalName;
-    public Integer inComponentId;
 
     public boolean forbidDuplicate;
 
@@ -19,16 +17,13 @@ public class FormClientAction extends ExecuteClientAction {
 
     public static String[] methodNames = new String[] {"getUserPreferences", "getRichDesignByteArray", "getInitFilterPropertyDraw", "getInputObjects"};
 
-    public FormClientAction(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges,
-                            ModalityType modalityType, String inFormCanonicalName, Integer inComponentId) {
+    public FormClientAction(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, ModalityType modalityType) {
         this.formSID = formSID;
         this.immutableMethods = immutableMethods;
         this.firstChanges = firstChanges;
         this.canonicalName = canonicalName;
         this.remoteForm = remoteForm;
         this.modalityType = modalityType;
-        this.inFormCanonicalName = inFormCanonicalName;
-        this.inComponentId = inComponentId;
         this.forbidDuplicate = forbidDuplicate;
     }
 
@@ -39,6 +34,6 @@ public class FormClientAction extends ExecuteClientAction {
 
     @Override
     public String toString() {
-        return "FormClientAction[modalitType: " + modalityType.name() + "]";
+        return "FormClientAction[modalitType: " + modalityType.getName() + "]";
     }
 }

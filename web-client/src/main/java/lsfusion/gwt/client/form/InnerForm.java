@@ -6,24 +6,20 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class InnerForm extends FormContainer {
+    private final Integer inComponentId;
 
-    private String inFormCanonicalName;
-    private Integer inComponentId;
-
-    protected final GFormController contextForm;
-
-    public InnerForm(FormsController formsController, boolean async, Event editEvent, GFormController contextForm, String inFormCanonicalName, Integer inComponentId) {
+    public InnerForm(FormsController formsController, boolean async, Event editEvent, Integer inComponentId) {
         super(formsController, async, editEvent);
-
-        this.contextForm = contextForm;
-        this.inFormCanonicalName = inFormCanonicalName;
         this.inComponentId = inComponentId;
     }
 
@@ -35,20 +31,34 @@ public class InnerForm extends FormContainer {
         this.widget = widget;
     }
 
+    GContainer inContainer;
+    GComponent innerComponent;
+
     protected void setFormContent(Widget widget) {
-        GFormController formController = formsController.findForm(inFormCanonicalName).getForm();
+        FormContainer formContainer = MainFrame.getCurrentForm();
+        if(formContainer != null) {
+            GFormController formController = formContainer.getForm();
 
-        GContainer container = formController.getForm().findContainerByID(inComponentId);
+            innerComponent = new GComponent();
+            innerComponent.setFlex(1); //без flex - нулевая высота
+            innerComponent.setAlignment(GFlexAlignment.STRETCH);
 
-        container.setFlex(1);
-        container.setAlignment(GFlexAlignment.STRETCH);
+            GComponent inComponent = formController.getForm().findComponentByID(inComponentId);
 
-        formController.getFormLayout().addBaseComponent(container, widget, null);
+            inContainer = inComponent instanceof GContainer ? (GContainer) inComponent : inComponent.container;
+            inContainer.add(innerComponent);
+
+            formController.getFormLayout().addBaseComponent(innerComponent, widget, null);
+        }
     }
 
     @Override
     public void hide(EndReason editFormCloseReason) {
-        widget.removeFromParent();
+        FormContainer formContainer = MainFrame.getCurrentForm();
+        if(formContainer != null) {
+            formContainer.getForm().getFormLayout().removeBaseComponent(innerComponent);
+            inContainer.removeFromChildren(innerComponent);
+        }
     }
 
     @Override

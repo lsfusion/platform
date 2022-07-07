@@ -236,10 +236,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     protected ModalityType getModalityType(FormClientAction action) { // should correspond ClientAsyncOpenForm.isDesktopEnabled
-        ModalityType modalityType = action.modalityType;
-        if (modalityType == ModalityType.DOCKED_MODAL && !canShowDockedModal())
-            modalityType = ModalityType.MODAL;
-        return modalityType;
+        if (action.modalityType.isDockedModal() && !canShowDockedModal()) {
+            action.modalityType.setModal();
+        }
+        return action.modalityType;
     }
 
     public void execute(FormClientAction action) {
@@ -257,7 +257,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             beforeModalActionInSameEDT(false);
             Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
             ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
-            ClientModalForm form = new ClientModalForm(owner, clientForm.getCaption(), modalityType, false) {
+            ClientModalForm form = new ClientModalForm(owner, clientForm.getCaption(), false) {
                 @Override
                 public void hideDialog() {
                     super.hideDialog();
@@ -266,7 +266,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             };
             form.init(action.canonicalName, action.formSID, remoteForm, clientForm, action.firstChanges, modalityType.isDialog(), editEvent);
             form.showDialog(false);
-        } else if (modalityType == ModalityType.DOCKED_MODAL) {
+        } else if (modalityType.isDockedModal()) {
             pauseDispatching();
             beforeModalActionInSameEDT(true);
             ClientFormDockable blockingForm = MainFrame.instance.runForm(asyncFormController, action.canonicalName, action.formSID, false, remoteForm, action.firstChanges, openFailed -> {

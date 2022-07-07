@@ -10,7 +10,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowType;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -818,9 +818,9 @@ public class ScriptingFormEntity {
         findCustomClassForFormSetup(className).setEditForm(form, getObjectEntity(objectID), version);
     }
 
-    public void setModalityType(ModalityType modalityType) {
-        if (modalityType != null) {
-            form.modalityType = modalityType;
+    public void setShowType(ShowType showType) {
+        if (showType != null) {
+            form.showType = showType;
         }
     }
 
