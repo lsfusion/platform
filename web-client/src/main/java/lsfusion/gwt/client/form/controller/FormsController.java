@@ -74,7 +74,7 @@ public abstract class FormsController {
         editModeButton = new EditModeButton();
         toolbarView.addComponent(editModeButton);
 
-        setupModeButton();
+        setupEditModeButton();
 
         if (!MainFrame.mobile) {
             fullScreenButton = new GToolbarButton(null) {
@@ -116,6 +116,8 @@ public abstract class FormsController {
             formFocusOrder.set(index, focusOrderCount++);
             isAdding = false;
         });
+
+        initEditModeTimer();
     }
 
     public void onServerInvocationResponse(ServerResponseResult response, GAsyncFormController asyncFormController) {
@@ -139,16 +141,73 @@ public abstract class FormsController {
     private boolean isRemoving = false;
     private boolean isAdding = false;
 
-    public void setupModeButton() {
+    public void checkEditModeEvents(NativeEvent event) {
+        Boolean ctrlKey = eventGetCtrlKey(event);
+        Boolean shiftKey = eventGetShiftKey(event);
+        Boolean altKey = eventGetAltKey(event);
+        if(ctrlKey != null) {
+            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
+            pressedCtrl = onlyCtrl;
+            if (onlyCtrl && !isLinkMode())
+                setForceEditMode(EditMode.LINK);
+            if (!onlyCtrl && isForceLinkMode())
+                removeForceEditMode();
+        }
+        if(shiftKey != null) {
+            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey);
+            pressedShift = onlyShift;
+            if (onlyShift && !isDialogMode())
+                setForceEditMode(EditMode.DIALOG);
+            if (!onlyShift && isForceDialogMode())
+                removeForceEditMode();
+        }
+    }
+
+    // we need native method and not getCtrlKey, since some events (for example focus) have ctrlKey undefined and in this case we want to ignore them
+    private native Boolean eventGetCtrlKey(NativeEvent evt) /*-{
+        return evt.ctrlKey;
+    }-*/;
+
+    private native Boolean eventGetShiftKey(NativeEvent evt) /*-{
+        return evt.shiftKey;
+    }-*/;
+
+    private native Boolean eventGetAltKey(NativeEvent evt) /*-{
+        return evt.altKey;
+    }-*/;
+
+    private static EditMode editMode;
+    private static EditMode prevEditMode;
+    private static EditMode forceEditMode;
+
+    private static boolean isForceLinkMode() {
+        return forceEditMode == EditMode.LINK;
+    }
+    public static boolean isLinkMode() {
+        return editMode == EditMode.LINK;
+    }
+
+    private static boolean isForceDialogMode() {
+        return forceEditMode == EditMode.DIALOG;
+    }
+    public static boolean isDialogMode() {
+        return editMode == EditMode.DIALOG;
+    }
+
+    public static int getEditModeIndex() {
+        return forceEditMode != null ? prevEditMode.getIndex() : editMode.getIndex();
+    }
+
+    private void setupEditModeButton() {
         final String[] images = new String[3];
         GwtClientUtils.setThemeImage("defaultMode.png", image -> images[0] = image);
         GwtClientUtils.setThemeImage("linkMode.png", image -> images[1] = image);
         GwtClientUtils.setThemeImage("dialogMode.png", image -> images[2] = image);
 
-        setupModeButton(editModeButton.getElement(), images, windowsController.restoreEditMode());
+        setupEditModeButton(editModeButton.getElement(), images, windowsController.restoreEditMode());
     }
 
-    public native void setupModeButton(Element element, String[] images, int defaultIndex) /*-{
+    private native void setupEditModeButton(Element element, String[] images, int defaultIndex) /*-{
         var instance = this;
         var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode (CTRL)'}, {imageSrc: images[2], title: 'Dialog Mode (SHIFT)'}];
 
@@ -157,12 +216,12 @@ public abstract class FormsController {
             defaultSelectedIndex:defaultIndex,
             width:16,
             onSelected: function(selectedData){
-                instance.@FormsController::selectMode(*)(selectedData.selectedIndex);
+                instance.@FormsController::selectEditMode(*)(selectedData.selectedIndex);
             }
         });
     }-*/;
 
-    public native int selectModeButton(int i) /*-{
+    private native int selectEditModeButton(int i) /*-{
         var modeButton = $wnd.$('#modeButton');
         var prevModeButton = modeButton.data('ddslick').selectedIndex;
         modeButton.ddslick('select', {index: i });
@@ -170,38 +229,59 @@ public abstract class FormsController {
 
     }-*/;
 
-    public native void destroyModeButton() /*-{
+    private native void destroyEditModeButton() /*-{
         var modeButton = $wnd.$('#modeButton');
         modeButton.ddslick('destroy');
     }-*/;
 
-    public void setForceEditMode(EditMode mode) {
-        GFormController.setPrevEditMode();
-        prevModeButton = selectModeButton(mode.getIndex());
-        updateMode(mode, mode == EditMode.LINK, mode == EditMode.DIALOG);
+    private void setForceEditMode(EditMode mode) {
+        prevEditMode = editMode;
+        prevModeButton = selectEditModeButton(mode.getIndex());
+        updateEditMode(mode, mode);
     }
 
-    public void removeForceEditMode() {
-        selectModeButton(prevModeButton);
-        updateMode(EditMode.getMode(prevModeButton), false, false);
+    private void removeForceEditMode() {
+        selectEditModeButton(prevModeButton);
+        updateEditMode(EditMode.getMode(prevModeButton), null);
     }
 
-    public void selectMode(int mode) {
-        updateMode(EditMode.getMode(mode), false, false);
+    private void selectEditMode(int mode) {
+        updateEditMode(EditMode.getMode(mode), null);
     }
 
-    public void updateMode(EditMode editMode, boolean forceLinkMode, boolean forceDialogMode) {
-        updateForceLinkModeStyles(editMode, forceLinkMode);
-        GFormController.setEditMode(editMode, forceLinkMode, forceDialogMode);
+    private void updateEditMode(EditMode mode, EditMode forceMode) {
+        updateForceLinkModeStyles(mode, forceMode == EditMode.LINK);
+        editMode = mode;
+        forceEditMode = forceMode;
     }
 
     private void updateForceLinkModeStyles(EditMode editMode, boolean forceLinkMode) {
         boolean linkMode = editMode == EditMode.LINK;
-        if(!GFormController.isForceLinkMode() && forceLinkMode) {
-            GFormController.scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
+        if(!isForceLinkMode() && forceLinkMode) {
+            scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
         } else {
-            GFormController.cancelLinkModeStylesTimer();
+            cancelLinkModeStylesTimer();
             setLinkModeStyles(linkMode);
+        }
+    }
+
+    private static Timer linkModeStylesTimer;
+    private static void scheduleLinkModeStylesTimer(Runnable setLinkModeStyles) {
+        if(linkModeStylesTimer == null) {
+            linkModeStylesTimer = new Timer() {
+                @Override
+                public void run() {
+                    setLinkModeStyles.run();
+                    linkModeStylesTimer = null;
+                }
+            };
+            linkModeStylesTimer.schedule(250);
+        }
+    }
+    private static void cancelLinkModeStylesTimer() {
+        if (linkModeStylesTimer != null) {
+            linkModeStylesTimer.cancel();
+            linkModeStylesTimer = null;
         }
     }
 
@@ -211,6 +291,30 @@ public abstract class FormsController {
             globalElement.addClassName("linkMode");
         else
             globalElement.removeClassName("linkMode");
+    }
+
+    private static Timer editModeTimer;
+    public static boolean pressedCtrl = false;
+    public static boolean pressedShift = false;
+    private void initEditModeTimer() {
+        if(editModeTimer == null) {
+            editModeTimer = new Timer() {
+                @Override
+                public void run() {
+                    if (pressedCtrl) {
+                        pressedCtrl = false;
+                    } else if(pressedShift) {
+                        pressedShift = false;
+                    } else {
+                        if (isForceLinkMode() || isForceDialogMode()) {
+                            removeForceEditMode();
+                            updateEditMode(EditMode.DEFAULT, null);
+                        }
+                    }
+                }
+            };
+            editModeTimer.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
+        }
     }
 
     public void updateFullScreenButton(){
@@ -507,8 +611,8 @@ public abstract class FormsController {
                 @Override
                 public void run() {
                     if(editModeButton.isVisible()) {
-                        destroyModeButton();
-                        setupModeButton();
+                        destroyEditModeButton();
+                        setupEditModeButton();
                         timer.cancel();
                     }
                 }

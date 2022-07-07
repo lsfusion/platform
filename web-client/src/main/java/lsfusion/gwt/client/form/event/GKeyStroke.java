@@ -4,7 +4,7 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
@@ -150,7 +150,7 @@ public class GKeyStroke implements Serializable {
     public static boolean isEditObjectEvent(Event event, boolean hasEditObjectAction, boolean hasChangeAction) {
         return hasEditObjectAction && (KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F9
                 || (!hasChangeAction && GMouseStroke.isDblClickEvent(event))
-                || GFormController.isLinkMode() && GMouseStroke.isChangeEvent(event));
+                || FormsController.isLinkMode() && GMouseStroke.isChangeEvent(event));
     }
 
     public static boolean isChangeAppendKeyEvent(Event event) {
