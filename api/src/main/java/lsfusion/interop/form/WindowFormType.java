@@ -5,10 +5,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public enum WindowFormType {
-    FLOAT, DOCKED, EMBEDDED, POPUP;
+    FLOAT, DOCKED, EMBEDDED, POPUP, INNER;
 
     public boolean isModal() {
-        return this != DOCKED;
+        return this != DOCKED && this != INNER;
     }
 
     public boolean isEditing() {
@@ -25,6 +25,8 @@ public enum WindowFormType {
                 return EMBEDDED;
             case 3:
                 return POPUP;
+            case 4:
+                return INNER;
         }
         throw new UnsupportedOperationException();
     }
@@ -39,6 +41,8 @@ public enum WindowFormType {
                 return 2;
             case POPUP:
                 return 3;
+            case INNER:
+                return 4;
         }
         throw new UnsupportedOperationException();
     }

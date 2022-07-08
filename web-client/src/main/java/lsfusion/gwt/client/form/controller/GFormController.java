@@ -90,8 +90,7 @@ import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.navigator.window.GShowType;
-import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 import net.customware.gwt.dispatch.shared.Result;
@@ -766,17 +765,17 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
-        boolean isDockedModal = modalityType.isDockedModal();
+    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
+        boolean isDockedModal = showFormType.isDockedModal();
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, forbidDuplicate, editEvent, editContext, this, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
                 formsController.selectTab((FormDockable) formContainer);
-            } else if(modalityType.isDocked())
+            } else if(showFormType.isDocked())
                 formsController.ensureTabSelected();
 
             handler.onHidden();

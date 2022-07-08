@@ -8,7 +8,6 @@ grammar LsfLogics;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
-    import lsfusion.interop.form.ShowType;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
@@ -494,7 +493,6 @@ formExtIDDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	ShowType showType = null;
 	int autoRefresh = 0;
 	String image = null;
 	String title = null;
@@ -503,7 +501,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, showType, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 

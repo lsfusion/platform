@@ -122,6 +122,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
             case FLOAT: return GWindowFormType.FLOAT;
             case EMBEDDED: return GWindowFormType.EMBEDDED;
             case POPUP: return GWindowFormType.POPUP;
+            case INNER: return GWindowFormType.POPUP;
         }
         return null;
     }

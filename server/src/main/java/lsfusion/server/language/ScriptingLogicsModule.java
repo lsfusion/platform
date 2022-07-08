@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.ShowType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.FormScheduler;
@@ -791,7 +790,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  ShowType showType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
+                                                  int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -801,7 +800,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         addFormEntity(formEntity);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
-        form.setShowType(showType);
 
         if(autoRefresh > 0) {
             formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());
@@ -3415,13 +3413,14 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
-        Integer inComponentId = inComponent != null ? inComponent.getID() : null;
+        checks.checkComponentIsContainer(inComponent);
+        Integer inContainerId = inComponent != null ? inComponent.getID() : null;
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
-                syncType, windowType, inComponentId, false, checkOnOk,
+                syncType, windowType, inContainerId, false, checkOnOk,
                 readonly);
 
         for (int usedParam : contextEntities.usedParams) {
