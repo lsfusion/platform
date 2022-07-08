@@ -62,7 +62,7 @@ public class ModalForm extends FormContainer {
     }
 
     @Override
-    protected void setContent(Widget widget) {
+    protected void setContent(Widget widget, String caption) {
         contentWidget.setInnerContentWidget(widget);
     }
 

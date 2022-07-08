@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GInnerComponent;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {
         if (selectedIndex >= 0) {
             GComponent selectedChild = visibleChildren.get(selectedIndex);
-            if (currentChild != selectedChild) {
+            if (currentChild != selectedChild && !(selectedChild instanceof GInnerComponent)) {
                 currentChild = selectedChild;
                 formController.setTabActive(container, selectedChild);
             }
@@ -129,6 +130,8 @@ public class TabbedContainerView extends GAbstractContainerView {
         String tabCaption = null;
         if (child instanceof GContainer) {
             tabCaption = ((GContainer) child).caption;
+        } else if (child instanceof GInnerComponent) {
+            tabCaption = ((GInnerComponent) child).caption;
         }
         if (tabCaption == null) {
             tabCaption = "";

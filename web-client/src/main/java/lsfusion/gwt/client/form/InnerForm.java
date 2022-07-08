@@ -7,6 +7,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GInnerComponent;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -24,26 +25,27 @@ public class InnerForm extends FormContainer {
     private Widget widget;
 
     @Override
-    protected void setContent(Widget widget) {
-        setFormContent(widget);
+    protected void setContent(Widget widget, String caption) {
+        setFormContent(widget, caption);
         this.widget = widget;
     }
 
     GContainer inContainer;
     GInnerComponent innerComponent;
 
-    protected void setFormContent(Widget widget) {
+    protected void setFormContent(Widget widget, String caption) {
         FormContainer formContainer = MainFrame.getCurrentForm();
         if(formContainer != null) {
             GFormController formController = formContainer.getForm();
 
-            innerComponent = new GInnerComponent();
-            innerComponent.setFlex(1); //без flex - нулевая высота
+            innerComponent = new GInnerComponent(caption);
 
             inContainer = formController.getForm().findContainerByID(inContainerId);
             inContainer.add(innerComponent);
 
-            formController.getFormLayout().addBaseComponent(innerComponent, widget, null);
+            GFormLayout layout = formController.getFormLayout();
+            layout.addBaseComponent(innerComponent, widget, null);
+            layout.update(-1);
         }
     }
 

@@ -49,7 +49,7 @@ public abstract class FormContainer {
         this.editEvent = editEvent;
     }
 
-    protected abstract void setContent(Widget widget);
+    protected abstract void setContent(Widget widget, String caption);
 
     public abstract GWindowFormType getWindowType();
 
@@ -144,7 +144,7 @@ public abstract class FormContainer {
         if(isAsyncHidden())
             form.closePressed(asyncHiddenReason);
         else {
-            setContent(form.getWidget());
+            setContent(form.getWidget(), form.getForm().getCaption());
             Scheduler.get().scheduleDeferred(this::initQuickFilter);
         }
 
@@ -176,7 +176,7 @@ public abstract class FormContainer {
     }
 
     public void setContentLoading() {
-        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)));
+        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl), null));
     }
     protected static String loadingAsyncImage = "loading_async.gif";
     protected static Widget createLoadingWidget(String imageUrl) {

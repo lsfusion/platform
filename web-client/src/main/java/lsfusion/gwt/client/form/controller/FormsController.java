@@ -431,7 +431,7 @@ public abstract class FormsController {
     }
 
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return (windowType.isEmbedded() && execContext.getProperty().autoSize) || windowType.isPopup();
+        return ((windowType.isEmbedded() || windowType.isInner()) && execContext.getProperty().autoSize) || windowType.isPopup();
     }
 
     private boolean isPreferredSize(ExecContext execContext, GWindowFormType windowType) {

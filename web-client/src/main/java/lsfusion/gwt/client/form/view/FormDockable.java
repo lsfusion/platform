@@ -48,7 +48,7 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    protected void setContent(Widget widget) {
+    protected void setContent(Widget widget, String caption) {
         contentWidget.setContent(widget);
     }
 
