@@ -371,7 +371,7 @@ public abstract class FormsController {
 
         if (!asyncOpened) {
             asyncFormController.cancelScheduledOpening();
-            formContainer = createFormContainer(windowType, showFormType, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
+            formContainer = createFormContainer(windowType, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
         }
         initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), isAutoSized(editContext, windowType));
         if(asyncOpened)
@@ -382,20 +382,21 @@ public abstract class FormsController {
         return formContainer;
     }
 
-    private FormContainer createFormContainer(GWindowFormType windowType, GShowFormType showFormType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
-        switch (windowType) {
-            case FLOAT:
-                return new ModalForm(this, formCaption, async, editEvent);
-            case DOCKED:
-                return new FormDockable(this, formCanonicalName, formCaption, async, editEvent);
-            case EMBEDDED:
-                return new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
-            case POPUP:
-                return new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
-            case INNER:
-                return new InnerForm(this, async, editEvent, showFormType.getInContainerId());
+    private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
+        Integer inContainerId = windowType.getInContainerId();
+        if(inContainerId != null) {
+            return new InnerForm(this, formCaption, async, editEvent, inContainerId);
+        } else if(windowType.isFloat()) {
+             return new ModalForm(this, formCaption, async, editEvent);
+        } else if(windowType.isDocked()) {
+            return new FormDockable(this, formCanonicalName, formCaption, async, editEvent);
+        } else if(windowType.isEmbedded()) {
+            return new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
+        } else if(windowType.isPopup()) {
+            return new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
+        } else {
+            throw new UnsupportedOperationException();
         }
-        throw new UnsupportedOperationException();
     }
 
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
@@ -403,12 +404,10 @@ public abstract class FormsController {
         if (duplicateForm == null) {
             GWindowFormType windowType = openForm.getWindowType(asyncFormController.canShowDockedModal());
             Scheduler.ScheduledCommand runOpenForm = () -> {
-                if(windowType != GWindowFormType.INNER) {
-                    FormContainer formContainer = createFormContainer(windowType, null, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
-                    formContainer.setContentLoading();
-                    formContainer.show(asyncFormController);
-                    asyncFormController.putAsyncForm(formContainer);
-                }
+                FormContainer formContainer = createFormContainer(windowType, true, asyncFormController.getEditRequestIndex(), openForm.canonicalName, openForm.caption, editEvent, editContext, formController);
+                formContainer.setContentLoading();
+                formContainer.show(asyncFormController);
+                asyncFormController.putAsyncForm(formContainer);
             };
             // this types because for them size is unknown, so there'll be blinking
             if(isCalculatedSized(editContext, windowType))
@@ -427,15 +426,15 @@ public abstract class FormsController {
     }
 
     private boolean isCalculatedSized(ExecContext execContext, GWindowFormType windowType) {
-        return isPreferredSize(execContext, windowType) || isAutoSized(execContext, windowType);
+        return isPreferredSize(windowType) || isAutoSized(execContext, windowType);
     }
 
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return ((windowType.isEmbedded() || windowType.isInner()) && execContext.getProperty().autoSize) || windowType.isPopup();
+        return ((windowType.isEmbedded() || windowType.getInContainerId() != null) && execContext.getProperty().autoSize) || windowType.isPopup();
     }
 
-    private boolean isPreferredSize(ExecContext execContext, GWindowFormType windowType) {
-        return windowType == GWindowFormType.FLOAT;
+    private boolean isPreferredSize(GWindowFormType windowType) {
+        return windowType.isFloat();
     }
 
     private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {

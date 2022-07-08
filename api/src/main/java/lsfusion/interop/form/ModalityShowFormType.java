@@ -26,11 +26,11 @@ public enum ModalityShowFormType implements ShowFormType {
 
     @Override
     public WindowFormType getWindowType() {
-        if (this == EMBEDDED) return WindowFormType.EMBEDDED;
-        if (this == POPUP) return WindowFormType.POPUP;
+        if (this == EMBEDDED) return ModalityWindowFormType.EMBEDDED;
+        if (this == POPUP) return ModalityWindowFormType.POPUP;
 
-        if (isWindow()) return WindowFormType.FLOAT;
-        else return WindowFormType.DOCKED;
+        if (isWindow()) return ModalityWindowFormType.FLOAT;
+        else return ModalityWindowFormType.DOCKED;
     }
 
     @Override

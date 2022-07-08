@@ -2,13 +2,13 @@ package lsfusion.gwt.client.form.design;
 
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 
-public class GInnerComponent extends GComponent {
+public class GFormComponent extends GComponent {
     public String caption;
 
-    public GInnerComponent() {
+    public GFormComponent() {
     }
 
-    public GInnerComponent(String caption) {
+    public GFormComponent(String caption) {
         this.caption = caption;
         alignment = GFlexAlignment.STRETCH;
     }

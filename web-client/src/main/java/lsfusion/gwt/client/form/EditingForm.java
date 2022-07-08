@@ -60,7 +60,7 @@ public abstract class EditingForm extends FormContainer {
 
     private Widget widget;
     @Override
-    protected void setContent(Widget widget, String caption) {
+    protected void setContent(Widget widget) {
         removeContent();
 
         setFormContent(widget);

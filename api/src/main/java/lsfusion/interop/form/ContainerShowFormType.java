@@ -9,13 +9,8 @@ public class ContainerShowFormType implements ShowFormType {
     }
 
     @Override
-    public Integer getInContainerId() {
-        return inContainerId;
-    }
-
-    @Override
     public WindowFormType getWindowType() {
-        return WindowFormType.INNER;
+        return new ContainerWindowFormType(inContainerId);
     }
 
     @Override

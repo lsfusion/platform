@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -120,6 +121,6 @@ public class PopupForm extends EditingForm {
 
     @Override
     public GWindowFormType getWindowType() {
-        return GWindowFormType.POPUP;
+        return GModalityWindowFormType.POPUP;
     }
 }

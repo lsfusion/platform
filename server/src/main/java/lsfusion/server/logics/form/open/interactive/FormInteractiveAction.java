@@ -3,10 +3,7 @@ package lsfusion.server.logics.form.open.interactive;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
-import lsfusion.interop.form.ContainerShowFormType;
-import lsfusion.interop.form.ModalityShowFormType;
-import lsfusion.interop.form.ShowFormType;
-import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.form.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -44,19 +41,19 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     private final Boolean syncType;
     private final WindowFormType windowType;
-    private final Integer inContainerId;
 
     private ShowFormType getShowFormType(boolean syncType) {
-        if(inContainerId != null) {
+        WindowFormType windowType = this.windowType;
+        if (windowType == null) {
+            windowType = syncType ? ModalityWindowFormType.FLOAT : ModalityWindowFormType.DOCKED;
+        }
+
+        Integer inContainerId = windowType.getInContainerId();
+        if (inContainerId != null) {
             return new ContainerShowFormType(inContainerId);
         } else {
-            WindowFormType windowType = this.windowType;
-            if (windowType == null) {
-                windowType = syncType ? WindowFormType.FLOAT : WindowFormType.DOCKED;
-            }
-
             if (syncType) {
-                switch (windowType) {
+                switch ((ModalityWindowFormType) windowType) {
                     case FLOAT:
                         return inputObjects.isEmpty() ? ModalityShowFormType.MODAL : ModalityShowFormType.DIALOG_MODAL;
                     case DOCKED:
@@ -93,7 +90,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                Boolean noCancel,
                                                                Boolean syncType,
                                                                WindowFormType windowType,
-                                                               Integer inContainerId,
                                                                boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly) {
@@ -106,7 +102,6 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
         this.syncType = syncType;
         this.windowType = windowType;
-        this.inContainerId = inContainerId;
 
         this.forbidDuplicate = forbidDuplicate;
 

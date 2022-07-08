@@ -6,46 +6,54 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.form.design.GInnerComponent;
+import lsfusion.gwt.client.form.design.GFormComponent;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
+import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class InnerForm extends FormContainer {
+    private final String caption;
     private final Integer inContainerId;
 
-    public InnerForm(FormsController formsController, boolean async, Event editEvent, Integer inContainerId) {
+    public InnerForm(FormsController formsController, String caption, boolean async, Event editEvent, Integer inContainerId) {
         super(formsController, async, editEvent);
+        this.caption = caption;
         this.inContainerId = inContainerId;
     }
 
     private Widget widget;
 
     @Override
-    protected void setContent(Widget widget, String caption) {
-        setFormContent(widget, caption);
+    protected void setContent(Widget widget) {
+        setFormContent(widget);
         this.widget = widget;
     }
 
     GContainer inContainer;
-    GInnerComponent innerComponent;
+    GFormComponent innerComponent;
 
-    protected void setFormContent(Widget widget, String caption) {
+    protected void setFormContent(Widget widget) {
         FormContainer formContainer = MainFrame.getCurrentForm();
         if(formContainer != null) {
             GFormController formController = formContainer.getForm();
 
-            innerComponent = new GInnerComponent(caption);
+            innerComponent = new GFormComponent(caption);
 
             inContainer = formController.getForm().findContainerByID(inContainerId);
             inContainer.add(innerComponent);
 
+            formController.putInnerForm(this);
+
             GFormLayout layout = formController.getFormLayout();
             layout.addBaseComponent(innerComponent, widget, null);
             layout.update(-1);
+            if(inContainer.tabbed)
+                ((TabbedContainerView)layout.getContainerView(inContainer)).activateTab(innerComponent);
         }
     }
 
@@ -53,8 +61,14 @@ public class InnerForm extends FormContainer {
     public void hide(EndReason editFormCloseReason) {
         FormContainer formContainer = MainFrame.getCurrentForm();
         if(formContainer != null) {
-            formContainer.getForm().getFormLayout().removeBaseComponent(innerComponent);
+            GFormController formController = formContainer.getForm();
+            formController.removeInnerForm(this);
+
+            GFormLayout layout = formController.getFormLayout();
+            layout.removeBaseComponent(innerComponent);
             inContainer.removeFromChildren(innerComponent);
+            if(inContainer.tabbed)
+                ((TabbedContainerView)layout.getContainerView(inContainer)).activateLastTab();
         }
     }
 
@@ -64,7 +78,7 @@ public class InnerForm extends FormContainer {
 
     @Override
     public GWindowFormType getWindowType() {
-        return null;
+        return new GContainerWindowFormType(inContainerId);
     }
 
     @Override

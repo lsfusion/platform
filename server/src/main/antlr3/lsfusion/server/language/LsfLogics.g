@@ -8,7 +8,7 @@ grammar LsfLogics;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
-    import lsfusion.interop.form.WindowFormType;
+    import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
@@ -3259,7 +3259,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 @init {
 
 	Boolean syncType = null;
-	WindowFormType windowType = null;
+	ModalityWindowFormType windowType = null;
     ComponentView inComponent = null;
 
     List<TypedParameter> objectsContext = null;
@@ -3300,7 +3300,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
 dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
-	WindowFormType windowType = null;
+	ModalityWindowFormType windowType = null;
 
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	
@@ -3364,11 +3364,11 @@ syncTypeLiteral returns [boolean val]
 	|	'NOWAIT' { $val = false; }
 	;
 
-windowTypeLiteral returns [WindowFormType val]
-	:	'FLOAT' { $val = WindowFormType.FLOAT; }
-	|	'DOCKED' { $val = WindowFormType.DOCKED; }
-	|	'EMBEDDED' { $val = WindowFormType.EMBEDDED; }
-	|	'POPUP' { $val = WindowFormType.POPUP; }
+windowTypeLiteral returns [ModalityWindowFormType val]
+	:	'FLOAT' { $val = ModalityWindowFormType.FLOAT; }
+	|	'DOCKED' { $val = ModalityWindowFormType.DOCKED; }
+	|	'EMBEDDED' { $val = ModalityWindowFormType.EMBEDDED; }
+	|	'POPUP' { $val = ModalityWindowFormType.POPUP; }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

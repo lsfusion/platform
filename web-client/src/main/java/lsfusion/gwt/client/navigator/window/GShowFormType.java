@@ -4,10 +4,6 @@ import java.io.Serializable;
 
 public interface GShowFormType extends Serializable {
 
-    default Integer getInContainerId() {
-        return null;
-    }
-
     default boolean isDocked() {
         return false;
     }

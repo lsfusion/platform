@@ -4,10 +4,6 @@ import java.io.Serializable;
 
 public interface ShowFormType extends Serializable {
 
-    default Integer getInContainerId() {
-        return null;
-    }
-
     default boolean isDockedModal() {
         return false;
     }

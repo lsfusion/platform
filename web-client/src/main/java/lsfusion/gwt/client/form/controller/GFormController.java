@@ -157,6 +157,16 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
+    private Set<InnerForm> innerForms = new HashSet<>();
+
+    public void putInnerForm(InnerForm innerForm) {
+        innerForms.add(innerForm);
+    }
+
+    public void removeInnerForm(InnerForm innerForm) {
+        innerForms.remove(innerForm);
+    }
+
     public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
@@ -1476,16 +1486,21 @@ public class GFormController implements EditManager {
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
-        FormDispatchAsync closeDispatcher = dispatcher;
+        for(InnerForm innerForm : innerForms) {
+            closeForm(innerForm.getForm().dispatcher, closeDelay);
+        }
+        closeForm(dispatcher, closeDelay);
+    }
+
+    private void closeForm(FormDispatchAsync dispatcher, int closeDelay) {
         Scheduler.get().scheduleDeferred(() -> {
-            closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
+            dispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
                 @Override
                 public void onFailure(Throwable caught) { // supressing errors
                 }
             });
-            closeDispatcher.close();
+            dispatcher.close();
         });
-//        dispatcher = null; // so far there are no null checks (for example, like in desktop-client), so changePageSize can be called after (apparently close will suppress it)
     }
 
     public void updateFormCaption() {

@@ -13,17 +13,12 @@ public class GContainerShowFormType implements GShowFormType {
     }
 
     @Override
-    public Integer getInContainerId() {
-        return inContainerId;
-    }
-
-    @Override
     public boolean isWindow() {
         return false;
     }
 
     @Override
     public GWindowFormType getWindowType() {
-        return GWindowFormType.INNER;
+        return new GContainerWindowFormType(inContainerId);
     }
 }

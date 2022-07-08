@@ -32,13 +32,13 @@ public enum GModalityShowFormType implements GShowFormType {
     @Override
     public GWindowFormType getWindowType() {
         if(this == EMBEDDED)
-            return GWindowFormType.EMBEDDED;
+            return GModalityWindowFormType.EMBEDDED;
         if(this == POPUP)
-            return GWindowFormType.POPUP;
+            return GModalityWindowFormType.POPUP;
 
         if(isWindow())
-            return GWindowFormType.FLOAT;
+            return GModalityWindowFormType.FLOAT;
         else
-            return GWindowFormType.DOCKED;
+            return GModalityWindowFormType.DOCKED;
     }
 }

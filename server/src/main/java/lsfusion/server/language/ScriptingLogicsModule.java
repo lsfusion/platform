@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.FormScheduler;
@@ -178,7 +179,6 @@ import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
 import static lsfusion.server.logics.classes.data.StringClass.getv;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
-import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
 public class ScriptingLogicsModule extends LogicsModule {
 
@@ -3413,14 +3413,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
-        checks.checkComponentIsContainer(inComponent);
-        Integer inContainerId = inComponent != null ? inComponent.getID() : null;
+        if(inComponent != null) {
+            checks.checkComponentIsContainer(inComponent);
+            windowType = new ContainerWindowFormType(inComponent.getID());
+        }
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
-                syncType, windowType, inContainerId, false, checkOnOk,
+                syncType, windowType, false, checkOnOk,
                 readonly);
 
         for (int usedParam : contextEntities.usedParams) {
@@ -3626,7 +3628,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                  inputObjects, inputProps, inputNulls, scope, contextEntities.list,
                                  manageSession, noCancel,
                                  contextEntities.orderInterfaces, contextEntities.filters,
-                                 syncType, windowType, null, checkOnOk,
+                                 syncType, windowType, checkOnOk,
                                  readonly, null, false);
 
         for (int usedParam : contextEntities.usedParams) {

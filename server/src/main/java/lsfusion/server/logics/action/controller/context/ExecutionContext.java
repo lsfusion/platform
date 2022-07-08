@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.lambda.Processor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.remote.RmiManager;
@@ -664,7 +665,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
 
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, WindowFormType.FLOAT, null, false);
+        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, ModalityWindowFormType.FLOAT, null, false);
     }
 
     public SQLSyntax getDbSyntax() {

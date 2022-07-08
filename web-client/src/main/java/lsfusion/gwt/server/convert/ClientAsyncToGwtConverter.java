@@ -7,8 +7,10 @@ import lsfusion.gwt.client.form.event.GBindingMode;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
-import lsfusion.gwt.client.navigator.window.GWindowFormType;
-import lsfusion.interop.form.WindowFormType;
+import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
+import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
+import lsfusion.interop.form.ContainerWindowFormType;
+import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 
 import javax.swing.*;
@@ -115,16 +117,20 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         return new GAsyncChange(clientAsyncChange.propertyIDs, clientAsyncChange.value);
     }
 
-    @Converter(from = WindowFormType.class)
-    public GWindowFormType convertWindowType(WindowFormType modalityType) {
-        switch (modalityType) {
-            case DOCKED: return GWindowFormType.DOCKED;
-            case FLOAT: return GWindowFormType.FLOAT;
-            case EMBEDDED: return GWindowFormType.EMBEDDED;
-            case POPUP: return GWindowFormType.POPUP;
-            case INNER: return GWindowFormType.POPUP;
+    @Converter(from = ModalityWindowFormType.class)
+    public GModalityWindowFormType convertModalityWindowFormType(ModalityWindowFormType modalityWindowFormType) {
+        switch (modalityWindowFormType) {
+            case DOCKED: return GModalityWindowFormType.DOCKED;
+            case FLOAT: return GModalityWindowFormType.FLOAT;
+            case EMBEDDED: return GModalityWindowFormType.EMBEDDED;
+            case POPUP: return GModalityWindowFormType.POPUP;
         }
         return null;
+    }
+
+    @Converter(from = ContainerWindowFormType.class)
+    public GContainerWindowFormType convertContainerWindowFormType(ContainerWindowFormType containerWindowFormType) {
+        return new GContainerWindowFormType(containerWindowFormType.inContainerId);
     }
 
     @Cached

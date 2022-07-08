@@ -661,7 +661,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkComponentIsContainer(ComponentView inComponent) throws ScriptingErrorLog.SemanticErrorException {
-        if(inComponent != null && !(inComponent instanceof ContainerView)) {
+        if(!(inComponent instanceof ContainerView)) {
             errLog.emitShowInContainerError(parser);
         }
     }

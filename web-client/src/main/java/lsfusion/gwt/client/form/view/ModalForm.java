@@ -6,14 +6,15 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FormRequestData;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -23,7 +24,7 @@ public class ModalForm extends FormContainer {
 
     @Override
     public GWindowFormType getWindowType() {
-        return GWindowFormType.FLOAT;
+        return GModalityWindowFormType.FLOAT;
     }
 
     @Override
@@ -62,7 +63,7 @@ public class ModalForm extends FormContainer {
     }
 
     @Override
-    protected void setContent(Widget widget, String caption) {
+    protected void setContent(Widget widget) {
         contentWidget.setInnerContentWidget(widget);
     }
 

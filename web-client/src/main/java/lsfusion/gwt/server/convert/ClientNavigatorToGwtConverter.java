@@ -15,7 +15,8 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.form.WindowFormType;
+import lsfusion.interop.form.ContainerWindowFormType;
+import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.ServletContext;
@@ -140,16 +141,20 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         return initNavigatorWindow(clientWindow, new GTreeNavigatorWindow());
     }
 
-    @Converter(from = WindowFormType.class)
-    public GWindowFormType convertWindowType(WindowFormType modalityType) {
-        switch (modalityType) {
-            case DOCKED: return GWindowFormType.DOCKED;
-            case FLOAT: return GWindowFormType.FLOAT;
-            case EMBEDDED: return GWindowFormType.EMBEDDED;
-            case POPUP: return GWindowFormType.POPUP;
-            case INNER: return GWindowFormType.INNER;
+    @Converter(from = ModalityWindowFormType.class)
+    public GModalityWindowFormType convertModalityWindowFormType(ModalityWindowFormType modalityWindowFormType) {
+        switch (modalityWindowFormType) {
+            case DOCKED: return GModalityWindowFormType.DOCKED;
+            case FLOAT: return GModalityWindowFormType.FLOAT;
+            case EMBEDDED: return GModalityWindowFormType.EMBEDDED;
+            case POPUP: return GModalityWindowFormType.POPUP;
         }
         return null;
+    }
+
+    @Converter(from = ContainerWindowFormType.class)
+    public GContainerWindowFormType convertContainerWindowFormType(ContainerWindowFormType containerWindowFormType) {
+        return new GContainerWindowFormType(containerWindowFormType.inContainerId);
     }
 
     @Cached
