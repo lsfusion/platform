@@ -19,8 +19,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
 
-import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
-
 /**
  * A table column header or footer.
  */

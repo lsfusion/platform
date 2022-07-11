@@ -2,7 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 
 public class CaptionPanel extends FlexPanel {
@@ -53,7 +53,7 @@ public class CaptionPanel extends FlexPanel {
     private boolean notNullCaption;
     private boolean notEmptyCaption;
     public void setCaption(String caption) {
-        legend.setText(EscapeUtils.unicodeEscape(caption != null ? caption : ""));
+        GwtClientUtils.setInnerContent(legend.getElement(), caption);
 
         // incremental update
         boolean notNullCaption = caption != null;
