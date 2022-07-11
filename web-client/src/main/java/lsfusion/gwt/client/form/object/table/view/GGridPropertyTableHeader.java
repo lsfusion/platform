@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.base.EscapeUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
@@ -156,11 +155,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     private static void renderCaption(Element captionElement, String caption) {
-        String value = caption == null ? "" : caption;
-        if (EscapeUtils.isContainHtmlTag(value))
-            captionElement.setInnerHTML(value);
-        else
-            captionElement.setInnerText(value);
+        GwtClientUtils.setInnerContent(captionElement, caption);
     }
 
     @Override

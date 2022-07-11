@@ -44,4 +44,12 @@ public class EscapeUtils {
         }
         return s;
     }
+
+    public static String escapeLineBreakHTML(String value) {
+        return value.replace("\n", "<br/>");
+    }
+
+    public static boolean isContainHtmlTag(String value) {
+        return value.matches(".*\\<[^>]+\\>(.|\n|\r)*");
+    }
 }
