@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
+import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 import static lsfusion.gwt.client.form.event.GKeyStroke.getKeyStroke;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
