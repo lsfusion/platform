@@ -45,8 +45,8 @@ import java.util.*;
 
 import static lsfusion.base.BaseUtils.isRedundantString;
 import static lsfusion.base.BaseUtils.nullTrim;
+import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.client.base.EscapeUtils.escapeLineBreakHTML;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {

@@ -19,10 +19,6 @@ public class EscapeUtils {
         }
         return SimpleHtmlSanitizer.sanitizeHtml(plainString).asString().replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
     }
-    
-    public static String sanitizeHtml(String plainString) {
-        return HtmlSanitizerUtil.sanitizeHtml(plainString).asString();
-    }
 
     private static final RegExp AMP_RE = RegExp.compile("&", "g");
     private static final RegExp GT_RE = RegExp.compile(">", "g");
@@ -51,5 +47,9 @@ public class EscapeUtils {
 
     public static String escapeLineBreakHTML(String value) {
         return value.replace("\n", "<br/>");
+    }
+
+    public static boolean isContainHtmlTag(String value) {
+        return value.matches(".*\\<[^>]+\\>(.|\n|\r)*");
     }
 }
