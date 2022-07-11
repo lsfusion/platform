@@ -179,7 +179,6 @@ import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
 import static lsfusion.server.logics.classes.data.StringClass.getv;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
-import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
 public class ScriptingLogicsModule extends LogicsModule {
 
@@ -355,6 +354,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return checks;
     }
 
+    public static String removeCarriageReturn(String s) {
+        return s.replace("\r\n", "\n");
+    }
+    
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod());
