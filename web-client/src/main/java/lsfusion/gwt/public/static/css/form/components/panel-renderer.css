@@ -1,0 +1,63 @@
+.dataPanelRendererPanel {
+    white-space: nowrap;
+
+    cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
+}
+
+.propertyContainerPanel {
+}
+
+.notEmptyPanelLabel {
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
+}
+
+.alignPanelLabel {
+    margin-top: var(--border-padding);
+    margin-bottom: var(--border-padding);
+}
+
+.panelRendererValue {
+    margin: var(--border-padding);
+}
+
+.panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
+    background: var(--component-background-color);
+}
+
+.panelRendererValueBoxed {
+    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
+}
+
+.propertyPanelRendererValue {
+}
+
+.propertyPanelRendererValue.panelRendererValueBoxed {
+    border-radius: var(--textfield-border-radius);
+    overflow: hidden; /* to hide inner corners */
+}
+
+.actionPanelRendererValue.panelRendererValueBoxed {
+    border-radius: var(--button-border-radius);
+}
+
+
+.panelRendererValueEdited {
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited),
+.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited) .background-inherit, button:focus {
+    background-color: var(--selection-color);
+}
+
+.panelRendererValueFocused.panelRendererValueBoxed, .actionPanelRendererValue:focus {
+    border: 1px solid var(--focus-color);
+}
+
+.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
+}
+
+.panelRendererValueBinding, .panelRendererValueBinding .background-inherit {
+    background-color: var(--button-active-background-color);
+}

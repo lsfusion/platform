@@ -1,0 +1,23 @@
+.tableContainer {
+    margin: var(--border-padding);
+}
+
+.tableContainerBoxed, .tableContainerBoxed .background-inherit {
+    background: var(--component-background-color);
+}
+
+.tableContainerBoxed {
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
+}
+
+.tableContainerFocused {
+}
+
+.tableContainerBoxed.tableContainerFocused {
+    border: 1px solid var(--focus-color);
+}
+
+.tableContainerBoxed:hover:not(.tableContainerFocused) { /* we want focus to have higher priority than hover*/
+    border: 1px solid var(--component-hover-border-color);
+}

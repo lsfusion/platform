@@ -35,8 +35,8 @@ pre {
 body {
     color: var(--text-color);
     margin: 10px;
-    border: 0px;
-    padding: 0px;
+    border: 0;
+    padding: 0;
     direction: ltr;
 }
 
@@ -85,40 +85,14 @@ svg {
     vertical-align: middle;
 }
 
-/* ------------ Scrollbars ------------ */
-body {
-    /*firefox*/
-    scrollbar-color: var(--scrollbar-color) var(--component-background-color);
-    scrollbar-width: thin;
-    /*ie*/
-    scrollbar-face-color: var(--scrollbar-color);
-    scrollbar-arrow-color: var(--component-border-color);
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar {
-    width: 0.5rem;
-    height: 0.5rem;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-color);
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--component-border-color);
-}
-
-::-webkit-scrollbar-corner {
-    background: transparent;
+:focus {
+    outline: 0;
 }
 
 .gwt-HTML {
     padding: 0 0;
 }
+
 
 /* ------------ Align ----------------- */
 .align-items-start {
@@ -133,45 +107,16 @@ body {
     align-items: center !important;
 }
 
-/* ------------ Default gwt overrides ------------ */
-:focus {
-    outline: 0;
-}
 
-.mobileFormsTabPanel > .nav-tabs-horz {
-    padding-top: 0;
-    padding-bottom: var(--border-padding);
-}
-
-.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-
-    scrollbar-width: none;  /* hide scrollbars in Firefox */
-}
-.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper::-webkit-scrollbar {
-    display: none;  /* hide scrollbars in Safari and Chrome */
-}
-
-.mobileFormsTabPanel > .nav-tabs-horz .nav-item {
-    border-top: none;
-    border-bottom: 1px solid var(--panel-border-color);
-    border-radius: var(--tab-border-radius-vert);
-}
-
-.mobileFormsTabPanel > .nav-tabs-horz .nav-item:hover {
-    border-bottom: 1px solid var(--component-hover-border-color);
-}
-
-.mobileFormsTabPanel > .tab-pane {
-    padding-top: 0;
-    padding-bottom: var(--border-padding);
-    border-top: none;
-    border-bottom: 1px solid var(--panel-border-color);
+/* ------------ Form "dockables"  ------------ */
+.dockableBlockingMask {
+    background: black;
+    opacity: 0.3;
+    z-index: 10000;
 }
 
 
-/* ------------ Message box styles ------------ */
+/* ------------ Message Box ------------ */
 .messageBox-button {
     width: 5.625rem;
 }
@@ -182,7 +127,8 @@ body {
     padding: 0.3125rem 0.3125rem 0.4375rem 0.3125rem;
 }
 
-/* ------------ Error box styles ------------ */
+
+/* ------------ Error Dialog ------------ */
 .errorBox-button {
     margin: 0.1875rem 0.1875rem 0.3125rem;
 }
@@ -197,244 +143,7 @@ body {
 }
 
 
-/* ------------ Cell Renderer related styles ------------ */
-
-.logicalRendererCheckBox {
-    /*margin: 0;*/
-    pointer-events: none;
-}
-
-/* ------------ Panel Renderer related styles ------------ */
-.dataPanelRendererPanel {
-    white-space: nowrap;
-
-    cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
-}
-
-.propertyContainerPanel {
-}
-
-.notEmptyPanelLabel {
-    margin-left: var(--border-padding);
-    margin-right: var(--border-padding);
-}
-
-.alignPanelLabel {
-    margin-top: var(--border-padding);
-    margin-bottom: var(--border-padding);
-}
-
-.panelRendererValue {
-    margin: var(--border-padding);
-}
-
-.property-toolbar-on-hover .hide {
-    width:0;
-    transition:width 200ms linear;
-}
-
-.property-toolbar-on-hover:hover .hide {
-    width:100%;
-    transition:width 200ms linear;
-}
-
-.panelRendererValueBoxed, .panelRendererValueBoxed .background-inherit {
-    background: var(--component-background-color);
-}
-
-.panelRendererValueBoxed {
-    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
-}
-
-.propertyPanelRendererValue {
-}
-
-.propertyPanelRendererValue.panelRendererValueBoxed {
-    border-radius: var(--textfield-border-radius);
-    overflow: hidden; /* to hide inner corners */
-}
-
-.actionPanelRendererValue.panelRendererValueBoxed {
-    border-radius: var(--button-border-radius);
-}
-
-
-.panelRendererValueEdited {
-}
-
-.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited),
-.panelRendererValueFocused.panelRendererValueBoxed:not(.panelRendererValueEdited) .background-inherit, button:focus {
-    background-color: var(--selection-color);
-}
-
-.panelRendererValueFocused.panelRendererValueBoxed, .actionPanelRendererValue:focus {
-    border: 1px solid var(--focus-color);
-}
-
-.panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
-    border: 1px solid var(--component-hover-border-color);
-}
-
-.panelRendererValueBinding, .panelRendererValueBinding .background-inherit {
-    background-color: var(--button-active-background-color);
-}
-
-/* ------------ Caption panel ------------ */
-
-.leftBorder {
-    border-left: var(--border-width) solid var(--panel-border-color);
-
-    margin-left: calc(0px - var(--border-width) - var(--border-padding));
-    padding-left: var(--border-padding);
-}
-.topBorder {
-    border-top: 1px solid var(--panel-border-color);
-
-    padding-top: var(--border-padding);
-}
-/* margin and not padding because we want the opposite borders to respect this padding */
-/* also to have correct size / scroll when right component is wrapped */
-.rightBorderNoWrap {
-    margin-right: calc(var(--border-padding) + var(--border-padding));
-}
-.flexHorzBorderWrap {
-    column-gap : calc(var(--border-padding) + var(--border-padding));
-}
-.bottomBorder {
-    margin-bottom: var(--border-padding);
-}
-
-/* we can't use topborder because it is removed in autoDrawBorders */
-.captionPanelNotNullLegend {
-    border-top: 1px solid var(--panel-border-color);
-}
-
-.captionPanel {
-    position: relative;
-}
-
-.captionLegendContainerPanel {
-    position: relative;
-}
-.captionPanelLegend {
-    white-space: nowrap;
-    /*background-color: var(--background-color);*/
-    color: var(--caption-panel-legend-color);
-}
-
-.notNullCaptionPanelLegend {
-    padding-top: var(--border-padding);
-    padding-bottom: var(--border-padding);
-}
-
-.notEmptyCaptionPanelLegend {
-    /*margin-left: 0.25rem;*/
-    /*margin-right: 0.25rem;*/
-
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
-}
-
-.captionCenteredLine {
-    /*position: absolute;*/
-    /*top : 50%;*/
-    /*bottom: 0;*/
-    /*left: 0;*/
-    /*right: 0;*/
-    /*z-index: -1;*/
-
-    border-top: 1px solid var(--panel-border-color);
-}
-
-.rightCaptionCenteredLine {
-    flex-grow : 1 !important;
-}
-
-.collapsePanelImage {
-    cursor: default;
-    /*margin-top: var(--border-padding);*/
-    /*background: var(--background-color);*/
-}
-
-/* ------------ Form "dockables"  ------------ */
-.dockableBlockingMask {
-    background: black;
-    opacity: 0.3;
-    z-index: 10000;
-}
-
-/* ------------ Filters ------------ */
-.form-check .form-check-input {
-    float: left;
-}
-
-.filter-group-check.form-check {
-    margin-left: 0.25rem; /*do not clip box shadowing*/
-    margin-right: 0.125rem;
-}
-
-.userFilterNegationCheckBox label {
-    vertical-align: middle;
-}
-
-.filter-group-select.form-select {
-    width: auto;
-    margin: 0.25rem; /*do not clip box shadowing*/
-}
-
-.userFilterLabel {
-    cursor: default;
-    margin: 0 0.1875rem 0 0.3125rem;
-}
-
-.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
-    margin-left: var(--border-padding);
-}
-
-/* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
-.userFilterSelector {
-    cursor : default;
-    border: 1px solid var(--component-border-color);
-    margin: var(--border-padding);
-    border-radius: var(--textfield-border-radius);
-
-    padding-left: 0.1875rem;
-    padding-right: 0.1875rem;
-
-    /* aligning text vertically (the other way with line-height) */
-    display : flex;
-    align-items : center;
-}
-
-.userFilterSelector, .userFilterSelector .background-inherit {
-    background-color: var(--component-background-color);
-}
-
-.userFilerValueCellApplied, .userFilerValueCellApplied .background-inherit {
-    background-color: var(--selection-color);
-}
-
-.userFilterNegationCheckBox input {
-    margin-left: 0.1875rem;
-}
-
-.userFilterJunctionSeparator {
-    margin: 0 0.4375rem 0 0.75rem;
-}
-
-
-/* ------------ Loading blocker  ------------ */
-.messageCanvas {
-    position: absolute;
-    background-color: rgba(226, 226, 226, 0.74);
-    padding: 0.5rem;
-    overflow: hidden;
-}
-
-.messageLabel {
-    word-wrap: break-word;
-}
-
+/* ------------ Busy Dialog  ------------ */
 .busyDialog {
     text-align: center;
 }
@@ -451,47 +160,6 @@ body {
 
 
 /* ------------ Other components  ------------ */
-.tableContainer{
-    margin: var(--border-padding);
-}
-
-.tableContainerBoxed, .tableContainerBoxed .background-inherit {
-    background: var(--component-background-color);
-}
-.tableContainerBoxed {
-    border: 1px solid var(--component-border-color);
-    border-radius: var(--table-border-radius);
-}
-
-.tableContainerFocused {
-}
-.tableContainerBoxed.tableContainerFocused {
-    border: 1px solid var(--focus-color);
-}
-.tableContainerBoxed:hover:not(.tableContainerFocused) { /* we want focus to have higher priority than hover*/
-    border: 1px solid var(--component-hover-border-color);
-}
-
-.btn-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
-
-.btn-toolbar .btn {
-    border: 0;
-    background: transparent;
-
-    padding: 0 0.25em;
-
-    margin-left: var(--border-padding);
-    margin-right: var(--border-padding);
-}
-
-.btn-toolbar .btn:hover {
-    background-color: var(--component-hover-background-color);
-}
-
 .logPanel {
     white-space: nowrap;
 }
@@ -509,39 +177,8 @@ body {
     outline: none;
 }
 
-.nullValueString {
-    color: var(--null-value-string-color);
-}
-
-.requiredValueString {
-    color: var(--required-value-string-color);
-
-    /* need this for notNullLine absolute positioning (see below) */
-    position: relative;
-}
-
-.notNullLine {
-    background: var(--not-null-line-color);
-    height: 1px;
-    bottom: 2px;
-    right:0;
-    left:0;
-    margin: 0 0.3125rem;
-    position:absolute;
-}
-
 .floatRight {
     float: right;
-}
-
-.filterDialogButton {
-    margin: 0;
-    height: 1.3125rem;
-    width: 1.3125rem;
-}
-
-.imageButtonWithoutCaption {
-    padding: 0.0625rem;
 }
 
 .verticalStretchSeparator {
@@ -558,23 +195,4 @@ body {
 .horizontalSeparator {
     width: 100%;
     border-bottom: 1px solid var(--panel-border-color);
-}
-
-.js-plotly-plot {
-    width: 100%;
-    height: 100%;
-}
-
-/* we want to turn cell to hyper link*/
-.linkMode .selectedCellHasEdit {
-    color: var(--link-color) !important;
-    cursor: pointer !important;
-}
-
-.linkMode .selectedCellHasEdit:hover {
-    text-decoration: underline;
-}
-
-.linkMode .selectedFileCellHasEdit {
-    border: 1px solid var(--link-color);
 }

@@ -40,10 +40,6 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 
 public abstract class GGridPropertyTable<T extends GridDataRecord> extends GPropertyTable<T> {
-    public static int DEFAULT_PREFERRED_WIDTH = 130; // должно соответствовать значению в gridResizePanel в MainFrame.css
-    public static int DEFAULT_PREFERRED_HEIGHT = 70; // должно соответствовать значению в gridResizePanel в MainFrame.css
-    public static int DEFAULT_MAX_PREFERRED_HEIGHT = 140;
-
     protected boolean columnsUpdated = true; //could be no properties on init
     protected boolean captionsUpdated = false;
     protected boolean footersUpdated = false;

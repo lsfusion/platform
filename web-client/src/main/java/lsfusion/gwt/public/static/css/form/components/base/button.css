@@ -56,3 +56,7 @@ button[disabled]:hover {
     display: inline-flex;
     vertical-align: middle;
 }
+
+.imageButtonWithoutCaption {
+    padding: 0.0625rem;
+}

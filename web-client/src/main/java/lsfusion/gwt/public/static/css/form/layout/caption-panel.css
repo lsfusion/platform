@@ -1,0 +1,68 @@
+.leftBorder {
+    border-left: var(--border-width) solid var(--panel-border-color);
+
+    margin-left: calc(0px - var(--border-width) - var(--border-padding));
+    padding-left: var(--border-padding);
+}
+
+.topBorder {
+    border-top: 1px solid var(--panel-border-color);
+
+    padding-top: var(--border-padding);
+}
+
+/* margin and not padding because we want the opposite borders to respect this padding */
+/* also to have correct size / scroll when right component is wrapped */
+.rightBorderNoWrap {
+    margin-right: calc(var(--border-padding) + var(--border-padding));
+}
+
+.flexHorzBorderWrap {
+    column-gap: calc(var(--border-padding) + var(--border-padding));
+}
+
+.bottomBorder {
+    margin-bottom: var(--border-padding);
+}
+
+/* we can't use topborder because it is removed in autoDrawBorders */
+.captionPanelNotNullLegend {
+    border-top: 1px solid var(--panel-border-color);
+}
+
+.captionPanel {
+    position: relative;
+}
+
+.captionLegendContainerPanel {
+    position: relative;
+}
+
+.captionPanelLegend {
+    white-space: nowrap;
+    color: var(--caption-panel-legend-color);
+}
+
+.notNullCaptionPanelLegend {
+    padding-top: var(--border-padding);
+    padding-bottom: var(--border-padding);
+}
+
+.notEmptyCaptionPanelLegend {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.captionCenteredLine {
+    border-top: 1px solid var(--panel-border-color);
+}
+
+.rightCaptionCenteredLine {
+    flex-grow: 1 !important;
+}
+
+
+/* ------------ Collapsible ------------ */
+.collapsePanelImage {
+    cursor: default;
+}

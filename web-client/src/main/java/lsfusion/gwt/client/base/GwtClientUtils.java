@@ -260,9 +260,7 @@ public class GwtClientUtils {
     }
 
     public static String createTooltipHorizontalSeparator() {
-        Widget separator = createHorizontalSeparator();
-        separator.addStyleName("tooltipHorizontalSeparator");
-        return separator.toString();
+        return createHorizontalSeparator().toString();
     }
 
     public static String getUserAgent() {

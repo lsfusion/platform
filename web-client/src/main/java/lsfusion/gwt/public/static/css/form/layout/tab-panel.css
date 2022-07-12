@@ -174,3 +174,38 @@
     user-select: none;
     opacity: 0.25;
 }
+
+
+/* ------------ Mobile Forms Tab Panel ------------ */
+.mobileFormsTabPanel > .nav-tabs-horz {
+    padding-top: 0;
+    padding-bottom: var(--border-padding);
+}
+
+.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+
+    scrollbar-width: none; /* hide scrollbars in Firefox */
+}
+
+.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper::-webkit-scrollbar {
+    display: none; /* hide scrollbars in Safari and Chrome */
+}
+
+.mobileFormsTabPanel > .nav-tabs-horz .nav-item {
+    border-top: none;
+    border-bottom: 1px solid var(--panel-border-color);
+    border-radius: var(--tab-border-radius-vert);
+}
+
+.mobileFormsTabPanel > .nav-tabs-horz .nav-item:hover {
+    border-bottom: 1px solid var(--component-hover-border-color);
+}
+
+.mobileFormsTabPanel > .tab-pane {
+    padding-top: 0;
+    padding-bottom: var(--border-padding);
+    border-top: none;
+    border-bottom: 1px solid var(--panel-border-color);
+}

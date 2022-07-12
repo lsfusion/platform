@@ -1,0 +1,19 @@
+.btn-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.btn-toolbar .btn {
+    border: 0;
+    background: transparent;
+
+    padding: 0 0.25em;
+
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
+}
+
+.btn-toolbar .btn:hover {
+    background-color: var(--component-hover-background-color);
+}

@@ -1,0 +1,61 @@
+.property-toolbar-on-hover .hide {
+    width: 0;
+    transition: width 200ms linear;
+}
+
+.property-toolbar-on-hover:hover .hide {
+    width: 100%;
+    transition: width 200ms linear;
+}
+
+.property-toolbar-start {
+    display: flex;
+    align-items: center;
+    max-width: 50%;
+}
+
+:not(.panelRendererValueFocused) > .property-toolbar-on-hover .property-toolbar-start {
+    justify-content: start;
+}
+
+.property-toolbar-end {
+    display: flex;
+    align-items: center;
+    max-width: 50%;
+}
+
+:not(.panelRendererValueFocused) > .property-toolbar-on-hover .property-toolbar-end {
+    justify-content: end;
+}
+
+.property-toolbar-loading {
+    padding: 0.125rem;
+}
+
+.property-toolbar-item-group-start {
+    display: flex;
+    align-self: stretch;
+    justify-content: end;
+}
+
+.property-toolbar-item-group-end {
+    display: flex;
+    align-self: stretch;
+    justify-content: start;
+}
+
+.property-toolbar-item {
+    /*overflow: hidden;*/
+    padding: 0.125rem;
+    border: 1px solid transparent;
+    border-radius: var(--button-border-radius);
+
+    /*stretch self and center image inside*/
+    display: flex;
+    align-self: stretch;
+    align-items: center;
+}
+
+.property-toolbar-item:hover {
+    border: 1px solid var(--component-hover-border-color);
+}

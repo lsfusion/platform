@@ -347,7 +347,6 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
     public CustomSplitLayoutPanel(int splitterSize) {
         super(Unit.PX);
         this.splitterSize = splitterSize;
-        setStyleName("gwt-SplitLayoutPanel");
 
         if (glassElem == null) {
             glassElem = Document.get().createDivElement();

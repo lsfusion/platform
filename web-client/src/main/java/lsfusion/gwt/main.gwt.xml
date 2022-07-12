@@ -143,27 +143,42 @@
 
     <stylesheet src="static/css/main.css"/>
 
-    <stylesheet src="static/css/button.css"/>
-    <stylesheet src="static/css/check-box.css"/>
-    <stylesheet src="static/css/decorated-popup-panel.css"/>
-    <stylesheet src="static/css/decorator-panel.css"/>
-    <stylesheet src="static/css/dialog-box.css"/>
-    <stylesheet src="static/css/grid.css"/>
-    <stylesheet src="static/css/menu-bar.css"/>
-    <stylesheet src="static/css/navigator.css"/>
-    <stylesheet src="static/css/popup-panel.css"/>
-    <stylesheet src="static/css/progress-bar.css"/>
-    <stylesheet src="static/css/radio-button.css"/>
-    <stylesheet src="static/css/resizable-window.css"/>
-    <stylesheet src="static/css/split-panel.css"/>
-    <stylesheet src="static/css/suggest-box.css"/>
-    <stylesheet src="static/css/tab-panel.css"/>
-    <stylesheet src="static/css/tree.css"/>
-    <stylesheet src="static/css/user-preferences.css"/>
-    <stylesheet src="static/css/window-box.css"/>
-    <stylesheet src="static/css/layout.css"/>
-    <stylesheet src="static/css/grid-header.css"/>
-    <stylesheet src="static/css/property.css"/>
+    <stylesheet src="static/css/form/components/filter.css"/>
+    <stylesheet src="static/css/form/components/panel-renderer.css"/>
+    <stylesheet src="static/css/form/components/toolbar.css"/>
+    <stylesheet src="static/css/form/components/user-preferences.css"/>
+    
+    <stylesheet src="static/css/form/components/base/button.css"/>
+    <stylesheet src="static/css/form/components/base/check-box.css"/>
+    <stylesheet src="static/css/form/components/base/decorated-popup-panel.css"/>
+    <stylesheet src="static/css/form/components/base/decorator-panel.css"/>
+    <stylesheet src="static/css/form/components/base/dialog.css"/>
+    <stylesheet src="static/css/form/components/base/menu-bar.css"/>
+    <stylesheet src="static/css/form/components/base/popup-panel.css"/>
+    <stylesheet src="static/css/form/components/base/progress-bar.css"/>
+    <stylesheet src="static/css/form/components/base/radio-button.css"/>
+    <stylesheet src="static/css/form/components/base/resizable-window.css"/>
+    <stylesheet src="static/css/form/components/base/scrollbar.css"/>
+    <stylesheet src="static/css/form/components/base/suggest-box.css"/>
+    <stylesheet src="static/css/form/components/base/text-area.css"/>
+    <stylesheet src="static/css/form/components/base/text-box.css"/>
+    <stylesheet src="static/css/form/components/base/window-box.css"/>
+    
+    <stylesheet src="static/css/form/components/property/property.css"/>
+    <stylesheet src="static/css/form/components/property/property-toolbar.css"/>
+    
+    <stylesheet src="static/css/form/components/table/grid.css"/>
+    <stylesheet src="static/css/form/components/table/grid-header.css"/>
+    <stylesheet src="static/css/form/components/table/table-cell.css"/>
+    <stylesheet src="static/css/form/components/table/table-container.css"/>
+    <stylesheet src="static/css/form/components/table/tree.css"/>
+    
+    <stylesheet src="static/css/form/layout/caption-panel.css"/>
+    <stylesheet src="static/css/form/layout/layout.css"/>
+    <stylesheet src="static/css/form/layout/tab-panel.css"/>
+
+    <stylesheet src="static/css/navigator/navigator.css"/>
+    <stylesheet src="static/css/navigator/split-window.css"/>
 
     <define-property name="is.user.agent.ie11" values="true,false" />
     <property-provider name="is.user.agent.ie11">

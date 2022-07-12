@@ -1,0 +1,55 @@
+.filter-group-check.form-check {
+    margin-left: 0.25rem; /*do not clip box shadowing*/
+    margin-right: 0.125rem;
+}
+
+.filter-group-select.form-select {
+    width: auto;
+    margin: 0.25rem; /*do not clip box shadowing*/
+}
+
+
+/* ------------ User Filters ------------ */
+.userFilterNegationCheckBox label {
+    vertical-align: middle;
+}
+
+.userFilterLabel {
+    cursor: default;
+    margin: 0 0.1875rem 0 0.3125rem;
+}
+
+.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
+    margin-left: var(--border-padding);
+}
+
+/* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
+.userFilterSelector {
+    cursor : default;
+    border: 1px solid var(--component-border-color);
+    margin: var(--border-padding);
+    border-radius: var(--textfield-border-radius);
+
+    padding-left: 0.1875rem;
+    padding-right: 0.1875rem;
+
+    /* aligning text vertically (the other way with line-height) */
+    display : flex;
+    align-items : center;
+}
+
+.userFilterSelector, .userFilterSelector .background-inherit {
+    background-color: var(--component-background-color);
+}
+
+.userFilerValueCellApplied, .userFilerValueCellApplied .background-inherit {
+    background-color: var(--selection-color);
+}
+
+.userFilterNegationCheckBox input {
+    margin-left: 0.1875rem;
+}
+
+.userFilterJunctionSeparator {
+    margin: 0 0.4375rem 0 0.75rem;
+}

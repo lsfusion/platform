@@ -7,8 +7,13 @@ input[type=checkbox]:focus {
     outline: 1px solid var(--focus-color);
 }
 
+.form-check .form-check-input {
+    float: left;
+}
+
 .gwt-CheckBox {
 }
+
 .gwt-CheckBox-disabled {
     color: var(--disabled-text-color);
 }

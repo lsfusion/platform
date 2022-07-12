@@ -1,0 +1,29 @@
+body {
+    /*firefox*/
+    scrollbar-color: var(--scrollbar-color) var(--component-background-color);
+    scrollbar-width: thin;
+    /*ie*/
+    scrollbar-face-color: var(--scrollbar-color);
+    scrollbar-arrow-color: var(--component-border-color);
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar {
+    width: 0.5rem;
+    height: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--component-border-color);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
