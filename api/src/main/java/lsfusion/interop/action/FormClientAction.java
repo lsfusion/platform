@@ -34,6 +34,6 @@ public class FormClientAction extends ExecuteClientAction {
 
     @Override
     public String toString() {
-        return "FormClientAction[showFormType: " + showFormType.getName() + "]";
+        return "FormClientAction[showFormType: " + showFormType + "]";
     }
 }

@@ -3392,7 +3392,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
-                                                                         Boolean syncType, WindowFormType windowType, ComponentView inComponent, ManageSessionType manageSession, FormSessionScope formSessionScope,
+                                                                         Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly,
                                                                          List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
@@ -3412,11 +3412,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         CFEWithParams<O> contextEntities = getContextFilterEntities(oldContext.size(), contextObjects, ListFact.fromJavaList(contextFilters));
-
-        if(inComponent != null) {
-            checks.checkComponentIsContainer(inComponent);
-            windowType = new ContainerWindowFormType(inComponent.getID());
-        }
 
         ImList<O> objects = mObjects.immutableList();
         LA action = addIFAProp(null, LocalizedString.NONAME, mapped.form, objects, mNulls.immutableList(),

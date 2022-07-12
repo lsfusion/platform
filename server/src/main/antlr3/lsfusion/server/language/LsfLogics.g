@@ -8,6 +8,8 @@ grammar LsfLogics;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
+    import lsfusion.interop.form.WindowFormType;
+    import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
@@ -3259,8 +3261,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 @init {
 
 	Boolean syncType = null;
-	ModalityWindowFormType windowType = null;
-    ComponentView inComponent = null;
+	WindowFormType windowType = null;
 
     List<TypedParameter> objectsContext = null;
     List<LPWithParams> contextFilters = new ArrayList<>();
@@ -3274,7 +3275,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, inComponent, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
+		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
 		                                     objectsContext, contextFilters, context);
 	}
 }
@@ -3287,7 +3288,6 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 		    cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); }
 		|   sync = syncTypeLiteral { syncType = $sync.val; }
 		|   window = windowTypeLiteral { windowType = $window.val; }
-		|   'IN' fc = formComponentID { inComponent = $fc.component; }
 
         |	ms=manageSessionClause { manageSession = $ms.result; }
 		|	nc=noCancelClause { noCancel = $nc.result; }
@@ -3300,7 +3300,7 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
 dialogActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
-	ModalityWindowFormType windowType = null;
+	WindowFormType windowType = null;
 
 	List<TypedParameter> newContext = new ArrayList<TypedParameter>(context);
 	
@@ -3364,11 +3364,17 @@ syncTypeLiteral returns [boolean val]
 	|	'NOWAIT' { $val = false; }
 	;
 
-windowTypeLiteral returns [ModalityWindowFormType val]
+windowTypeLiteral returns [WindowFormType val]
 	:	'FLOAT' { $val = ModalityWindowFormType.FLOAT; }
 	|	'DOCKED' { $val = ModalityWindowFormType.DOCKED; }
 	|	'EMBEDDED' { $val = ModalityWindowFormType.EMBEDDED; }
 	|	'POPUP' { $val = ModalityWindowFormType.POPUP; }
+	|   'IN' fc = formComponentID {
+	        if(inMainParseState()) {
+                self.getChecks().checkComponentIsContainer($fc.component);
+                $val = new ContainerWindowFormType($fc.component.getID());
+	        }
+	     }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

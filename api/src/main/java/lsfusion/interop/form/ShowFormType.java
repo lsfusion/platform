@@ -21,7 +21,4 @@ public interface ShowFormType extends Serializable {
     }
 
     WindowFormType getWindowType();
-
-    String getName();
-
 }

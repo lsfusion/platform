@@ -12,9 +12,4 @@ public class ContainerShowFormType implements ShowFormType {
     public WindowFormType getWindowType() {
         return new ContainerWindowFormType(inContainerId);
     }
-
-    @Override
-    public String getName() {
-        return "INNER";
-    }
 }

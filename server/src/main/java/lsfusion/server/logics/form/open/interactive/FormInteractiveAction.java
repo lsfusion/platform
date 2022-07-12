@@ -48,9 +48,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             windowType = syncType ? ModalityWindowFormType.FLOAT : ModalityWindowFormType.DOCKED;
         }
 
-        Integer inContainerId = windowType.getInContainerId();
-        if (inContainerId != null) {
-            return new ContainerShowFormType(inContainerId);
+        if (windowType instanceof ContainerWindowFormType) {
+            return new ContainerShowFormType(((ContainerWindowFormType) windowType).getInContainerId());
         } else {
             if (syncType) {
                 switch ((ModalityWindowFormType) windowType) {

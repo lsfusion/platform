@@ -32,9 +32,4 @@ public enum ModalityShowFormType implements ShowFormType {
         if (isWindow()) return ModalityWindowFormType.FLOAT;
         else return ModalityWindowFormType.DOCKED;
     }
-
-    @Override
-    public String getName() {
-        return name();
-    }
 }

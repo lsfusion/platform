@@ -1487,20 +1487,19 @@ public class GFormController implements EditManager {
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
         for(InnerForm innerForm : innerForms) {
-            closeForm(innerForm.getForm().dispatcher, closeDelay);
+            innerForm.getForm().closePressed(editFormCloseReason);
         }
-        closeForm(dispatcher, closeDelay);
-    }
 
-    private void closeForm(FormDispatchAsync dispatcher, int closeDelay) {
+        FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
-            dispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
+            closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {
                 @Override
                 public void onFailure(Throwable caught) { // supressing errors
                 }
             });
-            dispatcher.close();
+            closeDispatcher.close();
         });
+//        dispatcher = null; // so far there are no null checks (for example, like in desktop-client), so changePageSize can be called after (apparently close will suppress it)
     }
 
     public void updateFormCaption() {

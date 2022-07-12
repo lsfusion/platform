@@ -6,10 +6,6 @@ import java.io.IOException;
 
 public interface WindowFormType {
 
-    default Integer getInContainerId() {
-        return null;
-    }
-
     default boolean isModal() {
         return false;
     }
