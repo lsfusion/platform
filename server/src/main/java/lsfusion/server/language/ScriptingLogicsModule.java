@@ -1373,7 +1373,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing", "panel", "cell");
-    private Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
+    private static Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
         for(Map.Entry<String, String> option : optionsMap.entrySet()) {
             if(supportedBindings.contains(option.getKey())) {
@@ -1401,7 +1401,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return bindingModes;
     }
 
-    private Integer getPriority(Map<String, String> optionsMap) {
+    private static Integer getPriority(Map<String, String> optionsMap) {
         String priority = optionsMap.get("priority");
         if(priority != null) {
             try {
@@ -1412,7 +1412,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private Map<String, String> getOptionsMap(String values) {
+    private static Map<String, String> getOptionsMap(String values) {
         Map<String, String> options = new HashMap<>();
         Matcher m = Pattern.compile("([^=;]*)=([^=;]*)").matcher(values);
         while(m.find()) {
@@ -2261,7 +2261,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }));
     }
 
-    private KeyStrokeOptions parseKeyStrokeOptions(String code) {
+    public static KeyStrokeOptions parseKeyStrokeOptions(String code) {
         Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
             Map<String, String> optionsMap = getOptionsMap(m.group(2));
@@ -2271,10 +2271,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private class KeyStrokeOptions {
-        String keyStroke;
-        Map<String, BindingMode> bindingModesMap;
-        Integer priority;
+    public static class KeyStrokeOptions {
+        public String keyStroke;
+        public Map<String, BindingMode> bindingModesMap;
+        public Integer priority;
 
         public KeyStrokeOptions(String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority) {
             this.keyStroke = keyStroke;
