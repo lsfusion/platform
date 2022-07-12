@@ -12,7 +12,6 @@ public class GContainerWindowFormType implements GWindowFormType {
         this.inContainerId = inContainerId;
     }
 
-    @Override
     public Integer getInContainerId() {
         return inContainerId;
     }

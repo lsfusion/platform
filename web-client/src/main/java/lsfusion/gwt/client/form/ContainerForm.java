@@ -16,11 +16,11 @@ import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class InnerForm extends FormContainer {
+public class ContainerForm extends FormContainer {
     private final String caption;
     private final Integer inContainerId;
 
-    public InnerForm(FormsController formsController, String caption, boolean async, Event editEvent, Integer inContainerId) {
+    public ContainerForm(FormsController formsController, String caption, boolean async, Event editEvent, Integer inContainerId) {
         super(formsController, async, editEvent);
         this.caption = caption;
         this.inContainerId = inContainerId;
@@ -34,8 +34,8 @@ public class InnerForm extends FormContainer {
         this.widget = widget;
     }
 
-    GContainer inContainer;
-    GFormComponent innerComponent;
+    private GContainer inContainer;
+    private GFormComponent innerComponent;
 
     protected void setFormContent(Widget widget) {
         FormContainer formContainer = MainFrame.getCurrentForm();
@@ -47,7 +47,7 @@ public class InnerForm extends FormContainer {
             inContainer = formController.getForm().findContainerByID(inContainerId);
             inContainer.add(innerComponent);
 
-            formController.putInnerForm(this);
+            formController.putContainerForm(this);
 
             GFormLayout layout = formController.getFormLayout();
             layout.addBaseComponent(innerComponent, widget, null);
@@ -62,7 +62,7 @@ public class InnerForm extends FormContainer {
         FormContainer formContainer = MainFrame.getCurrentForm();
         if(formContainer != null) {
             GFormController formController = formContainer.getForm();
-            formController.removeInnerForm(this);
+            formController.removeContainerForm(this);
 
             GFormLayout layout = formController.getFormLayout();
             layout.removeBaseComponent(innerComponent);
@@ -82,7 +82,7 @@ public class InnerForm extends FormContainer {
     }
 
     @Override
-    public void show(GAsyncFormController asyncFormController, Integer index) {
+    public void show(GAsyncFormController asyncFormController) {
         if (!async)
             onSyncFocus(true);
     }

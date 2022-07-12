@@ -22,7 +22,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
 import lsfusion.gwt.client.form.EmbeddedForm;
-import lsfusion.gwt.client.form.InnerForm;
+import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -36,6 +36,7 @@ import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
+import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -131,8 +132,8 @@ public abstract class FormsController {
         }
         if (asyncFormController.onServerInvocationCloseResponse()) {
             if (Arrays.stream(response.actions).noneMatch(a -> a instanceof GHideFormAction)) {
-                Pair<FormContainer, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
-                asyncClosedForm.first.show(asyncFormController, asyncClosedForm.second);
+                Pair<FormDockable, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
+                asyncClosedForm.first.showDockable(asyncClosedForm.second);
             }
         }
     }
@@ -383,9 +384,8 @@ public abstract class FormsController {
     }
 
     private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
-        Integer inContainerId = windowType.getInContainerId();
-        if(inContainerId != null) {
-            return new InnerForm(this, formCaption, async, editEvent, inContainerId);
+        if(windowType instanceof GContainerWindowFormType) {
+            return new ContainerForm(this, formCaption, async, editEvent, ((GContainerWindowFormType) windowType).getInContainerId());
         } else if(windowType.isFloat()) {
              return new ModalForm(this, formCaption, async, editEvent);
         } else if(windowType.isDocked()) {
@@ -417,10 +417,9 @@ public abstract class FormsController {
         }
     }
 
-    public void asyncCloseForm(GAsyncFormController asyncFormController) {
-        FormContainer formContainer = MainFrame.getCurrentForm();
+    public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {
         if(formContainer instanceof FormDockable) {
-            asyncFormController.putAsyncClosedForm(new Pair<>(formContainer, forms.indexOf(formContainer)));
+            asyncFormController.putAsyncClosedForm(new Pair<>((FormDockable) formContainer, forms.indexOf(formContainer)));
             formContainer.queryHide(null);
         }
     }
@@ -430,7 +429,7 @@ public abstract class FormsController {
     }
 
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return ((windowType.isEmbedded() || windowType.getInContainerId() != null) && execContext.getProperty().autoSize) || windowType.isPopup();
+        return ((windowType.isEmbedded() || windowType instanceof GContainerWindowFormType) && execContext.getProperty().autoSize) || windowType.isPopup();
     }
 
     private boolean isPreferredSize(GWindowFormType windowType) {
@@ -463,7 +462,7 @@ public abstract class FormsController {
 
     public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize) {
         formContainer.initForm(this, form, (asyncFormController, editFormCloseReason) -> {
-            Pair<FormContainer, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
+            Pair<FormDockable, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
             if(asyncClosedForm == null) {
                 formContainer.queryHide(editFormCloseReason);
             }

@@ -75,11 +75,7 @@ public abstract class FormContainer {
         }
     }
 
-    public void show(GAsyncFormController asyncFormController) {
-        show(asyncFormController, null);
-    }
-
-    public abstract void show(GAsyncFormController asyncFormController, Integer index);
+    public abstract void show(GAsyncFormController asyncFormController);
 
     // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
     public void queryHide(EndReason editFormCloseReason) {

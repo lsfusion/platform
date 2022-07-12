@@ -59,7 +59,11 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    public void show(GAsyncFormController asyncFormController, Integer index) {
+    public void show(GAsyncFormController asyncFormController) {
+        showDockable(null);
+    }
+
+    public void showDockable(Integer index) {
         formsController.addDockable(this, index);
     }
 

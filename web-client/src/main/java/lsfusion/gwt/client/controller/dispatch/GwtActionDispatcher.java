@@ -26,6 +26,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 
 import java.util.ArrayList;
@@ -524,7 +525,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     private long lastCompletedRequest = -1L;
     private NativeHashMap<Long, FormContainer> asyncForms = new NativeHashMap<>();
-    private NativeHashMap<Long, Pair<FormContainer, Integer>> asyncClosedForms = new NativeHashMap<>();
+    private NativeHashMap<Long, Pair<FormDockable, Integer>> asyncClosedForms = new NativeHashMap<>();
     private NativeHashMap<Long, Timer> openTimers = new NativeHashMap<>();
 
     public GAsyncFormController getAsyncFormController(long requestIndex) {
@@ -540,12 +541,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
 
             @Override
-            public Pair<FormContainer, Integer> removeAsyncClosedForm() {
+            public Pair<FormDockable, Integer> removeAsyncClosedForm() {
                 return asyncClosedForms.remove(requestIndex);
             }
 
             @Override
-            public void putAsyncClosedForm(Pair<FormContainer, Integer> container) {
+            public void putAsyncClosedForm(Pair<FormDockable, Integer> container) {
                 asyncClosedForms.put(requestIndex, container);
             }
 

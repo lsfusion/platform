@@ -78,7 +78,7 @@ public class ModalForm extends FormContainer {
     }
 
     @Override
-    public void show(GAsyncFormController asyncFormController, Integer index) {
+    public void show(GAsyncFormController asyncFormController) {
         GwtActionDispatcher dispatcher = asyncFormController.getDispatcher();
         long requestIndex = asyncFormController.getEditRequestIndex();
         FormRequestData formRequestData = new FormRequestData(dispatcher, this, requestIndex);

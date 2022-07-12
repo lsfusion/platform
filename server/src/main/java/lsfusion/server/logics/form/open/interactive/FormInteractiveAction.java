@@ -88,8 +88,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                ManageSessionType manageSession,
                                                                Boolean noCancel,
                                                                Boolean syncType,
-                                                               WindowFormType windowType,
-                                                               boolean forbidDuplicate,
+                                                               WindowFormType windowType, boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly) {
         super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext);

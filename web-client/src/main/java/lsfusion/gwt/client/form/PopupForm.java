@@ -79,7 +79,7 @@ public class PopupForm extends EditingForm {
     private FormContainer prevForm;
 
     @Override
-    public void show(GAsyncFormController asyncFormController, Integer index) {
+    public void show(GAsyncFormController asyncFormController) {
         prevForm = MainFrame.getAssertCurrentForm();
         if(prevForm != null) // if there were no currentForm
             prevForm.onBlur(false);

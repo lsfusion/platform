@@ -4,10 +4,6 @@ import java.io.Serializable;
 
 public interface GWindowFormType extends Serializable {
 
-    default Integer getInContainerId() {
-        return null;
-    }
-
     default boolean isFloat() {
         return false;
     }

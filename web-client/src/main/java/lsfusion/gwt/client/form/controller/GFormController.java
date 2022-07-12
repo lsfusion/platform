@@ -9,7 +9,6 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
@@ -39,7 +38,7 @@ import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
 import lsfusion.gwt.client.form.GUpdateMode;
-import lsfusion.gwt.client.form.InnerForm;
+import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
@@ -157,14 +156,14 @@ public class GFormController implements EditManager {
         return formsController;
     }
 
-    private Set<InnerForm> innerForms = new HashSet<>();
+    private Set<ContainerForm> containerForms = new HashSet<>();
 
-    public void putInnerForm(InnerForm innerForm) {
-        innerForms.add(innerForm);
+    public void putContainerForm(ContainerForm containerForm) {
+        containerForms.add(containerForm);
     }
 
-    public void removeInnerForm(InnerForm innerForm) {
-        innerForms.remove(innerForm);
+    public void removeContainerForm(ContainerForm containerForm) {
+        containerForms.remove(containerForm);
     }
 
     public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
@@ -1070,9 +1069,7 @@ public class GFormController implements EditManager {
 
     private void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex -> {
-            if (!(formContainer instanceof InnerForm)) {
-                formsController.asyncCloseForm(getAsyncFormController(requestIndex));
-            }
+            formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer);
         }, onExec);
     }
 
@@ -1486,8 +1483,8 @@ public class GFormController implements EditManager {
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
-        for(InnerForm innerForm : innerForms) {
-            innerForm.getForm().closePressed(editFormCloseReason);
+        for(ContainerForm containerForm : containerForms) {
+            containerForm.getForm().closePressed(editFormCloseReason);
         }
 
         FormDispatchAsync closeDispatcher = dispatcher;
