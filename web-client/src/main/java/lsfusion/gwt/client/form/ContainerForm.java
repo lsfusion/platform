@@ -67,8 +67,12 @@ public class ContainerForm extends FormContainer {
             GFormLayout layout = formController.getFormLayout();
             layout.removeBaseComponent(innerComponent);
             inContainer.removeFromChildren(innerComponent);
-            if(inContainer.tabbed)
-                ((TabbedContainerView)layout.getContainerView(inContainer)).activateLastTab();
+            if(inContainer.tabbed) {
+                TabbedContainerView containerView = ((TabbedContainerView)layout.getContainerView(inContainer));
+                if(containerView != null) {
+                    containerView.activateLastTab();
+                }
+            }
         }
     }
 
