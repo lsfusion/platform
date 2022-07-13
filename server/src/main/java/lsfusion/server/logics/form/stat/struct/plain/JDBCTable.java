@@ -160,9 +160,9 @@ public class JDBCTable {
             case Types.DATE:
                 return DateClass.instance;
             case Types.TIME:
-                return TimeClass.instance;
+                return TimeClass.time;
             case Types.TIMESTAMP:
-                return DateTimeClass.instance;
+                return DateTimeClass.dateTime;
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:

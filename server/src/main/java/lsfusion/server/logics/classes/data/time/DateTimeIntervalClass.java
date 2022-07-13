@@ -34,11 +34,11 @@ public class DateTimeIntervalClass extends IntervalClass<LocalDateTime> {
 
     @Override
     protected Long parse(String date) throws ParseException {
-        return localDateTimeToUTCEpoch(DateTimeClass.instance.parseString(date));
+        return localDateTimeToUTCEpoch(DateTimeClass.dateTime.parseString(date));
     }
 
     @Override
     protected String format(Long epoch) {
-        return DateTimeClass.instance.formatString(epochToLocalDateTime(epoch));
+        return DateTimeClass.dateTime.formatString(epochToLocalDateTime(epoch));
     }
 }

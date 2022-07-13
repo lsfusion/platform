@@ -71,9 +71,12 @@ public final class ClassCanonicalNameUtils {
         return sid + UpClassSetNameRBracket;
     }
 
-    public static DataClass defaultStringClassObj = StringClass.text;
-    public static DataClass defaultNumericClassObj = NumericClass.get(5, 2);
-    
+    private static final DataClass defaultStringClassObj = StringClass.text;
+    private static final DataClass defaultNumericClassObj = NumericClass.get(5, 2);
+    private static final DataClass defaultZDateTimeClassObj = ZDateTimeClass.zDateTime;
+    private static final DataClass defaultDateTimeClassObj = DateTimeClass.dateTime;
+    private static final DataClass defaultTimeClassObj = TimeClass.time;
+
     public static DataClass getCanonicalNameDataClass(String name) {
         return canonicalDataClassNames.get(name); 
     }
@@ -85,12 +88,12 @@ public final class ClassCanonicalNameUtils {
         put("BOOLEAN", LogicalClass.instance);
         put("TBOOLEAN", LogicalClass.threeStateInstance);
         put("DATE", DateClass.instance);
-        put("DATETIME", DateTimeClass.instance );
-        put("ZDATETIME", ZDateTimeClass.instance );
+        put("DATETIME", defaultDateTimeClassObj );
+        put("ZDATETIME", defaultZDateTimeClassObj );
         put("DATEINTERVAL", DateIntervalClass.instance);
         put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
         put("TIMEINTERVAL", TimeIntervalClass.instance);
-        put("TIME", TimeClass.instance);
+        put("TIME", defaultTimeClassObj);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());
@@ -129,7 +132,8 @@ public final class ClassCanonicalNameUtils {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
-        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME|ZDATETIME)\\]))$")) {
+        } else if (name.matches("^((BPSTRING\\[\\d+\\])|(BPISTRING\\[\\d+\\])|(STRING\\[\\d+\\])|(ISTRING\\[\\d+\\])" +
+                "|(NUMERIC\\[\\d+,\\d+\\])|(INTERVAL\\[(DATE|DATETIME|TIME|ZDATETIME)\\])|(TIME\\[\\d+\\])|(DATETIME\\[\\d+\\])|(ZDATETIME\\[\\d+\\]))$")) {
             if (name.startsWith("BPSTRING[")) {
                 name = name.substring("BPSTRING[".length(), name.length() - 1);
                 return StringClass.get(new ExtInt(Integer.parseInt(name)));
@@ -146,9 +150,18 @@ public final class ClassCanonicalNameUtils {
                 String precision = name.substring("NUMERIC[".length(), name.indexOf(","));
                 String scale = name.substring(name.indexOf(",") + 1, name.length() - 1);
                 return NumericClass.get(Integer.parseInt(precision), Integer.parseInt(scale));
-            }  else if (name.startsWith("INTERVAL[")) {
+            } else if (name.startsWith("INTERVAL[")) {
                 String intervalType = name.substring("INTERVAL[".length(), name.length() - 1);
                 return IntervalClass.getInstance(intervalType);
+            } else if (name.startsWith("TIME[")) {
+                name = name.substring("TIME[".length(), name.length() - 1);
+                return TimeClass.get(new ExtInt(Integer.parseInt(name)));
+            } else if (name.startsWith("DATETIME[")) {
+                name = name.substring("DATETIME[".length(), name.length() - 1);
+                return DateTimeClass.get(new ExtInt(Integer.parseInt(name)));
+            } else if (name.startsWith("ZDATETIME[")) {
+                name = name.substring("ZDATETIME[".length(), name.length() - 1);
+                return ZDateTimeClass.get(new ExtInt(Integer.parseInt(name)));
             }
         }
         return null;
@@ -161,12 +174,12 @@ public final class ClassCanonicalNameUtils {
         put("BOOLEAN", LogicalClass.instance);
         put("TBOOLEAN", LogicalClass.threeStateInstance);
         put("DATE", DateClass.instance);
-        put("DATETIME", DateTimeClass.instance);
-        put("ZDATETIME", ZDateTimeClass.instance);
+        put("DATETIME", defaultDateTimeClassObj);
+        put("ZDATETIME", defaultZDateTimeClassObj);
         put("DATEINTERVAL", DateIntervalClass.instance);
         put("DATETIMEINTERVAL", DateTimeIntervalClass.instance);
         put("TIMEINTERVAL", TimeIntervalClass.instance);
-        put("TIME", TimeClass.instance);
+        put("TIME", defaultTimeClassObj);
         put("YEAR", YearClass.instance);
         put("WORDFILE", WordClass.get());
         put("IMAGEFILE", ImageClass.get());

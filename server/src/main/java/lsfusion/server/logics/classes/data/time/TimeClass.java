@@ -23,25 +23,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalTime;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
-public class TimeClass extends TimeSeriesClass<LocalTime> {
-    public final static TimeClass instance = new TimeClass();
+public class TimeClass extends HasTimeClass<LocalTime> {
 
-//    private final static String timePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(null, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
-
-    static {
-        DataClass.storeClass(instance);
+    private TimeClass(LocalizedString caption, ExtInt millisLength) {
+        super(caption, millisLength);
     }
 
-    private TimeClass() { super(LocalizedString.create("{classes.time}")); }
+    private final static Collection<TimeClass> timeClasses = new ArrayList<>();
+    public final static TimeClass time = get(ExtInt.UNLIMITED);
+    public static TimeClass get(ExtInt millisLength) {
+        return getCached(timeClasses, millisLength, () -> new TimeClass(LocalizedString.create("{classes.date.with.time.with.zone}"), millisLength));
+    }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof TimeClass ? this : null;
@@ -80,7 +78,7 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getTimeType();
+        return syntax.getTimeType(millisLength);
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
