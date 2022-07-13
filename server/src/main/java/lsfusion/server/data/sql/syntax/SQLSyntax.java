@@ -73,13 +73,13 @@ public interface SQLSyntax {
     String getDateType();
     int getDateSQL();
 
-    String getDateTimeType();
+    String getDateTimeType(ExtInt millisLength);
     int getDateTimeSQL();
 
-    String getZDateTimeType();
+    String getZDateTimeType(ExtInt millisLength);
     int getZDateTimeSQL();
 
-    String getTimeType();
+    String getTimeType(ExtInt millisLength);
     int getTimeSQL();
 
     String getIntervalType();

@@ -44,7 +44,7 @@ public class ListFilesAction extends InternalAction {
     }
 
     public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, LocalDateTime[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, DateTimeClass.instance);
+        writeProperty(session, property, values, DateTimeClass.dateTime);
     }
 
     public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, String[] values) throws SQLException, SQLHandledException {

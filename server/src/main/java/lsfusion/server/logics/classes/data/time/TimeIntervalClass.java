@@ -38,11 +38,11 @@ public class TimeIntervalClass extends IntervalClass<LocalTime> {
     private static final LocalDate dateEpoch = LocalDate.of(1970, 1, 1); //date before 1970 year gives a negative number of milliseconds
     @Override
     protected Long parse(String date) throws ParseException {
-        return localDateTimeToUTCEpoch(TimeClass.instance.parseString(date).atDate(dateEpoch));
+        return localDateTimeToUTCEpoch(TimeClass.time.parseString(date).atDate(dateEpoch));
     }
 
     @Override
     protected String format(Long epoch) {
-        return TimeClass.instance.formatString(epochToLocalDateTime(epoch).toLocalTime());
+        return TimeClass.time.formatString(epochToLocalDateTime(epoch).toLocalTime());
     }
 }

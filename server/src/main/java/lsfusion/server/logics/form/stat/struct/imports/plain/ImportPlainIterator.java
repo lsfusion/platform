@@ -128,7 +128,7 @@ public abstract class ImportPlainIterator extends ImportIterator {
 
                     Object fieldValue = getPropValue(mapping.get(where.field), fieldType);
                     if(fieldValue != null) {
-                        if (fieldType == DateClass.instance || fieldType == TimeClass.instance || fieldType == DateTimeClass.instance || fieldType instanceof NumericClass) {
+                        if (fieldType == DateClass.instance || fieldType == TimeClass.time || fieldType == DateTimeClass.dateTime || fieldType instanceof NumericClass) {
                             conditionResult = ignoreRowCondition(where.not, fieldValue, where.sign, fieldType.parseString(where.value));
                         } else {
                             conditionResult = ignoreRowCondition(where.not, String.valueOf(fieldValue), where.sign, where.value);

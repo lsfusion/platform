@@ -24,26 +24,23 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.FormatStyle;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static lsfusion.base.DateConverter.*;
 
 public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
-    public final static DateTimeClass instance = new DateTimeClass();
-
-//    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
-
-    static {
-        DataClass.storeClass(instance);
+    private DateTimeClass(LocalizedString caption, ExtInt millisLength) {
+        super(caption, millisLength);
     }
 
-    private DateTimeClass() { super(LocalizedString.create("{classes.date.with.time}")); }
+    private final static Collection<DateTimeClass> dateTimeClasses = new ArrayList<>();
+    public final static DateTimeClass dateTime = get(ExtInt.UNLIMITED);
+    public static DateTimeClass get(ExtInt millisLength) {
+        return getCached(dateTimeClasses, millisLength, () -> new DateTimeClass(LocalizedString.create("{classes.date.with.time.with.zone}"), millisLength));
+    }
 
     public int getReportPreferredWidth() {
         return 80;
@@ -74,7 +71,7 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getDateTimeType();
+        return syntax.getDateTimeType(millisLength);
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return "SqlDateTime";

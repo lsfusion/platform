@@ -188,7 +188,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         propertyReaders.exclAdd("session_id", processIDType);
         propertyReaders.exclAdd("host_name", StringClass.get(100));
         propertyReaders.exclAdd("client_net_address", StringClass.get(100));
-        propertyReaders.exclAdd("start_time", DateTimeClass.instance);
+        propertyReaders.exclAdd("start_time", DateTimeClass.dateTime);
         propertyReaders.immutable();
 
         ImOrderMap rs = context.getSession().sql.executeSelect(originalQuery, OperationOwner.unknown, StaticExecuteEnvironmentImpl.EMPTY, (ImMap<String, ParseInterface>) MapFact.mExclMap()
@@ -265,7 +265,7 @@ public abstract class ProcessDumpAction extends InternalAction {
         propertyReaders.exclAdd("pid", processIDType);
         propertyReaders.exclAdd("usename", StringClass.get(100));
         propertyReaders.exclAdd("client_addr", PGObjectReader.instance);
-        propertyReaders.exclAdd("query_start", DateTimeClass.instance);
+        propertyReaders.exclAdd("query_start", DateTimeClass.dateTime);
         propertyReaders.exclAdd("state", StringClass.get(100));
         propertyReaders.immutable();
 

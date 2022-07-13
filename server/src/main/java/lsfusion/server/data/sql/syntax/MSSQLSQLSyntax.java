@@ -171,7 +171,7 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getDateTimeType() {
+    public String getDateTimeType(ExtInt millisLength) {
         return "datetime"; // return "datetime2"; правильнее было бы datetime2, но нет mapping'а на .net'ский тип 
     }
 

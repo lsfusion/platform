@@ -25,8 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
@@ -39,7 +37,7 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         DataClass.storeClass(instance);
     }
 
-    private DateClass() { super(LocalizedString.create("{classes.date}")); }
+    private DateClass() { super(LocalizedString.create("{classes.date}"), ExtInt.UNLIMITED); }
 
     public int getReportPreferredWidth() { return 70; }
 

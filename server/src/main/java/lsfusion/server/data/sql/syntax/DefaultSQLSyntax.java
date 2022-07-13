@@ -117,12 +117,12 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return Types.DATE;
     }
 
-    public String getDateTimeType() {
-        return "timestamp";
+    public String getDateTimeType(ExtInt millisLength) {
+        return getMillisLimitedDateTimeType("timestamp", millisLength);
     }
 
-    public String getZDateTimeType() {
-        return "timestamptz";
+    public String getZDateTimeType(ExtInt millisLength) {
+        return getMillisLimitedDateTimeType("timestamptz", millisLength);
     }
 
     public int getDateTimeSQL() {
@@ -133,8 +133,13 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return Types.TIMESTAMP_WITH_TIMEZONE;
     }
 
-    public String getTimeType() {
-        return "time";
+    public String getTimeType(ExtInt millisLength) {
+        return getMillisLimitedDateTimeType("time", millisLength);
+    }
+
+    private String getMillisLimitedDateTimeType(String name, ExtInt millisLength) {
+        int value = millisLength.value;
+        return name + (value == -1 ? "" : ("(" + value + ")"));
     }
 
     public int getTimeSQL() {
