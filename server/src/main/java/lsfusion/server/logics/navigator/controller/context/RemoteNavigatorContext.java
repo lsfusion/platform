@@ -4,7 +4,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -122,12 +122,12 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
-            protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+            protected void requestFormUserInteraction(RemoteForm remoteForm, ShowFormType showFormType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
                 Stack<Result<RemoteForm>> getForms = getForm.get();
                 if(getForms != null)
                     getForms.peek().set(remoteForm);
                 else
-                    super.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
+                    super.requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, stack);
             }
         };
     }
@@ -176,8 +176,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
     // UI interfaces, multiple inheritance
     
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        uiContext.requestFormUserInteraction(formInstance, modalityType, forbidDuplicate, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        uiContext.requestFormUserInteraction(formInstance, showFormType, forbidDuplicate, stack);
     }
 
     @Override

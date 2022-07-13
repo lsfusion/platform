@@ -12,6 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.lambda.set.FunctionSet;
+import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyStrokes;
@@ -556,7 +557,7 @@ public abstract class LogicsModule {
         return addMFAProp(null, caption, form, objectsToSet, newSession);
     }
     public LA addMFAProp(Group group, LocalizedString caption, FormEntity form, ImOrderSet<ObjectEntity> objectsToSet, boolean newSession) {
-        return addIFAProp(group, caption, form, objectsToSet, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, true, WindowFormType.FLOAT, false);
+        return addIFAProp(group, caption, form, objectsToSet, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, true, ModalityWindowFormType.FLOAT, false);
     }
 
     protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImOrderSet<O> objectsToSet, FormSessionScope scope, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
@@ -1026,7 +1027,7 @@ public abstract class LogicsModule {
         return addDialogInputAProp(formSelector,
                 hasOldValue ? ListFact.singleton(object) : ListFact.EMPTY(), hasOldValue ? ListFact.singleton(true) : ListFact.EMPTY(),
                 ListFact.singleton(object), ListFact.singleton(targetProp), ListFact.singleton(true), scope, list,
-                ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, orderInterfaces, filters, true, WindowFormType.FLOAT, false, false, customChangeFunction, notNull);
+                ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, orderInterfaces, filters, true, ModalityWindowFormType.FLOAT, false, false, customChangeFunction, notNull);
     }
 
     public <P extends PropertyInterface, X extends PropertyInterface, O extends ObjectSelector> LA addDialogInputAProp(FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImList<O> inputObjects, ImList<LP> inputProps, ImList<Boolean> inputNulls, FormSessionScope scope, InputListEntity<?, P> list, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextFilters, boolean syncType, WindowFormType windowType, boolean checkOnOk, boolean readonly, String customChangeFunction, boolean notNull) {

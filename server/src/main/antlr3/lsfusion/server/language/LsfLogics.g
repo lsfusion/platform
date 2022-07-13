@@ -8,8 +8,9 @@ grammar LsfLogics;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
-    import lsfusion.interop.form.ModalityType;
     import lsfusion.interop.form.WindowFormType;
+    import lsfusion.interop.form.ContainerWindowFormType;
+    import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
@@ -494,7 +495,6 @@ formExtIDDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	ModalityType modalityType = null;
 	int autoRefresh = 0;
 	String image = null;
 	String title = null;
@@ -503,7 +503,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 
@@ -3365,10 +3365,16 @@ syncTypeLiteral returns [boolean val]
 	;
 
 windowTypeLiteral returns [WindowFormType val]
-	:	'FLOAT' { $val = WindowFormType.FLOAT; }
-	|	'DOCKED' { $val = WindowFormType.DOCKED; }
-	|	'EMBEDDED' { $val = WindowFormType.EMBEDDED; }
-	|	'POPUP' { $val = WindowFormType.POPUP; }
+	:	'FLOAT' { $val = ModalityWindowFormType.FLOAT; }
+	|	'DOCKED' { $val = ModalityWindowFormType.DOCKED; }
+	|	'EMBEDDED' { $val = ModalityWindowFormType.EMBEDDED; }
+	|	'POPUP' { $val = ModalityWindowFormType.POPUP; }
+	|   'IN' fc = formComponentID {
+	        if(inMainParseState()) {
+                self.getChecks().checkComponentIsContainer($fc.component);
+                $val = new ContainerWindowFormType($fc.component.getID());
+	        }
+	     }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

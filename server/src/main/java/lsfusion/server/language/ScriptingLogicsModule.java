@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.FormScheduler;
@@ -794,7 +794,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  ModalityType modalityType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
+                                                  int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -804,7 +804,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         addFormEntity(formEntity);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
-        form.setModalityType(modalityType);
 
         if(autoRefresh > 0) {
             formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());

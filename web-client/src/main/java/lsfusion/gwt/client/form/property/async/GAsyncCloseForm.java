@@ -22,6 +22,6 @@ public class GAsyncCloseForm extends GAsyncExec {
 
     @Override
     public void exec(GAsyncFormController asyncFormController, FormsController formsController, Event editEvent) {
-        formsController.asyncCloseForm(asyncFormController);
+        assert false;
     }
 }

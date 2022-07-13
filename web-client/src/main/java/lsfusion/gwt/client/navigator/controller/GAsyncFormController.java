@@ -4,6 +4,7 @@ import com.google.gwt.core.client.Scheduler;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.form.view.FormDockable;
 
 public interface GAsyncFormController {
 
@@ -11,9 +12,9 @@ public interface GAsyncFormController {
 
     void putAsyncForm(FormContainer container);
 
-    Pair<FormContainer, Integer> removeAsyncClosedForm();
+    Pair<FormDockable, Integer> removeAsyncClosedForm();
 
-    void putAsyncClosedForm(Pair<FormContainer, Integer> container);
+    void putAsyncClosedForm(Pair<FormDockable, Integer> container);
 
     boolean onServerInvocationOpenResponse(); // true if we need to check for obsolete asyncOpenForms
 

@@ -6,7 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ChooseClassClientAction;
 import lsfusion.interop.action.FormClientAction;
 import lsfusion.interop.action.RequestUserInputClientAction;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.property.cell.UserInputResult;
 import lsfusion.server.base.controller.context.AbstractContext;
@@ -46,13 +46,13 @@ import static lsfusion.server.data.type.TypeSerializer.serializeType;
 public abstract class RemoteUIContext extends AbstractContext {
 
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        requestFormUserInteraction(createRemoteForm(formInstance, stack), modalityType, forbidDuplicate, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ShowFormType showFormType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        requestFormUserInteraction(createRemoteForm(formInstance, stack), showFormType, forbidDuplicate, stack);
     }
 
-    protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), modalityType);
-        if(modalityType.isModal()) {
+    protected void requestFormUserInteraction(RemoteForm remoteForm, ShowFormType showFormType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), showFormType);
+        if(showFormType.isModal()) {
             requestUserInteraction(action);
             remoteForm.form.syncLikelyOnClose(true, stack);
         } else

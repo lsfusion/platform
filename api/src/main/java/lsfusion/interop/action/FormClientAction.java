@@ -1,6 +1,6 @@
 package lsfusion.interop.action;
 
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 public class FormClientAction extends ExecuteClientAction {
@@ -8,7 +8,7 @@ public class FormClientAction extends ExecuteClientAction {
     public String formSID;
     public String canonicalName;
     public RemoteFormInterface remoteForm;
-    public ModalityType modalityType;
+    public ShowFormType showFormType;
 
     public boolean forbidDuplicate;
 
@@ -17,13 +17,13 @@ public class FormClientAction extends ExecuteClientAction {
 
     public static String[] methodNames = new String[] {"getUserPreferences", "getRichDesignByteArray", "getInitFilterPropertyDraw", "getInputObjects"};
 
-    public FormClientAction(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, ModalityType modalityType) {
+    public FormClientAction(String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, ShowFormType showFormType) {
         this.formSID = formSID;
         this.immutableMethods = immutableMethods;
         this.firstChanges = firstChanges;
         this.canonicalName = canonicalName;
         this.remoteForm = remoteForm;
-        this.modalityType = modalityType;
+        this.showFormType = showFormType;
         this.forbidDuplicate = forbidDuplicate;
     }
 
@@ -34,6 +34,6 @@ public class FormClientAction extends ExecuteClientAction {
 
     @Override
     public String toString() {
-        return "FormClientAction[modalitType: " + modalityType.name() + "]";
+        return "FormClientAction[showFormType: " + showFormType + "]";
     }
 }

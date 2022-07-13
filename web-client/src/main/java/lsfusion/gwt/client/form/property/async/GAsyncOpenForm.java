@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import java.util.function.Consumer;
@@ -35,10 +36,10 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     public GWindowFormType getWindowType(boolean canShowDockedModal) {
-        if(type == GWindowFormType.DOCKED) {
+        if(type.isDocked()) {
             //if current form is modal, new async form can't be non-modal
             if(modal && !canShowDockedModal)
-                return GWindowFormType.FLOAT;
+                return GModalityWindowFormType.FLOAT;
         }
         return type;
     }
