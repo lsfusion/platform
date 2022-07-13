@@ -37,7 +37,7 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         DataClass.storeClass(instance);
     }
 
-    private DateClass() { super(LocalizedString.create("{classes.date}"), ExtInt.UNLIMITED); }
+    private DateClass() { super(LocalizedString.create("{classes.date}")); }
 
     public int getReportPreferredWidth() { return 70; }
 

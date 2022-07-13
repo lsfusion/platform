@@ -30,7 +30,7 @@ import java.util.Collection;
 
 import static lsfusion.base.DateConverter.*;
 
-public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
+public class DateTimeClass extends HasTimeClass<LocalDateTime> {
 
     private DateTimeClass(LocalizedString caption, ExtInt millisLength) {
         super(caption, millisLength);

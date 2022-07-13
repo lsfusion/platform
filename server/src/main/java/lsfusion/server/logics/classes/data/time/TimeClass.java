@@ -29,7 +29,7 @@ import java.util.Collection;
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
-public class TimeClass extends TimeSeriesClass<LocalTime> {
+public class TimeClass extends HasTimeClass<LocalTime> {
 
     private TimeClass(LocalizedString caption, ExtInt millisLength) {
         super(caption, millisLength);

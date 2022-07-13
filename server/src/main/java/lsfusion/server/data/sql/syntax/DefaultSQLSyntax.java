@@ -138,8 +138,7 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
     }
 
     private String getMillisLimitedDateTimeType(String name, ExtInt millisLength) {
-        int value = millisLength.value;
-        return name + (value == -1 ? "" : ("(" + value + ")"));
+        return name + (millisLength.isUnlimited() ? "" : ("(" + millisLength.value + ")"));
     }
 
     public int getTimeSQL() {

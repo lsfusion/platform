@@ -33,7 +33,7 @@ import java.util.Collection;
 import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToInstant;
 
-public class ZDateTimeClass extends TimeSeriesClass<Instant> {
+public class ZDateTimeClass extends HasTimeClass<Instant> {
 
     private ZDateTimeClass(LocalizedString caption, ExtInt millisLength) {
         super(caption, millisLength);
