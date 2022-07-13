@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.FormScheduler;
@@ -3254,8 +3253,8 @@ public class ScriptingLogicsModule extends LogicsModule {
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
             case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
             case DATE: lp =  addUnsafeCProp(DateClass.instance, value); break;
-            case DATETIME: lp =  addUnsafeCProp(DateTimeClass.dateTime, value); break;
-            case TIME: lp =  addUnsafeCProp(TimeClass.time, value); break;
+            case DATETIME: lp =  addUnsafeCProp(DateTimeClass.instance, value); break;
+            case TIME: lp =  addUnsafeCProp(TimeClass.instance, value); break;
             case STATIC: return addStaticClassConst((String) value);
             case COLOR: lp =  addUnsafeCProp(ColorClass.instance, value); break;
             case NULL: lp =  baseLM.vnull; break;

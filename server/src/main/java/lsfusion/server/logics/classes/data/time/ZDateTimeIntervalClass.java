@@ -31,11 +31,11 @@ public class ZDateTimeIntervalClass extends IntervalClass<Instant> {
 
     @Override
     protected Long parse(String date) throws lsfusion.server.logics.classes.data.ParseException {
-        return ZDateTimeClass.zDateTime.parseString(date).toEpochMilli();
+        return ZDateTimeClass.instance.parseString(date).toEpochMilli();
     }
 
     @Override
     protected String format(Long epoch) {
-        return ZDateTimeClass.zDateTime.formatString(Instant.ofEpochMilli(epoch));
+        return ZDateTimeClass.instance.formatString(Instant.ofEpochMilli(epoch));
     }
 }

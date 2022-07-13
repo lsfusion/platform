@@ -76,9 +76,9 @@ public class TypeSerializer {
         if (type == DataType.TLOGICAL) return LogicalClass.threeStateInstance;
         if (type == DataType.DATE) return DateClass.instance;
         if (type == DataType.YEAR) return YearClass.instance;
-        if (type == DataType.DATETIME) return DateTimeClass.dateTime;
-        if (type == DataType.ZDATETIME) return ZDateTimeClass.zDateTime;
-        if (type == DataType.TIME) return TimeClass.time;
+        if (type == DataType.DATETIME) return DateTimeClass.instance;
+        if (type == DataType.ZDATETIME) return ZDateTimeClass.instance;
+        if (type == DataType.TIME) return TimeClass.instance;
         if (type == DataType.DATEINTERVAL) return IntervalClass.getInstance("DATE");
         if (type == DataType.TIMEINTERVAL) return IntervalClass.getInstance("TIME");
         if (type == DataType.DATETIMEINTERVAL) return IntervalClass.getInstance("DATETIME");

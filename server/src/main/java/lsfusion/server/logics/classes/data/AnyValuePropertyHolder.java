@@ -99,8 +99,8 @@ public class AnyValuePropertyHolder {
                 && doubleProperty.property.getType() == DoubleClass.instance
                 && numericProperty.property.getType().getCompatible(NumericClass.get(0, 0)) != null
                 && yearProperty.property.getType() == YearClass.instance
-                && dateTimeProperty.property.getType().getCompatible(DateTimeClass.dateTime) != null
-                && zDateTimeProperty.property.getType().getCompatible(ZDateTimeClass.zDateTime) != null
+                && dateTimeProperty.property.getType().getCompatible(DateTimeClass.instance) != null
+                && zDateTimeProperty.property.getType().getCompatible(ZDateTimeClass.instance) != null
                 && intervalDateProperty.property.getType().getCompatible(IntervalClass.getInstance("DATE")) != null
                 && intervalDateTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("DATETIME")) != null
                 && intervalTimeProperty.property.getType().getCompatible(IntervalClass.getInstance("TIME")) != null
@@ -108,7 +108,7 @@ public class AnyValuePropertyHolder {
                 && logicalProperty.property.getType() == LogicalClass.instance
                 && tLogicalProperty.property.getType() == LogicalClass.threeStateInstance
                 && dateProperty.property.getType() == DateClass.instance
-                && timeProperty.property.getType().getCompatible(TimeClass.time) != null
+                && timeProperty.property.getType().getCompatible(TimeClass.instance) != null
                 && colorProperty.property.getType() == ColorClass.instance
                 && jsonProperty.property.getType() == JSONClass.instance
                 && wordFileProperty.property.getType() == WordClass.get()

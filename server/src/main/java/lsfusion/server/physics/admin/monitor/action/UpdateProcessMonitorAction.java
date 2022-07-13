@@ -165,7 +165,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
             case "idThreadProcess":
                 return idThread == null ? NullValue.instance : new DataObject(idThread);
             case "dateTimeCallProcess":
-                return sqlProcess.dateTimeCall == null ? NullValue.instance : new DataObject(sqlProcess.dateTimeCall, DateTimeClass.dateTime);
+                return sqlProcess.dateTimeCall == null ? NullValue.instance : new DataObject(sqlProcess.dateTimeCall, DateTimeClass.instance);
             case "querySQLProcess":
                 return sqlProcess.query == null ? NullValue.instance : new DataObject(sqlProcess.query);
             case "fullQuerySQLProcess":
@@ -177,7 +177,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
             case "addressUserSQLProcess":
                 return sqlProcess.addressUser == null ? NullValue.instance : new DataObject(sqlProcess.addressUser);
             case "dateTimeSQLProcess":
-                return sqlProcess.dateTime == null ? NullValue.instance : new DataObject(sqlProcess.dateTime, DateTimeClass.dateTime);
+                return sqlProcess.dateTime == null ? NullValue.instance : new DataObject(sqlProcess.dateTime, DateTimeClass.instance);
             case "isActiveSQLProcess":
                 return DataObject.create(sqlProcess.isActive != null && sqlProcess.isActive);
             case "inTransactionSQLProcess":
@@ -185,7 +185,7 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
                     ServerLoggers.assertLog(sqlProcess.baseInTransaction.equals(true), "FUSION AND BASE INTRANSACTION DIFFERS");
                 return DataObject.create(sqlProcess.baseInTransaction != null ? sqlProcess.baseInTransaction : sqlProcess.fusionInTransaction);
             case "startTransactionSQLProcess":
-                return sqlProcess.startTransaction == null ? NullValue.instance : new DataObject(sqlTimestampToLocalDateTime(new Timestamp(sqlProcess.startTransaction)), DateTimeClass.dateTime);
+                return sqlProcess.startTransaction == null ? NullValue.instance : new DataObject(sqlTimestampToLocalDateTime(new Timestamp(sqlProcess.startTransaction)), DateTimeClass.instance);
             case "attemptCountSQLProcess":
                 return sqlProcess.attemptCount == null ? NullValue.instance : new DataObject(sqlProcess.attemptCount);
             case "statusSQLProcess":

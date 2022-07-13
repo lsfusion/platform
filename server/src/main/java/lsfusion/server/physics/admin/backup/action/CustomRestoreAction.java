@@ -224,9 +224,9 @@ public class CustomRestoreAction extends InternalAction {
                                     else if (object instanceof Date || object instanceof LocalDate)
                                         return new DataObject(getWriteDate(object), DateClass.instance);
                                     else if (object instanceof Time || object instanceof LocalTime)
-                                        return new DataObject(getWriteTime(object), TimeClass.time);
+                                        return new DataObject(getWriteTime(object), TimeClass.instance);
                                     else if (object instanceof Timestamp || object instanceof LocalDateTime)
-                                        return new DataObject(getWriteDateTime(object), DateTimeClass.dateTime);
+                                        return new DataObject(getWriteDateTime(object), DateTimeClass.instance);
                                     else
                                         return new DataObject(String.valueOf(object));
                                 } catch (SQLException | SQLHandledException e) {
@@ -313,9 +313,9 @@ public class CustomRestoreAction extends InternalAction {
         if(key instanceof Date || key instanceof LocalDate) {
             keyType = DateClass.instance;
         } else if(key instanceof Time || key instanceof LocalTime) {
-            keyType = TimeClass.time;
+            keyType = TimeClass.instance;
         } else if(key instanceof Timestamp || key instanceof LocalDateTime) {
-            keyType = DateTimeClass.dateTime;
+            keyType = DateTimeClass.instance;
         } else if(key instanceof Integer) {
             keyType = IntegerClass.instance;
         } else {
@@ -331,10 +331,10 @@ public class CustomRestoreAction extends InternalAction {
                 valueClass = DateClass.instance;
                 break;
             case "TIME":
-                valueClass = TimeClass.time;
+                valueClass = TimeClass.instance;
                 break;
             case "DATETIME":
-                valueClass = DateTimeClass.dateTime;
+                valueClass = DateTimeClass.instance;
                 break;
             case "INTEGER":
                 valueClass = IntegerClass.instance;

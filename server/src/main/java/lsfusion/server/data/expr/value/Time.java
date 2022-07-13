@@ -18,7 +18,7 @@ public enum Time {
             case EPOCH:
                 return LongClass.instance;
             case DATETIME:
-                return DateTimeClass.dateTime;
+                return DateTimeClass.instance;
         }
         throw new RuntimeException("Unknown time");
     }

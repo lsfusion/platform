@@ -37,7 +37,7 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
     }
 
     private final static Collection<DateTimeClass> dateTimeClasses = new ArrayList<>();
-    public final static DateTimeClass dateTime = get(ExtInt.UNLIMITED);
+    public final static DateTimeClass instance = get(ExtInt.UNLIMITED);
     public static DateTimeClass get(ExtInt millisLength) {
         return getCached(dateTimeClasses, millisLength, () -> new DateTimeClass(LocalizedString.create("{classes.date.with.time.with.zone}"), millisLength));
     }

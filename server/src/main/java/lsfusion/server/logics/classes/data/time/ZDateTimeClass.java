@@ -40,7 +40,7 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
     }
 
     private final static Collection<ZDateTimeClass> zDateTimeClasses = new ArrayList<>();
-    public final static ZDateTimeClass zDateTime = get(ExtInt.UNLIMITED);
+    public final static ZDateTimeClass instance = get(ExtInt.UNLIMITED);
     public static ZDateTimeClass get(ExtInt millisLength) {
         return getCached(zDateTimeClasses, millisLength, () -> new ZDateTimeClass(LocalizedString.create("{classes.date.with.time.with.zone}"), millisLength));
     }

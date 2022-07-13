@@ -73,9 +73,9 @@ public final class ClassCanonicalNameUtils {
 
     private static final DataClass defaultStringClassObj = StringClass.text;
     private static final DataClass defaultNumericClassObj = NumericClass.get(5, 2);
-    private static final DataClass defaultZDateTimeClassObj = ZDateTimeClass.zDateTime;
-    private static final DataClass defaultDateTimeClassObj = DateTimeClass.dateTime;
-    private static final DataClass defaultTimeClassObj = TimeClass.time;
+    private static final DataClass defaultZDateTimeClassObj = ZDateTimeClass.instance;
+    private static final DataClass defaultDateTimeClassObj = DateTimeClass.instance;
+    private static final DataClass defaultTimeClassObj = TimeClass.instance;
 
     public static DataClass getCanonicalNameDataClass(String name) {
         return canonicalDataClassNames.get(name); 
