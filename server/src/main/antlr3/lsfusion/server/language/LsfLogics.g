@@ -5578,7 +5578,8 @@ fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
-fragment STRING_LITERAL_FRAGMENT : '\'' STR_LITERAL_CHAR* '\'';
+fragment STRING_LITERAL_FRAGMENT :  '\'' { setText(self.readStringLiteral(input)); };
+
 fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
 

@@ -3286,6 +3286,40 @@ public class ScriptingLogicsModule extends LogicsModule {
         return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
     }
 
+    public String readStringLiteral(CharStream input) {
+        StringBuilder builder = new StringBuilder("'");
+        int curDepth = 0;
+        while (input.LA(1) != CharStream.EOF && (input.LA(1) != '\'' || curDepth > 0)) {
+            int ch = input.LA(1);
+            moveToBuilder(input, builder);
+            if (ch == '\\') {
+                moveToBuilder(input, builder);
+            } else if (curDepth == 0) {
+                if (ch == '$' && input.LA(1) == '{') {
+                    curDepth = 1;
+                    moveToBuilder(input, builder);
+                }
+            } else if (ch == '{') {
+                ++curDepth;
+            } else if (ch == '}') {
+                curDepth = Math.max(0, curDepth-1);
+            }
+        }
+        if (input.LA(1) == CharStream.EOF) {
+            // throw some error
+        }
+        moveToBuilder(input, builder);
+        if ("Slack".equals(getName())) {
+            System.out.println(builder);
+        }
+        return builder.toString();
+    }
+
+    private static void moveToBuilder(CharStream input, StringBuilder builder) {
+        builder.append((char)input.LA(1));
+        input.consume();
+    }
+
     private LP addNumericConst(BigDecimal value) {
         //precision() of bigDecimal 0.x is incorrect
         int precision = value.abs().compareTo(BigDecimal.ONE) < 1 ? (value.scale() + 1) : value.precision();
