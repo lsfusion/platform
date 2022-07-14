@@ -26,10 +26,11 @@ public class SetupSchedulerAction extends InternalAction {
             ServerLoggers.startLogger.info("Starting Scheduler");
             Scheduler scheduler = context.getLogicsInstance().getCustomObject(Scheduler.class);
             Integer threadCount = (Integer) findProperty("threadCountScheduler[]").read(context);
-            boolean started = scheduler.setupScheduledTasks(context.getSession(), threadCount);
-            if(!started)
-                context.delayUserInteraction(new MessageClientAction("Scheduler disabled, change serverComputer() to enable", "Scheduler disabled"));
-            findProperty("isStartedScheduler[]").change(started ? true : null, context);
+            boolean onlySystemTasks = scheduler.setupScheduledTasks(context.getSession(), threadCount);
+            if(onlySystemTasks)
+                context.delayUserInteraction(new MessageClientAction("Scheduler will execute only system tasks, change serverComputer() to enable user tasks", "Scheduler disabled"));
+            findProperty("isStartedScheduler[]").change(true, context);
+            findProperty("onlySystemTasks[]").change(onlySystemTasks, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }

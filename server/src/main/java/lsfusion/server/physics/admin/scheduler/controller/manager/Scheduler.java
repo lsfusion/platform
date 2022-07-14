@@ -190,7 +190,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             futuresMap.put(task.scheduledTaskId, futures);
         }
 
-        return isServer;
+        return !isServer;
     }
 
     private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {

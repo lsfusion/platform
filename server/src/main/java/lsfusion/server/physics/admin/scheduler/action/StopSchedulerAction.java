@@ -23,6 +23,7 @@ public class StopSchedulerAction extends InternalAction {
         context.getLogicsInstance().getCustomObject(Scheduler.class).stopScheduledTasks();
         try {
             findProperty("isStartedScheduler[]").change((Boolean) null, context);
+            findProperty("onlySystemTasks[]").change((Boolean) null, context);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);
         }
