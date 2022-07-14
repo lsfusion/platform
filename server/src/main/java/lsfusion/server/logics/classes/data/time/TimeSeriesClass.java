@@ -12,5 +12,4 @@ public abstract class TimeSeriesClass<T> extends DataClass<T> {
     public abstract String getIntervalProperty();
     public abstract String getFromIntervalProperty();
     public abstract String getToIntervalProperty();
-
 }

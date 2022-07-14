@@ -96,6 +96,7 @@ public class SizedFlexPanel extends FlexPanel {
             else
                 element.addClassName("shrink-width");
             FlexPanel.setWidth(element, set ? null : intrinisticShrinkSize);
+            FlexPanel.setMinWidth(element, set ? intrinisticShrinkSize : null);
         }
     }
 

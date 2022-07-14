@@ -1,0 +1,13 @@
+MODULE Gantt;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientLoad() + {
+    INTERNAL CLIENT 'custom_gantt.css';
+    INTERNAL CLIENT 'custom_gantt.js';
+
+    INTERNAL CLIENT 'gantt.css';
+    INTERNAL CLIENT 'gantt.js';
+}

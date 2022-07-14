@@ -26,27 +26,24 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.time.chrono.Chronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.FormatStyle;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static lsfusion.base.DateConverter.instantToSqlTimestamp;
 import static lsfusion.base.DateConverter.sqlTimestampToInstant;
 
-public class ZDateTimeClass extends TimeSeriesClass<Instant> {
+public class ZDateTimeClass extends HasTimeClass<Instant> {
 
-    public final static ZDateTimeClass instance = new ZDateTimeClass();
-
-//    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
-
-    static {
-        DataClass.storeClass(instance);
+    private ZDateTimeClass(LocalizedString caption, ExtInt millisLength) {
+        super(caption, millisLength);
     }
 
-    private ZDateTimeClass() { super(LocalizedString.create("{classes.date.with.time.with.zone}")); }
+    private final static Collection<ZDateTimeClass> zDateTimeClasses = new ArrayList<>();
+    public final static ZDateTimeClass instance = get(ExtInt.UNLIMITED);
+    public static ZDateTimeClass get(ExtInt millisLength) {
+        return getCached(zDateTimeClasses, millisLength, () -> new ZDateTimeClass(LocalizedString.create("{classes.date.with.time.with.zone}"), millisLength));
+    }
 
     public int getReportPreferredWidth() {
         return 80;
@@ -76,7 +73,7 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getZDateTimeType();
+        return syntax.getZDateTimeType(millisLength);
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

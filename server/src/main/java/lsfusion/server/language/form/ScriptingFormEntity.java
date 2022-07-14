@@ -10,7 +10,6 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -816,12 +815,6 @@ public class ScriptingFormEntity {
 
     public void setAsEditForm(String className, String objectID, Version version) throws ScriptingErrorLog.SemanticErrorException {
         findCustomClassForFormSetup(className).setEditForm(form, getObjectEntity(objectID), version);
-    }
-
-    public void setModalityType(ModalityType modalityType) {
-        if (modalityType != null) {
-            form.modalityType = modalityType;
-        }
     }
 
     public void setLocalAsync(boolean localAsync) {

@@ -231,9 +231,9 @@ public class GFormLayout extends ResizableComplexPanel {
 
             GSize offsetWidth = GwtClientUtils.getOffsetWidth(getElement());
             GSize offsetHeight = GwtClientUtils.getOffsetHeight(getElement());
-            if(width != null)
+            if(width == null)
                 offsetWidth = offsetWidth.add(extraOffset.first);
-            if(height != null)
+            if(height == null)
                 offsetHeight = offsetHeight.add(extraOffset.second);
             return new Dimension(offsetWidth, offsetHeight);
         } finally {

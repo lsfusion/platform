@@ -651,6 +651,10 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, "all params should have explicit classes defined");
     }
 
+    public void emitShowInContainerError(ScriptParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "SHOW IN is supported only for container, not component");
+    }
+
     public void emitSimpleError(ScriptParser parser, String message) throws SemanticErrorException {
         if (parser.getCurrentParser() != null) {
             SemanticErrorException e = new SemanticErrorException(parser.getCurrentParser().input);

@@ -1,6 +1,5 @@
 package lsfusion.gwt.server.convert;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.file.RawFileData;
@@ -10,6 +9,7 @@ import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
+import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.gwt.client.GFormChangesDTO;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.GAsync;
@@ -17,22 +17,23 @@ import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
-import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GContainerShowFormType;
+import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
+import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
-import lsfusion.interop.form.ModalityType;
-import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.interop.form.ContainerShowFormType;
+import lsfusion.interop.form.ModalityShowFormType;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerator;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.interop.session.HttpClientAction;
 
-import java.awt.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -86,23 +87,41 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = FormClientAction.class)
     public GFormAction convertAction(FormClientAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
-        GModalityType modalityType = convertOrCast(action.modalityType);
+        GShowFormType modalityType = convertOrCast(action.showFormType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
         return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
                 action.forbidDuplicate);
     }
 
-    @Converter(from = ModalityType.class)
-    public GModalityType convertModalityType(ModalityType modalityType) {
-        switch (modalityType) {
-            case DOCKED: return GModalityType.DOCKED;
-            case MODAL: return GModalityType.MODAL;
-            case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
-            case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
-            case EMBEDDED: return GModalityType.EMBEDDED;
-            case POPUP: return GModalityType.POPUP;
+    @Converter(from = ModalityShowFormType.class)
+    public GModalityShowFormType convertModalityShowType(ModalityShowFormType modalityShowType) {
+        GModalityShowFormType modalityType = null;
+        switch (modalityShowType) {
+            case DOCKED:
+                modalityType = GModalityShowFormType.DOCKED;
+                break;
+            case MODAL:
+                modalityType = GModalityShowFormType.MODAL;
+                break;
+            case DOCKED_MODAL:
+                modalityType = GModalityShowFormType.DOCKED_MODAL;
+                break;
+            case DIALOG_MODAL:
+                modalityType = GModalityShowFormType.DIALOG_MODAL;
+                break;
+            case EMBEDDED:
+                modalityType = GModalityShowFormType.EMBEDDED;
+                break;
+            case POPUP:
+                modalityType = GModalityShowFormType.POPUP;
+                break;
         }
-        return null;
+        return modalityType;
+    }
+
+    @Converter(from = ContainerShowFormType.class)
+    public GContainerShowFormType convertModalityType(ContainerShowFormType containerShowTypeX) {
+        return new GContainerShowFormType(containerShowTypeX.inContainerId);
     }
 
     @Converter(from = HideFormClientAction.class)

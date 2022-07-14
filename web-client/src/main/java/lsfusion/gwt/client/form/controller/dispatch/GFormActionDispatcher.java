@@ -12,11 +12,10 @@ import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
-import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GModalityShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.interop.action.ServerResponse;
 
@@ -44,20 +43,20 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(final GFormAction action) {
-        if (action.modalityType == GModalityType.DOCKED_MODAL && !canShowDockedModal()) {
-            action.modalityType = GModalityType.MODAL;
+        if (action.showFormType.isDockedModal() && !canShowDockedModal()) {
+            action.showFormType = GModalityShowFormType.MODAL;
         }
 
-        if (action.modalityType.isModal()) {
+        if (action.showFormType.isModal()) {
             pauseDispatching();
         }
         WindowHiddenHandler onClose = () -> {
-            if (action.modalityType.isModal()) {
+            if (action.showFormType.isModal()) {
                 continueDispatching();
             }
         };
         try {
-            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, editContext, onClose);
+            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, editEvent, editContext, onClose);
         } catch (Throwable t) {
             onClose.onHidden();
             throw t;

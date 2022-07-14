@@ -280,7 +280,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_FILTER;
     }
 
-    private ImSet<FilterInstance> combineUserFilters(Set<FilterInstance> userFilters) {
+    private ImSet<FilterInstance> combineUserFilters(List<FilterInstance> userFilters) {
         FilterInstance comboFilter = null;
         List<List<FilterInstance>> organizedFilters = new ArrayList<>();
         List<FilterInstance> orFilters = new ArrayList<>();
@@ -318,14 +318,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(comboFilter != null)
             return SetFact.singleton(comboFilter);
 
-        return SetFact.fromJavaSet(userFilters);
+        return ListFact.fromJavaList(userFilters).toOrderSet().getSet();
     }
 
     // вообще все фильтры
     public ImSet<FilterInstance> fixedFilters = SetFact.EMPTY();
     public FilterInstance classFilter;
 
-    private Set<FilterInstance> userFilters = new HashSet<>();
+    private final List<FilterInstance> userFilters = new ArrayList<>();
     public void clearUserFilters() {
         if(!userFilters.isEmpty()) {
             userFilters.clear();

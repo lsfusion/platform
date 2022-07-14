@@ -1175,4 +1175,12 @@ public class GwtClientUtils {
     public static Object escapeComma(Object value, GCompare compare) {
         return value instanceof String && compare == GCompare.MATCH ? ((String) value).replace(",", "\\,") : value;
     }
+
+    public static void setInnerContent(Element element, String value) {
+        value = value == null ? "" : value;
+        if (EscapeUtils.isContainHtmlTag(value))
+            element.setInnerHTML(value);
+        else
+            element.setInnerText(value);
+    }
 }

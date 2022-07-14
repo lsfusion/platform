@@ -1,17 +1,26 @@
 package lsfusion.gwt.client.navigator.window;
 
-public enum GWindowFormType {
-    FLOAT, DOCKED, EMBEDDED, POPUP;
+import java.io.Serializable;
 
-    public boolean isEmbedded() {
-        return this == EMBEDDED;
+public interface GWindowFormType extends Serializable {
+
+    default boolean isFloat() {
+        return false;
     }
 
-    public boolean isPopup() {
-        return this == POPUP;
+    default boolean isDocked() {
+        return false;
     }
 
-    public boolean isEditing() {
-        return isEmbedded() || isPopup();
+    default boolean isEmbedded() {
+        return false;
+    }
+
+    default boolean isPopup() {
+        return false;
+    }
+
+    default boolean isEditing() {
+        return false;
     }
 }

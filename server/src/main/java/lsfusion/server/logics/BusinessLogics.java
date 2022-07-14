@@ -108,9 +108,8 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
-import lsfusion.server.physics.dev.integration.external.to.file.ClearCashListener;
-import lsfusion.server.physics.dev.integration.external.to.file.FileAlterationObserver;
-import lsfusion.server.physics.dev.integration.external.to.file.SynchronizeSourcesListener;
+import lsfusion.server.physics.dev.integration.external.to.file.ClearCashWatcher;
+import lsfusion.server.physics.dev.integration.external.to.file.SynchronizeSourcesWatcher;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
@@ -127,7 +126,6 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -1990,7 +1988,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getChangeDataCurrentDateTimeTask(scheduler));
         }
         result.add(getFlushAsyncValuesCachesTask(scheduler));
-        result.addAll(resetResourcesCacheTasks(scheduler));
+        result.add(resetResourcesCacheTasks(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2104,31 +2102,24 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
-        List<FileAlterationObserver> fileAlterationObservers = ResourceUtils.getSourceToBuildDirs().entrySet()
-                .stream().map(entry -> new FileAlterationObserver(new SynchronizeSourcesListener(entry.getKey(), entry.getValue()))).collect(Collectors.toList());
-
-        return scheduler.createSystemTask(stack -> fileAlterationObservers.forEach(org.apache.commons.io.monitor.FileAlterationObserver::checkAndNotify),
-                false, 1, false, "Synchronizing resources from sources to build. Only for debug");
+        SynchronizeSourcesWatcher sourcesWatcher = new SynchronizeSourcesWatcher();
+        return scheduler.createSystemTask(stack -> sourcesWatcher.watch(),
+                true, null, false, "Synchronizing resources from sources to build. Only for debug");
     }
 
     private Scheduler.SchedulerTask getAllocatedBytesUpdateTask(Scheduler scheduler) {
         return scheduler.createSystemTask(stack -> updateThreadAllocatedBytesMap(), false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
 
-    private List<Scheduler.SchedulerTask> resetResourcesCacheTasks(Scheduler scheduler) {
-        List<Scheduler.SchedulerTask> tasks = new ArrayList<>();
-        for (String element : ResourceUtils.getClassPathElements()) {
-            if (!isRedundantString(element)) {
-                if(!element.endsWith("*")) {
-                    final Path path = Paths.get(element + "/");
-                    if (Files.isDirectory(path)) {
-                        FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(new ClearCashListener(path.toString()));
-                        tasks.add(scheduler.createSystemTask(stack -> fileAlterationObserver.checkAndNotify(), true, 1, false, "Reset resources cache"));
-                    }
-                }
-            }
-        }
-        return tasks;
+    private Scheduler.SchedulerTask resetResourcesCacheTasks(Scheduler scheduler) {
+        ClearCashWatcher clearCacheWatcher = new ClearCashWatcher();
+        clearCacheWatcher.walkAndRegisterDirectories(Arrays.stream(ResourceUtils.getClassPathElements())
+                .filter(element -> !isRedundantString(element) && !element.endsWith("*"))
+                .map(element -> Paths.get(element + "/"))
+                .filter(Files::isDirectory)
+                .collect(Collectors.toList()));
+
+        return scheduler.createSystemTask(stack -> clearCacheWatcher.watch(), true, null, false, "Reset resources cache");
     }
 
     private class AllocatedInfo {

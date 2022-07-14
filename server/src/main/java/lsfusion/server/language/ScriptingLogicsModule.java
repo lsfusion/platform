@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.FormScheduler;
@@ -179,7 +178,6 @@ import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
 import static lsfusion.server.logics.classes.data.StringClass.getv;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
-import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
 public class ScriptingLogicsModule extends LogicsModule {
 
@@ -355,6 +353,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return checks;
     }
 
+    public static String removeCarriageReturn(String s) {
+        return s.replace("\r\n", "\n");
+    }
+    
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod());
@@ -791,7 +793,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,
-                                                  ModalityType modalityType, int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
+                                                  int autoRefresh, boolean localAsync) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateForm(formName);
         caption = (caption == null ? LocalizedString.create(formName) : caption);
 
@@ -801,7 +803,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         addFormEntity(formEntity);
                 
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
-        form.setModalityType(modalityType);
 
         if(autoRefresh > 0) {
             formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());
@@ -1373,7 +1374,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing", "panel", "cell");
-    private Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
+    private static Map<String, BindingMode> getBindingModesMap(Map<String, String> optionsMap) {
         Map<String, BindingMode> bindingModes = new HashMap<>();
         for(Map.Entry<String, String> option : optionsMap.entrySet()) {
             if(supportedBindings.contains(option.getKey())) {
@@ -1401,7 +1402,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return bindingModes;
     }
 
-    private Integer getPriority(Map<String, String> optionsMap) {
+    private static Integer getPriority(Map<String, String> optionsMap) {
         String priority = optionsMap.get("priority");
         if(priority != null) {
             try {
@@ -1412,7 +1413,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private Map<String, String> getOptionsMap(String values) {
+    private static Map<String, String> getOptionsMap(String values) {
         Map<String, String> options = new HashMap<>();
         Matcher m = Pattern.compile("([^=;]*)=([^=;]*)").matcher(values);
         while(m.find()) {
@@ -2261,7 +2262,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 }));
     }
 
-    private KeyStrokeOptions parseKeyStrokeOptions(String code) {
+    public static KeyStrokeOptions parseKeyStrokeOptions(String code) {
         Matcher m = Pattern.compile("([^;]*);(.*)").matcher(code);
         if(m.matches()) {
             Map<String, String> optionsMap = getOptionsMap(m.group(2));
@@ -2271,10 +2272,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private class KeyStrokeOptions {
-        String keyStroke;
-        Map<String, BindingMode> bindingModesMap;
-        Integer priority;
+    public static class KeyStrokeOptions {
+        public String keyStroke;
+        public Map<String, BindingMode> bindingModesMap;
+        public Integer priority;
 
         public KeyStrokeOptions(String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority) {
             this.keyStroke = keyStroke;

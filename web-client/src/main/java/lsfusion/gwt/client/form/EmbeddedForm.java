@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.controller.SmartScheduler;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestReplaceCellEditor;
@@ -19,6 +18,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -101,7 +101,7 @@ public class EmbeddedForm extends EditingForm {
 
     @Override
     public GWindowFormType getWindowType() {
-        return GWindowFormType.EMBEDDED;
+        return GModalityWindowFormType.EMBEDDED;
     }
 
     private FormContainer containerForm;
@@ -112,7 +112,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public void show(GAsyncFormController asyncFormController, Integer index) {
+    public void show(GAsyncFormController asyncFormController) {
         // we don't need to change currentForm for embedded form, since if closes on focus lost, so we don't need notifications / global key events
         // for the same reason we don't need to do onBlur
         // however now it's hard to tell what is the right approach

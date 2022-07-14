@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.design.GFormComponent;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 import java.util.ArrayList;
@@ -61,6 +62,14 @@ public class TabbedContainerView extends GAbstractContainerView {
         }
     }
 
+    public void activateLastTab() {
+        int index = visibleChildren.size() - 1;
+        if(index >= 0) {
+            currentChild = visibleChildren.get(index);
+            panel.selectTab(index);
+        }
+    }
+
     public void updateCaption(GContainer container) {
         int index = getTabIndex(container);
         if(index >= 0)
@@ -70,7 +79,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {
         if (selectedIndex >= 0) {
             GComponent selectedChild = visibleChildren.get(selectedIndex);
-            if (currentChild != selectedChild) {
+            if (currentChild != selectedChild && !(selectedChild instanceof GFormComponent)) {
                 currentChild = selectedChild;
                 formController.setTabActive(container, selectedChild);
             }
@@ -129,6 +138,8 @@ public class TabbedContainerView extends GAbstractContainerView {
         String tabCaption = null;
         if (child instanceof GContainer) {
             tabCaption = ((GContainer) child).caption;
+        } else if (child instanceof GFormComponent) {
+            tabCaption = ((GFormComponent) child).caption;
         }
         if (tabCaption == null) {
             tabCaption = "";

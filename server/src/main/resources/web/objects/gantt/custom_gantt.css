@@ -1,0 +1,20 @@
+/*.gantt-scroll {*/
+/*    height: 100%;*/
+/*    width: 100%;*/
+/*    overflow: scroll;*/
+/*}*/
+
+/*.gantt-svg {*/
+/*}*/
+
+.gantt g.bar-wrapper.current .bar-progress {
+    fill: #8aff8a;
+}
+
+.gantt g.bar-wrapper.current .bar {
+    fill: #a9c1b5;
+}
+
+.gantt-container {
+    height: 100%;
+}

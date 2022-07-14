@@ -4,46 +4,30 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public enum WindowFormType {
-    FLOAT, DOCKED, EMBEDDED, POPUP;
+public interface WindowFormType {
 
-    public boolean isModal() {
-        return this != DOCKED;
+    default boolean isModal() {
+        return false;
     }
 
-    public boolean isEditing() {
-        return this == EMBEDDED || this == POPUP;
+    default boolean isEditing() {
+        return false;
     }
 
-    public static WindowFormType deserialize(DataInputStream inStream) throws IOException {
-        switch(inStream.readByte()) {
-            case 0:
-                return FLOAT;
-            case 1:
-                return DOCKED;
-            case 2:
-                return EMBEDDED;
-            case 3:
-                return POPUP;
-        }
-        throw new UnsupportedOperationException();
-    }
+    byte getType();
 
-    public byte getType() {
-        switch(this) {
-            case FLOAT:
-                return 0;
-            case DOCKED:
-                return 1;
-            case EMBEDDED:
-                return 2;
-            case POPUP:
-                return 3;
-        }
-        throw new UnsupportedOperationException();
-    }
+    void serialize(DataOutputStream outStream) throws IOException;
 
-    public void serialize(DataOutputStream outStream) throws IOException {
+    default void serializeType(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getType());
+    }
+
+    static WindowFormType deserialize(DataInputStream inStream) throws IOException {
+        int type = inStream.readByte();
+        if (type == 0) {
+            return ContainerWindowFormType.deserialize(inStream);
+        } else {
+            return ModalityWindowFormType.deserialize(type);
+        }
     }
 }

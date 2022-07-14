@@ -9,8 +9,6 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
@@ -96,7 +94,7 @@ public abstract class IntervalClass<T> extends DataClass<BigDecimal> {
 
     @Override
     public BigDecimal getDefaultValue() {
-        long time = new Date().getTime() / 1000;
+        long time = new Date().getTime();
         return new BigDecimal(time + "." + time);
     }
 

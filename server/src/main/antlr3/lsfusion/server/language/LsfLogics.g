@@ -8,8 +8,9 @@ grammar LsfLogics;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
-    import lsfusion.interop.form.ModalityType;
     import lsfusion.interop.form.WindowFormType;
+    import lsfusion.interop.form.ContainerWindowFormType;
+    import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
@@ -494,7 +495,6 @@ formExtIDDeclaration
 
 formDeclaration returns [ScriptingFormEntity form]
 @init {
-	ModalityType modalityType = null;
 	int autoRefresh = 0;
 	String image = null;
 	String title = null;
@@ -503,7 +503,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, modalityType, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 
@@ -3365,10 +3365,16 @@ syncTypeLiteral returns [boolean val]
 	;
 
 windowTypeLiteral returns [WindowFormType val]
-	:	'FLOAT' { $val = WindowFormType.FLOAT; }
-	|	'DOCKED' { $val = WindowFormType.DOCKED; }
-	|	'EMBEDDED' { $val = WindowFormType.EMBEDDED; }
-	|	'POPUP' { $val = WindowFormType.POPUP; }
+	:	'FLOAT' { $val = ModalityWindowFormType.FLOAT; }
+	|	'DOCKED' { $val = ModalityWindowFormType.DOCKED; }
+	|	'EMBEDDED' { $val = ModalityWindowFormType.EMBEDDED; }
+	|	'POPUP' { $val = ModalityWindowFormType.POPUP; }
+	|   'IN' fc = formComponentID {
+	        if(inMainParseState()) {
+                self.getChecks().checkComponentIsContainer($fc.component);
+                $val = new ContainerWindowFormType($fc.component.getID());
+	        }
+	     }
 	;
 
 printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -5140,13 +5146,21 @@ metaCodeIdList returns [List<String> ids]
 metaCodeId returns [String sid]
 	:	id=compoundID 		{ $sid = $id.sid; }
 	|	ptype=primitiveType	{ $sid = $ptype.text; } 
-	|	lit=metaCodeLiteral 	{ $sid = $lit.text; }
-	|				{ $sid = ""; }
+	|	lit=metaCodeLiteral { $sid = $lit.sid; }
+	|	{ $sid = ""; }
 	;
 
-metaCodeLiteral
-	:	STRING_LITERAL 
-	| 	UINT_LITERAL
+metaCodeLiteral returns [String sid]
+	:	slit=metaCodeStringLiteral { $sid = $slit.val; }
+	|	lit=metaCodeNonStringLiteral { $sid = $lit.text; }
+	;
+
+metaCodeStringLiteral returns [String val]
+	:	slit=multilineStringLiteral { $val = $slit.val; }
+	;
+	
+metaCodeNonStringLiteral
+	:	UINT_LITERAL
 	|	UNUMERIC_LITERAL
 	|	UDOUBLE_LITERAL
 	|	ULONG_LITERAL
@@ -5323,7 +5337,7 @@ constantProperty[List<TypedParameter> context, boolean dynamic] returns [LP prop
 
 expressionLiteral returns [ScriptingLogicsModule.ConstType cls, Object value]
 	:	cl=commonLiteral { $cls = $cl.cls; $value = $cl.value; } 	
-	|	str=STRING_LITERAL { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.text; }
+	|	str=multilineStringLiteral { $cls = ScriptingLogicsModule.ConstType.STRING; $value = $str.val; }
 	;
 
 literal returns [ScriptingLogicsModule.ConstType cls, Object value]
@@ -5432,9 +5446,13 @@ colorLiteral returns [Color val]
 	|	'RGB' '(' r=uintLiteral ',' g=uintLiteral ',' b=uintLiteral ')' { $val = self.createScriptedColor($r.val, $g.val, $b.val); } 
 	;
 
+multilineStringLiteral returns [String val]
+	:	s=STRING_LITERAL { $val = self.removeCarriageReturn($s.text); } 
+	;
+	
 stringLiteral returns [String val]
-	:	s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
-    |   s=ID { $val = null; }
+	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.val); }
+    |   id=ID { $val = null; }
 	;
 
 primitiveType returns [String val]
@@ -5444,7 +5462,7 @@ primitiveType returns [String val]
 // there are some rules where ID is not desirable (see usages), where there is an ID
 // it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
 localizedStringLiteralNoID returns [LocalizedString val]
-	:	s=STRING_LITERAL { $val = self.transformLocalizedStringLiteral($s.text); }
+	:	s=multilineStringLiteral { $val = self.transformLocalizedStringLiteral($s.val); }
 	;
 
 localizedStringLiteral returns [LocalizedString val]
@@ -5568,7 +5586,7 @@ multOperand
 	
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
-fragment STR_LITERAL_CHAR	: ('\\' ~('\n'|'\r')) | ~('\r'|'\n'|'\''|'\\');	 // overcomplicated due to bug in ANTLR Works
+fragment STR_LITERAL_CHAR	: ('\\'.) | ~('\''|'\\');
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 fragment EDIGITS	:	('0'..'9')*;
@@ -5591,8 +5609,8 @@ fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STR
 
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | 'DATETIME' | 'ZDATETIME' | 'YEAR'
-                |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | 'TIME' | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE' | ('DATETIME' ('[' '0'..'6' ']')?) | ('ZDATETIME' ('[' '0'..'6' ']')?) | 'YEAR'
+                |   'TEXT' | 'RICHTEXT' | 'HTMLTEXT' | ('TIME' ('[' '0'..'6' ']')?) | 'WORDFILE' | 'IMAGEFILE' | 'PDFFILE' | 'DBFFILE' | 'RAWFILE'
 				| 	'FILE' | 'EXCELFILE' | 'TEXTFILE' | 'CSVFILE' | 'HTMLFILE' | 'JSONFILE' | 'XMLFILE' | 'TABLEFILE' | 'NAMEDFILE'
 				|   'WORDLINK' | 'IMAGELINK' | 'PDFLINK' | 'DBFLINK'
 				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'

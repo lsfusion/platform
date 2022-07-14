@@ -3,7 +3,7 @@
     <parent>
         <groupId>lsfusion.platform.build</groupId>
         <artifactId>platform-assemble</artifactId>
-        <version>5.0-SNAPSHOT</version>
+        <version>6.0-SNAPSHOT</version>
         <relativePath>../build/platform-assemble/pom.xml</relativePath>
     </parent>
 
@@ -80,11 +80,10 @@
                         </goals>
                         <configuration>
                             <target>
-                                <copy file="${basedir}\src\main\java\lsfusion\server\language\parserPostProcess\LSFLogicsParserPostProcess.class"
-                                      tofile="${basedir}\target\classes\lsfusion\server\language\parserPostProcess\LSFLogicsParserPostProcess.class" />
+                                <copy file="${basedir}\src\main\java\lsfusion\server\language\parserPostProcess\LSFLogicsParserPostProcess.class" tofile="${basedir}\target\classes\lsfusion\server\language\parserPostProcess\LSFLogicsParserPostProcess.class" />
                                 <java classname="lsfusion.server.language.parserPostProcess.LSFLogicsParserPostProcess" failonerror="true">
-                                    <classpath refid="maven.compile.classpath"/>
-                                    <arg line="${basedir}"/>
+                                    <classpath refid="maven.compile.classpath" />
+                                    <arg line="${basedir}" />
                                 </java>
                             </target>
                         </configuration>
