@@ -1107,4 +1107,12 @@ public class GwtClientUtils {
     public static Object escapeComma(Object value, GCompare compare) {
         return value instanceof String && compare == GCompare.MATCH ? ((String) value).replace(",", "\\,") : value;
     }
+
+    public static native void resizable(Element element, String handles)/*-{
+        $wnd.$(element).resizable({ handles: handles});
+    }-*/;
+
+    public static native void draggable(Element element, String handle)/*-{
+        $wnd.$(element).draggable({ handle: handle});
+    }-*/;
 }

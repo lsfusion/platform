@@ -1,5 +1,7 @@
 .gwt-DialogBox {
     border: 1px solid var(--dialog-outer-border-color);
+
+    z-index: 2000;
 }
 
 .gwt-DialogBox .Caption {

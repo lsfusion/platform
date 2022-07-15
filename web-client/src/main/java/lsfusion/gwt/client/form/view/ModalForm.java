@@ -43,7 +43,7 @@ public class ModalForm extends FormContainer {
                 super.onShow();
             }
         };
-        window.setOuterContentWidget();
+
         window.setCaption(caption);
 
         contentWidget = window;
@@ -59,12 +59,12 @@ public class ModalForm extends FormContainer {
         else
             size = form.getPreferredSize(maxWidth, maxHeight);
 
-        contentWidget.setInnerContentSize(size);
+        contentWidget.setContentSize(size);
     }
 
     @Override
     protected void setContent(Widget widget) {
-        contentWidget.setInnerContentWidget(widget);
+        contentWidget.setContentWidget(widget);
     }
 
     private FormContainer prevForm;

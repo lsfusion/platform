@@ -16,6 +16,7 @@ public class PopupDialogPanel extends PopupPanel {
     public PopupDialogPanel(boolean autoHide) {
         super(autoHide, false);
 
+        setStyleName("popup-dialog");
         addCloseHandler(event -> onClose());
     }
 

@@ -14,3 +14,7 @@
     opacity: 0.3;
     filter: alpha(opacity=30);
 }
+
+.popup-dialog {
+    z-index: 2000;
+}

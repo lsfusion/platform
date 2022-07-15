@@ -3,60 +3,47 @@
     opacity: 1;
 }
 
-.ResizableWindow {
-    position: absolute;
+.modal.show {
+    display: block;
+    width: fit-content;
+    height: fit-content;
+}
+
+.modal-dialog.modal-fit-content {
+    max-width: none;
+}
+
+.modal-content {
+    background-color: var(--background-color);
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+}
+.modal-backdrop.fade {
+    opacity: 0;
+}
+.modal-backdrop.show {
+    opacity: 0.3;
+}
+
+.modal-header {
+    padding: 0.5em;
+    border-bottom: 1px solid var(--dialog-outer-border-color);
+}
+
+.modal-title {
+    margin: 0;
+}
+
+.modal-content {
     border: 1px solid var(--dialog-outer-border-color);
 }
 
-.ResizableWindow .ResizableWindow-header {
-    background: var(--dialog-border-color);
-    padding: 0 0 0.25rem 0;
-    cursor: default;
-    font-weight: bold;
-    border-bottom: 1px solid var(--dialog-outer-border-color);
-    overflow: hidden;
-}
-
-@sprite .ResizableWindow .resize-edge {
-    line-height: 1px;
-    width: auto;
-    height: auto;
-}
-.ResizableWindow .resize-edge {
-    background: var(--dialog-border-color);
-}
-
-.ResizableWindow .resize-edge-nw .dragdrop-handle {
-    cursor: nw-resize;
-}
-
-.ResizableWindow .resize-edge-n .dragdrop-handle {
-    cursor: n-resize;
-}
-
-.ResizableWindow .resize-edge-ne .dragdrop-handle {
-    cursor: ne-resize;
-}
-
-.ResizableWindow .resize-edge-w .dragdrop-handle {
-    cursor: w-resize;
-}
-
-.ResizableWindow .resize-edge-e .dragdrop-handle {
-    cursor: e-resize;
-}
-
-.ResizableWindow .resize-edge-sw .dragdrop-handle {
-    cursor: sw-resize;
-}
-
-.ResizableWindow .resize-edge-s .dragdrop-handle {
-    cursor: s-resize;
-}
-
-.ResizableWindow .resize-edge-se .dragdrop-handle {
-    cursor: se-resize;
-}
-
-.ResizableWindow .dragdrop-handle {
+.modal-body {
 }

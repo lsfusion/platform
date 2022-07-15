@@ -8,6 +8,8 @@
 .gwt-SuggestBoxPopup {
     background: var(--component-background-color);
     border: 1px solid var(--component-border-color);
+
+    z-index: 2000;
 }
 
 .gwt-SuggestBoxPopup .item {
