@@ -3,6 +3,10 @@
     opacity: 1;
 }
 
+.modal-form {
+    z-index: 1000;
+}
+
 .modal.show {
     display: block;
     width: fit-content;
@@ -46,4 +50,20 @@
 }
 
 .modal-body {
+    flex: 1 1 auto;
+    padding: 0.5em;
+}
+
+.modal-footer {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.25em;
+    border-top: 1px solid var(--dialog-outer-border-color);
+}
+
+.modal-footer > * {
+    margin: 0.125rem;
 }

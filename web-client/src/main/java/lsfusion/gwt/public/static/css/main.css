@@ -119,19 +119,6 @@ svg {
     z-index: 10000;
 }
 
-
-/* ------------ Message Box ------------ */
-.messageBox-button {
-    width: 5.625rem;
-}
-
-.messageBox-messageContainer {
-    height: auto;
-    overflow: auto;
-    padding: 0.3125rem 0.3125rem 0.4375rem 0.3125rem;
-}
-
-
 /* ------------ Error Dialog ------------ */
 .errorBox-button {
     margin: 0.1875rem 0.1875rem 0.3125rem;

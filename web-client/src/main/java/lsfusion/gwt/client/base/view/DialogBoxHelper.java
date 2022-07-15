@@ -21,7 +21,7 @@ public class DialogBoxHelper {
     }
 
     public enum OptionType {
-        YES, NO, OK, CANCEL, CLOSE, LOGOUT;
+        YES, NO, OK, CANCEL, CLOSE;
 
         public String getCaption() {
             switch (this) {
@@ -30,7 +30,6 @@ public class DialogBoxHelper {
                 case OK: return messages.ok();
                 case CANCEL: return messages.cancel();
                 case CLOSE: return messages.close();
-                case LOGOUT: return messages.logout();
             }
             throw new IllegalStateException("Shouldn't happen");
         }
@@ -45,9 +44,12 @@ public class DialogBoxHelper {
                 case OK: return 0;
                 case CANCEL: return 1;
                 case CLOSE: return 2;
-                case LOGOUT: return 1;
             }
             throw new IllegalStateException("Shouldn't happen");
+        }
+
+        public boolean isPrimary() {
+            return this.equals(YES) || this.equals(OK);
         }
     }
 
@@ -56,7 +58,7 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(boolean isError, String caption, String message, boolean escapeMessage, final CloseCallback closeCallback) {
-        new MessageBox(caption, escapedIf(message, escapeMessage), 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
+        new MessageBox(caption, escapedIf(message, escapeMessage), 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).show();
     }
 
     private static String escapedIf(String message, boolean escapeMessage) {
@@ -64,7 +66,7 @@ public class DialogBoxHelper {
     }
 
     public static void showMessageBox(boolean isError, String caption, Widget contents, final CloseCallback closeCallback) {
-        new MessageBox(caption, contents, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).showCenter();
+        new MessageBox(caption, contents, 0, closeCallback, OptionType.CLOSE, OptionType.CLOSE).show();
     }
 
     public static void showConfirmBox(String caption, String message, boolean cancel, final CloseCallback closeCallback) {
@@ -80,24 +82,18 @@ public class DialogBoxHelper {
         if (cancel)
             options = new OptionType[]{OptionType.YES, OptionType.NO, OptionType.CLOSE};
         MessageBox messageBox = new MessageBox(caption, escapedIf(message, escapeMessage), timeout, closeCallback, options[initialValue], options);
-        messageBox.showCenter();
+        messageBox.show();
     }
     
     public static MessageBox showConfirmBox(String caption, Widget contents, OptionType[] options, final CloseCallback closeCallback) {
         MessageBox messageBox = new MessageBox(caption, contents, 0, closeCallback, options[0], options);
-        messageBox.showCenter();   
+        messageBox.show();
         return messageBox;
     }
     
-    public static void showLogoutMessageBox(String caption, String message, CloseCallback callback) {
-        new MessageBox(caption, message, 0, callback, OptionType.CLOSE, OptionType.CLOSE, OptionType.LOGOUT).showCenter();
-    }
-
     @SuppressWarnings("GWTStyleCheck")
-    public static final class MessageBox extends DialogModalBox {
-        private Widget contents;
-        private CloseCallback closeCallback;
-        private HorizontalPanel buttonPane;
+    public static final class MessageBox extends DialogModalWindow {
+        private final CloseCallback closeCallback;
         private Button activeButton;
 
         private MessageBox(String caption, String message, int timeout, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
@@ -105,14 +101,10 @@ public class DialogBoxHelper {
         }
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
-            this.contents = contents;
             this.closeCallback = closeCallback;
 
-            ResizableSimplePanel contentsContainer = new ResizableSimplePanel(this.contents);
-            contentsContainer.addStyleName("messageBox-messageContainer");
-            Style contentsContainerStyle = contentsContainer.getElement().getStyle();
-            contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");
-            contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
+            setCaption(caption);
+            setBodyWidget(contents);
 
             createButtonsPanel(activeOption, options);
 
@@ -125,40 +117,12 @@ public class DialogBoxHelper {
                 };
                 timer.schedule(timeout);
             }
-
-            final VerticalPanel mainPane = new VerticalPanel();
-            mainPane.add(contentsContainer);
-            mainPane.add(buttonPane);
-            mainPane.setCellHorizontalAlignment(buttonPane, HasAlignment.ALIGN_CENTER);
-
-            setGlassEnabled(true);
-
-            setText(caption);
-            setWidget(mainPane);
-        }
-
-        // модальный диалог не воспринимает некоторые события. нам не хватает ctrl+C 
-        // поэтому на preview пытаемся руками затолкать в буфер обмена выделенный текст
-        @Override
-        protected void onPreviewNativeEvent(Event.NativePreviewEvent event) {
-            // в IE работает и так
-            if (!GwtClientUtils.isIEUserAgent() && GKeyStroke.isCopyToClipboardEvent(event.getNativeEvent())) {
-                CopyPasteUtils.putSelectionIntoClipboard();
-            }
-
-            if (Event.ONKEYDOWN == event.getTypeInt()) {
-                if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
-                    GwtClientUtils.stopPropagation(event.getNativeEvent());
-                    hide(OptionType.CANCEL); // что-нибудь, преобразуемое в 1
-                }
-            }
-            
-            super.onPreviewNativeEvent(event);
         }
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options) {
-            buttonPane = new HorizontalPanel();
-            buttonPane.setSpacing(3);
+            ResizableComplexPanel buttonPane = new ResizableComplexPanel();
+            buttonPane.setStyleName("modal-footer");
+
             for (OptionType option : options) {
                 Button optionButton = createOptionButton(option);
                 if (option == activeOption) {
@@ -166,16 +130,14 @@ public class DialogBoxHelper {
                 }
                 buttonPane.add(optionButton);
             }
+
+            addContentWidget(buttonPane);
         }
 
         private Button createOptionButton(final OptionType option) {
-            Button optionButton = new Button(option.getCaption(), new ClickHandler() {
-                @Override
-                public void onClick(final ClickEvent event) {
-                    hide(option);
-                }
-            });
-            optionButton.addStyleName("messageBox-button");
+            Button optionButton = new Button(option.getCaption(), (ClickHandler) event -> hide(option));
+            optionButton.setStyleName("btn");
+            optionButton.addStyleName("btn-" + (option.isPrimary() ? "primary" : "secondary"));
 
             return optionButton;
         }
@@ -187,8 +149,8 @@ public class DialogBoxHelper {
             }
         }
 
-        public void showCenter() {
-            center();
+        public void show() {
+            super.show();
             activeButton.getElement().focus();
         }
     }

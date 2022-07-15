@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FormRequestData;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -65,7 +64,8 @@ public class ModalForm extends FormContainer {
 
     @Override
     protected void setContent(Widget widget) {
-        contentWidget.setContentWidget(widget);
+        GwtClientUtils.resizable(widget.getElement(), "e, s, se");
+        contentWidget.setBodyWidget(widget);
     }
 
     private FormContainer prevForm;
