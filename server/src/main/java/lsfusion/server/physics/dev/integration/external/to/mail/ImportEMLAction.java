@@ -116,7 +116,8 @@ public class ImportEMLAction extends EmailAction {
         MimeMessage message = new MimeMessage(emailSession, new ByteArrayInputStream(eml.getRawFile().getBytes()));
 
         Timestamp dateTimeSent = getSentDate(message);
-        String fromAddress = ((InternetAddress) message.getFrom()[0]).getAddress();
+        Address[] fromAddresses = message.getFrom();
+        String fromAddress = fromAddresses.length > 0 ? ((InternetAddress) fromAddresses[0]).getAddress() : null;
         String subjectEmail = message.getSubject();
 
         Object messageContent = getEmailContent(message);
