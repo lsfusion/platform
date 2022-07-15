@@ -15,6 +15,14 @@ public class RichTextCellRenderer extends StringBasedCellRenderer{
     }
 
     @Override
+    protected void setInnerHTML(Element element, String innerHTML) {
+        //stub. Because we use quill as renderer and editor we need quill to be initialized before editing,
+        // but first init quill only on call setInnerContent() which is only called if not property.isEditableNotNull().
+        //Else called setInnerHTML().
+        initQuill(element, "");
+    }
+
+    @Override
     public String format(Object value) {
         return (String) value;
     }

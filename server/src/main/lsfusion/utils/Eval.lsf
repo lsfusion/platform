@@ -148,13 +148,13 @@ javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s)  {
     executeScript(s);    
 }
 
-json '{eval.script.text.script}' (Script s) = [FORMULA STRING 'json_build_object(\'text\',$1,\'type\',$2)'] 
-            ((OVERRIDE text(s), ''), (OVERRIDE STRING(executionScriptTypeName(calculateScriptType())), ''));
+json '{eval.script.text.script}' (Script s) = [FORMULA TEXT 'json_build_object(\'text\',$1,\'type\',$2)'] 
+            ((OVERRIDE text(s), ''), (OVERRIDE executionScriptTypeName(calculateScriptType()), ''));
 
 changeScript(Script sc) {
-    INPUT s = STRING DO {
+    INPUT s = TEXT DO {
         stringToFile(s);
-        LOCAL text = STRING();
+        LOCAL text = TEXT();
         IMPORT JSON FROM resultFile() TO() text;
         text(sc) <- text(); 
     }

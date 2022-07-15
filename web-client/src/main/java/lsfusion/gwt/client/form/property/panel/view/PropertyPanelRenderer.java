@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
@@ -98,7 +99,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return;
         }
 
-        label.setText(text);
+        GwtClientUtils.setInnerContent(label.getElement(), text);
 
         boolean notEmptyText = text != null && !text.isEmpty();
         if(this.notEmptyText != notEmptyText) {

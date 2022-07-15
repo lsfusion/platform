@@ -3,14 +3,11 @@ package lsfusion.gwt.client.form.view;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.NumberResult;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -21,8 +18,6 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.function.BiConsumer;
-
-import static java.lang.Math.min;
 
 // multiple inheritance
 public abstract class FormContainer {
@@ -80,11 +75,7 @@ public abstract class FormContainer {
         }
     }
 
-    public void show(GAsyncFormController asyncFormController) {
-        show(asyncFormController, null);
-    }
-
-    public abstract void show(GAsyncFormController asyncFormController, Integer index);
+    public abstract void show(GAsyncFormController asyncFormController);
 
     // server response reaction - hideFormAction dispatch, and incorrect modalitytype when getting form, or no form at all
     public void queryHide(EndReason editFormCloseReason) {

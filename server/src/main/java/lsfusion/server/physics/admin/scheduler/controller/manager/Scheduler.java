@@ -175,7 +175,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         if (daemonTasksExecutor != null)
             daemonTasksExecutor.shutdownNow();
 
-        daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService(threadCount != null ? threadCount : 5, this);
+        daemonTasksExecutor = ExecutorFactory.createMonitorScheduledThreadService((threadCount != null ? threadCount : 5) + 1, this); // +1 because resetResourcesCacheTasks() should always be running
 
         boolean isServer = isServer();
         List<SchedulerTask> tasks = new ArrayList<>(BL.getSystemTasks(this, isServer));
@@ -190,7 +190,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             futuresMap.put(task.scheduledTaskId, futures);
         }
 
-        return isServer;
+        return !isServer;
     }
 
     private void fillUserScheduledTasks(DataSession session, List<SchedulerTask> tasks) throws SQLException, SQLHandledException, ScriptingErrorLog.SemanticErrorException {

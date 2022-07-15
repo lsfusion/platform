@@ -4,6 +4,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
@@ -117,15 +118,17 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.setCharWidth(charWidth);
     }
 
-    public void setChangeKey(KeyStroke changeKey) {
-        target.changeKey = new KeyInputEvent(changeKey);
+    public void setChangeKey(ScriptingLogicsModule.KeyStrokeOptions changeKey) {
+        target.changeKey = new KeyInputEvent(KeyStroke.getKeyStroke(changeKey.keyStroke), changeKey.bindingModesMap);
+        target.changeKeyPriority = changeKey.priority;
     }
     public void setChangeKeyPriority(int priority) {
         target.changeKeyPriority = priority;
     }
 
-    public void setChangeMouse(String changeMouse) {
-        target.changeMouse = new MouseInputEvent(changeMouse);
+    public void setChangeMouse(ScriptingLogicsModule.KeyStrokeOptions changeMouse) {
+        target.changeMouse = new MouseInputEvent(changeMouse.keyStroke, changeMouse.bindingModesMap);
+        target.changeMousePriority = changeMouse.priority;
     }
     public void setChangeMousePriority(int priority) {
         target.changeMousePriority = priority;

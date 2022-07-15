@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 
 public class CaptionPanel extends FlexPanel {
@@ -11,11 +11,11 @@ public class CaptionPanel extends FlexPanel {
         super(true);
         
         addStyleName("accordion-item");
-        
+
         headerButton = new UnFocusableImageButton();
         headerButton.setEnabled(false);
         headerButton.addStyleName("accordion-button");
-        
+
         add(headerButton, GFlexAlignment.STRETCH);
 
         setCaption(caption);
@@ -35,6 +35,6 @@ public class CaptionPanel extends FlexPanel {
     }
 
     public void setCaption(String caption) {
-        headerButton.setText(EscapeUtils.unicodeEscape(caption != null ? caption : ""));
+        GwtClientUtils.setInnerContent(headerButton.getElement(), caption);
     }
 }

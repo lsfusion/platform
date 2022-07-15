@@ -9,7 +9,6 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
@@ -36,6 +35,7 @@ import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
 import lsfusion.gwt.client.form.GUpdateMode;
+import lsfusion.gwt.client.form.ContainerForm;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
@@ -86,7 +86,7 @@ import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
-import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -146,12 +146,20 @@ public class GFormController implements EditManager {
 
     private boolean hasColumnGroupObjects;
 
-    private static Timer editModeTimer;
-
     private boolean needConfirm;
 
     public FormsController getFormsController() {
         return formsController;
+    }
+
+    private Set<ContainerForm> containerForms = new HashSet<>();
+
+    public void putContainerForm(ContainerForm containerForm) {
+        containerForms.add(containerForm);
+    }
+
+    public void removeContainerForm(ContainerForm containerForm) {
+        containerForms.remove(containerForm);
     }
 
     public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
@@ -189,8 +197,6 @@ public class GFormController implements EditManager {
         initializeUserOrders();
 
         initializeFormSchedulers();
-
-        initLinkModeTimer();
     }
 
     public void checkGlobalMouseEvent(Event event) {
@@ -247,122 +253,10 @@ public class GFormController implements EditManager {
 
     public static void checkKeyEvents(DomEvent event, FormsController formsController) {
         NativeEvent nativeEvent = event.getNativeEvent();
-        checkEditModeEvents(formsController, nativeEvent);
+        formsController.checkEditModeEvents(nativeEvent);
 
         if(GKeyStroke.isSwitchFullScreenModeEvent(nativeEvent) && !MainFrame.mobile) {
             formsController.switchFullScreenMode();
-        }
-    }
-
-    // we need native method and not getCtrlKey, since some events (for example focus) have ctrlKey undefined and in this case we want to ignore them
-    private static native Boolean eventGetCtrlKey(NativeEvent evt) /*-{
-        return evt.ctrlKey;
-    }-*/;
-
-    private static native Boolean eventGetShiftKey(NativeEvent evt) /*-{
-        return evt.shiftKey;
-    }-*/;
-    
-    private static native Boolean eventGetAltKey(NativeEvent evt) /*-{
-        return evt.altKey;
-    }-*/;
-
-    private static boolean pressedCtrl = false;
-    private static boolean pressedShift = false;
-    private void initLinkModeTimer() {
-        if(editModeTimer == null) {
-            editModeTimer = new Timer() {
-                @Override
-                public void run() {
-                    if (pressedCtrl) {
-                        pressedCtrl = false;
-                    } else if(pressedShift) {
-                        pressedShift = false;
-                    } else {
-                        if (isForceLinkMode() || isForceDialogMode()) {
-                            formsController.updateMode(EditMode.DEFAULT, false, false);
-                        }
-                    }
-                }
-            };
-            editModeTimer.scheduleRepeating(500); //delta between first and second events ~500ms, between next ~30ms
-        }
-    }
-
-    public static void checkEditModeEvents(FormsController formsController, NativeEvent event) {
-        Boolean ctrlKey = eventGetCtrlKey(event);
-        Boolean shiftKey = eventGetShiftKey(event);
-        Boolean altKey = eventGetAltKey(event);
-        if(ctrlKey != null) {
-            boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
-            pressedCtrl = onlyCtrl;
-            if (onlyCtrl && !isLinkMode())
-                formsController.setForceEditMode(EditMode.LINK);
-            if (!onlyCtrl && isForceLinkMode())
-                formsController.removeForceEditMode();
-        }
-        if(shiftKey != null) {
-            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey);
-            pressedShift = onlyShift;
-            if (onlyShift && !isDialogMode())
-                formsController.setForceEditMode(EditMode.DIALOG);
-            if (!onlyShift && isForceDialogMode())
-                formsController.removeForceEditMode();
-        }
-    }
-
-    private static EditMode editMode;
-
-    private static EditMode prevEditMode;
-    public static void setPrevEditMode() {
-        prevEditMode = editMode;
-    }
-
-    private static boolean forceLinkMode;
-    public static boolean isForceLinkMode() {
-        return forceLinkMode;
-    }
-    public static boolean isLinkMode() {
-        return editMode == EditMode.LINK;
-    }
-
-    private static boolean forceDialogMode;
-    public static boolean isForceDialogMode() {
-        return forceDialogMode;
-    }
-    public static boolean isDialogMode() {
-        return editMode == EditMode.DIALOG;
-    }
-
-    public static void setEditMode(EditMode mode, boolean setForceLinkMode, boolean setForceDialogMode) {
-        editMode = mode;
-        forceLinkMode = setForceLinkMode;
-        forceDialogMode = setForceDialogMode;
-    }
-
-    public static int getEditModeIndex() {
-        return forceLinkMode || forceDialogMode ? prevEditMode.getIndex() : editMode.getIndex();
-    }
-
-    public static Timer linkModeStylesTimer;
-
-    public static void scheduleLinkModeStylesTimer(Runnable setLinkModeStyles) {
-        if(linkModeStylesTimer == null) {
-            linkModeStylesTimer = new Timer() {
-                @Override
-                public void run() {
-                    setLinkModeStyles.run();
-                    linkModeStylesTimer = null;
-                }
-            };
-            linkModeStylesTimer.schedule(250);
-        }
-    }
-
-    public static void cancelLinkModeStylesTimer() {
-        if (linkModeStylesTimer != null) {
-            linkModeStylesTimer.cancel();
-            linkModeStylesTimer = null;
         }
     }
 
@@ -876,17 +770,17 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
-        boolean isDockedModal = modalityType == GModalityType.DOCKED_MODAL;
+    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
+        boolean isDockedModal = showFormType.isDockedModal();
         if (isDockedModal)
             ((FormDockable)formContainer).block();
 
-        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, modalityType, forbidDuplicate, editEvent, editContext, this, () -> {
+        FormContainer blockingForm = formsController.openForm(getAsyncFormController(requestIndex), form, showFormType, forbidDuplicate, editEvent, editContext, this, () -> {
             if(isDockedModal) {
                 ((FormDockable)formContainer).unblock();
 
                 formsController.selectTab((FormDockable) formContainer);
-            } else if(modalityType == GModalityType.DOCKED)
+            } else if(showFormType.isDocked())
                 formsController.ensureTabSelected();
 
             handler.onHidden();
@@ -1170,8 +1064,9 @@ public class GFormController implements EditManager {
     }
 
     private void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex ->
-                formsController.asyncCloseForm(getAsyncFormController(requestIndex)), onExec);
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex -> {
+            formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer);
+        }, onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
@@ -1567,7 +1462,7 @@ public class GFormController implements EditManager {
     public boolean previewEvent(Element target, Event event) {
         if(BrowserEvents.BLUR.equals(event.getType()))
             MainFrame.setLastBlurredElement(Element.as(event.getEventTarget()));
-        checkEditModeEvents(formsController, event);
+        formsController.checkEditModeEvents(event);
         return previewLoadingManagerSinkEvents(event) && MainFrame.previewEvent(target, event, isEditing());
     }
 
@@ -1584,6 +1479,10 @@ public class GFormController implements EditManager {
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+        for(ContainerForm containerForm : containerForms) {
+            containerForm.getForm().closePressed(editFormCloseReason);
+        }
+
         FormDispatchAsync closeDispatcher = dispatcher;
         Scheduler.get().scheduleDeferred(() -> {
             closeDispatcher.executePriority(new Close(closeDelay), new PriorityErrorHandlingCallback<VoidResult>() {

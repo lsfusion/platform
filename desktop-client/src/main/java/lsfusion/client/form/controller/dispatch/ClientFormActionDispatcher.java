@@ -10,7 +10,6 @@ import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.interop.action.*;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
-import lsfusion.interop.form.ModalityType;
 
 import java.awt.*;
 import java.io.IOException;

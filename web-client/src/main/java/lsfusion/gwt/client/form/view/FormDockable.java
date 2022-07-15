@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 public final class FormDockable extends FormContainer {
@@ -26,7 +27,7 @@ public final class FormDockable extends FormContainer {
 
     @Override
     public GWindowFormType getWindowType() {
-        return GWindowFormType.DOCKED;
+        return GModalityWindowFormType.DOCKED;
     }
 
     @Override
@@ -56,7 +57,11 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    public void show(GAsyncFormController asyncFormController, Integer index) {
+    public void show(GAsyncFormController asyncFormController) {
+        showDockable(null);
+    }
+
+    public void showDockable(Integer index) {
         formsController.addDockable(this, index);
     }
 

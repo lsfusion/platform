@@ -1108,6 +1108,14 @@ public class GwtClientUtils {
         return value instanceof String && compare == GCompare.MATCH ? ((String) value).replace(",", "\\,") : value;
     }
 
+    public static void setInnerContent(Element element, String value) {
+        value = value == null ? "" : value;
+        if (EscapeUtils.isContainHtmlTag(value))
+            element.setInnerHTML(value);
+        else
+            element.setInnerText(value);
+    }
+
     public static native void resizable(Element element, String handles)/*-{
         $wnd.$(element).resizable({ handles: handles});
     }-*/;

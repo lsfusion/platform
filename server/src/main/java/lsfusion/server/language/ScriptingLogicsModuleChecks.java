@@ -22,6 +22,8 @@ import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
@@ -655,6 +657,12 @@ public class ScriptingLogicsModuleChecks {
     public void checkSignatureParam(ResolveClassSet signatureParam) throws ScriptingErrorLog.SemanticErrorException {
         if(signatureParam == null) {
             errLog.emitSignatureParamError(parser);
+        }
+    }
+
+    public void checkComponentIsContainer(ComponentView inComponent) throws ScriptingErrorLog.SemanticErrorException {
+        if(!(inComponent instanceof ContainerView)) {
+            errLog.emitShowInContainerError(parser);
         }
     }
 }

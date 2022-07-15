@@ -1,10 +1,10 @@
 package lsfusion.gwt.client.action;
 
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.navigator.window.GModalityType;
+import lsfusion.gwt.client.navigator.window.GShowFormType;
 
 public class GFormAction extends GExecuteAction {
-    public GModalityType modalityType;
+    public GShowFormType showFormType;
     public GForm form;
     public boolean forbidDuplicate;
 
@@ -12,8 +12,8 @@ public class GFormAction extends GExecuteAction {
     @SuppressWarnings("UnusedDeclaration")
     public GFormAction() {}
 
-    public GFormAction(GModalityType modalityType, GForm form, boolean forbidDuplicate) {
-        this.modalityType = modalityType;
+    public GFormAction(GShowFormType showFormType, GForm form, boolean forbidDuplicate) {
+        this.showFormType = showFormType;
         this.form = form;
         this.forbidDuplicate = forbidDuplicate;
     }

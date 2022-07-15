@@ -1,5 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.mail;
 
+import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -41,6 +42,7 @@ import java.util.regex.Pattern;
 import static javax.mail.Message.RecipientType.TO;
 import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -214,7 +216,7 @@ public class SendEmailAction extends SystemExplicitAction {
                 } else {
                     inlineText = type.formatString(inlineValue);
                 }
-                customInlines.add(inlineText);
+                customInlines.add(EscapeUtils.isContainHtmlTag(inlineText) ? inlineText : escapeLineBreakHTML(inlineText));
             }
         }
     }

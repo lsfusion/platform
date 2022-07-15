@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GBindingMode;
@@ -54,7 +55,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         if(property != null && property.changeOnSingleClick != null)
             return property.changeOnSingleClick;
         return super.isChangeOnSingleClick(cell, event, rowChanged) ||
-                (!rowChanged && GFormController.isLinkMode() && property != null && property.hasEditObjectAction) ||
+                (!rowChanged && FormsController.isLinkMode() && property != null && property.hasEditObjectAction) ||
                 (GMouseStroke.isChangeEvent(event) && GEditBindingMap.getToolbarAction(event) != null);
     }
 

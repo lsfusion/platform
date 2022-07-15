@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.connection.TFormats;
-import lsfusion.interop.form.ModalityType;
+import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.context.Context;
@@ -251,8 +251,8 @@ public class ThreadLocalContext {
         return get().requestUserInteraction(action);
     }
 
-    public static void requestFormUserInteraction(FormInstance remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        get().requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
+    public static void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+        get().requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, stack);
     }
 
     public static boolean canBeProcessed() {

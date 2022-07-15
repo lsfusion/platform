@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.toCaption;
-import static lsfusion.client.base.EscapeUtils.escapeLineBreakHTML;
+import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 
 public class GridTableModel extends AbstractTableModel {
     private Object[][] data = new Object[0][0];

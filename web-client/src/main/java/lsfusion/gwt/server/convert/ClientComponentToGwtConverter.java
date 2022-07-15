@@ -39,9 +39,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
-import lsfusion.gwt.client.navigator.window.GModalityType;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.FormScheduler;
@@ -491,18 +489,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         switch (editType) {
             case EDITABLE: return GPropertyEditType.EDITABLE;
             case READONLY: return GPropertyEditType.READONLY;
-        }
-        return null;
-    }
-
-    @Cached
-    @Converter(from = ModalityType.class)
-    public GModalityType convertModalityType(ModalityType modalityType) {
-        switch (modalityType) {
-            case DOCKED: return GModalityType.DOCKED;
-            case DOCKED_MODAL: return GModalityType.DOCKED_MODAL;
-            case MODAL: return GModalityType.MODAL;
-            case DIALOG_MODAL: return GModalityType.DIALOG_MODAL;
         }
         return null;
     }

@@ -19,6 +19,7 @@ import lsfusion.gwt.client.classes.GObjectType;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.controller.remote.DeferredRunner;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.GFontMetrics;
@@ -1969,7 +1970,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private void rowAttrHeaderClickAction(JsArrayMixed rowKeyValues, String attrName, boolean dblClick) {
-        if((dblClick || GFormController.isLinkMode()) && rowKeyValues.length() > 0) {
+        if((dblClick || FormsController.isLinkMode()) && rowKeyValues.length() > 0) {
             Column column = columnMap.get(attrName);
             Integer rowIndex = getRowIndex(rowKeyValues, false);
             if (column != null && rowIndex != null) {
@@ -2039,7 +2040,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 updateViewLater();
             }
         } else {
-            if(GFormController.isLinkMode() && columnKeyValues.length() > 0) {
+            if(FormsController.isLinkMode() && columnKeyValues.length() > 0) {
                 Column column = columnMap.get(config.getArrayString("cols").get(columnKeyValues.length() - 1));
                 Integer rowIndex = getRowIndex(columnKeyValues, true);
                 if (column != null && rowIndex != null) {

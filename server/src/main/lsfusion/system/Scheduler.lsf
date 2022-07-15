@@ -167,7 +167,8 @@ runSetupSchedulerApply '{scheduler.run.setup.scheduler}'  {
     apply();
 }
 isStartedScheduler '{scheduler.is.started.scheduler}'  = DATA BOOLEAN ();
-isStoppedScheduler '{scheduler.is.stopped.scheduler}' () = NOT isStartedScheduler();
+isStoppedScheduler = NOT isStartedScheduler();
+onlySystemTasks '{scheduler.only.system.tasks}' = DATA BOOLEAN();
 
 threadCountScheduler '{scheduler.thread.count.scheduler}' = DATA INTEGER ();
 
@@ -240,7 +241,7 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
     PROPERTIES (dow) number, staticCaption 
     PROPERTIES (dow, t) in 
     
-    PROPERTIES () TOOLBAR stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 
+    PROPERTIES () TOOLBAR onlySystemTasks SHOWIF onlySystemTasks() READONLY, stopSchedulerApply SHOWIF isStartedScheduler() , runSetupSchedulerApply SHOWIF isStoppedScheduler() 
     
     ORDERS number(dow)
 ;
@@ -300,6 +301,7 @@ DESIGN scheduledTask {
     NEW bottom {
         type = CONTAINERH;
         align = END;
+        MOVE PROPERTY(onlySystemTasks());
         MOVE PROPERTY(runSetupSchedulerApply());
         MOVE PROPERTY(stopSchedulerApply());
     }

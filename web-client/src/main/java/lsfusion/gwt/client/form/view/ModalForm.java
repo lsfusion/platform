@@ -7,14 +7,15 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FormRequestData;
 import lsfusion.gwt.client.base.view.ResizableModalWindow;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -24,7 +25,7 @@ public class ModalForm extends FormContainer {
 
     @Override
     public GWindowFormType getWindowType() {
-        return GWindowFormType.FLOAT;
+        return GModalityWindowFormType.FLOAT;
     }
 
     @Override
@@ -78,7 +79,7 @@ public class ModalForm extends FormContainer {
     }
 
     @Override
-    public void show(GAsyncFormController asyncFormController, Integer index) {
+    public void show(GAsyncFormController asyncFormController) {
         GwtActionDispatcher dispatcher = asyncFormController.getDispatcher();
         long requestIndex = asyncFormController.getEditRequestIndex();
         FormRequestData formRequestData = new FormRequestData(dispatcher, this, requestIndex);

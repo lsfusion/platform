@@ -1,25 +1,17 @@
 package lsfusion.server.language.converters;
 
-import org.apache.commons.beanutils.ConversionException;
+import lsfusion.server.language.ScriptingLogicsModule;
 import org.apache.commons.beanutils.converters.AbstractConverter;
 
 import javax.swing.*;
 
 /**
- * <p>Конвертирует значение в значение типа KeyStroke. </p>
- * <p>Переданное значение конвертируется в строку, затем она парсится в KeyStroke при помощи {@link javax.swing.KeyStroke#getKeyStroke(String)}.</p>
- * <p>Примеры:</p>
- * <p>"control DELETE" => getAWTKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK);</p>
- * <p>"alt shift X" => getAWTKeyStroke(KeyEvent.VK_X, InputEvent.ALT_MASK | InputEvent.SHIFT_MASK);</p>
+ * Converts String to KeyStrokeOptions (keyStroke, bindingModesMap, priority)
  */
 public class KeyStrokeConverter extends AbstractConverter {
     @Override
     protected Object convertToType(Class type, Object value) {
-        KeyStroke keyStroke = KeyStroke.getKeyStroke(value.toString());
-        if (keyStroke == null) {
-            throw new ConversionException("Can't create KeyStroke");
-        }
-        return keyStroke;
+        return ScriptingLogicsModule.parseKeyStrokeOptions(value.toString());
     }
 
     @Override
