@@ -1,5 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.mail;
 
+import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -215,7 +216,7 @@ public class SendEmailAction extends SystemExplicitAction {
                 } else {
                     inlineText = type.formatString(inlineValue);
                 }
-                customInlines.add(escapeLineBreakHTML(inlineText));
+                customInlines.add(EscapeUtils.isContainHtmlTag(inlineText) ? inlineText : escapeLineBreakHTML(inlineText));
             }
         }
     }
