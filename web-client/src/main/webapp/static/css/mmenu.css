@@ -20,7 +20,7 @@
 
 .mm-spn.mm-spn--navbar.mm-spn--main:after,
 .mm-spn.mm-spn--navbar:after {
-    color: var(--caption-panel-legend-color);
+    color: var(--caption-panel-header-color);
     opacity: unset;
 }
 

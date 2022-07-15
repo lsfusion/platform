@@ -1,46 +1,22 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.size.GSize;
 
 public class CaptionPanel extends FlexPanel {
-
-    protected Label legend;
-    protected final DivWidget leftCenteredLine;
-    protected final DivWidget rightCenteredLine;
-
-    protected FlexPanel legendWrapper;
+    protected UnFocusableImageButton headerButton;
 
     public CaptionPanel(String caption) {
         super(true);
         
-        addStyleName("captionPanel");
-
-        legendWrapper = new FlexPanel(false);
-        legendWrapper.setStyleName("captionLegendContainerPanel");
-//        GwtClientUtils.setZeroZIndex(legendWrapper.getElement()); // since in captionCenteredLine we're using -1 z-index (we can't set captionPanelLegend z-index 1 since it will be above dialogs blocking masks)
-
-        GSize flexBasis = GSize.CONST(4);
-
-        leftCenteredLine = new DivWidget();
-        leftCenteredLine.setStyleName("captionCenteredLine");
-        legendWrapper.add(leftCenteredLine, GFlexAlignment.CENTER, 0, false, flexBasis);
-
-        legend = new Label();
-        legend.setStyleName("captionPanelLegend");
-        legendWrapper.addCentered(legend);
-
-        rightCenteredLine = new DivWidget();
-        rightCenteredLine.setStyleName("captionCenteredLine");
-
-        // it's a tricky hack we emulate flex 0 to make updatePanels stretch this whole panel if needed (this hack makes stretching this line not important)
-        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 0, false, flexBasis);
-        rightCenteredLine.addStyleName("rightCaptionCenteredLine");
-//        legendWrapper.add(rightCenteredLine, GFlexAlignment.CENTER, 1, false, 4);
-
-        add(legendWrapper, GFlexAlignment.STRETCH);
+        addStyleName("accordion-item");
+        
+        headerButton = new UnFocusableImageButton();
+        headerButton.setEnabled(false);
+        headerButton.addStyleName("accordion-button");
+        
+        add(headerButton, GFlexAlignment.STRETCH);
 
         setCaption(caption);
     }
@@ -50,29 +26,15 @@ public class CaptionPanel extends FlexPanel {
         addFillFlex(content, null);
     }
 
-    private boolean notNullCaption;
-    private boolean notEmptyCaption;
+    @Override
+    public void add(Widget widget, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, GSize flexBasis) {
+        super.add(widget, beforeIndex, alignment, flex, shrink, flexBasis);
+
+        widget.addStyleName("accordion-body");
+        widget.addStyleName("accordion-collapse");
+    }
+
     public void setCaption(String caption) {
-        legend.setText(EscapeUtils.unicodeEscape(caption != null ? caption : ""));
-
-        // incremental update
-        boolean notNullCaption = caption != null;
-        if(this.notNullCaption != notNullCaption) {
-            if(notNullCaption)
-                legend.addStyleName("notNullCaptionPanelLegend");
-            else
-                legend.removeStyleName("notNullCaptionPanelLegend");
-            rightCenteredLine.setVisible(notNullCaption);
-            this.notNullCaption = notNullCaption;
-        }
-
-        boolean notEmptyCaption = caption != null && !caption.isEmpty();
-        if(this.notEmptyCaption != notEmptyCaption) {
-            if(notEmptyCaption)
-                legend.addStyleName("notEmptyCaptionPanelLegend");
-            else
-                legend.removeStyleName("notEmptyCaptionPanelLegend");
-            this.notEmptyCaption = notEmptyCaption;
-        }
+        headerButton.setText(EscapeUtils.unicodeEscape(caption != null ? caption : ""));
     }
 }

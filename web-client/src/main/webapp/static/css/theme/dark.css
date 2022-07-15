@@ -14,12 +14,13 @@
     --dialog-outer-border-color: #696969;
     --mobile-navigator-arrow-color: var(--dialog-outer-border-color);
     
-    --caption-panel-legend-color: #7d7d7d;
+    --caption-panel-header-color: #7d7d7d;
+    --caption-panel-header-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23515151'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); /* --panel-border-color value inside */
     --null-value-string-color: #757575;
     --required-value-string-color: #c54d4d;
     --not-null-corner-triangle-color: #c30000;
     --not-null-line-color: #9a0000;
-    --close-tab-button-disabled-color: #5d5d5d;
+    --close-tab-button-x-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23bbbbbb'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e"); /* --text-color value inside */
     --button-disabled-hover-border-color: #6b6b6b;
     --button-hover-background-color: #53585A;
     --button-active-background-color: #5B5F62;

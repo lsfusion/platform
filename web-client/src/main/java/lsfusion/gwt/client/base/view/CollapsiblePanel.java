@@ -2,15 +2,8 @@ package lsfusion.gwt.client.base.view;
 
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
-import lsfusion.gwt.client.view.ColorThemeChangeListener;
-import lsfusion.gwt.client.view.MainFrame;
 
-public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeListener {
-    private final String COLLAPSE_IMAGE_PATH = "collapse_container.png";
-    private final String EXPAND_IMAGE_PATH = "expand_container.png";
-
-    protected GImage collapseImage;
-    
+public class CollapsiblePanel extends CaptionPanel {
     public boolean collapsed = false;
 
     private GFormController formController;
@@ -21,18 +14,19 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
         this.formController = formController;
         this.container = container;
 
-        collapseImage = new GImage(COLLAPSE_IMAGE_PATH);
-        collapseImage.addStyleName("collapsePanelImage");
-        collapseImage.addClickHandler(event -> toggleCollapsed());
-        legendWrapper.add(collapseImage, 0, GFlexAlignment.CENTER);
-
-        MainFrame.addColorThemeChangeListener(this);
+        headerButton.setEnabled(true);
+        headerButton.addStyleName("collapsible");
+        headerButton.addClickHandler(event -> toggleCollapsed());
     }
 
     public void setCollapsed(boolean collapsed) {
         this.collapsed = collapsed;
-
-        collapseImage.setImagePath(collapsed ? EXPAND_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
+        
+        if (collapsed) {
+            headerButton.addStyleName("collapsed");
+        } else {
+            headerButton.removeStyleName("collapsed");
+        }
 
         for (int i = 1; i < getChildren().size(); i++) {
             getChildren().get(i).setVisible(!collapsed);
@@ -44,10 +38,5 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
 
         if (formController != null)
             formController.setContainerCollapsed(container, collapsed);
-    }
-
-    @Override
-    public void colorThemeChanged() {
-        collapseImage.setImagePath(collapsed ? EXPAND_IMAGE_PATH : COLLAPSE_IMAGE_PATH);
     }
 }
