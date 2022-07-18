@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 
 import com.allen_sauer.gwt.dnd.client.DragHandlerAdapter;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -28,7 +28,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
 import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_FAMILY;
 
-@SuppressWarnings("GWTStyleCheck")
 public abstract class GUserPreferencesDialog extends WindowBox {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
@@ -78,12 +77,7 @@ public abstract class GUserPreferencesDialog extends WindowBox {
         // column caption settings        
         columnCaptionBox = new TextBox();
         columnCaptionBox.addStyleName("userPreferencesColumnTextBox");
-        columnCaptionBox.addKeyUpHandler(new KeyUpHandler() {
-            @Override
-            public void onKeyUp(KeyUpEvent event) {
-                columnsDualListBox.columnCaptionBoxTextChanged(columnCaptionBox.getText());
-            }
-        });
+        columnCaptionBox.addKeyUpHandler(event -> columnsDualListBox.columnCaptionBoxTextChanged(columnCaptionBox.getText()));
 
         FlexPanel columnCaptionPanel = new FlexPanel();
         columnCaptionPanel.add(new Label(messages.formGridPreferencesColumnCaption() + ":"), GFlexAlignment.CENTER);
@@ -93,12 +87,7 @@ public abstract class GUserPreferencesDialog extends WindowBox {
         // column pattern settings
         columnPatternBox = new TextBox();
         columnPatternBox.addStyleName("userPreferencesColumnTextBox");
-        columnPatternBox.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent changeEvent) {
-                columnsDualListBox.columnPatternBoxTextChanged(columnPatternBox.getText());
-            }
-        });
+        columnPatternBox.addChangeHandler(changeEvent -> columnsDualListBox.columnPatternBoxTextChanged(columnPatternBox.getText()));
 
         FlexPanel columnPatternPanel = new FlexPanel();
         columnPatternPanel.add(new Label(messages.formGridPreferencesColumnPattern() + ":"), GFlexAlignment.CENTER);
@@ -131,9 +120,7 @@ public abstract class GUserPreferencesDialog extends WindowBox {
         sizeBox = new TextBox();
         sizeBox.addStyleName("userPreferencesIntegralTextBox");
         boldBox = new FormCheckBox(messages.formGridPreferencesFontStyleBold());
-        boldBox.addStyleName("userPreferencesCheckBox");
         italicBox = new FormCheckBox(messages.formGridPreferencesFontStyleItalic());
-        italicBox.addStyleName("userPreferencesCheckBox");
         FlexPanel fontPanel = new FlexPanel();
         fontPanel.getElement().getStyle().setMargin(2, Style.Unit.PX);
         Label fontLabel = new Label(messages.formGridPreferencesFontSize() + ":");
@@ -158,41 +145,21 @@ public abstract class GUserPreferencesDialog extends WindowBox {
         if (canBeSaved) {
             saveButton = new Button(messages.formGridPreferencesSave());
             saveButton.addStyleName("userPreferencesSaveResetButton");
-            saveButton.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent event) {
-                    savePressed();
-                }
-            });
+            saveButton.addClickHandler(event -> savePressed());
 
             resetButton = new Button(messages.formGridPreferencesReset());
             resetButton.addStyleName("userPreferencesSaveResetButton");
-            resetButton.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent event) {
-                    resetPressed();
-                }
-            });
+            resetButton.addClickHandler(event -> resetPressed());
         }
 
         // ok/cancel buttons
         Button okButton = new Button(messages.ok());
         okButton.setWidth("6em");
-        okButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                okPressed();
-            }
-        });
+        okButton.addClickHandler(event -> okPressed());
 
         Button cancelButton = new Button(messages.cancel());
         cancelButton.setWidth("6em");
-        cancelButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                hide();
-            }
-        });
+        cancelButton.addClickHandler(event -> hide());
 
         HorizontalPanel okCancelButtons = new HorizontalPanel();
         okCancelButtons.add(okButton);
@@ -220,13 +187,10 @@ public abstract class GUserPreferencesDialog extends WindowBox {
         focusPanel = new FocusPanel(preferencesPanel);
         focusPanel.addStyleName("noOutline");
         focusPanel.setSize("100%", "100%");
-        focusPanel.addKeyDownHandler(new KeyDownHandler() {
-            @Override
-            public void onKeyDown(KeyDownEvent event) {
-                if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-                    GwtClientUtils.stopPropagation(event);
-                    hide();
-                }
+        focusPanel.addKeyDownHandler(event -> {
+            if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+                GwtClientUtils.stopPropagation(event);
+                hide();
             }
         });
 
@@ -454,12 +418,7 @@ public abstract class GUserPreferencesDialog extends WindowBox {
                 preferencesChanged();
                 String caption = save ? messages.formGridPreferencesSaving() : messages.formGridPreferencesResetting();
                 String message = save ? messages.formGridPreferencesSaveSuccess() : messages.formGridPreferencesResetSuccess();
-                DialogBoxHelper.showMessageBox(false, caption, message, new DialogBoxHelper.CloseCallback() {
-                    @Override
-                    public void closed(DialogBoxHelper.OptionType chosenOption) {
-                        focusPanel.setFocus(true);
-                    }
-                });
+                DialogBoxHelper.showMessageBox(false, caption, message, chosenOption -> focusPanel.setFocus(true));
             }
 
             @Override

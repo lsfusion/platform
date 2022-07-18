@@ -143,11 +143,6 @@
 
     <stylesheet src="static/css/main.css"/>
 
-    <stylesheet src="static/css/form/components/filter.css"/>
-    <stylesheet src="static/css/form/components/panel-renderer.css"/>
-    <stylesheet src="static/css/form/components/toolbar.css"/>
-    <stylesheet src="static/css/form/components/user-preferences.css"/>
-    
     <stylesheet src="static/css/form/components/base/button.css"/>
     <stylesheet src="static/css/form/components/base/check-box.css"/>
     <stylesheet src="static/css/form/components/base/decorated-popup-panel.css"/>
@@ -156,7 +151,6 @@
     <stylesheet src="static/css/form/components/base/menu-bar.css"/>
     <stylesheet src="static/css/form/components/base/popup-panel.css"/>
     <stylesheet src="static/css/form/components/base/progress-bar.css"/>
-    <stylesheet src="static/css/form/components/base/radio-button.css"/>
     <stylesheet src="static/css/form/components/base/resizable-window.css"/>
     <stylesheet src="static/css/form/components/base/scrollbar.css"/>
     <stylesheet src="static/css/form/components/base/suggest-box.css"/>
@@ -172,6 +166,11 @@
     <stylesheet src="static/css/form/components/table/table-cell.css"/>
     <stylesheet src="static/css/form/components/table/table-container.css"/>
     <stylesheet src="static/css/form/components/table/tree.css"/>
+
+    <stylesheet src="static/css/form/components/filter.css"/>
+    <stylesheet src="static/css/form/components/panel-renderer.css"/>
+    <stylesheet src="static/css/form/components/toolbar.css"/>
+    <stylesheet src="static/css/form/components/user-preferences.css"/>
     
     <stylesheet src="static/css/form/layout/caption-panel.css"/>
     <stylesheet src="static/css/form/layout/layout.css"/>

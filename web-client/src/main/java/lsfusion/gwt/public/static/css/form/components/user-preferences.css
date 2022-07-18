@@ -49,6 +49,11 @@
     background-color: var(--selection-color);
 }
 
+.dragdrop-selected, .dragdrop-dragging {
+    filter: none;
+    opacity: 1;
+}
+
 .draggableListBoxItem .dragdrop-handle {}
 
 .userPreferencesDualList .dragdrop-movable-panel {
@@ -66,14 +71,6 @@
     flex: auto !important;
 }
 
-.userPreferencesCheckBox {
-    display: flex;
-}
-
-.userPreferencesCheckBox label {
-    margin: auto;
-}
-
 .userPreferencesFontLabel {
     padding-bottom: 0.0625rem;
 }
@@ -81,9 +78,4 @@
 .userPreferencesSaveResetButton {
     width: 13em;
     margin: 0.0625rem;
-}
-
-.userPreferencesRadioButton {
-    display: inline-flex;
-    align-items: center;
 }

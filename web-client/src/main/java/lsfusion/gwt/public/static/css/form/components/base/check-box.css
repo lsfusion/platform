@@ -11,10 +11,6 @@ input[type=checkbox]:focus {
     float: left;
 }
 
-.gwt-CheckBox {
-}
-
-.gwt-CheckBox-disabled {
+.form-check-input:disabled~.form-check-label, .form-check-input[disabled]~.form-check-label {
     color: var(--disabled-text-color);
 }
-

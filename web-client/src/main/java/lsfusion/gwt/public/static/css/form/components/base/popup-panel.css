@@ -1,10 +1,4 @@
-.gwt-PopupPanel {
-    border: 1px solid var(--dialog-outer-border-color);
-    border-radius: var(--panel-border-radius);
-    background: var(--background-color);
-}
-
-.gwt-PopupPanel .popupContent {
+.popupContent {
     /*border: 0.1875rem solid var(--dialog-border-color);*/
     padding: var(--border-padding);
 }
@@ -17,4 +11,7 @@
 
 .popup-dialog {
     z-index: 2000;
+    border: 1px solid var(--dialog-outer-border-color);
+    border-radius: var(--dialog-border-radius);
+    background: var(--background-color);
 }
