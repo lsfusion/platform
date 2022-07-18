@@ -4,7 +4,7 @@ REQUIRE System;
 
 currentDateTime '{logics.date.current.datetime}' = FORMULA DATETIME PG 'DATE_TRUNC(\'second\', LOCALTIMESTAMP)', MS 'DATEADD(second, DATEDIFF(second, 0, GETDATE()), 0)';
 currentDateTimeMillis = FORMULA DATETIME PG 'DATE_TRUNC(\'milliseconds\', LOCALTIMESTAMP)', MS 'DATEADD(millisecond, DATEDIFF(millisecond, 0, GETDATE()), 0)';
-currentZDateTime '{logics.date.current.datetime}' = FORMULA ZDATETIME PG 'CURRENT_TIMESTAMP', MS 'GETDATE()';
+currentZDateTime '{logics.date.current.datetime}' = FORMULA ZDATETIME PG 'DATE_TRUNC(\'second\', CURRENT_TIMESTAMP)', MS 'GETDATE()';
 
 toDate(DATETIME dateTime) = DATE(dateTime AS DATETIME);
 toTime(DATETIME dateTime) = TIME(dateTime AS DATETIME);
@@ -90,23 +90,23 @@ sumWeekTo (DATE date, INTEGER int) = sum(date, int * 7 + 6) IF date IS DATE AND 
 
 //because to_timestamp() takes unix times in seconds we need to divide by 1000
 // datetime interval
-interval(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [FORMULA INTERVAL[DATETIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](dateTimeFrom AS DATETIME, dateTimeTo AS DATETIME);
-from(INTERVAL[DATETIME] dateTimeInterval) = [FORMULA DATETIME PG 'to_timestamp((trunc ($1)) / 1000) AT TIME ZONE \'UTC\''](dateTimeInterval AS INTERVAL[DATETIME]);
+interval(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [FORMULA INTERVAL[DATETIME] PG '(EXTRACT (EPOCH FROM $1) * 1000  || \'.\' || EXTRACT (EPOCH FROM $2) * 1000)'](dateTimeFrom AS DATETIME, dateTimeTo AS DATETIME);
+from(INTERVAL[DATETIME] dateTimeInterval) = [FORMULA DATETIME PG 'to_timestamp((trunc ($1::NUMERIC)) / 1000) AT TIME ZONE \'UTC\''](dateTimeInterval AS INTERVAL[DATETIME]);
 to(INTERVAL[DATETIME] dateTimeInterval) = [FORMULA DATETIME PG 'to_timestamp((SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) / 1000) AT TIME ZONE \'UTC\''](dateTimeInterval AS INTERVAL[DATETIME]);
 
 // date interval 
-interval(DATE dateFrom, DATE dateTo) = [FORMULA INTERVAL[DATE] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](dateFrom AS DATE, dateTo AS DATE);
-from(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG '(to_timestamp((trunc ($1)) / 1000) AT TIME ZONE \'UTC\')::date'](dateInterval AS INTERVAL[DATE]);
+interval(DATE dateFrom, DATE dateTo) = [FORMULA INTERVAL[DATE] PG '(EXTRACT (EPOCH FROM $1) * 1000  || \'.\' || EXTRACT (EPOCH FROM $2) * 1000)'](dateFrom AS DATE, dateTo AS DATE);
+from(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG '(to_timestamp((trunc ($1::NUMERIC)) / 1000) AT TIME ZONE \'UTC\')::date'](dateInterval AS INTERVAL[DATE]);
 to(INTERVAL[DATE] dateInterval) = [FORMULA DATE PG '(to_timestamp((SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) / 1000) AT TIME ZONE \'UTC\')::date'](dateInterval AS INTERVAL[DATE]);
 
 // time interval
-interval(TIME timeFrom, TIME timeTo) = [FORMULA INTERVAL[TIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](timeFrom AS TIME, timeTo AS TIME);
-from(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp((trunc ($1) / 1000)) AT TIME ZONE \'UTC\')::time'](timeInterval AS INTERVAL[TIME]);
+interval(TIME timeFrom, TIME timeTo) = [FORMULA INTERVAL[TIME] PG '(EXTRACT (EPOCH FROM $1) * 1000  || \'.\' || EXTRACT (EPOCH FROM $2) * 1000)'](timeFrom AS TIME, timeTo AS TIME);
+from(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp((trunc ($1::NUMERIC) / 1000)) AT TIME ZONE \'UTC\')::time'](timeInterval AS INTERVAL[TIME]);
 to(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp((SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) / 1000) AT TIME ZONE \'UTC\')::time'](timeInterval AS INTERVAL[TIME]);
 
 // zDatetime interval
-interval(ZDATETIME zDateTimeFrom, ZDATETIME zDateTimeTo) = [FORMULA INTERVAL[ZDATETIME] PG '(EXTRACT (EPOCH FROM $1)  || \'.\' || EXTRACT (EPOCH FROM $2))'](zDateTimeFrom AS ZDATETIME, zDateTimeTo AS ZDATETIME);
-from(INTERVAL[ZDATETIME] zDateTimeInterval) = [FORMULA ZDATETIME PG 'to_timestamp((trunc ($1)) / 1000)'](zDateTimeInterval AS INTERVAL[ZDATETIME]);
+interval(ZDATETIME zDateTimeFrom, ZDATETIME zDateTimeTo) = [FORMULA INTERVAL[ZDATETIME] PG '(EXTRACT (EPOCH FROM $1) * 1000  || \'.\' || EXTRACT (EPOCH FROM $2) * 1000)'](zDateTimeFrom AS ZDATETIME, zDateTimeTo AS ZDATETIME);
+from(INTERVAL[ZDATETIME] zDateTimeInterval) = [FORMULA ZDATETIME PG 'to_timestamp((trunc ($1::NUMERIC)) / 1000)'](zDateTimeInterval AS INTERVAL[ZDATETIME]);
 to(INTERVAL[ZDATETIME] zDateTimeInterval) = [FORMULA ZDATETIME PG 'to_timestamp((SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) / 1000)'](zDateTimeInterval AS INTERVAL[ZDATETIME]);
 // --------------------------------- Месяца ------------------------ //
 
