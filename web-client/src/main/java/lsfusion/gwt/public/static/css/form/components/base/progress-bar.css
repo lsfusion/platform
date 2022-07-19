@@ -1,16 +1,23 @@
-.gwt-ProgressBar-shell {
-    border: 1px solid var(--component-border-color);
-    background-color: #AAAAAA;
-    width: 50%;
+.progress {
+    background-color: var(--progress-background-color);
     height: 12pt;
+    overflow-x: hidden;
 }
 
-.gwt-ProgressBar-shell .gwt-ProgressBar-bar {
+.progress .progress-bar {
     background-color: var(--focus-color);
 }
 
-.gwt-ProgressBar-shell .gwt-ProgressBar-text {
-    padding: 0;
+.progress .progress-text {
+    padding: 0 var(--border-padding);
     margin: 0;
-    color: white;
+    color: var(--text-color);
+    white-space: nowrap;
+    cursor: default;
+}
+
+.progress .progress-text-firstHalf {
+}
+
+.progress .progress-text-secondHalf {
 }

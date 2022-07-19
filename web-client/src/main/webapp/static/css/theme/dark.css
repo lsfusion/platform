@@ -13,6 +13,7 @@
     --grid-separator-border-color: #5E6364; /* also hardcoded in StyleDefaults.java */
     --dialog-outer-border-color: #696969;
     --mobile-navigator-arrow-color: var(--dialog-outer-border-color);
+    --progress-background-color: var(--scrollbar-color);
     
     --caption-panel-header-color: #7d7d7d;
     --caption-panel-header-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23515151'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); /* --panel-border-color value inside */
