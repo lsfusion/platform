@@ -79,6 +79,10 @@ public class ModalWindow extends ResizableComplexPanel {
     }
 
     public void onShow() {
+        center();
+    }
+
+    public void center() {
         RootPanel.get().setWidgetPosition(this,
                 (Window.getClientWidth() - modal.getOffsetWidth()) / 2,
                 (Window.getClientHeight() - modal.getOffsetHeight()) / 2);
