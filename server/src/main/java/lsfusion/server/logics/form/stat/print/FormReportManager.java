@@ -132,7 +132,9 @@ public abstract class FormReportManager extends FormDataManager {
         byte[] reportSourcesByteArray = getReportSourcesByteArray(hierarchy.reportHierarchy, keyData, propData);
         byte[] reportDesignsByteArray = getReportDesignsByteArray(designs);
         byte[] classesByteArray = getClassesByteArray(usedClasses);
-        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports(), classesByteArray);
+        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray,
+                Settings.get().isUseShowIfInReports(), Settings.get().getJasperReportsGovernorMaxPages(), Settings.get().getJasperReportsGovernorTimeout(),
+                classesByteArray);
     }
 
     private Map<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {

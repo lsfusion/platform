@@ -2838,4 +2838,24 @@ public class Settings implements Cloneable {
     public void setUseGroupFiltersInAsyncFilterCompletion(boolean useGroupFiltersInAsyncFilterCompletion) {
         this.useGroupFiltersInAsyncFilterCompletion = useGroupFiltersInAsyncFilterCompletion;
     }
+
+    //http://jasperreports.freeideas.cz/subdom/jasperreports/how-prevent-infinite-loop-in-jasper-server-run-how-to-limit-timeout-for-report-run/
+    private int jasperReportsGovernorMaxPages = 0;
+    private long jasperReportsGovernorTimeout = 0;
+
+    public int getJasperReportsGovernorMaxPages() {
+        return jasperReportsGovernorMaxPages;
+    }
+
+    public void setJasperReportsGovernorMaxPages(int jasperReportsGovernorMaxPages) {
+        this.jasperReportsGovernorMaxPages = jasperReportsGovernorMaxPages;
+    }
+
+    public long getJasperReportsGovernorTimeout() {
+        return jasperReportsGovernorTimeout;
+    }
+
+    public void setJasperReportsGovernorTimeout(long jasperReportsGovernorTimeout) {
+        this.jasperReportsGovernorTimeout = jasperReportsGovernorTimeout;
+    }
 }
