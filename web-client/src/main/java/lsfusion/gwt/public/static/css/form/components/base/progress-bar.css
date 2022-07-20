@@ -4,7 +4,7 @@
     overflow-x: hidden;
 }
 
-.progress .progress-bar {
+.progress-bar {
     background-color: var(--focus-color);
 }
 
