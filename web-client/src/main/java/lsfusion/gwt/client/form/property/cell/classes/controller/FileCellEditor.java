@@ -11,9 +11,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.ProgressBar;
-import lsfusion.gwt.client.base.view.WindowBox;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -165,87 +163,67 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         public String fileName;
     }
 
-    private class LoadingBox extends WindowBox {
-        private VerticalPanel progressPanel;
+    private class LoadingBox extends DialogModalWindow {
+
+        private final SimplePanel progressPane;
         private GProgressBar prevProgress;
         private Timer timer;
 
         public LoadingBox(Runnable cancelAction) {
-            super(false, false, false);
-            setModal(true);
-            setGlassEnabled(true);
+            super();
 
-            setText(messages.loading());
+            setCaption(messages.loading());
 
-            VerticalPanel mainPanel = new VerticalPanel();
+            progressPane = new SimplePanel();
+            progressPane.setStyleName("dialog-loading-progress");
 
-            progressPanel = new VerticalPanel();
-            mainPanel.add(progressPanel);
+            setBodyWidget(progressPane);
 
-            HorizontalPanel bottomPanel = new HorizontalPanel();
-            bottomPanel.setWidth("100%");
-            bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
+            ResizableComplexPanel buttonPane = new ResizableComplexPanel();
+            buttonPane.setStyleName("modal-footer");
 
             Button btnCancel = new Button(messages.cancel());
             btnCancel.addClickHandler(clickEvent -> {
                 hideLoadingBox();
                 cancelAction.run();
             });
-            bottomPanel.add(btnCancel);
+            buttonPane.add(btnCancel);
 
-            mainPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-            mainPanel.add(bottomPanel);
-
-            setWidget(mainPanel);
+            addContentWidget(buttonPane);
         }
 
-        public void makeMaskVisible(boolean visible) {
-            getElement().getStyle().setOpacity(visible ? 1 : 0);
-            getGlassElement().getStyle().setOpacity(visible ? 0.3 : 0);
-        }
-
+        private boolean isShowing = false;
         public void showLoadingBox() {
             timer = new Timer() {
                 @Override
                 public void run() {
-                    show();
+                    isShowing = true; show();
                 }
             };
             timer.schedule(1000);
         }
 
         public void hideLoadingBox() {
-            if(isShowing())
+            if(isShowing) {
+                isShowing = false;
                 hide();
-            progressPanel.clear();
+            }
             timer.cancel();
         }
 
         public void setProgress(GProgressBar progress) {
             if (prevProgress == null || !prevProgress.equals(progress)) {
-                progressPanel.clear();
-                progressPanel.add(createProgressBarPanel(progress));
+                progressPane.setWidget(new ProgressBar(0, progress.total, progress.progress, new ProgressBar.TextFormatter() {
+                    @Override
+                    protected String getText(ProgressBar bar, double curProgress) {
+                        return progress.message;
+                    }
+                }));
                 prevProgress = progress;
             }
 
-            if(!isShowing())
+            if(isShowing)
                 center();
-        }
-
-        private FlexPanel createProgressBarPanel(final GProgressBar line) {
-            FlexPanel progressBarPanel = new FlexPanel(true);
-            progressBarPanel.addStyleName("stackMessage");
-            ProgressBar progressBar = new ProgressBar(0, line.total, line.progress, new ProgressBar.TextFormatter() {
-                @Override
-                protected String getText(ProgressBar bar, double curProgress) {
-                    return line.message;
-                }
-            });
-            progressBar.setWidth("200px");
-            progressBarPanel.add(progressBar);
-            if (line.params != null)
-                progressBarPanel.add(new HTML(line.params));
-            return progressBarPanel;
         }
     }
 }
