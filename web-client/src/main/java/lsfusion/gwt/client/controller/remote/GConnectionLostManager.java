@@ -233,7 +233,6 @@ public class GConnectionLostManager {
                         btnReconnect.setEnabled(true);
                     }
                     this.fatal = fatal;
-                    center();
                 }
             }
         }

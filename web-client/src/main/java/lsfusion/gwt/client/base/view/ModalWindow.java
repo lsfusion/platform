@@ -10,7 +10,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 
 public class ModalWindow extends ResizableComplexPanel {
 
-    private final SimplePanel modal;
+    protected final SimplePanel modal;
 
     protected ResizableComplexPanel header;
 
@@ -39,6 +39,7 @@ public class ModalWindow extends ResizableComplexPanel {
 
         SimplePanel dialog = new SimplePanel();
         dialog.setStyleName("modal-dialog");
+        dialog.addStyleName("modal-dialog-centered");
         dialog.addStyleName("modal-fit-content");
         modal.setWidget(dialog);
 
@@ -79,19 +80,11 @@ public class ModalWindow extends ResizableComplexPanel {
     }
 
     public void onShow() {
-        center();
-    }
-
-    public void center() {
-        RootPanel.get().setWidgetPosition(this,
-                (Window.getClientWidth() - modal.getOffsetWidth()) / 2,
-                (Window.getClientHeight() - modal.getOffsetHeight()) / 2);
     }
 
     public void hide() {
         modal.removeStyleName("show");
         RootPanel.get().remove(this);
-//        RootPanel.get().remove(modalBackDrop);
     }
 
     public void setCaption(String caption) {

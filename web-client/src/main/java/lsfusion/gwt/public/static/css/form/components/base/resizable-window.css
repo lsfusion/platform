@@ -1,15 +1,35 @@
 .modal-form {
     z-index: 1000;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+.modal {
+    width: 100%;
+    height: 100%;
 }
 
 .modal.show {
     display: block;
-    width: fit-content;
-    height: fit-content;
+}
+
+.modal-dialog {
+    margin: 1.75rem auto 1.75rem auto;
 }
 
 .modal-dialog.modal-fit-content {
     max-width: none;
+    width: fit-content;
+}
+
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1.75rem * 2);
 }
 
 .modal-content {

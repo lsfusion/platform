@@ -221,9 +221,6 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                 }));
                 prevProgress = progress;
             }
-
-            if(isShowing)
-                center();
         }
     }
 }
