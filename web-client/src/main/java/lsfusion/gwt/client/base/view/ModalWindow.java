@@ -12,6 +12,8 @@ public class ModalWindow extends ResizableComplexPanel {
 
     protected final SimplePanel modal;
 
+    protected final SimplePanel dialog;
+
     protected ResizableComplexPanel header;
 
     private final ResizableComplexPanel content;
@@ -37,7 +39,7 @@ public class ModalWindow extends ResizableComplexPanel {
         modal.addStyleName("fade");
         add(modal);
 
-        SimplePanel dialog = new SimplePanel();
+        dialog = new SimplePanel();
         dialog.setStyleName("modal-dialog");
         dialog.addStyleName("modal-dialog-centered");
         dialog.addStyleName("modal-fit-content");
@@ -97,6 +99,14 @@ public class ModalWindow extends ResizableComplexPanel {
 
     public Widget getBodyWidget() {
         return body.getWidget();
+    }
+
+    public void setResizable() {
+        if (getBodyWidget() != null) {
+            GwtClientUtils.resizable(getBodyWidget().getElement(), "e, s, se");
+            dialog.removeStyleName("modal-dialog-centered");
+            dialog.addStyleName("modal-resizable");
+        }
     }
 
     public void addContentWidget(Widget widget) {

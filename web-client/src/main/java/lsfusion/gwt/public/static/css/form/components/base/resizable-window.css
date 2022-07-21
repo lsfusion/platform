@@ -21,6 +21,10 @@
     margin: 1.75rem auto 1.75rem auto;
 }
 
+.modal-dialog.modal-resizable {
+    margin: 0;
+}
+
 .modal-dialog.modal-fit-content {
     max-width: none;
     width: fit-content;

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
@@ -40,6 +41,9 @@ public class ModalForm extends FormContainer {
             public void onShow() {
                 initPreferredSize(); // we need to do it after attach to have correct sizes
 
+                dialog.getElement().getStyle().setLeft((modal.getOffsetWidth() - dialog.getOffsetWidth()) >> 1, Style.Unit.PX);
+                dialog.getElement().getStyle().setTop((modal.getOffsetHeight() - dialog.getOffsetHeight()) >> 1, Style.Unit.PX);
+
                 super.onShow();
             }
         };
@@ -64,8 +68,8 @@ public class ModalForm extends FormContainer {
 
     @Override
     protected void setContent(Widget widget) {
-        GwtClientUtils.resizable(widget.getElement(), "e, s, se");
         contentWidget.setBodyWidget(widget);
+        contentWidget.setResizable();
     }
 
     private FormContainer prevForm;
