@@ -179,17 +179,12 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
 
             setBodyWidget(progressPane);
 
-            ResizableComplexPanel buttonPane = new ResizableComplexPanel();
-            buttonPane.setStyleName("modal-footer");
-
             Button btnCancel = new Button(messages.cancel());
             btnCancel.addClickHandler(clickEvent -> {
                 hideLoadingBox();
                 cancelAction.run();
             });
-            buttonPane.add(btnCancel);
-
-            addContentWidget(buttonPane);
+            addFooterWidget(btnCancel);
         }
 
         private boolean isShowing = false;

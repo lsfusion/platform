@@ -170,15 +170,12 @@ public class GConnectionLostManager {
 
             setBodyWidget(content);
 
-            ResizableComplexPanel buttonPanel = new ResizableComplexPanel();
-            buttonPanel.setStyleName("modal-footer");
-
             btnExit = new Button(messages.rmiConnectionLostExit());
             btnExit.setStyleName("btn");
             btnExit.addStyleName("btn-secondary");
             btnExit.setEnabled(false);
             btnExit.addClickHandler(clickEvent -> exitAction());
-            buttonPanel.add(btnExit);
+            addFooterWidget(btnExit);
 
             btnReconnect = new Button(messages.rmiConnectionLostReconnect());
             btnReconnect.setStyleName("btn");
@@ -186,10 +183,8 @@ public class GConnectionLostManager {
             btnReconnect.setEnabled(false);
             btnReconnect.addClickHandler(clickEvent -> reconnectAction());
             if (showReconnect) {
-                buttonPanel.add(btnReconnect);
+                addFooterWidget(btnReconnect);
             }
-
-            addContentWidget(buttonPanel);
         }
 
         public void showDialog() {

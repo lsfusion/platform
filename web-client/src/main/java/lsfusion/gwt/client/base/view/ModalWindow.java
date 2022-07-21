@@ -59,7 +59,7 @@ public class ModalWindow extends ResizableComplexPanel {
         body.setStyleName("modal-body");
         content.add(body);
 
-        GwtClientUtils.draggable(modal.getElement(), ".modal-header");
+        GwtClientUtils.draggable(dialog.getElement(), ".modal-header");
     }
 
     public void show() {
@@ -101,5 +101,16 @@ public class ModalWindow extends ResizableComplexPanel {
 
     public void addContentWidget(Widget widget) {
         content.add(widget);
+    }
+
+    private ResizableComplexPanel footer;
+    public void addFooterWidget(Widget widget) {
+        if (footer == null) {
+            footer = new ResizableComplexPanel();
+            footer.setStyleName("modal-footer");
+            addContentWidget(footer);
+        }
+
+        footer.add(widget);
     }
 }

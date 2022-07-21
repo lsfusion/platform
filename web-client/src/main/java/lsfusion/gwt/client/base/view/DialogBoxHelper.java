@@ -120,18 +120,13 @@ public class DialogBoxHelper {
         }
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options) {
-            ResizableComplexPanel buttonPane = new ResizableComplexPanel();
-            buttonPane.setStyleName("modal-footer");
-
             for (OptionType option : options) {
                 Button optionButton = createOptionButton(option);
                 if (option == activeOption) {
                     activeButton = optionButton;
                 }
-                buttonPane.add(optionButton);
+                addFooterWidget(optionButton);
             }
-
-            addContentWidget(buttonPane);
         }
 
         private Button createOptionButton(final OptionType option) {
