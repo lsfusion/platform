@@ -69,7 +69,6 @@ public class ModalForm extends FormContainer {
     @Override
     protected void setContent(Widget widget) {
         contentWidget.setBodyWidget(widget);
-        contentWidget.setResizable();
     }
 
     private FormContainer prevForm;

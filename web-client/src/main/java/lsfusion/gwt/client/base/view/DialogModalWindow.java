@@ -8,8 +8,8 @@ import lsfusion.gwt.client.view.MainFrame;
 // twin of a PopupDialogPanel
 public class DialogModalWindow extends ModalWindow {
 
-    public DialogModalWindow() {
-        super();
+    public DialogModalWindow(boolean resizable, boolean fitContent) {
+        super(resizable, fitContent);
     }
 
     private Element focusedElement;

@@ -16,7 +16,7 @@ public class ResizableModalWindow extends ModalWindow {
     }
 
     public ResizableModalWindow() {
-        super();
+        super(true, true);
 
         TooltipManager.registerWidget(header, new TooltipManager.TooltipHelper() {
             @Override

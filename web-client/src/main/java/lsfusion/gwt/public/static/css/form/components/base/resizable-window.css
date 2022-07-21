@@ -19,6 +19,8 @@
 
 .modal-dialog {
     margin: 1.75rem auto 1.75rem auto;
+    width: auto;
+    max-width: 500px;
 }
 
 .modal-dialog.modal-resizable {
@@ -38,6 +40,7 @@
 
 .modal-content {
     background-color: var(--background-color);
+    width: 100%;
 }
 
 .modal-backdrop {

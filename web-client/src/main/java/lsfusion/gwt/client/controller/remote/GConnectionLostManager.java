@@ -134,7 +134,7 @@ public class GConnectionLostManager {
         private boolean fatal;
 
         public GBlockDialog(boolean fatal, boolean showReconnect) {
-            super();
+            super(false, true);
 
             this.fatal = fatal;
 

@@ -101,6 +101,8 @@ public class DialogBoxHelper {
         }
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
+            super(false, true);
+
             this.closeCallback = closeCallback;
 
             setCaption(caption);

@@ -24,8 +24,13 @@ public class ModalWindow extends ResizableComplexPanel {
 
     protected final DivWidget modalBackDrop;
 
-    public ModalWindow() {
+    private final boolean resizable;
+
+    public ModalWindow(boolean resizable, boolean fitContent) {
         super();
+
+        this.resizable = resizable;
+
         setStyleName("modal-form");
 
         modalBackDrop = new DivWidget();
@@ -41,8 +46,12 @@ public class ModalWindow extends ResizableComplexPanel {
 
         dialog = new SimplePanel();
         dialog.setStyleName("modal-dialog");
-        dialog.addStyleName("modal-dialog-centered");
-        dialog.addStyleName("modal-fit-content");
+        if (resizable)
+            dialog.addStyleName("modal-resizable");
+        else
+            dialog.addStyleName("modal-dialog-centered");
+        if (fitContent)
+            dialog.addStyleName("modal-fit-content");
         modal.setWidget(dialog);
 
         header = new ResizableComplexPanel();
@@ -95,18 +104,12 @@ public class ModalWindow extends ResizableComplexPanel {
 
     public void setBodyWidget(Widget widget) {
         body.setWidget(widget);
+        if (resizable)
+            GwtClientUtils.resizable(getBodyWidget().getElement(), "e, s, se");
     }
 
     public Widget getBodyWidget() {
         return body.getWidget();
-    }
-
-    public void setResizable() {
-        if (getBodyWidget() != null) {
-            GwtClientUtils.resizable(getBodyWidget().getElement(), "e, s, se");
-            dialog.removeStyleName("modal-dialog-centered");
-            dialog.addStyleName("modal-resizable");
-        }
     }
 
     public void addContentWidget(Widget widget) {
