@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.base.focus;
 
+import lsfusion.gwt.client.base.FocusUtils;
+
 public interface DefaultFocusReceiver {
-    boolean focus();
+    boolean focus(FocusUtils.Reason reason);
 }

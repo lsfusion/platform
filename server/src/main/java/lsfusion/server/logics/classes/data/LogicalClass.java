@@ -11,6 +11,7 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import net.sf.jasperreports.engine.type.HorizontalTextAlignEnum;
 import org.apache.poi.ss.usermodel.Cell;
@@ -101,6 +102,16 @@ public class LogicalClass extends DataClass<Boolean> {
                 return true;
         }
         return null;
+    }
+
+    @Override
+    public boolean useInputTag() {
+        return Settings.get().isUseInputTagForBoolean();
+    }
+
+    @Override
+    public boolean hasToolbar(boolean isInputPanel) {
+        return !Settings.get().isNoToolbarForBoolean();
     }
 
     @Override

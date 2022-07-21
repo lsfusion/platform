@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -71,8 +72,8 @@ public abstract class GAbstractTableController extends GPropertyController imple
     }
 
     protected DefaultFocusReceiver getDefaultFocusReceiver() {
-        return () -> {
-            boolean focused = focusFirstWidget();
+        return (FocusUtils.Reason reason) -> {
+            boolean focused = focusFirstWidget(reason);
             if (focused) {
                 scrollToTop();
             }
@@ -99,7 +100,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
                     formController.setLoading(filterView, requestIndex);
 
                 if (focusFirstComponent) {
-                    Scheduler.get().scheduleDeferred(() -> focusFirstWidget());
+                    Scheduler.get().scheduleDeferred(() -> focusFirstWidget(FocusUtils.Reason.APPLYFILTER));
                 }
             }
 
@@ -159,7 +160,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     protected abstract long changeFilter(ArrayList<GPropertyFilter> conditions);
     // eventually is called either on form opening / form tab selection / filter dialog close
-    public abstract boolean focusFirstWidget();
+    public abstract boolean focusFirstWidget(FocusUtils.Reason reason);
     public abstract GComponent getGridComponent();
 
     @Override

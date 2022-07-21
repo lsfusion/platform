@@ -108,6 +108,9 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean notSelectAll;
     public String toolTip;
 
+    public String tag;
+    public Boolean toolbar;
+
     public boolean notNull;
 
     public Boolean sticky;
@@ -182,7 +185,11 @@ public class PropertyDrawView extends BaseComponentView {
     // we force optimistic async event scheme for external calls (since this calls assume that async push should exist)
     // for that purpose we have to send to client that type to do parsing, rendering, etc.
     public Type getExternalChangeType(ServerContext context) {
-        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE, true);
+        return getChangeType(context, true);
+    }
+
+    public Type getChangeType(ServerContext context, boolean externalChange) {
+        AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, CHANGE, externalChange);
         return asyncEventExec instanceof AsyncInput ? ((AsyncInput) asyncEventExec).changeType : null;
     }
 
@@ -403,6 +410,9 @@ public class PropertyDrawView extends BaseComponentView {
             outStream.writeByte(1);
             outStream.writeByte(DataType.ACTION);
         }
+
+        pool.writeString(outStream, getTag(pool.context));
+        pool.writeBoolean(outStream, hasToolbar(pool.context));
 
         Type externalChangeType = getExternalChangeType(pool.context);
         outStream.writeBoolean(externalChangeType != null);
@@ -697,6 +707,46 @@ public class PropertyDrawView extends BaseComponentView {
             return FlexAlignment.START;
         }
         return valueAlignment;
+    }
+
+    public String getTag(ServerContext context) {
+        if(tag != null)
+            return tag;
+
+        if(isCustom())
+            return null;
+
+        Type changeType = getChangeType(context, false);
+        if(!isProperty()) {
+            if(changeType == null)
+                return "button";
+        } else {
+            Type type = getType();
+            if(type != null && changeType != null && type.getCompatible(changeType) != null &&
+                    type.useInputTag())
+                return "input";
+        }
+
+        return null;
+    }
+
+    public boolean hasToolbar(ServerContext context) {
+        if(toolbar != null)
+            return toolbar;
+
+        if(isCustom())
+            return false;
+
+        if(!isProperty())
+            return true;
+
+        Type type = getType();
+        if(type != null) {
+            String tag = getTag(context);
+            return type.hasToolbar(tag != null && tag.equals("input") && !entity.isList(context.entity));
+        }
+
+        return true;
     }
 
     public Boolean boxed;

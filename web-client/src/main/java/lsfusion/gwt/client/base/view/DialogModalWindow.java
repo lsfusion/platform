@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.DialogBox;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -30,7 +31,7 @@ public class DialogModalWindow extends ModalWindow {
 
         MainFrame.setModalPopup(false);
         if(focusedElement != null) {
-            focusedElement.focus();
+            FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
             focusedElement = null; // just in case because sometimes hide is called without show (and the same DialogModalBox is used several time)
         }
     }

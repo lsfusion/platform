@@ -14,19 +14,23 @@ public class ColorCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public void renderStaticContent(Element element, RenderContext renderContext) {
+    public boolean renderContent(Element element, RenderContext renderContext) {
         element.setInnerText(EscapeUtils.UNICODE_NBSP);
 //        element.getStyle().setBorderWidth(0, Style.Unit.PX);
+
+        return false;
     }
 
     @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
 //        element.getStyle().clearBackgroundColor();
         element.setTitle(null);
+
+        return false;
     }
 
     @Override
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         String baseColor = getColorValue(value);
         element.setTitle(baseColor);
 
@@ -58,10 +62,5 @@ public class ColorCellRenderer extends CellRenderer<Object> {
     @Override
     public String format(Object value) {
         return getColorValue(value);
-    }
-
-    @Override
-    public boolean isAutoDynamicHeight() {
-        return false;
     }
 }

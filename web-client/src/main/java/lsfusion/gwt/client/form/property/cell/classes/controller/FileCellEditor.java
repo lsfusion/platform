@@ -11,6 +11,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
@@ -79,9 +80,10 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     }
 
     @Override
-    public void start(Event editEvent, Element parent, Object oldValue) {
-        if(GKeyStroke.isDropEvent(editEvent)) {
-            drop(editEvent, parent);
+    public void start(EventHandler handler, Element parent, Object oldValue) {
+        Event event;
+        if(handler != null && GKeyStroke.isDropEvent(event = handler.event)) {
+            drop(event, parent);
         } else {
             click(parent, createFileInputElement());
         }
@@ -150,7 +152,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
                 .setUploadSuccessHandler(uploadSuccessEvent -> {
                     loadingBox.hideLoadingBox();
                     uploaded = true;
-                    validateAndCommit(parent, true, CommitReason.FORCED);
+                    commit(parent, CommitReason.FORCED);
                     return true;
                 });
 

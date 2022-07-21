@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.grid.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -37,16 +38,13 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
     // when we have a td and it is not a simple text, we have to wrap it, because td has a display : table-cell (and often incorrect element type in general)
     // and thus height for example always work like min-height, so the size depends on
     // and it can not be changed and it's behaviour is often very odd
-    private static boolean needWrap(Element element, GPropertyDraw property, RenderContext renderContext) {
-        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer().isSimpleText(renderContext);
-    }
-    private static boolean needWrap(Element element, GPropertyDraw property, UpdateContext updateContext) {
-        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer().isSimpleText(updateContext);
+    private static boolean needWrap(Element element, GPropertyDraw property) {
+        return GwtClientUtils.isTDorTH(element) && !property.getCellRenderer().canBeRenderedInTD();
     }
 
-    public static Element renderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
-        if(needWrap(element, property, renderContext)) {
-            element = wrapSized(element, property.getCellRenderer().createRenderElement(renderContext));
+    public static Element renderSized(Element element, GPropertyDraw property, GFont font) {
+        if(needWrap(element, property)) {
+            element = wrapSized(element, property.getCellRenderer().createRenderElement());
 
             // the thing is that td ignores min-height (however height in td works just like min-height)
             // and we want height in table div work as min-height (i.e. to stretch)
@@ -54,20 +52,20 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         // we need to set the size to the "render" element to avoid problems with padding
-        FlexPanel.setHeight(element, property.getValueHeight(renderContext.getFont(), false, true));
+        FlexPanel.setHeight(element, property.getValueHeight(font, false, true));
 
         return element;
     }
 
-    public static Element getRenderSizedElement(Element element, GPropertyDraw property, UpdateContext updateContext) {
-        if(needWrap(element, property, updateContext))
+    public static Element getRenderSizedElement(Element element, GPropertyDraw property) {
+        if(needWrap(element, property))
             element = unwrapSized(element);
 
         return element;
     }
 
-    public static boolean clearRenderSized(Element element, GPropertyDraw property, RenderContext renderContext) {
-        if(needWrap(element, property, renderContext)) {
+    public static boolean clearRenderSized(Element element, GPropertyDraw property) {
+        if(needWrap(element, property)) {
             GwtClientUtils.removeAllChildren(element);
 
             return true;
@@ -99,12 +97,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     // pivot / footer
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext) {
-        property.getCellRenderer().render(renderSized(element, property, renderContext), renderContext);
+        property.getCellRenderer().render(renderSized(element, property, renderContext.getFont()), renderContext);
     }
 
     // pivot (render&update), footer (render&update, update)
     public static void update(GPropertyDraw property, Element element, UpdateContext updateContext) {
-        property.getCellRenderer().update(getRenderSizedElement(element, property, updateContext), updateContext);
+        property.getCellRenderer().update(getRenderSizedElement(element, property), updateContext);
     }
 
     @Override

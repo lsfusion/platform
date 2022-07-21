@@ -54,7 +54,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
     protected abstract boolean isSinglePicker();
 
     private void setInputValue(Element parent) {
-        setInputValue(getInputElement(parent), tryFormatInputText(getInputValue()));
+        setInputValue(parent, tryFormatInputText(getInputValue()));
     }
 
     protected native void removePicker()/*-{
@@ -159,8 +159,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
         //swap 'left' and 'right' because dateRangePicker library swap them inexplicably for what
         function getPickerAlign() {
-            var propertyHorTextAlignment = thisObj.@TextBasedCellEditor::property.@GPropertyDraw::getCellRenderer()()
-                .@lsfusion.gwt.client.form.property.cell.view.CellRenderer::getHorzTextAlignment()();
+            var propertyHorTextAlignment = thisObj.@SimpleTextBasedCellEditor::property.@GPropertyDraw::getHorzTextAlignment()();
             propertyHorTextAlignment = propertyHorTextAlignment === @com.google.gwt.dom.client.Style.TextAlign::LEFT ? @com.google.gwt.dom.client.Style.TextAlign::RIGHT
                 : propertyHorTextAlignment === @com.google.gwt.dom.client.Style.TextAlign::RIGHT ? @com.google.gwt.dom.client.Style.TextAlign::LEFT : propertyHorTextAlignment;
             return propertyHorTextAlignment.@com.google.gwt.dom.client.Style.TextAlign::getCssName()();

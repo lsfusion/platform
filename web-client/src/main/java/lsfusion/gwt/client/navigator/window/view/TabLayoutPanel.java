@@ -18,7 +18,6 @@ package lsfusion.gwt.client.navigator.window.view;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -36,6 +35,7 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.annotations.IsSafeHtml;
 import com.google.gwt.safehtml.shared.annotations.SuppressIsSafeHtmlCastCheck;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
 import java.util.ArrayList;
@@ -625,7 +625,7 @@ public class TabLayoutPanel extends ResizeComposite implements HasWidgets,
 
         Element focusedElement = focusedElements.get(index);
         if(focusedElement != null) {
-            Scheduler.get().scheduleFinally(() -> focusedElement.focus());
+            Scheduler.get().scheduleFinally(() -> FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS)); // however NAVIGATE, as well as SHOW can be used
         }
 
 

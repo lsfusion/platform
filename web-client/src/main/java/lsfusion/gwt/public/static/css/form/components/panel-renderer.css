@@ -1,6 +1,7 @@
 .dataPanelRendererPanel {
     white-space: nowrap;
-
+}
+.dataPanelRendererPanel:not(.prop-input) {
     cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
 }
 
@@ -56,6 +57,18 @@
 
 .panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
     border: 1px solid var(--component-hover-border-color);
+}
+
+/* border doesn't work for input checkbox */
+input[type=checkbox].panelRendererValueFocused.panelRendererValueBoxed {
+    outline: 1px solid var(--focus-color);
+
+    /* this is needed because Chrome has the default outline-offset set to 2 for :focus-visible input checkbox  */
+    /* https://stackoverflow.com/questions/73049600/should-input-checkbox-outline-include-margins-or-not */
+    outline-offset: 0;
+}
+input[type=checkbox].panelRendererValueBoxed:hover:not(.panelRendererValueFocused), .actionPanelRendererValue:hover:not(focus) { /* we want focus to have higher priority than hover*/
+    outline: 1px solid var(--component-hover-border-color);
 }
 
 .panelRendererValueBinding, .panelRendererValueBinding .background-inherit {

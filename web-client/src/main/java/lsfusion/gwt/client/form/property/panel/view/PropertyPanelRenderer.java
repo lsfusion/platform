@@ -25,8 +25,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         SizedWidget valueWidget = value.setSized();
 
-        if (property.notNull || property.hasChangeAction)
-            appendCorners(property.notNull, valueWidget.widget);
+        boolean editableNotNull = property.isEditableNotNull();
+        if (editableNotNull || property.hasChangeAction)
+            appendCorners(editableNotNull, valueWidget.widget);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
 

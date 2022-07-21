@@ -24,4 +24,9 @@ public class GImageType extends GFileType {
     public String toString() {
         return ClientMessages.Instance.get().typeImageCaption();
     }
+
+    @Override
+    public String getVertTextAlignment() {
+        return "stretch";
+    }
 }

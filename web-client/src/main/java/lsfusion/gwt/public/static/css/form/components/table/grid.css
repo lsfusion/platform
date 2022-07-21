@@ -12,7 +12,12 @@
 }
 
 .cell-div {
+    /* it's tricky here, this cell-div used for property rendering and in particular property "sizing"
+     "sizing" needs box-sizing to be content-box to ignore paddings, but it's no good for width 100%, so we have to
+     set it to fill-available to have 100% with the respect of paddings (for this class explicit width is not set, for now, while colgroup widths are used)*/
     width: 100%;
+    width: -webkit-fill-available;
+    width: -moz-available;
     min-height: 100%; /* we want to stretch div in the cell even if the explicit height is set */
 }
 

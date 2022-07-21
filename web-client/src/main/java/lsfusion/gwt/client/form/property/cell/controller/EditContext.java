@@ -24,7 +24,6 @@ public interface EditContext extends ExecContext {
     }
 
     Element getEditElement();
-    Element getEditEventElement();
 
     default Object getValue() { return getUpdateContext().getValue(); }
     void setValue(Object value);

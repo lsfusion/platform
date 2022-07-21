@@ -1240,7 +1240,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     public static void setTableToExcelPropertyAttributes(Element element, JavaScriptObject value, GPropertyDraw property) {
-        Style.TextAlign textAlignStyle = property.getTextAlignStyle();
+        Style.TextAlign textAlignStyle = property.getHorzTextAlignment();
         if (textAlignStyle != null) {
             switch (textAlignStyle) {
                 case LEFT:

@@ -5,6 +5,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -26,21 +27,26 @@ public abstract class CellRenderer<T> {
     protected final String NOT_DEFINED_VALUE = messages.formRendererNotDefined();
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
-    public Element createRenderElement(RenderContext renderContext) {
-        return Document.get().createDivElement();
-    }
-    public boolean isSimpleText(RenderContext renderContext) {
-        return false;
-    }
-    public boolean isSimpleText(UpdateContext updateContext) {
-        return false;
+    protected boolean isTagInput() {
+        String tag = getTag();
+        return tag != null && tag.equals("input");
     }
 
-    protected Style.TextAlign getDefaultHorzTextAlignment() {
-        return Style.TextAlign.LEFT;
+    protected String getTag() {
+        return property.tag;
     }
-    protected String getDefaultVertAlignment() {
-        return "center";
+
+    public Element createRenderElement() {
+        assert !isTagInput();
+
+        String tag = getTag();
+        if(tag == null)
+            return Document.get().createDivElement();
+
+        return Document.get().createElement(tag);
+    }
+    public boolean canBeRenderedInTD() {
+        return false;
     }
 
     private static String getFlexAlign(Style.TextAlign textAlign) {
@@ -53,28 +59,45 @@ public abstract class CellRenderer<T> {
                 return textAlign.getCssName();
         }
     }
+    private static Style.VerticalAlign getTextAlign(String vertAlign) {
+        switch (vertAlign) {
+            case "center":
+                return Style.VerticalAlign.MIDDLE;
+            case "baseline":
+                return Style.VerticalAlign.BASELINE;
+            case "top":
+                return Style.VerticalAlign.TOP;
+        }
+        throw new UnsupportedOperationException();
+    }
 
     // should be consistent with getWidthPadding and getHeightPadding
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
-        Style.TextAlign horzTextAlignment = getHorzTextAlignment();
-        String vertAlignment = getDefaultVertAlignment();
-        if(GwtClientUtils.isTDorTH(element)) {
-            assert isSimpleText(renderContext); // see needWrap check
-            renderSimpleStatic(element, horzTextAlignment, vertAlignment);
-        } else
-            renderFlexStatic(element, getFlexAlign(horzTextAlignment), vertAlignment);
-
         element.addClassName("prop");
 
-        renderStaticContent(element, renderContext);
+        boolean renderedAlignment = renderContent(element, renderContext);
+
+        if(!renderedAlignment) {
+            assert !GwtClientUtils.isTDorTH(element);
+            renderFlexAlignment(property, element);
+        }
     }
 
-    public Style.TextAlign getHorzTextAlignment() {
-        Style.TextAlign textAlign = property.getTextAlignStyle();
-        if (textAlign == null)
-            textAlign = getDefaultHorzTextAlignment();
-        return textAlign;
+    public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
+        GFont font = property.font != null ? property.font : renderContext.getFont();
+
+        if (font != null) {
+            font.apply(element.getStyle());
+        }
+    }
+
+    public static void clearBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
+        GFont font = property.font != null ? property.font : renderContext.getFont();
+
+        if (font != null) {
+            font.clear(element.getStyle());
+        }
     }
 
     public static void renderEditSelected(Element element, GPropertyDraw property) {
@@ -86,38 +109,39 @@ public abstract class CellRenderer<T> {
             element.removeClassName("selectedCellHasEdit");
     }
 
-    private static void renderFlexStatic(Element element, String horzAlignment, String vertAlignment) {
+    private static void renderFlexAlignment(GPropertyDraw property, Element element) {
         element.addClassName("wrap-center");
 
-        if(!vertAlignment.equals("center"))
+        String horzAlignment = getFlexAlign(property.getHorzTextAlignment());
+        String vertAlignment = property.getVertTextAlignment();
+        if(!vertAlignment.equals("center") && !vertAlignment.equals("baseline"))
             element.getStyle().setProperty("alignItems", vertAlignment);
         if(!horzAlignment.equals("center"))
             element.getStyle().setProperty("justifyContent", horzAlignment);
     }
 
-    private static void renderSimpleStatic(Element element, Style.TextAlign horzAlignment, String vertAlignment) {
-//        if(staticHeight != null)
-//            GPropertyTableBuilder.setLineHeight(element, staticHeight);
-        assert vertAlignment.equals("center") || vertAlignment.equals("top"); // top is used for the multi-lines text renderers
+    public static void renderTextAlignment(GPropertyDraw property, Element element) {
+//        assert GwtClientUtils.isTDorTH(element) || GwtClientUtils.isInput(element);
+
+        Style.TextAlign horzAlignment = property.getHorzTextAlignment();
+        Style.VerticalAlign vertAlignment = getTextAlign(property.getVertTextAlignment());
+
         // actually vertical-align works only for text content or td content
         // however for td line height should not be set (!) and for div should be set, god knows why
         // it seems that vertical-align is middle by default, however just in case
-        element.getStyle().setVerticalAlign(vertAlignment.equals("center") ? Style.VerticalAlign.MIDDLE : Style.VerticalAlign.TOP);
+        element.getStyle().setVerticalAlign(vertAlignment);
         element.getStyle().setTextAlign(horzAlignment);
     }
 
     public void clearRender(Element element, RenderContext renderContext) {
         GwtClientUtils.removeAllChildren(element);
 
-        if(GwtClientUtils.isTDorTH(element)) { // optimization
-            assert isSimpleText(renderContext);
-            clearRenderSimpleStatic(element);
-        } else
-            clearRenderFlexStatic(element);
+        boolean renderedAlignment = clearRenderContent(element, renderContext);
+
+        if(!renderedAlignment)
+            clearRenderFlexAlignment(element);
 
         element.removeClassName("prop");
-
-        clearRenderContent(element, renderContext);
 
         AbstractDataGridBuilder.clearColors(element);
 
@@ -131,13 +155,13 @@ public abstract class CellRenderer<T> {
         }
         element.setPropertyObject(RENDERED, null);
     }
-    private static void clearRenderSimpleStatic(Element element) {
+    public static void clearRenderTextAlignment(Element element) {
 //        if(staticHeight != null)
 //            GPropertyTableBuilder.clearLineHeight(element);
         element.getStyle().clearProperty("verticalAlign");
         element.getStyle().clearTextAlign();
     }
-    private static void clearRenderFlexStatic(Element element) {
+    private static void clearRenderFlexAlignment(Element element) {
         element.removeClassName("wrap-center");
         element.getStyle().clearProperty("alignItems");
         element.getStyle().clearProperty("justifyContent");
@@ -152,7 +176,7 @@ public abstract class CellRenderer<T> {
     }
 
     protected boolean needToRenderToolbarContent() {
-        return true;
+        return property.toolbar;
     }
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
@@ -226,7 +250,7 @@ public abstract class CellRenderer<T> {
             renderedState.colorTheme = MainFrame.colorTheme;
             renderedState.rerender = false;
 
-            cleared = renderDynamicContent(element, value, loading, updateContext);
+            cleared = updateContent(element, value, loading, updateContext);
         }
 
         if(needToRenderToolbarContent())
@@ -324,10 +348,11 @@ public abstract class CellRenderer<T> {
 
         if(needToolbar) {
             Element toolbarElement = cleared ? null : toolbarState.element;
-            boolean start = !getHorzTextAlignment().equals(Style.TextAlign.LEFT);
+            boolean start = !property.getHorzTextAlignment().equals(Style.TextAlign.LEFT);
             if(toolbarElement == null) {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
+                toolbarElement.addClassName("property-toolbar");
                 element.appendChild(toolbarElement);
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
 
@@ -402,8 +427,8 @@ public abstract class CellRenderer<T> {
     private Element wrapPropertyToolbarItemGroup(Element propertyToolbarItemGroup, Element toolbarElement, Element element, boolean start) {
         if(propertyToolbarItemGroup == null)
             propertyToolbarItemGroup = Document.get().createDivElement();
-        propertyToolbarItemGroup.addClassName(start ? "property-toolbar-item-group-start" : "property-toolbar-item-group-end");
-        propertyToolbarItemGroup.addClassName("hide");
+        propertyToolbarItemGroup.addClassName(start ? "property-toolbar-item-hover-start" : "property-toolbar-item-hover-end");
+        propertyToolbarItemGroup.addClassName("property-toolbar-item-hover");
 
         addToToolbar(toolbarElement, start, propertyToolbarItemGroup);
 
@@ -430,9 +455,9 @@ public abstract class CellRenderer<T> {
         element.removeClassName("property-toolbar-on-hover");
     }
 
-    public abstract void renderStaticContent(Element element, RenderContext renderContext);
-    public abstract boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext);
-    public abstract void clearRenderContent(Element element, RenderContext renderContext);
+    public abstract boolean renderContent(Element element, RenderContext renderContext);
+    public abstract boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext);
+    public abstract boolean clearRenderContent(Element element, RenderContext renderContext);
 
     public int getWidthPadding() {
         return 0;
@@ -442,10 +467,6 @@ public abstract class CellRenderer<T> {
     }
 
     public abstract String format(T value);
-
-    public boolean isAutoDynamicHeight() {
-        return true;
-    }
 
     public boolean isCustomRenderer() {
         return false;

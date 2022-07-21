@@ -12,15 +12,17 @@ public class HTMLLinkCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public void renderStaticContent(Element element, RenderContext renderContext) {
+    public boolean renderContent(Element element, RenderContext renderContext) {
+        return false;
     }
 
     @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
+        return false;
     }
 
     @Override
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         element.setInnerHTML("<iframe src=\"" + value + "\" style=\"width:100%; height:100%;\" >Unfortunately this content could not be displayed</iframe>");
 
         return true;

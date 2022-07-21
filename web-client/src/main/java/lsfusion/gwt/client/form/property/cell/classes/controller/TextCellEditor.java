@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextArea;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-public class TextCellEditor extends TextBasedCellEditor {
+public class TextCellEditor extends SimpleTextBasedCellEditor {
 
     public TextCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
         super(editManager, property, inputList);
@@ -17,16 +17,6 @@ public class TextCellEditor extends TextBasedCellEditor {
     @Override
     protected boolean disableSuggest() {
         return true;
-    }
-
-    @Override
-    protected Element createTextInputElement() {
-        return Document.get().createTextAreaElement();
-    }
-
-    @Override
-    protected ValueBoxBase<String> createTextInputWidget(Element inputElement) {
-        return new TextArea(inputElement);
     }
 
     @Override

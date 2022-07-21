@@ -3,9 +3,9 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.text.shared.SafeHtmlRenderer;
 import com.google.gwt.text.shared.SimpleSafeHtmlRenderer;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -29,8 +29,8 @@ public abstract class PopupValueCellEditor extends WindowValueCellEditor impleme
     }
 
     @Override
-    public void start(Event editEvent, Element parent, Object oldValue) {
-        PopupCellEditor.super.start(editEvent, parent, oldValue);
+    public void start(EventHandler handler, Element parent, Object oldValue) {
+        PopupCellEditor.super.start(handler, parent, oldValue);
         GwtClientUtils.showPopupInWindow(getPopup(), createPopupComponent(parent, oldValue), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
     }
 

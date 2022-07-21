@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.InputElement;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GExtInt;
@@ -49,4 +51,13 @@ public class GTextType extends GStringType {
         return ClientMessages.Instance.get().typeTextCaption() + (type != null ? " " + type : "");
     }
 
+    @Override
+    public String getVertTextAlignment() {
+        return "top";
+    }
+
+    @Override
+    public InputElement createTextInputElement() {
+        return Document.get().createTextAreaElement().cast();
+    }
 }

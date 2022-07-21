@@ -4,10 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -172,9 +169,9 @@ public class GFormLayout extends ResizableComplexPanel {
         }
     }
 
-    public boolean focusDefaultWidget() {
+    public boolean focusDefaultWidget(FocusUtils.Reason reason) {
         for (DefaultFocusReceiver dc : defaultFocusReceivers) {
-            if (dc.focus()) {
+            if (dc.focus(reason)) {
                 return true;
             }
         }

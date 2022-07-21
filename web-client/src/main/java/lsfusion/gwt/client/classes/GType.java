@@ -1,5 +1,8 @@
 package lsfusion.gwt.client.classes;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
@@ -84,5 +87,16 @@ public abstract class GType implements Serializable {
 
     public GType getFilterMatchType() {
         return this;
+    }
+
+    public Style.TextAlign getHorzTextAlignment() {
+        return Style.TextAlign.LEFT;
+    }
+    public String getVertTextAlignment() {
+        return "center";
+    }
+
+    public InputElement createTextInputElement() {
+        return Document.get().createTextInputElement();
     }
 }

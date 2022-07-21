@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 
@@ -90,7 +91,7 @@ public class DialogBoxHelper {
         messageBox.show();
         return messageBox;
     }
-    
+
     @SuppressWarnings("GWTStyleCheck")
     public static final class MessageBox extends DialogModalWindow {
         private final CloseCallback closeCallback;
@@ -148,7 +149,7 @@ public class DialogBoxHelper {
 
         public void show() {
             super.show();
-            activeButton.getElement().focus();
+            FocusUtils.focus(activeButton.getElement(), FocusUtils.Reason.SHOW);
         }
     }
 }

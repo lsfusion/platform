@@ -5,6 +5,7 @@ import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
@@ -18,7 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 // класс который можно сравнивать
-public abstract class IntegralClass<T extends Number> extends DataClass<T> {
+public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> {
 
     public int getReportMinimumWidth() { return 30; }
     public int getReportPreferredWidth() { return 50; }

@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.form.property.table.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
@@ -50,11 +51,11 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     public abstract GGridPropertyTable<T>.GridPropertyColumn getGridColumn(int column);
 
     @Override
-    public boolean isChangeOnSingleClick(Cell cell, Event event, boolean rowChanged) {
+    public boolean isChangeOnSingleClick(Cell cell, Event event, boolean rowChanged, Column column) {
         GPropertyDraw property = getProperty(cell);
         if(property != null && property.changeOnSingleClick != null)
             return property.changeOnSingleClick;
-        return super.isChangeOnSingleClick(cell, event, rowChanged) ||
+        return super.isChangeOnSingleClick(cell, event, rowChanged, column) ||
                 (!rowChanged && FormsController.isLinkMode() && property != null && property.hasEditObjectAction) ||
                 (GMouseStroke.isChangeEvent(event) && GEditBindingMap.getToolbarAction(event) != null);
     }
@@ -67,7 +68,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract void setLoadingAt(Cell cell);
 
-    public abstract void pasteData(Cell cell, TableCellElement parent, List<List<String>> table);
+    public abstract void pasteData(Cell cell, Element renderElement, List<List<String>> table);
 
     @Override
     protected int findRowByKey(Object key, int expandingIndex) {
@@ -86,20 +87,19 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 //        CopyPasteUtils.setEmptySelection(getSelectedElement());
 //    }
 
-    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, TableCellElement editCellParent) {
-        form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editCellParent));
+    public void onEditEvent(EventHandler handler, boolean isBinding, Cell editCell, Element editRenderElement) {
+        form.executePropertyEventAction(handler, isBinding, getEditContext(editCell, editRenderElement));
     }
 
-    protected abstract RenderContext getRenderContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
+    protected abstract RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
 
-    protected abstract UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
+    protected abstract UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GGridPropertyTable<T>.GridPropertyColumn column);
 
-    public ExecuteEditContext getEditContext(Cell editCell, TableCellElement editCellParent) {
+    public ExecuteEditContext getEditContext(Cell editCell, Element editRenderElement) {
         final GPropertyDraw property = GPropertyTable.this.getProperty(editCell);
         GGridPropertyTable<T>.GridPropertyColumn gridColumn = getGridColumn(editCell.getColumnIndex());
-        RenderContext renderContext = getRenderContext(editCell, editCellParent, property, gridColumn);
-        UpdateContext updateContext = getUpdateContext(editCell, editCellParent, property, gridColumn);
-        Element editElement = GPropertyTableBuilder.getRenderSizedElement(editCellParent, property, updateContext);
+        RenderContext renderContext = getRenderContext(editCell, editRenderElement, property, gridColumn);
+        UpdateContext updateContext = getUpdateContext(editCell, editRenderElement, property, gridColumn);
         return new ExecuteEditContext() {
             @Override
             public RenderContext getRenderContext() {
@@ -118,12 +118,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
             @Override
             public Element getEditElement() {
-                return editElement;
-            }
-
-            @Override
-            public Element getEditEventElement() {
-                return editCellParent;
+                return editRenderElement;
             }
 
             @Override
@@ -162,9 +157,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public void trySetFocus() {
-                if (changeSelectedColumn(editCell.getColumnIndex()))
-                    getFocusElement().focus();
+            public void trySetFocusOnBinding() {
+                GPropertyTable.this.focusColumn(editCell.getColumnIndex(), FocusUtils.Reason.BINDING);
             }
 
             @Override
@@ -195,16 +189,4 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     }
 
     public abstract GFont getFont();
-
-    @Override
-    public boolean changeSelectedColumn(int column) {
-        form.checkCommitEditing();
-        return super.changeSelectedColumn(column);
-    }
-
-    @Override
-    public void changeSelectedRow(int row) {
-        form.checkCommitEditing();
-        super.changeSelectedRow(row);
-    }
 }

@@ -24,7 +24,7 @@ import java.util.Collection;
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.cmp;
 
-public class StringClass extends DataClass<String> {
+public class StringClass extends TextBasedClass<String> {
 
     private final static Collection<StringClass> strings = new ArrayList<>();
 

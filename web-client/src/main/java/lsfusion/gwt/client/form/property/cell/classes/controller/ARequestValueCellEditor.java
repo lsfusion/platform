@@ -50,11 +50,6 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         return editManager.isThisCellEditing(this);
     }
 
-    // current value
-    public void validateAndCommit(Element parent, boolean cancelIfInvalid) {
-        validateAndCommit(parent, cancelIfInvalid, CommitReason.OTHER);
-    }
-
     public void validateAndCommit(Element parent, boolean cancelIfInvalid, CommitReason commitReason) {
         validateAndCommit(parent, null, cancelIfInvalid, commitReason);
     }

@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.view.MainFrame;
@@ -26,7 +27,7 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     }
 
     @Override
-    public void start(Event editEvent, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, Object oldValue) {
         initAceEditor(parent, oldValue, colorThemeName);
     }
 

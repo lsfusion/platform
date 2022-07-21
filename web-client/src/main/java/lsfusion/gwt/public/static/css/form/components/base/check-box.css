@@ -1,11 +1,11 @@
-input[type=checkbox] {
-    vertical-align: middle;
-    position: relative;
-}
+/*input[type=checkbox] {*/
+/*    vertical-align: middle;*/
+/*    position: relative;*/
+/*}*/
 
-input[type=checkbox]:focus {
-    outline: 1px solid var(--focus-color);
-}
+/*input[type=checkbox]:focus {*/
+/*    outline: 1px solid var(--focus-color);*/
+/*}*/
 
 .form-check .form-check-input {
     float: left;

@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
@@ -28,7 +28,7 @@ public class ColorCellEditor extends PopupValueCellEditor {
         colorPicker = new ColorPicker();
 
         Button btnOk = new Button(messages.ok());
-        btnOk.addClickHandler(event -> validateAndCommit(parent, false, CommitReason.OTHER));
+        btnOk.addClickHandler(event -> commit(parent, CommitReason.FORCED));
 
         Button btnCancel = new Button(messages.cancel());
         btnCancel.addClickHandler(event -> cancel(parent));
@@ -65,8 +65,8 @@ public class ColorCellEditor extends PopupValueCellEditor {
     }
 
     @Override
-    public void start(Event editEvent, Element parent, Object oldValue) {
-        super.start(editEvent, parent, oldValue);
+    public void start(EventHandler handler, Element parent, Object oldValue) {
+        super.start(handler, parent, oldValue);
 
         if (oldValue instanceof ColorDTO) {
             try {

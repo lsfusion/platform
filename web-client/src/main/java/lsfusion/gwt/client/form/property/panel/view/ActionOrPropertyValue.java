@@ -1,15 +1,19 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -19,7 +23,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 
 // property value renderer with editing
-public abstract class ActionOrPropertyValue extends FocusWidget implements EditContext, RenderContext, UpdateContext, ColorThemeChangeListener {
+public abstract class ActionOrPropertyValue extends Widget implements EditContext, RenderContext, UpdateContext, ColorThemeChangeListener {
 
     protected Object value;
     protected boolean loading;
@@ -99,17 +103,18 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     }
 
     @Override
-    public Element getEditEventElement() {
-        return getRenderElement();
-    }
-
-    @Override
     public Element getFocusElement() {
-        return getElement();
+        Element element = getRenderElement();
+
+        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(element);
+        if(inputElement != null)
+            return inputElement;
+
+        return element;
     }
 
     protected void render() {
-        Element renderElement = property.getCellRenderer().createRenderElement(this);
+        Element renderElement = property.getCellRenderer().createRenderElement();
         this.form.render(this.property, renderElement, this);
         setElement(renderElement);
 
@@ -117,15 +122,22 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         DataGrid.initSinkFocusEvents(this);
 
         GFormController.setBindingGroupObject(this,  property.groupObject);
+
+        getFocusElement().setTabIndex(isFocusable() ? 0 : -1);
+    }
+
+    public void focus(FocusUtils.Reason reason) {
+        FocusUtils.focus(getFocusElement(), reason);
     }
 
     public SizedWidget setSized() {
         setStyles();
 
         boolean globalCaptionIsDrawn = this.globalCaptionIsDrawn;
+        GFont font = getFont();
         return new SizedWidget(this,
-                property.getValueWidth(null, false, globalCaptionIsDrawn),
-                property.getValueHeight(null, false, globalCaptionIsDrawn));
+                property.getValueWidth(font, false, globalCaptionIsDrawn),
+                property.getValueHeight(font, false, globalCaptionIsDrawn));
     }
 
     private void setStyles() {
@@ -162,7 +174,7 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
         if(eventHandler.consumed)
             return;
 
-        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), getFocusElement(),
+        form.onPropertyBrowserEvent(eventHandler, getRenderElement(), true, getFocusElement(),
                 handler -> {}, // no outer context
                 this::onEditEvent,
                 handler -> {}, // no outer context
@@ -177,7 +189,10 @@ public abstract class ActionOrPropertyValue extends FocusWidget implements EditC
     protected void onFocus(EventHandler handler) {
         if(isFocused)
             return;
-        DataGrid.sinkPasteEvent(getFocusElement());
+
+        Element renderElement = getRenderElement();
+        if(SimpleTextBasedCellRenderer.getInputElement(renderElement) == null)
+            DataGrid.sinkPasteEvent(renderElement);
 
         isFocused = true;
         addStyleName("panelRendererValueFocused");

@@ -3,14 +3,11 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.base.EscapeUtils;
-import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
-import lsfusion.gwt.client.view.MainFrame;
 
-import static lsfusion.gwt.client.base.EscapeUtils.unicodeEscape;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_VERTICAL_PADDING;
 
@@ -20,51 +17,31 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         super(property);
     }
 
-    @Override
-    public boolean isSimpleText(RenderContext renderContext) {
-        if(isFixedMultiLine())
-            return false;
-        return true;
-    }
-
-    private boolean isFixedMultiLine() {
-        return isMultiLine() && !property.autoSize;
-    }
-
-    @Override
-    public boolean isSimpleText(UpdateContext updateContext) {
-        if(isFixedMultiLine())
-            return false;
-        return true;
-    }
-
-    @Override
-    protected String getDefaultVertAlignment() {
-        if(isFixedMultiLine())
-            return "stretch";
-
-        if(isMultiLine())
-            return "top";
-        return super.getDefaultVertAlignment();
-    }
-
-    public void renderStaticContent(Element element, RenderContext renderContext) {
+    public boolean renderContent(Element element, RenderContext renderContext) {
         setPadding(element);
 
-        render(property, element, renderContext, isMultiLine());
+        if(property.isEditableNotNull())
+            element.addClassName("requiredValueString");
+
+        return false;
     }
 
-    public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine) {
-        element.getStyle().setWhiteSpace(multiLine ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
-
-        setBasedTextFonts(property, element, renderContext);
+    public static void clearRender(GPropertyDraw property, Element element, RenderContext renderContext) {
+        element.getStyle().clearWhiteSpace();
     }
 
     @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
         clearPadding(element);
 
-        clearBasedTextFonts(property, element.getStyle(), renderContext);
+        clearRender(property, element, renderContext);
+
+        if(property.isEditableNotNull())
+            element.removeClassName("requiredValueString");
+
+        clearInnerText(element);
+
+        return false;
     }
 
     protected boolean isMultiLine() {
@@ -89,76 +66,36 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         element.getStyle().clearPadding();
     }
 
-    public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
-        GFont font = property.font != null ? property.font : renderContext.getFont();
-
-        if (font != null) {
-            font.apply(element.getStyle());
-        }
-    }
-    public static void clearBasedTextFonts(GPropertyDraw property, Style style, RenderContext renderContext) {
-        GFont font = property.font != null ? property.font : renderContext.getFont();
-
-        if (font != null) {
-            font.clear(style);
-        }
-    }
-
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
-        if (value == null) {
-            element.setTitle(property.isEditableNotNull() ? REQUIRED_VALUE : "");
-            setInnerText(element, null);
-        } else {
-            String stringValue = unicodeEscape(format((T) value));
-            setInnerText(element, stringValue);
-            element.setTitle(property.echoSymbols ? "" : stringValue);
-        }
-
-        return true;
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+        return setInnerText(element, value != null ? format((T) value) : null);
     }
 
     public abstract String format(T value);
 
-    protected void setInnerText(Element element, String innerText) {
-        if (innerText == null) {
-            if (property.isEditableNotNull()) {
-                setInnerHTML(element, getRequiredStringValue(element));
-                element.addClassName("requiredValueString");
-            } else {
-                setInnerContent(element, getNullStringValue(element));
-                element.removeClassName("requiredValueString");
-            }
+    protected boolean setInnerText(Element element, String innerText) {
+        String title = property.echoSymbols ? "" : innerText;
+        if(innerText == null) {
+            element.addClassName("nullValueString");
+            if(property.isEditableNotNull())
+                title = REQUIRED_VALUE;
+            innerText = "";
         } else {
-            setInnerContent(element, getNotNullStringValue(innerText, element));
-            element.removeClassName("requiredValueString");
+            element.removeClassName("nullValueString");
+            if(innerText.isEmpty()) {
+                innerText = EMPTY_VALUE;
+                element.addClassName("emptyValueString");
+            } else
+                element.removeClassName("emptyValueString");
         }
+
+        element.setTitle(title);
+        return setInnerContent(element, innerText);
     }
 
-    protected String getRequiredStringValue(Element element) {
-        return MainFrame.showNotDefinedStrings ? REQUIRED_VALUE : EscapeUtils.UNICODE_NBSP + "<div class=\"notNullLine\">" + EscapeUtils.UNICODE_NBSP + "</div>";
+    public static void clearInnerText(Element element) {
+        element.removeClassName("nullValueString");
+        element.removeClassName("emptyValueString");
     }
 
-    protected String getNullStringValue(Element element) {
-        return EscapeUtils.UNICODE_NBSP;
-    }
-
-    protected String getNotNullStringValue(String innerText, Element element) {
-        assert !innerText.isEmpty();
-        return innerText;
-    }
-
-    protected void setInnerContent(Element element, String innerText) {
-        assert !innerText.isEmpty(); // important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection)
-        element.setInnerText(innerText);
-    }
-
-    protected void setInnerHTML(Element element, String innerHTML) {
-        // assert that innerHTML has text inside, important to make paste work (otherwise DataGrid.sinkPasteEvent cannot put empty selection)
-        element.setInnerHTML(innerHTML);
-    }
-
-    @Override
-    public boolean isAutoDynamicHeight() {
-        return isMultiLine();
-    }
+    protected abstract boolean setInnerContent(Element element, String innerText);
 }

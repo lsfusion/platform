@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -16,16 +17,6 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         super(property, columnKey, form, globalCaptionIsDrawn, controller);
 
         render();
-    }
-
-    @Override
-    protected void onAttach() {
-        super.onAttach();
-
-        // here and not in constructor, because tabIndex is set by default to 0 (see super)
-        // in theory all renderer components should also be not focusable, otherwise during "tabbing" onFocus will return focus back, which will break tabbing
-        if(!isFocusable()) // need to avoid selecting by tab
-            setTabIndex(-1);
     }
 
     public boolean isFocusable() {
@@ -53,8 +44,8 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void trySetFocus() {
-        setFocus(true); // we can check if it's focusable, but it will be done automatically in onFocus
+    public void trySetFocusOnBinding() {
+        focus(FocusUtils.Reason.BINDING); // we can check if it's focusable, but it will be done automatically in onFocus
     }
 
     public void onBinding(Event event) {

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes;
 
+import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
@@ -76,5 +77,10 @@ public class GActionType extends GDataType {
     @Override
     public String toString() {
         return ClientMessages.Instance.get().typeActionCaption();
+    }
+
+    @Override
+    public Style.TextAlign getHorzTextAlignment() {
+        return Style.TextAlign.CENTER;
     }
 }

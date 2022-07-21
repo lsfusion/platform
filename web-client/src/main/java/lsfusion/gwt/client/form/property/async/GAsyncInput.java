@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.property.async;
 
-import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -26,7 +26,7 @@ public class GAsyncInput extends GAsyncFormExec {
     }
 
     @Override
-    public void exec(GFormController formController, Event event, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        formController.asyncChange(event, editContext, actionSID, this, onExec);
+    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        formController.asyncInput(handler, editContext, actionSID, this, onExec);
     }
 }

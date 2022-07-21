@@ -9,8 +9,7 @@ import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
 
-import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
-import static com.google.gwt.dom.client.BrowserEvents.KEYPRESS;
+import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
 
 public class GKeyStroke implements Serializable {
@@ -132,7 +131,8 @@ public class GKeyStroke implements Serializable {
     }
 
     public static boolean isSpaceKeyEvent(NativeEvent event) {
-        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_SPACE;
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_SPACE ||
+                KEYPRESS.equals(event.getType()) && event.getCharCode() == KEY_SPACE;
     }
 
     public static boolean isAltEnterEvent(NativeEvent event) {
@@ -181,12 +181,17 @@ public class GKeyStroke implements Serializable {
         return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
 
+    public static boolean isInputKeyEvent(Event event) {
+        return isCharModifyKeyEvent(event, null) ||
+                isCharNavigateHorzKeyEvent(event) || isPasteFromClipboardEvent(event);
+    }
+
     public static boolean isDropEvent(Event event) {
         return event.getType().equals(BrowserEvents.DROP);
     }
 
     // what events should be stealed by TextBasedEditor
-    public static boolean isCharNavigateKeyEvent(NativeEvent event) {
+    public static boolean isCharNavigateHorzKeyEvent(NativeEvent event) {
         if (KEYDOWN.equals(event.getType())) {
             int keyCode = event.getKeyCode();
             return keyCode == KEY_LEFT || keyCode == KEY_RIGHT || keyCode == KEY_END || keyCode == KEY_HOME;
@@ -211,6 +216,23 @@ public class GKeyStroke implements Serializable {
             return keyCode != KEY_ENTER && keyCode != KEY_ESCAPE && event.getCharCode() != 0;
         }
         return false;
+    }
+
+    public static boolean isLogicalInputChangeEvent(Event event) {
+        return isSpaceKeyEvent(event);
+    }
+
+    public static boolean isChangeEvent(Event event) {
+        return CHANGE.equals(event.getType());
+    }
+    public static boolean isKeyUpEvent(Event event) {
+        return KEYUP.equals(event.getType());
+    }
+    public static boolean isKeyDownEvent(Event event) {
+        return KEYDOWN.equals(event.getType());
+    }
+    public static boolean isKeyPressEvent(Event event) {
+        return KEYPRESS.equals(event.getType());
     }
 
     public static boolean isKeyEvent(Event event) {
@@ -244,10 +266,6 @@ public class GKeyStroke implements Serializable {
 
     public static boolean isSwitchFullScreenModeEvent(NativeEvent event) {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F11 && event.getAltKey();
-    }
-
-    public static boolean isSuitableEditKeyEvent(NativeEvent event) {
-        return !isActionKey(event.getKeyCode()) && !isAlt(event);
     }
 
     public static boolean isActionKey(int keyCode) {

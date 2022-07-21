@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -25,7 +26,7 @@ public class GPanelController extends GPropertyController {
     }
 
     private void selectNextElement(boolean forward) {
-        getNextSelectedElement(formController.getWidget().getElement(), forward).focus();
+        FocusUtils.focus(getNextSelectedElement(formController.getWidget().getElement(), forward), FocusUtils.Reason.KEYNEXTNAVIGATE);
     }
 
     private native Element getNextSelectedElement(Element formController, boolean forward) /*-{
@@ -50,7 +51,7 @@ public class GPanelController extends GPropertyController {
         if(!updateKeys) {
             if (propertyController == null) {
                 propertyController = new GPropertyPanelController(property, formController);
-                getFormLayout().addBaseComponent(property, propertyController.initView(), this::focusFirstWidget);
+                getFormLayout().addBaseComponent(property, propertyController.initView(), (FocusUtils.Reason reason) -> focusFirstWidget(reason));
 
                 propertyControllers.put(property, propertyController);
             }
@@ -142,11 +143,11 @@ public class GPanelController extends GPropertyController {
     public void focusProperty(GPropertyDraw propertyDraw) {
         GPropertyPanelController propertyPanelController = propertyControllers.get(propertyDraw);
         if (propertyPanelController != null) {
-            propertyPanelController.focusFirstWidget();
+            propertyPanelController.focus(FocusUtils.Reason.ACTIVATE);
         }
     }
 
-    public boolean focusFirstWidget() {
+    public boolean focusFirstWidget(FocusUtils.Reason reason) {
         if (propertyControllers.isEmpty()) {
             return false;
         }
@@ -154,7 +155,7 @@ public class GPanelController extends GPropertyController {
         for (GPropertyDraw property : formController.getPropertyDraws()) {
             GPropertyPanelController propController = propertyControllers.get(property);
             if (propController != null) {
-                if (property.isFocusable() && propController.focusFirstWidget()) {
+                if (property.isFocusable() && propController.focus(reason)) {
                     return true;
                 }
             }

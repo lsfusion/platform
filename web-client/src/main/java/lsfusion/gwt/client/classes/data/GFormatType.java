@@ -1,8 +1,9 @@
 package lsfusion.gwt.client.classes.data;
 
+import lsfusion.gwt.client.classes.GTextBasedType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public abstract class GFormatType extends GDataType {
+public abstract class GFormatType extends GTextBasedType {
 
     @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {

@@ -6,6 +6,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
@@ -104,9 +105,9 @@ public abstract class FormContainer {
 
     protected void onSyncFocus(boolean add) {
         if(add || focusedElement == null)
-            form.focusFirstWidget();
+            form.focusFirstWidget(FocusUtils.Reason.SHOW);
         else
-            focusedElement.focus();
+            FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
         form.gainedFocus();
     }
 

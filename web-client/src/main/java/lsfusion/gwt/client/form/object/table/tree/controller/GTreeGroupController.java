@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.tree.controller;
 
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -243,9 +244,9 @@ public class GTreeGroupController extends GAbstractTableController {
         return treeGroup.filtersContainer;
     }
 
-    public boolean focusFirstWidget() {
+    public boolean focusFirstWidget(FocusUtils.Reason reason) {
         if (isShowing(tree.getWidget())) {
-            tree.focus();
+            tree.focus(reason);
             return true;
         }
 

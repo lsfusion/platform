@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.property;
 
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
@@ -18,6 +18,7 @@ import lsfusion.gwt.client.classes.data.GHTMLTextType;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
@@ -29,6 +30,8 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
+import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -44,11 +47,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
-import static lsfusion.gwt.client.form.event.GKeyStroke.getKeyStroke;
+import static lsfusion.gwt.client.form.event.GKeyStroke.*;
 import static lsfusion.gwt.client.form.property.cell.GEditBindingMap.CHANGE;
 
 public class GPropertyDraw extends GComponent implements GPropertyReader, Serializable {
@@ -83,6 +87,9 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String pattern;
     public String defaultPattern;
     public GClass returnClass;
+
+    public String tag;
+    public boolean toolbar;
 
     public boolean boxed = true;
 
@@ -353,8 +360,40 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public boolean hasFooter;
 
+    private boolean isSuppressOnFocusChange(Element element) {
+        FocusUtils.Reason focusReason = FocusUtils.getFocusReason(element);
+
+        if(focusReason != null) { // system (probably navigate), so we will not suppress it
+            switch (focusReason) {
+                // for input setting focus will lead to starting change event handling "in between" (inside focus) with unpredictable consequences, so we'll not do that
+                // we could not set focus at all (it will work because in SimpleTextBasedEditor we consume the event propagating to native (so focus will be set anyway)), but for now we'll do this way
+                case MOUSECHANGE:
+                // we don't focus to be set and rely on mouse event handling
+                case MOUSENAVIGATE:
+                // it's really odd to start editing while scrolling, and other navigating
+                case SCROLLNAVIGATE:
+                case KEYMOVENAVIGATE:
+                // CHANGE will be started anyway
+                case BINDING:
+                // really odd behaviour to start editing (dropdown list) when focus is returned
+                case RESTOREFOCUS:
+                // not sure about SHOW, but it seems that this way is better
+                case SHOW:
+                // after applying filter, start editing does not make much sense
+                case APPLYFILTER:
+                // because there is a manual startediting
+//                case NEWFILTER:
+                // unknown reason, it's better to suppress
+                case OTHER:
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     // eventually gets to PropertyDrawEntity.getEventAction (which is symmetrical to this)
-    public String getEventSID(Event editEvent, Result<Integer> contextAction) {
+    public String getEventSID(Event editEvent, ExecuteEditContext editContext, Result<Integer> contextAction) {
         if (editBindingMap != null) { // property bindings
             String actionSID = editBindingMap.getEventSID(editEvent);
             if(actionSID != null)
@@ -367,8 +406,35 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return CHANGE;
         }
 
+        if (isEditObjectEvent(editEvent, hasEditObjectAction, hasUserChangeAction())) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
+            return GEditBindingMap.EDIT_OBJECT;
+
+        // starting change on focus, or any key pressed when focus is on input
+        boolean isFocus = BrowserEvents.FOCUS.equals(editEvent.getType());
+        InputElement inputElement;
+        if((isFocus || GKeyStroke.isInputKeyEvent(editEvent))
+                && (inputElement = SimpleTextBasedCellRenderer.getInputEventTarget(editContext.getEditElement(), editEvent)) != null &&
+                !(isFocus && isSuppressOnFocusChange(inputElement)))
+            return CHANGE;
+
+        if (GMouseStroke.isChangeEvent(editEvent)) {
+            Integer actionIndex = (Integer) GEditBindingMap.getToolbarAction(editEvent);
+            if(actionIndex == null && FormsController.isDialogMode()) {
+                actionIndex = ((Supplier<Integer>) this::getDialogInputActionIndex).get();
+            }
+            contextAction.set(actionIndex);
+            return CHANGE;
+        }
+
+        if (isGroupChangeKeyEvent(editEvent))
+            return GEditBindingMap.GROUP_CHANGE;
+
         GType changeType = getChangeType();
-        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction(), this::getDialogInputActionIndex);
+        if (isCharModifyKeyEvent(editEvent, changeType == null ? null : changeType.getEditEventFilter()) ||
+                isDropEvent(editEvent) || isChangeAppendKeyEvent(editEvent))
+            return CHANGE;
+
+        return null;
     }
 
     public Integer getInputActionIndex(Event editEvent, boolean isEditing) {
@@ -604,7 +670,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return alignment;
     }
     
-    public Style.TextAlign getTextAlignStyle() {
+    public Style.TextAlign getHorzTextAlignment() {
         if (valueAlignment != null) {
             switch (valueAlignment) {
                 case START:
@@ -616,7 +682,17 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                     return Style.TextAlign.RIGHT;
             }
         }
-        return null;
+        return baseType.getHorzTextAlignment();
+    }
+
+    public String getVertTextAlignment() {
+        return baseType.getVertTextAlignment();
+    }
+
+    public InputElement createTextInputElement() {
+        InputElement inputElement = baseType.createTextInputElement();
+        inputElement.addClassName("prop-input");
+        return inputElement;
     }
 
     public static ArrayList<GGroupObjectValue> getColumnKeys(GPropertyDraw property, NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> currentGridObjects) {

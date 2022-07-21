@@ -2,12 +2,13 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -606,7 +607,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public void onBinding(GPropertyDraw property, Event event) {
         int column = getGridColumnIndex(property, null);
         if(column >= 0 && getSelectedRow() >= 0)
-            onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedElement(column));
+            onEditEvent(new EventHandler(event), true, getSelectedCell(column), getSelectedRenderElement(column));
     }
 
     public void setKeys(ArrayList<GGroupObjectValue> keys) {
@@ -786,7 +787,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public void pasteData(Cell cell, TableCellElement parent, final List<List<String>> table) {
+    public void pasteData(Cell cell, Element renderElement, final List<List<String>> table) {
         final int tableColumns = getMaxColumnsCount(table);
         final int selectedColumn = getSelectedColumn();
         if (table.size() > 1 || tableColumns > 1) {
@@ -810,7 +811,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
             });
             return;
         }
-        super.pasteData(cell, parent, table);
+        super.pasteData(cell, renderElement, table);
     }
 
     @Override
@@ -870,7 +871,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 if (isRowWithinBounds(i)) {
                     Object value = getValueAt(i, searchColumn);
                     if (value != null && value.toString().regionMatches(true, 0, lastQuickSearchPrefix, 0, lastQuickSearchPrefix.length())) {
-                        changeSelectedRow(i);
+                        selectionHandler.changeRow(i, FocusUtils.Reason.KEYMOVENAVIGATE);
                         break;
                     }
                 }
@@ -881,10 +882,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        int ind = getGridColumnIndex(propertyDraw, null);
-        if (ind != -1) {
-            changeSelectedColumn(ind);
-        }
+        focusColumn(getGridColumnIndex(propertyDraw, null), FocusUtils.Reason.ACTIVATE);
+    }
+
+    @Override
+    public void focus(FocusUtils.Reason reason) {
+        GTableView.super.focus(reason);
     }
 
     // editing set value (in EditContext), changes model and value itself

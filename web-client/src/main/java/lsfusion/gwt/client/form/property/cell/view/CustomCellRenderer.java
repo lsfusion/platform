@@ -18,8 +18,10 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public void renderStaticContent(Element element, RenderContext renderContext) {
+    public boolean renderContent(Element element, RenderContext renderContext) {
         render(customRenderer, element);
+
+        return false;
     }
 
     protected native void render(JavaScriptObject customRenderer, Element element)/*-{
@@ -27,14 +29,9 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }-*/;
 
     @Override
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         setRendererValue(customRenderer, element, getController(property, updateContext, element), GSimpleStateTableView.convertToJSValue(property, value));
 
-        return false;
-    }
-
-    @Override
-    protected boolean needToRenderToolbarContent() {
         return false;
     }
 
@@ -43,8 +40,10 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }-*/;
 
     @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
         clear(customRenderer, element);
+
+        return false;
     }
     
     protected native void clear(JavaScriptObject customRenderer, Element element)/*-{

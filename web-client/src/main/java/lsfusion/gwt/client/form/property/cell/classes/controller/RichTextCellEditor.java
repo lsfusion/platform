@@ -2,12 +2,15 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 
-public class RichTextCellEditor implements RequestEmbeddedCellEditor {
+public class RichTextCellEditor implements RequestEmbeddedCellEditor, KeepCellEditor {
 
     private final EditManager editManager;
     private String oldValue;
@@ -17,19 +20,24 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
     }
 
     @Override
-    public void start(Event event, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, Object oldValue) {
         String value = oldValue == null ? "" : oldValue.toString().replaceAll("<div>", "<p>").replaceAll("</div>", "</p>");
         this.oldValue = getEditorValue(parent);
 
-        String startEventValue = checkStartEvent(event, parent, null);
+        String startEventValue = handler != null ? checkStartEvent(handler.event, parent, null) : null;
         boolean selectAll = startEventValue == null;
         value = startEventValue != null ? startEventValue : value;
 
+        enableEditing(parent, false);
+
         start(parent, value, selectAll);
+
+        parent.addClassName("property-hide-toolbar");
     }
 
     protected native void start(Element element, String value, boolean selectAll)/*-{
         this.@RichTextCellEditor::enableEditing(*)(element, true);
+
         var quill = element.quill;
         quill.focus();
 
@@ -70,10 +78,12 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor {
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
+        parent.removeClassName("property-hide-toolbar");
+
         enableEditing(parent, false);
 
         if (!blurred)
-            parent.focus(); //return focus to the parent
+            FocusUtils.focus(parent, FocusUtils.Reason.OTHER); //return focus to the parent
 
         if (cancel)
             setEditorValue(parent, oldValue); //to return the previous value after pressing esc

@@ -3,31 +3,34 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class HTMLTextCellRenderer extends StringBasedCellRenderer {
+public class HTMLTextCellRenderer extends CellRenderer {
 
     public HTMLTextCellRenderer(GPropertyDraw property) {
         super(property);
     }
 
     @Override
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean renderContent(Element element, RenderContext renderContext) {
+        return false;
+    }
+
+    @Override
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         GwtClientUtils.setField(element, "controller", CustomCellRenderer.getController(property, updateContext, element));
-        return super.renderDynamicContent(element, value, loading, updateContext);
+        element.setInnerHTML((String)value);
+        return true;
     }
 
     @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
         GwtClientUtils.removeField(element, "controller");
-        super.clearRenderContent(element, renderContext);
-    }
 
-    @Override
-    protected void setInnerContent(Element element, String innerText) {
-        element.setInnerHTML(innerText);
+        return false;
     }
 
     @Override

@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
@@ -72,7 +73,6 @@ public class MainFrame implements EntryPoint {
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static long updateRendererStateSetTimeout = 100;
-    public static boolean showNotDefinedStrings;
     public static boolean pivotOnlySelectedColumn;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
@@ -150,7 +150,7 @@ public class MainFrame implements EntryPoint {
         // in theory we also have to check if focused element still visible, isShowing in GwtClientUtils but now it's assumed that it is always visible
         if(lastBlurredElement != null && lastBlurredElement != focusEventElement) { // return focus back where it was
             focusEventHandler.consume();
-            lastBlurredElement.focus();
+            FocusUtils.focus(lastBlurredElement, FocusUtils.Reason.RESTOREFOCUS);
             return true;
         }
         return false;
@@ -252,7 +252,6 @@ public class MainFrame implements EntryPoint {
                 projectLSFDir = result.projectLSFDir;
                 showDetailedInfo = result.showDetailedInfo;
                 forbidDuplicateForms = result.forbidDuplicateForms;
-                showNotDefinedStrings = result.showNotDefinedStrings;
                 pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;

@@ -212,7 +212,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
             logicsSupplier.getForm().getFormLayout().update(-1);
 
-            conditionView.focusOnValue();
+            conditionView.onAdd();
 
             if (keyEvent != null) {
                 conditionView.startEditing(keyEvent);

@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -49,12 +50,13 @@ public class PopupForm extends EditingForm {
         }
 
         @Override
-        public void start(Event editEvent, Element parent, Object oldValue) {
-            PopupCellEditor.super.start(editEvent, parent, oldValue);
+        public void start(EventHandler handler, Element parent, Object oldValue) {
+            PopupCellEditor.super.start(handler, parent, oldValue);
 
-            if(DataGrid.isMouseEvent(editEvent)) {
-                clientX = editEvent.getClientX();
-                clientY = editEvent.getClientY();
+            Event event;
+            if(handler != null && DataGrid.isMouseEvent(event = handler.event)) {
+                clientX = event.getClientX();
+                clientY = event.getClientY();
             } else {
                 clientX = parent.getAbsoluteLeft();
                 clientY = parent.getAbsoluteTop();

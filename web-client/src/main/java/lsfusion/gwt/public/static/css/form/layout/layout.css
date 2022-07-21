@@ -11,30 +11,6 @@
     min-width: -moz-available;
 }
 
-/* ------------ Colored corner triangles  ------------ */
-
-.rightBottomCornerTriangle {
-    position: relative;
-}
-.rightBottomCornerTriangle::after {
-    content: "";
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 0 5px 5px;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-}
-
-.notNullCornerTriangle::after {
-    border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
-}
-
-.changeActionCornerTriangle::after {
-    border-color: transparent transparent var(--focus-color) transparent;
-}
-
 /* need this because user-agent uses some paddings and we want to get WYSIWYG during input (when a renderer changes to an editor) */
 input {
     padding: 0;

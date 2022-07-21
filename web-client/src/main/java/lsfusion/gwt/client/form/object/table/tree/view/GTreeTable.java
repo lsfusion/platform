@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -60,7 +61,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     public NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> readOnly = new NativeSIDMap<>();
 
     private GTreeGroup treeGroup;
-    
+
+    @Override
+    public void focus(FocusUtils.Reason reason) {
+        FocusUtils.focus(getTableDataFocusElement(), reason);
+    }
 
     private GSize hierarchicalWidth;
 
@@ -145,11 +150,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
-        focus();
-        int ind = tree.getPropertyIndex(propertyDraw);
-        if (ind != -1) {
-            changeSelectedColumn(ind);
-        }
+       focusColumn(tree.getPropertyIndex(propertyDraw), FocusUtils.Reason.ACTIVATE);
     }
 
     public void updateProperty(GPropertyDraw property, List<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
@@ -351,7 +352,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
+        public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
             Event event = handler.event;
             boolean changeEvent = GMouseStroke.isChangeEvent(event);
             if (changeEvent || (treeGroupController.isExpandOnClick() && GMouseStroke.isDoubleChangeEvent(event))) { // we need to consume double click event to prevent treetable global dblclick binding (in this case node will be collapsed / expanded once again)
@@ -502,10 +503,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             // if property changed - rerender
             if(!GwtClientUtils.nullEquals(oldProperty, newProperty) && !form.isEditing()) { // we don't want to clear editing (it will be rerendered anyway, however not sure if this check is needed)
                 if(oldProperty != null) {
-                    RenderContext renderContext = getRenderContext(cell, cellElement, oldProperty, this);
-                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty, renderContext)) {
-                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty, getUpdateContext(cell, cellElement, oldProperty, this));
-                        oldProperty.getCellRenderer().clearRender(cellElement, renderContext);
+                    if(!GPropertyTableBuilder.clearRenderSized(cellElement, oldProperty)) {
+                        assert cellElement == GPropertyTableBuilder.getRenderSizedElement(cellElement, oldProperty);
+                        oldProperty.getCellRenderer().clearRender(cellElement, getRenderContext(cell, cellElement, oldProperty, this));
                     }
                     cellElement.setPropertyObject(PDRAW_ATTRIBUTE, null);
                 }

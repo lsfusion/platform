@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.SizedWidget;
@@ -89,8 +90,8 @@ public abstract class PanelRenderer {
         value.onBinding(event);
     }
 
-    public void focus() {
-        value.setFocus(true);
+    public void focus(FocusUtils.Reason reason) {
+        value.focus(reason);
     }
 
     public Object setLoadingValue(Object value) {

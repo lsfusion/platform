@@ -13,11 +13,12 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     protected static final String ICON_FILE = "file.png";
 
     @Override
-    public void renderStaticContent(Element element, RenderContext renderContext) {
+    public boolean renderContent(Element element, RenderContext renderContext) {
+        return false;
     }
 
     @Override
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         element.setInnerText(null);
 
         ImageElement img = null;
@@ -68,10 +69,12 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
         element.getStyle().clearPadding();
         element.removeClassName("requiredValueString");
         element.setTitle("");
+
+        return false;
     }
 
     protected void setBasedEmptyElement(Element element) {

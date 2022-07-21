@@ -14,11 +14,6 @@ public class ImageCellRenderer extends FileBasedCellRenderer {
     }
 
     @Override
-    protected String getDefaultVertAlignment() {
-        return "stretch";
-    }
-
-    @Override
     protected void setImage(Object value, Consumer<String> consumer) {
         String extension = ((GImageType) property.baseType).extension;
         if (value instanceof String)

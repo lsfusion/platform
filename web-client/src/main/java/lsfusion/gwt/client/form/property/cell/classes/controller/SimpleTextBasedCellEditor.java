@@ -25,40 +25,40 @@ import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
-import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextBox;
+import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
-import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 
-public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor {
+// now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on isInputAsRenderElement)
+public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String LOADING_IMAGE_PATH = "loading.gif";
     private static final String REFRESH_IMAGE_PATH = "refresh.png";
-    private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
+    private static final TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     protected final GPropertyDraw property;
 
-    private boolean hasList;
-    private GCompletionType completionType;
-    private GInputListAction[] actions;
+    private final boolean hasList;
+    private final GCompletionType completionType;
+    private final GInputListAction[] actions;
+    private final GCompare compare;
     private CustomSuggestBox suggestBox = null;
-    private GCompare compare;
 
-    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
+    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
     }
 
-    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
+    public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
         super(editManager);
         this.property = property;
         this.hasList = inputList != null && !disableSuggest() && !property.echoSymbols;
@@ -71,37 +71,103 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         return false;
     }
 
+    private boolean isRenderInputElement(Element cellParent) {
+        return getRenderInputElement(cellParent) != null;
+    }
+    private InputElement getRenderInputElement(Element cellParent) {
+        return SimpleTextBasedCellRenderer.getInputElement(cellParent);
+    }
+
     @Override
-    public void start(Event event, Element parent, Object oldValue) {
-        String value = property.clearText ? "" : tryFormatInputText(oldValue);
-        if(hasList) {
-            suggestBox.showSuggestionList();
-            suggestBox.setValue(value);
+    public boolean needReplace(Element cellParent, RenderContext renderContext) {
+        return !isRenderInputElement(cellParent);
+    }
+
+    protected InputElement inputElement;
+    private String oldStringValue;
+
+    protected void onInputReady(Element parent, Object oldValue) {
+    }
+
+    @Override
+    public void start(EventHandler handler, Element parent, Object oldValue) {
+        boolean allSuggestions = true;
+        if(inputElement == null) {
+            inputElement = getRenderInputElement(parent);
+
+            onInputReady(parent, oldValue);
+
+            parent.addClassName("property-hide-toolbar");
+
+            oldStringValue = getInputValue(parent);
+            handler.consume(true, false);
+        } else {
+            InputElement inputElement = getInputElement(parent);
+
+            onInputReady(parent, oldValue);
+
+            //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
+            FocusUtils.focus(inputElement, FocusUtils.Reason.OTHER);
+            boolean selectAll = !GKeyStroke.isChangeAppendKeyEvent(handler.event);
+
+            String value = checkStartEvent(handler.event, parent, this::checkInputValidity);
+            if(value != null) {
+                allSuggestions = false;
+                selectAll = false;
+            } else
+                value = (property.clearText ? "" : tryFormatInputText(oldValue));
+
+            setInputValue(parent, value);
+
+            if (selectAll)
+                inputElement.select();
         }
-        InputElement inputElement = getInputElement(parent);
-        String startEventValue = checkStartEvent(event, parent, this::checkInputValidity);
-        boolean selectAll = startEventValue == null && !GKeyStroke.isChangeAppendKeyEvent(event);
-        value = startEventValue != null ? startEventValue : value;
 
-        //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
-        inputElement.focus();
-        setInputValue(inputElement, value);
-
-        if (selectAll) {
-            inputElement.select();
+        if(hasList) {
+            suggestBox = createSuggestBox(getInputElement(parent), parent);
+            suggestBox.showSuggestionList(allSuggestions);
         }
     }
 
-    protected void setInputValue(InputElement element, String value) {
+    @Override
+    public void stop(Element parent, boolean cancel, boolean blurred) {
+        if(hasList) {
+            suggestBox.hideSuggestions();
+            suggestBox = null;
+        }
+
+        if(isRenderInputElement(parent)) {
+            parent.removeClassName("property-hide-toolbar");
+
+            setInputValue(parent, oldStringValue);
+        }
+
+        inputElement = null;
+    }
+
+    protected void setInputValue(Element parent, String value) {
+        setInputValue(getInputElement(parent), value);
+    }
+    public static void setInputValue(InputElement element, String value) {
         element.setValue(value);
+    }
+    private String getInputValue(Element parent) {
+        return getInputValue(getInputElement(parent));
+    }
+    public static String getInputValue(InputElement element) {
+        return element.getValue();
     }
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
+        if(hasList && isThisCellEditor()) {
+            suggestBox.onBrowserEvent(handler);
+            if(handler.consumed)
+                return;
+        }
+
         Event event = handler.event;
-        String type = event.getType();
-        if (GKeyStroke.isCharAddKeyEvent(event) || GKeyStroke.isCharDeleteKeyEvent(event) ||
-                GKeyStroke.isCharNavigateKeyEvent(event) || GMouseStroke.isEvent(event) || GKeyStroke.isPasteFromClipboardEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
+        if (GKeyStroke.isInputKeyEvent(event) || GMouseStroke.isEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
             boolean isCorrect = true;
 
             String stringToAdd = null;
@@ -113,29 +179,22 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 isCorrect = false; // this thing is needed to disable inputting incorrect symbols
 
             handler.consume(isCorrect, false);
-        } else if (BLUR.equals(type)) {
-            //restore focus and ignore blur if refresh button pressed
-            if(hasList && suggestBox.display.isRefreshButtonPressed()) {
-                suggestBox.display.setRefreshButtonPressed(false);
-                suggestBox.setFocus(true);
-                return;
-            }
         } else {
             Integer inputActionIndex = property.getInputActionIndex(event, true);
             if(inputActionIndex != null) {
-                validateAndCommit(parent, inputActionIndex, true, CommitReason.OTHER);
+                validateAndCommit(parent, inputActionIndex, true, CommitReason.SUGGEST);
                 return;
             }
         }
 
         super.onBrowserEvent(parent, handler);
     }
-    
+
     private boolean checkInputValidity(Element parent, String stringToAdd) {
         InputElement input = getInputElement(parent);
         int cursorPosition = textBoxImpl.getCursorPos(input);
         int selectionLength = textBoxImpl.getSelectionLength(input);
-        String currentValue = getCurrentText(parent);
+        String currentValue = getInputValue(parent);
         String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
         String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
 
@@ -151,33 +210,36 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
     }
 
-    @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
-        TextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
+    public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
+        InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property);
+        inputElement.setTabIndex(-1); // we don't want input to get focus if it's wrapped or in table (when editing it's not important, but just in case)
 
-        Element inputElement = createTextInputElement();
+        CellRenderer.renderTextAlignment(property, inputElement);
 
-        if(hasList) {
-            suggestBox = createSuggestBox(createTextInputWidget(inputElement), cellParent);
-            assert inputElement == suggestBox.getElement();
-        }
-
-        Style.TextAlign textAlign = property.getTextAlignStyle();
-        if(textAlign != null)
-            inputElement.getStyle().setTextAlign(textAlign);
-
-        TextBasedCellRenderer.render(property, inputElement, renderContext, isMultiLine());
+        CellRenderer.setBasedTextFonts(property, inputElement, renderContext); // ??? cellParent
+        SimpleTextBasedCellRenderer.render(property, inputElement, renderContext, multiLine);
 
         // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
-        if(property.autoSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble sizes
+        if(property.autoSize && renderedSize != null) { // we have to set sizes that were rendered, since input elements have really unpredicatble content sizes
             inputElement.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
             inputElement.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
-            if(isMultiLine())
+            if(multiLine)
                 // https://stackoverflow.com/questions/7144843/extra-space-under-textarea-differs-along-browsers
                 inputElement.getStyle().setVerticalAlign(Style.VerticalAlign.TOP);
         } else
             GwtClientUtils.setupPercentParent(inputElement);
         cellParent.appendChild(inputElement);
+
+        return inputElement;
+    }
+
+    @Override
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+        assert !isRenderInputElement(cellParent);
+
+        TextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
+
+        inputElement = renderInputElement(cellParent, property, isMultiLine(), renderContext, renderedSize);
     }
 
     protected boolean isMultiLine() {
@@ -186,16 +248,19 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     @Override
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
-        if(hasList)
-            suggestBox.hideSuggestions();
+        assert !isRenderInputElement(cellParent);
 
         TextBasedCellRenderer.clearPadding(cellParent);
+
+//        TextBasedCellRenderer.clearBasedTextFonts(property, element.getStyle(), renderContext);
+
+//        TextBasedCellRenderer.clearRender(property, element.getStyle(), renderContext);
 
         super.clearRender(cellParent, renderContext, cancel);
     }
 
     public Object getValue(Element parent, Integer contextAction) {
-        String stringValue = contextAction != null ? suggestBox.getValue() : getCurrentText(parent);
+        String stringValue = getInputValue(parent);
         if(hasList && completionType.isStrict() && contextAction == null && !suggestBox.isValidValue(stringValue))
             return RequestValueCellEditor.invalid;
         try {
@@ -205,21 +270,14 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
     }
 
-    protected Element createTextInputElement() {
-        return Document.get().createTextInputElement();
-    }
-    protected ValueBoxBase<String> createTextInputWidget(Element inputElement) {
-        return new TextBox(inputElement);
-    }
-
     protected boolean isThisCellEditor() {
         assert hasList;
-        boolean showing = isShowing(suggestBox);
+        boolean showing = suggestBox != null;
 //        assert (editManager.isEditing() && this == editManager.getCellEditor()) == showing;
         return showing;
     }
 
-    private CustomSuggestBox createSuggestBox(ValueBoxBase textBoxBase, Element parent) {
+    private CustomSuggestBox createSuggestBox(InputElement element, Element parent) {
         return new CustomSuggestBox(new SuggestOracle() {
             private Timer delayTimer;
             private Request currentRequest; // current pending request
@@ -265,7 +323,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                         public void run() {
                             if (isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
                                 callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
-                                setMinWidth(suggestBox, false);
+                                setMinWidth(element, suggestBox, false);
                             }
                         }
                     };
@@ -315,7 +373,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                                 }
                                 suggestBox.setLatestSuggestions(rawSuggestions);
                                 callback.onSuggestionsReady(request, new Response(suggestionList));
-                                setMinWidth(suggestBox, true);
+                                setMinWidth(element, suggestBox, true);
 
                                 succeededEmpty = suggestionList.isEmpty();
                             }
@@ -351,8 +409,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     updateAsyncValues();
             }
 
-            private void setMinWidth(CustomSuggestBox suggestBox, boolean offsets) {
-                setMinWidth(suggestBox.getPopupElement(), suggestBox.getOffsetWidth() - (offsets ? 8 : 0)); //8 = offsets
+            private void setMinWidth(InputElement inputElement, CustomSuggestBox suggestBox, boolean offsets) {
+                setMinWidth(suggestBox.getPopupElement(), inputElement.getOffsetWidth() - (offsets ? 8 : 0)); //8 = offsets
             }
 
             private native void setMinWidth(Element element, int minWidth) /*-{
@@ -365,7 +423,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             public boolean isDisplayStringHTML() {
                 return true;
             }
-        }, textBoxBase, new DefaultSuggestionDisplayString(parent)) {
+        }, element, new DefaultSuggestionDisplayString(parent), suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
             @Override
             public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                 // canceling query
@@ -388,11 +446,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     }
 
     protected InputElement getInputElement(Element parent) {
-        return parent.getFirstChild().cast();
-    }
-
-    private String getCurrentText(Element parent) {
-        return getInputElement(parent).getValue();
+        return inputElement;
     }
 
     protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
@@ -421,10 +475,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         private DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
 
-        public CustomSuggestBox(SuggestOracle oracle, ValueBoxBase<String> valueBox, DefaultSuggestionDisplayString display) {
-            super(oracle, valueBox, display, completionType.isAnyStrict());
+        public CustomSuggestBox(SuggestOracle oracle, InputElement inputElement, DefaultSuggestionDisplayString display, SuggestionCallback callback) {
+            super(oracle, inputElement, display, completionType.isAnyStrict(), callback);
             this.display = display;
-            onAttach();
         }
 
         public void setLatestSuggestions(List<String> latestSuggestions) {
@@ -449,9 +502,23 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         public Element getPopupElement() {
             return display.getPopupElement();
         }
+
+        @Override
+        public void onBrowserEvent(EventHandler handler) {
+            super.onBrowserEvent(handler);
+
+            if (!handler.consumed && BLUR.equals(handler.event.getType())) {
+                //restore focus and ignore blur if refresh button pressed
+                if (display.isRefreshButtonPressed()) {
+                    display.setRefreshButtonPressed(false);
+                    handler.consume();
+                    focus();
+                }
+            }
+        }
     }
 
-    private class DefaultSuggestionDisplayString extends SuggestBox.DefaultSuggestionDisplay {
+    private class DefaultSuggestionDisplayString extends SuggestBox.SuggestionDisplay {
         private Label noResultsLabel;
         private Label emptyLabel; //for loading
         private GToolbarButton refreshButton;
@@ -459,12 +526,6 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         private final Element parent;
         public DefaultSuggestionDisplayString(Element parent) {
             this.parent = parent;
-            setSuggestionListHiddenWhenEmpty(false);
-        }
-
-        public String getReplacementString() {
-            SuggestOracle.Suggestion selection = getCurrentSelection();
-            return selection != null ? selection.getReplacementString() : null;
         }
 
         @Override
@@ -496,7 +557,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 public ClickHandler getClickHandler() {
                     return event -> {
                         refreshButtonPressed = true;
-                        suggestBox.showSuggestionList();
+                        suggestBox.refreshSuggestionList();
                     };
                 }
             });
@@ -506,7 +567,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 SuggestPopupButton actionButton = new SuggestPopupButton(actions[index].action + ".png") {
                     @Override
                     public ClickHandler getClickHandler() {
-                        return event -> validateAndCommit(parent, index, true, CommitReason.OTHER);
+                        return event -> validateAndCommit(parent, index, true, CommitReason.SUGGEST);
                     }
                 };
                 buttonsPanel.add(actionButton);
@@ -538,14 +599,6 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             return panel;
         }
 
-        @Override
-        protected void showSuggestions(SuggestBox suggestBox, Collection<? extends SuggestOracle.Suggestion> suggestions, boolean isDisplayStringHTML, boolean isAutoSelectEnabled, SuggestBox.SuggestionCallback callback) {
-            super.showSuggestions(suggestBox, suggestions, isDisplayStringHTML, isAutoSelectEnabled, suggestion -> {
-                callback.onSuggestionSelected(suggestion);
-                validateAndCommit(parent,  true);
-            });
-        }
-
         public boolean isLoading;
         public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean isLoading) {
             noResultsLabel.setVisible(showNoResult);
@@ -556,20 +609,22 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             }
         }
 
+        private void updateSuggestBox() {
+            if (!completionType.isAnyStrict()) {
+                suggestBox.setSelection(getCurrentSelection());
+            }
+        }
+
         @Override
         protected void moveSelectionDown() {
             super.moveSelectionDown();
-            if(!completionType.isAnyStrict()) {
-                suggestBox.setValue(getReplacementString());
-            }
+            updateSuggestBox();
         }
 
         @Override
         protected void moveSelectionUp() {
             super.moveSelectionUp();
-            if(!completionType.isAnyStrict()) {
-                suggestBox.setValue(getReplacementString());
-            }
+            updateSuggestBox();
         }
 
         public boolean isRefreshButtonPressed() {

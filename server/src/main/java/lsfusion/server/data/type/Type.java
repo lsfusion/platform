@@ -20,6 +20,7 @@ import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.CustomDbfRecord;
+import lsfusion.server.physics.admin.Settings;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellValue;
 import org.json.JSONException;
@@ -108,4 +109,13 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     String getSID();
 
     T read(Object value);
+
+    default boolean useInputTag() {
+        return false;
+    }
+    default boolean hasToolbar(boolean isInputPanel) {
+        if(isInputPanel)
+            return !Settings.get().isNoToolbarForInputTagInPanel();
+        return true;
+    }
 }

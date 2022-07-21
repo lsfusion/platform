@@ -284,7 +284,12 @@ public class GwtClientUtils {
         if (widget == null) {
             return false;
         }
-        Element el = widget.getElement();
+        return isShowing(widget.getElement());
+    }
+    public static boolean isShowing(Element el) {
+        if (el == null) {
+            return false;
+        }
         while (el != null && el != rootElement) {
             if (!UIObject.isVisible(el)) {
                 return false;
@@ -418,7 +423,7 @@ public class GwtClientUtils {
 
         showPopup(popup, mouseX, mouseY);
 
-        Scheduler.get().scheduleDeferred(() -> widget.getElement().focus());
+        Scheduler.get().scheduleDeferred(() -> FocusUtils.focus(widget.getElement(), FocusUtils.Reason.SHOW));
     }
 
     public static void showPopup(PopupDialogPanel popup, int mouseX, int mouseY) {
@@ -825,10 +830,11 @@ public class GwtClientUtils {
     }
 
     public static boolean isTDorTH(Element element) {
-        String tagName = element.getTagName().toLowerCase();
-        return tagName.equals("td") || tagName.equals("th");
+        return TableCellElement.is(element);
     }
-
+    public static boolean isInput(Element element) {
+        return InputElement.is(element);
+    }
 
     public static <T> T findInList(List<T> list, Predicate<T> predicate) {
         for(T element : list)

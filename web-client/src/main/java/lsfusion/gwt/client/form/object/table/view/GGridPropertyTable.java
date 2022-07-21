@@ -1,11 +1,9 @@
 package lsfusion.gwt.client.form.object.table.view;
 
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -27,6 +25,7 @@ import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -200,14 +199,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return font;
     }
 
-    public Cell getSelectedCell() {
-        return getSelectedCell(getSelectedColumn());
-    }
-
-    public Cell getSelectedCell(int column) {
-        return new Cell(getSelectedRow(), column, getColumn(column), getSelectedRowValue());
-    }
-
     public int getAutoSize() {
         return getTableBodyElement().getOffsetHeight();
     }
@@ -329,12 +320,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         form.runGroupReport(groupObject.ID);
     }
 
-    public void selectNextRow(boolean down) {
-        selectionHandler.nextRow(down);
-    }
-
     public void selectNextCellInColumn(boolean forward) {
-        selectionHandler.nextColumn(forward);
+        selectionHandler.nextColumn(forward, FocusUtils.Reason.KEYNEXTNAVIGATE);
     }
 
     public static class GridPropertyTableSelectionHandler<T extends GridDataRecord> extends DataGridSelectionHandler<T> {
@@ -347,11 +334,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             assert BrowserEvents.KEYDOWN.equals(event.getType());
 
             int keyCode = event.getKeyCode();
+            FocusUtils.Reason reason = FocusUtils.Reason.KEYMOVENAVIGATE;
             if (keyCode == KeyCodes.KEY_HOME && !event.getCtrlKey()) {
-                for(int i=0;!changeColumn(i);i++);
+                int i=0;
+                while (!isFocusable(i))
+                    i++;
+                changeColumn(i, reason);
                 return true;
             } else if (keyCode == KeyCodes.KEY_END && !event.getCtrlKey()) {
-                for(int i=display.getColumnCount()-1;!changeColumn(i);i--);
+                int i=display.getColumnCount()-1;
+                while (!isFocusable(i))
+                    i--;
+                changeColumn(i, reason);
                 return true;
             }
             return super.handleKeyEvent(event);
@@ -570,7 +564,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         setValueAt(cell, value);
 
         TableCellElement element = getElement(cell);
-        form.update(property, element, getUpdateContext(cell, element, property, column));
+        form.update(property, element, getUpdateContext(cell, getRenderElement(cell, element), property, column));
 
         return new Pair<>(GGroupObjectValue.getFullKey(propertyRowKey, propertyColumnKey), oldValue);
     }
@@ -624,19 +618,36 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }
 
+    private <C> Element getRenderElement(Cell cell, TableCellElement parent) {
+        if(parent == null)
+            return null;
+
+        GPropertyDraw property = getProperty(cell);
+        if(property == null)
+            return null;
+
+        return GPropertyTableBuilder.getRenderSizedElement(parent, property);
+    }
+
+    protected Element getSelectedRenderElement(int column) {
+        return getRenderElement(getSelectedCell(column), getSelectedElement(column));
+    }
+
     public <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent) {
-        form.onPropertyBrowserEvent(new EventHandler(event), parent, getTableDataFocusElement(),
-                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged)),
-                handler -> column.onEditEvent(handler, cell, parent),
+        Element renderElement = getRenderElement(cell, parent);
+
+        form.onPropertyBrowserEvent(new EventHandler(event), renderElement, parent != null, getTableDataFocusElement(),
+                handler -> selectionHandler.onCellBefore(handler, cell, rowChanged -> isChangeOnSingleClick(cell, event, (Boolean) rowChanged, column)),
+                handler -> column.onEditEvent(handler, cell, renderElement),
                 handler -> selectionHandler.onCellAfter(handler, cell),
-                handler -> CopyPasteUtils.putIntoClipboard(parent), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, parent, GwtClientUtils.getClipboardTable(line))),
+                handler -> CopyPasteUtils.putIntoClipboard(renderElement), handler -> CopyPasteUtils.getFromClipboard(handler, line -> pasteData(cell, renderElement, GwtClientUtils.getClipboardTable(line))),
                 false, cell.getColumn().isCustomRenderer());
     }
 
     @Override
-    public void pasteData(Cell cell, TableCellElement parent, List<List<String>> table) {
+    public void pasteData(Cell cell, Element renderElement, List<List<String>> table) {
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
-            form.pasteValue(getEditContext(cell, parent), table.get(0).get(0));
+            form.pasteValue(getEditContext(cell, renderElement), table.get(0).get(0));
         }
     }
 
@@ -653,8 +664,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         protected abstract String getForeground(GPropertyDraw property, T record);
 
         @Override
-        public void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent) {
-            GGridPropertyTable.this.onEditEvent(handler, false, editCell, editCellParent);
+        public void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement) {
+            GGridPropertyTable.this.onEditEvent(handler, false, editCell, editRenderElement);
         }
 
         public void renderDom(Cell cell, TableCellElement cellElement) {
@@ -662,8 +673,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             if(property == null) // in tree there can be no property in groups other than last
                 return;
 
-            RenderContext renderContext = getRenderContext(cell, cellElement, property, this);
-            form.render(property, GPropertyTableBuilder.renderSized(cellElement, property, renderContext), renderContext);
+            Element renderElement = GPropertyTableBuilder.renderSized(cellElement, property, getFont());
+            form.render(property, renderElement, getRenderContext(cell, renderElement, property, this));
         }
 
         @Override
@@ -674,8 +685,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             // RERENDER IF NEEDED : we don't have the previous state, so we have to store it in element
 
-            UpdateContext updateContext = getUpdateContext(cell, cellElement, property, this);
-            form.update(property, GPropertyTableBuilder.getRenderSizedElement(cellElement, property, updateContext), updateContext);
+            Element renderElement = GPropertyTableBuilder.getRenderSizedElement(cellElement, property);
+            form.update(property, renderElement, getUpdateContext(cell, renderElement, property, this));
         }
     }
 
@@ -695,7 +706,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     @Override
-    protected RenderContext getRenderContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
+    protected RenderContext getRenderContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new RenderContext() {
             @Override
             public boolean globalCaptionIsDrawn() {
@@ -718,16 +729,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return true;
     }
 
-    public UpdateContext getUpdateContext(Cell cell, TableCellElement cellElement, GPropertyDraw property, GridPropertyColumn column) {
+    public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
             public void changeProperty(Object result) {
-                form.changeProperty(getEditContext(cell, cellElement), result);
+                form.changeProperty(getEditContext(cell, renderElement), result);
             }
 
             @Override
             public void executeContextAction(int action) {
-                form.executeContextAction(getEditContext(cell, cellElement), action);
+                form.executeContextAction(getEditContext(cell, renderElement), action);
             }
 
             @Override
@@ -783,5 +794,21 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 return getThemedColor(foreground != null ? foreground : row.getRowForeground());
             }
         };
+    }
+
+    @Override
+    public void changeSelectedCell(int row, int column, FocusUtils.Reason reason) {
+        form.checkCommitEditing();
+
+        super.changeSelectedCell(row, column, reason);
+
+        if(getSelectedRow() >= 0 && getSelectedColumn() >= 0) {
+            Element selectedRenderElement = getSelectedRenderElement(getSelectedColumn());
+            if(selectedRenderElement != null) {
+                InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(selectedRenderElement);
+                if (inputElement != null)
+                    FocusUtils.focus(inputElement, reason);
+            }
+        }
     }
 }

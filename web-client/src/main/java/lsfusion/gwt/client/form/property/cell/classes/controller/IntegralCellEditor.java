@@ -10,7 +10,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
 
-public class IntegralCellEditor extends TextBasedCellEditor implements FormatCellEditor {
+public class IntegralCellEditor extends SimpleTextBasedCellEditor implements FormatCellEditor {
     protected final GIntegralType type;
 
     public IntegralCellEditor(GIntegralType type, EditManager editManager, GPropertyDraw property) {
@@ -21,16 +21,6 @@ public class IntegralCellEditor extends TextBasedCellEditor implements FormatCel
     @Override
     public GFormatType getFormatType() {
         return type;
-    }
-
-    @Override
-    public Element createTextInputElement() {
-        Element element = super.createTextInputElement();
-        if(MainFrame.mobile) {
-            element.setAttribute("type", "number");
-            element.setAttribute("step", "0.01");
-        }
-        return element;
     }
 
     @Override

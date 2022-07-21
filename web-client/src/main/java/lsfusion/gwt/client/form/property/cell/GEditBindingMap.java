@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -60,24 +61,6 @@ public class GEditBindingMap implements Serializable {
     }
 
     public static final String TOOLBAR_ACTION = "toolbarAction";
-    public static String getDefaultEventSID(Event event, Result<Integer> contextAction, EditEventFilter editEventFilter, boolean hasEditObjectAction, boolean hasChangeAction,
-                                            Supplier<Integer> dialogActionIndexSupplier) {
-        if (isEditObjectEvent(event, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
-            return EDIT_OBJECT;
-        if (GMouseStroke.isChangeEvent(event)) {
-            Integer actionIndex = (Integer) getToolbarAction(event);
-            if(actionIndex == null && FormsController.isDialogMode()) {
-                actionIndex = dialogActionIndexSupplier.get();
-            }
-            contextAction.set(actionIndex);
-            return CHANGE;
-        }
-        if (isGroupChangeKeyEvent(event))
-            return GROUP_CHANGE;
-        if (isCharModifyKeyEvent(event, editEventFilter) || isDropEvent(event) || isChangeAppendKeyEvent(event))
-            return CHANGE;
-        return null;
-    }
 
     public static Object getToolbarAction(Event event) {
         return event.getEventTarget().<Element>cast().getPropertyObject(TOOLBAR_ACTION);

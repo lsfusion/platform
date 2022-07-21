@@ -78,8 +78,9 @@ select:focus {
     border: 1px solid var(--focus-color);
 }
 
-input, textarea {
-    background-color: var(--component-background-color);
+.prop-input {
+    background-color:transparent;
+/*var(--component-background-color);*/
     color: var(--text-color);
 
     border-width: 0;

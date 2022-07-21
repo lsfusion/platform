@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -301,7 +302,11 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     // ignore for now
     @Override
     public void focusProperty(GPropertyDraw propertyDraw) {
+        focus(FocusUtils.Reason.ACTIVATE);
+    }
 
+    public Element getTableDataFocusElement() {
+        return getWidget().getElement();
     }
 
     @Override

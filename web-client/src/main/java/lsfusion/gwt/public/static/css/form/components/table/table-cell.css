@@ -1,29 +1,5 @@
 .logicalRendererCheckBox {
-    /*margin: 0;*/
-    pointer-events: none;
 }
-
-.nullValueString {
-    color: var(--null-value-string-color);
-}
-
-.requiredValueString {
-    color: var(--required-value-string-color);
-
-    /* need this for notNullLine absolute positioning (see below) */
-    position: relative;
-}
-
-.notNullLine {
-    background: var(--not-null-line-color);
-    height: 1px;
-    bottom: 2px;
-    right:0;
-    left:0;
-    margin: 0 0.3125rem;
-    position:absolute;
-}
-
 
 /* ------------ Link Mode ------------ */
 /* we want to turn cell to hyper link*/

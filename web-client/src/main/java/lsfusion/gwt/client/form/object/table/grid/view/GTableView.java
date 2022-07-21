@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -66,10 +67,10 @@ public interface GTableView extends TableComponent {
 
     // focus
     void focusProperty(GPropertyDraw propertyDraw);
-    default void focus() {
-        getFocusHolderElement().focus();
+    default void focus(FocusUtils.Reason reason) {
+        FocusUtils.focus(getTableDataFocusElement(), reason);
     }
-    default Element getFocusHolderElement() { return getWidget().getElement(); }; // protected
+    Element getTableDataFocusElement(); // protected
 
     // add / delete
     int getSelectedRow();

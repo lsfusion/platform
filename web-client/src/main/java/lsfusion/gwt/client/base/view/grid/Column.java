@@ -15,6 +15,7 @@
  */
 package lsfusion.gwt.client.base.view.grid;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -29,7 +30,7 @@ public abstract class Column<T, C> implements HasNativeSID {
 
   public abstract boolean isSticky();
 
-  public abstract void onEditEvent(EventHandler handler, Cell editCell, TableCellElement editCellParent);
+  public abstract void onEditEvent(EventHandler handler, Cell editCell, Element editRenderElement);
 
   public abstract void renderDom(Cell cell, TableCellElement cellElement);
 

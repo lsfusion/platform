@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.classes.data.GLogicalType;
@@ -66,17 +67,18 @@ public class GDataFilterValueView extends SizedFlexPanel {
         cell.updateValue(filterValue.value);
     }
 
-    public void focusOnValue() {
-        cell.setFocus(true);
+    public void onAdd() {
+        cell.focus(FocusUtils.Reason.NEWFILTER);
     }
 
     public void startEditing(Event keyEvent) {
         if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
             if (!(cell.getProperty().baseType instanceof GLogicalType)) {
+                EventHandler handler = new EventHandler(keyEvent);
                 if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
-                    cell.startEditing(keyEvent);
+                    cell.startEditing(handler);
                 } else {
-                    cell.onEditEvent(new EventHandler(keyEvent));
+                    cell.onEditEvent(handler);
                 }
             } else {
                 // to be able to apply on Enter

@@ -1,16 +1,23 @@
-.property-toolbar-on-hover .hide {
+.property-toolbar-on-hover .property-toolbar-item-hover {
     width: 0;
     transition: width 200ms linear;
 }
 
-.property-toolbar-on-hover:hover .hide {
+.property-toolbar-on-hover:hover .property-toolbar-item-hover {
     width: 100%;
     transition: width 200ms linear;
 }
 
-.property-toolbar-start {
+.property-hide-toolbar > .property-toolbar {
+    display: none;
+}
+
+.property-toolbar {
     display: flex;
     align-items: center;
+}
+
+.property-toolbar-start {
     max-width: 50%;
 }
 
@@ -19,8 +26,6 @@
 }
 
 .property-toolbar-end {
-    display: flex;
-    align-items: center;
     max-width: 50%;
 }
 
@@ -32,15 +37,16 @@
     padding: 0.125rem;
 }
 
-.property-toolbar-item-group-start {
+.property-toolbar-item-hover {
     display: flex;
     align-self: stretch;
+}
+
+.property-toolbar-item-hover-start {
     justify-content: end;
 }
 
-.property-toolbar-item-group-end {
-    display: flex;
-    align-self: stretch;
+.property-toolbar-item-hover-end {
     justify-content: start;
 }
 

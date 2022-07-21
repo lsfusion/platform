@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.PopupPanel;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -41,7 +42,7 @@ public class PopupDialogPanel extends PopupPanel {
     public void onClose() {
         MainFrame.setModalPopup(false);
         if(focusedElement != null)
-            focusedElement.focus();
+            FocusUtils.focus(focusedElement, FocusUtils.Reason.RESTOREFOCUS);
     }
 
     public boolean tooltipFocused = false;

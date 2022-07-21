@@ -3,6 +3,7 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.Dimension;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.view.ModalForm;
@@ -71,6 +72,6 @@ public class ResizableModalWindow extends ModalWindow {
         if (tabIndex == -1) {
             element.setTabIndex(0);
         }
-        element.focus();
+        FocusUtils.focus(element, FocusUtils.Reason.SHOW);
     }
 }

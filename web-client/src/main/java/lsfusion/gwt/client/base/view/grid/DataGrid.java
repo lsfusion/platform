@@ -23,8 +23,8 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
-import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -55,7 +55,7 @@ import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
 import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
 
-public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThemeChangeListener, HasMaxPreferredSize {
+public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeListener, HasMaxPreferredSize {
 
     public static final String DATA_GRID_CLASS = "table";
 
@@ -264,7 +264,7 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
     public static void initSinkEvents(Widget widget) {
         CellBasedWidgetImpl.get().sinkEvents(widget, getBrowserEvents());
 
-        widget.sinkEvents(Event.ONPASTE | Event.ONCONTEXTMENU);
+        widget.sinkEvents(Event.ONPASTE | Event.ONCONTEXTMENU | Event.ONCHANGE);
     }
     // the problem that onpaste ('paste') event is not triggered when there is no "selection" inside element (or no other contenteditable element)
     // also it's important that focusElement should have text, thats why EscapeUtils.UNICODE_NBSP is used in a lot of places
@@ -316,7 +316,7 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
         return getBrowserFocusEvents().contains(eventType);
     }
     public static boolean checkSinkGlobalEvents(Event event) {
-        return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE || event.getType().equals(BrowserEvents.CONTEXTMENU);
+        return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE || event.getType().equals(BrowserEvents.CONTEXTMENU) || event.getType().equals(BrowserEvents.CHANGE);
     }
 
     public GridStyle getStyle() {
@@ -325,35 +325,6 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
 
     public void setPageIncrement(int pageIncrement) {
         this.pageIncrement = Math.max(1, pageIncrement);
-    }
-
-    @Override
-    public void setAccessKey(char key) {
-    }
-
-    @Override
-    public void setTabIndex(int index) {
-    }
-
-    @Override
-    public int getTabIndex() {
-        return 0;
-    }
-
-    // transfering focus to table data element
-    @Override
-    public void setFocus(boolean focused) {
-        Element focusHolderElement = getTableDataFocusElement();
-
-        if (focused) {
-            focusHolderElement.focus();
-        } else {
-            focusHolderElement.blur();
-        }
-    }
-
-    public void focus() {
-        setFocus(true);
     }
 
     private Runnable rowChangedHandler;
@@ -425,7 +396,7 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
                 targetTableSection = tbody;
 
                 row = getSelectedRow();
-                columnParent = getSelectedElement();
+                columnParent = getSelectedElement(getSelectedColumn());
                 if(columnParent != null)
                     column = tableBuilder.getColumn(columnParent);
             }
@@ -521,9 +492,9 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
         // Increment the keyboard selected column.
         int selectedColumn = getSelectedColumn();
         if(selectedColumn == -1)
-            changeSelectedColumn(columns.size() - 1);
+            setSelectedColumn(columns.size() - 1);
         else if (beforeIndex <= selectedColumn)
-            changeSelectedColumn(selectedColumn + 1);
+            setSelectedColumn(selectedColumn + 1);
     }
 
     public void moveColumn(int oldIndex, int newIndex) {
@@ -656,7 +627,8 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
     }
     public void focusedChanged() {
         focusedChanged = true;
-        scheduleUpdateDOM();
+        if(!isResolvingState) // hack, grid elements can have focus and not be in editing mode (for example input) and removing such elements will lead to blur
+            scheduleUpdateDOM();
     }
 
     public void onResizeChanged() {
@@ -734,28 +706,30 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
     // so to handle this there are to ways of doing that, either with GFormController.checkCommitEditing, or moving focus to grid
     // so far will do it with checkCommitEditing (like in form bindings)
     // see overrides
-    public boolean changeSelectedColumn(int column) {
-//        setFocus(true);
+    public void changeSelectedCell(int row, int column, FocusUtils.Reason reason) {
+        // there are index checks inside, sometimes they are redundant, sometimes not
+        // however not it's not that important as well, as if the row / column actually was changed
+        changeSelectedRow(row);
+        changeSelectedColumn(column);
+    }
+
+    private void changeSelectedColumn(int column) {
         int columnCount = getColumnCount();
         if(columnCount == 0)
-            return true;
+            return;
         if (column < 0)
             column = 0;
         else if (column >= columnCount)
             column = columnCount - 1;
 
-        if(!isFocusable(column))
-            return false;
-
+        assert isFocusable(column);
         setSelectedColumn(column);
-        return true;
     }
-    public void changeSelectedRow(int row) {
-//        setFocus(true);
+    private void changeSelectedRow(int row) {
         int rowCount = getRowCount();
-
         if(rowCount == 0)
             return;
+
         if (row < 0)
             row = 0;
         else if (row >= rowCount)
@@ -763,6 +737,14 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
 
         if(setSelectedRow(row))
             rowChangedHandler.run();
+    }
+
+    public Cell getSelectedCell() {
+        return getSelectedCell(getSelectedColumn());
+    }
+
+    public Cell getSelectedCell(int column) {
+        return new Cell(getSelectedRow(), column, getColumn(column), (RowIndexHolder) getSelectedRowValue());
     }
 
     public void setSelectedColumn(int column) {
@@ -781,7 +763,17 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
     public boolean isFocusable(Cell cell) {
         return cell.getColumn().isFocusable();
     }
-    public boolean isChangeOnSingleClick(Cell cell, Event event, boolean rowChanged) {
+
+    protected void focusColumn(int columnIndex, FocusUtils.Reason reason) {
+        if (columnIndex == -1 || !isFocusable(columnIndex))
+            return;
+        focus(reason);
+        selectionHandler.changeColumn(columnIndex, reason);
+    }
+
+    public abstract void focus(FocusUtils.Reason reason);
+
+    public boolean isChangeOnSingleClick(Cell cell, Event event, boolean rowChanged, Column column) {
         return !isFocusable(cell);
     }
 
@@ -837,10 +829,6 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
         if (!(row >= 0 && row < rows.getLength()))
             return null;
         return rows.getItem(row);
-    }
-
-    protected TableCellElement getSelectedElement() {
-        return getSelectedElement(getSelectedColumn());
     }
 
     protected TableCellElement getSelectedElement(int column) {
@@ -1061,7 +1049,7 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
                 newRow = getFirstVisibleRow(visibleTop, rowBottom >= visibleTop ? visibleBottom : null, selectedRow + 1);
             }
             if (newRow != -1) {
-                changeSelectedRow(newRow);
+                selectionHandler.changeRow(newRow, FocusUtils.Reason.SCROLLNAVIGATE);
             }
         }
     }
@@ -1730,10 +1718,14 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
                 int col = cell.getColumnIndex();
                 int row = cell.getRowIndex();
                 boolean rowChanged = display.getSelectedRow() != row;
-                if ((display.getSelectedColumn() != col) || rowChanged) {
+                int selectedColumn = display.getSelectedColumn();
 
-                    changeColumn(col);
-                    changeRow(row);
+                if (selectedColumn != col || rowChanged) {
+                    FocusUtils.Reason reason = FocusUtils.Reason.MOUSENAVIGATE;
+                    if(!isFocusable(col))
+                        changeRow(row, reason);
+                    else
+                        changeCell(row, col, reason);
 
                     if(changeEvent && !isChangeOnSingleClick.apply(rowChanged)) // we'll propagate native events to enable (support) "text selection" feature
                         handler.consume(true, true); // we'll propagate events upper, to process bindings if there are any (for example CTRL+CLICK)
@@ -1753,44 +1745,58 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
 
         public boolean handleKeyEvent(Event event) {
             int keyCode = event.getKeyCode();
+            FocusUtils.Reason reason = FocusUtils.Reason.KEYMOVENAVIGATE;
             switch (keyCode) {
                 case KeyCodes.KEY_RIGHT:
-                    return nextColumn(true);
+                    nextColumn(true, reason);
+                    return true;
                 case KeyCodes.KEY_LEFT:
-                    return nextColumn(false);
+                    nextColumn(false, reason);
+                    return true;
                 case KeyCodes.KEY_DOWN:
-                    return nextRow(true);
+                    nextRow(true, reason);
+                    return true;
                 case KeyCodes.KEY_UP:
-                    return nextRow(false);
+                    nextRow(false, reason);
+                    return true;
                 case KeyCodes.KEY_PAGEDOWN:
-                    return changeRow(display.getSelectedRow() + display.pageIncrement);
+                    changeRow(display.getSelectedRow() + display.pageIncrement, reason);
+                    return true;
                 case KeyCodes.KEY_PAGEUP:
-                    return changeRow(display.getSelectedRow() - display.pageIncrement);
+                    changeRow(display.getSelectedRow() - display.pageIncrement, reason);
+                    return true;
                 case KeyCodes.KEY_HOME:
-                    return changeRow(0);
+                    changeRow(0, reason);
+                    return true;
                 case KeyCodes.KEY_END:
-                    return changeRow(display.getRowCount() - 1);
+                    changeRow(display.getRowCount() - 1, reason);
+                    return true;
             }
             return false;
         }
 
-        protected boolean changeColumn(int column) {
-            return display.changeSelectedColumn(column);
+        protected boolean isFocusable(int column) {
+            return display.isFocusable(column);
         }
-        protected boolean changeRow(int row) {
-            display.changeSelectedRow(row);
-            return true;
+        protected void changeCell(int row, int column, FocusUtils.Reason reason) {
+            display.changeSelectedCell(row, column, reason);
+        }
+        public void changeColumn(int column, FocusUtils.Reason reason) {
+            changeCell(display.getSelectedRow(), column, reason);
+        }
+        public void changeRow(int row, FocusUtils.Reason reason) {
+            changeCell(row, display.getSelectedColumn(), reason);
         }
 
-        public boolean nextRow(boolean down) {
+        public void nextRow(boolean down, FocusUtils.Reason reason) {
             int rowIndex = display.getSelectedRow();
-            return changeRow(down ? rowIndex + 1 : rowIndex - 1);
+            changeRow(down ? rowIndex + 1 : rowIndex - 1, reason);
         }
 
-        public boolean nextColumn(boolean forward) {
+        public void nextColumn(boolean forward, FocusUtils.Reason reason) {
             int rowCount = display.getRowCount();
             if(rowCount == 0) // not sure if it's needed
-                return false;
+                return;
             int columnCount = display.getColumnCount();
 
             int rowIndex = display.getSelectedRow();
@@ -1819,11 +1825,11 @@ public abstract class DataGrid<T> implements TableComponent, Focusable, ColorThe
                     }
                 }
 
-                if(changeColumn(columnIndex))
+                if(isFocusable(columnIndex))
                     break;
             }
 
-            return changeRow(rowIndex);
+            changeCell(rowIndex, columnIndex, reason);
         }
     }
 

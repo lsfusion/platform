@@ -2691,6 +2691,43 @@ public class Settings implements Cloneable {
         this.minSizeForReportExportToCSV = minSizeForReportExportToCSV;
     }
 
+    private boolean useInputTagForTextBased = true;
+    private boolean useInputTagForBoolean = true;
+    private boolean noToolbarForInputTagInPanel = false;
+    private boolean noToolbarForBoolean = true;
+
+    public boolean isUseInputTagForTextBased() {
+        return useInputTagForTextBased;
+    }
+
+    public void setUseInputTagForTextBased(boolean useInputTagForTextBased) {
+        this.useInputTagForTextBased = useInputTagForTextBased;
+    }
+
+    public boolean isUseInputTagForBoolean() {
+        return useInputTagForBoolean;
+    }
+
+    public void setUseInputTagForBoolean(boolean useInputTagForBoolean) {
+        this.useInputTagForBoolean = useInputTagForBoolean;
+    }
+
+    public boolean isNoToolbarForInputTagInPanel() {
+        return noToolbarForInputTagInPanel;
+    }
+
+    public void setNoToolbarForInputTagInPanel(boolean noToolbarForInputTagInPanel) {
+        this.noToolbarForInputTagInPanel = noToolbarForInputTagInPanel;
+    }
+
+    public boolean isNoToolbarForBoolean() {
+        return noToolbarForBoolean;
+    }
+
+    public void setNoToolbarForBoolean(boolean noToolbarForBoolean) {
+        this.noToolbarForBoolean = noToolbarForBoolean;
+    }
+
     private int authTokenExpiration = 60 * 24; // in minutes
 
     public int getAuthTokenExpiration() {

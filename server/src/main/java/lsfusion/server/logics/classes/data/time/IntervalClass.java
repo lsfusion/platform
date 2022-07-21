@@ -4,6 +4,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ import java.util.Date;
 
 import static lsfusion.base.DateConverter.*;
 
-public abstract class IntervalClass<T> extends DataClass<BigDecimal> {
+public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
 
     public static IntervalClass getInstance(String type) {
         switch (type) {

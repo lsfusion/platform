@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GFormChanges;
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
@@ -611,9 +612,9 @@ public class GGridController extends GAbstractTableController {
         table.modifyGroupObject(key, add, position);
     }
 
-    public boolean focusFirstWidget() {
+    public boolean focusFirstWidget(FocusUtils.Reason reason) {
         if (table != null && GwtClientUtils.isShowing(table.getWidget())) {
-            table.focus();
+            table.focus(reason);
             return true;
         }
 
@@ -649,7 +650,6 @@ public class GGridController extends GAbstractTableController {
 
     public void focusProperty(GPropertyDraw property) {
         GTableView table = this.table;
-        table.focus();
         table.focusProperty(property);
     }
 

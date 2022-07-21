@@ -52,7 +52,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }
 
     @Override
-    public void start(Event editEvent, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, Object oldValue) {
         // we'll assume that everything is done in render method
     }
 

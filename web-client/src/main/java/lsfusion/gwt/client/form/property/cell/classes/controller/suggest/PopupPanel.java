@@ -1017,13 +1017,9 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    *
    * @param target the target to show the popup below
    */
-  public final void showRelativeTo(final UIObject target) {
+  public final void showRelativeTo(final Element target) {
     // Set the position of the popup right before it is shown.
-    setPopupPositionAndShow(new PositionCallback() {
-      public void setPosition(int offsetWidth, int offsetHeight) {
-        position(target, offsetWidth, offsetHeight);
-      }
-    });
+    setPopupPositionAndShow((offsetWidth, offsetHeight) -> position(target, offsetWidth, offsetHeight));
   }
 
   @Override
@@ -1191,7 +1187,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    * @param offsetWidth the drop down's offset width
    * @param offsetHeight the drop down's offset height
    */
-  private void position(final UIObject relativeObject, int offsetWidth,
+  private void position(final Element relativeObject, int offsetWidth,
       int offsetHeight) {
     // Calculate left position for the popup. The computation for
     // the left position is bidi-sensitive.

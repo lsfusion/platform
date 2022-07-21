@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.panel.controller;
 
+import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.Result;
@@ -166,14 +167,14 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         }
     }
 
-    public boolean focusFirstWidget() {
+    public boolean focus(FocusUtils.Reason reason) {
         if (renderers == null || renderers.isEmpty()) {
             return false;
         }
 
         PanelRenderer toFocus = columnKeys == null ? renderers.firstValue() : renderers.get(columnKeys.get(0));
         if (isShowing(toFocus.getComponent())) {
-            toFocus.focus();
+            toFocus.focus(reason);
             return true;
         }
         return false;

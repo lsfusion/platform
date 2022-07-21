@@ -271,6 +271,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.baseType = typeConverter.convertOrCast(clientPropertyDraw.baseType);
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
+        propertyDraw.tag = clientPropertyDraw.tag;
+        propertyDraw.toolbar = clientPropertyDraw.toolbar;
+
         propertyDraw.externalChangeType = typeConverter.convertOrCast(clientPropertyDraw.externalChangeType);
         propertyDraw.asyncExecMap = new HashMap<>();
         for(Map.Entry<String, ClientAsyncEventExec> entry : clientPropertyDraw.asyncExecMap.entrySet()) {

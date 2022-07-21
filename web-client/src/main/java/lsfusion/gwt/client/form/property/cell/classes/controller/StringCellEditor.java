@@ -5,7 +5,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
-public class StringCellEditor extends TextBasedCellEditor {
+public class StringCellEditor extends SimpleTextBasedCellEditor {
     private boolean isVarString;
     private int stringLength; 
 

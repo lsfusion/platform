@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.dom.client.Style;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
@@ -31,7 +32,7 @@ public class GLogicalType extends GDataType {
     @Override
     public CellRenderer createCellRenderer(GPropertyDraw property) {
         return new LogicalCellRenderer(property, threeState);
-}
+    }
 
     @Override
     public CellEditor createCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
@@ -58,5 +59,10 @@ public class GLogicalType extends GDataType {
     @Override
     public String toString() {
         return ClientMessages.Instance.get().typeLogicalCaption();
+    }
+
+    @Override
+    public Style.TextAlign getHorzTextAlignment() {
+        return Style.TextAlign.CENTER;
     }
 }

@@ -1,11 +1,13 @@
 package lsfusion.gwt.client.classes.data;
 
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
 
@@ -65,5 +67,15 @@ public abstract class GIntegralType extends GFormatType {
 
     protected NumberFormat getDefaultFormat() {
         return NumberFormat.getDecimalFormat();
+    }
+
+    @Override
+    public InputElement createTextInputElement() {
+        InputElement element = super.createTextInputElement();
+        if(MainFrame.mobile) {
+            element.setAttribute("type", "number");
+            element.setAttribute("step", "0.01");
+        }
+        return element;
     }
 }

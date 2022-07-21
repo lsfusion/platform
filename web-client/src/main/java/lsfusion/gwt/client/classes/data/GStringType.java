@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.classes.GTextBasedType;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GExtInt;
@@ -18,7 +19,7 @@ import static java.lang.Math.pow;
 import static java.lang.Math.round;
 import static lsfusion.gwt.client.form.filter.user.GCompare.*;
 
-public class GStringType extends GDataType {
+public class GStringType extends GTextBasedType {
 
     public boolean blankPadded;
     public boolean caseInsensitive;

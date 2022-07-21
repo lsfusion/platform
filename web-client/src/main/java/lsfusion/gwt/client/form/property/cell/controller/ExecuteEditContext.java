@@ -9,7 +9,7 @@ public interface ExecuteEditContext extends EditContext {
 
     boolean isReadOnly();
 
-    void trySetFocus();
+    void trySetFocusOnBinding();
 
     default boolean canUseChangeValueForRendering(GType type) {
         return getProperty().canUseChangeValueForRendering(type);

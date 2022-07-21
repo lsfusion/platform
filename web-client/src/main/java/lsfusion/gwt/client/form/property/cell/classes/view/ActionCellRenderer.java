@@ -10,8 +10,6 @@ import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import java.util.function.Consumer;
 
-import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.clearBasedTextFonts;
-import static lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer.setBasedTextFonts;
 import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 // actually extends TextBasedCellRenderer for optimization purposes, when there are no images
@@ -28,16 +26,8 @@ public class ActionCellRenderer extends CellRenderer {
     public static final String ASYNCIMAGE = "lsf-async-image";
 
     @Override
-    public Element createRenderElement(RenderContext renderContext) {
-        return Document.get().createButtonElement();
-    }
-    @Override
-    public boolean isSimpleText(RenderContext renderContext) {
-        return !hasImage(renderContext);
-    }
-    @Override
-    public boolean isSimpleText(UpdateContext updateContext) {
-        return !hasImage(updateContext);
+    public boolean canBeRenderedInTD() {
+        return false; // since for now we want button element
     }
 
     private boolean hasImage(boolean globalCaptionIsDrawn) {
@@ -52,14 +42,7 @@ public class ActionCellRenderer extends CellRenderer {
         return hasImage(updateContext.globalCaptionIsDrawn());
     }
 
-    @Override
-    protected Style.TextAlign getDefaultHorzTextAlignment() {
-        return Style.TextAlign.CENTER;
-    }
-
-    private static void wrapAlignedFlexImg(Element th, Consumer<ImageElement> imgProcessor) {
-        assert GwtClientUtils.isAlignedFlexModifiableDiv(th) || GwtClientUtils.isTDorTH(th); // has vertical and text align
-
+    private static void addImage(Element th, Consumer<ImageElement> imgProcessor) {
         ImageElement img = Document.get().createImageElement();
         img.addClassName("wrap-img-margins");
         imgProcessor.accept(img);
@@ -68,40 +51,55 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderStaticContent(Element element, RenderContext renderContext) {
+    public boolean renderContent(Element element, RenderContext renderContext) {
         element.addClassName("btn");
-        element.setInnerText("...");
 
+        element.setInnerText("..."); // need this to make getLastChild work
         JavaScriptObject node;
         if(hasImage(renderContext)) { // optimization;
             if(property.panelCaptionVertical)
                 element.getStyle().setProperty("flexDirection", "column");
-            wrapAlignedFlexImg(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
+            addImage(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
                 element.setPropertyObject(IMAGE, imageElement);
             });
         }
         node = element.getLastChild();
 
-        setBasedTextFonts(property, element, renderContext);
-
         element.setPropertyObject(TEXT, node);
         setLabelText(element, null);
 
-        // using widgets can lead to some leaks
-        // also there is a problem with focuses (all inner elements, should be not focusable), outer borders and extra elements
-//        AppImageButton button = new AppImageButton(property.imageHolder, null);
+        setBasedTextFonts(property, element, renderContext);
+        // we can't use text alignment for several reasons:
+        // button does not support vertical-align
+        // vertical-align doesn't work properly with images (it works really odd, and has to be aligned manually with margins)
+//        if(GwtClientUtils.isTDorTH(element)) { // otherwise we'll use flex alignment (however text alignment would also do)
+//            renderTextAlignment(property, element);
+//            return true;
+//        }
+//        }
+
+        return false;
     }
 
     @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
         element.removeClassName("btn");
-        if(property.panelCaptionVertical)
-            element.getStyle().clearProperty("flexDirection");
-        element.getStyle().clearPadding();
+
+        if(hasImage(renderContext)) {
+            if (property.panelCaptionVertical) {
+                element.getStyle().clearProperty("flexDirection");
+            }
+        }
+//        element.getStyle().clearPadding();
+
         element.setPropertyObject(TEXT, null);
 
-        if(!hasImage(renderContext))
-            clearBasedTextFonts(property, element.getStyle(), renderContext);
+        clearBasedTextFonts(property, element, renderContext);
+//        if(GwtClientUtils.isTDorTH(element)) { // otherwise we'll use flex alignment (however text alignment would also do)
+//            clearRenderTextAlignment(element);
+//            return true;
+//            }
+        return false;
     }
 
     public static void setLabelText(Element element, String text) {
@@ -131,7 +129,7 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
 
         // we have it here and not in renderStaticContent because of using enabled
@@ -175,10 +173,5 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public String format(Object value) {
         return (value != null) && ((Boolean) value) ? "..." : "";
-    }
-
-    @Override
-    public boolean isAutoDynamicHeight() {
-        return false;
     }
 }

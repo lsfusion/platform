@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.async;
 
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -31,8 +32,8 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(GFormController formController, Event event, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
-        formController.asyncOpenForm(this, editContext, execContext, event, actionSID, pushAsyncResult, externalChange, onExec);
+    public void exec(GFormController formController, EventHandler handler, EditContext editContext, ExecContext execContext, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
+        formController.asyncOpenForm(this, editContext, execContext, handler, actionSID, pushAsyncResult, externalChange, onExec);
     }
 
     public GWindowFormType getWindowType(boolean canShowDockedModal) {

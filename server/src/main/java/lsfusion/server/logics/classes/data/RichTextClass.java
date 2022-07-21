@@ -24,4 +24,9 @@ public class RichTextClass extends TextClass {
     public DataClass getCompatible(DataClass compClass, boolean or) {
         return compClass instanceof RichTextClass ? this : super.getCompatible(compClass, or);
     }
+
+    @Override
+    public boolean useInputTag() {
+        return false;
+    }
 }

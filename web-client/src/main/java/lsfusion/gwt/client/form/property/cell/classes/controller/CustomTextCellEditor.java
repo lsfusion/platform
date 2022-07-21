@@ -10,7 +10,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
-public class CustomTextCellEditor extends TextBasedCellEditor implements CustomCellEditor {
+public class CustomTextCellEditor extends SimpleTextBasedCellEditor implements CustomCellEditor {
 
     private final String renderFunction;
     private final GType type;

@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
+import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -16,44 +19,99 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    protected Style.TextAlign getDefaultHorzTextAlignment() {
-        return Style.TextAlign.CENTER;
+    public boolean canBeRenderedInTD() {
+        return true;
+    }
+
+    private final static String inputElementProp = "logicalInputElement";
+
+    public static InputElement getInputEventTarget(Element parent, Event event) {
+        InputElement inputElement = getInputElement(parent);
+        if(inputElement == event.getEventTarget().cast())
+            return inputElement;
+        return null;
+    }
+
+    public static InputElement getInputElement(Element parent) {
+        return (InputElement) parent.getPropertyObject(inputElementProp);
+    }
+
+    public static void setInputElement(Element element, InputElement inputElement) {
+        element.setPropertyObject(inputElementProp, inputElement);
     }
 
     @Override
-    public void renderStaticContent(Element element, RenderContext renderContext) {
-//        if (GwtClientUtils.isIEUserAgent()) {
-//            ImageElement img = element.appendChild(Document.get().createImageElement());
-//            checkStyle = img.getStyle();
-//            checkStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
-//        }
+    public boolean renderContent(Element element, RenderContext renderContext) {
+        InputElement inputElement;
+
+        boolean renderedAlignment = false;
+
+        boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
+        boolean isInput = isTagInput();
+        if (!isInput || isTDOrTH) {
+            inputElement = renderInputElement(element);
+
+            if(isTDOrTH) {
+                renderTextAlignment(property, element);
+
+                renderedAlignment = true;
+            }
+        } else
+            inputElement = (InputElement) element;
+
+        setInputElement(element, inputElement);
+
+        return renderedAlignment;
+    }
+
+    public static InputElement renderInputElement(Element element) {
+        InputElement inputElement = createCheckInput();
+        element.appendChild(inputElement);
+        return inputElement;
+    }
+
+    public static InputElement createCheckInput() {
         InputElement input = Document.get().createCheckInputElement();
-        input.addClassName("logicalRendererCheckBox");
-        element.appendChild(input);
-    }
-
-    @Override
-    public void clearRenderContent(Element element, RenderContext renderContext) {
-    }
-
-    @Override
-    public boolean renderDynamicContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
-//        if (GwtClientUtils.isIEUserAgent()) {
-//            ImageElement img = element.getFirstChild().cast();
-//            img.setSrc(getCBImagePath(value));
-//        } else {
-        InputElement input = element.getFirstChild().cast();
         input.setTabIndex(-1);
-        input.setChecked(value != null && (Boolean) value);
+        input.addClassName("logicalRendererCheckBox");
+        return input;
+    }
+
+    @Override
+    public boolean clearRenderContent(Element element, RenderContext renderContext) {
+        setInputElement(element, null);
+
+        if(GwtClientUtils.isTDorTH(element))
+            clearRenderTextAlignment(element);
+
+        return false;
+    }
+
+    @Override
+    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+        InputElement input = getInputElement(element);
+        boolean newValue = value != null && (Boolean) value;
+        setChecked(input, newValue);
         input.setDisabled(threeState && value == null);
 
         return false;
-//        }
+    }
+
+    public static void setChecked(InputElement input, boolean newValue) {
+        input.setChecked(newValue);
+        input.setDefaultChecked(newValue);
+    }
+
+    public static void cancelChecked(InputElement input) {
+        input.setChecked(input.isDefaultChecked());
     }
 
     @Override
-    protected boolean needToRenderToolbarContent() {
-        return false;
+    public Element createRenderElement() {
+        if(isTagInput())
+            return createCheckInput();
+
+        return super.createRenderElement();
     }
 
     //    private String getCBImagePath(Object value) {
@@ -64,10 +122,5 @@ public class LogicalCellRenderer extends CellRenderer {
     @Override
     public String format(Object value) {
         return (value != null) && ((Boolean) value) ? "TRUE" : "FALSE";
-    }
-
-    @Override
-    public boolean isAutoDynamicHeight() {
-        return false;
     }
 }

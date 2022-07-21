@@ -90,11 +90,13 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     protected void onEditEvent(EventHandler handler) {
         Result<Boolean> contextAction = new Result<>();
         if(property.isFilterChange(handler.event, contextAction)) {
-            handler.consume();
             if(contextAction.result != null) // assert that reset is called
                 updateAndCommit(null);
             else
-                startEditing(handler.event);
+                startEditing(handler);
+
+            if(!handler.consumed)
+                handler.consume();
         }
     }
 
@@ -104,9 +106,9 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         return result.getValue();
     }
 
-    protected void startEditing(Event event) {
+    protected void startEditing(EventHandler handler) {
         form.edit(property.getFilterBaseType(),
-                event,
+                handler,
                 false,
                 null,
                 inputList,

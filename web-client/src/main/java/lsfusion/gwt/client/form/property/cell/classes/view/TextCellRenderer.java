@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public class TextCellRenderer extends StringBasedCellRenderer {
+public class TextCellRenderer extends StringBasedCellRenderer<Object> {
 
     public TextCellRenderer(GPropertyDraw property) {
         super(property);

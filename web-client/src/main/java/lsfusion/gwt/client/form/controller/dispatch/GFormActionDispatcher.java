@@ -5,6 +5,7 @@ import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
+import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -56,7 +57,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             }
         };
         try {
-            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, editEvent, editContext, onClose);
+            form.openForm(getDispatchingIndex(), action.form, action.showFormType, action.forbidDuplicate, editEventHandler != null ? editEventHandler.event : null, editContext, onClose);
         } catch (Throwable t) {
             onClose.onHidden();
             throw t;
@@ -142,7 +143,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
 
     // editing (INPUT) functionality
 
-    public Event editEvent;
+    public EventHandler editEventHandler;
     public EditContext editContext; // needed for some input operations (input, update edit value)
 
     public EndReason editFormCloseReason;
@@ -156,7 +157,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         Result<Object> result = new Result<>();
         // we'll be optimists and assume that this value will stay
         long dispatchingIndex = getDispatchingIndex();
-        form.edit(action.readType, editEvent, action.hasOldValue, action.oldValue, action.inputList,
+        form.edit(action.readType, editEventHandler, action.hasOldValue, action.oldValue, action.inputList,
                 (value, onExec) -> {
                     onExec.accept(dispatchingIndex);
 
