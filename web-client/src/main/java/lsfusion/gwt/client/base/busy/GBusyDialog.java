@@ -16,13 +16,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GBusyDialog extends WindowBox {
+public class GBusyDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public Boolean needInterrupt = null;
 
     VerticalPanel mainPanel;
     VerticalPanel topPanel;
-    HorizontalPanel bottomPanel;
     boolean pauseTopProgressBar = false;
     private Image topProgressBarDynamic;
     private Image topProgressBarStatic;
@@ -42,12 +41,9 @@ public class GBusyDialog extends WindowBox {
     private int latestWindowWidth;
 
     public GBusyDialog() {
-        super(false, false, inDevMode());
-        setModal(true);
-        setGlassEnabled(true);
+        super(false, inDevMode() ? ModalWindowSize.EXTRA_LARGE : ModalWindowSize.LARGE);
 
-        addStyleName("busyDialog");
-        setText(messages.busyDialogLoading());
+        setCaption(messages.busyDialogLoading());
 
         mainPanel = new VerticalPanel();
         mainPanel.setWidth("100%");
@@ -87,14 +83,11 @@ public class GBusyDialog extends WindowBox {
 
         mainPanel.add(topPanel);
 
-        bottomPanel = new HorizontalPanel();
-        bottomPanel.setWidth("100%");
-        bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-
-        HorizontalPanel buttonPanel = new HorizontalPanel();
-        buttonPanel.setSpacing(5);
+        setBodyWidget(mainPanel);
 
         Button btnCopy = new Button(messages.busyDialogCopyToClipboard());
+        btnCopy.setStyleName("btn");
+        btnCopy.addStyleName("btn-secondary");
         if (inDevMode()) {
             btnCopy.addClickHandler(new ClickHandler() {
                 @Override
@@ -102,20 +95,24 @@ public class GBusyDialog extends WindowBox {
                     copyToClipboard();
                 }
             });
-            buttonPanel.add(btnCopy);
+            addFooterWidget(btnCopy);
         }
 
         btnExit = new Button(messages.busyDialogExit());
         btnExit.setEnabled(false);
+        btnExit.setStyleName("btn");
+        btnExit.addStyleName("btn-secondary");
         btnExit.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent clickEvent) {
                 exitAction();
             }
         });
-        buttonPanel.add(btnExit);
+        addFooterWidget(btnExit);
 
         btnReconnect = new Button(messages.busyDialogReconnect());
+        btnReconnect.setStyleName("btn");
+        btnReconnect.addStyleName("btn-secondary");
         btnReconnect.setEnabled(false);
         btnReconnect.addClickHandler(new ClickHandler() {
             @Override
@@ -123,9 +120,11 @@ public class GBusyDialog extends WindowBox {
                 reconnectAction();
             }
         });
-        buttonPanel.add(btnReconnect);
+        addFooterWidget(btnReconnect);
 
         btnCancel = new Button(messages.cancel());
+        btnCancel.setStyleName("btn");
+        btnCancel.addStyleName("btn-secondary");
         btnCancel.setEnabled(false);
         btnCancel.addClickHandler(new ClickHandler() {
             @Override
@@ -133,9 +132,11 @@ public class GBusyDialog extends WindowBox {
                 cancelAction();
             }
         });
-        buttonPanel.add(btnCancel);
+        addFooterWidget(btnCancel);
 
         btnInterrupt = new Button(messages.busyDialogBreak());
+        btnInterrupt.setStyleName("btn");
+        btnInterrupt.addStyleName("btn-secondary");
         btnInterrupt.setEnabled(false);
         btnInterrupt.addClickHandler(new ClickHandler() {
             @Override
@@ -143,22 +144,11 @@ public class GBusyDialog extends WindowBox {
                 interruptAction();
             }
         });
-        buttonPanel.add(btnInterrupt);
-
-        bottomPanel.add(buttonPanel);
-        mainPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-        mainPanel.add(bottomPanel);
-
-        setWidget(mainPanel);
+        addFooterWidget(btnInterrupt);
     }
     
     private static boolean inDevMode() {
         return MainFrame.showDetailedInfo;
-    }
-
-    public void makeMaskVisible(boolean visible) {
-        getElement().getStyle().setOpacity(visible ? 1 : 0);
-        getGlassElement().getStyle().setOpacity(visible ? 0.3 : 0);
     }
 
     public void scheduleButtonEnabling() {
@@ -175,8 +165,8 @@ public class GBusyDialog extends WindowBox {
     }
 
     public void hideBusyDialog() {
-        if(isShowing())
-            hide();
+//        if(isShowing())
+        hide();
         messagePanel.clear();
         btnExit.setEnabled(false);
         btnReconnect.setEnabled(false);
@@ -250,7 +240,7 @@ public class GBusyDialog extends WindowBox {
             int topProgressBarHeight = pauseTopProgressBar ?
                     (topProgressBarStatic.isVisible() ? topProgressBarStatic.getElement().getClientHeight() : 0) :
                     (topProgressBarDynamic.isVisible() ? topProgressBarDynamic.getElement().getClientHeight() : 0);
-            int height = mainPanel.getElement().getClientHeight() - bottomPanel.getElement().getClientHeight() -
+            int height = mainPanel.getElement().getClientHeight() - getFooterWidget().getElement().getClientHeight() -
                     topProgressBarHeight - 3; //3 is magic number
             messagePanel.getElement().getStyle().setProperty("maxWidth", width + "px");
             scrollMessagePanel.getElement().getStyle().setProperty("maxWidth", width + "px");
@@ -337,9 +327,9 @@ public class GBusyDialog extends WindowBox {
             protected String getText(ProgressBar bar, double curProgress) {
                 return line.message;
             }
-        }));
+        }), GFlexAlignment.STRETCH);
         if (line.params != null)
-            progressBarPanel.add(new HTML(line.params));
+            progressBarPanel.add(new HTML(line.params), GFlexAlignment.STRETCH);
         return progressBarPanel;
     }
 

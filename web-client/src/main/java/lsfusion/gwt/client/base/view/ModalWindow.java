@@ -138,6 +138,10 @@ public class ModalWindow extends ResizableComplexPanel {
         footer.add(widget);
     }
 
+    public Widget getFooterWidget() {
+        return footer;
+    }
+
     public enum ModalWindowSize {
         FIT_CONTENT, LARGE, EXTRA_LARGE
     }

@@ -26,9 +26,8 @@ public class GBusyDialogDisplayer extends LoadingManager {
             public void run() {
                 assert visible;
                 blockingPanel.hide();
-                busyDialog.makeMaskVisible(true);
+                busyDialog.show();
 
-                busyDialog.center();
                 busyDialog.scheduleButtonEnabling();
 
                 updateBusyDialog(messageProvider); // we want immediate update, to avoid leaps
@@ -73,7 +72,6 @@ public class GBusyDialogDisplayer extends LoadingManager {
     public void start() {
         if (!visible) {
             blockingPanel.center();
-            busyDialog.makeMaskVisible(false);
 
             showTimer.schedule((int) MainFrame.busyDialogTimeout);
             visible = true;
