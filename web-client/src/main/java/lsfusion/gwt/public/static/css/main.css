@@ -121,19 +121,9 @@ svg {
 }
 
 /* ------------ Error Dialog ------------ */
-.errorBox-button {
-    margin: 0.1875rem 0.1875rem 0.3125rem;
+.error-dialog-stacks {
+    height: 30em;
 }
-
-.errorBox-stackBox {
-    resize: none;
-    white-space: nowrap;
-}
-
-.errorBox-message {
-    padding: 0.3125rem;
-}
-
 
 /* ------------ Busy Dialog  ------------ */
 .busyDialog {

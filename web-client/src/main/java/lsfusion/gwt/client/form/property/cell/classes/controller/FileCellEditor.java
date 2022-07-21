@@ -170,7 +170,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         private Timer timer;
 
         public LoadingBox(Runnable cancelAction) {
-            super(false, true);
+            super(false, ModalWindowSize.FIT_CONTENT);
 
             setCaption(messages.loading());
 

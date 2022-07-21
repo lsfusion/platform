@@ -26,7 +26,7 @@ public class ModalWindow extends ResizableComplexPanel {
 
     private final boolean resizable;
 
-    public ModalWindow(boolean resizable, boolean fitContent) {
+    public ModalWindow(boolean resizable, ModalWindowSize size) {
         super();
 
         this.resizable = resizable;
@@ -50,8 +50,19 @@ public class ModalWindow extends ResizableComplexPanel {
             dialog.addStyleName("modal-resizable");
         else
             dialog.addStyleName("modal-dialog-centered");
-        if (fitContent)
-            dialog.addStyleName("modal-fit-content");
+
+        switch (size) {
+            case FIT_CONTENT:
+                dialog.addStyleName("modal-fit-content");
+                break;
+            case LARGE:
+                dialog.addStyleName("modal-lg");
+                break;
+            case EXTRA_LARGE:
+                dialog.addStyleName("modal-xl");
+                break;
+        }
+
         modal.setWidget(dialog);
 
         header = new ResizableComplexPanel();
@@ -125,5 +136,9 @@ public class ModalWindow extends ResizableComplexPanel {
         }
 
         footer.add(widget);
+    }
+
+    public enum ModalWindowSize {
+        FIT_CONTENT, LARGE, EXTRA_LARGE
     }
 }

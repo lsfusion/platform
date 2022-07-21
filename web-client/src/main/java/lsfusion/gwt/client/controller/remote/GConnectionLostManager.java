@@ -134,7 +134,7 @@ public class GConnectionLostManager {
         private boolean fatal;
 
         public GBlockDialog(boolean fatal, boolean showReconnect) {
-            super(false, true);
+            super(false, ModalWindowSize.FIT_CONTENT);
 
             this.fatal = fatal;
 

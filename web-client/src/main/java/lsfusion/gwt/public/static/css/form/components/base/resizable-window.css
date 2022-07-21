@@ -20,7 +20,24 @@
 .modal-dialog {
     margin: 1.75rem auto 1.75rem auto;
     width: auto;
-    max-width: 500px;
+}
+
+@media (min-width: 576px) {
+    .modal-dialog {
+        max-width: 500px;
+    }
+}
+
+@media (min-width: 992px) {
+    .modal-lg {
+        max-width: 800px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .modal-xl {
+        max-width: 1140px;
+    }
 }
 
 .modal-dialog.modal-resizable {

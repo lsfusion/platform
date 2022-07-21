@@ -19,7 +19,7 @@ public class GClassDialog extends DialogModalWindow {
     private GObjectClass chosenClass;
 
     public GClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-        super(false, false);
+        super(false, null);
 
         this.concreate = concreate;
         this.classChosenHandler = classChosenHandler;
