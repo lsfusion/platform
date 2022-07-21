@@ -492,18 +492,20 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         List<ClientPropertyDraw> result = new ArrayList<>();
 
         for (ClientPropertyDraw property : propertiesList) {
-            if (hasUserPreferences()) {
-                Boolean userHide = getUserHide(property);
-                if (userHide == null || !userHide) {
-                    if (getUserOrder(property) == null) {
-                        setUserHide(property, true);
-                        setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
-                    } else {
-                        result.add(property);
+            if (!property.hide) {
+                if (hasUserPreferences()) {
+                    Boolean userHide = getUserHide(property);
+                    if (userHide == null || !userHide) {
+                        if (getUserOrder(property) == null) {
+                            setUserHide(property, true);
+                            setUserOrder(property, Short.MAX_VALUE + propertiesList.indexOf(property));
+                        } else {
+                            result.add(property);
+                        }
                     }
+                } else {
+                    result.add(property);
                 }
-            } else if (!property.hide) {
-                result.add(property);
             }
         }
 

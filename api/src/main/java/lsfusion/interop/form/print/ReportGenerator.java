@@ -830,6 +830,15 @@ public class ReportGenerator {
             print.setProperty(XlsReportConfiguration.PROPERTY_MAXIMUM_ROWS_PER_SHEET, "1048576");
         }
 
+        if(generationData.jasperReportsGovernorMaxPages > 0) {
+            print.setProperty("net.sf.jasperreports.governor.max.pages", String.valueOf(generationData.jasperReportsGovernorMaxPages));
+            print.setProperty("net.sf.jasperreports.governor.max.pages.enabled", "true");
+        }
+        if(generationData.jasperReportsGovernorTimeout > 0) {
+            print.setProperty("net.sf.jasperreports.governor.timeout", String.valueOf(generationData.jasperReportsGovernorTimeout));
+            print.setProperty("net.sf.jasperreports.governor.timeout.enabled", "true");
+        }
+
         JRAbstractExporter exporter = getExporter(type);
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
         exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
