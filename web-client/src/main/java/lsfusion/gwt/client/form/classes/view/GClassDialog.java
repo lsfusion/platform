@@ -1,11 +1,8 @@
 package lsfusion.gwt.client.form.classes.view;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.DialogModalWindow;
-import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
-import lsfusion.gwt.client.base.view.WindowBox;
 import lsfusion.gwt.client.classes.GObjectClass;
 
 public class GClassDialog extends DialogModalWindow {

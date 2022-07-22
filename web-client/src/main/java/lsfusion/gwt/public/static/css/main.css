@@ -164,10 +164,6 @@ svg {
     outline: none;
 }
 
-.floatRight {
-    float: right;
-}
-
 .verticalStretchSeparator {
     border-left: 1px solid var(--panel-border-color);
     margin: 0.1875rem 0;

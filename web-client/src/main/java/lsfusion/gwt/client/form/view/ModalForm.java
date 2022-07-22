@@ -41,9 +41,6 @@ public class ModalForm extends FormContainer {
             public void onShow() {
                 initPreferredSize(); // we need to do it after attach to have correct sizes
 
-                dialog.getElement().getStyle().setLeft((modal.getOffsetWidth() - dialog.getOffsetWidth()) >> 1, Style.Unit.PX);
-                dialog.getElement().getStyle().setTop((modal.getOffsetHeight() - dialog.getOffsetHeight()) >> 1, Style.Unit.PX);
-
                 super.onShow();
             }
         };

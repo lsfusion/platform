@@ -28,7 +28,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
 import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_FAMILY;
 
-public abstract class GUserPreferencesDialog extends WindowBox {
+public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String CSS_USER_PREFERENCES_DUAL_LIST = "userPreferencesDualList";
 
@@ -49,10 +49,9 @@ public abstract class GUserPreferencesDialog extends WindowBox {
     private TextBox columnPatternBox;
 
     public GUserPreferencesDialog(GGridTable grid, GGridController groupController, GPanelController panelController, boolean canBeSaved) {
-        super(false, false, true);
-        setGlassEnabled(true);
-        
-        setText(messages.formGridPreferences());
+        super(true, ModalWindowSize.LARGE);
+
+        setCaption(messages.formGridPreferences());
 
         this.groupController = groupController;
 
@@ -154,20 +153,18 @@ public abstract class GUserPreferencesDialog extends WindowBox {
 
         // ok/cancel buttons
         Button okButton = new Button(messages.ok());
-        okButton.setWidth("6em");
+        okButton.setStyleName("btn");
+        okButton.addStyleName("btn-primary");
         okButton.addClickHandler(event -> okPressed());
 
         Button cancelButton = new Button(messages.cancel());
-        cancelButton.setWidth("6em");
+        cancelButton.setStyleName("btn");
+        cancelButton.addStyleName("btn-secondary");
         cancelButton.addClickHandler(event -> hide());
 
-        HorizontalPanel okCancelButtons = new HorizontalPanel();
-        okCancelButtons.add(okButton);
-        okCancelButtons.add(createHorizontalStrut(3));
-        okCancelButtons.add(cancelButton);
-        okCancelButtons.addStyleName("floatRight");
+        addFooterWidget(okButton);
+        addFooterWidget(cancelButton);
 
-        
         VerticalPanel preferencesPanel = new VerticalPanel();
         preferencesPanel.setSpacing(3);
         preferencesPanel.setSize("100%", "100%");
@@ -182,7 +179,6 @@ public abstract class GUserPreferencesDialog extends WindowBox {
             preferencesPanel.add(saveButton);
             preferencesPanel.add(resetButton);
         }
-        preferencesPanel.add(okCancelButtons);
 
         focusPanel = new FocusPanel(preferencesPanel);
         focusPanel.addStyleName("noOutline");
@@ -194,13 +190,11 @@ public abstract class GUserPreferencesDialog extends WindowBox {
             }
         });
 
-        VerticalPanel mainContainer = new VerticalPanel();
+        ResizableComplexPanel mainContainer = new ResizableComplexPanel();
+        mainContainer.setStyleName("dialog-user-preferences-container");
         mainContainer.add(focusPanel);
-        mainContainer.setCellHeight(focusPanel, "100%");
-        mainContainer.setSize("430px", "450px");
 
-        setWidget(mainContainer);
-        center();
+        setBodyWidget(mainContainer);
 
         refreshValues(mergeFont());
     }
