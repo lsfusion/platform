@@ -3,12 +3,13 @@ package lsfusion.gwt.client.form.property.panel.view;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
-import lsfusion.gwt.client.form.design.view.flex.LinearCaptionContainer;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -73,14 +74,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     public void appendCorners(boolean notNull, Widget panel) {
         Element panelElement = panel.getElement();
-//        panelElement.getStyle().setPosition(Style.Position.RELATIVE); // for corners (setStatic sets position absolute, so we don't need to do this for setStatic)
-//        DivElement changeEventSign = Document.get().createDivElement();
-        panelElement.addClassName("rightBottomCornerTriangle");
-        if(notNull)
-            panelElement.addClassName("notNullCornerTriangle");
-        else
-            panelElement.addClassName("changeActionCornerTriangle");
-//        panelElement.appendChild(changeEventSign);
+        panelElement.addClassName(notNull ? "notNullCornerTriangleHolder" : "changeActionCornerTriangleHolder");
     }
 
     @Override

@@ -15,10 +15,10 @@
 
 /* ------------ Colored corner triangles  ------------ */
 
-.rightBottomCornerTriangle {
+.notNullCornerTriangleHolder, .changeActionCornerTriangleHolder {
     position: relative;
 }
-.rightBottomCornerTriangle::after {
+.notNullCornerTriangleHolder::after, .changeActionCornerTriangleHolder::after {
     content: "";
     width: 0;
     height: 0;
@@ -29,11 +29,11 @@
     bottom: 0;
 }
 
-.notNullCornerTriangle::after {
+.notNullCornerTriangleHolder::after {
     border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
 }
 
-.changeActionCornerTriangle::after {
+.changeActionCornerTriangleHolder::after {
     border-color: transparent transparent var(--focus-color) transparent;
 }
 

@@ -112,15 +112,9 @@ public class GGridPropertyTableHeader extends Header<String> {
         }
 
         if (notNull) {
-            DivElement notNullSign = Document.get().createDivElement();
-            notNullSign.addClassName("rightBottomCornerTriangle");
-            notNullSign.addClassName("notNullCornerTriangle");
-            th.appendChild(notNullSign);
+            th.addClassName("notNullCornerTriangleHolder");
         } else if (hasChangeAction) {
-            DivElement changeActionSign = Document.get().createDivElement();
-            changeActionSign.addClassName("rightBottomCornerTriangle");
-            changeActionSign.addClassName("changeActionCornerTriangle");
-            th.appendChild(changeActionSign);
+            th.addClassName("changeActionCornerTriangleHolder");
         }
     }
 

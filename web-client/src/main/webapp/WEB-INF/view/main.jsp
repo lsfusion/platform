@@ -54,9 +54,6 @@
         <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
         <script>
             loadResources([
-                // 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',
-                // 'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js',
-
                 <!-- need jquery for pivot table -->
                 <!-- version jquery above 2.2.4 causes to errors in the pivot table -->
                 'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js',
@@ -194,5 +191,12 @@
         <%-- gwt js src is <module name>/<module name>.nocache.js --%>
         <script type="text/javascript" language="javascript"
                 src="main/main.nocache.js"></script>
+        
+<%--        <script>--%>
+<%--            loadResources([--%>
+<%--                'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css',--%>
+<%--                'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js'--%>
+<%--            ]);--%>
+<%--        </script>--%>
     </body>
 </html>

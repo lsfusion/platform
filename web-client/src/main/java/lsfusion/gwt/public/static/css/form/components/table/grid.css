@@ -5,10 +5,15 @@
     however in second case, somewhy padding is not working, so margin should be used which is not convenient, since margin is used for other purposes
     */
     border-spacing: 0;
+    border-collapse: separate !important;
 
     table-layout: fixed; /* we want predictable (not dependant from the content) manual column sizes  */
     width: 100%; /* it's odd but without this table-layout is switched to auto */
     height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
+}
+
+.table > :not(:first-child) {
+    border: none !important;
 }
 
 .cell-div {
@@ -41,11 +46,11 @@
     2) draw left and bottom + right for last cells
     for now will use 2nd option
     */
-    border-bottom: 1px solid var(--grid-separator-border-color);
+    border-bottom: 1px solid var(--grid-separator-border-color) !important;
     border-right: 1px solid var(--grid-separator-border-color);
-    background: var(--background-color);
+    background: var(--background-color) !important;
     
-    position: sticky;
+    position: sticky !important;
     top: 0;
     z-index: 1;
     padding: 0 0.125rem;
@@ -86,9 +91,10 @@
 .dataGridFooter {
 }
 .dataGridFooterCell {
-    background: var(--background-color);
-    border-top: 1px solid var(--grid-separator-border-color);
+    background: var(--background-color) !important;
+    border-top: 1px solid var(--grid-separator-border-color) !important;
     border-right: 1px solid var(--grid-separator-border-color);
+    border-bottom: none !important;
     
     /* cells for non-text renderers change position to relative in GwtClientUtils.setupFillParentElement() */
     position: sticky !important;
@@ -139,13 +145,13 @@
 }
 
 .dataGridStickyHeader {
-    position: sticky;
+    position: sticky !important;
     z-index: 1001;
     background-color: var(--background-color);
 }
 
 .dataGridStickyFooter {
-    position: sticky;
+    position: sticky !important;
     z-index: 1000;
 }
 
@@ -158,7 +164,7 @@
 }
 
 .focusedCellBottomBorder {
-    border-bottom: var(--border-width) solid var(--focused-cell-border-color);
+    border-bottom: var(--border-width) solid var(--focused-cell-border-color) !important;
 }
 
 .leftNeighbourRightBorder {
