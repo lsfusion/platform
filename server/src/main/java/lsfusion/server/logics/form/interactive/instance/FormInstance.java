@@ -219,6 +219,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public boolean local = false; // временный хак для resolve'а, так как modifier очищается синхронно, а форма нет, можно было бы в транзакцию перенести, но там подмену modifier'а (resolveModifier) так не встроишь
 
+    public final String formId;
+
     public FormInstance(FormEntity entity, LogicsInstance logicsInstance, ImSet<ObjectEntity> inputObjects, DataSession session, SecurityPolicy securityPolicy,
                         FocusListener focusListener, CustomClassListener classListener,
                         ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
@@ -226,7 +228,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         boolean isSync, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk,
                         boolean showDrop, boolean interactive, WindowFormType type,
                         boolean isExternal, ImSet<ContextFilterInstance> contextFilters,
-                        boolean showReadOnly, Locale locale) throws SQLException, SQLHandledException {
+                        boolean showReadOnly, Locale locale, String formId) throws SQLException, SQLHandledException {
         this.isSync = isSync;
         this.isModal = type.isModal();
         this.isEditing = type.isEditing();
@@ -244,6 +246,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.securityPolicy = securityPolicy;
 
         this.locale = locale;
+
+        this.formId = formId;
         
         instanceFactory = new InstanceFactory();
 
@@ -433,6 +437,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public void changeListViewType(GroupObjectInstance groupObject, ListViewType listViewType) throws SQLException, SQLHandledException {
         groupObject.changeListViewType(this, BL.LM.listViewType, listViewType);
+    }
+
+    public String getFormId() {
+        return formId;
     }
 
     public static class DiffForm {

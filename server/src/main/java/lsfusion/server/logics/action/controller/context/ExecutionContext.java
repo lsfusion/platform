@@ -659,13 +659,13 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return requestUser(ObjectType.instance, () -> ThreadLocalContext.requestUserClass(baseClass, defaultValue, concrete));
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
-        return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, type, contextFilters, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly, String formId) throws SQLException, SQLHandledException {
+        return ThreadLocalContext.createFormInstance(formEntity, inputObjects, mapObjects, stack, session, isModal, noCancel, manageSession, checkOnOk, showDrop, interactive, type, contextFilters, readonly, formId);
     }
 
     @Deprecated
     public FormInstance createFormInstance(FormEntity formEntity) throws SQLException, SQLHandledException {
-        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, ModalityWindowFormType.FLOAT, null, false);
+        return createFormInstance(formEntity, null, MapFact.<ObjectEntity, DataObject>EMPTY(), getSession(), false, FormEntity.DEFAULT_NOCANCEL, ManageSessionType.AUTO, false, false, false, ModalityWindowFormType.FLOAT, null, false, null);
     }
 
     public SQLSyntax getDbSyntax() {

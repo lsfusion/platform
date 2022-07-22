@@ -198,8 +198,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         return uiContext.requestUserClass(baseClass, defaultValue, concrete);
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
-        return uiContext.createFormInstance(formEntity, inputObjects, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, type, contextFilters, readonly);
+    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly, String formId) throws SQLException, SQLHandledException {
+        return uiContext.createFormInstance(formEntity, inputObjects, mapObjects, session, isModal, noCancel, manageSession, stack, checkOnOk, showDrop, interactive, type, contextFilters, readonly, formId);
     }
 
     public RemoteForm createRemoteForm(FormInstance formInstance, ExecutionStack stack) {

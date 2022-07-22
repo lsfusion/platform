@@ -78,6 +78,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
     private final boolean readOnly;
     private final boolean checkOnOk;
+
+    private final String formId;
     
     public <C extends PropertyInterface> FormInteractiveAction(LocalizedString caption,
                                                                FormSelector<O> form,
@@ -90,7 +92,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                Boolean syncType,
                                                                WindowFormType windowType, boolean forbidDuplicate,
                                                                boolean checkOnOk,
-                                                               boolean readOnly) {
+                                                               boolean readOnly,
+                                                               String formID) {
         super(caption, form, objectsToSet, nulls, orderInterfaces, contextFilters, mapContext);
 
         this.inputObjects = inputObjects;
@@ -108,6 +111,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
         this.readOnly = readOnly;
         this.checkOnOk = checkOnOk;
+
+        this.formId = formID;
     }
     
     private boolean isShowDrop() {
@@ -145,7 +150,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
 
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
 
-        FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly);
+        FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly, formId);
         context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, context.stack);
 
         if (syncType) {

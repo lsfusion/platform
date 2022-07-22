@@ -51,7 +51,8 @@ public abstract class RemoteUIContext extends AbstractContext {
     }
 
     protected void requestFormUserInteraction(RemoteForm remoteForm, ShowFormType showFormType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(), Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), showFormType);
+        FormClientAction action = new FormClientAction(remoteForm.getCanonicalName(), remoteForm.getSID(), forbidDuplicate, remoteForm, remoteForm.getImmutableMethods(),
+                Settings.get().isDisableFirstChangesOptimization() ? null : remoteForm.getFormChangesByteArray(stack), showFormType, remoteForm.getFormId());
         if(showFormType.isModal()) {
             requestUserInteraction(action);
             remoteForm.form.syncLikelyOnClose(true, stack);
@@ -114,13 +115,16 @@ public abstract class RemoteUIContext extends AbstractContext {
         return false;
     }
 
-    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects, DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack, boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters, boolean readonly) throws SQLException, SQLHandledException {
+    public FormInstance createFormInstance(FormEntity formEntity, ImSet<ObjectEntity> inputObjects, ImMap<ObjectEntity, ? extends ObjectValue> mapObjects,
+                                           DataSession session, boolean isModal, Boolean noCancel, ManageSessionType manageSession, ExecutionStack stack,
+                                           boolean checkOnOk, boolean showDrop, boolean interactive, WindowFormType type, ImSet<ContextFilterInstance> contextFilters,
+                                           boolean readonly, String formId) throws SQLException, SQLHandledException {
         return new FormInstance(formEntity, getLogicsInstance(), inputObjects,
                 session,
                 getSecurityPolicy(), getFocusListener(), getClassListener(),
                 mapObjects, stack, isModal,
                 noCancel, manageSession,
-                checkOnOk, showDrop, interactive, type, isExternal(), contextFilters, readonly, getLocale());
+                checkOnOk, showDrop, interactive, type, isExternal(), contextFilters, readonly, getLocale(), formId);
     }
 
     protected abstract int getExportPort();

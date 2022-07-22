@@ -640,6 +640,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
+    public String getFormId() {
+        return form.getFormId();
+    }
+
     public String getCanonicalName() {
         return form.entity.getCanonicalName();
     }
