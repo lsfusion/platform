@@ -65,11 +65,6 @@
     <inherits name="net.customware.gwt.dispatch.Dispatch"/>
     <inherits name="com.bfr.client.Selection"/>
 
-    <!-- Standard FlexPanelImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.view.FlexPanelImplStandard">
-        <when-type-is class="lsfusion.gwt.client.base.view.FlexPanelImpl"/>
-    </replace-with>
-
     <!-- - - - - - - - - - - CELL VIEW - - - - - - - - - - - - - - - - -->
 
     <inherits name="com.google.gwt.aria.Aria"/>
@@ -83,41 +78,11 @@
         <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
     </replace-with>
 
-    <!-- IE-specific CellBasedWidgetImpl implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImplTrident">
-        <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
-        <any>
-            <when-property-is name="user.agent" value="ie6"/>
-            <when-property-is name="user.agent" value="ie8"/>
-        </any>
-    </replace-with>
-
     <!-- StandardBase CellBasedWidgetImpl implementation. -->
     <replace-with class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImplStandardBase">
         <when-type-is class="lsfusion.gwt.client.base.view.grid.CellBasedWidgetImpl"/>
         <any>
             <when-property-is name="user.agent" value="safari"/>
-            <when-property-is name="user.agent" value="ie9"/>
-            <when-property-is name="user.agent" value="ie10"/>
-        </any>
-    </replace-with>
-
-    <!-- Mozilla-specific CellTable implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.view.grid.DataGridImplMozilla">
-        <when-type-is class="lsfusion.gwt.client.base.view.grid.DataGridImpl"/>
-        <any>
-            <when-property-is name="user.agent" value="gecko1_8"/>
-        </any>
-    </replace-with>
-
-    <!-- IE-specific CellTable implementation. -->
-    <replace-with class="lsfusion.gwt.client.base.view.grid.DataGridImplTrident">
-        <when-type-is class="lsfusion.gwt.client.base.view.grid.DataGridImpl"/>
-        <any>
-            <when-property-is name="user.agent" value="ie6"/>
-            <when-property-is name="user.agent" value="ie8"/>
-            <when-property-is name="user.agent" value="ie9"/>
-            <when-property-is name="user.agent" value="ie10"/>
         </any>
     </replace-with>
 
@@ -156,7 +121,6 @@
     <stylesheet src="static/css/form/components/base/suggest-box.css"/>
     <stylesheet src="static/css/form/components/base/text-area.css"/>
     <stylesheet src="static/css/form/components/base/text-box.css"/>
-    <stylesheet src="static/css/form/components/base/window-box.css"/>
     
     <stylesheet src="static/css/form/components/property/property.css"/>
     <stylesheet src="static/css/form/components/property/property-toolbar.css"/>
@@ -178,19 +142,4 @@
 
     <stylesheet src="static/css/navigator/navigator.css"/>
     <stylesheet src="static/css/navigator/split-window.css"/>
-
-    <define-property name="is.user.agent.ie11" values="true,false" />
-    <property-provider name="is.user.agent.ie11">
-        <![CDATA[
-          {
-            var ua = window.navigator.userAgent.toLowerCase();
-            var an = window.navigator.appName.toLowerCase();
-            if ((an == 'netscape') && ua.indexOf('trident') != -1 && ua.indexOf('gecko') != -1) {
-              return 'true';
-            } else {
-              return 'false';
-            }
-          }
-        ]]>
-    </property-provider>
 </module>
