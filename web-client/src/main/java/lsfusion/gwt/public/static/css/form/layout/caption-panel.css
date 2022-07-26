@@ -1,13 +1,19 @@
+.accordion-item {
+}
+
 .accordion-button {
     border: none;
-    border-bottom: var(--border-width) solid var(--panel-border-color);
     background: var(--background-color);
     text-align: left;
     border-radius: 0;
     display: flex;
     align-items: center;
-    padding-left: var(--border-padding);
+    padding: var(--border-padding);
     color: var(--caption-panel-header-color);
+}
+
+.accordion-button:hover, .accordion-button:focus {
+    background-color: transparent;
 }
 
 .accordion-button[disabled] {
@@ -16,24 +22,44 @@
 
 .accordion-button[disabled]:hover {
     border: none;
-    border-bottom: var(--border-width) solid var(--panel-border-color); /* override default button outset style */
     color: var(--caption-panel-header-color);
 }
 
-.accordion-button.collapsible::after {
-    flex-shrink: 0;
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-left: auto;
+.accordion-button::before {
     content: "";
-    background-image: var(--caption-panel-header-arrow-url);
-    background-repeat: no-repeat;
-    background-size: 1.25rem;
-    transition: transform .2s ease-in-out;
+    width: 1rem;
+    border-bottom: 1px solid var(--panel-border-color);
+    margin-right: var(--border-padding);
+    margin-bottom: var(--border-width);
 }
 
-.accordion-button.collapsible:not(.collapsed)::after {
-    transform: rotate(-180deg);
+.accordion-button.collapsible::before {
+    border-bottom: none;
+    height: 1rem;
+    background-image: var(--caption-panel-header-expand-icon-url);
+    margin-bottom: 0;
+}
+
+.accordion-button.collapsible:not(.collapsed)::before {
+    background-image: var(--caption-panel-header-collapse-icon-url);
+}
+
+.accordion-button::after {
+    content: "";
+    flex-grow: 1;
+    width: 1.25rem;
+    border-bottom: 1px solid var(--panel-border-color);
+    margin-left: var(--border-padding);
+    margin-bottom: var(--border-width);
+}
+
+.accordion-button.collapsed {
+}
+
+.accordion-body {
+}
+
+.accordion-collapse {
 }
 
 

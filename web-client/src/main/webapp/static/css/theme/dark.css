@@ -16,7 +16,8 @@
     --progress-background-color: var(--scrollbar-color);
     
     --caption-panel-header-color: #7d7d7d;
-    --caption-panel-header-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23515151'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e"); /* --panel-border-color value inside */
+    --caption-panel-header-expand-icon-url: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAABHklEQVQ4jd2RsUrEQBCG/80ahKAHNneFxYE+gg9wLyFBH8DzDUJIMstK4IiNEe293lJ8AUFrK6t7ArGwCTFkScbGQFgvXK1/Nf8M/8fMLvDnJdY1icgHcPIz3wbwLKW81lqXGwFEdAugLIpC53n+BUAopXxmnhtjjrMs+xxch4h8Irrs+bxXz5IkubMzjuVPpZQXPX/YFWmaPgkhRlrrnX5gywJIrXWplMqY+QDAERHdA4Ax5hzAqmmaKYC3oRMe0XsXInqw5ssoiiaDJzDzi1LKXweP43gfwHixWLwPAqqqumHmMyKaAYCUct6FHcdZAkhs8K9vDMNwz3XdKwAjIcSqbduxEGICIEnT9HUjoFMQBLue503ruv6w1/5n+gaPdmjw1/JHuAAAAABJRU5ErkJggg==');
+    --caption-panel-header-collapse-icon-url: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAABCklEQVQ4jd2RQUrEQBBFf6UNQtABN6PgYsCLzCUk6AHUG4RAUk2bhhA3RnSvZxF07crVnEAU3IQYpknazQhDm2bW+nf1f9WjigL+vGjMZOYYwMkq3wbwJIS4UUq1GwHMfAegbZpG1XX9BYCklLG19twYc1xV1ad3HWaOmfnKk83zPL93/cCpT4UQl2MArfUjEU2UUjvr/pbTJ5RSrZSystYerQfGmAsAi77vZwBefYAAABVFkXrOOOj7/sN7grX2WUoZjw1nWXYIYFqW5ZsX0HXdrbX2jJnn7nAQBA8Achf8641pmu6FYXgNYEJEi2EYpkS0DyDXWr9sBPwoSZLdKIpmy+Xy3V37n+kbFLxjiwgu2/oAAAAASUVORK5CYII=');
     --null-value-string-color: #757575;
     --required-value-string-color: #c54d4d;
     --not-null-corner-triangle-color: #c30000;
