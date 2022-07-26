@@ -246,9 +246,9 @@ public abstract class FormReportManager extends FormDataManager {
             
             new File(reportName).getParentFile().mkdirs();
             JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
-            
-            if(!recreateCustom) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
-                Files.copy(Paths.get(reportName), Paths.get(defaultCustomReportPath.targetPath));                        
+
+            if(!recreateCustom && !Files.exists(Paths.get(defaultCustomReportPath.targetPath))) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
+                Files.copy(Paths.get(reportName), Paths.get(defaultCustomReportPath.targetPath));
         }
     }
 
