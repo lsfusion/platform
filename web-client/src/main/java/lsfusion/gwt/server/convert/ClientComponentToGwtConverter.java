@@ -17,8 +17,10 @@ import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
+import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.classes.GClass;
@@ -41,10 +43,7 @@ import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.event.BindingMode;
-import lsfusion.interop.form.event.FormScheduler;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
@@ -604,6 +603,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         for(FormScheduler formScheduler : clientForm.formSchedulers) {
             form.formSchedulers.add(convertOrCast(formScheduler));
         }
+        for(Map.Entry<FormEvent, ClientAsyncExec> asyncExec : clientForm.asyncExecMap.entrySet()) {
+            form.asyncExecMap.put(convertOrCast(asyncExec.getKey()), asyncConverter.convertOrCast(asyncExec.getValue()));
+        }
+
         GContainer mainContainer = convertOrCast(clientForm.mainContainer);
         mainContainer.main = true;
         form.mainContainer = mainContainer;
@@ -656,5 +659,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     @Converter(from = FormScheduler.class)
     public GFormScheduler convertAction(FormScheduler scheduler) {
         return new GFormScheduler(scheduler.period, scheduler.fixed);
+    }
+
+    @Converter(from = FormEventClose.class)
+    public GFormEventClose convertAction(FormEventClose formEventClose) {
+        return new GFormEventClose(formEventClose.ok);
     }
 }

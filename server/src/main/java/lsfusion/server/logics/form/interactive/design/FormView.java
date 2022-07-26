@@ -11,6 +11,7 @@ import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -22,6 +23,8 @@ import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.LogicsModule.InsertType;
+import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
@@ -67,6 +70,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public Integer overridePageWidth;
 
     public NFOrderSet<FormScheduler> formSchedulers;
+    public NFOrderMap<FormEvent, AsyncExec> asyncExecMap;
 
     // список деревеьев
     private NFSet<TreeGroupView> treeGroups = NFFact.set();
@@ -711,6 +715,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
         serializeFormSchedulers(outStream, formSchedulers.getOrderSet());
+        serializeAsyncExecMap(outStream, asyncExecMap.getListMap());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -749,6 +754,14 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         outStream.writeInt(list.size());
         for(FormScheduler formScheduler : list) {
             formScheduler.serialize(outStream);
+        }
+    }
+
+    private void serializeAsyncExecMap(DataOutputStream outStream, ImOrderMap<FormEvent, AsyncExec> asyncExecMap) throws IOException {
+        outStream.writeInt(asyncExecMap.size());
+        for(int i = 0; i < asyncExecMap.size(); i++) {
+            asyncExecMap.getKey(i).serialize(outStream);
+            AsyncSerializer.serializeEventExec(asyncExecMap.getValue(i), outStream);
         }
     }
 

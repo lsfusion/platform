@@ -504,7 +504,7 @@ public class GFormController implements EditManager {
             public boolean execute() {
                 if (!formHidden) {
                     if (isShowing(getWidget()) && !MainFrame.isModalPopup()) {
-                        asyncDispatch(new ExecuteFormSchedulerAction(formScheduler), new ServerResponseCallback() {
+                        asyncDispatch(new ExecuteFormEventAction(formScheduler), new ServerResponseCallback() {
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                                 super.onSuccess(response, onDispatchFinished);
                                 if (!formHidden && !formScheduler.fixed) {
@@ -515,6 +515,11 @@ public class GFormController implements EditManager {
 
                         if(formScheduler.fixed) {
                             scheduleFormScheduler(formScheduler);
+                        }
+
+                        GAsyncExec asyncExec = form.asyncExecMap.get(formScheduler);
+                        if(asyncExec != null) {
+                            asyncExec.exec(GFormController.this, null, editContext, editContext, CHANGE, null, true, null);
                         }
 
                     } else {
@@ -1239,7 +1244,9 @@ public class GFormController implements EditManager {
     }
 
     public void closePressed(EndReason reason) {
-        syncDispatch(new ClosePressed(reason instanceof CommitReason), new ServerResponseCallback() {
+        GFormEventClose eventClose = new GFormEventClose(reason instanceof CommitReason);
+
+        long requestIndex = syncDispatch(new ExecuteFormEventAction(eventClose), new ServerResponseCallback() {
             @Override
             protected Runnable getOnRequestFinished() {
                 return () -> {
@@ -1253,6 +1260,15 @@ public class GFormController implements EditManager {
                 super.onSuccess(response, onDispatchFinished);
             }
         });
+
+        for(GFormEvent formEvent : form.asyncExecMap.keySet()) {
+            if(formEvent instanceof GFormEventClose && ((GFormEventClose) formEvent).ok == eventClose.ok) {
+                GAsyncExec asyncExec = form.asyncExecMap.get(formEvent);
+                if(asyncExec != null) {
+                    asyncExec.exec(actionDispatcher.getAsyncFormController(requestIndex), formsController, formContainer, editEvent);
+                }
+            }
+        }
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {

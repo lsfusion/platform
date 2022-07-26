@@ -5,7 +5,7 @@ import lsfusion.base.Pair;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.event.FormScheduler;
+import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -256,18 +256,11 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex, boolean ok) throws RemoteException {
-        logRemoteMethodStartCall("closedPressed");
-        ServerResponse result = target.closedPressed(requestIndex, lastReceivedRequestIndex, ok);
-        logRemoteMethodEndCall("closedPressed", result);
-        return result;
-    }
-
     @Override
-    public ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, FormScheduler formScheduler) throws RemoteException {
-        logRemoteMethodStartCall("schedulerExecuted");
-        ServerResponse result = target.formSchedulerExecuted(requestIndex, lastReceivedRequestIndex, formScheduler);
-        logRemoteMethodEndCall("schedulerExecuted", result);
+    public ServerResponse executeFormEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
+        logRemoteMethodStartCall("executeFormEventAction");
+        ServerResponse result = target.executeFormEventAction(requestIndex, lastReceivedRequestIndex, formEvent);
+        logRemoteMethodEndCall("executeFormEventAction", result);
         return result;
     }
 

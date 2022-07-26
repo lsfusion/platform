@@ -11,6 +11,8 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -34,6 +36,7 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -122,6 +125,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return eventActions.getListIt(eventObject);
     }
     public NFOrderSet<FormScheduler> formSchedulers = NFFact.orderSet();
+    public NFOrderMap<FormEvent, AsyncExec> asyncExecMap = NFFact.orderMap();
 
     private NFOrderSet<GroupObjectEntity> groups = NFFact.orderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<GroupObjectEntity> getGroupsIt() {
@@ -1127,6 +1131,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(eventObject instanceof FormScheduler) {
             formSchedulers.add((FormScheduler) eventObject, version);
         }
+
+        if (eventObject == FormEventType.QUERYCLOSE) {
+            AsyncExec asyncEventExec = (AsyncExec) actions[0].getAsyncEventExec(this, null, true);
+            if(asyncEventExec != null) {
+                asyncExecMap.add(new FormEventClose(false), asyncEventExec, version);
+            }
+        }
+
     }
 
     public ComponentView getDrawComponent(PropertyDrawEntity<?> property) {

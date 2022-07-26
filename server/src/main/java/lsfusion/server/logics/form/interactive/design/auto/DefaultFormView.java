@@ -97,6 +97,7 @@ public class DefaultFormView extends FormView {
         canonicalName = entity.getSID();
         creationPath = entity.getCreationPath();
         formSchedulers = entity.formSchedulers;
+        asyncExecMap = entity.asyncExecMap;
 
         FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);
         
