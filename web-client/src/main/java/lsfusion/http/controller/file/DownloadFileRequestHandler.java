@@ -55,7 +55,8 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
 
         // in theory e-tag and last modified may be send but since we're using "version" it's not that necessary
 
-        FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, inStream -> {
+        // it seems that the browser might resend the request (for concurrent reading or whatever)
+        FileUtils.readFile(FileUtils.APP_DOWNLOAD_FOLDER_PATH, fileName, !staticFile, true, inStream -> {
             ByteStreams.copy(inStream, response.getOutputStream());
         });
     }
