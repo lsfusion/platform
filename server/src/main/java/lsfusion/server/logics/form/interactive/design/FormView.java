@@ -2,19 +2,13 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormScheduler;
-import lsfusion.interop.form.event.KeyInputEvent;
-import lsfusion.interop.form.event.MouseInputEvent;
+import lsfusion.interop.form.event.*;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.SIDHandler;
@@ -36,6 +30,7 @@ import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -70,7 +65,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public Integer overridePageWidth;
 
     public NFOrderSet<FormScheduler> formSchedulers;
-    public NFOrderMap<FormEvent, AsyncExec> asyncExecMap;
 
     // список деревеьев
     private NFSet<TreeGroupView> treeGroups = NFFact.set();
@@ -715,7 +709,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeString(outStream, creationPath);
         pool.writeInt(outStream, overridePageWidth);
         serializeFormSchedulers(outStream, formSchedulers.getOrderSet());
-        serializeAsyncExecMap(outStream, asyncExecMap.getListMap());
+        serializeAsyncExecMap(outStream, getAsyncExecMap());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -757,12 +751,32 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
     }
 
-    private void serializeAsyncExecMap(DataOutputStream outStream, ImOrderMap<FormEvent, AsyncExec> asyncExecMap) throws IOException {
+    private void serializeAsyncExecMap(DataOutputStream outStream, Map<FormEvent, AsyncExec> asyncExecMap) throws IOException {
         outStream.writeInt(asyncExecMap.size());
-        for(int i = 0; i < asyncExecMap.size(); i++) {
-            asyncExecMap.getKey(i).serialize(outStream);
-            AsyncSerializer.serializeEventExec(asyncExecMap.getValue(i), outStream);
+        for(Map.Entry<FormEvent, AsyncExec> entry : asyncExecMap.entrySet()) {
+            entry.getKey().serialize(outStream);
+            AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
         }
+    }
+
+    private Map<FormEvent, AsyncExec> getAsyncExecMap() {
+        Map<FormEvent, AsyncExec> asyncExecMap = new HashMap<>();
+
+        ImMap<Object, ImList<ActionObjectEntity<?>>> eventActions = entity.getEventActions();
+        for(int i = 0; i < eventActions.size(); i++) {
+            Object eventObject = eventActions.getKey(i);
+            ImList<ActionObjectEntity<?>> actions = eventActions.getValue(i);
+
+            boolean queryOk = eventObject == FormEventType.QUERYOK;
+            boolean queryClose = eventObject == FormEventType.QUERYCLOSE;
+            if (queryOk || queryClose) {
+                AsyncExec asyncEventExec = (AsyncExec) actions.single().getAsyncEventExec(entity, null, true);
+                if (asyncEventExec != null) {
+                    asyncExecMap.put(new FormEventClose(queryOk), asyncEventExec);
+                }
+            }
+        }
+        return asyncExecMap;
     }
 
     public void finalizeAroundInit() {

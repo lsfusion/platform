@@ -125,7 +125,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return eventActions.getListIt(eventObject);
     }
     public NFOrderSet<FormScheduler> formSchedulers = NFFact.orderSet();
-    public NFOrderMap<FormEvent, AsyncExec> asyncExecMap = NFFact.orderMap();
 
     private NFOrderSet<GroupObjectEntity> groups = NFFact.orderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<GroupObjectEntity> getGroupsIt() {
@@ -1131,14 +1130,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(eventObject instanceof FormScheduler) {
             formSchedulers.add((FormScheduler) eventObject, version);
         }
-
-        if (eventObject == FormEventType.QUERYCLOSE) {
-            AsyncExec asyncEventExec = (AsyncExec) actions[0].getAsyncEventExec(this, null, true);
-            if(asyncEventExec != null) {
-                asyncExecMap.add(new FormEventClose(false), asyncEventExec, version);
-            }
-        }
-
     }
 
     public ComponentView getDrawComponent(PropertyDrawEntity<?> property) {
