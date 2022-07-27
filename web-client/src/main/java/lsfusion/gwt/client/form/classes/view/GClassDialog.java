@@ -1,6 +1,6 @@
 package lsfusion.gwt.client.form.classes.view;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.DialogModalWindow;
 import lsfusion.gwt.client.classes.GObjectClass;
@@ -16,7 +16,7 @@ public class GClassDialog extends DialogModalWindow {
     private GObjectClass chosenClass;
 
     public GClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-        super(false, null);
+        super(false, ModalWindowSize.LARGE);
 
         this.concreate = concreate;
         this.classChosenHandler = classChosenHandler;
