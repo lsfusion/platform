@@ -424,7 +424,7 @@ public class ClientFormController implements AsyncListener {
                             if (formScheduler.fixed) {
                                 scheduleFormScheduler(scheduler, formScheduler);
                             }
-                            return remoteForm.executeFormEventAction(requestIndex, lastReceivedRequestIndex, formScheduler);
+                            return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, formScheduler);
                         }
 
                         @Override
@@ -1689,7 +1689,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("closePressed") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.executeFormEventAction(requestIndex, lastReceivedRequestIndex, new FormEventClose(false));
+                return remoteForm.executeEventAction(requestIndex, lastReceivedRequestIndex, new FormEventClose(false));
             }
         });
     }

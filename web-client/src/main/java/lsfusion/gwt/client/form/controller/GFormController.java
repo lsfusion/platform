@@ -547,22 +547,13 @@ public class GFormController implements EditManager {
 
     private void executeFormEventAction(GFormEvent formEvent, ServerResponseCallback serverResponseCallback) {
         ExecuteFormEventAction executeFormEventAction = new ExecuteFormEventAction(formEvent);
+        long requestIndex = asyncDispatch(executeFormEventAction, serverResponseCallback);
+
         GAsyncExec asyncExec = form.asyncExecMap.get(formEvent);
-        if (formEvent instanceof GFormScheduler) {
-            asyncDispatch(executeFormEventAction, serverResponseCallback);
-
-            if (asyncExec != null) {
-                asyncExec.exec(GFormController.this, null, editContext, editContext, CHANGE, null, true, null);
-            }
-        } else {
-            long requestIndex = syncDispatch(executeFormEventAction, serverResponseCallback);
-
-            if (asyncExec != null) {
-                asyncExec.exec(actionDispatcher.getAsyncFormController(requestIndex), formsController, formContainer, editEvent);
-            }
+        if (asyncExec != null) {
+            asyncExec.exec(actionDispatcher.getAsyncFormController(requestIndex), formsController, formContainer, editEvent);
         }
     }
-
 
     public GPropertyDraw getProperty(int id) {
         return form.getProperty(id);

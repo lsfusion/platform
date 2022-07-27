@@ -11,8 +11,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -36,7 +34,6 @@ import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
@@ -290,6 +287,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied.action, MapFact.EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
+    }
+
+    public Iterable<Object> getAllFormEventActions() {
+        return BaseUtils.mergeIterables(formSchedulers.getIt(), (Iterable) Arrays.asList(FormEventType.QUERYOK, FormEventType.QUERYCLOSE));
+    }
+
+    public ActionObjectEntity<?> getEventAction(Object eventObject) {
+        return eventActions.getListIt(eventObject).iterator().next();
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
@@ -1572,7 +1577,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
-            for(String changeEvent : propertyDraw.getAllEventActions()) {
+            for(String changeEvent : propertyDraw.getAllPropertyEventActions()) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
                     consumer.accept(editAction, propertyDraw);

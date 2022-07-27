@@ -17,6 +17,11 @@ public class FormEventClose extends FormEvent {
         return 1;
     }
 
+    @Override
+    public Object getFireEvent() {
+        return ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE;
+    }
+
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeBoolean(ok);

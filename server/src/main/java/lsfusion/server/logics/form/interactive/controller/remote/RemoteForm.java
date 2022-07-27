@@ -647,18 +647,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse executeFormEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isTraceEnabled()) {
-                logger.trace("executeFormEventAction");
+                logger.trace("executeEventAction");
             }
 
-            if (formEvent instanceof FormScheduler) {
-                form.fireFormSchedulerEvent(stack, (FormScheduler) formEvent);
-            } else if (formEvent instanceof FormEventClose) {
-                form.formQueryClose(stack, ((FormEventClose) formEvent).ok);
-            }
+            form.fireFormEvent(stack, formEvent);
         });
     }
 

@@ -19,6 +19,6 @@ public class ExecuteFormEventActionHandler extends FormServerResponseActionHandl
 
     @Override
     public ServerResponseResult executeEx(final ExecuteFormEventAction action, ExecutionContext context) throws RemoteException {
-        return getServerResponseResult(action, remoteForm -> remoteForm.executeFormEventAction(action.requestIndex, action.lastReceivedRequestIndex, gwtConverter.convertOrCast(action.formEvent)));
+        return getServerResponseResult(action, remoteForm -> remoteForm.executeEventAction(action.requestIndex, action.lastReceivedRequestIndex, gwtConverter.convertOrCast(action.formEvent)));
     }
 }

@@ -9,6 +9,8 @@ public abstract class FormEvent implements Serializable {
 
     public abstract int getType();
 
+    public abstract Object getFireEvent();
+
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(getType());
     }

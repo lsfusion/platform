@@ -37,7 +37,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     
     ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException;
 
-    ServerResponse executeFormEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException;
+    ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException;
 
     // events : group objects
 
