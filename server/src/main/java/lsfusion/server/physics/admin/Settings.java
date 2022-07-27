@@ -2691,4 +2691,14 @@ public class Settings implements Cloneable {
     public void setTrueSerializable(boolean trueSerializable) {
         this.trueSerializable = trueSerializable;
     }
+
+    private boolean logExternalHttpServerBody = false;
+
+    public boolean isLogExternalHttpServerBody() {
+        return logExternalHttpServerBody;
+    }
+
+    public void setLogExternalHttpServerBody(boolean logExternalHttpServerBody) {
+        this.logExternalHttpServerBody = logExternalHttpServerBody;
+    }
 }

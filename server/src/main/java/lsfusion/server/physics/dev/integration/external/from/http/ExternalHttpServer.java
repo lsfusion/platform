@@ -118,7 +118,8 @@ public class ExternalHttpServer extends MonitorServer {
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
                         request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null,null,
-                        "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery());
+                        "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(),
+                        Settings.get().isLogExternalHttpServerBody());
 
                 if (response.response != null)
                     sendResponse(request, response);
