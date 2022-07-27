@@ -21,7 +21,6 @@ import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormEventType;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -81,6 +80,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
+import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
@@ -2586,7 +2586,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public void fireFormEvent(ExecutionStack stack, FormEvent formEvent) throws SQLException, SQLHandledException {
-        fireEvent(formEvent.getFireEvent(), stack);
+        fireEvent(entity.getEventObject(formEvent), stack);
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {

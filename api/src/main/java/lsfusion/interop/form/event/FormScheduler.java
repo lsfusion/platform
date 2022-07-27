@@ -17,11 +17,6 @@ public class FormScheduler extends FormEvent {
         return 0;
     }
 
-    @Override
-    public Object getFireEvent() {
-        return this;
-    }
-
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeInt(period);

@@ -8,6 +8,9 @@ import java.util.Objects;
 public class FormEventClose extends FormEvent {
     public boolean ok;
 
+    public static FormEventClose OK = new FormEventClose(true);
+    public static FormEventClose CLOSE = new FormEventClose(false);
+
     public FormEventClose(boolean ok) {
         this.ok = ok;
     }
@@ -15,11 +18,6 @@ public class FormEventClose extends FormEvent {
     @Override
     public int getType() {
         return 1;
-    }
-
-    @Override
-    public Object getFireEvent() {
-        return ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE;
     }
 
     public void serialize(DataOutputStream outStream) throws IOException {

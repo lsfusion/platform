@@ -17,6 +17,7 @@ import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.LogicsModule.InsertType;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
@@ -752,27 +753,26 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         }
     }
 
-    private void serializeAsyncExecMap(DataOutputStream outStream, Map<FormEvent, AsyncExec> asyncExecMap) throws IOException {
+    private void serializeAsyncExecMap(DataOutputStream outStream, Map<FormEvent, AsyncEventExec> asyncExecMap) throws IOException {
         outStream.writeInt(asyncExecMap.size());
-        for(Map.Entry<FormEvent, AsyncExec> entry : asyncExecMap.entrySet()) {
+        for(Map.Entry<FormEvent, AsyncEventExec> entry : asyncExecMap.entrySet()) {
             entry.getKey().serialize(outStream);
             AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
         }
     }
 
-    private Map<FormEvent, AsyncExec> getAsyncExecMap() {
-        Map<FormEvent, AsyncExec> asyncExecMap = new HashMap<>();
+    private Map<FormEvent, AsyncEventExec> getAsyncExecMap() {
+        Map<FormEvent, AsyncEventExec> asyncExecMap = new HashMap<>();
 
-        Iterable<Object> allFormEventActions = entity.getAllFormEventActions();
-        for(Object eventObject : allFormEventActions) {
-            ActionObjectEntity<?> eventAction = entity.getEventAction(eventObject);
+        Iterable<FormEvent> allFormEventActions = entity.getAllFormEventActions();
+        for(FormEvent formEvent : allFormEventActions) {
+            ActionObjectEntity<?> eventAction = entity.getEventAction(formEvent);
             AsyncExec asyncEventExec = (AsyncExec) eventAction.getAsyncEventExec(entity, null, true);
-            if (asyncEventExec == null && eventObject instanceof FormScheduler) {
+            if (asyncEventExec == null && formEvent instanceof FormScheduler) {
                 asyncEventExec = AsyncNoWaitExec.instance;
             }
             if(asyncEventExec != null) {
-                asyncExecMap.put(eventObject == FormEventType.QUERYOK ? new FormEventClose(true) :
-                        eventObject == FormEventType.QUERYCLOSE ? new FormEventClose(false) : (FormEvent) eventObject, asyncEventExec);
+                asyncExecMap.put(formEvent, asyncEventExec);
             }
         }
         return asyncExecMap;
