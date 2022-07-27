@@ -5592,7 +5592,6 @@ multOperand
 	
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
-fragment STR_LITERAL_CHAR	: ('\\'.) | ~('\''|'\\');
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 fragment EDIGITS	:	('0'..'9')*;
@@ -5602,45 +5601,16 @@ fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
-//fragment STRING_LITERAL_FRAGMENT :  '\'' { setText(self.readStringLiteral(input)); };
-
-fragment ESCAPED_STR_LITERAL_CHAR:	('\\'.) | ~('\\'|'{'|'}');
-fragment STR_LITERAL_CHAR2 
+fragment STR_LITERAL_CHAR 
 	:	('\\'.) 
 	|	~('\''|'\\'|'$')
 	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$' 
 	;
 
+fragment ESCAPED_STR_LITERAL_CHAR:	('\\'.) | ~('\\'|'{'|'}');
 fragment BLOCK: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}'; 
-fragment INLINE_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}' { System.out.println("INLINE_BLOCK: " + getText());};	 
-fragment STRING_LITERAL_FRAGMENT:	'\'' (INLINE_BLOCK | STR_LITERAL_CHAR2)* '\''; 
-
-
-//fragment STRING_LITERAL_FRAGMENT :	'\'' (INLINE_BLOCK | STR_LITERAL_CHAR2)* '\'';
-//fragment STR_LITERAL_CHAR2 
-//	:	('\\'.) 
-//	|	~('\''|'\\'|'$')
-//	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$' 
-//	;
-//
-//
-//fragment INLINE_BLOCK
-//options {greedy=false;}
-//@init{
-//	int open = 1;
-//	System.out.println("INLINE_BLOCK_NEW init");
-//}
-//	:  '${' { System.out.println("${ parsed"); }
-//	       (
-//		       ( ('\\'.) 
-//		       | ~('{' | '}' | '\\') 
-//		       | '{' {++open; System.out.println("{ parsed");} 
-//		       | {open > 1}?=> '}' {--open; System.out.println("} parsed");}
-//		       ) 
-//	       )*
-//	   '}'    
-//	; 
-
+fragment INLINE_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';	 
+fragment STRING_LITERAL_FRAGMENT:	'\'' (INLINE_BLOCK | STR_LITERAL_CHAR)* '\''; 
 
 fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
