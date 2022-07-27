@@ -16,12 +16,16 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     private final GForm form;
     private final GFormController formController;
 
+    // priority modifier to make inner window request more important
+    public final int dispatchPriority;
+
     //отдельный флаг закрытой формы нужен, чтобы не посылать случайных запросов в закрытую форму (в частности changePageSize)
     private boolean formClosed = false;
 
-    public FormDispatchAsync(GFormController formController) {
+    public FormDispatchAsync(GFormController formController, int dispatchPriority) {
         this.formController = formController;
         this.form = formController.getForm();
+        this.dispatchPriority = dispatchPriority;
     }
 
     @Override
@@ -56,6 +60,11 @@ public class FormDispatchAsync extends RemoteDispatchAsync {
     @Override
     protected boolean isClosed() {
         return formClosed;
+    }
+
+    @Override
+    protected int getDispatchPriority() {
+        return dispatchPriority;
     }
 
     public void close() {

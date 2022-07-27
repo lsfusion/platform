@@ -2,24 +2,24 @@ package lsfusion.gwt.client;
 
 import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AsyncCallbackEx;
 import lsfusion.gwt.client.base.busy.GBusyDialogDisplayer;
 import lsfusion.gwt.client.base.busy.LoadingManager;
-import lsfusion.gwt.client.controller.dispatch.DispatchAsyncWrapper;
+import lsfusion.gwt.client.controller.dispatch.GWTDispatch;
 import lsfusion.gwt.client.controller.remote.action.*;
 import lsfusion.gwt.client.controller.remote.action.form.GetAsyncValues;
 import lsfusion.gwt.client.form.controller.dispatch.QueuedAction;
 import lsfusion.gwt.client.view.ServerMessageProvider;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class RemoteDispatchAsync implements ServerMessageProvider {
-    private final DispatchAsyncWrapper gwtDispatch = new DispatchAsyncWrapper(new DefaultExceptionHandler());
+    private final GWTDispatch gwtDispatch = GWTDispatch.instance;
 
     protected long nextRequestIndex = 0;
     protected long lastReceivedRequestIndex = -1;
@@ -44,7 +44,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
     }
 
     public <A extends PriorityAction<R>, R extends Result> void executePriority(final A action, final PriorityAsyncCallback<R> callback) {
-        gwtExecute((BaseAction<R>) action, callback);
+        gwtExecute((BaseAction<R>) action, () -> priorityExec, new Object(), callback);
     }
 
     public int syncCount;
@@ -84,6 +84,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, action instanceof GetAsyncValues);
         if (continueInvocation) {
             q.add(0, queuedAction);
+            waitingForContinueInvocation = false;
         } else {
             q.add(queuedAction);
         }
@@ -98,7 +99,11 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         } else
             onAsyncStarted();
 
-        gwtExecute((BaseAction<R>) action, new AsyncCallbackEx<R>() {
+        // we will not prioritize queued calls if we're waiting for the continueInvocation to come (not to cancel this calls when the continue call comes)
+        // should be "synchronized" with the params (q, waitingForContinueInvocation) changes, see usages / gwtOnPriorirtyIncreased calls
+        gwtExecute((BaseAction<R>) action,
+            () -> - ((waitingForContinueInvocation ? 1 : 0) + q.indexOf(queuedAction)) * queueIndexStep,
+            queuedAction, new AsyncCallbackEx<R>() {
             @Override
             public void preProcess() {
                 if(sync) {
@@ -154,6 +159,16 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         return -1;
     }
 
+    // at first we want "zero" requests, than modal windows / lower indices requests
+    public static int queueIndexStep = 1000000;
+    public static int windowDeepStep = 10000;
+    public static int requestIndexDeepStep = 1;
+
+    // to be less important than zero requests, but more than the others
+    public static int priorityExec = - queueIndexStep / 2;
+
+    private boolean waitingForContinueInvocation;
+
     private boolean pendingFlushCompletedRequests;
     public void flushCompletedRequests(Runnable preProceed, Runnable postProceed) {
         q.forEach(queuedAction -> {
@@ -175,9 +190,12 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
             }
 
             q.remove();
-            if (requestIndex >= 0) {
+            waitingForContinueInvocation = action.isContinueInvocation();
+            if(!waitingForContinueInvocation) // see priority function (should be synchronized with it)
+                gwtOnPriorityExecuted(q);
+
+            if (requestIndex >= 0)
                 lastReceivedRequestIndex = requestIndex;
-            }
 
             if (action.preProceeded == null || !action.preProceeded) {
                 preProceed.run();
@@ -190,13 +208,22 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         return false;
     }
 
-    protected <A extends BaseAction<R>, R extends Result> void gwtExecute(final A action, final AsyncCallback<R> callback) {
+    protected int getDispatchPriority() {
+        return 0;
+    }
+
+    protected <A extends BaseAction<R>, R extends Result> void gwtOnPriorityExecuted(List<?> ids) {
+        if(!isClosed())
+            gwtDispatch.onPriorityIncreased(ids);
+    }
+
+    protected <A extends BaseAction<R>, R extends Result> void gwtExecute(final A action, Supplier<Integer> priority, Object id, final AsyncCallback<R> callback) {
         if (!isClosed()) {
             fillAction(action);
             Log.debug("Executing action: " + action.toString());
 
             final double startExecTime = Duration.currentTimeMillis();
-            gwtDispatch.execute(action, new AsyncCallbackEx<R>() {
+            gwtDispatch.execute(action, () -> priority.get() + getDispatchPriority(), id, new AsyncCallbackEx<R>() {
                 @Override
                 public void preProcess() {
                     double execTime = Duration.currentTimeMillis() - startExecTime;
