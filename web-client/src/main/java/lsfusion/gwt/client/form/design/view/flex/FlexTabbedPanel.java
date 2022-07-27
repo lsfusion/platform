@@ -152,17 +152,24 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     private Widget visibleWidget;
 
     public void showTab(int index) {
-        index = getTabIndex(index); // adding flex tab bar
-        checkIndexBoundsForAccess(index);
-
         Widget oldWidget = visibleWidget;
-        visibleWidget = getWidget(index);
+
+        Widget newWidget;
+        if(index >= 0) {
+            index = getTabIndex(index); // adding flex tab bar
+            checkIndexBoundsForAccess(index);
+
+            newWidget = getWidget(index);
+        } else
+            newWidget = null;
+
+        visibleWidget = newWidget;
 
         if (visibleWidget != oldWidget) {
-            visibleWidget.setVisible(true);
-            if (oldWidget != null) {
+            if(visibleWidget != null)
+                visibleWidget.setVisible(true);
+            if (oldWidget != null)
                 oldWidget.setVisible(false);
-            }
         }
     }
 
