@@ -229,7 +229,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         List<FormScheduler> formSchedulers = new ArrayList<>();
         int size = inStream.readInt();
         for(int i = 0; i < size; i++) {
-            formSchedulers.add(FormScheduler.deserialize(inStream));
+            formSchedulers.add((FormScheduler) FormEvent.deserialize(inStream));
         }
         return formSchedulers;
     }
