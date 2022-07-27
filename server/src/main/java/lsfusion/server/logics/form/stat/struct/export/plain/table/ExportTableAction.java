@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.stat.struct.export.plain.table;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
@@ -10,6 +11,7 @@ import lsfusion.server.logics.form.stat.struct.export.plain.ExportPlainAction;
 import lsfusion.server.logics.form.stat.struct.export.plain.ExportPlainWriter;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
+import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -24,7 +26,7 @@ public class ExportTableAction<O extends ObjectSelector> extends ExportPlainActi
     }
 
     @Override
-    protected ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
+    protected ExportPlainWriter getWriter(ExecutionContext<ClassPropertyInterface> context, ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException {
         return new ExportTableWriter(fieldTypes, singleRow);
     }
 }

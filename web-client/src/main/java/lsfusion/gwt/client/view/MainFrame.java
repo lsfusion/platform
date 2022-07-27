@@ -124,7 +124,9 @@ public class MainFrame implements EntryPoint {
         DataGrid.useColumnMinWidth = !GwtClientUtils.isFirefoxUserAgent();
 
         hackForGwtDnd();
-        
+
+        GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
+
         GWT.setUncaughtExceptionHandler(t -> {
             GExceptionManager.logClientError(t);
             DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);

@@ -2895,4 +2895,14 @@ public class Settings implements Cloneable {
     public void setJasperReportsGovernorTimeout(long jasperReportsGovernorTimeout) {
         this.jasperReportsGovernorTimeout = jasperReportsGovernorTimeout;
     }
+
+    private boolean logExternalHttpServerBody = false;
+
+    public boolean isLogExternalHttpServerBody() {
+        return logExternalHttpServerBody;
+    }
+
+    public void setLogExternalHttpServerBody(boolean logExternalHttpServerBody) {
+        this.logExternalHttpServerBody = logExternalHttpServerBody;
+    }
 }

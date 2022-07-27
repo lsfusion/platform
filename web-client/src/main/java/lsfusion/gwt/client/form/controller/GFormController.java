@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -110,6 +111,10 @@ public class GFormController implements EditManager {
 
     private FormDispatchAsync dispatcher;
 
+    public int getDispatchPriority() {
+        return dispatcher.dispatchPriority;
+    }
+
     private final GFormActionDispatcher actionDispatcher;
 
     private final FormsController formsController;
@@ -160,7 +165,7 @@ public class GFormController implements EditManager {
         containerForms.remove(containerForm);
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, int dispatchPriority, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
@@ -168,7 +173,7 @@ public class GFormController implements EditManager {
         this.form = gForm;
         this.isDialog = isDialog;
 
-        dispatcher = new FormDispatchAsync(this);
+        dispatcher = new FormDispatchAsync(this, dispatchPriority);
 
         formLayout = new GFormLayout(this, form.mainContainer, autoSize);
         if (form.sID != null)
