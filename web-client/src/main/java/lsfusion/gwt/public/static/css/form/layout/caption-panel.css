@@ -29,7 +29,6 @@
     content: "";
     width: 1rem;
     border-bottom: 1px solid var(--panel-border-color);
-    margin-right: var(--border-padding);
     margin-bottom: var(--border-width);
 }
 
@@ -38,6 +37,10 @@
     height: 1rem;
     background-image: var(--caption-panel-header-expand-icon-url);
     margin-bottom: 0;
+}
+
+.accordion-button:not(.empty-caption)::before {
+    margin-right: var(--border-padding);
 }
 
 .accordion-button.collapsible:not(.collapsed)::before {
@@ -49,8 +52,12 @@
     flex-grow: 1;
     width: 1.25rem;
     border-bottom: 1px solid var(--panel-border-color);
-    margin-left: var(--border-padding);
     margin-bottom: var(--border-width);
+}
+
+
+.accordion-button:not(.empty-caption)::after {
+    margin-left: var(--border-padding);
 }
 
 .accordion-button.collapsed {

@@ -7,6 +7,8 @@ import lsfusion.gwt.client.base.size.GSize;
 public class CaptionPanel extends FlexPanel {
     protected UnFocusableImageButton headerButton;
 
+    private boolean emptyCaption;
+
     public CaptionPanel(String caption) {
         super(true);
         
@@ -36,5 +38,15 @@ public class CaptionPanel extends FlexPanel {
 
     public void setCaption(String caption) {
         GwtClientUtils.setInnerContent(headerButton.getElement(), caption);
+
+        boolean emptyCaption = caption != null && caption.isEmpty();
+        if (this.emptyCaption != emptyCaption) {
+            if (emptyCaption) {
+                headerButton.addStyleName("empty-caption");
+            } else {
+                headerButton.removeStyleName("empty-caption");
+            }
+            this.emptyCaption = emptyCaption;
+        }
     }
 }
