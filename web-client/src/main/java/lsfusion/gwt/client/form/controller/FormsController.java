@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
+import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -116,9 +117,11 @@ public abstract class FormsController {
             }
         });
         tabsPanel.setSelectionHandler(index -> {
-            forms.get(index).onFocus(isAdding);
-            formFocusOrder.set(index, focusOrderCount++);
-            isAdding = false;
+            if(index >= 0) {
+                forms.get(index).onFocus(isAdding);
+                formFocusOrder.set(index, focusOrderCount++);
+                isAdding = false;
+            }
         });
 
         initEditModeTimer();
@@ -374,7 +377,17 @@ public abstract class FormsController {
             asyncFormController.cancelScheduledOpening();
             formContainer = createFormContainer(windowType, false, -1, form.canonicalName, form.getCaption(), editEvent, editContext, formController);
         }
-        initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), isAutoSized(editContext, windowType));
+
+        int dispatchPriority = (formController != null ? formController.getDispatchPriority() : 0);
+        if(showFormType.isWindow()) {
+            assert showFormType.isModal();
+            // we'll increase the priority for the cascade window forms, because they can block ui (and more important)
+            // and we'll prioritize less requestIndexes calls (see ModalForm show order)
+            dispatchPriority += RemoteDispatchAsync.windowDeepStep -
+                    (int)asyncFormController.getEditRequestIndex() * RemoteDispatchAsync.requestIndexDeepStep;
+        }
+
+        initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), isAutoSized(editContext, windowType), dispatchPriority);
         if(asyncOpened)
             formContainer.onAsyncInitialized();
         else
@@ -460,14 +473,14 @@ public abstract class FormsController {
         }, ContextMenuEvent.getType());
     }
 
-    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize) {
+    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize, int dispatchPriority) {
         formContainer.initForm(this, form, (asyncFormController, editFormCloseReason) -> {
             Pair<FormDockable, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
             if(asyncClosedForm == null) {
                 formContainer.queryHide(editFormCloseReason);
             }
             hiddenHandler.onHidden();
-        }, dialog, autoSize);
+        }, dialog, autoSize, dispatchPriority);
     }
 
     public void selectTab(FormDockable dockable) {

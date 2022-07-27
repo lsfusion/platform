@@ -23,7 +23,7 @@ public class FlexTabBar extends Composite implements TabBar {
 
     private final FlexPanel panel;
 
-    private Widget selectedTab;
+    private int selectedTab = -1;
 
     public FlexTabBar(Widget extraTabWidget, boolean vertical) {
         panel = new FlexPanel(vertical);
@@ -73,10 +73,7 @@ public class FlexTabBar extends Composite implements TabBar {
     }
 
     public int getSelectedTab() {
-        if (selectedTab == null) {
-            return -1;
-        }
-        return panel.getWidgetIndex(selectedTab) - 1;
+        return selectedTab;
     }
 
     public int getTabCount() {
@@ -102,12 +99,9 @@ public class FlexTabBar extends Composite implements TabBar {
     public void removeTab(int index) {
         checkTabIndex(index);
 
-        // (index + 1) to account for 'first' placeholder widget.
-        Widget toRemove = panel.getWidget(index + 1);
-        if (toRemove == selectedTab) {
-            selectedTab = null;
-        }
-        panel.remove(toRemove);
+        if (index == selectedTab)
+            selectedTab = -1;
+        panel.remove(index + 1);
     }
 
     /**
@@ -117,24 +111,20 @@ public class FlexTabBar extends Composite implements TabBar {
      * @return <code>true</code> if successful, <code>false</code> if the change
      *         is denied by the {@link BeforeSelectionHandler}.
      */
-    public boolean selectTab(int index) {
+    public void selectTab(int index) {
+        if(index == selectedTab)
+            return;
+
         checkTabIndex(index);
 
         beforeSelectionHandler.accept(index);
 
         // Check for -1.
-        setSelectionStyle(selectedTab, false);
-        if (index == -1) {
-            selectedTab = null;
-            return true;
-        }
-
-        selectedTab = panel.getWidget(index + 1);
-        setSelectionStyle(selectedTab, true);
+        setSelectionStyle(false);
+        selectedTab = index;
+        setSelectionStyle(true);
 
         selectionHandler.accept(index);
-
-        return true;
     }
 
     /**
@@ -215,24 +205,24 @@ public class FlexTabBar extends Composite implements TabBar {
      * @return true if the tab corresponding to the widget for the tab could
      *         located and selected, false otherwise
      */
-    private boolean selectTabByTabWidget(Widget tabWidget) {
+    private void selectTabByTabWidget(Widget tabWidget) {
         int numTabs = panel.getWidgetCount() - 1;
 
         for (int i = 1; i < numTabs; ++i) {
             if (panel.getWidget(i) == tabWidget) {
-                return selectTab(i - 1);
+                selectTab(i - 1);
             }
         }
-
-        return false;
     }
 
-    private void setSelectionStyle(Widget item, boolean selected) {
-        if (item != null) {
+    private void setSelectionStyle(boolean selected) {
+        int index = selectedTab;
+        if(index >= 0) {
+            Widget widget = panel.getWidget(index + 1);
             if (selected) {
-                item.addStyleName("gwt-TabBarItem-selected");
+                widget.addStyleName("gwt-TabBarItem-selected");
             } else {
-                item.removeStyleName("gwt-TabBarItem-selected");
+                widget.removeStyleName("gwt-TabBarItem-selected");
             }
         }
     }
