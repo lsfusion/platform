@@ -5599,35 +5599,51 @@ fragment CLOSE_CODE_BRACKET : '}>';
 //fragment STRING_LITERAL_FRAGMENT :  '\'' { setText(self.readStringLiteral(input)); };
 
 fragment ESCAPED_STR_LITERAL_CHAR:	('\\'.) | ~('\\'|'{'|'}');
-fragment STR_LITERAL_CHAR2 : ('\\'.) | ~('\''|'\\'|'$');
-//fragment BLOCK options {backtrack=true;}: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}'; 
-//fragment INLINE_BLOCK options {backtrack=true;}: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}' { System.out.println("INLINE_BLOCK: " + getText());};	 
+fragment STR_LITERAL_CHAR2 
+	:	('\\'.) 
+	|	~('\''|'\\'|'$')
+	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$' 
+	;
 
-fragment INLINE_BLOCK_NEW
-options {greedy=false;}
-@init{
-	int open = 1;
-}
-:  '${' ( {open == 1}?=>             
-       ( ('\\'.) 
-       | ~('{' | '}' | '\\') 
-       | '{' {++open; System.out.println("{ parsed");} 
-       | '}' {--open; System.out.println("} parsed");} 
-       )
-   )*
-   '}'
-; 
+fragment BLOCK: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}'; 
+fragment INLINE_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}' { System.out.println("INLINE_BLOCK: " + getText());};	 
+fragment STRING_LITERAL_FRAGMENT:	'\'' (INLINE_BLOCK | STR_LITERAL_CHAR2)* '\''; 
 
-fragment STRING_LITERAL_FRAGMENT_NEW :	'\'' (INLINE_BLOCK_NEW | STR_LITERAL_CHAR2)* '\'';
+
+//fragment STRING_LITERAL_FRAGMENT :	'\'' (INLINE_BLOCK | STR_LITERAL_CHAR2)* '\'';
+//fragment STR_LITERAL_CHAR2 
+//	:	('\\'.) 
+//	|	~('\''|'\\'|'$')
+//	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$' 
+//	;
+//
+//
+//fragment INLINE_BLOCK
+//options {greedy=false;}
+//@init{
+//	int open = 1;
+//	System.out.println("INLINE_BLOCK_NEW init");
+//}
+//	:  '${' { System.out.println("${ parsed"); }
+//	       (
+//		       ( ('\\'.) 
+//		       | ~('{' | '}' | '\\') 
+//		       | '{' {++open; System.out.println("{ parsed");} 
+//		       | {open > 1}?=> '}' {--open; System.out.println("} parsed");}
+//		       ) 
+//	       )*
+//	   '}'    
+//	; 
+
 
 fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
 
 fragment ID_META_FRAGMENT : (ID_FRAGMENT? (('###' | '##') NEXTID_FRAGMENT)+) | ID_FRAGMENT;
 
-fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT_NEW;
-fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT_NEW;
-fragment STRING_META_FRAGMENT : (NEXTID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT_NEW (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
+fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
+fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
+fragment STRING_META_FRAGMENT : (NEXTID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
 
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
