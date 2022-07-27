@@ -132,7 +132,9 @@ public abstract class FormReportManager extends FormDataManager {
         byte[] reportSourcesByteArray = getReportSourcesByteArray(hierarchy.reportHierarchy, keyData, propData);
         byte[] reportDesignsByteArray = getReportDesignsByteArray(designs);
         byte[] classesByteArray = getClassesByteArray(usedClasses);
-        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray, Settings.get().isUseShowIfInReports(), classesByteArray);
+        return new ReportGenerationData(reportHierarchyByteArray, reportDesignsByteArray, reportSourcesByteArray,
+                Settings.get().isUseShowIfInReports(), Settings.get().getJasperReportsGovernorMaxPages(), Settings.get().getJasperReportsGovernorTimeout(),
+                classesByteArray);
     }
 
     private Map<String, byte[]> getUsedClasses(Collection<JasperDesign> designs) {
@@ -244,9 +246,9 @@ public abstract class FormReportManager extends FormDataManager {
             
             new File(reportName).getParentFile().mkdirs();
             JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
-            
-            if(!recreateCustom) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
-                Files.copy(Paths.get(reportName), Paths.get(defaultCustomReportPath.targetPath));                        
+
+            if(!recreateCustom && !Files.exists(Paths.get(defaultCustomReportPath.targetPath))) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
+                Files.copy(Paths.get(reportName), Paths.get(defaultCustomReportPath.targetPath));
         }
     }
 

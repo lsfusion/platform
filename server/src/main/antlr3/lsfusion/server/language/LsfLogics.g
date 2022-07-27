@@ -2446,6 +2446,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 	boolean hasHeader = false;
 	boolean noEscape = false;
 	String charset = null;
+	LPWithParams sheetName = null;
 	boolean attr = false;
 	LPWithParams root = null;
 	LPWithParams tag = null;
@@ -2454,12 +2455,12 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
-			                                                 root, tag, separator, !hasHeader, noEscape, selectTop, charset, attr, orderProperties, orderDirections);
+			                                                 sheetName, root, tag, separator, !hasHeader, noEscape, selectTop, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
 	    (type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
-	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
+	                                                    sheetName = $type.sheetName; charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		('TOP' selectTop = intLiteral)?
 		'FROM' plist=nonEmptyAliasedPropertyExpressionList[newContext, true]
 		('WHERE' whereExpr=propertyExpression[newContext, true])?
@@ -3413,7 +3414,7 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
             ( // static - interactive
                 { printType = FormPrintType.PRINT; }
                 ( // static - jasper
-                    type = printType [context, dynamic] { printType = $type.printType; sheetNameProperty = $type.sheetNameProperty; passwordProperty = $type.passwordProperty;}
+                    type = printType [context, dynamic] { printType = $type.printType; sheetNameProperty = $type.sheetName; passwordProperty = $type.passwordProperty;}
                     ('TO' pUsage=propertyUsage)?
                 )?
                 ( 'PREVIEW' | 'NOPREVIEW' { autoPrint = true; } )?
@@ -3423,9 +3424,9 @@ printActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns
         )
 	;
 
-printType [List<TypedParameter> context, boolean dynamic] returns [FormPrintType printType, LPWithParams sheetNameProperty, LPWithParams passwordProperty]
-        :    'XLS'  { $printType = FormPrintType.XLS; } ('SHEET' sheet = propertyExpression[context, dynamic] { $sheetNameProperty = $sheet.property; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { $passwordProperty = $pwd.property; })?
-        |	'XLSX' { $printType = FormPrintType.XLSX; } ('SHEET' sheet = propertyExpression[context, dynamic] { $sheetNameProperty = $sheet.property; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { $passwordProperty = $pwd.property; })?
+printType [List<TypedParameter> context, boolean dynamic] returns [FormPrintType printType, LPWithParams sheetName, LPWithParams passwordProperty]
+        :    'XLS'  { $printType = FormPrintType.XLS; } (sheet = sheetExpression[context, dynamic] { $sheetName = $sheet.sheetName; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { $passwordProperty = $pwd.property; })?
+        |	'XLSX' { $printType = FormPrintType.XLSX; } (sheet = sheetExpression[context, dynamic] { $sheetName = $sheet.sheetName; })? ('PASSWORD' pwd = propertyExpression[context, dynamic] { $passwordProperty = $pwd.property; })?
         |	'PDF' { $printType = FormPrintType.PDF; }
         |	'DOC'  { $printType = FormPrintType.DOC; }
         |	'DOCX' { $printType = FormPrintType.DOCX; }
@@ -3444,12 +3445,13 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean noEscape = false;
 	String charset = null;
 	boolean attr = false;
+	LPWithParams sheetName = null;
 	LPWithParams root = null;
 	LPWithParams tag = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages,
+		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
 }
@@ -3459,7 +3461,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    }
 	    (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
-        	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
+        	                                                    charset = $type.charset; sheetName = $type.sheetName; root = $type.root; tag = $type.tag; attr = $type.attr; })?
 		('TOP' selectTop = intLiteral)?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
@@ -3478,11 +3480,11 @@ contextFiltersClause[List<TypedParameter> oldContext, List<TypedParameter> objec
         (',' decl=propertyExpression[context, true] { contextFilters.add($decl.property); })*
     ;
 
-exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean hasHeader, boolean noEscape, String charset, LPWithParams root, LPWithParams tag, boolean attr]
+exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean hasHeader, boolean noEscape, String charset, LPWithParams sheetName, LPWithParams root, LPWithParams tag, boolean attr]
 	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? (noEscapeVal = noEscapeOption { $noEscape = $noEscapeVal.noEscape; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
     |	'DBF' { $format = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-    |   'XLS' { $format = FormIntegrationType.XLS; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
-    |   'XLSX' { $format = FormIntegrationType.XLSX; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
+    |   'XLS' { $format = FormIntegrationType.XLS; } (sheet = sheetExpression[context, dynamic] { $sheetName = $sheet.sheetName; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
+    |   'XLSX' { $format = FormIntegrationType.XLSX; } (sheet = sheetExpression[context, dynamic] { $sheetName = $sheet.sheetName; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
 	|	'JSON' { $format = FormIntegrationType.JSON; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'XML' { $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('TAG' tagProperty = propertyExpression[context, dynamic] {$tag = $tagProperty.property; })? ('ATTR' { $attr = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'TABLE' { $format = FormIntegrationType.TABLE; }
@@ -3497,6 +3499,10 @@ noEscapeOption returns [boolean noEscape]
     :	'NOESCAPE' { $noEscape = true; }
     |	'ESCAPE'{ $noEscape = false; }
 	;
+
+sheetExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams sheetName]
+        :   'SHEET' name = propertyExpression[context, dynamic] { $sheetName = $name.property; }
+        ;
 
 groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, NamedPropertyUsage> pUsages]
 @init {

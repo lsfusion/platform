@@ -44,11 +44,11 @@ public class ExportXLSWriter extends ExportMatrixWriter {
     }
     private final Styles styles;    
 
-    public ExportXLSWriter(ImOrderMap<String, Type> fieldTypes, boolean xlsx, boolean noHeader) throws IOException {
+    public ExportXLSWriter(ImOrderMap<String, Type> fieldTypes, boolean xlsx, boolean noHeader, String sheetName) throws IOException {
         super(fieldTypes, noHeader);
 
         workbook = xlsx ? new XSSFWorkbook() : new HSSFWorkbook();
-        sheet = workbook.createSheet();        
+        sheet = sheetName != null ? workbook.createSheet(sheetName) : workbook.createSheet();
         styles = new Styles(workbook);
 
         finalizeInit();

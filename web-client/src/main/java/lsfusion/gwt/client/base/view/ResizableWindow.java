@@ -195,8 +195,9 @@ public class ResizableWindow extends Composite {
         }
     }
 
-    public void hide() {
+    public void hide(DivWidget backdrop) {
         windowController.getBoundaryPanel().remove(this);
+        windowController.getBoundaryPanel().remove(backdrop);
     }
 
     public void onShow() {
@@ -210,12 +211,14 @@ public class ResizableWindow extends Composite {
                 (Window.getClientHeight() - getOffsetHeight()) / 2);
     }
 
-    public void show(Integer insertIndex) {
+    public void show(Integer insertIndex, DivWidget backdrop) {
         AbsolutePanel boundaryPanel = windowController.getBoundaryPanel();
         // attaching
         if(insertIndex != null) {
             boundaryPanel.insert(this, insertIndex);
+            boundaryPanel.insert(backdrop, insertIndex);
         } else {
+            boundaryPanel.add(backdrop);
             boundaryPanel.add(this);
         }
         

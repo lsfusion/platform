@@ -252,7 +252,8 @@ public class EmailReceiver {
                     Message message = emailFolder.getMessage(messageCount - count);
                     Timestamp dateTimeSentEmail = getSentDate(message);
                     if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
-                        String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
+                        Address[] fromAddresses = message.getFrom();
+                        String fromAddressEmail = fromAddresses.length > 0 ? ((InternetAddress) fromAddresses[0]).getAddress() : null;
                         String subjectEmail = message.getSubject();
                         String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail, usedEmails);
                         usedEmails.add(idEmail);
