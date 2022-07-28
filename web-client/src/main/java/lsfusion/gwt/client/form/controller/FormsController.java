@@ -417,7 +417,7 @@ public abstract class FormsController {
                 asyncFormController.putAsyncForm(formContainer);
             };
             // this types because for them size is unknown, so there'll be blinking
-            if(isCalculatedSized(editContext, windowType))
+            if(isAutoSized(editContext, windowType))
                 asyncFormController.scheduleOpen(runOpenForm);
             else
                 runOpenForm.execute();
@@ -431,16 +431,8 @@ public abstract class FormsController {
         }
     }
 
-    private boolean isCalculatedSized(ExecContext execContext, GWindowFormType windowType) {
-        return isPreferredSize(windowType) || isAutoSized(execContext, windowType);
-    }
-
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return ((windowType.isEmbedded() || windowType instanceof GContainerWindowFormType) && execContext.getProperty().autoSize) || windowType.isPopup();
-    }
-
-    private boolean isPreferredSize(GWindowFormType windowType) {
-        return windowType.isFloat();
+        return ((windowType.isEmbedded() || windowType instanceof GContainerWindowFormType) && execContext.getProperty().autoSize) || windowType.isPopup() || windowType.isFloat();
     }
 
     private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {

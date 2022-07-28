@@ -51,16 +51,12 @@ public class ModalForm extends FormContainer {
     }
 
     protected void initPreferredSize() {
-        GSize maxWidth = GwtClientUtils.getOffsetWidth(Document.get().getBody()).subtract(GSize.CONST(20));
-        GSize maxHeight = GwtClientUtils.getOffsetHeight(Document.get().getBody()).subtract(GSize.CONST(100));
+        if(!async) {
+            GSize maxWidth = GwtClientUtils.getOffsetWidth(Document.get().getBody()).subtract(GSize.CONST(20));
+            GSize maxHeight = GwtClientUtils.getOffsetHeight(Document.get().getBody()).subtract(GSize.CONST(100));
 
-        Dimension size;
-        if(async)
-            size = new Dimension(maxWidth.min(GSize.CONST(790)), maxHeight.min(GSize.CONST(580)));
-        else
-            size = form.getPreferredSize(maxWidth, maxHeight);
-
-        contentWidget.setContentSize(size);
+            contentWidget.setContentSize(form.getPreferredSize(maxWidth, maxHeight, contentWidget.getContentWidget().getElement()));
+        }
     }
 
     @Override

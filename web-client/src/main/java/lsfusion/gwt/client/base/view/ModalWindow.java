@@ -83,6 +83,8 @@ public class ModalWindow extends ResizableComplexPanel {
         content.add(body);
 
         GwtClientUtils.draggable(dialog.getElement(), ".modal-header");
+        if (resizable)
+            GwtClientUtils.resizable(content.getElement(), "e, s, se");
     }
 
     public void show() {
@@ -123,8 +125,7 @@ public class ModalWindow extends ResizableComplexPanel {
 
     public void setBodyWidget(Widget widget) {
         body.setWidget(widget);
-        if (resizable)
-            GwtClientUtils.resizable(getBodyWidget().getElement(), "e, s, se");
+        GwtClientUtils.setupPercentParent(widget.getElement());
     }
 
     public Widget getBodyWidget() {
@@ -134,6 +135,8 @@ public class ModalWindow extends ResizableComplexPanel {
     public void addContentWidget(Widget widget) {
         content.add(widget);
     }
+
+    public Widget getContentWidget() { return content; }
 
     private ResizableComplexPanel footer;
     public void addFooterWidget(Widget widget) {

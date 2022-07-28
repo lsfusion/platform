@@ -36,9 +36,11 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public final ResizableComplexPanel attachContainer;
 
+    private final boolean autoSize;
     public GFormLayout(GFormController iform, GContainer mainContainer, boolean autoSize) {
         this.form = iform;
         this.mainContainer = mainContainer;
+        this.autoSize = autoSize;
 
         attachContainer = new ResizableComplexPanel();
         attachContainer.setVisible(false);
@@ -223,7 +225,7 @@ public class GFormLayout extends ResizableComplexPanel {
         return hasVisible;
     }
 
-    public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight) {
+    public Dimension getPreferredSize(GSize maxWidth, GSize maxHeight, Element element) {
         GSize width = mainContainer.getWidth();
         GSize height = mainContainer.getHeight();
 
@@ -231,8 +233,8 @@ public class GFormLayout extends ResizableComplexPanel {
         try {
             DataGrid.flushUpdateDOM(); // there can be some pending grid changes, and we need actual sizes
 
-            GSize offsetWidth = GwtClientUtils.getOffsetWidth(getElement());
-            GSize offsetHeight = GwtClientUtils.getOffsetHeight(getElement());
+            GSize offsetWidth = GwtClientUtils.getOffsetWidth(element);
+            GSize offsetHeight = GwtClientUtils.getOffsetHeight(element);
             if(width == null)
                 offsetWidth = offsetWidth.add(extraOffset.first);
             if(height == null)
@@ -244,7 +246,8 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     public Pair<Integer, Integer> setPreferredSize(boolean set, GSize width, GSize height, GSize maxWidth, GSize maxHeight) {
-        GwtClientUtils.changePercentFillWidget(main, set);
+        assert autoSize;
+//        GwtClientUtils.changePercentFillWidget(main, set);
 
         Element element = main.getElement();
         FlexPanel.setHeight(element, height);

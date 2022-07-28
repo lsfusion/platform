@@ -85,8 +85,13 @@
 }
 
 .modal-content {
+    display: flex;
+    flex-direction: column;
+
     border: 1px solid var(--dialog-outer-border-color);
     border-radius: var(--dialog-border-radius);
+
+    overflow: hidden;
 }
 
 .modal-body {
