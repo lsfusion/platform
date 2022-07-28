@@ -1239,7 +1239,6 @@ public class GFormController implements EditManager {
     }
 
     public void closePressed(EndReason reason) {
-        formsController.removeFormContainer(formContainer);
         syncDispatch(new ClosePressed(reason instanceof CommitReason), new ServerResponseCallback() {
             @Override
             protected Runnable getOnRequestFinished() {
@@ -1484,6 +1483,7 @@ public class GFormController implements EditManager {
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+        formsController.removeFormContainer(formContainer);
         for(ContainerForm containerForm : containerForms) {
             containerForm.getForm().closePressed(editFormCloseReason);
         }

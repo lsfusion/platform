@@ -90,7 +90,8 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
                                                                ManageSessionType manageSession,
                                                                Boolean noCancel,
                                                                Boolean syncType,
-                                                               WindowFormType windowType, boolean forbidDuplicate,
+                                                               WindowFormType windowType,
+                                                               boolean forbidDuplicate,
                                                                boolean checkOnOk,
                                                                boolean readOnly,
                                                                String formID) {
@@ -151,7 +152,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
         ImList<ObjectEntity> resolvedInputObjects = inputObjects.mapList(mapRevObjects);
 
         FormInstance newFormInstance = context.createFormInstance(form, resolvedInputObjects.getCol().toSet(), mapObjectValues, context.getSession(), syncType, noCancel, manageSession, checkOnOk, isShowDrop(), true, showFormType.getWindowType(), contextFilters, readOnly, formId);
-        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, context.stack);
+        context.requestFormUserInteraction(newFormInstance, showFormType, forbidDuplicate, formId, context.stack);
 
         if (syncType) {
             FormCloseType formResult = newFormInstance.getFormResult();
