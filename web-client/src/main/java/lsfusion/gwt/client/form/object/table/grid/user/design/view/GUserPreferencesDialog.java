@@ -191,6 +191,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         });
 
         ResizableComplexPanel mainContainer = new ResizableComplexPanel();
+        mainContainer.setStyleName("dialog-user-preferences-container");
         mainContainer.add(focusPanel);
 
         setBodyWidget(mainContainer);

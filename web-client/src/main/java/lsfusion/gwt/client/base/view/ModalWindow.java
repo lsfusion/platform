@@ -125,7 +125,8 @@ public class ModalWindow extends ResizableComplexPanel {
 
     public void setBodyWidget(Widget widget) {
         body.setWidget(widget);
-        GwtClientUtils.setupPercentParent(widget.getElement());
+        widget.getElement().getStyle().setProperty("flex", "1 1 auto");
+//        GwtClientUtils.setupPercentParent(widget.getElement());
     }
 
     public Widget getBodyWidget() {

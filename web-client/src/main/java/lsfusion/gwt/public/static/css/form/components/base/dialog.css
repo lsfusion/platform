@@ -120,3 +120,7 @@
 .dialog-loading-progress {
     width: 30em;
 }
+
+.dialog-user-preferences-container {
+    min-height: 40em;
+}
