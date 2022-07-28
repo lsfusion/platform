@@ -91,7 +91,7 @@ public abstract class GNavigatorController implements GINavigatorController {
             boolean sync = element.asyncExec == null;
             long requestIndex = formsController.executeNavigatorAction(element.canonicalName, nativeEvent, sync);
             if(!sync)
-                element.asyncExec.exec(formsController.getDispatcher().getAsyncFormController(requestIndex), formsController, nativeEvent instanceof Event ? (Event) nativeEvent : null);
+                element.asyncExec.exec(formsController.getDispatcher().getAsyncFormController(requestIndex), formsController, null, nativeEvent instanceof Event ? (Event) nativeEvent : null);
         }
     }
 }
