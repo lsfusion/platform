@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
+import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import net.customware.gwt.dispatch.shared.Result;
 
 public class QueuedAction<R extends Result> {
@@ -43,5 +44,9 @@ public class QueuedAction<R extends Result> {
             if(onDispatchFinished != null)
                 onDispatchFinished.run();
         }
+    }
+
+    public boolean isContinueInvocation() {
+        return result instanceof ServerResponseResult && ((ServerResponseResult) result).resumeInvocation;
     }
 }

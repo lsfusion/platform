@@ -8,6 +8,8 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferences;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
+import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
@@ -25,6 +27,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public String creationPath;
 
     public ArrayList<GFormScheduler> formSchedulers = new ArrayList<>();
+    public Map<GFormEvent, GAsyncEventExec> asyncExecMap = new HashMap<>();
 
     public GContainer mainContainer;
     public HashSet<GTreeGroup> treeGroups = new HashSet<>();

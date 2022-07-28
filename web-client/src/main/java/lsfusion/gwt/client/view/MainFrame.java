@@ -120,7 +120,9 @@ public class MainFrame implements EntryPoint {
 
     public void onModuleLoad() {
         hackForGwtDnd();
-        
+
+        GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
+
         GWT.setUncaughtExceptionHandler(t -> {
             GExceptionManager.logClientError(t);
             DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);

@@ -119,8 +119,8 @@ public abstract class FormContainer {
 
     protected abstract Element getFocusedElement();
 
-    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize, String formId) {
-        form = new GFormController(formsController, this, gForm, isDialog, autoSize, editEvent) {
+    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize, int dispatchPriority, String formId) {
+        form = new GFormController(formsController, this, gForm, isDialog, autoSize, dispatchPriority, editEvent) {
             @Override
             public void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
                 super.onFormHidden(asyncFormController, closeDelay, editFormCloseReason);

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.controller;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -116,6 +117,10 @@ public class GFormController implements EditManager {
 
     private FormDispatchAsync dispatcher;
 
+    public int getDispatchPriority() {
+        return dispatcher.dispatchPriority;
+    }
+
     private final GFormActionDispatcher actionDispatcher;
 
     private final FormsController formsController;
@@ -166,7 +171,7 @@ public class GFormController implements EditManager {
         containerForms.remove(containerForm);
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, Event editEvent) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, int dispatchPriority, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
@@ -174,7 +179,7 @@ public class GFormController implements EditManager {
         this.form = gForm;
         this.isDialog = isDialog;
 
-        dispatcher = new FormDispatchAsync(this);
+        dispatcher = new FormDispatchAsync(this, dispatchPriority);
 
         formLayout = new GFormLayout(this, form.mainContainer, autoSize);
         if (form.sID != null)
@@ -504,7 +509,7 @@ public class GFormController implements EditManager {
             public boolean execute() {
                 if (!formHidden) {
                     if (isShowing(getWidget()) && !MainFrame.isModalPopup()) {
-                        asyncDispatch(new ExecuteFormSchedulerAction(formScheduler), new ServerResponseCallback() {
+                        executeFormEventAction(formScheduler, new ServerResponseCallback() {
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                                 super.onSuccess(response, onDispatchFinished);
                                 if (!formHidden && !formScheduler.fixed) {
@@ -524,6 +529,43 @@ public class GFormController implements EditManager {
                 return false;
             }
         }, formScheduler.period * 1000);
+    }
+
+    public void closePressed(EndReason reason) {
+        GFormEventClose eventClose = new GFormEventClose(reason instanceof CommitReason);
+
+        executeFormEventAction(eventClose, new ServerResponseCallback() {
+            @Override
+            protected Runnable getOnRequestFinished() {
+                return () -> {
+                    actionDispatcher.editFormCloseReason = null;
+                };
+            }
+
+            @Override
+            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                actionDispatcher.editFormCloseReason = reason;
+                super.onSuccess(response, onDispatchFinished);
+            }
+        });
+    }
+
+    private void executeFormEventAction(GFormEvent formEvent, ServerResponseCallback serverResponseCallback) {
+        ExecuteFormEventAction executeFormEventAction = new ExecuteFormEventAction(formEvent);
+
+        GAsyncExec asyncExec = getAsyncExec(form.asyncExecMap.get(formEvent));
+        if (asyncExec != null) {
+            long requestIndex = asyncDispatch(executeFormEventAction, serverResponseCallback);
+            asyncExec.exec(actionDispatcher.getAsyncFormController(requestIndex), formsController, formContainer, editEvent);
+        } else {
+            syncDispatch(executeFormEventAction, serverResponseCallback);
+        }
+    }
+
+    private GAsyncExec getAsyncExec(GAsyncEventExec asyncEventExec) {
+        if(asyncEventExec instanceof GAsyncExec)
+            return (GAsyncExec) asyncEventExec;
+        return null;
     }
 
     public GPropertyDraw getProperty(int id) {
@@ -1236,23 +1278,6 @@ public class GFormController implements EditManager {
         asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
 
         formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
-    }
-
-    public void closePressed(EndReason reason) {
-        syncDispatch(new ClosePressed(reason instanceof CommitReason), new ServerResponseCallback() {
-            @Override
-            protected Runnable getOnRequestFinished() {
-                return () -> {
-                    actionDispatcher.editFormCloseReason = null;
-                };
-            }
-
-            @Override
-            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
-                actionDispatcher.editFormCloseReason = reason;
-                super.onSuccess(response, onDispatchFinished);
-            }
-        });
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {

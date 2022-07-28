@@ -15,6 +15,9 @@ import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
+import lsfusion.client.form.property.async.ClientAsyncEventExec;
+import lsfusion.client.form.property.async.ClientAsyncSerializer;
+import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.event.FormScheduler;
 
 import java.io.DataInputStream;
@@ -31,6 +34,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
     public String creationPath = "";
 
     public List<FormScheduler> formSchedulers = new ArrayList<>();
+    public Map<FormEvent, ClientAsyncEventExec> asyncExecMap;
 
     public static ClientGroupObject lastActiveGroupObject;
 
@@ -209,6 +213,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         creationPath = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
         formSchedulers = deserializeFormSchedulers(inStream);
+        asyncExecMap = deserializeAsyncExecMap(inStream);
     }
 
     private List<List<ClientPropertyDraw>> deserializePivot(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -224,9 +229,18 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
         List<FormScheduler> formSchedulers = new ArrayList<>();
         int size = inStream.readInt();
         for(int i = 0; i < size; i++) {
-            formSchedulers.add(FormScheduler.deserialize(inStream));
+            formSchedulers.add((FormScheduler) FormEvent.deserialize(inStream));
         }
         return formSchedulers;
+    }
+
+    private Map<FormEvent, ClientAsyncEventExec> deserializeAsyncExecMap(DataInputStream inStream) throws IOException {
+        Map<FormEvent, ClientAsyncEventExec> asyncExecMap = new HashMap<>();
+        int size = inStream.readInt();
+        for(int i = 0; i < size; i++) {
+            asyncExecMap.put(FormEvent.deserialize(inStream), ClientAsyncSerializer.deserializeEventExec(inStream));
+        }
+        return asyncExecMap;
     }
 
     public boolean removePropertyDraw(ClientPropertyDraw clientPropertyDraw) {

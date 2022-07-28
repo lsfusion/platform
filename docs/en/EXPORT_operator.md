@@ -14,8 +14,8 @@ The `EXPORT` operator: creates an [action](Actions.md) that exports [specified p
     JSON [CHARSET charsetStr]
     XML [ATTR] [CHARSET charsetStr]
     CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-    XLS [HEADER | NOHEADER]
-    XLSX [HEADER | NOHEADER]
+    XLS [SHEET sheetProperty] [HEADER | NOHEADER]
+    XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
     DBF [CHARSET charsetStr]
     TABLE
 
@@ -102,6 +102,10 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
     - `charsetStr`
      
         String literal that defines the encoding. 
+
+- `sheetProperty`
+
+  The [ID of the property](IDs.md#propertyid) whose value is used as the name of the sheet in the exported file. The property must not have parameters. It is used for `XLS` and `XLSX` export formats.
      
 - `TOP n`
 

@@ -9,6 +9,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -41,14 +42,15 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset) {
-        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false);
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, ValueClass... extraParams) {
+        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, extraParams);
     }
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset, boolean useCaptionInsteadOfIntegrationSID) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset);
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset,
+                             boolean useCaptionInsteadOfIntegrationSID, ValueClass... extraParams) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset, extraParams);
         this.exportFiles = exportFiles;
         this.useCaptionInsteadOfIntegrationSID = useCaptionInsteadOfIntegrationSID;
     }
@@ -57,7 +59,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
     protected void export(ExecutionContext<ClassPropertyInterface> context, StaticExportData exportData, StaticDataGenerator.Hierarchy hierarchy) throws IOException, SQLException, SQLHandledException {
         Map<GroupObjectEntity, RawFileData> files = new HashMap<>();
 
-        exportGroupData(hierarchy.getRoot(), SetFact.EMPTY(), hierarchy, files, exportData, null);
+        exportGroupData(context, hierarchy.getRoot(), SetFact.EMPTY(), hierarchy, files, exportData, null);
 
         writeResult(context, files);
     }
@@ -70,9 +72,9 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
         }
     }
 
-    protected abstract ExportPlainWriter getWriter(ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException;
+    protected abstract ExportPlainWriter getWriter(ExecutionContext<ClassPropertyInterface> context, ImOrderMap<String, Type> fieldTypes, boolean singleRow) throws IOException;
 
-    protected void exportGroupData(GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, RawFileData> files, final ExportData data, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
+    protected void exportGroupData(ExecutionContext<ClassPropertyInterface> context, GroupObjectEntity currentGroup, ImSet<GroupObjectEntity> parentGroups, StaticDataGenerator.Hierarchy hierarchy, Map<GroupObjectEntity, RawFileData> files, final ExportData data, ImOrderSet<ImMap<ObjectEntity, Object>> parentRows) throws IOException {
         
         ImOrderSet<PropertyDrawEntity> childProperties = hierarchy.getProperties(currentGroup);
 
@@ -118,7 +120,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
         ImOrderSet<ImMap<ObjectEntity, Object>> allRows = data.getRows(currentGroup);
 
         RawFileData resultFile;
-        ExportPlainWriter exporter = getWriter(fieldTypes, currentGroup == null);
+        ExportPlainWriter exporter = getWriter(context, fieldTypes, currentGroup == null);
         try {
             exporter.writeCount(allRows.size());
             for (int i = 0, size = allRows.size(); i < size; i++) {
@@ -141,7 +143,7 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
         if(currentGroup != null)
             parentGroups = parentGroups.addExcl(currentGroup);
         for(GroupObjectEntity childGroup : hierarchy.getDependencies(currentGroup))
-            exportGroupData(childGroup, parentGroups, hierarchy, files, data, allRows);
+            exportGroupData(context, childGroup, parentGroups, hierarchy, files, data, allRows);
 
     }
 
