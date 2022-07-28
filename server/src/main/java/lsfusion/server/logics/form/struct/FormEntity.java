@@ -982,12 +982,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) throws AlreadyDefined {
+    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias, boolean ignoreAlreadyDefinedCheck) throws AlreadyDefined {
         String newSID = (alias == null ? property.getSID() : alias);
-        property.setSID(null);
-        PropertyDrawEntity drawEntity;
-        if ((drawEntity = getPropertyDraw(newSID, Version.current())) != null) {
-            throw new AlreadyDefined(getCanonicalName(), newSID, drawEntity.getFormPath());
+        if (!ignoreAlreadyDefinedCheck) {
+            property.setSID(null);
+            PropertyDrawEntity drawEntity;
+            if ((drawEntity = getPropertyDraw(newSID, Version.current())) != null) {
+                throw new AlreadyDefined(getCanonicalName(), newSID, drawEntity.getFormPath());
+            }
         }
         property.setSID(newSID);
 
