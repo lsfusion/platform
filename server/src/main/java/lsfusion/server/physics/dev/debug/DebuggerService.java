@@ -12,4 +12,6 @@ public interface DebuggerService extends Remote {
     void registerStepping() throws RemoteException;
 
     void unregisterStepping() throws RemoteException;
+
+    void showFormDesign(String form, String formName) throws RemoteException;
 }

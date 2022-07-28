@@ -322,6 +322,52 @@ clearApplicationLog () + {
 	}
 }   
 
+showJavaStack '{eval.script.show.stack}' = DATA LOCAL BOOLEAN ();
+showStack() {
+    showJavaStack() <- NOT showJavaStack(); 
+}
+
+FORM errorLiveDesign
+    PROPERTIES() messageCaughtException BACKGROUND RGB(255, 50, 50) READONLY
+    PROPERTIES() showStack
+    PROPERTIES() READONLY SHOWIF showJavaStack() javaStackTraceCaughtException
+;
+
+DESIGN errorLiveDesign {
+    REMOVE TOOLBARRIGHT;
+    REMOVE TOOLBARLEFT;
+    MOVE PROPERTY (messageCaughtException()) {
+        panelCaptionVertical = TRUE;
+        caption = 'PARSING FORM ERROR';
+        captionFont = 'bold 24';
+        autoSize = TRUE;
+    };
+    align = STRETCH;
+    MOVE PROPERTY(showStack()) {
+        height = 40;
+        align = STRETCH;
+        panelCaptionVertical = TRUE;
+    }
+    MOVE PROPERTY (javaStackTraceCaughtException()) {
+        caption = '';
+        autoSize = TRUE;
+    }
+}
+
+showFormDesign(TEXT form) {
+    FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
+        NEWSESSION {
+            NEWTHREAD {
+                TRY {
+                    EVAL form;
+                } CATCH {
+                    SHOW errorLiveDesign DOCKED;
+                }
+            } CONNECTION connection;     
+        }
+    }
+}
+
 FORM connections '{system.events.form.connections}'
 
     OBJECTS c=Connection
