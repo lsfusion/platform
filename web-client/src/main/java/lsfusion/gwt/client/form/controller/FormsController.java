@@ -379,8 +379,8 @@ public abstract class FormsController {
         }
 
         int dispatchPriority = (formController != null ? formController.getDispatchPriority() : 0);
-        if(showFormType.isWindow()) {
-            assert showFormType.isModal();
+        if(modalityType.isWindow()) {
+            assert modalityType.isModal();
             // we'll increase the priority for the cascade window forms, because they can block ui (and more important)
             // and we'll prioritize less requestIndexes calls (see ModalForm show order)
             dispatchPriority += RemoteDispatchAsync.windowDeepStep -
