@@ -228,6 +228,10 @@ public class GwtClientUtils {
         parent.setInnerText("");
     }
 
+    public static final native TableSectionElement createTBody(TableElement element) /*-{
+        return element.createTBody();
+    }-*/;
+
     public static Widget createHorizontalStrut(int size) {
         SimplePanel strut = new SimplePanel();
         strut.setWidth(size + "px");

@@ -7,11 +7,6 @@ public interface GridStyle {
     String dataGridWidget();
 
     /**
-     * applied to the whole header
-     */
-    String dataGridHeader();
-
-    /**
      * Applied to headers cells.
      */
     String dataGridHeaderCell();
@@ -25,11 +20,6 @@ public interface GridStyle {
      * Applied to the last column headers.
      */
     String dataGridLastHeaderCell();
-
-    /**
-     * applied to the whole footer
-     */
-    String dataGridFooter();
 
     /**
      * Applied to footers cells.

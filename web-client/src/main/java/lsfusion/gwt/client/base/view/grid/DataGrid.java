@@ -57,8 +57,6 @@ import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundCol
 
 public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeListener, HasMaxPreferredSize {
 
-    public static final String DATA_GRID_CLASS = "table";
-
     public final static int BORDER_VERT_SIZE = 1;
 
     protected static GridStyle DEFAULT_STYLE = new GridTableStyle();
@@ -317,10 +315,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
     public static boolean checkSinkGlobalEvents(Event event) {
         return getBrowserKeyEvents().contains(event.getType()) || event.getTypeInt() == Event.ONPASTE || event.getType().equals(BrowserEvents.CONTEXTMENU) || event.getType().equals(BrowserEvents.CHANGE);
-    }
-
-    public GridStyle getStyle() {
-        return style;
     }
 
     public void setPageIncrement(int pageIncrement) {
@@ -1299,7 +1293,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private void updateFocusedCellDOM() {
         NodeList<TableRowElement> rows = tableWidget.getDataRows();
-        NodeList<TableRowElement> headerRows = noHeaders ? null : getTableHeadElement().getRows(); // we need headerRows for upper border
+        TableRowElement headerRow = noHeaders ? null : headerBuilder.getHeaderRow(); // we need headerRows for upper border
 
         int newLocalSelectedRow = getSelectedRow();
         int newLocalSelectedCol = getSelectedColumn();
@@ -1309,7 +1303,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         // if old row index is out of bounds only by 1, than we still need to clean top cell, which is in bounds (for vertical direction there is no such problem since we set outer border, and not inner, for horz it's not possible because of header)
         if (renderedSelectedRow >= 0 && renderedSelectedRow <= rows.getLength() && renderedSelectedCol >= 0 && renderedSelectedCol < columnCount &&
                 (renderedSelectedRow != newLocalSelectedRow || renderedSelectedCol != newLocalSelectedCol)) {
-            setFocusedCellStyles(renderedSelectedRow, renderedSelectedCol, rows, headerRows, false);
+            setFocusedCellStyles(renderedSelectedRow, renderedSelectedCol, rows, headerRow, false);
             if(renderedSelectedRow < rows.getLength() && renderedLeftStickyCol >= 0 && renderedLeftStickyCol < columnCount) {
                 setLeftNeighbourRightBorder(new LeftNeighbourRightBorder(renderedSelectedRow, renderedLeftStickyCol, false));
                 renderedLeftStickyCol = -1;
@@ -1318,7 +1312,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rows.getLength() && newLocalSelectedCol >= 0 && newLocalSelectedCol < columnCount) {
-            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRows, isFocused);
+            setFocusedCellStyles(newLocalSelectedRow, newLocalSelectedCol, rows, headerRow, isFocused);
         }
     }
 
@@ -1412,7 +1406,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return cell.hasClassName("dataGridStickyCell");
     }
 
-    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused) {
+    private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, TableRowElement headerRow, boolean focused) {
         // setting left and bottom borders since they are used to draw lines in grid
         int rowCount = rows.getLength();
         int columnCount = getColumnCount();
@@ -1443,7 +1437,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         // TOP BORDER (BOTTOM of upper row)
         if(column < columnCount) {
-            TableRowElement upperRow = row > 0 ? rows.getItem(row - 1) : (headerRows != null ? headerRows.getItem(0) : null);
+            TableRowElement upperRow = row > 0 ? rows.getItem(row - 1) : headerRow;
             if(upperRow != null)
                 setFocusedCellBottomBorder(upperRow.getCells().getItem(column), focused);
         }
@@ -1487,14 +1481,16 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     // mechanism is slightly different - removing redundant columns, resetting others, however there is no that big difference from other updates so will leave it this way
     protected void updateWidthsDOM(boolean columnsChanged) {
-        int columnCount = getColumnCount();
+        if(columnsChanged) {
+//            tableBuilder.rebuildColumnRow(tableWidget.colRowElement);
+            tableWidget.rebuildColumnGroup();
+        }
 
-        if(columnsChanged)
-            tableWidget.removeUnusedColumns(columnCount);
-        for (int i = 0; i < columnCount; i++) {
-            TableColElement colElement = tableWidget.ensureTableColElement(i);
+        for (int i = 0, columnCount = getColumnCount(); i < columnCount; i++) {
+//            TableCellElement colElement = tableWidget.colRowElement.getCells().getItem(i);
+            TableColElement colElement = tableWidget.colGroupElement.getChild(i).cast();
+
             Column<T, ?> key = columns.get(i);
-
             String width = columnWidths.get(key);
             String flexWidth = columnFlexWidths.get(key);
             if(useColumnMinWidth)
@@ -1619,81 +1615,50 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected class TableWidget extends Widget {
         protected final TableElement tableElement;
-        protected final TableColElement colgroupElement;
+        protected final TableColElement colGroupElement;
+//        protected TableRowElement colRowElement;
         protected TableSectionElement headerElement = null;
-        protected final TableSectionElement sectionElement;
+        protected final TableSectionElement bodyElement;
         protected TableSectionElement footerElement = null;
         
         public TableWidget() {
-            this(null);
-        }
-
-        public TableWidget(String extraClass) {
             tableElement = Document.get().createTableElement();
 
-            tableElement.addClassName(DATA_GRID_CLASS);
-            if(extraClass != null)
-                tableElement.addClassName(extraClass);
+            tableElement.addClassName("table");
 
-            colgroupElement = tableElement.appendChild(Document.get().createColGroupElement());
+            colGroupElement = tableElement.appendChild(Document.get().createColGroupElement());
 
             if (!noHeaders) {
                 headerElement = tableElement.createTHead();
-                headerElement.setClassName(style.dataGridHeader());
+                headerElement.setClassName("dataGridHeader");
+
+//                colRowElement = headerElement.insertRow(-1);
             }
 
-            sectionElement = createSectionElement();
-            
+            bodyElement = GwtClientUtils.createTBody(tableElement);
+
             if (!noFooters) {
                 footerElement = tableElement.createTFoot();
-                footerElement.setClassName(style.dataGridFooter());
+                footerElement.setClassName("dataGridFooter");
             }
 
             setElement(tableElement);
         }
 
-        protected TableSectionElement createSectionElement() {
-            if (tableElement.getTBodies().getLength() > 0) {
-                return tableElement.getTBodies().getItem(0);
-            } else {
-                return tableElement.appendChild(Document.get().createTBodyElement());
-            }
-        }
+        public void rebuildColumnGroup() {
+            GwtClientUtils.removeAllChildren(colGroupElement);
 
-        /**
-         * Get the {@link TableColElement} at the specified index, creating it if
-         * necessary.
-         *
-         * @param index the column index
-         * @return the {@link TableColElement}
-         */
-        public TableColElement ensureTableColElement(int index) {
-            // Ensure that we have enough columns.
-            for (int i = colgroupElement.getChildCount(); i <= index; i++) {
-                colgroupElement.appendChild(Document.get().createColElement());
-            }
-            return colgroupElement.getChild(index).cast();
-        }
-
-        /**
-         * Hide columns that aren't used in the table.
-         *
-         * @param start the first unused column index
-         */
-        void removeUnusedColumns(int start) {
-            // Remove all col elements that appear after the last column.
-            int colCount = colgroupElement.getChildCount();
-            for (int i = start; i < colCount; i++) {
-                colgroupElement.removeChild(ensureTableColElement(start));
+            for(int i = 0, columnCount = getColumnCount(); i < columnCount; i++) {
+                colGroupElement.appendChild(Document.get().createColElement());
             }
         }
 
         public TableSectionElement getSection() {
-            return sectionElement;
+            return bodyElement;
         }
         
         public NodeList<TableRowElement> getDataRows() {
-            return sectionElement.getRows();
+            return bodyElement.getRows();
         } 
     }
 

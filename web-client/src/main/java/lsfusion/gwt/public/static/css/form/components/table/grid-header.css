@@ -27,3 +27,13 @@
     align-self: center;
 }
 
+/* this 2 classes are not used for now (see usages) */
+.dataGridColumnRow {
+    /* does exactly what we need, used in layout, but not visible*/
+    visibility: collapse;
+}
+/* https://stackoverflow.com/questions/72782687/incorrect-percentage-padded-columns-width-when-the-table-layout-is-fixed */
+.dataGridColumnRowCell {
+    box-sizing: border-box;
+}
+

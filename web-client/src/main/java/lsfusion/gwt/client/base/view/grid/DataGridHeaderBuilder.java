@@ -63,22 +63,21 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         this.headerElement = delegate.getHeaderElement();
     }
 
+    private TableRowElement headerRow;
     @Override
     public void update(boolean columnsChanged) {
-        int rowCount = headerElement.getChildCount();
-        if (columnsChanged || rowCount == 0) {
-            if (rowCount != 0) {
-                assert rowCount == 1;
-                getHeaderRow().removeFromParent();
-            }
-            buildHeaderImpl(headerElement.insertRow(0));
+        if (columnsChanged) {
+            if (headerRow != null)
+                headerRow.removeFromParent();
+            headerRow = headerElement.insertRow(-1);
+            buildHeaderImpl(headerRow);
         } else {
-            updateHeaderImpl(getHeaderRow());
+            updateHeaderImpl(headerRow);
         }
     }
 
     public TableRowElement getHeaderRow() {
-        return headerElement.getRows().getItem(0);
+        return headerRow;
     }
 
     protected abstract void buildHeaderImpl(TableRowElement tr);

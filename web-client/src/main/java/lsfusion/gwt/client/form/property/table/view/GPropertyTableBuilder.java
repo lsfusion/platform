@@ -19,20 +19,9 @@ import java.util.function.BiPredicate;
  * Based on lsfusion.gwt.client.base.view.grid.DefaultDataGridBuilder
  */
 public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T> {
-    private final String rowStyle;
-    private final String cellStyle;
-    private final String firstColumnStyle;
-    private final String lastColumnStyle;
 
     public GPropertyTableBuilder(DataGrid table) {
         super(table);
-
-        // Cache styles for faster access.
-        GridStyle style = table.getStyle();
-        rowStyle = style.dataGridRow();
-        cellStyle = style.dataGridCell();
-        firstColumnStyle = " " + style.dataGridFirstCell();
-        lastColumnStyle = " " + style.dataGridLastCell();
     }
 
     // when we have a td and it is not a simple text, we have to wrap it, because td has a display : table-cell (and often incorrect element type in general)
@@ -107,35 +96,44 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
     @Override
     public void buildRowImpl(int rowIndex, T rowValue, TableRowElement tr) {
-
         setRowValueIndex(tr, rowIndex, (RowIndexHolder) rowValue);
-        tr.setClassName(rowStyle);
+
+        buildRow(rowIndex, (RowIndexHolder) rowValue, tr);
+    }
+
+    @Override
+    public void buildColumnRow(TableRowElement tr) {
+        buildRow(-1, null, tr);
+
+        tr.addClassName("dataGridColumnRow");
+    }
+
+    private void buildRow(int rowIndex, RowIndexHolder rowValue, TableRowElement tr) {
+        tr.setClassName("dataGridRow");
 
         // Build the columns.
         int columnCount = cellTable.getColumnCount();
         for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
             Column<T, ?> column = cellTable.getColumn(columnIndex);
 
-            // Create the cell styles.
-            StringBuilder tdClasses = new StringBuilder(cellStyle);
-            if (columnIndex == 0) {
-                tdClasses.append(firstColumnStyle);
-            }
-            // The first and last column could be the same column.
-            if (columnIndex == columnCount - 1) {
-                tdClasses.append(lastColumnStyle);
-            }
+            TableCellElement td = tr.insertCell(-1);
 
-            TableCellElement td = tr.insertCell(-1); //columnIndex
-            td.setClassName(tdClasses.toString());
+            td.setClassName("dataGridCell");
+            if (columnIndex == 0)
+                td.addClassName("dataGridFirstCell");
+            if (columnIndex == columnCount - 1)
+                td.addClassName("dataGridLastCell");
 
             renderTD(td, false);
 
-            Cell cell = new Cell(rowIndex, columnIndex, column, (RowIndexHolder) rowValue);
+            Cell cell = new Cell(rowIndex, columnIndex, column, rowValue);
 
             renderCell(td, cell, column);
 
-            updateCell(td, cell, column);
+            if(rowIndex >= 0)
+                updateCell(td, cell, column);
+            else
+                td.addClassName("dataGridColumnRowCell");
         }
     }
 
@@ -204,6 +202,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
     }
 
+    // pivoting
     public static void renderTD(Element td) {
         renderTD(td, true);
     }

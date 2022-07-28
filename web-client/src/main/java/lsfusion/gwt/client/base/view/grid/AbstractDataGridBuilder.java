@@ -107,6 +107,12 @@ public abstract class AbstractDataGridBuilder<T> {
         buildRowImpl(rowIndex, rowValue, tr);
     }
 
+    public void rebuildColumnRow(TableRowElement tr) {
+        removeAllChildren(tr);
+
+        buildColumnRow(tr);
+    }
+
     private void buildRow(TableSectionElement tbodyElement, int rowIndex, T rowValue) {
         TableRowElement tr = tbodyElement.insertRow(-1);
 
@@ -156,6 +162,8 @@ public abstract class AbstractDataGridBuilder<T> {
      * @param rowElement
      */
     protected abstract void buildRowImpl(int rowIndex, T rowValue, TableRowElement rowElement);
+
+    public abstract void buildColumnRow(TableRowElement rowElement);
 
     /**
      * Build zero or more table rows for the specified row value.

@@ -7,11 +7,6 @@ public class GridTableStyle implements GridStyle {
     }
 
     @Override
-    public String dataGridHeader() {
-        return "dataGridHeader";
-    }
-
-    @Override
     public String dataGridHeaderCell() {
         return "dataGridHeaderCell";
     }
@@ -24,11 +19,6 @@ public class GridTableStyle implements GridStyle {
     @Override
     public String dataGridLastHeaderCell() {
         return "dataGridLastHeaderCell";
-    }
-
-    @Override
-    public String dataGridFooter() {
-        return "dataGridFooter";
     }
 
     @Override

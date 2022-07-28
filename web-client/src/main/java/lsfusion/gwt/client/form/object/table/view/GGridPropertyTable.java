@@ -613,7 +613,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         // plus calc(100px+3%) doesn't work (despite the css specification), however not sure that this would help
         // plus there is a problem with paddings:
         //      when setting width to a column, this width is set "with paddings", that could be fixed, by setting widths for the first row (however in that case we would have to create one invisible virtual row in the header)
-        //      but the main problem is that % percentage works really odd, it respects paddings, but not the way it does in divs (i.e subtract paddings, and then split the rest). This might create problems in resizing,
+        //      but the main problem is that % percentage works really odd (but only in Chrome, in Firefox it works fine), it respects paddings, but not the way it does in divs (i.e subtract paddings, and then split the rest). This might create problems in resizing,
+        //      plus Firefox doesn't respect min-width for td (as well as Chrome)
         // so for now we'll use the width with padding
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }

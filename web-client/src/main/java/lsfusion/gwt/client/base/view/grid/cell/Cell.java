@@ -19,8 +19,9 @@ public class Cell {
         this.columnIndex = columnIndex;
         this.column = column;
         this.row = row;
-        assert row.getRowIndex() == rowIndex;
-        assert column != null && row != null;
+        // row - null and rownIndex are needed for the "column" row, which is not used for now
+        assert (row == null && rowIndex == -1) || row != null && row.getRowIndex() == rowIndex;
+        assert column != null;
     }
 
     public int getColumnIndex() {
