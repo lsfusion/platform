@@ -16,6 +16,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -654,26 +656,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return form.entity.getCanonicalName();
     }
 
-    public ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex, boolean ok) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("closedPressed Action");
-            }
-
-            form.formQueryClose(stack, ok);
-        });
-    }
-
     @Override
-    public ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, FormScheduler formScheduler) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
-                logger.debug("formScheduler executed");
+                logger.debug("executeEventAction");
             }
 
-            form.fireFormSchedulerEvent(stack, formScheduler);
+            form.fireFormEvent(stack, formEvent);
         });
     }
 

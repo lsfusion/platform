@@ -413,7 +413,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return propertyObject.mapping;
     }     
 
-    public Iterable<String> getAllEventActions() {
+    public Iterable<String> getAllPropertyEventActions() {
         return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings().keySet()), getKeyBindings().valueIt());
     }
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {

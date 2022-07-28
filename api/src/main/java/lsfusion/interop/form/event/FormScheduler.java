@@ -3,7 +3,7 @@ package lsfusion.interop.form.event;
 import java.io.*;
 import java.util.Objects;
 
-public class FormScheduler implements Serializable {
+public class FormScheduler extends FormEvent {
     public int period;
     public boolean fixed;
 
@@ -12,7 +12,13 @@ public class FormScheduler implements Serializable {
         this.fixed = fixed;
     }
 
+    @Override
+    public int getType() {
+        return 0;
+    }
+
     public void serialize(DataOutputStream outStream) throws IOException {
+        super.serialize(outStream);
         outStream.writeInt(period);
         outStream.writeBoolean(fixed);
     }

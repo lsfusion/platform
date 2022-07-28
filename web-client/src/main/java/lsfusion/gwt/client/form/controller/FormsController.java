@@ -436,8 +436,7 @@ public abstract class FormsController {
         }
     }
 
-    public void asyncCloseForm(GAsyncFormController asyncFormController) {
-        FormContainer formContainer = MainFrame.getCurrentForm();
+    public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {
         if(formContainer instanceof FormDockable) {
             asyncFormController.putAsyncClosedForm(new Pair<>(formContainer, forms.indexOf(formContainer)));
             formContainer.queryHide(null);

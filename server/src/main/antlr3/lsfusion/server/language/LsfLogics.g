@@ -10,7 +10,6 @@ grammar LsfLogics;
     import lsfusion.interop.action.ServerResponse;
     import lsfusion.interop.form.ModalityType;
     import lsfusion.interop.form.WindowFormType;
-    import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.interop.form.event.FormScheduler;
@@ -55,6 +54,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.ChangeEvent;
     import lsfusion.server.logics.event.Event;
     import lsfusion.server.logics.event.SystemEvent;
+    import lsfusion.server.logics.form.interactive.FormEventType;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
     import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
@@ -5171,7 +5171,7 @@ metaCodeId returns [String sid]
 	;
 
 metaCodeLiteral
-	:	STRING_LITERAL 
+	:	STRING_LITERAL
 	| 	UINT_LITERAL
 	|	UNUMERIC_LITERAL
 	|	UDOUBLE_LITERAL

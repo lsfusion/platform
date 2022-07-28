@@ -4,7 +4,6 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -225,7 +224,7 @@ public class PropertyDrawView extends BaseComponentView {
         Map<String, AsyncEventExec> asyncExecMap = new HashMap<>();
         Boolean sync = getSync();
         if(sync == null || !sync) { // if WAIT we don't want any asyncs
-            for (String actionId : entity.getAllEventActions()) {
+            for (String actionId : entity.getAllPropertyEventActions()) {
                 AsyncEventExec asyncEventExec = entity.getAsyncEventExec(context.entity, context.securityPolicy, actionId, false);
                 if (asyncEventExec == null && (sync != null || !defaultSync)) // explicit NOWAIT or not default sync
                     asyncEventExec = AsyncNoWaitExec.instance;

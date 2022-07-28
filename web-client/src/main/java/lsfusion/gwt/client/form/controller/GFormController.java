@@ -497,7 +497,7 @@ public class GFormController implements EditManager {
             public boolean execute() {
                 if (!formHidden) {
                     if (isShowing(getWidget()) && !MainFrame.isModalPopup()) {
-                        asyncDispatch(new ExecuteFormSchedulerAction(formScheduler), new ServerResponseCallback() {
+                        executeFormEventAction(formScheduler, new ServerResponseCallback() {
                             public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
                                 super.onSuccess(response, onDispatchFinished);
                                 if (!formHidden && !formScheduler.fixed) {
@@ -517,6 +517,43 @@ public class GFormController implements EditManager {
                 return false;
             }
         }, formScheduler.period * 1000);
+    }
+
+    public void closePressed(EndReason reason) {
+        GFormEventClose eventClose = new GFormEventClose(reason instanceof CommitReason);
+
+        executeFormEventAction(eventClose, new ServerResponseCallback() {
+            @Override
+            protected Runnable getOnRequestFinished() {
+                return () -> {
+                    actionDispatcher.editFormCloseReason = null;
+                };
+            }
+
+            @Override
+            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
+                actionDispatcher.editFormCloseReason = reason;
+                super.onSuccess(response, onDispatchFinished);
+            }
+        });
+    }
+
+    private void executeFormEventAction(GFormEvent formEvent, ServerResponseCallback serverResponseCallback) {
+        ExecuteFormEventAction executeFormEventAction = new ExecuteFormEventAction(formEvent);
+
+        GAsyncExec asyncExec = getAsyncExec(form.asyncExecMap.get(formEvent));
+        if (asyncExec != null) {
+            long requestIndex = asyncDispatch(executeFormEventAction, serverResponseCallback);
+            asyncExec.exec(actionDispatcher.getAsyncFormController(requestIndex), formsController, formContainer, editEvent);
+        } else {
+            syncDispatch(executeFormEventAction, serverResponseCallback);
+        }
+    }
+
+    private GAsyncExec getAsyncExec(GAsyncEventExec asyncEventExec) {
+        if(asyncEventExec instanceof GAsyncExec)
+            return (GAsyncExec) asyncEventExec;
+        return null;
     }
 
     public GPropertyDraw getProperty(int id) {
@@ -1077,7 +1114,7 @@ public class GFormController implements EditManager {
 
     private void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex ->
-                formsController.asyncCloseForm(getAsyncFormController(requestIndex)), onExec);
+                formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
@@ -1243,23 +1280,6 @@ public class GFormController implements EditManager {
         asyncResponseDispatch(new SetContainerCollapsed(container.ID, collapsed));
 
         formLayout.updatePanels(); // we want to avoid blinking between setting visibility and getting response (and having updatePanels there)
-    }
-
-    public void closePressed(EndReason reason) {
-        syncDispatch(new ClosePressed(reason instanceof CommitReason), new ServerResponseCallback() {
-            @Override
-            protected Runnable getOnRequestFinished() {
-                return () -> {
-                    actionDispatcher.editFormCloseReason = null;
-                };
-            }
-
-            @Override
-            public void onSuccess(ServerResponseResult response, Runnable onDispatchFinished) {
-                actionDispatcher.editFormCloseReason = reason;
-                super.onSuccess(response, onDispatchFinished);
-            }
-        });
     }
 
     private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {

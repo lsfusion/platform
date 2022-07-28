@@ -19,8 +19,7 @@ import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.event.FormEventType;
-import lsfusion.interop.form.event.FormScheduler;
+import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -80,6 +79,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.FormCloseType;
+import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
@@ -2636,12 +2636,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireQueryClose(ExecutionStack stack, boolean ok) throws SQLException, SQLHandledException {
-        fireEvent(ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE, stack);
-    }
-
-    public void fireFormSchedulerEvent(ExecutionStack stack, FormScheduler formScheduler) throws SQLException, SQLHandledException {
-        fireEvent(formScheduler, stack);
+    public void fireFormEvent(ExecutionStack stack, FormEvent formEvent) throws SQLException, SQLHandledException {
+        fireEvent(entity.getEventObject(formEvent), stack);
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -2748,11 +2744,6 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public FormInstance getFormInstance() {
         return this;
-    }
-
-    // close делать не надо, так как по умолчанию добавляется обработчик события formClose
-    public void formQueryClose(ExecutionStack stack, boolean ok) throws SQLException, SQLHandledException {
-        fireQueryClose(stack, ok);
     }
 
     public void formCancel(ExecutionContext context) throws SQLException, SQLHandledException {
