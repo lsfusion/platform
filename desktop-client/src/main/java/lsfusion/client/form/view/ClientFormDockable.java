@@ -35,7 +35,7 @@ public class ClientFormDockable extends ClientDockable {
         setContent(new JLabel(new ImageIcon(ClientImages.get("loading_async.gif").getImage().getScaledInstance(32, 32, Image.SCALE_DEFAULT))));
     }
 
-    public void init(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientForm clientForm, final MainFrame.FormCloseListener closeListener, byte[] firstChanges) {
+    public void init(ClientNavigator navigator, String canonicalName, String formSID, RemoteFormInterface remoteForm, ClientForm clientForm, final MainFrame.FormCloseListener closeListener, byte[] firstChanges, String formId) {
         this.form = new ClientFormController(canonicalName, formSID, remoteForm, formsController, clientForm, firstChanges, navigator, false, false) {
             @Override
             public void onFormHidden() {
@@ -83,6 +83,8 @@ public class ClientFormDockable extends ClientDockable {
         setContent(this.form.getLayout());
         onContendAdded();
         async = false;
+
+        this.formId = formId;
     }
 
     public void setCaption(String caption, String tooltip) {

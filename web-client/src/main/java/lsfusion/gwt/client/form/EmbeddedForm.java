@@ -123,8 +123,8 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize, int dispatchPriority) {
-        super.initForm(formsController, gForm, hiddenHandler, isDialog, autoSize, dispatchPriority);
+    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize, int dispatchPriority, String formId) {
+        super.initForm(formsController, gForm, hiddenHandler, isDialog, autoSize, dispatchPriority, formId);
 
         form.contextEditForm = contextForm;
         form.getWidget().getElement().setTabIndex(-1); // we need to make form focusable, because otherwise clicking on this form will lead to moving focus to the grid (not the cell), which will cause blur and stop editing
