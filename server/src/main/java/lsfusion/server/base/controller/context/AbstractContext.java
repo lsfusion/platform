@@ -238,7 +238,7 @@ public abstract class AbstractContext implements Context {
     }
 
     // UI interfaces, careful with that because RemoteNavigatorContext has multiple inheritance, so every that interfaces should be "proxied" there
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
         throw new UnsupportedOperationException("requestFormUserInteraction is not supported");
     }
 

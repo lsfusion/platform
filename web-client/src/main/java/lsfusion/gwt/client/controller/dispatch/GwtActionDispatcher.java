@@ -336,6 +336,10 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     }
 
     @Override
+    public void execute(GCloseFormAction action) {
+    }
+
+    @Override
     public void execute(GChangeColorThemeAction action) {
     }
 

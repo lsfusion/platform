@@ -3196,6 +3196,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $action = $importFormADB.action; }
 	|	activeFormADB=activeFormActionDefinitionBody[context, dynamic] { $action = $activeFormADB.action; }
 	|	activateADB=activateActionDefinitionBody[context, dynamic] { $action = $activateADB.action; }
+	|	closeFormADB=closeFormActionDefinitionBody[context, dynamic] { $action = $closeFormADB.action; }
 	|	expandCollapseADB=expandCollapseActionDefinitionBody[context, dynamic] { $action = $expandCollapseADB.action; }
     |   internalADB=internalContextActionDefinitionBody[context, dynamic] { $action = $internalADB.action;}
     |   externalADB=externalActionDefinitionBody[context, dynamic] { $action = $externalADB.action;}
@@ -3272,14 +3273,16 @@ formActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 
 	boolean readOnly = false;
 	boolean checkOnOk = false;
+
+	String formId = null;
 }
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedShowFAProp($mf.mapped, $mf.props, syncType, windowType, manageSession, formSessionScope, checkOnOk, noCancel, readOnly,
-		                                     objectsContext, contextFilters, context);
+		                                     objectsContext, contextFilters, context, formId);
 	}
 }
-	:	'SHOW' mf=mappedForm[context, null, dynamic]
+	:	'SHOW' (formIdVal = stringLiteral { formId = $formIdVal.val; } '=' )? mf=mappedForm[context, null, dynamic]
 	    {
 	        if(inMainParseState())
                 objectsContext = self.getTypedObjectsNames($mf.mapped);
@@ -4035,6 +4038,18 @@ activateActionDefinitionBody[List<TypedParameter> context, boolean dynamic] retu
 		|	'TAB' fc = formComponentID { form = $fc.form; component = $fc.component; }
 		|   'PROPERTY' fp = formPropertyID { propertyDraw = $fp.propertyDraw; }
 		)
+	;
+
+closeFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+    String formId = null;
+}
+@after {
+	if (inMainParseState()) {
+        $action = self.addScriptedCloseFormAProp(formId);
+	}
+}
+	:	'CLOSE' 'FORM' formIdVal = stringLiteral { formId = $formIdVal.val; }
 	;
 
 expandCollapseActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]

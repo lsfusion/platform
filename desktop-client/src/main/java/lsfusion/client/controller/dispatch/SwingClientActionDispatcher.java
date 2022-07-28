@@ -274,10 +274,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
                 if (!openFailed) {
                     continueDispatching();
                 }
-            });
+            }, action.formId);
             setBlockingForm(blockingForm);
         } else {
-            MainFrame.instance.runForm(asyncFormController, action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null);
+            MainFrame.instance.runForm(asyncFormController, action.canonicalName, action.formSID, action.forbidDuplicate, remoteForm, action.firstChanges, null, action.formId);
         }
     }
 
@@ -682,6 +682,11 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     @Override
     public void execute(MaximizeFormClientAction action) {
         ((DockableMainFrame) MainFrame.instance).maximizeForm();
+    }
+
+    @Override
+    public void execute(CloseFormClientAction action) {
+        ((DockableMainFrame) MainFrame.instance).closeForm(action.formId);
     }
 
     @Override

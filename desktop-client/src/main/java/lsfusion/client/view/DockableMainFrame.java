@@ -542,9 +542,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public ClientFormDockable runForm(AsyncFormController asyncFormController, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener) {
+    public ClientFormDockable runForm(AsyncFormController asyncFormController, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener, String formId) {
         try {
-            return formsController.openForm(asyncFormController, mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener);
+            return formsController.openForm(asyncFormController, mainNavigator, canonicalName, formSID, forbidDuplicate, remoteForm, firstChanges, closeListener, formId);
         } catch (Exception e) {
             if(closeListener != null)
                 closeListener.formClosed(true);
@@ -613,6 +613,15 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
                 openedForm.toFront();
                 openedForm.requestFocusInWindow();
                 openedForm.onOpened();
+                break;
+            }
+        }
+    }
+
+    public void closeForm(String formId) {
+        for (ClientDockable openedForm : formsController.openedForms) {
+            if (formId.equals(openedForm.formId)) {
+                openedForm.onClosing();
                 break;
             }
         }

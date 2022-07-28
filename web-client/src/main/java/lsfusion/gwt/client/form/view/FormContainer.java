@@ -43,6 +43,8 @@ public abstract class FormContainer {
         return asyncHidden;
     }
 
+    public String formId;
+
     public FormContainer(FormsController formsController, boolean async, Event editEvent) {
         this.formsController = formsController;
         this.async = async;
@@ -126,7 +128,7 @@ public abstract class FormContainer {
 
     protected abstract Element getFocusedElement();
 
-    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize, int dispatchPriority) {
+    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize, int dispatchPriority, String formId) {
         form = new GFormController(formsController, this, gForm, isDialog, autoSize, dispatchPriority, editEvent) {
             @Override
             public void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
@@ -149,6 +151,8 @@ public abstract class FormContainer {
         }
 
         async = false;
+
+        this.formId = formId;
     }
 
     protected abstract void setCaption(String caption, String tooltip);

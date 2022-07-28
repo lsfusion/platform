@@ -91,6 +91,7 @@ import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
 import lsfusion.server.logics.form.interactive.action.input.InputContextAction;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.lifecycle.CloseFormAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
@@ -2368,6 +2369,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LAWithParams(addAProp(null, new ActivateAction(LocalizedString.NONAME, form, component)), new ArrayList<>());
     }
 
+    public LAWithParams addScriptedCloseFormAProp(String formId) {
+        return new LAWithParams(addAProp(null, new CloseFormAction(LocalizedString.NONAME, formId)), new ArrayList<>());
+    }
+
     public LAWithParams addScriptedCollapseExpandAProp(ComponentView component, boolean collapse) {
         return new LAWithParams(addAProp(null, new ExpandCollapseContainerAction(LocalizedString.NONAME, component, collapse)), new ArrayList<>());
     }
@@ -3396,7 +3401,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     public <O extends ObjectSelector> LAWithParams addScriptedShowFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps,
                                                                          Boolean syncType, WindowFormType windowType, ManageSessionType manageSession, FormSessionScope formSessionScope,
                                                                          boolean checkOnOk, Boolean noCancel, boolean readonly,
-                                                                         List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext) throws ScriptingErrorLog.SemanticErrorException {
+                                                                         List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> oldContext,
+                                                                         String formId) throws ScriptingErrorLog.SemanticErrorException {
         ImList<O> mappedObjects = mapped.objects;
         ImOrderSet<O> contextObjects = getMappingObjectsArray(mapped, objectsContext);
 
@@ -3420,7 +3426,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 formSessionScope, manageSession, noCancel,
                 contextEntities.orderInterfaces, contextEntities.filters,
                 syncType, windowType, false, checkOnOk,
-                readonly);
+                readonly, formId);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));

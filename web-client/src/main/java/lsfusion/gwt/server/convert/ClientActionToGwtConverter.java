@@ -89,7 +89,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         GModalityType modalityType = convertOrCast(action.modalityType);
         RemoteFormInterface remoteForm = new RemoteFormProxy(action.remoteForm, realHostName);
         return new GFormAction(modalityType, servlet.getFormProvider().createForm(servlet, action.canonicalName, action.formSID, remoteForm, action.immutableMethods, action.firstChanges, formSessionObject.navigatorID),
-                action.forbidDuplicate);
+                action.forbidDuplicate, action.formId);
     }
 
     @Converter(from = ModalityType.class)
@@ -236,6 +236,11 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ActivateFormClientAction.class)
     public GActivateFormAction convertAction(ActivateFormClientAction action) {
         return new GActivateFormAction(action.formCanonicalName);
+    }
+
+    @Converter(from = CloseFormClientAction.class)
+    public GCloseFormAction convertAction(CloseFormClientAction action) {
+        return new GCloseFormAction(action.formId);
     }
 
     @Converter(from = MaximizeFormClientAction.class)

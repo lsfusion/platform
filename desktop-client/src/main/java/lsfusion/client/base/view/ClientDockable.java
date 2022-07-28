@@ -36,6 +36,8 @@ public abstract class ClientDockable extends DefaultMultipleCDockable {
     protected AsyncFormController asyncFormController;
     public boolean async;
 
+    public String formId;
+
     protected ClientDockable(String canonicalName, FormsController formsController) {
         super(formsController.getDockableFactory());
 

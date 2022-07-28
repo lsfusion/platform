@@ -57,7 +57,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
             }
         };
         try {
-            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, editContext, onClose);
+            form.openForm(getDispatchingIndex(), action.form, action.modalityType, action.forbidDuplicate, editEvent, editContext, onClose, action.formId);
         } catch (Throwable t) {
             onClose.onHidden();
             throw t;
@@ -172,5 +172,10 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         if(editContext != null) {
             form.setValue(editContext, action.value);
         }
+    }
+
+    @Override
+    public void execute(GCloseFormAction action) {
+        form.getFormsController().closeForm(action.formId);
     }
 }

@@ -560,11 +560,11 @@ public abstract class LogicsModule {
     }
 
     protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImOrderSet<O> objectsToSet, FormSessionScope scope, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
-        return addIFAProp(group, caption, form, objectsToSet, ListFact.toList(false, objectsToSet.size()), scope, ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, SetFact.EMPTYORDER(), SetFact.EMPTY(), syncType, windowType, forbidDuplicate, false, false);
+        return addIFAProp(group, caption, form, objectsToSet, ListFact.toList(false, objectsToSet.size()), scope, ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, SetFact.EMPTYORDER(), SetFact.EMPTY(), syncType, windowType, forbidDuplicate, false, false, null);
     }
 
-    public <P extends PropertyInterface, O extends ObjectSelector, X extends PropertyInterface> LA<ClassPropertyInterface> addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormSessionScope scope, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextProperties, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly) {
-        FormInteractiveAction<O> formAction = new FormInteractiveAction<>(caption, form, objectsToSet, nulls, ListFact.EMPTY(), ListFact.EMPTY(), ListFact.EMPTY(), orderInterfaces, contextProperties, null, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly);
+    public <P extends PropertyInterface, O extends ObjectSelector, X extends PropertyInterface> LA<ClassPropertyInterface> addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, FormSessionScope scope, ManageSessionType manageSession, Boolean noCancel, ImOrderSet<P> orderInterfaces, ImSet<ContextFilterSelector<P, O>> contextProperties, Boolean syncType, WindowFormType windowType, boolean forbidDuplicate, boolean checkOnOk, boolean readonly, String formId) {
+        FormInteractiveAction<O> formAction = new FormInteractiveAction<>(caption, form, objectsToSet, nulls, ListFact.EMPTY(), ListFact.EMPTY(), ListFact.EMPTY(), orderInterfaces, contextProperties, null, manageSession, noCancel, syncType, windowType, forbidDuplicate, checkOnOk, readonly, formId);
 
         ImOrderSet<ClassPropertyInterface> listInterfaces = formAction.getFriendlyOrderInterfaces();
 
@@ -1033,7 +1033,7 @@ public abstract class LogicsModule {
         // objects + contextInterfaces
         Result<InputListEntity<?, ClassPropertyInterface>> mappedList = list != null ? new Result<>() : null;
         FormInteractiveAction<O> formAction = new FormInteractiveAction<>(LocalizedString.NONAME, form, objectsToSet, nulls, inputObjects, inputProps, inputNulls, orderInterfaces, contextFilters,
-                map -> { if(mappedList != null) mappedList.set(list.map(map)); }, manageSession, noCancel, syncType ? true : null, windowType, false, checkOnOk, readonly);
+                map -> { if(mappedList != null) mappedList.set(list.map(map)); }, manageSession, noCancel, syncType ? true : null, windowType, false, checkOnOk, readonly, null);
 
         ImOrderSet<ClassPropertyInterface> listInterfaces = formAction.getFriendlyOrderInterfaces();
 

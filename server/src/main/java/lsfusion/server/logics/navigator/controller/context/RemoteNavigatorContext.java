@@ -122,12 +122,12 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             }
 
             @Override
-            protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
+            protected void requestFormUserInteraction(RemoteForm remoteForm, ModalityType modalityType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
                 Stack<Result<RemoteForm>> getForms = getForm.get();
                 if(getForms != null)
                     getForms.peek().set(remoteForm);
                 else
-                    super.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, stack);
+                    super.requestFormUserInteraction(remoteForm, modalityType, forbidDuplicate, formId, stack);
             }
         };
     }
@@ -176,8 +176,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
     // UI interfaces, multiple inheritance
     
     @Override
-    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        uiContext.requestFormUserInteraction(formInstance, modalityType, forbidDuplicate, stack);
+    public void requestFormUserInteraction(FormInstance formInstance, ModalityType modalityType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
+        uiContext.requestFormUserInteraction(formInstance, modalityType, forbidDuplicate, formId, stack);
     }
 
     @Override
