@@ -52,8 +52,8 @@ public class ReceiveEMLAction extends EmailAction {
                 Integer receivePortAccount = (Integer) emailLM.receivePortAccount.read(context, accountObject);
                 String nameAccount = (String) emailLM.nameAccount.read(context, accountObject);
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
-                String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
-                AccountType accountType = AccountType.get(nameReceiveAccountTypeAccount);
+                AccountType accountType = AccountType.get((String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject));
+                boolean startTLS = emailLM.startTLS.read(context, accountObject) != null;
                 boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
                 Integer lastDaysAccount = (Integer) emailLM.lastDaysAccount.read(context, accountObject);
                 Integer maxMessagesAccount = (Integer) emailLM.maxMessagesAccount.read(context, accountObject);
@@ -67,7 +67,7 @@ public class ReceiveEMLAction extends EmailAction {
 
                 Set<Long> skipEmails = getSkipEmails(context, nameAccount);
 
-                Map<Long, FileData> emlMap = receiveEML(context, skipEmails, ignoreExceptions, accountType, receivePortAccount, nameAccount, passwordAccount, receiveHostAccount, lastDaysAccount, maxMessagesAccount, deleteMessagesAccount);
+                Map<Long, FileData> emlMap = receiveEML(context, skipEmails, ignoreExceptions, accountType, startTLS, receivePortAccount, nameAccount, passwordAccount, receiveHostAccount, lastDaysAccount, maxMessagesAccount, deleteMessagesAccount);
                 for (Map.Entry<Long, FileData> entry : emlMap.entrySet()) {
                     DataObject entryObject = new DataObject(entry.getKey());
                     LM.findProperty("emlFile[LONG]").change(entry.getValue(), context, entryObject);
@@ -103,11 +103,11 @@ public class ReceiveEMLAction extends EmailAction {
         return skipEmails;
     }
 
-    public Map<Long, FileData> receiveEML(ExecutionContext context, Set<Long> skipEmails, boolean ignoreExceptions, AccountType accountType, Integer receivePort, String user, String password, String receiveHost, Integer lastDays, Integer maxMessages, boolean deleteMessages) throws MessagingException, IOException, GeneralSecurityException {
+    public Map<Long, FileData> receiveEML(ExecutionContext context, Set<Long> skipEmails, boolean ignoreExceptions, AccountType accountType, boolean startTLS, Integer receivePort, String user, String password, String receiveHost, Integer lastDays, Integer maxMessages, boolean deleteMessages) throws MessagingException, IOException, GeneralSecurityException {
 
         Map<Long, FileData> emlMap = new HashMap<>();
 
-        Store emailStore = EmailUtils.getEmailStore(receiveHost, accountType);
+        Store emailStore = EmailUtils.getEmailStore(receiveHost, accountType, startTLS);
         if (receivePort != null) emailStore.connect(receiveHost, receivePort, user, password);
         else emailStore.connect(receiveHost, user, password);
 

@@ -55,12 +55,13 @@ public class ReceiveEmailAccountAction extends InternalAction {
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
                 String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
                 AccountType accountType = AccountType.get(nameReceiveAccountTypeAccount);
+                boolean startTLS = emailLM.startTLS.read(context, accountObject) != null;
                 boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
                 Integer lastDaysAccount = (Integer) emailLM.lastDaysAccount.read(context, accountObject);
                 Integer maxMessagesAccount = (Integer) emailLM.maxMessagesAccount.read(context, accountObject);
 
                 receiveEmail(context, accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
-                        accountType, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
+                        accountType, startTLS, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
             } catch (Exception e) {
                 logger.error(localize("{mail.failed.to.receive.mail}"), e);
@@ -72,7 +73,7 @@ public class ReceiveEmailAccountAction extends InternalAction {
     }
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                              String nameAccount, String passwordAccount, AccountType accountType, boolean deleteMessagesAccount, Integer lastDaysAccount,
+                              String nameAccount, String passwordAccount, AccountType accountType, boolean startTLS, boolean deleteMessagesAccount, Integer lastDaysAccount,
                               Integer maxMessagesAccount)
             throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
@@ -81,7 +82,7 @@ public class ReceiveEmailAccountAction extends InternalAction {
         }
 
         EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(receiveHostAccount),
-                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), accountType, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
+                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), accountType, startTLS, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
         receiver.receiveEmail(context);
     }

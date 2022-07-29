@@ -36,6 +36,7 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LP receivePortAccount;
 
     public LP nameReceiveAccountTypeAccount;
+    public LP startTLS;
 
     public LP deleteMessagesAccount;
     public LP lastDaysAccount;
@@ -75,7 +76,8 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
         receivePortAccount = findProperty("receivePort[Account]");
 
         nameReceiveAccountTypeAccount = findProperty("nameReceiveAccountType[Account]");
-        
+        startTLS = findProperty("startTLS[Account]");
+
         deleteMessagesAccount = findProperty("deleteMessages[Account]");
         lastDaysAccount = findProperty("lastDays[Account]");
         maxMessagesAccount = findProperty("maxMessages[Account]");
