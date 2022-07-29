@@ -15,7 +15,7 @@ public class GTreeColumnValue {
         this.type = type;
         this.openDotBottom = openDotBottom;
         this.closedDotBottom = closedDotBottom;
-        assert lastInLevelMap.length == level;
+        //assert lastInLevelMap.length == level;
     }
 
     public GTreeColumnValue override(GTreeColumnValueType type) {
