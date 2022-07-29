@@ -1,6 +1,6 @@
 MODULE Email;
 
-REQUIRE System, Reflection;
+REQUIRE System, Reflection, SystemEvents;
 
 // -------------- Account ----------------- //
 CLASS Account '{email.account}';
@@ -45,7 +45,8 @@ receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
 
 CLASS ReceiveAccountType '{email.receive.account.type}' {
     POP3 '{email.receive.account.type.pop3}',
-    IMAP '{email.receive.account.type.imap}'
+    IMAP '{email.receive.account.type.imap}',
+    IMAPS '{email.receive.account.type.imaps}'
 }
 TABLE receiveAccountType(ReceiveAccountType);
 
@@ -58,6 +59,15 @@ FORM receiveAccountTypes '{email.receive.account.type}'
 
 receiveAccountType = DATA ReceiveAccountType(Account);
 nameReceiveAccountType '{email.receive.account.type.account}' (Account account) = name(receiveAccountType(account));
+
+imapsMigrated = DATA BOOLEAN();
+onStarted() + { 
+imapsMigrated() <- NULL;
+    IF NOT imapsMigrated() THEN {
+        receiveAccountType(Account a) <- ReceiveAccountType.IMAPS WHERE receiveAccountType(a) == ReceiveAccountType.IMAP;
+        imapsMigrated() <- TRUE; 
+    }   
+}
 
 deleteMessages '{email.delete.messages.account}' = DATA BOOLEAN(Account);
 lastDays '{email.last.days.account}' = DATA INTEGER(Account) CHARWIDTH 10 NOFLEX;

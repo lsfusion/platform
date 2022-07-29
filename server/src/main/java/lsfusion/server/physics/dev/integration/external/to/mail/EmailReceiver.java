@@ -10,7 +10,6 @@ import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.imap.IMAPInputStream;
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.FolderClosedIOException;
-import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -56,28 +55,26 @@ import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
 
 public class EmailReceiver {
     EmailLogicsModule LM;
-    Properties mailProps = new Properties();
     DataObject accountObject;
     String receiveHostAccount;
     Integer receivePortAccount;
     String nameAccount;
     String passwordAccount;
-    boolean isPOP3;
+    AccountType accountType;
     boolean deleteMessagesAccount;
     Integer lastDaysAccount;
     Integer maxMessagesAccount;
 
     public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                         String nameAccount, String passwordAccount, boolean isPOP3, boolean deleteMessagesAccount, Integer lastDaysAccount,
+                         String nameAccount, String passwordAccount, AccountType accountType, boolean deleteMessagesAccount, Integer lastDaysAccount,
                          Integer maxMessagesAccount) {
-            mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", receiveHostAccount);
         this.LM = emailLM;
         this.accountObject = accountObject;
         this.receiveHostAccount = receiveHostAccount;
         this.receivePortAccount = receivePortAccount;
         this.nameAccount = nameAccount;
         this.passwordAccount = passwordAccount;
-        this.isPOP3 = isPOP3;
+        this.accountType = accountType;
         this.deleteMessagesAccount = deleteMessagesAccount;
         this.lastDaysAccount = lastDaysAccount;
         this.maxMessagesAccount = maxMessagesAccount;
@@ -213,19 +210,9 @@ public class EmailReceiver {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
-        //options to increase downloading big attachments
-        mailProps.put("mail.imaps.partialfetch", "true");
-        mailProps.put("mail.imaps.fetchsize", "819200");
         System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
-        if (!isPOP3) { //imaps
-            MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
-            socketFactory.setTrustAllHosts(true);
-            mailProps.put("mail.imaps.ssl.socketFactory", socketFactory);
-            mailProps.setProperty("mail.store.protocol", "imaps");
-            mailProps.setProperty("mail.imaps.timeout", "5000");
-        }
-        Session emailSession = Session.getInstance(mailProps);
-        Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imaps");
+
+        Store emailStore = EmailUtils.getEmailStore(receiveHostAccount, accountType);
         if (receivePortAccount != null)
             emailStore.connect(receiveHostAccount, receivePortAccount, nameAccount, passwordAccount);
         else
