@@ -61,12 +61,13 @@ public class EmailReceiver {
     String nameAccount;
     String passwordAccount;
     AccountType accountType;
+    boolean startTLS;
     boolean deleteMessagesAccount;
     Integer lastDaysAccount;
     Integer maxMessagesAccount;
 
     public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                         String nameAccount, String passwordAccount, AccountType accountType, boolean deleteMessagesAccount, Integer lastDaysAccount,
+                         String nameAccount, String passwordAccount, AccountType accountType, boolean startTLS, boolean deleteMessagesAccount, Integer lastDaysAccount,
                          Integer maxMessagesAccount) {
         this.LM = emailLM;
         this.accountObject = accountObject;
@@ -75,6 +76,7 @@ public class EmailReceiver {
         this.nameAccount = nameAccount;
         this.passwordAccount = passwordAccount;
         this.accountType = accountType;
+        this.startTLS = startTLS;
         this.deleteMessagesAccount = deleteMessagesAccount;
         this.lastDaysAccount = lastDaysAccount;
         this.maxMessagesAccount = maxMessagesAccount;
@@ -212,7 +214,7 @@ public class EmailReceiver {
         List<List<Object>> dataAttachments = new ArrayList<>();
         System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
 
-        Store emailStore = EmailUtils.getEmailStore(receiveHostAccount, accountType);
+        Store emailStore = EmailUtils.getEmailStore(receiveHostAccount, accountType, startTLS);
         if (receivePortAccount != null)
             emailStore.connect(receiveHostAccount, receivePortAccount, nameAccount, passwordAccount);
         else

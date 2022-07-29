@@ -51,6 +51,7 @@ public class ReceiveEmailAction extends InternalAction {
             accountQuery.addProperty("nameAccount", emailLM.nameAccount.getExpr(accountExpr));
             accountQuery.addProperty("passwordAccount", emailLM.passwordAccount.getExpr(accountExpr));
             accountQuery.addProperty("nameReceiveAccountTypeAccount", emailLM.nameReceiveAccountTypeAccount.getExpr(accountExpr));
+            accountQuery.addProperty("startTLS", emailLM.startTLS.getExpr(accountExpr));
             accountQuery.addProperty("deleteMessagesAccount", emailLM.deleteMessagesAccount.getExpr(accountExpr));
             accountQuery.addProperty("lastDaysAccount", emailLM.lastDaysAccount.getExpr(accountExpr));
             accountQuery.addProperty("maxMessagesAccount", emailLM.maxMessagesAccount.getExpr(accountExpr));
@@ -71,14 +72,14 @@ public class ReceiveEmailAction extends InternalAction {
                     Integer receivePortAccount = (Integer) accountValues.get("receivePortAccount").getValue();
                     nameAccount = (String) accountValues.get("nameAccount").getValue();
                     String passwordAccount = (String) accountValues.get("passwordAccount").getValue();
-                    String nameReceiveAccountTypeAccount = (String) accountValues.get("nameReceiveAccountTypeAccount").getValue();
-                    AccountType accountType = AccountType.get(nameReceiveAccountTypeAccount);
+                    AccountType accountType = AccountType.get((String) accountValues.get("nameReceiveAccountTypeAccount").getValue());
+                    boolean startTLS = accountValues.get("startTLS").getValue() != null;
                     boolean deleteMessagesAccount = accountValues.get("deleteMessagesAccount").getValue() != null;
                     Integer lastDaysAccount = (Integer) accountValues.get("lastDaysAccount").getValue();
                     Integer maxMessagesAccount = (Integer) accountValues.get("maxMessagesAccount").getValue();
 
                     receiveEmail(context, accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
-                            accountType, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
+                            accountType, startTLS, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
                 } catch (Exception e) {
                     String message = localize("{mail.failed.to.receive.mail}") + ", account: " + nameAccount;
@@ -92,7 +93,7 @@ public class ReceiveEmailAction extends InternalAction {
     }
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                              String nameAccount, String passwordAccount, AccountType accountType, boolean deleteMessagesAccount, Integer lastDaysAccount,
+                              String nameAccount, String passwordAccount, AccountType accountType, boolean startTLS, boolean deleteMessagesAccount, Integer lastDaysAccount,
                               Integer maxMessagesAccount)
             throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
@@ -101,7 +102,7 @@ public class ReceiveEmailAction extends InternalAction {
         }
 
         EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(receiveHostAccount),
-                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), accountType, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
+                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), accountType, startTLS, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
         receiver.receiveEmail(context);
     }
