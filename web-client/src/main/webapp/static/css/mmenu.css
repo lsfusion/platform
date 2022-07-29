@@ -71,17 +71,20 @@
     left: -130%;
 }
 
-.mm-ocd__content {
-    /* hack for mmenu-light issue: https://github.com/FrDH/mmenu-light/issues/73 */
-    -webkit-transition-property: none;
-    transition-property: none;
-    -o-transition-property: none;
-    transition-property: none;
-    transition-property: none;
-    -webkit-transition-duration: unset;
-    -o-transition-duration: unset;
-    transition-duration: unset;
-    -webkit-transition-timing-function: unset;
-    -o-transition-timing-function: unset;
-    transition-timing-function: unset;
+
+/* workaround for mmenu-light + Chrome 102+ issue: https://github.com/FrDH/mmenu-light/issues/73 */
+.mm-ocd {
+    -webkit-transition-duration: .1s, .3s;
+    -o-transition-duration: .1s, .3s;
+    transition-duration: .1s, .3s;
+}
+.mm-ocd--open {
+    -webkit-transition-delay: .1s;
+    -o-transition-delay: .1s;
+    transition-delay: .1s
+}
+.mm-spn ul {
+    -webkit-transition: left .3s ease .1s;
+    -o-transition: left .3s ease .1s;
+    transition: left .3s ease .1s;
 }
