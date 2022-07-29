@@ -45,6 +45,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
 import static lsfusion.gwt.client.navigator.window.GWindowFormType.*;
@@ -501,9 +502,12 @@ public abstract class FormsController {
     }
 
     public void closeForm(String formId) {
-        for(FormContainer formContainer : formContainers) {
+        ListIterator<FormContainer> iterator = formContainers.listIterator();
+        while(iterator.hasNext()){
+            FormContainer formContainer = iterator.next();
             if(formId.equals(formContainer.formId)) {
                 formContainer.closePressed();
+                iterator.remove();
             }
         }
     }
