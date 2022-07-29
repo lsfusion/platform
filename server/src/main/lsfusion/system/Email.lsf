@@ -62,7 +62,6 @@ nameReceiveAccountType '{email.receive.account.type.account}' (Account account) 
 
 imapsMigrated = DATA BOOLEAN();
 onStarted() + { 
-imapsMigrated() <- NULL;
     IF NOT imapsMigrated() THEN {
         receiveAccountType(Account a) <- ReceiveAccountType.IMAPS WHERE receiveAccountType(a) == ReceiveAccountType.IMAP;
         imapsMigrated() <- TRUE; 
