@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.view.MainFrame;
@@ -147,7 +148,7 @@ public class TooltipManager {
             verticalPanel.add(userPathPanel);
             verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
-            Button button = new Button(messages.applyLabel());
+            FormButton button = new FormButton(messages.applyLabel());
             button.getElement().getStyle().setProperty("padding", "0px 3px");
             button.addClickHandler(event -> {
                 String textBoxText = textBox.getText();

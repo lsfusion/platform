@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HasAlignment;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
@@ -27,14 +27,11 @@ public class ColorCellEditor extends PopupValueCellEditor {
     protected Widget createPopupComponent(Element parent, Object oldValue) {
         colorPicker = new ColorPicker();
 
-        Button btnOk = new Button(messages.ok());
-        btnOk.addClickHandler(event -> commit(parent, CommitReason.FORCED));
+        FormButton btnOk = new FormButton(messages.ok(), event -> commit(parent, CommitReason.FORCED));
 
-        Button btnCancel = new Button(messages.cancel());
-        btnCancel.addClickHandler(event -> cancel(parent));
+        FormButton btnCancel = new FormButton(messages.cancel(), event -> cancel(parent));
 
-        Button btnReset = new Button(messages.reset());
-        btnReset.addClickHandler(event -> reset(parent));
+        FormButton btnReset = new FormButton(messages.reset(), event -> reset(parent));
 
         FlowPanel bottomPane = new FlowPanel();
         bottomPane.add(btnOk);

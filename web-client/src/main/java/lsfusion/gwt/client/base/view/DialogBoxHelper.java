@@ -1,18 +1,11 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.form.event.GKeyStroke;
 
 public class DialogBoxHelper {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -95,7 +88,7 @@ public class DialogBoxHelper {
     @SuppressWarnings("GWTStyleCheck")
     public static final class MessageBox extends DialogModalWindow {
         private final CloseCallback closeCallback;
-        private Button activeButton;
+        private FormButton activeButton;
 
         private MessageBox(String caption, String message, int timeout, final CloseCallback closeCallback, OptionType activeOption, OptionType... options) {
             this(caption, new HTML(message), timeout, closeCallback, activeOption, options);
@@ -124,7 +117,7 @@ public class DialogBoxHelper {
 
         private void createButtonsPanel(OptionType activeOption, OptionType[] options) {
             for (OptionType option : options) {
-                Button optionButton = createOptionButton(option);
+                FormButton optionButton = createOptionButton(option);
                 if (option == activeOption) {
                     activeButton = optionButton;
                 }
@@ -132,10 +125,9 @@ public class DialogBoxHelper {
             }
         }
 
-        private Button createOptionButton(final OptionType option) {
-            Button optionButton = new Button(option.getCaption(), (ClickHandler) event -> hide(option));
-            optionButton.setStyleName("btn");
-            optionButton.addStyleName("btn-" + (option.isPrimary() ? "primary" : "secondary"));
+        private FormButton createOptionButton(final OptionType option) {
+            FormButton optionButton = new FormButton(option.getCaption(), event -> hide(option));
+            optionButton.setStyle(option.isPrimary() ? FormButton.ButtonStyle.PRIMARY : FormButton.ButtonStyle.SECONDARY);
 
             return optionButton;
         }

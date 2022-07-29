@@ -1,16 +1,11 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Image;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
-
-public class ImageButton extends Button implements ColorThemeChangeListener {
+public class ImageButton extends FormButton implements ColorThemeChangeListener {
     protected final Image image;
 
     protected String imagePath; // default

@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.classes.view;
 
-import com.google.gwt.user.client.ui.Button;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.DialogModalWindow;
+import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.classes.GObjectClass;
 
 public class GClassDialog extends DialogModalWindow {
@@ -16,7 +16,7 @@ public class GClassDialog extends DialogModalWindow {
     private GObjectClass chosenClass;
 
     public GClassDialog(GObjectClass baseClass, GObjectClass defaultClass, boolean concreate, final ClassChosenHandler classChosenHandler) {
-        super(false, ModalWindowSize.LARGE);
+        super(false, null);
 
         this.concreate = concreate;
         this.classChosenHandler = classChosenHandler;
@@ -36,18 +36,10 @@ public class GClassDialog extends DialogModalWindow {
 
         setBodyWidget(classPanel);
 
-        Button btnOk = new Button(messages.ok());
-        btnOk.setStyleName("btn");
-        btnOk.addStyleName("btn-primary");
-        btnOk.addClickHandler(event -> okPressed());
-
+        FormButton btnOk = new FormButton(messages.ok(), FormButton.ButtonStyle.PRIMARY, event -> okPressed());
         addFooterWidget(btnOk);
 
-        Button btnCancel = new Button(messages.cancel());
-        btnCancel.setStyleName("btn");
-        btnCancel.addStyleName("btn-secondary");
-        btnCancel.addClickHandler(event -> chooseClass(null));
-
+        FormButton btnCancel = new FormButton(messages.cancel(), FormButton.ButtonStyle.SECONDARY, event -> chooseClass(null));
         addFooterWidget(btnCancel);
     }
 

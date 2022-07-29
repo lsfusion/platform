@@ -2,11 +2,10 @@ package lsfusion.gwt.client.form.object.table.grid.user.design.view;
 
 import com.allen_sauer.gwt.dnd.client.DragController;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.CaptionPanel;
+import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.form.object.table.grid.user.design.PropertyListItem;
 
 import java.util.ArrayList;
@@ -53,10 +52,10 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
         };
         ColumnsListContainer rightFocusPanel = new ColumnsListContainer(invisibleList);
 
-        Button oneRight = new Button("&gt;");
-        Button oneLeft = new Button("&lt;");
-        Button allRight = new Button("&gt;&gt;");
-        Button allLeft = new Button("&lt;&lt;");
+        FormButton oneRight = new FormButton("&gt;", event -> moveItems(visibleList, invisibleList, true));
+        FormButton oneLeft = new FormButton("&lt;", event -> moveItems(invisibleList, visibleList, true));
+        FormButton allRight = new FormButton("&gt;&gt;", event -> moveItems(visibleList, invisibleList, false));
+        FormButton allLeft = new FormButton("&lt;&lt;", event -> moveItems(invisibleList, visibleList, false));
 
         VerticalPanel buttonsPanel = new VerticalPanel();
         buttonsPanel.addStyleName(CSS_DUAL_LIST_BUTTONS_CONTAINER);
@@ -83,35 +82,6 @@ public abstract class ColumnsDualListBox extends AbsolutePanel {
 
         add(dockContainer);
         
-
-        allRight.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                moveItems(visibleList, invisibleList, false);
-            }
-        });
-
-        allLeft.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                moveItems(invisibleList, visibleList, false);
-            }
-        });
-
-        oneRight.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                moveItems(visibleList, invisibleList, true);
-            }
-        });
-
-        oneLeft.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                moveItems(invisibleList, visibleList, true);
-            }
-        });
-
         dragController.registerDropController(new ColumnsListBoxDropController(visibleList));
         dragController.registerDropController(new ColumnsListBoxDropController(invisibleList));
         dragController.registerDropController(new ColumnsListContainerDropController(rightFocusPanel));

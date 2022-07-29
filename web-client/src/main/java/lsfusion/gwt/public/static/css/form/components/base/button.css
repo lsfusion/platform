@@ -38,6 +38,16 @@ button[disabled]:hover {
     background: var(--background-color);
 }
 
+
+.btn {
+}
+
+.btn-primary {
+}
+
+.btn-secondary {
+}
+
 .btn.active {
     background-color: var(--selection-color);
     --bs-btn-active-bg: var(--selection-color);

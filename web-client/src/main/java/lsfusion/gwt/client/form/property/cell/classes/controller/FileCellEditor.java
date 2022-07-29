@@ -6,13 +6,15 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.view.DialogModalWindow;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.ProgressBar;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -181,8 +183,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
 
             setBodyWidget(progressPane);
 
-            Button btnCancel = new Button(messages.cancel());
-            btnCancel.addClickHandler(clickEvent -> {
+            FormButton btnCancel = new FormButton(messages.cancel(), FormButton.ButtonStyle.SECONDARY, clickEvent -> {
                 hideLoadingBox();
                 cancelAction.run();
             });

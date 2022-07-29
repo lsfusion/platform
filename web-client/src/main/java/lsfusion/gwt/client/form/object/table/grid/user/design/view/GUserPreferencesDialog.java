@@ -139,29 +139,9 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         gridSettingsPanel.add(headerHeightPanel);
         gridSettingsPanel.add(new CaptionPanel(messages.formGridPreferencesFont(), fontPanel));
 
-        Button saveButton = null;
-        Button resetButton = null; 
-        if (canBeSaved) {
-            saveButton = new Button(messages.formGridPreferencesSave());
-            saveButton.addStyleName("userPreferencesSaveResetButton");
-            saveButton.addClickHandler(event -> savePressed());
-
-            resetButton = new Button(messages.formGridPreferencesReset());
-            resetButton.addStyleName("userPreferencesSaveResetButton");
-            resetButton.addClickHandler(event -> resetPressed());
-        }
-
         // ok/cancel buttons
-        Button okButton = new Button(messages.ok());
-        okButton.setStyleName("btn");
-        okButton.addStyleName("btn-primary");
-        okButton.addClickHandler(event -> okPressed());
-
-        Button cancelButton = new Button(messages.cancel());
-        cancelButton.setStyleName("btn");
-        cancelButton.addStyleName("btn-secondary");
-        cancelButton.addClickHandler(event -> hide());
-
+        FormButton okButton = new FormButton(messages.ok(), FormButton.ButtonStyle.PRIMARY, event -> okPressed());
+        FormButton cancelButton = new FormButton(messages.cancel(), FormButton.ButtonStyle.SECONDARY, event -> hide());
         addFooterWidget(okButton);
         addFooterWidget(cancelButton);
 
@@ -176,7 +156,12 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
         preferencesPanel.add(new CaptionPanel(messages.formGridPreferencesGridSettings(), gridSettingsPanel));
         preferencesPanel.add(createVerticalStrut(5));
         if (canBeSaved) {
+            FormButton saveButton = new FormButton(messages.formGridPreferencesSave(), event -> savePressed());
+            saveButton.addStyleName("userPreferencesSaveResetButton");
             preferencesPanel.add(saveButton);
+
+            FormButton resetButton = new FormButton(messages.formGridPreferencesReset(), event -> resetPressed());
+            resetButton.addStyleName("userPreferencesSaveResetButton");
             preferencesPanel.add(resetButton);
         }
 

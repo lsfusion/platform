@@ -4,7 +4,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -89,7 +88,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         resetConditionsButton.setVisible(false);
     }
 
-    public Button getToolbarButton() {
+    public GToolbarButton getToolbarButton() {
         return toolbarButton;
     }
 

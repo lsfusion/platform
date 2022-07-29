@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static lsfusion.gwt.client.base.view.FormButton.ButtonStyle.SECONDARY;
+
 public class GBusyDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     public Boolean needInterrupt = null;
@@ -28,10 +30,10 @@ public class GBusyDialog extends DialogModalWindow {
 
     private ScrollPanel scrollMessagePanel;
     private VerticalPanel messagePanel;
-    private Button btnExit;
-    private Button btnReconnect;
-    private Button btnCancel;
-    private Button btnInterrupt;
+    private FormButton btnExit;
+    private FormButton btnReconnect;
+    private FormButton btnCancel;
+    private FormButton btnInterrupt;
 
     private List prevMessageList;
     private Timer longActionTimer;
@@ -85,65 +87,26 @@ public class GBusyDialog extends DialogModalWindow {
 
         setBodyWidget(mainPanel);
 
-        Button btnCopy = new Button(messages.busyDialogCopyToClipboard());
-        btnCopy.setStyleName("btn");
-        btnCopy.addStyleName("btn-secondary");
+        FormButton btnCopy = new FormButton(messages.busyDialogCopyToClipboard(), SECONDARY);
         if (inDevMode()) {
-            btnCopy.addClickHandler(new ClickHandler() {
-                @Override
-                public void onClick(ClickEvent clickEvent) {
-                    copyToClipboard();
-                }
-            });
+            btnCopy.addClickHandler(clickEvent -> copyToClipboard());
             addFooterWidget(btnCopy);
         }
 
-        btnExit = new Button(messages.busyDialogExit());
+        btnExit = new FormButton(messages.busyDialogExit(), SECONDARY, clickEvent -> exitAction());
         btnExit.setEnabled(false);
-        btnExit.setStyleName("btn");
-        btnExit.addStyleName("btn-secondary");
-        btnExit.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                exitAction();
-            }
-        });
         addFooterWidget(btnExit);
 
-        btnReconnect = new Button(messages.busyDialogReconnect());
-        btnReconnect.setStyleName("btn");
-        btnReconnect.addStyleName("btn-secondary");
+        btnReconnect = new FormButton(messages.busyDialogReconnect(), SECONDARY, clickEvent -> reconnectAction());
         btnReconnect.setEnabled(false);
-        btnReconnect.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                reconnectAction();
-            }
-        });
         addFooterWidget(btnReconnect);
 
-        btnCancel = new Button(messages.cancel());
-        btnCancel.setStyleName("btn");
-        btnCancel.addStyleName("btn-secondary");
+        btnCancel = new FormButton(messages.cancel(), SECONDARY, clickEvent -> cancelAction());
         btnCancel.setEnabled(false);
-        btnCancel.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                cancelAction();
-            }
-        });
         addFooterWidget(btnCancel);
 
-        btnInterrupt = new Button(messages.busyDialogBreak());
-        btnInterrupt.setStyleName("btn");
-        btnInterrupt.addStyleName("btn-secondary");
+        btnInterrupt = new FormButton(messages.busyDialogBreak(), SECONDARY, clickEvent -> interruptAction());
         btnInterrupt.setEnabled(false);
-        btnInterrupt.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                interruptAction();
-            }
-        });
         addFooterWidget(btnInterrupt);
     }
     

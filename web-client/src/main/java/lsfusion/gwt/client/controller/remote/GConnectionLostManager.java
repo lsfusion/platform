@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.controller.remote;
 
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.HTML;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.AtomicBoolean;
 import lsfusion.gwt.client.base.AtomicLong;
@@ -9,8 +9,11 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.view.DialogModalWindow;
 import lsfusion.gwt.client.base.view.DivWidget;
+import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.view.MainFrame;
+
+import static lsfusion.gwt.client.base.view.FormButton.ButtonStyle.SECONDARY;
 
 public class GConnectionLostManager {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -124,8 +127,8 @@ public class GConnectionLostManager {
     public static class GBlockDialog extends DialogModalWindow {
 
         public Timer showButtonsTimer;
-        private final Button btnExit;
-        private final Button btnReconnect;
+        private final FormButton btnExit;
+        private final FormButton btnReconnect;
         private final HTML message;
         private final DivWidget loading;
         private final DivWidget warning;
@@ -170,18 +173,12 @@ public class GConnectionLostManager {
 
             setBodyWidget(content);
 
-            btnExit = new Button(messages.rmiConnectionLostExit());
-            btnExit.setStyleName("btn");
-            btnExit.addStyleName("btn-secondary");
+            btnExit = new FormButton(messages.rmiConnectionLostExit(), SECONDARY, clickEvent -> exitAction());
             btnExit.setEnabled(false);
-            btnExit.addClickHandler(clickEvent -> exitAction());
             addFooterWidget(btnExit);
 
-            btnReconnect = new Button(messages.rmiConnectionLostReconnect());
-            btnReconnect.setStyleName("btn");
-            btnReconnect.addStyleName("btn-secondary");
+            btnReconnect = new FormButton(messages.rmiConnectionLostReconnect(), SECONDARY, clickEvent -> reconnectAction());
             btnReconnect.setEnabled(false);
-            btnReconnect.addClickHandler(clickEvent -> reconnectAction());
             if (showReconnect) {
                 addFooterWidget(btnReconnect);
             }

@@ -3,7 +3,6 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.HeadingElement;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -52,16 +51,18 @@ public class ModalWindow extends ResizableComplexPanel {
         else
             dialog.addStyleName("modal-dialog-centered");
 
-        switch (size) {
-            case FIT_CONTENT:
-                dialog.addStyleName("modal-fit-content");
-                break;
-            case LARGE:
-                dialog.addStyleName("modal-lg");
-                break;
-            case EXTRA_LARGE:
-                dialog.addStyleName("modal-xl");
-                break;
+        if (size != null) {
+            switch (size) {
+                case FIT_CONTENT:
+                    dialog.addStyleName("modal-fit-content");
+                    break;
+                case LARGE:
+                    dialog.addStyleName("modal-lg");
+                    break;
+                case EXTRA_LARGE:
+                    dialog.addStyleName("modal-xl");
+                    break;
+            }
         }
 
         modal.setWidget(dialog);

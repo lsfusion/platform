@@ -1,19 +1,21 @@
 package lsfusion.gwt.client.base.exception;
 
-import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.DialogModalWindow;
+import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 
 public class ErrorDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    private final Button closeButton;
+    private final FormButton closeButton;
 
     private FlexTabbedPanel stacks = null;
 
@@ -50,15 +52,11 @@ public class ErrorDialog extends DialogModalWindow {
 
         setBodyWidget(body);
 
-        closeButton = new Button(messages.close(), (ClickHandler) event -> hide());
-        closeButton.setStyleName("btn");
-        closeButton.addStyleName("btn-primary");
+        closeButton = new FormButton(messages.close(), FormButton.ButtonStyle.PRIMARY, event -> hide());
         addFooterWidget(closeButton);
 
         if (stacks != null) {
-            Button moreButton = new Button(messages.more(), (ClickHandler) event -> stacks.setVisible(!stacks.isVisible()));
-            moreButton.setStyleName("btn");
-            moreButton.addStyleName("btn-secondary");
+            FormButton moreButton = new FormButton(messages.more(), FormButton.ButtonStyle.SECONDARY, event -> stacks.setVisible(!stacks.isVisible()));
             addFooterWidget(moreButton);
         }
         

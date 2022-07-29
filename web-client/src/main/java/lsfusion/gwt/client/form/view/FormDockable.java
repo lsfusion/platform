@@ -1,14 +1,12 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.FormsController;
@@ -151,7 +149,7 @@ public final class FormDockable extends FormContainer {
 
     private class TabWidget extends FlexPanel {
         private Label label;
-        private Button closeButton;
+        private FormButton closeButton;
 
         private String tooltip;
 
@@ -178,14 +176,14 @@ public final class FormDockable extends FormContainer {
         }
 
         private void addCloseButton () {
-            closeButton = new Button() {
+            closeButton = new FormButton() {
                 @Override
                 protected void onAttach() {
                     super.onAttach();
                     setTabIndex(-1);
                 }
             };
-            closeButton.setStyleName("btn-close");
+            closeButton.addStyleName("btn-close");
 
             add(closeButton, GFlexAlignment.CENTER); //, 0, false, closeTabButtonWidth);
 
