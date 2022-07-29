@@ -72,13 +72,13 @@ public class ReceiveEmailAction extends InternalAction {
                     nameAccount = (String) accountValues.get("nameAccount").getValue();
                     String passwordAccount = (String) accountValues.get("passwordAccount").getValue();
                     String nameReceiveAccountTypeAccount = (String) accountValues.get("nameReceiveAccountTypeAccount").getValue();
-                    boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
+                    AccountType accountType = AccountType.get(nameReceiveAccountTypeAccount);
                     boolean deleteMessagesAccount = accountValues.get("deleteMessagesAccount").getValue() != null;
                     Integer lastDaysAccount = (Integer) accountValues.get("lastDaysAccount").getValue();
                     Integer maxMessagesAccount = (Integer) accountValues.get("maxMessagesAccount").getValue();
 
                     receiveEmail(context, accountObject, receiveHostAccount, receivePortAccount, nameAccount, passwordAccount,
-                            isPop3Account, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
+                            accountType, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
                 } catch (Exception e) {
                     String message = localize("{mail.failed.to.receive.mail}") + ", account: " + nameAccount;
@@ -92,7 +92,7 @@ public class ReceiveEmailAction extends InternalAction {
     }
 
     private void receiveEmail(ExecutionContext context, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                              String nameAccount, String passwordAccount, boolean isPop3, boolean deleteMessagesAccount, Integer lastDaysAccount,
+                              String nameAccount, String passwordAccount, AccountType accountType, boolean deleteMessagesAccount, Integer lastDaysAccount,
                               Integer maxMessagesAccount)
             throws MessagingException, IOException, ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException, GeneralSecurityException {
         if (receiveHostAccount == null) {
@@ -101,7 +101,7 @@ public class ReceiveEmailAction extends InternalAction {
         }
 
         EmailReceiver receiver = new EmailReceiver(emailLM, accountObject, nullTrim(receiveHostAccount),
-                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), isPop3, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
+                receivePortAccount, nullTrim(nameAccount), nullTrim(passwordAccount), accountType, deleteMessagesAccount, lastDaysAccount, maxMessagesAccount);
 
         receiver.receiveEmail(context);
     }
