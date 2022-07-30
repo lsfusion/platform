@@ -62,8 +62,8 @@ public class ResizableModalWindow extends ModalWindow {
 
     public void setContentSize(Dimension size) {
         Element element = getContentWidget().getElement();
-        FlexPanel.setWidth(element, size.width);
-        FlexPanel.setHeight(element, size.height);
+        FlexPanel.setPrefWidth(element, size.width);
+        FlexPanel.setPrefHeight(element, size.height);
     }
 
     public void focus() {

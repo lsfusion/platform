@@ -111,9 +111,9 @@ public class FlexPanelImpl {
         if(set) { // we're moving flexBasis to min-size
             setFlexParams(child, layoutData.getFlex(), null, layoutData.gridLine, vertical, grid, false);
 
-            FlexPanel.setMinSize(child, vertical, layoutData.getFlexBasis());
+            FlexPanel.setMinPanelSize(child, vertical, layoutData.getFlexBasis());
 
-            FlexPanel.setSize(child, vertical, null);
+            FlexPanel.setPanelSize(child, vertical, null);
         } else
             updateFlex(layoutData, child, vertical, grid);
 //
@@ -183,9 +183,9 @@ public class FlexPanelImpl {
         setFlexParams(child, flex, null, gridLine, vertical, grid, shrink); // flexBasis
 
         // otherwise min-width won't let the container to shrink
-        FlexPanel.setMinSize(child, vertical, shrink ? GSize.ZERO : null);
+        FlexPanel.setMinPanelSize(child, vertical, shrink ? GSize.ZERO : null);
 
-        FlexPanel.setSize(child, vertical, flexBasis);
+        FlexPanel.setPanelSize(child, vertical, flexBasis);
     }
 
     private void setFlexParams(Element child, double flex, GSize flexBasis, Integer gridLine, boolean vertical, boolean grid, boolean shrink) {

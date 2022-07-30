@@ -772,7 +772,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     @Override
     public void setPreferredSize(boolean set, Result<Integer> grids) {
-        FlexPanel.setMaxWidth(getElement(), set ? "min-content" : null);
+        FlexPanel.setMaxPrefWidth(getElement(), set ? "min-content" : null);
 
         grids.set(grids.result + 1);
     }
@@ -1480,12 +1480,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             TableCellElement colElement = tableWidget.colRowElement.getCells().getItem(colRowInd++);
 //            TableColElement colElement = tableWidget.colGroupElement.getChild(i).cast();
 
-            FlexPanel.setWidth(colElement, getColumnWidth(i).getString());
+            FlexPanel.setGridWidth(colElement, getColumnWidth(i).getString());
 
             if(isColumnFlex(i)) {
                 double columnFlexPerc = getColumnFlexPerc(i);
                 colElement = tableWidget.colRowElement.getCells().getItem(colRowInd++);
-                FlexPanel.setWidth(colElement, columnFlexPerc + "%");
+                FlexPanel.setGridWidth(colElement, columnFlexPerc + "%");
             }
         }
     }

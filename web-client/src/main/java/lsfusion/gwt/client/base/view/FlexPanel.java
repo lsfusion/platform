@@ -180,57 +180,76 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     // a) alignment STRETCH doesn't work when width is set (however for the alignment other than STRETCH min param works as max of this min size, and auto size, and this behaviour is different from flex:0 0 size what we want to get)
     // b) !!!(not relevant, because width / height could/should be used) flexBasis auto doesn't respect flexBasis of its descendants (!!! it's not true for vertical direction, see addFill comment !!!), but respects min-width (however with that approach in future there might be some problems with flex-shrink if we we'll want to support it)
 
-    public static void setHeight(Element element, GSize size, boolean fixedSize) {
-        if(fixedSize) {
-            setHeight(element, size);
-        } else {
-            setMinHeight(element, size);
-        }
-    }
-
-    public static void setMinSize(Element element, boolean vertical, GSize size) {
+    // everything panel sizing related
+    public static void setMinPanelSize(Element element, boolean vertical, GSize size) {
         if(vertical)
-            setMinHeight(element, size);
+            setMinPanelHeight(element, size);
         else
-            setMinWidth(element, size);
+            setMinPanelWidth(element, size);
     }
-    public static void setSize(Element element, boolean vertical, GSize size) {
+    public static void setPanelSize(Element element, boolean vertical, GSize size) {
         if(vertical)
             setHeight(element, size);
         else
-            setWidth(element, size);
+            setPanelWidth(element, size);
     }
-    public static void setWidth(Element element, GSize size) {
-        setWidth(element, size != null ? size.getString() : null);
+    public static void setPanelWidth(Element element, GSize size) {
+        setWidth(element, size);
     }
-    public static void setWidth(Element element, String size) {
-        setSizeProperty(element, "width", size);
+    public static void setMinPanelWidth(Element element, GSize size) {
+        setMinPanelWidth(element, size != null ? size.getString() : null);
     }
-    public static void setHeight(Element element, GSize size) {
-        setHeight(element, size != null ? size.getString() : null);
-    }
-    public static void setHeight(Element element, String size) {
-        setSizeProperty(element, "height", size);
-    }
-    public static void setMinHeight(Element element, GSize size) {
+    public static void setMinPanelHeight(Element element, GSize size) {
         setSizeProperty(element, "minHeight", size != null ? size.getString() : null);
     }
-    public static void setMaxHeight(Element element, GSize size) {
-        setSizeProperty(element, "maxHeight", size != null ? size.getString() : null);
-    }
-    public static void setMinWidth(Element element, GSize size) {
-        setMinWidth(element, size != null ? size.getString() : null);
-    }
-    public static void setMinWidth(Element element, String size) {
+    public static void setMinPanelWidth(Element element, String size) {
         setSizeProperty(element, "minWidth", size);
     }
-    public static void setMaxWidth(Element element, GSize size) {
+
+    // everything grid sizing related
+    public static void setGridWidth(Element element, String size) {
+        setWidth(element, size);
+    }
+    public static void setGridHeight(Element element, GSize size) {
+        setHeight(element, size);
+    }
+
+    // everything pref sizing (auto dialog size) related
+    public static void setPrefWidth(Element element, GSize size) {
+        setWidth(element, size);
+    }
+    public static void setPrefHeight(Element element, GSize size) {
+        setHeight(element, size);
+    }
+    public static void setMaxPrefWidth(Element element, GSize size) {
+        setMaxWidth(element, size);
+    }
+    public static void setMaxPrefHeight(Element element, GSize size) {
+        setMaxHeight(element, size);
+    }
+    public static void setMaxPrefWidth(Element element, String size) {
+        setMaxWidth(element, size);
+    }
+
+    private static void setWidth(Element element, GSize size) {
+        setWidth(element, size != null ? size.getString() : null);
+    }
+    private static void setWidth(Element element, String size) {
+        setSizeProperty(element, "width", size);
+    }
+    private static void setHeight(Element element, GSize size) {
+        setSizeProperty(element, "height", size != null ? size.getString() : null);
+    }
+    private static void setMaxWidth(Element element, GSize size) {
         setMaxWidth(element, size != null ? size.getString() : null);
     }
-    public static void setMaxWidth(Element element, String size) {
+    private static void setMaxHeight(Element element, GSize size) {
+        setSizeProperty(element, "maxHeight", size != null ? size.getString() : null);
+    }
+    private static void setMaxWidth(Element element, String size) {
         setSizeProperty(element, "maxWidth", size);
     }
-    public static void setSizeProperty(Element element, String propName, String size) {
+    private static void setSizeProperty(Element element, String propName, String size) {
         if(size != null)
             element.getStyle().setProperty(propName, size);
         else

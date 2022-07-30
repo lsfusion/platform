@@ -250,8 +250,8 @@ public class GFormLayout extends ResizableComplexPanel {
 //        GwtClientUtils.changePercentFillWidget(main, set);
 
         Element element = main.getElement();
-        FlexPanel.setHeight(element, height);
-        FlexPanel.setWidth(element, width);
+        FlexPanel.setPrefHeight(element, height);
+        FlexPanel.setPrefWidth(element, width);
 
         Result<Integer> grids = new Result<>(0);
         if(main instanceof HasMaxPreferredSize)
@@ -264,12 +264,13 @@ public class GFormLayout extends ResizableComplexPanel {
             int extraHorzOffset = DataGrid.nativeScrollbarWidth * grids.result + 1; // 1 is for rounding
             int extraVertOffset = DataGrid.nativeScrollbarHeight * grids.result + 1; // 1 is for rounding
 
-            FlexPanel.setMaxWidth(element, maxWidth);
-            FlexPanel.setMaxHeight(element, maxHeight);
+            FlexPanel.setMaxPrefWidth(element, maxWidth);
+            FlexPanel.setMaxPrefHeight(element, maxHeight);
 
             return new Pair<>(extraHorzOffset, extraVertOffset);
         } else {
-            FlexPanel.setMaxWidth(element, (GSize) null);
+            FlexPanel.setMaxPrefWidth(element, (GSize) null);
+            FlexPanel.setMaxPrefHeight(element, (GSize) null);
             return null;
         }
     }

@@ -41,7 +41,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         // we need to set the size to the "render" element to avoid problems with padding
-        FlexPanel.setHeight(element, property.getValueHeight(font, false, true));
+        FlexPanel.setGridHeight(element, property.getValueHeight(font, false, true));
 
         return element;
     }
@@ -60,7 +60,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             return true;
         }
 
-        FlexPanel.setHeight(element, (GSize)null);
+        FlexPanel.setGridHeight(element, (GSize)null);
 
         return false;
     }
@@ -236,7 +236,7 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         if(tableToExcel) {
             GPivot.setTableToExcelRowHeight(td, height);
         }
-        FlexPanel.setHeight(td, height);
+        FlexPanel.setGridHeight(td, height);
     }
 }
 

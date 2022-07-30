@@ -41,13 +41,13 @@ public class SizedFlexPanel extends FlexPanel {
                 else {
                     assert isStretch;
                     if(alignSize == null) {
-                        setMinWidth(element, "fit-content");
+                        setMinPanelWidth(element, "fit-content");
                     } else {
                         // in theory max(fill-available, alignSize) should be, but fill-available cannot be used in calcs, so
                         if(size == null) // we're using an extra div
                             fixed = false;
-                        else // we're fucked so will use 100% (it ignores margins, but you gonna do)
-                            setMinWidth(element, "calc(max(100%," + alignSize.getString() + "))");
+                        else // we're fucked so will use 100% (it ignores margins, but what you gonna do)
+                            setMinPanelWidth(element, "calc(max(100%," + alignSize.getString() + "))");
                     }
                 }
             } else // for height nothing of the above works (even fill-content)
@@ -62,7 +62,7 @@ public class SizedFlexPanel extends FlexPanel {
                 if (size != null) { // we want to use intristic widths, because otherwise (when setting the size to the wrap panel) margin/border/padding will be ignored
                     assert !vertical;
                     setIntrinisticWidths(element, true, size);
-                    setWidth(element, size);
+                    setPanelWidth(element, size);
                     size = null;
                 }
 
@@ -73,7 +73,7 @@ public class SizedFlexPanel extends FlexPanel {
             }
         }
 
-        setSize(element, !vertical, alignSize);
+        setPanelSize(element, !vertical, alignSize);
 
         add(widget, beforeIndex, alignment, flex, shrink, size);
     }
@@ -95,8 +95,8 @@ public class SizedFlexPanel extends FlexPanel {
                 element.removeClassName("shrink-width");
             else
                 element.addClassName("shrink-width");
-            FlexPanel.setWidth(element, set ? null : intrinisticShrinkSize);
-            FlexPanel.setMinWidth(element, set ? intrinisticShrinkSize : null);
+            FlexPanel.setPanelWidth(element, set ? null : intrinisticShrinkSize);
+            FlexPanel.setMinPanelWidth(element, set ? intrinisticShrinkSize : null);
         }
     }
 
