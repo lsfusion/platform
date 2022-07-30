@@ -33,7 +33,7 @@ public class SaveUserPreferencesActionHandler extends FormServerResponseActionHa
                 HashMap<String, ColumnUserPreferences> columnUPMap = new HashMap<>();
                 for (Map.Entry<String, GColumnUserPreferences> entry : gGroupObjectUP.getColumnUserPreferences().entrySet()) {
                     GColumnUserPreferences gColumnUP = entry.getValue();
-                    columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userPattern, gColumnUP.userWidth, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));
+                    columnUPMap.put(entry.getKey(), new ColumnUserPreferences(gColumnUP.userHide, gColumnUP.userCaption, gColumnUP.userPattern, gColumnUP.userWidth, gColumnUP.userFlex, gColumnUP.userOrder, gColumnUP.userSort, gColumnUP.userAscendingSort));
                 }
                 GroupObjectUserPreferences groupObjectUP = new GroupObjectUserPreferences(columnUPMap, gGroupObjectUP.getGroupObjectSID(), gwtConverter.convertFont(gGroupObjectUP.getFont()), gGroupObjectUP.getPageSize(), gGroupObjectUP.getHeaderHeight(), gGroupObjectUP.hasUserPreferences());
 

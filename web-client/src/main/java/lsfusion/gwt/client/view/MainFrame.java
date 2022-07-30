@@ -120,9 +120,6 @@ public class MainFrame implements EntryPoint {
     }
 
     public void onModuleLoad() {
-        // the problem is that firefox does not support min-width for columns
-        DataGrid.useColumnMinWidth = !GwtClientUtils.isFirefoxUserAgent();
-
         hackForGwtDnd();
 
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());

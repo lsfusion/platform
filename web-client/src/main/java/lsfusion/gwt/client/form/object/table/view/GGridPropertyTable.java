@@ -107,7 +107,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GFont font;
 
     public GGridPropertyTable(GFormController form, GGroupObject groupObject, TableContainer tableContainer, GFont font) {
-        super(form, groupObject, tableContainer, DEFAULT_STYLE, !groupObject.hasHeaders, !groupObject.hasFooters, false);
+        super(form, groupObject, tableContainer, !groupObject.hasHeaders, !groupObject.hasFooters, false);
         
         this.font = font;
 
@@ -352,101 +352,80 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
+    @Override
+    protected GSize getColumnWidth(int column) {
+        if(resized)
+            return GSize.getResizeSize(doublePrefs[column]);
+
+        return prefs[column];
+    }
+
+    @Override
+    protected double getColumnFlexPerc(int column) {
+        return flexPercents[column];
+    }
+
+    @Override
+    public boolean isColumnFlex(int column) {
+        return baseFlexes[column] > 0;
+    }
+
+    private double[] flexPercents;
     private void updateLayoutWidthColumns() {
-        GSize totalPref = GSize.ZERO;
-        double totalDoublePref = 0.0;
-
-        List<Column> flexColumns = new ArrayList<>();
-        List<Double> flexValues = new ArrayList<>();
         double totalFlexValues = 0;
-
-        for (int i = 0, columnCount = getColumnCount(); i < columnCount; ++i) {
-            Column column = getColumn(i);
-
-            double flexPref;
-            GSize pref;
-            if(resized) {
-                flexPref = doublePrefs[i];
-                pref = GSize.getResizeSize(flexPref);
-                totalDoublePref += flexPref;
-            } else {
-                pref = prefs[i];
-                flexPref = pref.getValueFlexSize();
-                totalPref = totalPref.add(pref);
-            }
-            if(flexes[i]) {
-                flexColumns.add(column);
-                flexValues.add(flexPref);
-                totalFlexValues += flexPref;
-            }
-            setColumnWidth(column, pref.getString());
-        }
-
-        // поправка для округлений (чтобы не дрожало)
-        int flexSize = flexValues.size();
-        if(flexSize % 2 != 0)
-            flexSize--;
-        for(int i=0;i<flexSize;i++)
-            flexValues.set(i, flexValues.get(i) + (i % 2 == 0 ? 0.1 : -0.1));
+        int columnCount = getColumnCount();
+        for (int i = 0; i < columnCount; i++)
+            totalFlexValues += flexes[i];
 
         int precision = 10000;
         int restPercent = 100 * precision;
-        for(int i=0,size=flexColumns.size();i<size;i++) {
-            Column flexColumn = flexColumns.get(i);
-            double flexValue = flexValues.get(i);
-            int flexPercent = (int) Math.round(flexValue * restPercent / totalFlexValues);
-            restPercent -= flexPercent;
-            totalFlexValues -= flexValue;
-            setColumnFlexWidth(flexColumn, ((double)flexPercent / (double)precision)  + "%");
+        flexPercents = new double[columnCount];
+        for(int i=0;i<columnCount;i++) {
+            if(baseFlexes[i] > 0) {
+                double flex = flexes[i];
+                int flexPercent = (int) Math.round(flex * restPercent / totalFlexValues);
+                restPercent -= flexPercent;
+                totalFlexValues -= flex;
+                flexPercents[i] = ((double) flexPercent / (double) precision);
+            }
         }
-        if(resized)
-            totalPref = GSize.getResizeSize(totalDoublePref);
-        setMinimumTableWidth(totalPref);
     }
 
     public double resizeColumn(int column, int delta) {
 //        int body = ;
+        int columnCount = getColumnCount();
         if(!resized) {
-            boolean needCalc = false; // optimization
-
             resized = true;
-            doublePrefs = new double[prefs.length];
-            intBasePrefs = new int[basePrefs.length];
-            for (int i = 0; i < prefs.length; i++) {
+            doublePrefs = new double[columnCount];
+            intBasePrefs = new int[columnCount];
+            for (int i = 0; i < columnCount; i++) {
                 Double pxPref = prefs[i].getResizeSize();
                 Integer pxBasePref = basePrefs[i].getIntResizeSize();
-                // we don't calc paddings, since the width is set to col, which includes paddings
-                if(pxPref == null || pxBasePref == null) {
-                    // this will set with to the fixed ones
-                    setColumnFlexWidth(getColumn(i), null); // it will be restored in updateLayoutWidthColumns
-                    needCalc = true;
-                }
                 doublePrefs[i] = pxPref != null ? pxPref : -1.0;
                 intBasePrefs[i] = pxBasePref != null ? pxBasePref : -1;
             }
             prefs = null;
             basePrefs = null;
 
-            if(needCalc)
-                updateWidthsDOM(false);
-
-            for (int i = 0; i < doublePrefs.length; i++) {
+            margins = 0;
+            for (int i = 0; i < columnCount; i++) {
+                int actualSize = getClientColumnWidth(i);
                 if(doublePrefs[i] < -0.5 || intBasePrefs[i] < 0) {
-                    int actualSize = getOffsetColumnWidth(i);
                     if(doublePrefs[i] < -0.5)
                         doublePrefs[i] = actualSize;
                     if(intBasePrefs[i] < 0)
                         intBasePrefs[i] = actualSize;
                 }
+                margins += getFullColumnWidth(i) - actualSize;
             }
         }
 
-        int viewWidth = getViewportWidth();
-        double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, doublePrefs, intBasePrefs, flexes);
+        int viewWidth = getViewportWidth() - margins;
+        double restDelta = GwtClientUtils.calculateNewFlexes(column, delta, viewWidth, doublePrefs, flexes, intBasePrefs, baseFlexes, true);
 
-        for (int i = 0; i < doublePrefs.length; i++) {
-            int pref = (int) Math.round(doublePrefs[i]);
-            setUserWidth(i, pref);
+        for (int i = 0; i < columnCount; i++) {
+            setUserWidth(i, (int) Math.round(doublePrefs[i]));
+            setUserFlex(i, flexes[i]);
         }
 
         updateLayoutWidthColumns();
@@ -458,7 +437,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     }
 
     protected abstract void setUserWidth(GPropertyDraw property, Integer value);
+    protected abstract void setUserFlex(GPropertyDraw property, Double value);
     protected abstract Integer getUserWidth(GPropertyDraw property);
+    protected abstract Double getUserFlex(GPropertyDraw property);
 
     protected abstract GPropertyDraw getColumnPropertyDraw(int i);
     protected abstract GGroupObjectValue getColumnKey(int i);
@@ -486,32 +467,44 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     private boolean resized;
     private double[] doublePrefs;  // mutable, should be equal to prefs
     private int[] intBasePrefs;
+    private int margins;
+
+    private double[] flexes;
+    private double[] baseFlexes;
     private GSize[] prefs;
     private GSize[] basePrefs;
 
-    private boolean[] flexes;
     public void updateLayoutWidth() {
         int columnsCount = getColumnCount();
 
-        flexes = new boolean[columnsCount];
-
         resized = false;
-        prefs = new GSize[columnsCount];
         doublePrefs = null;
-        basePrefs = new GSize[columnsCount];
         intBasePrefs = null;
+        margins = 0;
+
+        flexes = new double[columnsCount];
+        baseFlexes = new double[columnsCount];
+
+        prefs = new GSize[columnsCount];
+        basePrefs = new GSize[columnsCount];
         for (int i = 0; i < columnsCount; ++i) {
-            boolean flex = isColumnFlex(i);
-            flexes[i] = flex;
+            double baseFlex = getColumnFlex(i);
+            baseFlexes[i] = baseFlex;
 
             GSize basePref = getColumnBaseWidth(i);
             basePrefs[i] = basePref;
 
             GSize pref = basePref;
             Integer userWidth = getUserWidth(i);
-            if(flex && userWidth != null)
+            if(baseFlex > 0 && userWidth != null)
                 pref = pref.max(GSize.getResizeSize(userWidth));
             prefs[i] = pref;
+
+            double flex = baseFlex;
+            Double userFlex = getUserFlex(i);
+            if(baseFlex > 0 && userFlex != null)
+                flex = userFlex;
+            flexes[i] = flex;
         }
         updateLayoutWidthColumns();
     }
@@ -595,18 +588,24 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return null;
     }
 
-    protected boolean isColumnFlex(int i) {
-        return getColumnPropertyDraw(i).isFlex();
+    protected double getColumnFlex(int i) {
+        return getColumnPropertyDraw(i).getFlex();
     }
 
     protected void setUserWidth(int i, int width) {
         setUserWidth(getColumnPropertyDraw(i), width);
     }
+    protected void setUserFlex(int i, double width) {
+        setUserFlex(getColumnPropertyDraw(i), width);
+    }
 
     protected Integer getUserWidth(int i) {
         return getUserWidth(getColumnPropertyDraw(i));
     }
-    
+    protected Double getUserFlex(int i) {
+        return getUserFlex(getColumnPropertyDraw(i));
+    }
+
     protected GSize getColumnBaseWidth(int i) {
         // we need not null, because table with table-layout:fixed, uses auto which just split the rest percents equally
         // and table-layout:auto won't do for a lot of reasons
@@ -615,8 +614,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         //      when setting width to a column, this width is set "with paddings", that could be fixed, by setting widths for the first row (however in that case we would have to create one invisible virtual row in the header)
         //      but the main problem is that % percentage works really odd (but only in Chrome, in Firefox it works fine), it respects paddings, but not the way it does in divs (i.e subtract paddings, and then split the rest). This might create problems in resizing,
         //      plus Firefox doesn't respect min-width for td (as well as Chrome)
-        // so for now we'll use the width with padding
-        return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
+        // but there is another way : to create separate columns for flex props : one fixed size, one percent size, and set colspan 2 for headers / rows
+        return getColumnPropertyDraw(i).getValueWidth(font, true, true);
     }
 
     private <C> Element getRenderElement(Cell cell, TableCellElement parent) {

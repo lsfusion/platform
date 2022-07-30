@@ -109,7 +109,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
         HashMap<String, GColumnUserPreferences> gColumnUPMap = new HashMap<>();
         for (Map.Entry<String, ColumnUserPreferences> entry : groupObjectUP.getColumnUserPreferences().entrySet()) {
             ColumnUserPreferences columnUP = entry.getValue();
-            gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userPattern, columnUP.userWidth, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
+            gColumnUPMap.put(entry.getKey(), new GColumnUserPreferences(columnUP.userHide, columnUP.userCaption, columnUP.userPattern, columnUP.userWidth, columnUP.userFlex, columnUP.userOrder, columnUP.userSort, columnUP.userAscendingSort));
         }
         GFont userFont = convertFont(groupObjectUP.fontInfo);
         GGroupObject groupObj = gForm.getGroupObject(groupObjectUP.groupObjectSID);

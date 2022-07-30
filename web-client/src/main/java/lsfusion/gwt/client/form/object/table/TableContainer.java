@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
@@ -50,6 +51,10 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     public int getClientHeight() {
         return getScrollableElement().getClientHeight();
+    }
+
+    public int getWidth() {
+        return GwtClientUtils.getWidth(getScrollableElement());
     }
 
     public int getClientWidth() {

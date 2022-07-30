@@ -6,7 +6,6 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.base.view.grid.GridStyle;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -32,8 +31,8 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected final GFormController form;
     protected final GGroupObject groupObject;
 
-    public GPropertyTable(GFormController iform, GGroupObject groupObject, TableContainer tableContainer, GridStyle style, boolean noHeaders, boolean noFooters, boolean noScrollers) {
-        super(tableContainer, style, noHeaders, noFooters);
+    public GPropertyTable(GFormController iform, GGroupObject groupObject, TableContainer tableContainer, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+        super(tableContainer, noHeaders, noFooters);
 
         this.form = iform;
         this.groupObject = groupObject;

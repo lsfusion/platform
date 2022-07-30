@@ -48,18 +48,18 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         }
 
         @Override
-        public String getCellStyle() {
-            return grid.style.dataGridHeaderCell();
+        public void setCellStyle(TableCellElement element) {
+            element.setClassName("dataGridHeaderCell");
         }
 
         @Override
-        public String getFirstCellStyle() {
-            return grid.style.dataGridFirstHeaderCell();
+        public void addFirstCellStyle(TableCellElement element) {
+            element.addClassName("dataGridFirstHeaderCell");
         }
 
         @Override
-        public String getLastCellStyle() {
-            return grid.style.dataGridLastHeaderCell();
+        public void addLastCellStyle(TableCellElement element) {
+            element.addClassName("dataGridLastHeaderCell");
         }
     }
 
@@ -81,18 +81,18 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         }
 
         @Override
-        public String getCellStyle() {
-            return grid.style.dataGridFooterCell();
+        public void setCellStyle(TableCellElement element) {
+            element.setClassName("dataGridFooterCell");
         }
 
         @Override
-        public String getFirstCellStyle() {
-            return grid.style.dataGridFirstFooterCell();
+        public void addFirstCellStyle(TableCellElement element) {
+            element.addClassName("dataGridFirstFooterCell");
         }
 
         @Override
-        public String getLastCellStyle() {
-            return grid.style.dataGridLastFooterCell();
+        public void addLastCellStyle(TableCellElement element) {
+            element.addClassName("dataGridLastFooterCell");
         }
     }
 
@@ -110,37 +110,24 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
     protected void buildHeaderImpl(TableRowElement tr) {
         DataGrid<T> table = getTable();
 
-        // Early exit if there aren't any columns to render.
         int columnCount = table.getColumnCount();
-
-        // Get the common style names.
-        String cellClass = delegate.getCellStyle();
-        String firstCellClass = delegate.getFirstCellStyle();
-        String lastCellClass = delegate.getLastCellStyle();
-
-        // Loop through all column headers.
-        int curColumn;
-        for (curColumn = 0; curColumn < columnCount; curColumn++) {
+        for (int curColumn = 0; curColumn < columnCount; curColumn++) {
             Header<?> header = getHeader(curColumn);
 
             TableCellElement th = Document.get().createTHElement();
+            delegate.setCellStyle(th);
+            if (curColumn == 0)
+                delegate.addFirstCellStyle(th);
+            if (curColumn == columnCount - 1)
+                delegate.addLastCellStyle(th);
 
-            //куча if-ов, чтобы не заморачиваться с StringBuilder
-            if (curColumn == 0 && curColumn == columnCount - 1) {
-                th.setClassName(cellClass + " " + firstCellClass + " " + lastCellClass);
-            } else if (curColumn == 0) {
-                th.setClassName(cellClass + " " + firstCellClass);
-            } else if (curColumn == columnCount - 1) {
-                th.setClassName(cellClass + " " + lastCellClass);
-            } else {
-                th.setClassName(cellClass);
-            }
-
-            if(header != null) {
+            if(header != null)
                 renderHeader(th, header);
-            }
 
             tr.appendChild(th);
+
+            if(table.isColumnFlex(curColumn))
+                th.setColSpan(2);
         }
     }
 

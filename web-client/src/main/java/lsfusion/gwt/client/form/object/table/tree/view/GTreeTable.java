@@ -36,7 +36,6 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
@@ -373,7 +372,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         @Override
         public void renderDom(Cell cell, TableCellElement cellElement) {
-            GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
+            if(cell.getRow() != null) // can be cell in column row
+                GTreeTable.renderExpandDom(cellElement, getTreeValue(cell));
         }
 
         private static final String RENDERED = "renderedTree";
@@ -583,15 +583,27 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     private Integer hierarchicalUserWidth = null;
+    private Double hierarchicalUserFlex = null;
     private final NativeSIDMap<GPropertyDraw, Integer> userWidths = new NativeSIDMap<>();
+    private final NativeSIDMap<GPropertyDraw, Double> userFlexes = new NativeSIDMap<>();
     @Override
     protected void setUserWidth(GPropertyDraw property, Integer value) {
         userWidths.put(property, value);
     }
 
     @Override
+    protected void setUserFlex(GPropertyDraw property, Double value) {
+        userFlexes.put(property, value);
+    }
+
+    @Override
     protected Integer getUserWidth(GPropertyDraw property) {
         return userWidths.get(property);
+    }
+
+    @Override
+    protected Double getUserFlex(GPropertyDraw property) {
+        return userFlexes.get(property);
     }
 
     @Override
@@ -610,6 +622,21 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return super.getUserWidth(i);
     }
 
+    @Override
+    protected void setUserFlex(int i, double flex) {
+        if(i==0) {
+            hierarchicalUserFlex = flex;
+            return;
+        }
+        super.setUserFlex(i, flex);
+    }
+
+    @Override
+    protected Double getUserFlex(int i) {
+        if(i==0)
+            return hierarchicalUserFlex;
+        return super.getUserFlex(i);
+    }
 
     public GTreeGridRecord getTreeGridRow(Cell editCell) {
         return (GTreeGridRecord) editCell.getRow();
@@ -652,10 +679,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    protected boolean isColumnFlex(int i) {
+    protected double getColumnFlex(int i) {
         if(i == 0)
-            return true;
-        return super.isColumnFlex(i);
+            return hierarchicalWidth.getValueFlexSize();
+        return super.getColumnFlex(i);
     }
 
     @Override

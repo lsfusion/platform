@@ -27,7 +27,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -59,8 +58,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     public final static int BORDER_VERT_SIZE = 1;
 
-    protected static GridStyle DEFAULT_STYLE = new GridTableStyle();
-
     public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
     public static int nativeScrollbarHeight = AbstractNativeScrollbar.getNativeScrollbarHeight();
 
@@ -75,10 +72,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     boolean isFocused;
 
     private final ArrayList<Column<T, ?>> columns = new ArrayList<>();
-    private final NativeSIDMap<Column<T, ?>, String> columnWidths = new NativeSIDMap<>();
-    private final NativeSIDMap<Column<T, ?>, String> columnFlexWidths = new NativeSIDMap<>();
-
-    protected final GridStyle style;
 
     private HeaderBuilder<T> footerBuilder;
     private final List<Header<?>> footers = new ArrayList<>();
@@ -147,14 +140,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         element.getStyle().setMarginRight(setMargin ? -1 : 0, Unit.PX);
     }
 
-    public DataGrid(TableContainer tableContainer, GridStyle style, boolean noHeaders, boolean noFooters) {
+    public DataGrid(TableContainer tableContainer, boolean noHeaders, boolean noFooters) {
         this.tableContainer = tableContainer;
 
         this.noHeaders = noHeaders;
         this.noFooters = noFooters;
         noScrollers = tableContainer.autoSize;
-
-        this.style = style;
 
         // INITIALIZING MAIN DATA
         tableWidget = new TableWidget();
@@ -683,17 +674,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return getRowElementNoFlush(row);
     }
 
-    public void setColumnWidth(Column<T, ?> column, String width) {
-        columnWidths.put(column, width);
-    }
+    protected abstract GSize getColumnWidth(int column);
+    protected abstract double getColumnFlexPerc(int column);
+    public abstract boolean isColumnFlex(int column);
 
-    public void setColumnFlexWidth(Column<T, ?> column, String width) {
-        columnFlexWidths.put(column, width);
+    public int getFullColumnWidth(int index) {
+        return GwtClientUtils.getFullWidth(getWidthElement(index));
     }
-
-    public int getOffsetColumnWidth(int index) {
-        return getHeaderElement(index).getOffsetWidth();
-//        return impl.getFullSize(getHeaderElement(index), false);
+    public int getClientColumnWidth(int index) {
+        return GwtClientUtils.getWidth(getWidthElement(index));
     }
 
     // when row or column are changed by keypress in grid (KEYUP, PAGEUP, etc), no focus is lost
@@ -781,19 +770,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return true;
     }
 
-    public static boolean useColumnMinWidth = true;
-    private GSize minWidth;
-    public void setMinimumTableWidth(GSize width) {
-        if(!useColumnMinWidth) {
-            this.minWidth = width;
-
-            FlexPanel.setMinWidth(tableWidget.getElement(), minWidth);
-        }
-    }
-
     @Override
     public void setPreferredSize(boolean set, Result<Integer> grids) {
-        FlexPanel.setMaxWidth(getElement(), set ? (!useColumnMinWidth ? minWidth.getString() : "min-content") : null);
+        FlexPanel.setMaxWidth(getElement(), set ? "min-content" : null);
 
         grids.set(grids.result + 1);
     }
@@ -1070,7 +1049,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         NodeList<TableRowElement> rows = tableWidget.getDataRows();
 
         int viewportWidth = getViewportWidth();
-        boolean hasVerticalScroll = viewportWidth != tableContainer.getOffsetWidth();
+        boolean hasVerticalScroll = viewportWidth != tableContainer.getOffsetWidth(); // probably getFullWidth should be used
         if(hasVerticalScroll != this.hasVerticalScroll)
             pendingState.hasVertical = hasVerticalScroll;
 
@@ -1173,11 +1152,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected int getViewportWidth() {
         if(!noScrollers)
-            return tableContainer.getClientWidth();
+            return tableContainer.getWidth();
 
-        return getTableElement().getClientWidth();
+        return GwtClientUtils.getWidth(getTableElement());
     }
-    public int getViewportHeight() {
+    public int getViewportClientHeight() {
         if(!noScrollers)
             return tableContainer.getClientHeight();
 
@@ -1479,23 +1458,35 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return headerBuilder.getHeaderRow().getCells().getItem(element);
     }
 
+    public Element getWidthElement(int element) {
+        int shift = 0;
+        for(int i=0;i<element;i++) {
+            shift++;
+            if(isColumnFlex(i))
+                shift++;
+        }
+        return tableWidget.colRowElement.getCells().getItem(shift);
+    }
+
     // mechanism is slightly different - removing redundant columns, resetting others, however there is no that big difference from other updates so will leave it this way
     protected void updateWidthsDOM(boolean columnsChanged) {
         if(columnsChanged) {
-//            tableBuilder.rebuildColumnRow(tableWidget.colRowElement);
-            tableWidget.rebuildColumnGroup();
+            tableBuilder.rebuildColumnRow(tableWidget.colRowElement);
+//            tableWidget.rebuildColumnGroup();
         }
 
+        int colRowInd = 0;
         for (int i = 0, columnCount = getColumnCount(); i < columnCount; i++) {
-//            TableCellElement colElement = tableWidget.colRowElement.getCells().getItem(i);
-            TableColElement colElement = tableWidget.colGroupElement.getChild(i).cast();
+            TableCellElement colElement = tableWidget.colRowElement.getCells().getItem(colRowInd++);
+//            TableColElement colElement = tableWidget.colGroupElement.getChild(i).cast();
 
-            Column<T, ?> key = columns.get(i);
-            String width = columnWidths.get(key);
-            String flexWidth = columnFlexWidths.get(key);
-            if(useColumnMinWidth)
-                FlexPanel.setMinWidth(colElement, flexWidth != null ? width : null);
-            FlexPanel.setWidth(colElement, flexWidth != null ? flexWidth : width);
+            FlexPanel.setWidth(colElement, getColumnWidth(i).getString());
+
+            if(isColumnFlex(i)) {
+                double columnFlexPerc = getColumnFlexPerc(i);
+                colElement = tableWidget.colRowElement.getCells().getItem(colRowInd++);
+                FlexPanel.setWidth(colElement, columnFlexPerc + "%");
+            }
         }
     }
 
@@ -1615,8 +1606,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     protected class TableWidget extends Widget {
         protected final TableElement tableElement;
-        protected final TableColElement colGroupElement;
-//        protected TableRowElement colRowElement;
+//        protected final TableColElement colGroupElement;
+        protected TableRowElement colRowElement;
         protected TableSectionElement headerElement = null;
         protected final TableSectionElement bodyElement;
         protected TableSectionElement footerElement = null;
@@ -1626,14 +1617,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             tableElement.addClassName("table");
 
-            colGroupElement = tableElement.appendChild(Document.get().createColGroupElement());
+//            if (!noHeaders) {
+            headerElement = tableElement.createTHead();
+            headerElement.setClassName("dataGridHeader");
+//            }
 
-            if (!noHeaders) {
-                headerElement = tableElement.createTHead();
-                headerElement.setClassName("dataGridHeader");
-
-//                colRowElement = headerElement.insertRow(-1);
-            }
+            colRowElement = headerElement.insertRow(-1);
 
             bodyElement = GwtClientUtils.createTBody(tableElement);
 
@@ -1645,14 +1634,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             setElement(tableElement);
         }
 
-        public void rebuildColumnGroup() {
-            GwtClientUtils.removeAllChildren(colGroupElement);
-
-            for(int i = 0, columnCount = getColumnCount(); i < columnCount; i++) {
-                colGroupElement.appendChild(Document.get().createColElement());
-            }
-        }
-
+//        public void rebuildColumnGroup() {
+//            GwtClientUtils.removeAllChildren(colGroupElement);
+//
+//            for(int i = 0, columnCount = getColumnCount(); i < columnCount; i++) {
+//                colGroupElement.appendChild(Document.get().createColElement());
+//            }
+//        }
+//
         public TableSectionElement getSection() {
             return bodyElement;
         }

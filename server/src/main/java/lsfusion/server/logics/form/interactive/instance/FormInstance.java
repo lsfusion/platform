@@ -555,6 +555,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             query.addProperty("generalCaption", BL.reflectionLM.columnCaptionPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalPattern", BL.reflectionLM.columnPatternPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalWidth", BL.reflectionLM.columnWidthPropertyDraw.getExpr(propertyDrawExpr));
+            query.addProperty("generalFlex", BL.reflectionLM.columnFlexPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalOrder", BL.reflectionLM.columnOrderPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalSort", BL.reflectionLM.columnSortPropertyDraw.getExpr(propertyDrawExpr));
             query.addProperty("generalAscendingSort", BL.reflectionLM.columnAscendingSortPropertyDraw.getExpr(propertyDrawExpr));
@@ -569,6 +570,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             query.addProperty("userCaption", BL.reflectionLM.columnCaptionPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userPattern", BL.reflectionLM.columnPatternPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userWidth", BL.reflectionLM.columnWidthPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
+            query.addProperty("userFlex", BL.reflectionLM.columnFlexPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userOrder", BL.reflectionLM.columnOrderPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userSort", BL.reflectionLM.columnSortPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
             query.addProperty("userAscendingSort", BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.getExpr(propertyDrawExpr, customUserExpr));
@@ -636,10 +638,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             String caption = (String) values.get(prefix + "Caption");
             String pattern = (String) values.get(prefix + "Pattern");
             Integer width = (Integer) values.get(prefix + "Width");
+            Double flex = (Double) values.get(prefix + "Flex");
             Integer order = (Integer) values.get(prefix + "Order");
             Integer sort = (Integer) values.get(prefix + "Sort");
             Boolean userAscendingSort = (Boolean) values.get(prefix + "AscendingSort");
-            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
+            ColumnUserPreferences columnPrefs = new ColumnUserPreferences(needToHide, caption, pattern, width, flex, order, sort, userAscendingSort != null ? userAscendingSort : (sort != null ? false : null));
 
             Integer pageSize = (Integer) values.get(prefix + "PageSize");
             Integer headerHeight = (Integer) values.get(prefix + "HeaderHeight");
@@ -713,6 +716,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                         BL.reflectionLM.columnCaptionPropertyDraw.change(columnPreferences.userCaption, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnPatternPropertyDraw.change(columnPreferences.userPattern, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnWidthPropertyDraw.change(columnPreferences.userWidth, dataSession, propertyDrawObject);
+                        BL.reflectionLM.columnFlexPropertyDraw.change(columnPreferences.userFlex, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnOrderPropertyDraw.change(columnPreferences.userOrder, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnSortPropertyDraw.change(columnPreferences.userSort, dataSession, propertyDrawObject);
                         BL.reflectionLM.columnAscendingSortPropertyDraw.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject);
@@ -751,6 +755,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         BL.reflectionLM.columnCaptionPropertyDrawCustomUser.change(columnPreferences.userCaption, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnPatternPropertyDrawCustomUser.change(columnPreferences.userPattern, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnWidthPropertyDrawCustomUser.change(columnPreferences.userWidth, dataSession, propertyDrawObject, user);
+        BL.reflectionLM.columnFlexPropertyDrawCustomUser.change(columnPreferences.userFlex, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnOrderPropertyDrawCustomUser.change(columnPreferences.userOrder, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnSortPropertyDrawCustomUser.change(columnPreferences.userSort, dataSession, propertyDrawObject, user);
         BL.reflectionLM.columnAscendingSortPropertyDrawCustomUser.change(columnPreferences.userAscendingSort, dataSession, propertyDrawObject, user);    

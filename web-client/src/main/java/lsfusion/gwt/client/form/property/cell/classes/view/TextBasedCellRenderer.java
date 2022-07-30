@@ -56,14 +56,16 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         return CELL_VERTICAL_PADDING;
     }
     public static void setPadding(Element element) {
-        Style style = element.getStyle();
-        style.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
-        style.setPaddingBottom(CELL_VERTICAL_PADDING, Style.Unit.PX);
-        style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
-        style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
+        element.addClassName("text-based-prop");
+//        Style style = element.getStyle();
+//        style.setPaddingTop(CELL_VERTICAL_PADDING, Style.Unit.PX);
+//        style.setPaddingBottom(CELL_VERTICAL_PADDING, Style.Unit.PX);
+//        style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
+//        style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
     }
     public static void clearPadding(Element element) {
-        element.getStyle().clearPadding();
+        element.removeClassName("text-based-prop");
+//        element.getStyle().clearPadding();
     }
 
     public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {

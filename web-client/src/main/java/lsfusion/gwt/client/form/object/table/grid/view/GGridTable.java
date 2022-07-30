@@ -819,7 +819,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         super.onResize();
 
         if (getWidget().isVisible()) {
-            int tableHeight = getViewportHeight();
+            int tableHeight = getViewportClientHeight();
             if (tableHeight == 0) {
                 return;
             }
@@ -1079,6 +1079,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         return currentGridPreferences.getUserWidth(property);
     }
 
+    protected Double getUserFlex(GPropertyDraw property) {
+        return currentGridPreferences.getUserFlex(property);
+    }
+
     public Integer getUserOrder(GPropertyDraw property) {
         return currentGridPreferences.getUserOrder(property);
     }
@@ -1113,6 +1117,10 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     
     public void setUserWidth(GPropertyDraw property, Integer userWidth) {
         currentGridPreferences.setUserWidth(property, userWidth);
+    }
+
+    protected void setUserFlex(GPropertyDraw property, Double value) {
+        currentGridPreferences.setUserFlex(property, value);
     }
 
     public void setUserOrder(GPropertyDraw property, Integer userOrder) {

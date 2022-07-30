@@ -82,8 +82,6 @@ select:focus {
     background-color:transparent;
 /*var(--component-background-color);*/
     color: var(--text-color);
-
-    border-width: 0;
 }
 
 img,

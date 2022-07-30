@@ -88,7 +88,7 @@ public class GridUserPreferences {
     private ColumnUserPreferences ensureColumnPreferences(ClientPropertyDraw property) {
         ColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
-            prefs = new ColumnUserPreferences(null, null, null, null, null, null, null);
+            prefs = new ColumnUserPreferences(null, null, null, null, null, null, null, null);
             columnUserPreferences.put(property, prefs);
         }
         return prefs;
@@ -128,7 +128,7 @@ public class GridUserPreferences {
         headerHeight = null;
         hasUserPreferences = false;
         for (ClientPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
-            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null, null, null));
+            columnUserPreferences.put(property, new ColumnUserPreferences(null, null, null, null, null, null, null, null));
         }
     }
 

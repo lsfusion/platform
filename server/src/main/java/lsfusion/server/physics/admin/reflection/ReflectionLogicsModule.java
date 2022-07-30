@@ -114,6 +114,8 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP columnPatternPropertyDraw;
     public LP columnWidthPropertyDrawCustomUser;
     public LP columnWidthPropertyDraw;
+    public LP columnFlexPropertyDrawCustomUser;
+    public LP columnFlexPropertyDraw;
     public LP columnOrderPropertyDrawCustomUser;
     public LP columnOrderPropertyDraw;
     public LP columnSortPropertyDrawCustomUser;
@@ -329,6 +331,9 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         
         columnWidthPropertyDrawCustomUser = findProperty("columnWidth[PropertyDraw,CustomUser]");
         columnWidthPropertyDraw = findProperty("columnWidth[PropertyDraw]");
+
+        columnFlexPropertyDrawCustomUser = findProperty("columnFlex[PropertyDraw,CustomUser]");
+        columnFlexPropertyDraw = findProperty("columnFlex[PropertyDraw]");
 
         columnOrderPropertyDrawCustomUser = findProperty("columnOrder[PropertyDraw,CustomUser]");
         columnOrderPropertyDraw = findProperty("columnOrder[PropertyDraw]");

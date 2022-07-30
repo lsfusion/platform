@@ -201,7 +201,7 @@ public class GwtToClientConverter extends ObjectConverter {
     
     @Converter(from = GColumnUserPreferences.class)
     public ColumnUserPreferences convertColumnPreferences(GColumnUserPreferences gprefs) {
-        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
+        return new ColumnUserPreferences(gprefs.userHide, gprefs.userCaption, gprefs.userPattern, gprefs.userWidth, gprefs.userFlex, gprefs.userOrder, gprefs.userSort, gprefs.userAscendingSort);
     }
 
     @Converter(from = GFormScheduler.class)

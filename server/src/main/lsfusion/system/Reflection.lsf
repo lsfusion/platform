@@ -167,6 +167,9 @@ columnPattern '{reflection.column.pattern.property.draw}' = DATA STRING[100] (Pr
 columnWidth '{reflection.column.width.property.draw.custom.user}' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidth '{reflection.column.width.property.draw}' = DATA INTEGER (PropertyDraw);
 
+columnFlex '{reflection.column.flex.property.draw.custom.user}' = DATA DOUBLE (PropertyDraw, CustomUser);
+columnFlex '{reflection.column.flex.property.draw}' = DATA DOUBLE (PropertyDraw);
+
 columnOrder '{reflection.column.order.property.draw.custom.user}' = DATA INTEGER (PropertyDraw, CustomUser);
 columnOrder '{reflection.column.order.property.draw}' = DATA INTEGER (PropertyDraw);
 
@@ -435,7 +438,9 @@ FORM forms '{reflection.form.forms}'
     PROPERTIES(p) columnPattern
     PROPERTIES(p,u) columnPattern
     PROPERTIES(p) columnWidth
+    PROPERTIES(p) columnFlex
     PROPERTIES(p,u) columnWidth
+    PROPERTIES(p,u) columnFlex
     PROPERTIES(p) columnOrder
     PROPERTIES(p,u) columnOrder
     PROPERTIES(p) columnSort

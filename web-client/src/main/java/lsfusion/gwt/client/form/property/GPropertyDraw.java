@@ -692,6 +692,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public InputElement createTextInputElement() {
         InputElement inputElement = baseType.createTextInputElement();
         inputElement.addClassName("prop-input");
+        inputElement.addClassName("remove-all-pmb");
         return inputElement;
     }
 

@@ -718,27 +718,6 @@ public class GwtClientUtils {
         }
     }
 
-    //  prefs parameter is filled
-    public static double calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
-        double[] flexValues = new double[prefs.length];
-        double[] baseFlexValues = new double[prefs.length];
-        for (int i = 0; i < prefs.length; i++) {
-            if (flexes[i]) {
-                flexValues[i] = prefs[i];
-                baseFlexValues[i] = basePrefs[i];
-            } else {
-                flexValues[i] = 0.0;
-                baseFlexValues[i] = 0.0;
-            }
-        }
-
-        double restDelta = calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
-
-        adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
-
-        return restDelta;
-    }
-
     //equal to BaseUtils.replaceSeparators
     public static String replaceSeparators(String value, String separator, String groupingSeparator) {
         if (value.contains(",") && !groupingSeparator.equals(",") && separator.equals("."))
@@ -784,7 +763,7 @@ public class GwtClientUtils {
         return getCurrentLocaleName().substring(0, 2);
     }
 
-    // without padding, getClient - with paddings, getOffset with paddings and borders
+    // without padding, getClient - with paddings, getOffset with paddings and borders, getFull wit paddings, borders and margins
     public static native int getHeight(Element element) /*-{
         return parseInt($wnd.getComputedStyle(element, null).height);
     }-*/;

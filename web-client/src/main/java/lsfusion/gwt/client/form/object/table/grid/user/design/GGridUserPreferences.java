@@ -71,6 +71,10 @@ public class GGridUserPreferences {
         return ensureColumnPreferences(property).userWidth;
     }
 
+    public Double getUserFlex(GPropertyDraw property) {
+        return ensureColumnPreferences(property).userFlex;
+    }
+
     public Integer getUserOrder(GPropertyDraw property) {
         return ensureColumnPreferences(property).userOrder;
     }
@@ -86,7 +90,7 @@ public class GGridUserPreferences {
     private GColumnUserPreferences ensureColumnPreferences(GPropertyDraw property) {
         GColumnUserPreferences prefs = columnUserPreferences.get(property);
         if (prefs == null) {
-            prefs = new GColumnUserPreferences(null, null, null, null, null, null, null);
+            prefs = new GColumnUserPreferences(null, null, null, null, null, null, null, null);
             columnUserPreferences.put(property, prefs);
         }
         return prefs;
@@ -108,6 +112,10 @@ public class GGridUserPreferences {
         ensureColumnPreferences(property).userWidth = userWidth;
     }
 
+    public void setUserFlex(GPropertyDraw property, Double userFlex) {
+        ensureColumnPreferences(property).userFlex = userFlex;
+    }
+
     public void setUserOrder(GPropertyDraw property, Integer userOrder) {
         ensureColumnPreferences(property).userOrder = userOrder;
     }
@@ -125,7 +133,7 @@ public class GGridUserPreferences {
     }
 
     public void resetPreferences(GPropertyDraw property) {
-        columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null));
+        columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null, null));
     }
 
     public void resetPreferences() {
@@ -134,7 +142,7 @@ public class GGridUserPreferences {
         headerHeight = null;
         hasUserPreferences = false;
         for (GPropertyDraw property : new HashSet<>(columnUserPreferences.keySet())) {
-            columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null));
+            columnUserPreferences.put(property, new GColumnUserPreferences(null, null, null, null, null, null, null, null));
         }
     }
 

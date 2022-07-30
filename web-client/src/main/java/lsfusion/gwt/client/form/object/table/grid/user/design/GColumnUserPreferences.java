@@ -7,6 +7,7 @@ public class GColumnUserPreferences implements Serializable {
     public String userCaption;
     public String userPattern;
     public Integer userWidth;
+    public Double userFlex;
     public Integer userOrder;
     public Integer userSort;
     public Boolean userAscendingSort;
@@ -16,15 +17,16 @@ public class GColumnUserPreferences implements Serializable {
     }
 
     public GColumnUserPreferences(GColumnUserPreferences prefs) {
-        this(prefs.userHide, prefs.userCaption, prefs.userPattern, prefs.userWidth, prefs.userOrder, prefs.userSort, prefs.userAscendingSort);
+        this(prefs.userHide, prefs.userCaption, prefs.userPattern, prefs.userWidth, prefs.userFlex, prefs.userOrder, prefs.userSort, prefs.userAscendingSort);
     }
 
-    public GColumnUserPreferences(Boolean userHide, String userCaption, String userPattern, Integer width, Integer userOrder,
-                                 Integer userSort, Boolean userAscendingSort) {
+    public GColumnUserPreferences(Boolean userHide, String userCaption, String userPattern, Integer width, Double flex, Integer userOrder,
+                                  Integer userSort, Boolean userAscendingSort) {
         this.userHide = userHide;
         this.userCaption = userCaption;
         this.userPattern = userPattern;
         this.userWidth = width;
+        this.userFlex = flex;
         this.userOrder = userOrder;
         this.userSort = userSort;
         this.userAscendingSort = userAscendingSort;

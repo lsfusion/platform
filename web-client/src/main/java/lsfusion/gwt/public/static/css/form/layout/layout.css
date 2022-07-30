@@ -11,12 +11,10 @@
     min-width: -moz-available;
 }
 
-/* need this because user-agent uses some paddings and we want to get WYSIWYG during input (when a renderer changes to an editor) */
-input {
+.remove-all-pmb {
     padding: 0;
-}
-textarea {
-    padding: 0;
+    margin: 0;
+    border: none;
 }
 
 .comp-shrink-horz {

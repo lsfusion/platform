@@ -32,11 +32,9 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
 
         TableSectionElement getHeaderElement();
 
-        String getCellStyle();
-
-        String getFirstCellStyle();
-
-        String getLastCellStyle();
+        void setCellStyle(TableCellElement element);
+        void addFirstCellStyle(TableCellElement element);
+        void addLastCellStyle(TableCellElement element);
     }
 
     /**

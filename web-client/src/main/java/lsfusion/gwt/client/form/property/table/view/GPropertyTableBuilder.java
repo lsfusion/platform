@@ -130,10 +130,20 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
 
             renderCell(td, cell, column);
 
+            if(cellTable.isColumnFlex(columnIndex)) {
+                if(rowIndex >= 0)
+                    td.setColSpan(2);
+                else {
+                    TableCellElement flexTd = tr.insertCell(-1);
+                    flexTd.addClassName("dataGridColumnRowFlexCell");
+                    flexTd.addClassName("remove-all-pmb");
+                }
+            }
+
             if(rowIndex >= 0)
                 updateCell(td, cell, column);
             else
-                td.addClassName("dataGridColumnRowCell");
+                td.addClassName("dataGridColumnRowPrefCell");
         }
     }
 
