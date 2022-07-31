@@ -27,7 +27,6 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     public TableContainer(boolean autoSize, GFormController form) {
         this.autoSize = autoSize;
-
         
         setStyleName(STYLE_NAME);
 

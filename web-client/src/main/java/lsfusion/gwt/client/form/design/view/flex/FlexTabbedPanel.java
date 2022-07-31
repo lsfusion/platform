@@ -31,7 +31,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
         this.tabBar = tabBar;
 
-        setStyleName("tab-panel");
+        addStyleName("tab-panel");
     }
 
     private void onBeforeTabSelected(Integer index) {

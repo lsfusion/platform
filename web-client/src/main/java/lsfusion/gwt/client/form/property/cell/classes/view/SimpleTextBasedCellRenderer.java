@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -50,6 +51,11 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
         }
 
         return super.createRenderElement();
+    }
+
+    @Override
+    public void renderPanelLabel(LabelWidget label) {
+        label.addStyleName("form-label");
     }
 
     public static InputElement createInputElement(GPropertyDraw property) {

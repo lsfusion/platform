@@ -39,7 +39,7 @@ public class FlexTabBar extends Composite implements TabBar {
 
         sinkEvents(Event.ONMOUSEDOWN);
 
-        setStyleName("nav");
+        addStyleName("nav");
         addStyleName("nav-tabs");
 
         addStyleName("nav-tabs-" + (vertical ? "vert" : "horz"));

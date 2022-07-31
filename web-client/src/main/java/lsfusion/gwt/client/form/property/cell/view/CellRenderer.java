@@ -3,6 +3,8 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.LabelWidget;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -82,6 +84,12 @@ public abstract class CellRenderer<T> {
             assert !GwtClientUtils.isTDorTH(element);
             renderFlexAlignment(property, element);
         }
+    }
+
+    public void renderPanelLabel(LabelWidget label) {
+    }
+
+    public void renderPanelContainer(SizedFlexPanel panel) {
     }
 
     public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {

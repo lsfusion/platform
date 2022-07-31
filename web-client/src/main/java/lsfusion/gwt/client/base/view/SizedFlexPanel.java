@@ -54,11 +54,9 @@ public class SizedFlexPanel extends FlexPanel {
                 fixed = false;
 
             if(!fixed) {
-                FlexPanel wrapPanel = new FlexPanel(!vertical);
-                wrapPanel.setStyleName("oppositeSizeCssFixPanel"); // just to identify this div in dom
+                FlexPanel wrapPanel = new FlexPanel(!vertical, isStretch ? GFlexAlignment.START : alignment);
+                wrapPanel.addStyleName("oppositeSizeCssFixPanel"); // just to identify this div in dom
                 wrapPanel.add(widget, GFlexAlignment.STRETCH, isStretch ? 1 : 0, alignShrink, alignSize);
-                if (!isStretch)
-                    wrapPanel.setFlexAlignment(alignment);
                 if (size != null) { // we want to use intristic widths, because otherwise (when setting the size to the wrap panel) margin/border/padding will be ignored
                     assert !vertical;
                     setIntrinisticWidths(element, true, size);

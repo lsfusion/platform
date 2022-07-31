@@ -6,23 +6,28 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
     private SizedWidget sizedView;
 
-    private Label label;
+    private LabelWidget label;
 
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey);
 
         value.addStyleName("dataPanelRendererPanel");
+
+//        value.getElement().setAttribute("id", property.sID);
+        value.getElement().setId(property.propertyFormName);
 
         SizedWidget valueWidget = value.setSized();
 
@@ -39,12 +44,18 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if(property.caption == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
 
-        label = new Label();
+        label = new LabelWidget();
         label.addStyleName("alignPanelLabel");
         label.addStyleName("dataPanelRendererPanel");
 
+        label.getElement().setAttribute("for", property.propertyFormName);
+
         if (this.property.captionFont != null)
             this.property.captionFont.apply(label.getElement().getStyle());
+
+        // for
+        CellRenderer cellRenderer = property.getCellRenderer();
+        cellRenderer.renderPanelLabel(label);
 
         GFlexAlignment panelCaptionAlignment = property.getPanelCaptionAlignment(); // vertical alignment
         boolean captionLast = property.isPanelCaptionLast();
@@ -68,6 +79,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         if (captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
+
+        cellRenderer.renderPanelContainer(panel);
 
         return new SizedWidget(panel);
     }

@@ -21,68 +21,176 @@ public class FlexPanelImpl {
         return impl;
     }
 
-    protected String getDisplayValue(boolean grid) {
-        return grid ? "grid" : "flex";
+//    protected String getDisplayValue(boolean grid) {
+//        return grid ? "grid" : "flex";
+//    }
+    protected void setDisplayValue(Element element, boolean grid) {
+        if(grid)
+            element.addClassName("display-grid");
+        else
+            element.addClassName("display-flex");
     }
 
-    protected String getDirectionValue(boolean vertical) {
-        return vertical ? getVertDirectionValue() : getHorzDirectionValue();
+    protected void setDirectionValue(Element parent, boolean vertical) {
+        if(vertical)
+            parent.addClassName("flex-dir-vert");
+        else
+            parent.addClassName("flex-dir-horz");
     }
 
-    protected String getHorzDirectionValue() {
-        return "row";
+    protected void setGridDirection(Element parent, boolean vertical) {
+        if(vertical)
+            parent.addClassName("grid-dir-vert");
+        else
+            parent.addClassName("grid-dir-horz");
     }
 
-    protected String getVertDirectionValue() {
-        return "column";
+    //    protected String getAlignmentValue(GFlexAlignment justify, boolean grid) {
+//        switch (justify) {
+//            case START:
+//                return grid ? "start" : "flex-start";
+//            case CENTER:
+//                return "center";
+//            case END:
+//                return grid ? "end" : "flex-end";
+//            case STRETCH:
+//                return "stretch";
+//        }
+//        throw new IllegalStateException("Unknown alignment");
+//    }
+
+    public void setupParentDiv(DivElement parent, boolean vertical, FlexPanel.GridLines gridLines, GFlexAlignment contentAlignment, boolean wrap) {
+        boolean grid = gridLines != null;
+
+        setDisplayValue(parent, grid);
+        if(grid) {
+            setGridContentAlignment(parent, vertical, contentAlignment);
+
+            setGridDirection(parent, vertical);
+
+            setGridLines(parent, !vertical, gridLines.getString());
+        } else {
+            setFlexContentAlignment(parent, contentAlignment);
+
+            if(wrap)
+                setFlexWrap(parent);
+
+            setDirectionValue(parent, vertical);
+        }
     }
 
-    protected String getAlignmentValue(GFlexAlignment justify, boolean grid) {
-        switch (justify) {
+    public void setFlexWrap(Element parent) {
+//        parent.getStyle().setProperty("flexWrap", "wrap");
+        parent.addClassName("flex-wrap");
+    }
+
+    public void clearFlexWrap(Element parent) {
+        parent.removeClassName("flex-wrap");
+//        parent.getStyle().clearProperty("flexWrap");
+    }
+
+    //        parent.getStyle().setProperty(grid && !vertical ? "alignContent" : "justifyContent", getAlignmentValue(alignment, grid));
+    public void setFlexContentAlignment(DivElement parent, GFlexAlignment alignment) {
+        switch (alignment) {
             case START:
-                return grid ? "start" : "flex-start";
+                parent.addClassName("flex-content-start");
+                return;
             case CENTER:
-                return "center";
+                parent.addClassName("flex-content-center");
+                return;
             case END:
-                return grid ? "end" : "flex-end";
+                parent.addClassName("flex-content-end");
+                return;
             case STRETCH:
-                return "stretch";
+                parent.addClassName("flex-content-stretch");
+                return;
+        }
+        throw new IllegalStateException("Unknown alignment");
+    }
+    public void setGridContentAlignment(DivElement parent, boolean vertical, GFlexAlignment alignment) {
+        switch (alignment) {
+            case START:
+                if(vertical)
+                    parent.addClassName("grid-content-vert-start");
+                else
+                    parent.addClassName("grid-content-horz-start");
+                return;
+            case CENTER:
+                if(vertical)
+                    parent.addClassName("grid-content-vert-center");
+                else
+                    parent.addClassName("grid-content-horz-center");
+                return;
+            case END:
+                if(vertical)
+                    parent.addClassName("grid-content-vert-end");
+                else
+                    parent.addClassName("grid-content-horz-end");
+                return;
+            case STRETCH:
+                if(vertical)
+                    parent.addClassName("grid-content-vert-stretch");
+                else
+                    parent.addClassName("grid-content-horz-stretch");
+                return;
+        }
+        throw new IllegalStateException("Unknown alignment");
+    }
+//    public void setFlexAlignment(DivElement parent, boolean vertical, boolean grid, GFlexAlignment justify) {
+//        parent.getStyle().setProperty(grid && !vertical ? "alignContent" : "justifyContent", getAlignmentValue(justify, grid));
+//    }
+
+    //  child.getStyle().setProperty(grid && vertical ? "justifySelf" : "alignSelf", getAlignmentValue(alignment, grid));
+    public void setFlexAlignment(GFlexAlignment alignment, Element child) {
+        switch (alignment) {
+            case START:
+                child.addClassName("flex-start");
+                return;
+            case CENTER:
+                child.addClassName("flex-center");
+                return;
+            case END:
+                child.addClassName("flex-end");
+                return;
+            case STRETCH:
+                child.addClassName("flex-stretch");
+                return;
+        }
+        throw new IllegalStateException("Unknown alignment");
+    }
+    public void setGridAlignment(GFlexAlignment alignment, Element child, boolean vertical) {
+        switch (alignment) {
+            case START:
+                if(vertical)
+                    child.addClassName("grid-vert-start");
+                else
+                    child.addClassName("grid-horz-start");
+                return;
+            case CENTER:
+                if(vertical)
+                    child.addClassName("grid-vert-center");
+                else
+                    child.addClassName("grid-horz-center");
+                return;
+            case END:
+                if(vertical)
+                    child.addClassName("grid-vert-end");
+                else
+                    child.addClassName("grid-horz-end");
+                return;
+            case STRETCH:
+                if(vertical)
+                    child.addClassName("grid-vert-stretch");
+                else
+                    child.addClassName("grid-horz-stretch");
+                return;
         }
         throw new IllegalStateException("Unknown alignment");
     }
 
-    public void setupParentDiv(DivElement parent, boolean vertical, FlexPanel.GridLines gridLines, GFlexAlignment justify, boolean wrap) {
-        boolean grid = gridLines != null;
-
-        parent.getStyle().setProperty("display", getDisplayValue(grid));
-        setFlexAlignment(parent, vertical, grid, justify);
-        if(grid) {
-            parent.getStyle().setProperty("gridAutoFlow", vertical ? "row" : "column");
-
-            parent.getStyle().setProperty(getGridLinesAttrName(!vertical), gridLines.getString());
-        } else {
-            if(wrap)
-                setWrap(parent);
-
-            parent.getStyle().setProperty("flexDirection", getDirectionValue(vertical));
-        }
-    }
-
-    public void setWrap(Element parent) {
-        parent.getStyle().setProperty("flexWrap", "wrap");
-    }
-
-    public void dropWrap(Element parent) {
-        parent.getStyle().clearProperty("flexWrap");
-    }
-
-    public void setFlexAlignment(DivElement parent, boolean vertical, boolean grid, GFlexAlignment justify) {
-        parent.getStyle().setProperty(!grid || vertical ? "justifyContent" : "alignContent", getAlignmentValue(justify, grid));
-    }
-
-    public void setVisible(DivElement parent, boolean visible, boolean grid) {
-        parent.getStyle().setProperty("display", visible ? getDisplayValue(grid) : "none");
-    }
+//    public void setVisible(DivElement parent, boolean visible, boolean grid) {
+//        parent.getStyle().setProperty("display", visible ? getDisplayValue(grid) : "none");
+//    }
 
     public FlexPanel.WidgetLayoutData insertChild(Element parent, Element child, int beforeIndex, GFlexAlignment alignment, double flex, boolean shrink, GSize flexBasis, boolean vertical, boolean grid) {
         FlexPanel.WidgetLayoutData layoutData = new FlexPanel.WidgetLayoutData(new FlexPanel.FlexLayoutData(flex, flexBasis, shrink), new FlexPanel.AlignmentLayoutData(alignment));
@@ -122,24 +230,14 @@ public class FlexPanelImpl {
     }
 
     public void setGridLines(Element parent, int count, boolean vertical) {
-        Style style = parent.getStyle();
-
         String[] linesArray = GwtSharedUtils.toArray("0px", count);
         parent.setPropertyObject("linesArray", linesArray);
 
-        updateGridLines(style, linesArray, vertical);
-    }
-
-    private static String getGridLinesAttrName(boolean vertical) {
-        return "gridTemplate" + (vertical ? "Rows" : "Columns");
-    }
-    private static String getGridSpanAttrName(boolean vertical) {
-        return "grid" + (vertical ? "Row" : "Column") + "End";
+        updateGridLines(parent, linesArray, vertical);
     }
 
     private static void updateGridLineSize(Element child, int gridLine, boolean vertical, String sizeString) {
         Element parentElement = child.getParentElement();
-        Style style = parentElement.getStyle();
 
         // converting to array
         String[] lines = (String[]) parentElement.getPropertyObject("linesArray");
@@ -160,11 +258,15 @@ public class FlexPanelImpl {
 //        while(size >= 1 && lines[size - 1].equals(DROPCOLUMNSTRING))
 //            size--;
 
-        updateGridLines(style, lines, vertical);
+        updateGridLines(parentElement, lines, vertical);
     }
 
-    private static void updateGridLines(Style style, String[] lines, boolean vertical) {
-        style.setProperty(getGridLinesAttrName(vertical), GwtSharedUtils.toString(" ", lines.length, lines));
+    private static void updateGridLines(Element element, String[] lines, boolean vertical) {
+        setGridLines(element, vertical, GwtSharedUtils.toString(" ", lines.length, lines));
+    }
+
+    private static void setGridLines(Element element, boolean vertical, String gridLines) {
+        element.getStyle().setProperty("gridTemplate" + (vertical ? "Rows" : "Columns"), gridLines);
     }
 
     //    private static String DROPCOLUMNSTRING = "-1px";
@@ -216,7 +318,7 @@ public class FlexPanelImpl {
 
 
     public void setSpan(Element child, int span, boolean vertical) {
-        child.getStyle().setProperty(getGridSpanAttrName(vertical), "span " + span);
+        child.getStyle().setProperty("grid" + (vertical ? "Row" : "Column") + "End", "span " + span);
     }
 
     public int getFullSize(Element child, boolean vertical) {
@@ -242,13 +344,12 @@ public class FlexPanelImpl {
     public void updateFlex(FlexPanel.FlexLayoutData layoutData, Element child, boolean vertical, boolean grid) {
         setFlex(child, layoutData.getFlex(), layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
-
     public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
-        child.getStyle().setProperty(grid && vertical ? "justifySelf" : "alignSelf", getAlignmentValue(layoutData.alignment, grid));
-    }
-
-    public void setGridAlignment(Element child, boolean vertical, GFlexAlignment alignment) {
-        child.getStyle().setProperty(vertical ? "alignSelf" : "justifySelf", getAlignmentValue(alignment, true));
+        GFlexAlignment alignment = layoutData.alignment;
+        if(grid)
+            setFlexAlignment(alignment, child);
+        else
+            setGridAlignment(alignment, child, vertical);
     }
 
     public void setFlexBasis(FlexPanel.FlexLayoutData layoutData, Element child, GSize flexBasis, boolean vertical, boolean grid) {

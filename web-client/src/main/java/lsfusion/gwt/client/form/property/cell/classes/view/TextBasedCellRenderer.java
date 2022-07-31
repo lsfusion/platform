@@ -62,10 +62,14 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 //        style.setPaddingBottom(CELL_VERTICAL_PADDING, Style.Unit.PX);
 //        style.setPaddingRight(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
 //        style.setPaddingLeft(CELL_HORIZONTAL_PADDING, Style.Unit.PX);
+
+//        element.addClassName("form-control");
     }
     public static void clearPadding(Element element) {
         element.removeClassName("text-based-prop");
 //        element.getStyle().clearPadding();
+
+//        element.removeClassName("form-control");
     }
 
     public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {

@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
@@ -47,15 +44,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         this(vertical, GFlexAlignment.START);
     }
 
-    public void setFlexAlignment(GFlexAlignment flexAlignment) {
-        if(!this.flexAlignment.equals(flexAlignment)) {
-            this.flexAlignment = flexAlignment;
-            assert !flexAlignment.equals(GFlexAlignment.STRETCH);
-
-            impl.setFlexAlignment(parentElement, vertical, isGrid(), flexAlignment);
-        }
-    }
-
     private final GridLines gridLines;
     
     public FlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
@@ -92,7 +80,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     public void setVisible(boolean nVisible) {
         if (visible != nVisible) {
             visible = nVisible;
-            impl.setVisible(parentElement, visible, isGrid());
+            super.setVisible(nVisible);
+//            impl.setVisible(parentElement, visible, isGrid());
         }
     }
 
@@ -250,10 +239,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         setSizeProperty(element, "maxWidth", size);
     }
     private static void setSizeProperty(Element element, String propName, String size) {
+        Style style = element.getStyle();
         if(size != null)
-            element.getStyle().setProperty(propName, size);
+            style.setProperty(propName, size);
         else
-            element.getStyle().clearProperty(propName);
+            style.clearProperty(propName);
     }
 
     public static void setSpan(Widget w, int span, boolean vertical) {
@@ -773,7 +763,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         Element element = getElement();
         if(wrap) // in theory there should be recursive drop wrap, but on the other hand we'are dropping flex / shrink and flexbasis, so there will be no wrap inside
-            impl.dropWrap(element);
+            impl.clearFlexWrap(element);
 
         int i = 0;
         for(FlexLine line : children) {
@@ -814,7 +804,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             restDelta = parentSameFlexPanel.panel.resizeWidget(restDelta, parentSameFlexPanel.lines, parentSameFlexPanel.index, parents.subList(1, parents.size()));
 
         if(wrap)
-            impl.setWrap(element);
+            impl.setFlexWrap(element);
 
         i = 0;
         for(FlexLine line : children) {
@@ -855,7 +845,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public static void setGridAlignment(Element element, boolean vertical, GFlexAlignment alignment) {
-        impl.setGridAlignment(element, vertical, alignment);
+        impl.setGridAlignment(alignment, element, vertical);
     }
 
     private interface InnerAlignment {

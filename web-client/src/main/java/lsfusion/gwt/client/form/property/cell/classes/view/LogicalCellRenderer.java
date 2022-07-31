@@ -4,6 +4,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.view.LabelWidget;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -74,7 +76,18 @@ public class LogicalCellRenderer extends CellRenderer {
         InputElement input = Document.get().createCheckInputElement();
         input.setTabIndex(-1);
         input.addClassName("logicalRendererCheckBox");
+        input.addClassName("form-check-input"); // bootstrap
         return input;
+    }
+
+    @Override
+    public void renderPanelLabel(LabelWidget label) {
+        label.addStyleName("form-check-label");
+    }
+
+    @Override
+    public void renderPanelContainer(SizedFlexPanel panel) {
+        panel.addStyleName("form-check");
     }
 
     @Override

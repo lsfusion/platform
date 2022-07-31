@@ -213,6 +213,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
         InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property);
         inputElement.setTabIndex(-1); // we don't want input to get focus if it's wrapped or in table (when editing it's not important, but just in case)
+        inputElement.addClassName("remove-all-pmb");
 
         CellRenderer.renderTextAlignment(property, inputElement);
 

@@ -62,7 +62,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             assert !alignCaption;
 
             columnsPanel = new SizedFlexPanel(property.panelColumnVertical);
-            columnsPanel.setStyleName("propertyContainerPanel");
+            columnsPanel.addStyleName("propertyContainerPanel");
             return new ComponentWidget(columnsPanel);
         } else {
             Result<CaptionWidget> captionWidget = alignCaption && property.container.isAlignCaptions() ? new Result<>() : null;
