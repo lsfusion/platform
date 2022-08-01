@@ -33,7 +33,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         boolean editableNotNull = property.isEditableNotNull();
         if (editableNotNull || property.hasChangeAction)
-            appendCorners(editableNotNull, valueWidget.widget);
+            appendCorners(editableNotNull, valueWidget.widget.getElement());
 
         sizedView = initCaption(valueWidget, property, captionContainer);
 
@@ -85,9 +85,11 @@ public class PropertyPanelRenderer extends PanelRenderer {
         return new SizedWidget(panel);
     }
 
-    public void appendCorners(boolean notNull, Widget panel) {
-        Element panelElement = panel.getElement();
-        panelElement.addClassName(notNull ? "notNullCornerTriangleHolder" : "changeActionCornerTriangleHolder");
+    public static void appendCorners(boolean notNull, Element panelElement) {
+        if(notNull)
+            panelElement.addClassName("notNullCornerTriangleHolder");
+        else
+            panelElement.addClassName("changeActionCornerTriangleHolder");
     }
 
     @Override

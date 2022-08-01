@@ -210,8 +210,8 @@ public abstract class CellRenderer<T> {
     private static final String RENDERED = "rendered";
 
     protected String getBackground(UpdateContext updateContext) {
-        String baseBackground = getBaseBackground(updateContext.getValue()); // not converted (with getDisplayColor)
-        return updateContext.getBackground(baseBackground); // converted (with getDisplayColor)
+        String baseBackground = getBaseBackground(updateContext.getValue()); // not converted (with getThemedColor)
+        return updateContext.getBackground(baseBackground); // converted (with getThemedColor)
     }
 
     protected static void rerenderState(Element element, boolean set) {

@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.Header;
+import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.function.Consumer;
@@ -111,11 +112,8 @@ public class GGridPropertyTableHeader extends Header<String> {
             th.addClassName("dataGridStickyHeader");
         }
 
-        if (notNull) {
-            th.addClassName("notNullCornerTriangleHolder");
-        } else if (hasChangeAction) {
-            th.addClassName("changeActionCornerTriangleHolder");
-        }
+        if(notNull || hasChangeAction)
+            PropertyPanelRenderer.appendCorners(notNull, th);
     }
 
     public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);

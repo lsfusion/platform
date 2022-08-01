@@ -33,6 +33,10 @@
     visibility: collapse;
 }
 .dataGridColumnRowPrefCell {
+    /* we have to drop up and down borders, because otherwise in chrome there will be the problem with the visibility collapse (1px will remain creating a whole)*/
+    /* for dataGridColumnRowFlexCell - remove-all-pmb removes up and down borders */
+    border-top: 0;
+    border-bottom: 0;
 }
 .dataGridColumnRowFlexCell {
 }

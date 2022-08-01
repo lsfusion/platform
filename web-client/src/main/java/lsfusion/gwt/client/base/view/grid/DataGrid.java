@@ -1197,8 +1197,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     private void updateSelectedCells(int rowIndex, ArrayList<Column> dataColumnsChanged) {
-        // last parameter is an optimization
-        // actually only background and selected changed (i.e. tColumn.hasQuickAccessAction(cell))
+        // last parameter is an optimization (not to update already updated cells)
         tableBuilder.updateRowImpl(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex), (tColumn, cell) -> (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
     }
 

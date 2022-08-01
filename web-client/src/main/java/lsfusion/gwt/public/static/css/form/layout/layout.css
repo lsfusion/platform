@@ -11,7 +11,7 @@
     min-width: -moz-available;
 }
 
-.remove-all-pmb {
+.remove-all-pmb, .remove-all-pmb.form-control {
     padding: 0;
     margin: 0;
     border: none;
