@@ -46,8 +46,9 @@ public abstract class AbstractClientContainerView implements ClientContainerView
                     Integer flexBasis = wrappedWidget.getLayoutData().flexBasis;
                     if(flexBasis == null) {
                         Dimension preferredSize = tabbedView.getPreferredSize();
-                        wrappedWidget.getLayoutData().flexBasis = vertical ? preferredSize.height : preferredSize.width;
-                        tabbedView.setPreferredSize(preferredSize);
+                        flexBasis = vertical ? preferredSize.height : preferredSize.width;
+                        wrappedWidget.getLayoutData().flexBasis = flexBasis;
+                        FlexPanel.setBaseSize(wrappedWidget, vertical, flexBasis);
                     }
                 }
             });

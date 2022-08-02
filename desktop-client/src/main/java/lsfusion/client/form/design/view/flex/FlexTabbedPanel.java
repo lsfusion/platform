@@ -125,15 +125,4 @@ public class FlexTabbedPanel extends FlexPanel {
             }
         }
     }
-
-    public Dimension getMaxPreferredSize(boolean vertical) {
-        int maxWidth = 0;
-        int maxHeight = 0;
-        for(Widget child : getChildren()) {
-            Dimension prefSize = child.getFlexPreferredSize(vertical);
-            maxWidth = Math.max(maxWidth, vertical ? prefSize.height : prefSize.width);
-            maxHeight = Math.max(maxHeight, vertical ? prefSize.height : prefSize.width);
-        }
-        return new Dimension(maxWidth, maxHeight);
-    }
 }
