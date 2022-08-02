@@ -311,12 +311,12 @@ public class ActionDebugger implements DebuggerService {
     }
 
     public LogicsInstance logicsInstance;
-    public void showFormDesign(String form, String formName) {
+    public void eval(String evalCode) {
         TopExecutionStack stack = new TopExecutionStack("debugServiceEval");
         EventThreadInfo debugServiceEval = new EventThreadInfo("debugServiceEval");
         ThreadLocalContext.aspectBeforeEvent(logicsInstance, stack, debugServiceEval, false, SyncType.NOSYNC);
         try (DataSession dataSession = logicsInstance.getDbManager().createSession()){
-            logicsInstance.getBusinessLogics().systemEventsLM.findAction("showFormDesign[TEXT]").execute(dataSession, stack, new DataObject(form + "\nrun() { SHOW "+ formName + " NOWAIT; }"));
+            logicsInstance.getBusinessLogics().systemEventsLM.findAction("eval[TEXT]").execute(dataSession, stack, new DataObject(evalCode));
         } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

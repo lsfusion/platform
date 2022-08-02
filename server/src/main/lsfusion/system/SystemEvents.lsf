@@ -327,18 +327,18 @@ showStack() {
     showJavaStack() <- NOT showJavaStack(); 
 }
 
-FORM errorLiveDesign
+FORM evalError
     PROPERTIES() messageCaughtException BACKGROUND RGB(255, 50, 50) READONLY
     PROPERTIES() showStack
     PROPERTIES() READONLY SHOWIF showJavaStack() javaStackTraceCaughtException
 ;
 
-DESIGN errorLiveDesign {
+DESIGN evalError {
     REMOVE TOOLBARRIGHT;
     REMOVE TOOLBARLEFT;
     MOVE PROPERTY (messageCaughtException()) {
         panelCaptionVertical = TRUE;
-        caption = 'PARSING FORM ERROR';
+        caption = 'EVAL ERROR';
         captionFont = 'bold 24';
         autoSize = TRUE;
     };
@@ -354,14 +354,26 @@ DESIGN errorLiveDesign {
     }
 }
 
-showFormDesign(TEXT form) {
+index = DATA LOCAL STRING();
+closeEvalError() {
+    IF index() THEN {
+        EVAL 'run() \{ CLOSE FORM \'evalError_' + index() + '\'; \}';      
+        index() <- NULL;     
+    } 
+}
+
+eval(TEXT code) {
     FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
         NEWSESSION {
             NEWTHREAD {
+                LOCAL evalText = TEXT();
                 TRY {
-                    EVAL form;
+                    closeEvalError();
+                    EVAL code;
                 } CATCH {
-                    SHOW errorLiveDesign DOCKED;
+                    closeEvalError();
+                    index() <- STRING(randInt(10000));
+                    EVAL 'run() \{ SHOW \'evalError_' + index() + '\' = evalError NOWAIT; \}';
                 }
             } CONNECTION connection;     
         }
