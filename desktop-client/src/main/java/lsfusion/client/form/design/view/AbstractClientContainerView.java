@@ -7,6 +7,7 @@ import lsfusion.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,13 +35,26 @@ public abstract class AbstractClientContainerView implements ClientContainerView
         child.installMargins(view.getComponent());
 
         boolean fixFlexBasis = view instanceof FlexTabbedPanel && child.getFlex() > 0 && container.getFlexCount() > 1;
-        if(fixFlexBasis) {
-            FlexTabbedPanel tabbedView = (FlexTabbedPanel) view;
-            tabbedView.setBeforeSelectionHandler(tabIndex -> ((FlexTabbedPanel) view).setPreferredSize(tabbedView.getMaxPreferredSize(tabbedView.isVertical())));
-        }
 
         children.add(index, child);
-        childrenViews.add(index, wrapAndOverflowView(child, view, fixFlexBasis));
+        Widget wrappedWidget = wrapAndOverflowView(child, view, fixFlexBasis);
+
+        if(fixFlexBasis) {
+            FlexTabbedPanel tabbedView = (FlexTabbedPanel) view;
+            tabbedView.setBeforeSelectionHandler(tabIndex -> {
+                if (tabIndex > 0) {
+                    Integer flexBasis = wrappedWidget.getLayoutData().flexBasis;
+                    if(flexBasis == null) {
+                        Dimension preferredSize = tabbedView.getPreferredSize();
+                        flexBasis = vertical ? preferredSize.height : preferredSize.width;
+                        wrappedWidget.getLayoutData().flexBasis = flexBasis;
+                        FlexPanel.setBaseSize(wrappedWidget, vertical, flexBasis);
+                    }
+                }
+            });
+        }
+
+        childrenViews.add(index, wrappedWidget);
 
         addImpl(index, child, view);
     }
