@@ -145,7 +145,11 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     private void removeFormSessionObject(String formSessionID) throws SessionInvalidatedException {
         FormSessionObject<?> sessionObject = getFormSessionObject(formSessionID);
         currentForms.remove(formSessionID);
-        if(sessionObject.savedTempFiles != null) {
+        closeTempFiles(sessionObject);
+    }
+
+    private void closeTempFiles(FormSessionObject<?> sessionObject) {
+        if (sessionObject.savedTempFiles != null) {
             for (Pair<String, Runnable> closer : sessionObject.savedTempFiles.values())
                 closer.second.run();
         }
@@ -180,5 +184,8 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
     @Override
     public void destroy() throws Exception {
+        for(FormSessionObject<?> sessionObject : currentForms.values()) {
+            closeTempFiles(sessionObject);
+        }
     }
 }
