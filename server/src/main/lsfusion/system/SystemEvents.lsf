@@ -327,6 +327,7 @@ showStack() {
     showJavaStack() <- NOT showJavaStack(); 
 }
 
+//Do not remove form. Used in plugin. FormDesignChangeDetector.showLiveDesign
 FORM evalError
     PROPERTIES() messageCaughtException BACKGROUND RGB(255, 50, 50) READONLY
     PROPERTIES() showStack
@@ -354,26 +355,15 @@ DESIGN evalError {
     }
 }
 
-index = DATA LOCAL STRING();
-closeEvalError() {
-    IF index() THEN {
-        EVAL 'run() \{ CLOSE FORM \'evalError_' + index() + '\'; \}';      
-        index() <- NULL;     
-    } 
-}
-
-eval(TEXT code) {
+eval(TEXT code, TEXT onErrorCode) {
     FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
         NEWSESSION {
             NEWTHREAD {
                 LOCAL evalText = TEXT();
                 TRY {
-                    closeEvalError();
                     EVAL code;
                 } CATCH {
-                    closeEvalError();
-                    index() <- STRING(randInt(10000));
-                    EVAL 'run() \{ SHOW \'evalError_' + index() + '\' = evalError NOWAIT; \}';
+                    IF onErrorCode THEN EVAL onErrorCode;
                 }
             } CONNECTION connection;     
         }

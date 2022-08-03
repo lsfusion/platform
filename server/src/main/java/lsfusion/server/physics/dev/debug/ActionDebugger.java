@@ -19,6 +19,7 @@ import lsfusion.server.base.controller.thread.SyncType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
@@ -311,12 +312,13 @@ public class ActionDebugger implements DebuggerService {
     }
 
     public LogicsInstance logicsInstance;
-    public void eval(String evalCode) {
+    public void eval(String evalCode, String onErrorCode) {
         TopExecutionStack stack = new TopExecutionStack("debugServiceEval");
         EventThreadInfo debugServiceEval = new EventThreadInfo("debugServiceEval");
         ThreadLocalContext.aspectBeforeEvent(logicsInstance, stack, debugServiceEval, false, SyncType.NOSYNC);
         try (DataSession dataSession = logicsInstance.getDbManager().createSession()){
-            logicsInstance.getBusinessLogics().systemEventsLM.findAction("eval[TEXT]").execute(dataSession, stack, new DataObject(evalCode));
+            logicsInstance.getBusinessLogics().systemEventsLM.findAction("eval[TEXT,TEXT]")
+                    .execute(dataSession, stack, new DataObject(evalCode), onErrorCode == null ? NullValue.instance : new DataObject(onErrorCode));
         } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
