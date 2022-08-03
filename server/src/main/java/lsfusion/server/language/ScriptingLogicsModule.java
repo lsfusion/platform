@@ -2049,7 +2049,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         int i = 0;
         
         if (fromProp != null) {
-            eaProp.setFromAddressAccount(allImplements.get(i++));
+            eaProp.setFromAddress(allImplements.get(i++));
         }
 
         if(subjProp != null) {

@@ -86,7 +86,6 @@ grammar LsfLogics;
     import lsfusion.server.physics.dev.integration.internal.to.InternalFormat;
     import lsfusion.server.physics.dev.integration.external.to.ExternalFormat;
     import lsfusion.interop.session.ExternalHttpMethod;
-    import lsfusion.server.physics.dev.integration.external.to.mail.AttachmentFormat;
     import org.antlr.runtime.BitSet;
     import org.antlr.runtime.*;
     

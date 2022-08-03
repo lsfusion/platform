@@ -107,7 +107,7 @@ public class ReceiveEMLAction extends EmailAction {
 
         Map<Long, FileData> emlMap = new HashMap<>();
 
-        Store emailStore = EmailUtils.getEmailStore(receiveHost, accountType, startTLS);
+        Store emailStore = EmailReceiver.getEmailStore(receiveHost, accountType, startTLS);
         if (receivePort != null) emailStore.connect(receiveHost, receivePort, user, password);
         else emailStore.connect(receiveHost, user, password);
 

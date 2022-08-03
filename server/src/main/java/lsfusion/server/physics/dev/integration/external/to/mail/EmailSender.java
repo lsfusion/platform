@@ -27,92 +27,83 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static lsfusion.base.BaseUtils.trimToEmpty;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class EmailSender {
     private final static Logger logger = ServerLoggers.mailLogger;
-    SMTPMessage message;
-    Properties mailProps = new Properties();
-    String userName;
-    String password;
-    String smtpHost;
-    String smtpPort;
-    String fromAddress;
-    Map<String, Message.RecipientType> emails = new HashMap<>();
 
-    public static class AttachmentFile {
-        public RawFileData file;
-        public String attachmentName;
-        public String extension;
+    public static void sendMail(ExecutionContext context, String fromAddress, Map<String, Message.RecipientType> recipients, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments, String smtpHost, String smtpPort, String encryptedConnectionType, String user, String password, boolean syncType) throws MessagingException, IOException {
 
-        public AttachmentFile(RawFileData file, String attachmentName, String extension) {
-            this.file = file;
-            this.attachmentName = attachmentName;
-            this.extension = extension;
-        }
-    }
+        Properties mailProps = new Properties();
+        mailProps.setProperty("mail.smtp.host", smtpHost);
+        mailProps.setProperty("mail.from", fromAddress);
 
-    public EmailSender(String smtpHostAccount, String fromAddressAccount, Map<String, Message.RecipientType> targets) {
-        //mailProps.setProperty("mail.debug", "true");
-        mailProps.setProperty("mail.smtp.host", smtpHostAccount);
-        mailProps.setProperty("mail.from", fromAddressAccount);
         mailProps.setProperty("mail.smtp.timeout", "120000");
         mailProps.setProperty("mail.smtp.connectiontimeout", "60000");
-        emails = targets;
-    }
-
-    public EmailSender(String smtpHostAccount, String smtpPortAccount, String encryptedConnectionType, String fromAddressAccount, String userName, String password, Map<String, Message.RecipientType> targets) {
-        this(smtpHostAccount, fromAddressAccount, targets);
 
         System.setProperty("mail.mime.multipart.allowempty", "true");
 
-        if (!smtpPortAccount.isEmpty()) {
-            mailProps.put("mail.smtp.port", smtpPortAccount);
+        if (!smtpPort.isEmpty()) {
+            mailProps.put("mail.smtp.port", smtpPort);
         }
         if ("TLS".equals(encryptedConnectionType))
             mailProps.setProperty("mail.smtp.starttls.enable", "true");
         if ("SSL".equals(encryptedConnectionType)) {
-            mailProps.put("mail.smtp.socketFactory.port", smtpPortAccount);
+            mailProps.put("mail.smtp.socketFactory.port", smtpPort);
             mailProps.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         }
 
-        if (!userName.isEmpty() && !password.isEmpty()) {
+        if (!user.isEmpty() && !password.isEmpty()) {
             mailProps.setProperty("mail.smtp.auth", "true");
-            this.userName = userName;
-            this.password = password;
         }
-        this.smtpHost = smtpHostAccount;
-        this.smtpPort = smtpPortAccount;
-        this.fromAddress = fromAddressAccount;
-    }
 
-    private Session getSession() {
-        return Session.getInstance(mailProps, null);
-    }
-
-    private void setMessageHeading(String subject) throws MessagingException {
-        message = new SMTPMessage(getSession());
+        SMTPMessage message = new SMTPMessage(Session.getInstance(mailProps, null));
         message.setFrom();
         message.setSentDate(new java.util.Date());
-        setRecipients(emails);
         message.setSubject(subject, "utf-8");
-    }
 
+        for (Map.Entry<String, Message.RecipientType> recipient : recipients.entrySet()) {
+            message.addRecipients(recipient.getValue(), recipient.getKey());
+        }
 
-    public void setRecipients(Map<String,Message.RecipientType> targets) throws MessagingException {
-        for (Map.Entry<String, Message.RecipientType> target : targets.entrySet()) {
-            message.addRecipients(target.getValue(), target.getKey());
+        Multipart mp = new MimeMultipart();
+        for(String inlineFile : inlineFiles)
+            if(inlineFile != null)
+                setText(mp, inlineFile);
+        for (AttachmentFile attachment : attachments)
+            attachFile(mp, attachment);
+
+        message.setContent(mp);
+
+        final LP emailSent = context.getBL().emailLM.emailSent;
+
+        if (syncType) {
+            processEmail(subject, emailSent, true, smtpHost, smtpPort, user, password, fromAddress, message);
+        } else {
+            ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
+            executor.submit(() -> processEmail(subject, emailSent, false, smtpHost, smtpPort, user, password, fromAddress, message));
+            executor.shutdown();
         }
     }
 
-    public void setText(Multipart mp, String text) throws MessagingException, IOException {
+    private static void setText(Multipart mp, String text) throws MessagingException, IOException {
         MimeBodyPart textPart = new MimeBodyPart();
         textPart.setDataHandler(new DataHandler(new ByteArrayDataSource(text, "text/html; charset=utf-8")));
         textPart.setDisposition(Part.INLINE);
         mp.addBodyPart(textPart);
     }
 
-    private String getMimeType(String extension) {
+    private static void attachFile(Multipart mp, AttachmentFile attachment) throws MessagingException, IOException {
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(attachment.file.getInputStream(), getMimeType(attachment.extension));
+        MimeBodyPart filePart = new MimeBodyPart();
+        filePart.setDataHandler(new DataHandler(dataSource));
+        filePart.setFileName(attachment.attachmentName);
+        filePart.setHeader("Content-Transfer-Encoding", "base64");
+        mp.addBodyPart(filePart);
+    }
+
+    private static String getMimeType(String extension) {
         switch (extension) {
             case "pdf":
                 return "application/pdf; charset=utf-8";
@@ -132,52 +123,16 @@ public class EmailSender {
         }
     }
 
-    public void attachFile(Multipart mp, AttachmentFile attachment) throws MessagingException, IOException {
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(attachment.file.getInputStream(), getMimeType(attachment.extension));
-        MimeBodyPart filePart = new MimeBodyPart();
-        filePart.setDataHandler(new DataHandler(dataSource));
-        filePart.setFileName(attachment.attachmentName);
-        filePart.setHeader("Content-Transfer-Encoding", "base64");
-        mp.addBodyPart(filePart);
-    }
-
-    public void sendMail(ExecutionContext context, final String subject, List<String> inlineFiles, List<AttachmentFile> attachments, boolean syncType) throws MessagingException, IOException {
-        Multipart mp = new MimeMultipart();
-        setMessageHeading(subject);
-
-        for(String inlineFile : inlineFiles)
-            if(inlineFile != null)
-                setText(mp, inlineFile);
-
-        for (AttachmentFile attachment : attachments)
-            attachFile(mp, attachment);
-
-        message.setContent(mp);
-        final LP emailSent = context.getBL().emailLM.emailSent;
-
-        if (syncType) {
-            processEmail(subject, emailSent, true);
-        } else {
-            ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
-            executor.submit(() -> {
-                processEmail(subject, emailSent, false);
-            });
-            executor.shutdown();
-        }
-    }
-
-    private void processEmail(String subject, LP emailSent, boolean syncType) {
-        String messageInfo = subject != null ? subject.trim() : "";
+    private static void processEmail(String subject, LP emailSent, boolean syncType, String smtpHost, String smtpPort, String user, String password, String fromAddress, SMTPMessage message) {
+        String messageInfo = trimToEmpty(subject);
         try {
             Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
-            if (addressesTo == null || addressesTo.length == 0) {
-                logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-                throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-            }
+            checkNoAddressTo(addressesTo, messageInfo);
+
             messageInfo += " " + localize("{mail.sender}") + " : " + fromAddress;
             messageInfo += " " + localize("{mail.recipients}") + " : " + BaseUtils.toString(",", addressesTo);
         } catch (MessagingException me) {
-            messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
+            messageInfo += " " + localize("{mail.failed.to.get.list.of.recipients}") + " " + me;
         }
 
         boolean send = false;
@@ -187,7 +142,7 @@ public class EmailSender {
                 send = true;
                 count++;
                 try {
-                     sendMessage(message, smtpHost, smtpPort, userName, password);
+                     sendMessage(message, smtpHost, smtpPort, user, password);
                     logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
                 } catch (MessagingException e) {
                     if (!syncType) {
@@ -219,18 +174,18 @@ public class EmailSender {
         }
     }
 
-    private void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {
+    private static void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String user, String password) throws MessagingException {
         trustAllCerts();
         Integer port = parsePort(smtpPort);
         Transport transport = message.getSession().getTransport(port != null && port.equals(25) ? "smtp" : "smtps");
         if(port == null)
-            transport.connect(smtpHost, userName, password);
+            transport.connect(smtpHost, user, password);
         else
-            transport.connect(smtpHost, port, userName, password);
+            transport.connect(smtpHost, port, user, password);
         transport.sendMessage(message, message.getAllRecipients());
     }
 
-    private void trustAllCerts() {
+    private static void trustAllCerts() {
         SSLContext ctx;
         TrustManager[] trustAllCerts = new X509TrustManager[]{new X509TrustManager(){
             public java.security.cert.X509Certificate[] getAcceptedIssuers(){return null;}
@@ -246,7 +201,14 @@ public class EmailSender {
         }
     }
 
-    private Integer parsePort(String port) {
+    private static void checkNoAddressTo(Address[] addressesTo, String messageInfo) {
+        if (addressesTo == null || addressesTo.length == 0) {
+            logger.error(localize("{mail.failed.to.send.mail}") + " " + messageInfo + " : " + localize("{mail.recipient.not.specified}"));
+            throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : " + localize("{mail.recipient.not.specified}"));
+        }
+    }
+
+    private static Integer parsePort(String port) {
         try {
             return Integer.parseInt(port);
         } catch (Exception e) {
@@ -254,59 +216,15 @@ public class EmailSender {
         }
     }
 
-    @Deprecated
-    public static class AttachmentProperties {
-        public String fileName;
-        public String attachmentName;
-        public AttachmentFormat format;
+    public static class AttachmentFile {
+        private RawFileData file;
+        private String attachmentName;
+        private String extension;
 
-        public AttachmentProperties(String fileName, String attachmentName, AttachmentFormat format) {
-            this.fileName = fileName;
+        public AttachmentFile(RawFileData file, String attachmentName, String extension) {
+            this.file = file;
             this.attachmentName = attachmentName;
-            this.format = format;
-        }
-    }
-
-    @Deprecated
-    public void sendSimpleMail(ExecutionContext context, String subject, List<AttachmentProperties> attachments) throws MessagingException, IOException {
-        assert attachments != null;
-
-        Multipart mp = new MimeMultipart();
-        setMessageHeading(subject);
-
-        for (AttachmentProperties attachment : attachments) {
-            attachFile(mp, new AttachmentFile(new RawFileData(attachment.fileName), attachment.attachmentName, attachment.format.getExtension()));
-        }
-        message.setContent(mp);
-
-        String messageInfo = subject.trim();
-        try {
-            Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
-            if (addressesTo == null || addressesTo.length == 0) {
-                logger.error(localize("{mail.failed.to.send.mail}")+" " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-                throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo + " : "+localize("{mail.recipient.not.specified}"));
-            }
-            messageInfo += " "+localize("{mail.recipients}")+" : " + BaseUtils.toString(",", addressesTo);
-        } catch (MessagingException me) {
-            messageInfo += " "+localize("{mail.failed.to.get.list.of.recipients}")+" " + me.toString();
-        }
-
-        boolean send = false;
-        try {
-            sendMessage(message, smtpHost, smtpPort, userName, password);
-            send = true;
-        } catch (MessagingException e) {
-            throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo, e);
-        } finally {
-            try {
-                if (context != null) {
-                    LP emailSent = context.getBL().emailLM.findProperty("emailSent[]");
-                    if(emailSent != null)
-                        emailSent.change(send ? true : null, context.getSession());
-                }
-            } catch (Exception e) {
-                logger.error("emailSent writing error", e);
-            }
+            this.extension = extension;
         }
     }
 }

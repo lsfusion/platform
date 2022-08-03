@@ -10,6 +10,7 @@ import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.imap.IMAPInputStream;
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.FolderClosedIOException;
+import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -52,49 +53,51 @@ import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.server.physics.dev.integration.external.to.mail.AccountType.*;
 
 public class EmailReceiver {
-    EmailLogicsModule LM;
-    DataObject accountObject;
-    String receiveHostAccount;
-    Integer receivePortAccount;
-    String nameAccount;
-    String passwordAccount;
-    AccountType accountType;
-    boolean startTLS;
-    boolean deleteMessagesAccount;
-    Integer lastDaysAccount;
-    Integer maxMessagesAccount;
 
-    public EmailReceiver(EmailLogicsModule emailLM, DataObject accountObject, String receiveHostAccount, Integer receivePortAccount,
-                         String nameAccount, String passwordAccount, AccountType accountType, boolean startTLS, boolean deleteMessagesAccount, Integer lastDaysAccount,
-                         Integer maxMessagesAccount) {
-        this.LM = emailLM;
-        this.accountObject = accountObject;
-        this.receiveHostAccount = receiveHostAccount;
-        this.receivePortAccount = receivePortAccount;
-        this.nameAccount = nameAccount;
-        this.passwordAccount = passwordAccount;
-        this.accountType = accountType;
-        this.startTLS = startTLS;
-        this.deleteMessagesAccount = deleteMessagesAccount;
-        this.lastDaysAccount = lastDaysAccount;
-        this.maxMessagesAccount = maxMessagesAccount;
-    }
-
-    public void receiveEmail(ExecutionContext context) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
+    public static void receiveEmail(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, String receiveHost, Integer receivePort,
+                             String user, String password, AccountType accountType, boolean startTLS, boolean deleteMessages, Integer lastDays,
+                             Integer maxMessages) throws MessagingException, IOException, SQLException, ScriptingErrorLog.SemanticErrorException, SQLHandledException, GeneralSecurityException {
 
         boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
         boolean ignoreExceptions = LM.findProperty("ignoreExceptions[Account]").read(context, accountObject) != null;
-        List<List<List<Object>>> data = downloadEmailList(context, getSkipEmails(context), unpack, ignoreExceptions);
+        List<List<List<Object>>> data = downloadEmailList(context, receiveHost, receivePort, user, password, accountType, startTLS,
+                deleteMessages, lastDays, maxMessages, getSkipEmails(context, LM, user), unpack, ignoreExceptions);
 
-        importEmails(context, data.get(0));
-        importAttachments(context, data.get(1));
+        importEmails(context, LM, accountObject, data.get(0));
+        importAttachments(context, LM, data.get(1));
 
         LM.findAction("formRefresh[]").execute(context);
     }
 
-    private Set<String> getSkipEmails(ExecutionContext context) {
+    public static Store getEmailStore(String receiveHost, AccountType accountType, boolean startTLS) throws GeneralSecurityException, NoSuchProviderException {
+        Properties mailProps = new Properties();
+        mailProps.setProperty(accountType == POP3 ? "mail.pop3.host" : "mail.imap.host", receiveHost);
+
+        boolean imap = accountType == IMAP;
+        boolean imaps = accountType == IMAPS;
+        if (imap || imaps) { //imaps
+            MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
+            socketFactory.setTrustAllHosts(true);
+            mailProps.put(imap ? "mail.imap.ssl.socketFactory" : "mail.imaps.ssl.socketFactory", socketFactory);
+            mailProps.setProperty("mail.store.protocol", accountType.getProtocol());
+            mailProps.setProperty(imap ? "mail.imap.timeout" : "mail.imaps.timeout", "5000");
+            if(startTLS) {
+                mailProps.setProperty("mail.imap.starttls.enable", "true");
+            }
+            if(imaps) {
+                //options to increase downloading big attachments
+                mailProps.put("mail.imaps.partialfetch", "true");
+                mailProps.put("mail.imaps.fetchsize", "819200");
+            }
+        }
+
+        return Session.getInstance(mailProps).getStore(accountType.getProtocol());
+    }
+
+    private static Set<String> getSkipEmails(ExecutionContext context, EmailLogicsModule LM, String user) {
         Set<String> skipEmails = new HashSet<>();
         try {
             KeyExpr emailExpr = new KeyExpr("email");
@@ -113,12 +116,12 @@ public class EmailReceiver {
             }
 
         } catch (Exception e) {
-            ServerLoggers.mailLogger.error(String.format("Account %s: read emails from base failed", nameAccount), e);
+            ServerLoggers.mailLogger.error(String.format("Account %s: read emails from base failed", user), e);
         }
         return skipEmails;
     }
 
-    public void importEmails(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private static void importEmails(ExecutionContext context, EmailLogicsModule LM, DataObject accountObject, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<>();
         List<ImportField> fields = new ArrayList<>();
@@ -169,7 +172,7 @@ public class EmailReceiver {
         }
     }
 
-    public void importAttachments(ExecutionContext context, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private static void importAttachments(ExecutionContext context, EmailLogicsModule LM, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<>();
         List<ImportField> fields = new ArrayList<>();
@@ -208,17 +211,19 @@ public class EmailReceiver {
         }
     }
 
-    public List<List<List<Object>>> downloadEmailList(ExecutionContext context, Set<String> skipEmails, boolean unpack, boolean ignoreExceptions) throws MessagingException, IOException, GeneralSecurityException {
+    private static List<List<List<Object>>> downloadEmailList(ExecutionContext context, String receiveHost, Integer receivePort, String user, String password,
+                                                              AccountType accountType, boolean startTLS, boolean deleteMessages, Integer lastDays, Integer maxMessages,
+                                                              Set<String> skipEmails, boolean unpack, boolean ignoreExceptions) throws MessagingException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
         System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
 
-        Store emailStore = EmailUtils.getEmailStore(receiveHostAccount, accountType, startTLS);
-        if (receivePortAccount != null)
-            emailStore.connect(receiveHostAccount, receivePortAccount, nameAccount, passwordAccount);
+        Store emailStore = getEmailStore(receiveHost, accountType, startTLS);
+        if (receivePort != null)
+            emailStore.connect(receiveHost, receivePort, user, password);
         else
-            emailStore.connect(receiveHostAccount, nameAccount, passwordAccount);
+            emailStore.connect(receiveHost, user, password);
 
         List<Folder> folders = getSubFolders(emailStore.getFolder("INBOX"));
 
@@ -228,15 +233,15 @@ public class EmailReceiver {
 
             LocalDateTime dateTimeReceivedEmail = LocalDateTime.now();
             Timestamp minDateTime = null;
-            if (lastDaysAccount != null) {
-                minDateTime = localDateTimeToSqlTimestamp(LocalDateTime.now().minusDays(lastDaysAccount));
+            if (lastDays != null) {
+                minDateTime = localDateTimeToSqlTimestamp(LocalDateTime.now().minusDays(lastDays));
             }
 
             int count = 0;
             int messageCount = emailFolder.getMessageCount();
-            ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messageCount));
+            ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", user, emailFolder.getFullName(), messageCount));
             Set<String> usedEmails = new HashSet<>();
-            while(count < messageCount && (maxMessagesAccount == null ||  count < maxMessagesAccount)) {
+            while(count < messageCount && (maxMessages == null ||  count < maxMessages)) {
                 try {
                     Message message = emailFolder.getMessage(messageCount - count);
                     Timestamp dateTimeSentEmail = getSentDate(message);
@@ -247,7 +252,7 @@ public class EmailReceiver {
                         String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail, usedEmails);
                         usedEmails.add(idEmail);
                         if (!skipEmails.contains(idEmail)) {
-                            message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
+                            message.setFlag(deleteMessages ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
                             MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) : messageContent instanceof FilterInputStream ? getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody(((String) messageContent).replace("\0", ""), null) : null;
                             if (messageEmail == null) {
@@ -255,7 +260,7 @@ public class EmailReceiver {
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                             }
                             FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
-                            dataEmails.add(Arrays.asList(idEmail, sqlTimestampToLocalDateTime(dateTimeSentEmail), dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                            dataEmails.add(Arrays.asList(idEmail, sqlTimestampToLocalDateTime(dateTimeSentEmail), dateTimeReceivedEmail, fromAddressEmail, user, subjectEmail, messageEmail.message, emlFileEmail));
                             int counter = 1;
                             if (messageEmail.attachments != null) {
                                 for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
@@ -285,7 +290,7 @@ public class EmailReceiver {
         return Arrays.asList(dataEmails, dataAttachments);
     }
 
-    private List<Folder> getSubFolders(Folder folder) throws MessagingException {
+    private static List<Folder> getSubFolders(Folder folder) throws MessagingException {
         List<Folder> folders = new ArrayList<>();
         folders.add(folder);
         //pop3 doesn't allow subfolders
@@ -297,7 +302,7 @@ public class EmailReceiver {
         return folders;
     }
 
-    private Object getEmailContent(Message email) throws IOException, MessagingException {
+    private static Object getEmailContent(Message email) throws IOException, MessagingException {
         Object content;
         try {
             content = email.getContent();
@@ -315,20 +320,20 @@ public class EmailReceiver {
         return content;
     }
 
-    private Timestamp getSentDate(Message message) {
+    private static Timestamp getSentDate(Message message) {
         return (Timestamp) BaseUtils.executeWithTimeout(() -> {
             Date sentDate = message.getSentDate();
             return sentDate == null ? null : new Timestamp(sentDate.getTime());
         }, 60000);
     }
 
-    private RawFileData getEMLByteArray (Message msg) throws IOException, MessagingException {
+    private static RawFileData getEMLByteArray(Message msg) throws IOException, MessagingException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         msg.writeTo(out); //вообще, out сначала необходимо MimeUtility.encode, а при открытии - decode, чтобы всё сохранялось корректно
         return new RawFileData(out);
     }
 
-    private String getEmailId(Timestamp dateTime, String fromAddress, String subject, Set<String> usedEmails) {
+    private static String getEmailId(Timestamp dateTime, String fromAddress, String subject, Set<String> usedEmails) {
         String id = String.format("%s/%s/%s", dateTime == null ? "" : dateTime.getTime(), fromAddress, subject == null ? "" : subject);
         if(usedEmails != null) {
             int i = 0;
@@ -342,7 +347,7 @@ public class EmailReceiver {
         return id;
     }
 
-    private MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack) throws IOException, MessagingException {
+    private static MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack) throws IOException, MessagingException {
         String body = "";
         Map<String, FileData> attachments = new HashMap<>();
         for (int i = 0; i < mp.getCount(); i++) {
@@ -396,7 +401,7 @@ public class EmailReceiver {
         return new MultipartBody(body, attachments);
     }
 
-    private Object getBodyPartContent(BodyPart bp) throws MessagingException, IOException {
+    private static Object getBodyPartContent(BodyPart bp) throws MessagingException, IOException {
         Object content = null;
         if(bp instanceof IMAPBodyPart) {
             String encoding = ((IMAPBodyPart) bp).getEncoding();
@@ -412,7 +417,7 @@ public class EmailReceiver {
         return content != null ? content : bp.getContent();
     }
 
-    private MultipartBody extractWinMail(File winMailFile) throws IOException {
+    private static MultipartBody extractWinMail(File winMailFile) throws IOException {
         HMEFMessage msg = new HMEFMessage(Files.newInputStream(winMailFile.toPath()));
         Map<String, FileData> attachments = new HashMap<>();
         for(Attachment attach : msg.getAttachments()) {
@@ -422,13 +427,13 @@ public class EmailReceiver {
         return new MultipartBody(msg.getBody(), attachments);
     }
 
-    private MultipartBody getMultipartBodyStream(String subjectEmail, FilterInputStream filterInputStream, String fileName, boolean unpack) throws IOException {
+    private static MultipartBody getMultipartBodyStream(String subjectEmail, FilterInputStream filterInputStream, String fileName, boolean unpack) throws IOException {
         RawFileData byteArray = new RawFileData(filterInputStream);
         Map<String, FileData> attachments = new HashMap<>(unpack(byteArray, fileName, unpack));
         return new MultipartBody(subjectEmail, attachments);
     }
 
-    private String decodeFileName(String value) throws UnsupportedEncodingException {
+    private static String decodeFileName(String value) throws UnsupportedEncodingException {
         if (value == null)
             value = "attachment.txt";
         else {
@@ -442,7 +447,7 @@ public class EmailReceiver {
         return value;
     }
 
-    private String parseIMAPInputStream(BodyPart bp, IMAPInputStream content) throws IOException, MessagingException {
+    private static String parseIMAPInputStream(BodyPart bp, IMAPInputStream content) throws IOException, MessagingException {
         String contentType = bp.getContentType();
         if (contentType != null) {
             ContentType ct = null;
@@ -461,7 +466,7 @@ public class EmailReceiver {
         return null;
     }
 
-    private class MultipartBody {
+    private static class MultipartBody {
         String message;
         Map<String, FileData> attachments;
 
@@ -471,7 +476,7 @@ public class EmailReceiver {
         }
     }
 
-    private Map<String, FileData> unpack(RawFileData byteArray, String fileName, boolean unpack) {
+    private static Map<String, FileData> unpack(RawFileData byteArray, String fileName, boolean unpack) {
         Map<String, FileData> attachments = new HashMap<>();
         String[] fileNameAndExt = fileName.split("\\.");
         String fileExtension = fileNameAndExt.length > 1 ? fileNameAndExt[fileNameAndExt.length - 1].trim() : "";
@@ -486,7 +491,7 @@ public class EmailReceiver {
         return attachments;
     }
 
-    private Map<String, FileData> unpackRARFile(RawFileData rawFile) {
+    private static Map<String, FileData> unpackRARFile(RawFileData rawFile) {
 
         Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
@@ -538,7 +543,7 @@ public class EmailReceiver {
         return result;
     }
 
-    private Map<String, FileData> unpackZIPFile(RawFileData rawFile) {
+    private static Map<String, FileData> unpackZIPFile(RawFileData rawFile) {
 
         Map<String, FileData> result = new HashMap<>();
         File inputFile = null;
@@ -605,17 +610,21 @@ public class EmailReceiver {
         return result;
     }
 
-    private String getFileName(Map<String, FileData> files, String fileName) {
+    private static String getFileName(Map<String, FileData> files, String fileName) {
         if (files.containsKey(fileName)) {
             String name = BaseUtils.getFileName(fileName);
             String extension = BaseUtils.getFileExtension(fileName);
             int count = 1;
-            while (files.containsKey(name + "_" + count + (extension.isEmpty() ? "" : ("." + extension)))) {
+            while (files.containsKey(getFileName(name, count, extension))) {
                 count++;
             }
-            fileName = name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
+            fileName = getFileName(name, count, extension);
         }
         return fileName;
+    }
+
+    private static String getFileName(String name, int count, String extension) {
+        return name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
     }
 }
 
