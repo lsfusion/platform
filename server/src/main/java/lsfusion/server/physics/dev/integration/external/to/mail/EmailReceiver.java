@@ -238,6 +238,7 @@ public class EmailReceiver {
             Set<String> usedEmails = new HashSet<>();
             while(count < messageCount && (maxMessagesAccount == null ||  count < maxMessagesAccount)) {
                 try {
+                    ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessagesAccount));
                     Message message = emailFolder.getMessage(messageCount - count);
                     Timestamp dateTimeSentEmail = getSentDate(message);
                     if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
