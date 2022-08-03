@@ -8,6 +8,24 @@ onDesktopClientStarted  ABSTRACT LIST ( );
 onWebClientStarted  ABSTRACT LIST ( );
 
 onWebClientLoad ABSTRACT LIST ();
+
+useBootstrap = TRUE;
+onWebClientLoad() + {
+    IF useBootstrap() THEN {
+        INTERNAL CLIENT 'bootstrap.min.css';
+        INTERNAL CLIENT 'bootstrap-background-inherit.css';
+    } ELSE {
+        INTERNAL CLIENT 'table.css';
+        INTERNAL CLIENT 'table-border.css';
+        INTERNAL CLIENT 'table-sticky.css';
+        INTERNAL CLIENT 'table-container-border.css';
+        INTERNAL CLIENT 'caption-panel-border.css';
+        INTERNAL CLIENT 'layout.css';
+        INTERNAL CLIENT 'panel-renderer-border.css';
+        INTERNAL CLIENT 'main.css';
+    }
+}
+
 onWebClientStarted () +{ 
     onWebClientLoad();
 

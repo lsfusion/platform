@@ -763,6 +763,10 @@ public class GwtClientUtils {
         return getCurrentLocaleName().substring(0, 2);
     }
 
+    public static boolean hasVerticalScroll(Element element) {
+        return element.getScrollHeight() > element.getClientHeight();
+    }
+
     // without padding, getClient - with paddings, getOffset with paddings and borders, getFull wit paddings, borders and margins
     public static native int getHeight(Element element) /*-{
         return parseInt($wnd.getComputedStyle(element, null).height);

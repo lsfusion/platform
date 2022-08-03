@@ -1,0 +1,30 @@
+
+.dataPanelRendererPanel {
+    white-space: nowrap;
+}
+.dataPanelRendererPanel:not(.prop-input) {
+    cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
+}
+
+.propertyContainerPanel {
+}
+
+.notEmptyPanelLabel {
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
+}
+
+.alignPanelLabel {
+    margin-top: var(--border-padding);
+    margin-bottom: var(--border-padding);
+}
+
+.panelRendererValue {
+    margin: var(--border-padding);
+}
+
+.propertyPanelRendererValue {
+}
+
+.panelRendererValueEdited {
+}

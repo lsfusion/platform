@@ -32,6 +32,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
 
         TableSectionElement getHeaderElement();
 
+        void setRowStyle(TableRowElement element);
         void setCellStyle(TableCellElement element);
         void addFirstCellStyle(TableCellElement element);
         void addLastCellStyle(TableCellElement element);
@@ -68,6 +69,9 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
             if (headerRow != null)
                 headerRow.removeFromParent();
             headerRow = headerElement.insertRow(-1);
+            delegate.setRowStyle(headerRow);
+            // see .tableContainerBoxed comment
+            headerRow.addClassName("background-inherit"); // because it's assumed that header and footer are sticky
             buildHeaderImpl(headerRow);
         } else {
             updateHeaderImpl(headerRow);

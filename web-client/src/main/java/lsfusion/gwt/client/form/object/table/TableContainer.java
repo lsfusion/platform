@@ -17,10 +17,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import static com.google.gwt.dom.client.Style.Overflow.AUTO;
 
 public class TableContainer extends ResizableSimplePanel implements HasMaxPreferredSize {
-    private static final String STYLE_NAME = "tableContainer";
-    private static final String BOXED_STYLE_NAME = "tableContainerBoxed";
-    private static final String FOCUSED_STYLE_NAME = "tableContainerFocused";
-    
+
     public final boolean autoSize;
     private final GFormController form;
     private TableComponent tableComponent;
@@ -28,19 +25,13 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     public TableContainer(boolean autoSize, GFormController form) {
         this.autoSize = autoSize;
         
-        setStyleName(STYLE_NAME);
+        setStyleName("tableContainer");
 
         this.form = form;
 
         getElement().getStyle().setOutlineStyle(Style.OutlineStyle.NONE);
         getElement().getStyle().setOverflow(AUTO);
 
-        // in theory margin should be set for inner (child element)
-        // but 1) margin-right doesn't work for table if it's width 100%
-        // 2) it's hard to tell what to do with scroller, since we want right border when there is scroll, and don't wan't it when there is no such scroll
-        // however we can remove margin when there is a vertical scroller (so there's no difference whether to set border for child or parent)
-        DataGrid.removeOuterGridBorders(this);
-        
         DataGrid.initSinkFocusEvents(this);
     }
 
@@ -106,9 +97,9 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         }
 
         if(boxed)
-            addStyleName(BOXED_STYLE_NAME);
+            addStyleName("tableContainerBoxed");
         else
-            removeStyleName(BOXED_STYLE_NAME);
+            removeStyleName("tableContainerBoxed");
     }
 
     @Override
@@ -146,7 +137,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         if(isFocused)
             return;
         isFocused = true;
-        addStyleName(FOCUSED_STYLE_NAME);
+        addStyleName("tableContainerFocused");
     }
 
     protected void onBlur(Element target, Event event) {
@@ -161,7 +152,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             return;
         }
         isFocused = false;
-        removeStyleName(FOCUSED_STYLE_NAME);
+        removeStyleName("tableContainerFocused");
     }
 
     public void setPreferredSize(boolean set, Result<Integer> grids) {

@@ -48,6 +48,11 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         }
 
         @Override
+        public void setRowStyle(TableRowElement element) {
+            element.setClassName("dataGridHeaderRow");
+        }
+
+        @Override
         public void setCellStyle(TableCellElement element) {
             element.setClassName("dataGridHeaderCell");
         }
@@ -78,6 +83,11 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         @Override
         public TableSectionElement getHeaderElement() {
             return grid.getTableFootElement();
+        }
+
+        @Override
+        public void setRowStyle(TableRowElement element) {
+            element.setClassName("dataGridFooterRow");
         }
 
         @Override

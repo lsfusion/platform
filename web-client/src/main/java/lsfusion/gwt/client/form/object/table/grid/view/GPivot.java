@@ -1753,15 +1753,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     public void checkPadding(boolean forceUpdate) {
         Element tableDataScroller = getTableDataScroller();
         if(tableDataScroller != null) {
-            int scrollWidth = tableDataScroller.getClientWidth();
-            boolean newHasVerticalScroll = scrollWidth != tableDataScroller.getOffsetWidth();
+            boolean newHasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableDataScroller);
 
             if (forceUpdate || hasVerticalScroll != newHasVerticalScroll) {
                 hasVerticalScroll = newHasVerticalScroll;
 
 //                DataGrid.updateTableMargin(hasVerticalScroll, getHeaderTableScroller());
                 DataGrid.updateTablePadding(hasVerticalScroll, getHeaderTableElement());
-                DataGrid.updateTableRightOuterBorder(hasVerticalScroll, tableDataScroller);
+                DataGrid.updateVerticalScroll(hasVerticalScroll, tableDataScroller);
             }
         }
     }

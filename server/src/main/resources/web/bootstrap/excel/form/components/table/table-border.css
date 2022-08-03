@@ -1,0 +1,95 @@
+
+.table {
+    /* here it's tricky, there are two ways to make border single :
+    1) border-spacing: 0, border-collapse: separate (default)
+    2) border-collapse: collapse
+    however in second case, somewhy padding is not working, so margin should be used which is not convenient, since margin is used for other purposes
+    */
+    border-spacing: 0;
+    border-collapse: separate;
+}
+
+.dataGridHeaderCell {
+    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+    /* there are two ways to draw a grid:
+    1) use border-collapse : collapse + first / last cells border : none, but there gonna be problems with focus cell + padding won't work (it can be fixed but it's harder to implement)
+    2) draw left and bottom + right for last cells
+    for now will use 2nd option
+    */
+    border-bottom: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
+}
+
+/*there are two ways to remove outer grid borders :*/
+/*1) set styles for outer cells and set border-left/top : none there*/
+/*2) set margins (not paddings since they do not support negative values) to -1*/
+/*first solution is cleaner (since border can be wider than 1px + margin can be used for other purposes, for example scroller padding), however the problem is that in that case the same should be implemented for focus which is pretty tricky*/
+/*the second solution is easier to implement*/
+/*the same problem is in gpivot (.subtotalouterdiv .scrolldiv / .headerdiv), and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)*/
+
+/*in theory margin should be set for inner (child element)*/
+/*but 1) margin-right doesn't work for table if it's width 100%*/
+/*2) it's hard to tell what to do with scroller, since we want right border when there is scroll, and don't wan't it when there is no such scroll*/
+/*however we can remove margin when there is a vertical scroller (so there's no difference whether to set border for child or parent)*/
+
+.no-vertical-scroll {
+    /* WON'T WORK FOR NOW SHOULD BE DONE DIFFERENTLY*/
+    /*margin-right: calc(0px - var(--border-width));*/
+}
+
+.dataGridFirstHeaderCell {
+    /*border-left : none;*/
+}
+
+.dataGridLastHeaderCell {
+    /*border-right: none;*/
+    /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
+    border-right: 1px solid var(--grid-separator-border-color);
+}
+
+.dataGridFooterCell {
+    border-top: 1px solid var(--grid-separator-border-color);
+    border-right: 1px solid var(--grid-separator-border-color);
+    border-bottom: none;
+}
+
+.dataGridFirstFooterCell {
+    /*border-left : none;*/
+}
+.dataGridLastFooterCell {
+    /*border-right : none;*/
+}
+
+.dataGridCell {
+    /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
+    border-bottom: var(--border-width) solid var(--grid-separator-border-color);
+    border-right: var(--border-width) solid var(--grid-separator-border-color);
+}
+
+.dataGridFirstCell {
+    /*border-left : none;*/
+}
+
+.dataGridLastCell {
+    /*border-right : none;*/
+    /* the same as dataGridLastCell, dataGridLastHeaderCell, table.pvtTable thead tr th:last-of-type */
+    border-right: 1px solid var(--grid-separator-border-color);
+}
+
+:root {
+    /*override in StyleDefaults init*/
+    --focused-cell-border-color: #000000;
+}
+
+.focusedCellRightBorder {
+    border-right: var(--border-width) solid var(--focused-cell-border-color);
+}
+
+.focusedCellBottomBorder {
+    border-bottom: var(--border-width) solid var(--focused-cell-border-color);
+}
+
+.leftNeighbourRightBorder {
+    border-right: var(--border-width) solid var(--focused-cell-border-color);
+}
+

@@ -127,19 +127,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     protected final boolean noFooters;
     private final boolean noScrollers;
 
-    // there are two ways to remove outer grid borders :
-    // 1) set styles for outer cells and set border-left/top : none there
-    // 2) set margins (not paddings since they do not support negative values) to -1
-    // first solution is cleaner (since border can be wider than 1px + margin can be used for other purposes, for example scroller padding), however the problem is that in that case the same should be implemented for focus which is pretty tricky
-    // the second solution is easier to implement
-    // the same problem is in gpivot (.subtotalouterdiv .scrolldiv / .headerdiv), and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)
-    public static void removeOuterGridBorders(Widget parent) {
-        setOuterRightGridBorder(parent.getElement(), true);
-    }
-    public static void setOuterRightGridBorder(Element element, boolean setMargin) {
-        element.getStyle().setMarginRight(setMargin ? -1 : 0, Unit.PX);
-    }
-
     public DataGrid(TableContainer tableContainer, boolean noHeaders, boolean noFooters) {
         this.tableContainer = tableContainer;
 
@@ -777,10 +764,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         grids.set(grids.result + 1);
     }
 
-    private void updateTableRightOuterBorder() {
-        updateTableRightOuterBorder(hasVerticalScroll, tableContainer.getElement());
-    }
-
     /* see DataGrid.css, dataGridTableWrapperWidget description */
     public static void updateTablePadding(boolean hasVerticalScroll, Element tableElement) {
         if(hasVerticalScroll)
@@ -788,13 +771,25 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         else
             tableElement.getStyle().clearPaddingRight();
     }
-    public static void updateTableRightOuterBorder(boolean hasVerticalScroller, Element tableElement) {
-        setOuterRightGridBorder(tableElement, !hasVerticalScroller);
-    }
 
-    private void updateTableMargins() {
-        if(!noScrollers)
-            updateTableRightOuterBorder();
+    // there are two ways to remove outer grid borders :
+    // 1) set styles for outer cells and set border-left/top : none there
+    // 2) set margins (not paddings since they do not support negative values) to -1
+    // first solution is cleaner (since border can be wider than 1px + margin can be used for other purposes, for example scroller padding), however the problem is that in that case the same should be implemented for focus which is pretty tricky
+    // the second solution is easier to implement
+    // the same problem is in gpivot (.subtotalouterdiv .scrolldiv / .headerdiv), and there it is solved the same way (however since there is no focus cell there in history there should be a solution with styles, conditional css)
+
+    // in theory margin should be set for inner (child element)
+    // but 1) margin-right doesn't work for table if it's width 100%
+    // 2) it's hard to tell what to do with scroller, since we want right border when there is scroll, and don't wan't it when there is no such scroll
+    // however we can remove margin when there is a vertical scroller (so there's no difference whether to set border for child or parent)
+
+    public static void updateVerticalScroll(boolean hasVerticalScroller, Element tableElement) {
+        boolean setMargin = !hasVerticalScroller;
+        if(setMargin)
+            tableElement.addClassName("no-vertical-scroll");
+        else
+            tableElement.removeClassName("no-vertical-scroll");
     }
 
     private TableRowElement getRowElementNoFlush(int row) {
@@ -1048,12 +1043,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         NodeList<TableRowElement> rows = tableWidget.getDataRows();
 
-        int viewportWidth = getViewportWidth();
-        boolean hasVerticalScroll = viewportWidth != tableContainer.getOffsetWidth(); // probably getFullWidth should be used
-        if(hasVerticalScroll != this.hasVerticalScroll)
-            pendingState.hasVertical = hasVerticalScroll;
+        if(!noScrollers) {
+            boolean hasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableContainer.getElement()); // probably getFullWidth should be used
+            if (this.hasVerticalScroll == null || !this.hasVerticalScroll.equals(hasVerticalScroll))
+                pendingState.hasVertical = hasVerticalScroll;
+        }
 
         int currentScrollLeft = tableContainer.getHorizontalScrollPosition();
+
+        int viewportWidth = getViewportWidth();
 
         //scroll column to visible if needed
         int scrollLeft = currentScrollLeft;
@@ -1163,7 +1161,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return getTableElement().getClientHeight();
     }
 
-    boolean hasVerticalScroll = false;
+    Boolean hasVerticalScroll;
     private void afterUpdateDOMScroll(SetPendingScrollState pendingState) {
         afterUpdateDOMScrollHorizontal(pendingState);
         afterUpdateDOMScrollVertical(pendingState);
@@ -1178,7 +1176,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private void afterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
         if(pendingState.hasVertical != null) {
             hasVerticalScroll = pendingState.hasVertical;
-            updateTableMargins();
+            updateVerticalScroll(hasVerticalScroll, tableContainer.getElement());
         }
 
         if (pendingState.left != null) {
@@ -1624,6 +1622,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             colRowElement = headerElement.insertRow(-1);
 
             bodyElement = GwtClientUtils.createTBody(tableElement);
+            bodyElement.setClassName("dataGridBody");
 
             if (!noFooters) {
                 footerElement = tableElement.createTFoot();

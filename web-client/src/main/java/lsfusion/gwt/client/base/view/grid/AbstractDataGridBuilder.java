@@ -200,7 +200,7 @@ public abstract class AbstractDataGridBuilder<T> {
             //class dataGridStickyCell is also used in DataGrid isStickyCell()
             td.addClassName("dataGridStickyCell");
             td.addClassName("background-inherit");
-            td.getStyle().setProperty("position", "sticky"); // we need to add it explicitly since it is used in setupFillParent
+//            td.getStyle().setProperty("position", "sticky"); // we need to add it explicitly since it is used in setupFillParent
         }
     }
 

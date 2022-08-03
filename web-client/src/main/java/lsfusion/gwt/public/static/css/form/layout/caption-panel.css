@@ -1,85 +1,10 @@
-.accordion-item {
-}
-
-.accordion-button {
-    border: none;
-    background: var(--background-color);
-    text-align: left;
-    border-radius: 0;
-    display: flex;
-    align-items: center;
-    padding: var(--border-padding);
-    color: var(--caption-panel-header-color);
-}
-
-.accordion-button:hover, .accordion-button:focus {
-    background-color: transparent;
-}
-
-.accordion-button[disabled] {
-    color: var(--caption-panel-header-color);
-}
-
-.accordion-button[disabled]:hover {
-    border: none;
-    color: var(--caption-panel-header-color);
-}
-
-.accordion-button::before {
-    content: "";
-    width: 1rem;
-    border-bottom: 1px solid var(--panel-border-color);
-    margin-bottom: var(--border-width);
-}
-
-.accordion-button.collapsible::before {
-    border-bottom: none;
-    height: 1rem;
-    background-image: var(--caption-panel-header-expand-icon-url);
-    margin-bottom: 0;
-}
-
-.accordion-button:not(.empty-caption)::before {
-    margin-right: var(--border-padding);
-}
-
-.accordion-button.collapsible:not(.collapsed)::before {
-    background-image: var(--caption-panel-header-collapse-icon-url);
-}
-
-.accordion-button::after {
-    content: "";
-    flex-grow: 1;
-    width: 1.25rem;
-    border-bottom: 1px solid var(--panel-border-color);
-    margin-bottom: var(--border-width);
-}
-
-
-.accordion-button:not(.empty-caption)::after {
-    margin-left: var(--border-padding);
-}
-
-.accordion-button.collapsed {
-}
-
-.accordion-body {
-}
-
-.accordion-collapse {
-}
-
 
 .leftBorder {
-    border-left: var(--border-width) solid var(--panel-border-color);
-
-    margin-left: calc(0px - var(--border-width) - var(--border-padding));
+    margin-left: calc(0px - var(--border-padding));
     padding-left: var(--border-padding);
 }
 
 .topBorder {
-    border-top: 1px solid var(--panel-border-color);
-
     padding-top: var(--border-padding);
 }
 

@@ -1,0 +1,18 @@
+
+/* all background-color selectors should be duplicated here with .background-inherit */
+/* needed for sticky, toolbars, etc. (see .background-inherit comment / usages) */
+
+body .background-inherit {
+    background-color: var(--bs-body-bg);
+}
+
+.table > :not(caption) > * > *.background-inherit,
+.table > :not(caption) > * > * .background-inherit
+{
+    background-color: var(--bs-table-bg);
+}
+
+/* we need not transparent background, otherwise background-inherit won't work */
+.table {
+    --bs-table-bg: var(--bs-body-bg);
+}

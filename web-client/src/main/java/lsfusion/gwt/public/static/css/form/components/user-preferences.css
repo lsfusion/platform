@@ -4,6 +4,10 @@
     margin-top: 1px;
 }
 
+.noOutline {
+    outline: none;
+}
+
 .userPreferencesDualList .dragdrop-selected {
     opacity: 1.0;
 }

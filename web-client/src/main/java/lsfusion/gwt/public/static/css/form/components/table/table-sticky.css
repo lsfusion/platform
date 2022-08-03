@@ -1,0 +1,48 @@
+
+/* we're adding background-inherit to set the background for all that classes */
+
+.dataGridHeaderRow {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.dataGridFooterRow {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+}
+
+.dataGridHeaderCell {
+    /*position: sticky;*/
+    /*top: 0;*/
+    /*z-index: 1;*/
+}
+
+.dataGridFooterCell {
+    /*position: sticky;*/
+    /*bottom: 0;*/
+    /*z-index: 1;*/
+}
+
+.dataGridStickyCell {
+    position: sticky;
+
+    z-index: 1;
+}
+
+.dataGridStickyHeader {
+    position: sticky;
+
+    z-index: 1001;
+}
+
+.dataGridStickyFooter {
+    position: sticky;
+
+    z-index: 1001;
+}
+
+.dataGridStickyOverflow {
+    z-index: 0;
+}

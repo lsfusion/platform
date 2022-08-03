@@ -110,6 +110,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         if(sticky) {
             th.addClassName("dataGridStickyHeader");
+            th.addClassName("background-inherit");
         }
 
         if(notNull || hasChangeAction)

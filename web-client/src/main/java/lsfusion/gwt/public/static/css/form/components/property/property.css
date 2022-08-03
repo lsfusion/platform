@@ -11,6 +11,12 @@
     overflow-y: hidden;
 }
 
+.prop-input {
+    background-color:transparent;
+    /*var(--component-background-color);*/
+    color: var(--text-color);
+}
+
 /* ------------ Colored corner triangles  ------------ */
 
 .notNullCornerTriangleHolder, .changeActionCornerTriangleHolder {

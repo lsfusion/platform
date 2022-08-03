@@ -125,14 +125,15 @@
     <stylesheet src="static/css/form/components/property/property.css"/>
     <stylesheet src="static/css/form/components/property/property-toolbar.css"/>
     
-    <stylesheet src="static/css/form/components/table/grid.css"/>
-    <stylesheet src="static/css/form/components/table/grid-header.css"/>
+    <stylesheet src="static/css/form/components/table/table.css"/>
+    <stylesheet src="static/css/form/components/table/table-header.css"/>
     <stylesheet src="static/css/form/components/table/table-cell.css"/>
     <stylesheet src="static/css/form/components/table/table-container.css"/>
+    <stylesheet src="static/css/form/components/table/table-sticky.css"/>
     <stylesheet src="static/css/form/components/table/tree.css"/>
 
     <stylesheet src="static/css/form/components/filter.css"/>
-    <stylesheet src="static/css/form/components/panel-renderer.css"/>
+    <stylesheet src="static/css/form/components/property/panel-renderer.css"/>
     <stylesheet src="static/css/form/components/toolbar.css"/>
     <stylesheet src="static/css/form/components/user-preferences.css"/>
     

@@ -1,0 +1,89 @@
+
+body {
+    font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
+    font-size: 9pt;
+}
+
+input,
+button,
+select,
+optgroup,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+body, html {
+    margin: 0;
+}
+
+pre {
+    font-family: "courier new", courier, sans-serif;
+    font-size: small;
+}
+body {
+    color: var(--text-color);
+    margin: 10px;
+    border: 0;
+    padding: 0;
+    direction: ltr;
+}
+
+body, body .background-inherit {
+    background-color: var(--background-color);
+}
+
+a, a:visited {
+    color: var(--focus-color);
+    text-decoration:none;
+}
+
+a:hover {
+    color: var(--focus-color);
+    text-decoration:underline;
+}
+
+h5, .h5 {
+    font-size: 1.25em;
+}
+
+select {
+    background: var(--component-background-color);
+    color: var(--text-color);
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--combobox-border-radius);
+}
+
+select option {
+    background: var(--component-background-color);
+}
+
+select:focus {
+    border: 1px solid var(--focus-color);
+}
+
+img,
+svg {
+    vertical-align: middle;
+}
+
+:focus {
+    outline: 0;
+}
+
+.gwt-HTML {
+    padding: 0 0;
+}
+
+/* ------------ Align ----------------- */
+.align-items-start {
+    align-items: flex-start !important;
+}
+
+.align-items-end {
+    align-items: flex-end !important;
+}
+
+.align-items-center {
+    align-items: center !important;
+}
