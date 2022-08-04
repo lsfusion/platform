@@ -257,7 +257,7 @@ public class EmailReceiver {
                         if (!skipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessages ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
-                            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack) : messageContent instanceof FilterInputStream ? getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody(((String) messageContent).replace("\0", ""), null) : null;
+                            MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack);
                             if (messageEmail == null) {
                                 messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
@@ -305,7 +305,19 @@ public class EmailReceiver {
         return folders;
     }
 
-    private static Object getEmailContent(Message email) throws IOException, MessagingException {
+    public static MultipartBody getEmailMessage(String subjectEmail, Message message, Object messageContent, boolean unpack) throws MessagingException, IOException {
+        if (messageContent instanceof Multipart) {
+            return getMultipartBody(subjectEmail, (Multipart) messageContent, unpack);
+        } else if (messageContent instanceof FilterInputStream) {
+            return getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack);
+        } else if (messageContent instanceof String) {
+            return new MultipartBody(((String) messageContent).replace("\0", ""), null);
+        } else {
+            return null;
+        }
+    }
+
+    public static Object getEmailContent(Message email) throws IOException, MessagingException {
         Object content;
         try {
             content = email.getContent();
@@ -471,11 +483,11 @@ public class EmailReceiver {
         return null;
     }
 
-    private static class MultipartBody {
+    public static class MultipartBody {
         String message;
         Map<String, FileData> attachments;
 
-        private MultipartBody(String message, Map<String, FileData> attachments) {
+        public MultipartBody(String message, Map<String, FileData> attachments) {
             this.message = message;
             this.attachments = attachments;
         }
