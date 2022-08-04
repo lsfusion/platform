@@ -45,7 +45,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
             if (action.showFormType.isModal()) {
                 continueDispatching();
             }
-        });
+        }, action.formId);
     }
 
     @Override
