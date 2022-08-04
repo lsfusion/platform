@@ -355,10 +355,6 @@ DESIGN evalError {
     }
 }
 
-test(TEXT code, STRING form) {
-    EVAL code PARAMS form;
-}
-
 evalInAllCurrentConnections(TEXT code, TEXT param) {
     FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
         NEWSESSION {
