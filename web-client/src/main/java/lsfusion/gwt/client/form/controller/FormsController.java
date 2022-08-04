@@ -358,10 +358,6 @@ public abstract class FormsController {
         return tabsPanel;
     }
 
-    public void openForm(GAsyncFormController asyncFormController, GForm form, GModalityType modalityType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
-        openForm(asyncFormController, form, modalityType, forbidDuplicate, editEvent, editContext, formController, hiddenHandler, null);
-    }
-
     public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
         GWindowFormType windowType = showFormType.getWindowType();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
@@ -455,7 +451,7 @@ public abstract class FormsController {
     }
 
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return (windowType.isEmbedded() && execContext.getProperty().autoSize) || windowType.isPopup();
+        return (windowType.isEmbedded() && execContext.getProperty().autoSize) || windowType.isPopup() || windowType instanceof GContainerWindowFormType;
     }
 
     private boolean isPreferredSize(GWindowFormType windowType) {
