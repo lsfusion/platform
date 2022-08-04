@@ -597,6 +597,7 @@
     </bean>
 
     <bean id="initDebugTask" class="lsfusion.server.physics.dev.debug.controller.init.InitActionDebuggerTask">
+        <property name="logicsInstance" ref="logicsInstance"/>
         <property name="dependencies">
             <set>
                 <ref bean="checkAbstractTask"/>
