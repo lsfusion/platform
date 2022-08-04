@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
+import static lsfusion.gwt.client.navigator.window.GWindowFormType.*;
 
 public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
