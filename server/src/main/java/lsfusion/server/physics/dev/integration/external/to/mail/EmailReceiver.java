@@ -246,11 +246,13 @@ public class EmailReceiver {
                     ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
                     Message message = emailFolder.getMessage(messageCount - count);
                     Timestamp dateTimeSentEmail = getSentDate(message);
+                    ServerLoggers.mailLogger.info("sentDate: " + dateTimeSentEmail);
                     if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
                         Address[] fromAddresses = message.getFrom();
                         String fromAddressEmail = fromAddresses.length > 0 ? ((InternetAddress) fromAddresses[0]).getAddress() : null;
                         String subjectEmail = message.getSubject();
                         String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail, usedEmails);
+                        ServerLoggers.mailLogger.info("idEmail: " + idEmail);
                         usedEmails.add(idEmail);
                         if (!skipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessages ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
@@ -351,9 +353,11 @@ public class EmailReceiver {
     private static MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack) throws IOException, MessagingException {
         String body = "";
         Map<String, FileData> attachments = new HashMap<>();
-        for (int i = 0; i < mp.getCount(); i++) {
+        int parts = mp.getCount();
+        for (int i = 0; i < parts; i++) {
             BodyPart bp = mp.getBodyPart(i);
             String disp = bp.getDisposition();
+            ServerLoggers.mailLogger.info(String.format("reading attachment %s of %s", i, parts));
             if (disp != null && (disp.equalsIgnoreCase(BodyPart.ATTACHMENT))) {
                 String fileName = decodeFileName(bp.getFileName());
                 
