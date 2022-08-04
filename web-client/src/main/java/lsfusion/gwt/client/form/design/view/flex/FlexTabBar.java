@@ -90,6 +90,9 @@ public class FlexTabBar extends Composite implements TabBar {
         delWidgetStyle.setDisplay(Style.Display.FLEX);
         delWidgetStyle.setProperty("alignItems", "center");
 
+        if(beforeIndex <= selectedTab)
+            selectedTab++;
+
         panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH);
         delWidget.getElement().scrollIntoView();
 
@@ -101,6 +104,8 @@ public class FlexTabBar extends Composite implements TabBar {
 
         if (index == selectedTab)
             selectedTab = -1;
+        else if(index < selectedTab)
+            selectedTab--;
         panel.remove(index + 1);
     }
 
