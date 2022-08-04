@@ -283,7 +283,7 @@ NAVIGATOR {
 
 ```lsf
 MODULE HockeyStats;
-// описание логики : https://documentation.lsfusion.org/pages/viewpage.action?pageId=2228240
+
 REQUIRE System;
 
 CLASS Team 'Команда';
