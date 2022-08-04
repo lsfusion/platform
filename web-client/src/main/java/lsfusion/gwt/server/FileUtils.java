@@ -35,6 +35,9 @@ import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
 import java.io.*;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class FileUtils {
@@ -60,7 +63,17 @@ public class FileUtils {
     // should correspond url-pattern for fileDownloadHandler, application context handler (in web.xml)
     public static String DOWNLOAD_HANDLER = "downloadFile";
 
-    public static void readFile(String relativePath, String fileName, boolean close, EConsumer<InputStream, IOException> consumer) {
+    private static final ScheduledExecutorService closeExecutor = Executors.newScheduledThreadPool(5);
+    private static void scheduleCloseFile(File file, long delay) {
+        closeExecutor.schedule(() -> {
+            try {
+                deleteFile(file);
+            } catch (Throwable e) { // we need to suppress to not stop scheduler
+            }
+        }, delay, TimeUnit.MILLISECONDS);
+    }
+
+    public static void readFile(String relativePath, String fileName, boolean close, boolean scheduleClose, EConsumer<InputStream, IOException> consumer) {
         File file = createFile(relativePath, fileName);
 
         try(FileInputStream inStream = new FileInputStream(file)) {
@@ -69,8 +82,12 @@ public class FileUtils {
             throw Throwables.propagate(e);
         }
 
-        if(close)
-            deleteFile(file);
+        if(close) {
+            if(scheduleClose)
+                scheduleCloseFile(file, 5000);
+            else
+                deleteFile(file);
+        }
     }
     public static Runnable writeFile(String relativePath, boolean override, String fileName, EConsumer<OutputStream, IOException> consumer) {
         File file = createFile(relativePath, fileName);
@@ -308,7 +325,7 @@ public class FileUtils {
 
     public static Object readUploadFileAndDelete(GFilesDTO filesObj) {
         Result<Object> result = new Result<>();
-        readFile(APP_UPLOAD_FOLDER_PATH, filesObj.filePath, true, inStream ->
+        readFile(APP_UPLOAD_FOLDER_PATH, filesObj.filePath, true, false, inStream ->
                 result.set(BaseUtils.filesToBytes(false, filesObj.storeName, filesObj.custom, filesObj.named, new String[]{filesObj.fileName}, new String[]{filesObj.filePath}, new InputStream[]{inStream})));
         return result.result;
     }

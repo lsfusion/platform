@@ -20,6 +20,8 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static lsfusion.base.SystemUtils.getRevision;
+
 public class BusinessLogicsBootstrap {
     private static final Logger logger = ServerLoggers.startLogger;
 
@@ -63,7 +65,10 @@ public class BusinessLogicsBootstrap {
                         logger.info("Installer for Windows (without auto update): https://download.lsfusion.org/exe/lsfusion-desktop-" + version + (SystemUtils.is64Arch() ? "-x64" : "") + ".exe");
                     }
                 }
-                logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
+
+                String revision = getRevision(SystemProperties.inDevMode);
+                logger.info("Server " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : "") +
+                        " has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {
                 logger.info("Error starting server, server will be stopped.");
                 stop();

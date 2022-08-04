@@ -6,6 +6,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
+import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ public class GAsyncCloseForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(GAsyncFormController asyncFormController, FormsController formsController, Event editEvent) {
-        assert false;
+    public void exec(GAsyncFormController asyncFormController, FormsController formsController, FormContainer formContainer, Event editEvent) {
+        formsController.asyncCloseForm(asyncFormController, formContainer);
     }
 }

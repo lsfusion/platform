@@ -6,6 +6,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.async.ClientPushAsyncAdd;
 import lsfusion.client.form.property.async.ClientPushAsyncClose;
 import lsfusion.client.form.property.async.ClientPushAsyncInput;
+import lsfusion.gwt.client.GFormEventClose;
 import lsfusion.gwt.client.GFormScheduler;
 import lsfusion.gwt.client.action.GExternalHttpResponse;
 import lsfusion.gwt.client.form.GUpdateMode;
@@ -26,6 +27,7 @@ import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.ColumnUserPreferences;
@@ -207,5 +209,10 @@ public class GwtToClientConverter extends ObjectConverter {
     @Converter(from = GFormScheduler.class)
     public FormScheduler convertFormScheduler(GFormScheduler formScheduler) {
         return new FormScheduler(formScheduler.period, formScheduler.fixed);
+    }
+
+    @Converter(from = GFormEventClose.class)
+    public FormEventClose convertFormScheduler(GFormEventClose formEventClose) {
+        return new FormEventClose(formEventClose.ok);
     }
 }

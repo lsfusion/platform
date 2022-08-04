@@ -11,7 +11,6 @@ grammar LsfLogics;
     import lsfusion.interop.form.WindowFormType;
     import lsfusion.interop.form.ContainerWindowFormType;
     import lsfusion.interop.form.ModalityWindowFormType;
-    import lsfusion.interop.form.event.FormEventType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.interop.form.event.FormScheduler;
@@ -56,6 +55,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.ChangeEvent;
     import lsfusion.server.logics.event.Event;
     import lsfusion.server.logics.event.SystemEvent;
+    import lsfusion.server.logics.form.interactive.FormEventType;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
     import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
@@ -5592,7 +5592,6 @@ multOperand
 	
 fragment NEWLINE	:	'\r'?'\n'; 
 fragment SPACE		:	(' '|'\t');
-fragment STR_LITERAL_CHAR	: ('\\'.) | ~('\''|'\\');
 fragment DIGIT		:	'0'..'9';
 fragment DIGITS		:	('0'..'9')+;
 fragment EDIGITS	:	('0'..'9')*;
@@ -5602,7 +5601,17 @@ fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
-fragment STRING_LITERAL_FRAGMENT : '\'' STR_LITERAL_CHAR* '\'';
+fragment STR_LITERAL_CHAR 
+	:	('\\'.) 
+	|	~('\''|'\\'|'$')
+	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$' 
+	;
+
+fragment ESCAPED_STR_LITERAL_CHAR:	('\\'.) | ~('\\'|'{'|'}');
+fragment BLOCK: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}'; 
+fragment INLINE_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';	 
+fragment STRING_LITERAL_FRAGMENT:	'\'' (INLINE_BLOCK | STR_LITERAL_CHAR)* '\''; 
+
 fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;
 
@@ -5610,7 +5619,7 @@ fragment ID_META_FRAGMENT : (ID_FRAGMENT? (('###' | '##') NEXTID_FRAGMENT)+) | I
 
 fragment STRING_LITERAL_ID_FRAGMENT : ID_FRAGMENT | STRING_LITERAL_FRAGMENT;
 fragment STRING_LITERAL_NEXTID_FRAGMENT : NEXTID_FRAGMENT | STRING_LITERAL_FRAGMENT;
-fragment STRING_META_FRAGMENT : (STRING_LITERAL_ID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
+fragment STRING_META_FRAGMENT : (NEXTID_FRAGMENT ('###' | '##'))* STRING_LITERAL_FRAGMENT (('###' | '##') STRING_LITERAL_NEXTID_FRAGMENT)*;
 
 fragment INTERVAL_TYPE : 'DATE' | 'DATETIME' | 'TIME' | 'ZDATETIME';
 
