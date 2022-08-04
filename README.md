@@ -3,7 +3,7 @@
   <a href="https://github.com/lsfusion/platform/tree/master/README_ru.md#lsfusion-">Russian</a>
 </p>
 
-# lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/themes/lsfusion/assets/images/i-logo-lsfusion.svg" align="right"/></a>  
+# lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/imgs/logo.svg" align="right"/></a>  
 
 lsFusion is a free open-source platform for information systems development based on the fifth-generation programming language of the same name.
 

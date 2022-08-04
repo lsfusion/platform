@@ -3,7 +3,7 @@
   <span>Русский</span>
 </p>
 
-# lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/themes/lsfusion/assets/images/i-logo-lsfusion.svg" align="right"/></a>  
+# lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/imgs/logo.svg" align="right"/></a>  
 
 Бесплатная открытая платформа разработки информационных систем на основе одноименного языка пятого поколения.
 
