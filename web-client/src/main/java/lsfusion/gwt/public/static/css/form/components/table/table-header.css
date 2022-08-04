@@ -41,3 +41,30 @@
 .dataGridColumnRowFlexCell {
 }
 
+.wrap-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dataGridHeaderCell-caption {
+    white-space: normal;
+}
+
+.dataGridHeaderCell-sortimg {
+    /*overflow: hidden;*/
+}
+
+.dataGridHeader {
+}
+.dataGridHeaderCell {
+    /* ??? */
+    /*overflow: hidden;*/
+}
+
+.dataGridFooter {
+}
+.dataGridFooterCell {
+    /* ??? */
+    /*overflow: hidden;*/
+}

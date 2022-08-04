@@ -25,42 +25,12 @@
 
     /*background: var(--component-background-color);*/
     cursor: default;
-    overflow: hidden; /* important for "removing outer grid borders", since they are removed with margin -1 overflow should be hidden */
-}
-
-/* it's hard to tell why, but setting overflow:hidden, prevents getting divs bigger than their parents */
-
-.wrap-center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    /*overflow: hidden; !* important for "removing outer grid borders", since they are removed with margin -1 overflow should be hidden *!*/
 }
 
 .wrap-img-margins {
     /*overflow: hidden;*/
     margin: 0.0625rem 0.125rem;
-}
-
-.dataGridHeaderCell-caption {
-    white-space: normal;
-}
-
-.dataGridHeaderCell-sortimg {
-    /*overflow: hidden;*/
-}
-
-.dataGridHeader {
-}
-.dataGridHeaderCell {
-    /* ??? */
-    /*overflow: hidden;*/
-}
-
-.dataGridFooter {
-}
-.dataGridFooterCell {
-    /* ??? */
-    /*overflow: hidden;*/
 }
 
 .dataGridRow {

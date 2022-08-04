@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -54,7 +53,7 @@ public class LogicalCellRenderer extends CellRenderer {
             inputElement = renderInputElement(element);
 
             if(isTDOrTH) {
-                renderTextAlignment(property, element);
+                renderTextAlignment(property, element, false);
 
                 renderedAlignment = true;
             }

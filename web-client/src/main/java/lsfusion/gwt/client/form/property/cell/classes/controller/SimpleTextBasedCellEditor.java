@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
@@ -215,7 +214,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         inputElement.setTabIndex(-1); // we don't want input to get focus if it's wrapped or in table (when editing it's not important, but just in case)
         inputElement.addClassName("remove-all-pmb");
 
-        CellRenderer.renderTextAlignment(property, inputElement);
+        CellRenderer.renderTextAlignment(property, inputElement, true);
 
         CellRenderer.setBasedTextFonts(property, inputElement, renderContext); // ??? cellParent
         SimpleTextBasedCellRenderer.render(property, inputElement, renderContext, multiLine);

@@ -847,11 +847,6 @@ public class GwtClientUtils {
         return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
     }
 
-    // optimization
-    public static boolean isAlignedFlexModifiableDiv(Element th) {
-        return th.hasClassName("wrap-center");
-    }
-
     //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
     public static Element wrapDiv(Element th) {
         Element wrappedTh = Document.get().createDivElement();

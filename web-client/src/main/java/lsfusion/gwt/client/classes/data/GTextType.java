@@ -52,7 +52,7 @@ public class GTextType extends GStringType {
     }
 
     @Override
-    public String getVertTextAlignment() {
+    public String getVertTextAlignment(boolean isInput) {
         return "top";
     }
 

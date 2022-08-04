@@ -51,28 +51,6 @@ public abstract class CellRenderer<T> {
         return false;
     }
 
-    private static String getFlexAlign(Style.TextAlign textAlign) {
-        switch (textAlign) {
-            case LEFT:
-                return "flex-start"; // left/start somewhy doesn't work with text
-            case RIGHT:
-                return "flex-end"; // rigt/end somewhy doesn't work with text
-            default:
-                return textAlign.getCssName();
-        }
-    }
-    private static Style.VerticalAlign getTextAlign(String vertAlign) {
-        switch (vertAlign) {
-            case "center":
-                return Style.VerticalAlign.MIDDLE;
-            case "baseline":
-                return Style.VerticalAlign.BASELINE;
-            case "top":
-                return Style.VerticalAlign.TOP;
-        }
-        throw new UnsupportedOperationException();
-    }
-
     // should be consistent with getWidthPadding and getHeightPadding
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
@@ -118,27 +96,70 @@ public abstract class CellRenderer<T> {
     }
 
     private static void renderFlexAlignment(GPropertyDraw property, Element element) {
-        element.addClassName("wrap-center");
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+        switch(horzTextAlignment) {
+            case LEFT:
+                element.addClassName("prop-flex-horz-start");
+                break;
+            case CENTER:
+                element.addClassName("prop-flex-horz-center");
+                break;
+            case RIGHT:
+                element.addClassName("prop-flex-horz-end");
+                break;
+        }
 
-        String horzAlignment = getFlexAlign(property.getHorzTextAlignment());
-        String vertAlignment = property.getVertTextAlignment();
-        if(!vertAlignment.equals("center") && !vertAlignment.equals("baseline"))
-            element.getStyle().setProperty("alignItems", vertAlignment);
-        if(!horzAlignment.equals("center"))
-            element.getStyle().setProperty("justifyContent", horzAlignment);
+        String vertAlignment = property.getVertTextAlignment(false); // here we don't care about baseline / center
+        switch (vertAlignment) {
+            case "top":
+                element.addClassName("prop-flex-vert-start");
+                break;
+            case "baseline":
+            case "center":
+                element.addClassName("prop-flex-vert-center");
+                break;
+            case "stretch":
+                element.addClassName("prop-flex-vert-stretch");
+                break;
+            case "bottom":
+                element.addClassName("prop-flex-vert-end");
+                break;
+        }
     }
 
-    public static void renderTextAlignment(GPropertyDraw property, Element element) {
+    public static void renderTextAlignment(GPropertyDraw property, Element element, boolean isInput) {
 //        assert GwtClientUtils.isTDorTH(element) || GwtClientUtils.isInput(element);
+        assert isInput == GwtClientUtils.isInput(element);
 
-        Style.TextAlign horzAlignment = property.getHorzTextAlignment();
-        Style.VerticalAlign vertAlignment = getTextAlign(property.getVertTextAlignment());
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+        switch(horzTextAlignment) {
+            case LEFT:
+                element.addClassName("prop-text-horz-start");
+                break;
+            case CENTER:
+                element.addClassName("prop-text-horz-center");
+                break;
+            case RIGHT:
+                element.addClassName("prop-text-horz-end");
+                break;
+        }
 
-        // actually vertical-align works only for text content or td content
-        // however for td line height should not be set (!) and for div should be set, god knows why
-        // it seems that vertical-align is middle by default, however just in case
-        element.getStyle().setVerticalAlign(vertAlignment);
-        element.getStyle().setTextAlign(horzAlignment);
+        String vertAlignment = property.getVertTextAlignment(isInput);
+        switch (vertAlignment) {
+            case "top":
+                element.addClassName("prop-text-vert-start");
+                break;
+            case "center":
+            case "stretch":
+                element.addClassName("prop-text-vert-center");
+                break;
+            case "baseline":
+                element.addClassName("prop-text-vert-baseline");
+                break;
+            case "bottom":
+                element.addClassName("prop-text-vert-end");
+                break;
+        }
     }
 
     public void clearRender(Element element, RenderContext renderContext) {

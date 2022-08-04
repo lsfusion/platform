@@ -63,3 +63,47 @@
 .text-based-prop, .text-based-prop.dataGridCell {
     padding: 2px 3px;
 }
+
+.prop-flex-horz-start {
+    align-items: flex-start;
+}
+.prop-flex-horz-center {
+    align-items: center;
+}
+.prop-flex-horz-end {
+    align-items: flex-end;
+}
+.prop-flex-vert-start {
+    justify-content: flex-start;
+}
+.prop-flex-vert-center {
+    justify-content: center;
+}
+.prop-flex-vert-stretch {
+    justify-content: stretch;
+}
+.prop-flex-vert-end {
+    justify-content: flex-end;
+}
+
+.prop-text-horz-start {
+    text-align: left;
+}
+.prop-text-horz-center {
+    text-align: center;
+}
+.prop-text-horz-end {
+    text-align: right;
+}
+.prop-text-vert-start {
+    vertical-align: top;
+}
+.prop-text-vert-center {
+    vertical-align: middle;
+}
+.prop-text-vert-baseline {
+    vertical-align: baseline;
+}
+.prop-text-vert-end {
+    vertical-align: bottom;
+}

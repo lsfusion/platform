@@ -160,7 +160,6 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     public static Element wrapImg(Element th, Consumer<ImageElement> imgProcessor) {
-        assert !GwtClientUtils.isAlignedFlexModifiableDiv(th);
         th.addClassName("wrap-wrapimgdiv");
 
         Element wrappedTh = Document.get().createDivElement();

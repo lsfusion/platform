@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.property;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
@@ -685,8 +684,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType.getHorzTextAlignment();
     }
 
-    public String getVertTextAlignment() {
-        return baseType.getVertTextAlignment();
+    public String getVertTextAlignment(boolean isInput) {
+        return baseType.getVertTextAlignment(isInput);
     }
 
     public InputElement createTextInputElement() {

@@ -26,7 +26,7 @@ public class GImageType extends GFileType {
     }
 
     @Override
-    public String getVertTextAlignment() {
+    public String getVertTextAlignment(boolean isInput) {
         return "stretch";
     }
 }

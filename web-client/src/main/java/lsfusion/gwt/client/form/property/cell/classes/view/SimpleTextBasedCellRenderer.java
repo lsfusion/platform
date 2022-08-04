@@ -94,7 +94,7 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) { // otherwise we'll use flex alignment (however text alignment would also do)
-                renderTextAlignment(property, element);
+                renderTextAlignment(property, element, isInput);
 //                renderedAlignment = true;
 //            }
             SimpleTextBasedCellRenderer.render(property, element, renderContext, isMultiLine());
