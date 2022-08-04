@@ -131,7 +131,8 @@ public class FormsController implements ColorThemeChangeListener {
         openedForms.add(page);
     }
 
-    public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener) {
+    public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate,
+                                       RemoteFormInterface remoteForm, byte[] firstChanges, MainFrame.FormCloseListener closeListener, String formId) {
         ClientForm clientForm = ClientFormController.deserializeClientForm(remoteForm);
         ClientFormDockable page = asyncFormController.removeAsyncForm();
         boolean asyncOpened = page != null;
@@ -154,7 +155,7 @@ public class FormsController implements ColorThemeChangeListener {
         } else {
             page.getContentPane().removeAll(); //remove loading
         }
-        page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges);
+        page.init(navigator, canonicalName, formSID, remoteForm, clientForm, closeListener, firstChanges, formId);
         if (!asyncOpened) {
             openForm(page);
         }

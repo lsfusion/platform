@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
 import lsfusion.gwt.client.action.GActivateFormAction;
+import lsfusion.gwt.client.action.GCloseFormAction;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GMaximizeFormAction;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -44,7 +45,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
             if (action.showFormType.isModal()) {
                 continueDispatching();
             }
-        });
+        }, action.formId);
     }
 
     @Override
@@ -62,5 +63,10 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
         if (!MainFrame.mobile) {
             formsController.setFullScreenMode(true);
         }
+    }
+
+    @Override
+    public void execute(final GCloseFormAction action) {
+        formsController.closeForm(action.formId);
     }
 }

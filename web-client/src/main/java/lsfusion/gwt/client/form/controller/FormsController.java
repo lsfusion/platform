@@ -49,13 +49,17 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
+import static lsfusion.gwt.client.navigator.window.GWindowFormType.*;
 
 public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
     private final FlexTabbedPanel tabsPanel;
+
+    private final List<FormContainer> formContainers = new ArrayList<>();
 
     private final List<FormDockable> forms = new ArrayList<>();
     private final List<Integer> formFocusOrder = new ArrayList<>();
@@ -348,7 +352,7 @@ public abstract class FormsController {
         return tabsPanel;
     }
 
-    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler) {
+    public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
         GWindowFormType windowType = showFormType.getWindowType();
         FormContainer formContainer = asyncFormController.removeAsyncForm();
         boolean asyncOpened = formContainer != null;
@@ -381,7 +385,7 @@ public abstract class FormsController {
                     (int)asyncFormController.getEditRequestIndex() * RemoteDispatchAsync.requestIndexDeepStep;
         }
 
-        initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), isAutoSized(editContext, windowType), dispatchPriority);
+        initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), isAutoSized(editContext, windowType), dispatchPriority, formId);
         if(asyncOpened)
             formContainer.onAsyncInitialized();
         else
@@ -391,19 +395,24 @@ public abstract class FormsController {
     }
 
     private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
+        FormContainer formContainer;
         if(windowType instanceof GContainerWindowFormType) {
-            return new ContainerForm(this, formCaption, async, editEvent, ((GContainerWindowFormType) windowType).getInContainerId());
+            formContainer = new ContainerForm(this, formCaption, async, editEvent, ((GContainerWindowFormType) windowType).getInContainerId());
         } else if(windowType.isFloat()) {
-             return new ModalForm(this, formCaption, async, editEvent);
+            formContainer =  new ModalForm(this, formCaption, async, editEvent);
         } else if(windowType.isDocked()) {
-            return new FormDockable(this, formCanonicalName, formCaption, async, editEvent);
+            formContainer =  new FormDockable(this, formCanonicalName, formCaption, async, editEvent);
         } else if(windowType.isEmbedded()) {
-            return new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            formContainer =  new EmbeddedForm(this, editRequestIndex, async, editEvent, editContext, formController);
         } else if(windowType.isPopup()) {
-            return new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
+            formContainer =  new PopupForm(this, editRequestIndex, async, editEvent, editContext, formController);
         } else {
             throw new UnsupportedOperationException();
         }
+
+        formContainers.add(formContainer);
+
+        return formContainer;
     }
 
     public void asyncOpenForm(GAsyncFormController asyncFormController, GAsyncOpenForm openForm, Event editEvent, EditContext editContext, ExecContext execContext, GFormController formController) {
@@ -432,7 +441,7 @@ public abstract class FormsController {
     }
 
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return ((windowType.isEmbedded() || windowType instanceof GContainerWindowFormType) && execContext.getProperty().autoSize) || windowType.isPopup() || windowType.isFloat();
+        return ((windowType.isEmbedded() || windowType instanceof GContainerWindowFormType) && execContext.getProperty().autoSize) || windowType.isPopup() || windowType.isFloat() || windowType.isFloat();
     }
 
     private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
@@ -459,14 +468,14 @@ public abstract class FormsController {
         }, ContextMenuEvent.getType());
     }
 
-    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize, int dispatchPriority) {
+    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize, int dispatchPriority, String formId) {
         formContainer.initForm(this, form, (asyncFormController, editFormCloseReason) -> {
             Pair<FormDockable, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
             if(asyncClosedForm == null) {
                 formContainer.queryHide(editFormCloseReason);
             }
             hiddenHandler.onHidden();
-        }, dialog, autoSize, dispatchPriority);
+        }, dialog, autoSize, dispatchPriority, formId);
     }
 
     public void selectTab(FormDockable dockable) {
@@ -477,6 +486,17 @@ public abstract class FormsController {
         FormDockable form = findForm(formCanonicalName);
         if(form != null)
             selectTab(form);
+    }
+
+    public void closeForm(String formId) {
+        ListIterator<FormContainer> iterator = formContainers.listIterator();
+        while(iterator.hasNext()){
+            FormContainer formContainer = iterator.next();
+            if(formId.equals(formContainer.formId)) {
+                formContainer.closePressed();
+                iterator.remove();
+            }
+        }
     }
 
     public FormDockable findForm(String formCanonicalName) {
@@ -597,6 +617,10 @@ public abstract class FormsController {
     
     public void executeNotificationAction(String actionSID, int type, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         syncDispatch(new ExecuteNavigatorAction(actionSID, type), callback);
+    }
+
+    public void removeFormContainer(FormContainer formContainer) {
+        formContainers.remove(formContainer);
     }
 
     private class EditModeButton extends SimplePanel implements ColorThemeChangeListener {

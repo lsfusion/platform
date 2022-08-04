@@ -65,7 +65,9 @@ public interface ClientActionDispatcher {
     void execute(ActivateFormClientAction action);
 
     void execute(MaximizeFormClientAction action);
-    
+
+    void execute(CloseFormClientAction action);
+
     void execute(ChangeColorThemeClientAction action);
     
     void execute(ResetWindowsLayoutClientAction action);

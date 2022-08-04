@@ -251,8 +251,8 @@ public class ThreadLocalContext {
         return get().requestUserInteraction(action);
     }
 
-    public static void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, ExecutionStack stack) throws SQLException, SQLHandledException {
-        get().requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, stack);
+    public static void requestFormUserInteraction(FormInstance remoteForm, ShowFormType showFormType, boolean forbidDuplicate, String formId, ExecutionStack stack) throws SQLException, SQLHandledException {
+        get().requestFormUserInteraction(remoteForm, showFormType, forbidDuplicate, formId, stack);
     }
 
     public static boolean canBeProcessed() {
@@ -368,10 +368,10 @@ public class ThreadLocalContext {
     private static void aspectBeforeEvent(LogicsInstance instance, NewThreadExecutionStack stack, ThreadInfo threadInfo, SyncType mirror) {
         aspectBeforeEvent(instance, stack, threadInfo, true, mirror);
     }
-    private static AspectState aspectBeforeEvent(LogicsInstance instance, NewThreadExecutionStack stack, ThreadInfo threadInfo, boolean assertTop, SyncType mirror) {
+    public static AspectState aspectBeforeEvent(LogicsInstance instance, NewThreadExecutionStack stack, ThreadInfo threadInfo, boolean assertTop, SyncType mirror) {
         return aspectBeforeEvent(instance.getContext(), assertTop, threadInfo, stack, mirror);
     }
-    private static void aspectAfterEvent(ThreadInfo threadInfo) {
+    public static void aspectAfterEvent(ThreadInfo threadInfo) {
         aspectAfterEvent(null, true, threadInfo);
     }
     private static NewThreadExecutionStack eventStack(EventServer eventServer) {

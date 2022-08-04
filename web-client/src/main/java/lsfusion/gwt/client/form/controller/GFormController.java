@@ -810,7 +810,7 @@ public class GFormController implements EditManager {
             return panelController;
     }
 
-    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler) {
+    public void openForm(Long requestIndex, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, final WindowHiddenHandler handler, String formId) {
         boolean isDockedModal = showFormType.isDockedModal();
         if (isDockedModal)
             ((FormDockable)formContainer).block();
@@ -824,7 +824,7 @@ public class GFormController implements EditManager {
                 formsController.ensureTabSelected();
 
             handler.onHidden();
-        });
+        }, formId);
 
         if (isDockedModal)
             ((FormDockable)formContainer).setBlockingForm((FormDockable) blockingForm);
@@ -1503,6 +1503,7 @@ public class GFormController implements EditManager {
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
+        formsController.removeFormContainer(formContainer);
         for(ContainerForm containerForm : containerForms) {
             containerForm.getForm().closePressed(editFormCloseReason);
         }

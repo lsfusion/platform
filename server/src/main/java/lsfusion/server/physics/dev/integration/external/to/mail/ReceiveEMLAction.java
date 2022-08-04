@@ -2,7 +2,6 @@ package lsfusion.server.physics.dev.integration.external.to.mail;
 
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.FolderClosedIOException;
-import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -12,7 +11,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -23,11 +21,9 @@ import javax.mail.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
-import static lsfusion.base.BaseUtils.nullTrim;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class ReceiveEMLAction extends EmailAction {
@@ -56,8 +52,8 @@ public class ReceiveEMLAction extends EmailAction {
                 Integer receivePortAccount = (Integer) emailLM.receivePortAccount.read(context, accountObject);
                 String nameAccount = (String) emailLM.nameAccount.read(context, accountObject);
                 String passwordAccount = (String) emailLM.passwordAccount.read(context, accountObject);
-                String nameReceiveAccountTypeAccount = (String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject);
-                boolean isPop3Account = nameReceiveAccountTypeAccount == null || nullTrim(nameReceiveAccountTypeAccount).equals("POP3");
+                AccountType accountType = AccountType.get((String) emailLM.nameReceiveAccountTypeAccount.read(context, accountObject));
+                boolean startTLS = emailLM.startTLS.read(context, accountObject) != null;
                 boolean deleteMessagesAccount = emailLM.deleteMessagesAccount.read(context, accountObject) != null;
                 Integer lastDaysAccount = (Integer) emailLM.lastDaysAccount.read(context, accountObject);
                 Integer maxMessagesAccount = (Integer) emailLM.maxMessagesAccount.read(context, accountObject);
@@ -71,7 +67,7 @@ public class ReceiveEMLAction extends EmailAction {
 
                 Set<Long> skipEmails = getSkipEmails(context, nameAccount);
 
-                Map<Long, FileData> emlMap = receiveEML(context, skipEmails, ignoreExceptions, isPop3Account, receivePortAccount, nameAccount, passwordAccount, receiveHostAccount, lastDaysAccount, maxMessagesAccount, deleteMessagesAccount);
+                Map<Long, FileData> emlMap = receiveEML(context, skipEmails, ignoreExceptions, accountType, startTLS, receivePortAccount, nameAccount, passwordAccount, receiveHostAccount, lastDaysAccount, maxMessagesAccount, deleteMessagesAccount);
                 for (Map.Entry<Long, FileData> entry : emlMap.entrySet()) {
                     DataObject entryObject = new DataObject(entry.getKey());
                     LM.findProperty("emlFile[LONG]").change(entry.getValue(), context, entryObject);
@@ -79,7 +75,7 @@ public class ReceiveEMLAction extends EmailAction {
 
             } catch (Exception e) {
                 logger.error(localize("{mail.failed.to.receive.mail}"), e);
-                context.delayUserInterfaction(new MessageClientAction(localize("{mail.failed.to.receive.mail}") + " : " + e.toString(), localize("{mail.receiving}")));
+                context.delayUserInterfaction(new MessageClientAction(localize("{mail.failed.to.receive.mail}") + " : " + e, localize("{mail.receiving}")));
             }
         } else {
             logger.info("Email Server disabled, change serverComputer() to enable");
@@ -107,12 +103,11 @@ public class ReceiveEMLAction extends EmailAction {
         return skipEmails;
     }
 
-    public Map<Long, FileData> receiveEML(ExecutionContext context, Set<Long> skipEmails, boolean ignoreExceptions, boolean isPOP3, Integer receivePort, String user, String password, String receiveHost, Integer lastDays, Integer maxMessages, boolean deleteMessages) throws MessagingException, IOException, GeneralSecurityException {
+    public Map<Long, FileData> receiveEML(ExecutionContext context, Set<Long> skipEmails, boolean ignoreExceptions, AccountType accountType, boolean startTLS, Integer receivePort, String user, String password, String receiveHost, Integer lastDays, Integer maxMessages, boolean deleteMessages) throws MessagingException, IOException, GeneralSecurityException {
 
         Map<Long, FileData> emlMap = new HashMap<>();
 
-        Session emailSession = Session.getInstance(getMailProperties(receiveHost, isPOP3));
-        Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imaps");
+        Store emailStore = EmailReceiver.getEmailStore(receiveHost, accountType, startTLS);
         if (receivePort != null) emailStore.connect(receiveHost, receivePort, user, password);
         else emailStore.connect(receiveHost, user, password);
 
@@ -174,24 +169,6 @@ public class ReceiveEMLAction extends EmailAction {
             }
         }
         return folders;
-    }
-
-    public Properties getMailProperties(String receiveHost, boolean isPOP3) throws GeneralSecurityException {
-        Properties mailProps = new Properties();
-        mailProps.setProperty(isPOP3 ? "mail.pop3.host" : "mail.imap.host", receiveHost);
-
-        //options to increase downloading big attachments
-        mailProps.put("mail.imaps.partialfetch", "true");
-        mailProps.put("mail.imaps.fetchsize", "819200");
-
-        if (!isPOP3) { //imaps
-            MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
-            socketFactory.setTrustAllHosts(true);
-            mailProps.put("mail.imaps.ssl.socketFactory", socketFactory);
-            mailProps.setProperty("mail.store.protocol", "imaps");
-            mailProps.setProperty("mail.imaps.timeout", "5000");
-        }
-        return mailProps;
     }
 
     private Long getUID(Folder folder, Message message) throws MessagingException {

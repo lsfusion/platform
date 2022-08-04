@@ -424,7 +424,7 @@ public class ScriptingFormEntity {
                 propertyDraw.setIntegrationSID(forceIntegrationSID);
 
             try {
-                form.setFinalPropertyDrawSID(propertyDraw, alias);
+                form.setFinalPropertyDrawSID(propertyDraw, alias, false);
             } catch (FormEntity.AlreadyDefined alreadyDefined) {
                 LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
             }

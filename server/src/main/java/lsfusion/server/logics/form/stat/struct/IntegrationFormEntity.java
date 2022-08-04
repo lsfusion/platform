@@ -89,7 +89,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 if(!isNamed && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
                     alias = "value";
             }
-            setFinalPropertyDrawSID(propertyDraw, alias);
+            setFinalPropertyDrawSID(propertyDraw, alias, true);
 
             propertyDraw.group = Group.NOGROUP; // without group
 

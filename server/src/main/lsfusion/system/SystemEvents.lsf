@@ -340,6 +340,49 @@ clearApplicationLog () + {
 	}
 }   
 
+showJavaStack '{eval.script.show.stack}' = DATA LOCAL BOOLEAN ();
+showStack() {
+    showJavaStack() <- NOT showJavaStack(); 
+}
+
+//Do not remove form. Used in plugin. FormDesignChangeDetector.showLiveDesign
+FORM evalError
+    PROPERTIES() messageCaughtException BACKGROUND RGB(255, 50, 50) READONLY
+    PROPERTIES() showStack
+    PROPERTIES() READONLY SHOWIF showJavaStack() javaStackTraceCaughtException
+;
+
+DESIGN evalError {
+    REMOVE TOOLBARRIGHT;
+    REMOVE TOOLBARLEFT;
+    MOVE PROPERTY (messageCaughtException()) {
+        panelCaptionVertical = TRUE;
+        caption = 'EVAL ERROR';
+        captionFont = 'bold 24';
+        autoSize = TRUE;
+    };
+    align = STRETCH;
+    MOVE PROPERTY(showStack()) {
+        height = 40;
+        align = STRETCH;
+        panelCaptionVertical = TRUE;
+    }
+    MOVE PROPERTY (javaStackTraceCaughtException()) {
+        caption = '';
+        autoSize = TRUE;
+    }
+}
+
+evalInAllCurrentConnections(TEXT code, TEXT param) {
+    FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
+        NEWSESSION {
+            NEWTHREAD {
+                EVAL code PARAMS param;
+            } CONNECTION connection;     
+        }
+    }
+}
+
 FORM connections '{system.events.form.connections}'
 
     OBJECTS c=Connection

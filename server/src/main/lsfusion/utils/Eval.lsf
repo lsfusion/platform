@@ -183,12 +183,6 @@ FORM interpreter '{eval.script.form.interpreter}'
     PROPERTIES(r) NEW, DELETE GRID
 ;
 
-createScript ()  { 
-    NEW s = Script {
-        SEEK interpreter.s = s;
-    }
-}
-
 copyScript '{eval.script.copy.script}' (Script sf)  { 
     NEW s = Script {
         text(s) <- text(sf);
@@ -218,11 +212,15 @@ findScript '{eval.script.find.script}' (Script sf)  {
     }   
 }
 
-EXTEND FORM interpreter
-    PROPERTIES(s) copyScript, findScript
+EXTEND FORM interpreter 
+    PROPERTIES(s) copyScript, findScript 
     
-    EVENTS
-        ON INIT createScript();
+    EVENTS  
+        ON INIT {
+            NEW scr = Script {
+                SEEK interpreter.s = scr; 
+            }
+        }
 ;
 
 DESIGN interpreter {

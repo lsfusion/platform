@@ -1,6 +1,6 @@
 MODULE Email;
 
-REQUIRE System, Reflection;
+REQUIRE System, Reflection, SystemEvents;
 
 // -------------- Account ----------------- //
 CLASS Account '{email.account}';
@@ -45,7 +45,8 @@ receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
 
 CLASS ReceiveAccountType '{email.receive.account.type}' {
     POP3 '{email.receive.account.type.pop3}',
-    IMAP '{email.receive.account.type.imap}'
+    IMAP '{email.receive.account.type.imap}',
+    IMAPS '{email.receive.account.type.imaps}'
 }
 TABLE receiveAccountType(ReceiveAccountType);
 
@@ -59,6 +60,16 @@ FORM receiveAccountTypes '{email.receive.account.type}'
 receiveAccountType = DATA ReceiveAccountType(Account);
 nameReceiveAccountType '{email.receive.account.type.account}' (Account account) = name(receiveAccountType(account));
 
+startTLS '{email.receive.start.tls}' = DATA BOOLEAN (Account);
+
+imapsMigrated = DATA BOOLEAN();
+onStarted() + { 
+    IF NOT imapsMigrated() THEN {
+        receiveAccountType(Account a) <- ReceiveAccountType.IMAPS WHERE receiveAccountType(a) == ReceiveAccountType.IMAP;
+        imapsMigrated() <- TRUE; 
+    }   
+}
+
 deleteMessages '{email.delete.messages.account}' = DATA BOOLEAN(Account);
 lastDays '{email.last.days.account}' = DATA INTEGER(Account) CHARWIDTH 10 NOFLEX;
 maxMessages '{email.max.messages.account}' = DATA INTEGER(Account) CHARWIDTH 10 NOFLEX;
@@ -69,7 +80,7 @@ FORM account '{email.form.account}'
     OBJECTS a = Account PANEL
     PROPERTIES(a) name, password, disable
     PROPERTIES(a) smtpHost, smtpPort, nameEncryptedConnectionType, fromAddress, isDefaultInbox 
-    PROPERTIES(a) receiveHost, receivePort, nameReceiveAccountType, 
+    PROPERTIES(a) receiveHost, receivePort, nameReceiveAccountType, startTLS,
                   deleteMessages, lastDays, maxMessages, unpack, ignoreExceptions
                    
     EDIT Account OBJECT a
@@ -99,6 +110,7 @@ DESIGN account {
                 MOVE PROPERTY(receiveHost(a));
                 MOVE PROPERTY(receivePort(a));
                 MOVE PROPERTY(nameReceiveAccountType(a));
+                MOVE PROPERTY(startTLS(a));
                 MOVE PROPERTY(deleteMessages(a));
                 MOVE PROPERTY(lastDays(a));
                 MOVE PROPERTY(maxMessages(a));
