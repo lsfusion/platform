@@ -14,14 +14,22 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.controller.thread.EventThreadInfo;
+import lsfusion.server.base.controller.thread.SyncType;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
+import lsfusion.server.logics.action.controller.stack.TopExecutionStack;
 import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
@@ -301,6 +309,20 @@ public class ActionDebugger implements DebuggerService {
             throws SQLException, SQLHandledException {
         // StringEscapeUtils.unescapeJava call was removed, because statements string is not java string
         return evalAction(context, namespace, require, priorities, "{" + statements + "}", null);
+    }
+
+    public LogicsInstance logicsInstance;
+    public void eval(String evalCode, String param) {
+        TopExecutionStack stack = new TopExecutionStack("debugServiceEval");
+        EventThreadInfo debugServiceEval = new EventThreadInfo("debugServiceEval");
+        ThreadLocalContext.aspectBeforeEvent(logicsInstance, stack, debugServiceEval, false, SyncType.NOSYNC);
+        try (DataSession dataSession = logicsInstance.getDbManager().createSession()){
+            logicsInstance.getBusinessLogics().systemEventsLM.findAction("evalInAllCurrentConnections[TEXT, TEXT]")
+                    .execute(dataSession, stack, new DataObject(evalCode), param != null ? new DataObject(param) : NullValue.instance);
+        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+        ThreadLocalContext.aspectAfterEvent(debugServiceEval);
     }
 
     @SuppressWarnings("UnusedDeclaration") //this method is used by IDEA plugin

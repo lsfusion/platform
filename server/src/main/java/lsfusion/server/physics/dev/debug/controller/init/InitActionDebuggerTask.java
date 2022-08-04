@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.file.IOUtils;
 import lsfusion.server.base.task.GroupSplitTask;
+import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.debug.DebuggerService;
@@ -22,6 +23,10 @@ public class InitActionDebuggerTask extends GroupSplitTask<String> {
     @Override
     public String getCaption() {
         return "Initializing actions' debugger";
+    }
+
+    public void setLogicsInstance(LogicsInstance logicsInstance) {
+        ActionDebugger.getInstance().logicsInstance = logicsInstance;
     }
 
     File sourceDir;
