@@ -312,13 +312,13 @@ public class ActionDebugger implements DebuggerService {
     }
 
     public LogicsInstance logicsInstance;
-    public void eval(String evalCode, String onErrorCode) {
+    public void eval(String evalCode, String param) {
         TopExecutionStack stack = new TopExecutionStack("debugServiceEval");
         EventThreadInfo debugServiceEval = new EventThreadInfo("debugServiceEval");
         ThreadLocalContext.aspectBeforeEvent(logicsInstance, stack, debugServiceEval, false, SyncType.NOSYNC);
         try (DataSession dataSession = logicsInstance.getDbManager().createSession()){
-            logicsInstance.getBusinessLogics().systemEventsLM.findAction("eval[TEXT,TEXT]")
-                    .execute(dataSession, stack, new DataObject(evalCode), onErrorCode == null ? NullValue.instance : new DataObject(onErrorCode));
+            logicsInstance.getBusinessLogics().systemEventsLM.findAction("evalInAllCurrentConnections[TEXT, TEXT]")
+                    .execute(dataSession, stack, new DataObject(evalCode), param != null ? new DataObject(param) : NullValue.instance);
         } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

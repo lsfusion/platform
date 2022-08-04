@@ -355,16 +355,15 @@ DESIGN evalError {
     }
 }
 
-eval(TEXT code, TEXT onErrorCode) {
+test(TEXT code, STRING form) {
+    EVAL code PARAMS form;
+}
+
+evalInAllCurrentConnections(TEXT code, TEXT param) {
     FOR connectionStatus(Connection connection) == ConnectionStatus.connectedConnection DO {
         NEWSESSION {
             NEWTHREAD {
-                LOCAL evalText = TEXT();
-                TRY {
-                    EVAL code;
-                } CATCH {
-                    IF onErrorCode THEN EVAL onErrorCode;
-                }
+                EVAL code PARAMS param;
             } CONNECTION connection;     
         }
     }
