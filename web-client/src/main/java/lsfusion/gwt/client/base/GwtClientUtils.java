@@ -820,7 +820,7 @@ public class GwtClientUtils {
         return TableCellElement.is(element);
     }
     public static boolean isInput(Element element) {
-        return InputElement.is(element);
+        return InputElement.is(element) || TextAreaElement.is(element);
     }
 
     public static <T> T findInList(List<T> list, Predicate<T> predicate) {
