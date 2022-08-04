@@ -347,9 +347,9 @@ public class FlexPanelImpl {
     public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
         GFlexAlignment alignment = layoutData.alignment;
         if(grid)
-            setFlexAlignment(alignment, child);
-        else
             setGridAlignment(alignment, child, vertical);
+        else
+            setFlexAlignment(alignment, child);
     }
 
     public void setFlexBasis(FlexPanel.FlexLayoutData layoutData, Element child, GSize flexBasis, boolean vertical, boolean grid) {
