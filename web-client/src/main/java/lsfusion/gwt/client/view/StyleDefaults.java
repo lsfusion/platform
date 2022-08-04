@@ -36,14 +36,16 @@ public class StyleDefaults {
     private static int[] pivotGroupLevelDarkenStepRGB;
 
     public static void init() {
-        setCustomProperties(RootPanel.get().getElement(), getTableGridColor(), getFocusedCellBorderColor());
+        setCustomProperties(RootPanel.get().getElement(), getTableGridColor(), getFocusedCellBorderColor(), getSelectedRowBackgroundColor(false), getFocusedCellBackgroundColor(false));
     }
 
-    private static native void setCustomProperties(Element root, String tableGridColor, String focusedCellBorderColor) /*-{
+    private static native void setCustomProperties(Element root, String tableGridColor, String focusedCellBorderColor, String selectedRowBackgroundColor, String focusedCellBackgroundColor) /*-{
         if(tableGridColor != null) {
             root.style.setProperty("--grid-separator-border-color", tableGridColor);
         }
         root.style.setProperty("--focused-cell-border-color", focusedCellBorderColor);
+        root.style.setProperty("--selected-row-background-color", selectedRowBackgroundColor)
+        root.style.setProperty("--focused-cell-background-color", focusedCellBackgroundColor)
     }-*/;
 
     public static void reset() {
@@ -93,7 +95,7 @@ public class StyleDefaults {
             return selectedRowBackgroundColorMixed;
         }
 
-        if (selectedRowBackgroundColor == null)
+        if (selectedRowBackgroundColor == null && MainFrame.colorPreferences != null) // might be called before colorPreferences initialization (color theme change)
             selectedRowBackgroundColor = calculateSelectedRowBackgroundColor(false);
         return selectedRowBackgroundColor;
     }
@@ -105,7 +107,7 @@ public class StyleDefaults {
             return focusedCellBackgroundColorMixed;
         }
 
-        if (focusedCellBackgroundColor == null)
+        if (focusedCellBackgroundColor == null && MainFrame.colorPreferences != null) // might be called before colorPreferences initialization (color theme change)
             focusedCellBackgroundColor = calculateFocusedCellBackgroundColor(false);
         return focusedCellBackgroundColor;
     }

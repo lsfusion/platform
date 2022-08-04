@@ -86,6 +86,16 @@ public abstract class CellRenderer<T> {
         }
     }
 
+    private void setSelectedCell(Element td, boolean selected) {
+        if (selected) {
+            td.addClassName("selected-cell"); //default
+            td.addClassName("table-active"); //bootstrap
+        } else {
+            td.removeClassName("selected-cell"); //default
+            td.removeClassName("table-active"); //bootstrap
+        }
+    }
+
     public static void renderEditSelected(Element element, GPropertyDraw property) {
         if(property.hasEditObjectAction)
             element.addClassName("selectedCellHasEdit");
@@ -302,6 +312,7 @@ public abstract class CellRenderer<T> {
             renderEditSelected(element, property);
         else
             clearEditSelected(element, property);
+        setSelectedCell(element, selected);
 
         Object value = updateContext.getValue();
         boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);

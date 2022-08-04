@@ -16,3 +16,18 @@ body .background-inherit {
 .table {
     --bs-table-bg: var(--bs-body-bg);
 }
+
+:root {
+    /*override in StyleDefaults init*/
+    --selected-row-background-color: #000000;
+    --focused-cell-background-color: #000000;
+}
+
+td.table-active /*selected cell*/ {
+    background-color: var(--selected-row-background-color);
+    /*background-blend-mode: multiply;*/
+}
+
+td.table-primary { /*focused cell*/
+    background-color: var(--focused-cell-background-color);
+}
