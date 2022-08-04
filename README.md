@@ -93,7 +93,7 @@ For a more complete list see [lsfusion website](https://lsfusion.org/opportuniti
 
     In addition to **lsFusion**, these installers also install **OpenJDK**, **PostgreSQL**, **Tomcat**, and **IntelliJ IDEA Community Edition** with the built-in **lsFusion plugin**. If any of these programs are already on your computer, you can exclude them during the installation process.
 
-    After the installation completes successfully, the corresponding shortcuts for launching IDE and the client will automatically be created on the desktop. A description of working with IDE after it opens is located [here](https://documentation.lsfusion.org/display/LSFUS/IDE).
+    After the installation completes successfully, the corresponding shortcuts for launching IDE and the client will automatically be created on the desktop. A description of working with IDE after it opens is located [here](https://docs.lsfusion.org/IDE/).
 
 - **Production**
 
@@ -128,22 +128,22 @@ For a more complete list see [lsfusion website](https://lsfusion.org/opportuniti
 
           source <(curl -s https://download.lsfusion.org/apt/install-lsfusion4)
 
-For more detailed information about installation process please refer to [install section](https://documentation.lsfusion.org/display/LSFUS/Install) of documentation.
+For more detailed information about installation process please refer to [install section](https://docs.lsfusion.org/Install/) of documentation.
 
 ## Code examples
-- [Score table](https://documentation.lsfusion.org/display/LSFUS/Score+table)
+- [Score table](https://docs.lsfusion.org/Score_table/)
 
   Simple application that allows you to calculate the score table of a hockey tournament. It contains exactly one form, in which the user can enter game scores, based on which the score table is automatically built. 
   
   Using this example you can get an idea of how to quickly develop "Excel-style" applications in which form data are editable, and any changes to them will cause all dependent data on the form to be updated incrementally.
 
-- [Materials management](https://documentation.lsfusion.org/display/LSFUS/Materials+management)
+- [Materials management](https://docs.lsfusion.org/Materials_management/)
 
   Example of creating a simple stock management business application. In it, the user can manage receipt and shipment operations, and also obtain item balances.
 
   This example shows a way to create an application for processing documents that have headers and lines. All forms are created in "Dialog style". In this approach, for each class in the system, a form with their list is created, in which only buttons for creating, editing and deleting objects are available for editing. Clicking the corresponding button opens a separate dialog form, with which the user can create a new object or edit an existing one.
 
-- [How-To](https://documentation.lsfusion.org/display/LSFUS/How-to)
+- [How-To](https://docs.lsfusion.org/How-to/)
 
   How-to section of documentation contains examples of typical tasks, categorized.
 
@@ -152,13 +152,13 @@ It is possible to run the code snippets in lsfusion programming language [online
 
 ## Online demos
 - [Score table](https://demo.lsfusion.org/hockeystats) 
-  - [docs](https://documentation.lsfusion.org/display/LSFUS/Score+table) 
+  - [docs](https://docs.lsfusion.org/Score_table/) 
   - [github](https://github.com/lsfusion/samples/tree/master/hockeystats) 
   - username: guest
   - password: guest 
 
 - [Materials management (MM)](https://demo.lsfusion.org/mm)
-  - [docs](https://documentation.lsfusion.org/display/LSFUS/Materials+management)
+  - [docs](https://docs.lsfusion.org/Materials_management/)
   - [github](https://github.com/lsfusion/samples/tree/master/mm) 
   - username: guest
   - password: guest 
@@ -175,7 +175,7 @@ It is possible to run the code snippets in lsfusion programming language [online
 
 ## Links
 - [Homepage](https://lsfusion.org)
-- [Documentation](https://documentation.lsfusion.org/)
+- [Documentation](https://docs.lsfusion.org/)
 - [Blog (ru)](https://habr.com/ru/company/lsfusion/blog/)
 - [Q&A (ru)](https://ru.stackoverflow.com/questions/tagged/lsfusion)
 - [Repository](https://github.com/lsfusion/platform)
