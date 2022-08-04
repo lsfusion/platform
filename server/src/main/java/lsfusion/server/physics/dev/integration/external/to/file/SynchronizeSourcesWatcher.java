@@ -27,18 +27,22 @@ public class SynchronizeSourcesWatcher extends FilesChangeWatcher{
         try {
             File targetFile = getTargetFile(file);
             if (targetFile != null) {
+                boolean isDirectory = file.isDirectory();
                 if (kind == ENTRY_CREATE) {
-                    if (file.isDirectory())
+                    if (isDirectory)
                         targetFile.mkdirs();
                     else
                         org.apache.commons.io.FileUtils.copyFile(file, targetFile);
                 } else if (kind == ENTRY_DELETE) {
-                    if (file.isDirectory())
+                    if (isDirectory)
                         org.apache.commons.io.FileUtils.deleteDirectory(targetFile);
                     else
                         targetFile.delete();
                 } else if (kind == ENTRY_MODIFY) {
-                    FileUtils.copyFile(file, targetFile);
+                    if (isDirectory)
+                        FileUtils.copyDirectory(file, targetFile);
+                    else
+                        FileUtils.copyFile(file, targetFile);
                 }
             }
         } catch (IOException e) {
