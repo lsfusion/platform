@@ -323,7 +323,7 @@ public class EmailReceiver {
         }
     }
 
-    private Object getEmailContent(Message email) throws IOException, MessagingException {
+    public static Object getEmailContent(Message email) throws IOException, MessagingException {
         Object content;
         try {
             content = email.getContent();
