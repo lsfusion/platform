@@ -94,7 +94,7 @@ public class LogicalCellRenderer extends CellRenderer {
         setInputElement(element, null);
 
         if(GwtClientUtils.isTDorTH(element))
-            clearRenderTextAlignment(element);
+            clearRenderTextAlignment(property, element, false);
 
         return false;
     }

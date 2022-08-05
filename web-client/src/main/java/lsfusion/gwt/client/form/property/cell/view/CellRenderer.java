@@ -170,7 +170,7 @@ public abstract class CellRenderer<T> {
         boolean renderedAlignment = clearRenderContent(element, renderContext);
 
         if(!renderedAlignment)
-            clearRenderFlexAlignment(element);
+            clearRenderFlexAlignment(property, element);
 
         element.removeClassName("prop");
 
@@ -186,16 +186,69 @@ public abstract class CellRenderer<T> {
         }
         element.setPropertyObject(RENDERED, null);
     }
-    public static void clearRenderTextAlignment(Element element) {
-//        if(staticHeight != null)
-//            GPropertyTableBuilder.clearLineHeight(element);
-        element.getStyle().clearProperty("verticalAlign");
-        element.getStyle().clearTextAlign();
+    public static void clearRenderTextAlignment(GPropertyDraw property, Element element, boolean isInput) {
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+        switch(horzTextAlignment) {
+            case LEFT:
+                element.removeClassName("prop-text-horz-start");
+                break;
+            case CENTER:
+                element.removeClassName("prop-text-horz-center");
+                break;
+            case RIGHT:
+                element.removeClassName("prop-text-horz-end");
+                break;
+        }
+
+        String vertAlignment = property.getVertTextAlignment(isInput);
+        switch (vertAlignment) {
+            case "top":
+                element.removeClassName("prop-text-vert-start");
+                break;
+            case "center":
+            case "stretch":
+                element.removeClassName("prop-text-vert-center");
+                break;
+            case "baseline":
+                element.removeClassName("prop-text-vert-baseline");
+                break;
+            case "bottom":
+                element.removeClassName("prop-text-vert-end");
+                break;
+        }
     }
-    private static void clearRenderFlexAlignment(Element element) {
-        element.removeClassName("wrap-center");
-        element.getStyle().clearProperty("alignItems");
-        element.getStyle().clearProperty("justifyContent");
+    private static void clearRenderFlexAlignment(GPropertyDraw property, Element element) {
+        element.removeClassName("prop-display-flex");
+
+        Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
+        switch(horzTextAlignment) {
+            case LEFT:
+                element.removeClassName("prop-flex-horz-start");
+                break;
+            case CENTER:
+                element.removeClassName("prop-flex-horz-center");
+                break;
+            case RIGHT:
+                element.removeClassName("prop-flex-horz-end");
+                break;
+        }
+
+        String vertAlignment = property.getVertTextAlignment(false); // here we don't care about baseline / center
+        switch (vertAlignment) {
+            case "top":
+                element.removeClassName("prop-flex-vert-start");
+                break;
+            case "baseline":
+            case "center":
+                element.removeClassName("prop-flex-vert-center");
+                break;
+            case "stretch":
+                element.removeClassName("prop-flex-vert-stretch");
+                break;
+            case "bottom":
+                element.removeClassName("prop-flex-vert-end");
+                break;
+        }
     }
 
     protected boolean renderedLoadingContent(UpdateContext updateContext) {

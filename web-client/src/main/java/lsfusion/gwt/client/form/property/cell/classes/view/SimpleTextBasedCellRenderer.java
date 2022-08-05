@@ -123,7 +123,7 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) {
-                clearRenderTextAlignment(element);
+                clearRenderTextAlignment(property, element, isInput);
 //                renderedAlignment = true;
 //            }
 
