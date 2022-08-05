@@ -204,7 +204,7 @@ FORM mail '{email.form.mail}'
     
     OBJECTS e=Email LAST
     PROPERTIES(e) READONLY subject, fromAddress, toAddress, dateTimeSent, 
-                           dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, message PANEL
+                           dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, '' = message PANEL
     PROPERTIES(e) NEWSESSION DELETE
     PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
     FILTERS account(e) = a
@@ -216,41 +216,40 @@ FORM mail '{email.form.mail}'
 ;
 
 DESIGN mail {
-    BOX {
-        NEW specContainer {
+    OBJECTS {
+        NEW top {
             fill = 1;
-            type = SPLITV;
-            MOVE BOX(a);
-            NEW emailContainer {
-                fill = 3;
-                type = SPLITV;
-                MOVE BOX(e);
-                NEW tabbedContainer {
-                    fill = 1;
-                    type = TABBED;
-                    NEW textContainer {
-                        caption = '{email.form.mail.caption.message}';
-                        type = CONTAINERV;        
-                        MOVE PROPERTY(message(e)) {
-                            fill = 1;
-                            valueSize = ( -1, 200);
-                            panelCaptionVertical = TRUE;
-                        }
+            type = SPLITH;
+            MOVE BOX(a) { width = 300; }
+            MOVE BOX(e) { fill = 3; }
+        }
+        NEW content {
+            fill = 1;
+            height = 300;
+            type = TABBED;
+            NEW message {
+                height = 200;
+                caption = '{email.form.mail.caption.message}';
+                MOVE PROPERTY(message(e)) {
+                    autoSize = TRUE;
+                }
+            }
+            NEW attachments {
+                fill = 1;
+                caption = '{email.form.mail.caption.attachments}';
+                type = CONTAINERH;
+                MOVE BOX(ae) {
+                    PROPERTY(filename(ae)) { autoSize = TRUE; }
+                    GRID(ae) {
+                        height = 100;
                     }
-                    NEW attachment {
-                        fill = 1;
-                        caption = '{email.form.mail.caption.attachments}';
-                        type = CONTAINERH;
-                        MOVE BOX(ae);
-                        MOVE PROPERTY (lastError(ae)){ 
-                            panelCaptionVertical = TRUE;
-                            fill = 0.3;
-                        };
-                    }
+                }
+                MOVE PROPERTY (lastError(ae)){ 
+                    panelCaptionVertical = TRUE;
+                    fill = 0.3;
                 }
             }
         }
-        MOVE TOOLBARBOX;
     }
 }
 
