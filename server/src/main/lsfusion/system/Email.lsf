@@ -154,6 +154,8 @@ message '{email.message.email}' = DATA HTMLTEXT (Email);
 emlFile '{email.eml.file.email}' = DATA FILE (Email);
 openEMLFile '{email.open.eml.file.email}' (Email email)  { open(emlFile(email)); }
 
+skipFilter(Email email, Account account, DATETIME minDateTime) = fromAddress(email) AND account(email) == account AND (NOT minDateTime OR dateTimeSent(email) >= minDateTime); 
+
 // Attachment
 CLASS AttachmentEmail '{email.attachment.email}';
 TABLE attachmentEmail(AttachmentEmail);
