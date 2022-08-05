@@ -243,7 +243,7 @@ public class EmailReceiver {
             Set<String> usedEmails = new HashSet<>();
             while(count < messageCount && (maxMessages == null ||  count < maxMessages)) {
                 try {
-                    ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
+                    ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count + 1, messageCount, maxMessages));
                     Message message = emailFolder.getMessage(messageCount - count);
                     Timestamp dateTimeSentEmail = getSentDate(message);
                     ServerLoggers.mailLogger.info("sentDate: " + dateTimeSentEmail);
@@ -257,7 +257,7 @@ public class EmailReceiver {
                         if (!skipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessages ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
-                            MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack);
+                            MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack, "");
                             if (messageEmail == null) {
                                 messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
@@ -362,17 +362,17 @@ public class EmailReceiver {
         return id;
     }
 
-    private static MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack) throws IOException, MessagingException {
+    private static MultipartBody getMultipartBody(String subjectEmail, Multipart mp, boolean unpack, String prefix) throws IOException, MessagingException {
         String body = "";
         Map<String, FileData> attachments = new HashMap<>();
         int parts = mp.getCount();
         for (int i = 0; i < parts; i++) {
             BodyPart bp = mp.getBodyPart(i);
             String disp = bp.getDisposition();
-            ServerLoggers.mailLogger.info(String.format("reading attachment %s of %s", i, parts));
+            ServerLoggers.mailLogger.info(String.format("%sreading attachment %s of %s", prefix, i + 1, parts));
             if (disp != null && (disp.equalsIgnoreCase(BodyPart.ATTACHMENT))) {
                 String fileName = decodeFileName(bp.getFileName());
-                
+
                 InputStream is = bp.getInputStream();
                 File f = File.createTempFile("attachment", "");
                 try {
@@ -384,6 +384,7 @@ public class EmailReceiver {
                     }
                     fos.close();
 
+                    ServerLoggers.mailLogger.info(String.format("%sattachment name: %s, size: %s", prefix, fileName, f.length()));
                     if(bp.getContentType() != null && bp.getContentType().contains("application/ms-tnef")) {
                         attachments.putAll(extractWinMail(f).attachments);
                     } else {
@@ -391,7 +392,7 @@ public class EmailReceiver {
                     }
 
                 } catch (IOException ioe) {
-                    ServerLoggers.mailLogger.error("Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
+                    ServerLoggers.mailLogger.error(prefix + "Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
                     throw ioe;
                 } finally {
                     if(!f.delete())
@@ -403,13 +404,18 @@ public class EmailReceiver {
                     if (content instanceof FilterInputStream) {
                         RawFileData byteArray = new RawFileData((FilterInputStream) content);
                         String fileName = decodeFileName(bp.getFileName());
+                        ServerLoggers.mailLogger.info(prefix + "attachment is FilterInputStream: " + fileName);
                         attachments.putAll(unpack(byteArray, fileName, unpack));
                     } else if (content instanceof MimeMultipart) {
-                        body = getMultipartBody(subjectEmail, (Multipart) content, unpack).message;
+                        ServerLoggers.mailLogger.info(prefix + "attachment is MimeMultipart");
+                        body = getMultipartBody(subjectEmail, (Multipart) content, unpack, prefix + "---").message;
                     } else if(content instanceof IMAPInputStream){
                         body = parseIMAPInputStream(bp, (IMAPInputStream) content);
-                    } else
+                        ServerLoggers.mailLogger.info(prefix + "attachment is IMAPInputStream, length: " + (body != null ? body.length() : "0"));
+                    } else {
                         body = String.valueOf(content);
+                        ServerLoggers.mailLogger.info(prefix + "attachment is String, length: " + (body != null ? body.length() : "0"));
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException("Email subject: " + subjectEmail, e);
                 }
