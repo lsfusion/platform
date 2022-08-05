@@ -22,22 +22,6 @@
     z-index: 10000;
 }
 
-/* ------------ Error Dialog ------------ */
-.error-dialog-stacks {
-    height: 30em;
-}
-
-.stackMessage {
-    margin: 0.3125rem 0.3125rem 0.3125rem 0.3125rem;
-    border: 1px solid var(--panel-border-color);
-    padding: 0.3125rem;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    /*!* Умный разбор длинных строк без пробелов по словам *!*/
-    word-break: break-word;
-}
-
-
 /* ------------ Other components  ------------ */
 .logPanel {
     white-space: nowrap;

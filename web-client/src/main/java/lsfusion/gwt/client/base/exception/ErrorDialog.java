@@ -31,7 +31,7 @@ public class ErrorDialog extends DialogModalWindow {
 
         if (javaStack != null || lsfStack != null) {
             stacks = new FlexTabbedPanel();
-            stacks.setStyleName("error-dialog-stacks");
+            stacks.setStyleName("dialog-error-stacks");
             if (javaStack != null) {
                 TextArea javaTA = new TextArea();
                 javaTA.setStyleName("form-control");
