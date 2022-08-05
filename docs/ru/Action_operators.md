@@ -15,7 +15,6 @@ title: 'Операторы-действия'
 -   [Оператор `ACTIVE FORM`](ACTIVE_FORM_operator.md)
 -   [Оператор `APPLY`](APPLY_operator.md)
 -   [Оператор `ASK`](ASK_operator.md)
--   [Оператор `ASYNCUPDATE`](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=12320796)
 -   [Оператор `BREAK`](BREAK_operator.md)
 -   [Оператор `CANCEL`](CANCEL_operator.md)
 -   [Оператор `CASE`](CASE_action_operator.md)

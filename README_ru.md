@@ -3,7 +3,7 @@
   <span>Русский</span>
 </p>
 
-# lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/themes/lsfusion/assets/images/i-logo-lsfusion.svg" align="right"/></a>  
+# lsFusion <a href="http://lsfusion.org" target="_blank"><img src="https://lsfusion.org/imgs/logo.svg" align="right"/></a>  
 
 Бесплатная открытая платформа разработки информационных систем на основе одноименного языка пятого поколения.
 
@@ -95,7 +95,7 @@
 
     Помимо **lsFusion** эти программы также устанавливают **OpenJDK**, **PostgreSQL**, **Tomcat** и **IntelliJ IDEA Community Edition** со встроенным **lsFusion плагином**. Если какие-то из этих программ уже есть на вашем компьютере, то их можно будет исключить в процессе установки.
 
-    После того как установка успешно завершится, на рабочем столе будут автоматически созданы соответствующие ярлыки для запуска IDE и клиента. Описание работы с IDE после ее запуска находится [здесь](https://ru-documentation.lsfusion.org/display/LSFUS/IDE).
+    После того как установка успешно завершится, на рабочем столе будут автоматически созданы соответствующие ярлыки для запуска IDE и клиента. Описание работы с IDE после ее запуска находится [здесь](https://docs.lsfusion.org/ru/IDE/).
 
 - **Запуск**
 
@@ -130,22 +130,22 @@
 
           source <(curl -s https://download.lsfusion.org/apt/install-lsfusion4)
 
-Для более детального описания процесса установки обратитесь к соответствующему [разделу документации](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=18645035). 
+Для более детального описания процесса установки обратитесь к соответствующему [разделу документации](https://docs.lsfusion.org/ru/Install/). 
 
 ## Примеры кода
-- [Турнирная таблица](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=2228240)
+- [Турнирная таблица](https://docs.lsfusion.org/ru/Score_table/)
 
   Простое приложение, позволяющее рассчитывать турнирную таблицу хоккейного турнира. В нем существует ровно одна форма, в которой пользователь может вводить результаты матчей, на основе которых автоматически строится турнирная таблица.
   
   При помощи этого примера можно получить представление, как быстро разрабатывать "Excel-style" приложения, в которых данные на формах доступны для редактирования, и при любом их изменении все зависимые данные на форме обновляются инкрементно.
 
-- [Управление материальными потоками](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=2228636)
+- [Управление материальными потоками](https://docs.lsfusion.org/ru/Materials_management/)
 
   Пример создания простого бизнес-приложения по управлению складом. В нем пользователь может фиксировать документы приходов и расходов, а также получать остатки по товарам.
 
   В данном примере показан способ создания приложения по обработке документов, в которых есть шапка и строки. Все формы созданы по "Dialog style" принципу. В таком подходе для каждого объекта в системе создается форма с их списком, в которой доступны для редактирования только кнопки по созданию, редактированию и удалению объектов. При нажатии соответствующей кнопки открывается отдельная диалоговая форма, при помощи которой пользователь добавляет новый или редактирует существующий объект.
 
-- [How-To](https://ru-documentation.lsfusion.org/display/LSFUS/How-to)
+- [How-To](https://docs.lsfusion.org/ru/How-to/)
 
   Раздел документации How-to содержит примеры типовых задач, разбитые по категориям.
 
@@ -154,13 +154,13 @@
 
 ## Демонстрационные примеры
 - [Турнирная таблица](https://demo.lsfusion.org/hockeystats) 
-  - [описание](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=2228240) 
+  - [описание](https://docs.lsfusion.org/ru/Score_table/) 
   - [github](https://github.com/lsfusion/samples/tree/master/hockeystats) 
   - логин: guest
   - пароль: guest 
 
 - [Управление материальными потоками](https://demo.lsfusion.org/mm)
-  - [описание](https://ru-documentation.lsfusion.org/pages/viewpage.action?pageId=2228636)
+  - [описание](https://docs.lsfusion.org/ru/Materials_management/)
   - [github](https://github.com/lsfusion/samples/tree/master/mm) 
   - логин: guest
   - пароль: guest 
@@ -177,7 +177,7 @@
 
 ## Ссылки
 - [Страница проекта](https://ru.lsfusion.org/)
-- [Документация](https://ru-documentation.lsfusion.org/)
+- [Документация](https://docs.lsfusion.org/ru/)
 - [Блог](https://habr.com/ru/company/lsfusion/blog/)
 - [Q&A](https://ru.stackoverflow.com/questions/tagged/lsfusion)
 - [Репозиторий](https://github.com/lsfusion/platform)

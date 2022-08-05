@@ -281,7 +281,7 @@ The process of creating an information system is completed.
 
 ```lsf
 MODULE HockeyStats;
-// logic description: https://documentation.lsfusion.org/pages/viewpage.action?pageId=2228240
+
 REQUIRE System, Utils;
 
 CLASS Team 'Team';
