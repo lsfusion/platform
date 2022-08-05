@@ -96,6 +96,8 @@ public abstract class CellRenderer<T> {
     }
 
     private static void renderFlexAlignment(GPropertyDraw property, Element element) {
+        element.addClassName("prop-display-flex");
+
         Style.TextAlign horzTextAlignment = property.getHorzTextAlignment();
         switch(horzTextAlignment) {
             case LEFT:
@@ -383,6 +385,7 @@ public abstract class CellRenderer<T> {
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
                 toolbarElement.addClassName("property-toolbar");
                 element.appendChild(toolbarElement);
+
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
 
                 toolbarState.element = toolbarElement;

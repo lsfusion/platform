@@ -105,7 +105,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
-    public boolean useInputTag() {
+    public boolean useInputTag(boolean isPanel) {
         return Settings.get().isUseInputTagForBoolean();
     }
 

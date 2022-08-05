@@ -722,7 +722,7 @@ public class PropertyDrawView extends BaseComponentView {
         } else {
             Type type = getType();
             if(type != null && changeType != null && type.getCompatible(changeType) != null &&
-                    type.useInputTag())
+                    type.useInputTag(!entity.isList(context.entity)))
                 return "input";
         }
 

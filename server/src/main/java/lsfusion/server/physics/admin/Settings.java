@@ -2691,17 +2691,17 @@ public class Settings implements Cloneable {
         this.minSizeForReportExportToCSV = minSizeForReportExportToCSV;
     }
 
-    private boolean useInputTagForTextBased = true;
+    private boolean useInputTagForTextBasedInPanel = true;
     private boolean useInputTagForBoolean = true;
-    private boolean noToolbarForInputTagInPanel = false;
+    private boolean noToolbarForInputTagInPanel = true;
     private boolean noToolbarForBoolean = true;
 
-    public boolean isUseInputTagForTextBased() {
-        return useInputTagForTextBased;
+    public boolean isUseInputTagForTextBasedInPanel() {
+        return useInputTagForTextBasedInPanel;
     }
 
-    public void setUseInputTagForTextBased(boolean useInputTagForTextBased) {
-        this.useInputTagForTextBased = useInputTagForTextBased;
+    public void setUseInputTagForTextBasedInPanel(boolean useInputTagForTextBasedInPanel) {
+        this.useInputTagForTextBasedInPanel = useInputTagForTextBasedInPanel;
     }
 
     public boolean isUseInputTagForBoolean() {

@@ -26,7 +26,7 @@ public class RichTextClass extends TextClass {
     }
 
     @Override
-    public boolean useInputTag() {
+    public boolean useInputTag(boolean isPanel) {
         return false;
     }
 }

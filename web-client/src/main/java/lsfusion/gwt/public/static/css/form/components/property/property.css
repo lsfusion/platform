@@ -64,6 +64,10 @@
     padding: 2px 3px;
 }
 
+.prop-display-flex {
+    display: flex;
+}
+
 .prop-flex-horz-start {
     align-items: flex-start;
 }

@@ -110,7 +110,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T read(Object value);
 
-    default boolean useInputTag() {
+    default boolean useInputTag(boolean isPanel) {
         return false;
     }
     default boolean hasToolbar(boolean isInputPanel) {

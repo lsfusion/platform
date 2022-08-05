@@ -216,7 +216,6 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         CellRenderer.renderTextAlignment(property, inputElement, true);
 
-        CellRenderer.setBasedTextFonts(property, inputElement, renderContext); // ??? cellParent
         SimpleTextBasedCellRenderer.render(property, inputElement, renderContext, multiLine);
 
         // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
