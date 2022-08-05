@@ -23,8 +23,11 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
+import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.service.*;
@@ -52,6 +55,7 @@ import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 public class EmailReceiver {
     EmailLogicsModule LM;
@@ -86,7 +90,9 @@ public class EmailReceiver {
 
         boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
         boolean ignoreExceptions = LM.findProperty("ignoreExceptions[Account]").read(context, accountObject) != null;
-        List<List<List<Object>>> data = downloadEmailList(context, getSkipEmails(context), unpack, ignoreExceptions);
+        Timestamp minDateTime = lastDaysAccount != null ? localDateTimeToSqlTimestamp(LocalDateTime.now().minusDays(lastDaysAccount)) : null;
+
+        List<List<List<Object>>> data = downloadEmailList(context, getSkipEmails(context, minDateTime), minDateTime, unpack, ignoreExceptions);
 
         importEmails(context, data.get(0));
         importAttachments(context, data.get(1));
@@ -94,17 +100,20 @@ public class EmailReceiver {
         LM.findAction("formRefresh[]").execute(context);
     }
 
-    private Set<String> getSkipEmails(ExecutionContext context) {
+    private Set<String> getSkipEmails(ExecutionContext context, Timestamp minDateTime) {
         Set<String> skipEmails = new HashSet<>();
         try {
             KeyExpr emailExpr = new KeyExpr("email");
             ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
 
+            LocalDateTime minDate = sqlTimestampToLocalDateTime(minDateTime);
+            ObjectValue minDateObject = minDate != null ?  new DataObject(minDate, DateTimeClass.instance) : NullValue.instance;
+
             QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
             emailQuery.addProperty("fromAddressEmail", LM.findProperty("fromAddress[Email]").getExpr(emailExpr));
             emailQuery.addProperty("dateTimeSentEmail", LM.findProperty("dateTimeSent[Email]").getExpr(emailExpr));
             emailQuery.addProperty("subjectEmail", LM.findProperty("subject[Email]").getExpr(emailExpr));
-            emailQuery.and(LM.findProperty("fromAddress[Email]").getExpr(emailExpr).getWhere());
+            emailQuery.and(LM.findProperty("skipFilter[Email,Account,DATETIME]").getExpr(emailExpr, accountObject.getExpr(), minDateObject.getExpr()).getWhere());
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
             ServerLoggers.mailLogger.info("reading skip emails:");
@@ -211,7 +220,7 @@ public class EmailReceiver {
         }
     }
 
-    public List<List<List<Object>>> downloadEmailList(ExecutionContext context, Set<String> skipEmails, boolean unpack, boolean ignoreExceptions) throws MessagingException, IOException, GeneralSecurityException {
+    public List<List<List<Object>>> downloadEmailList(ExecutionContext context, Set<String> skipEmails, Timestamp minDateTime, boolean unpack, boolean ignoreExceptions) throws MessagingException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
@@ -230,10 +239,6 @@ public class EmailReceiver {
             emailFolder.open(Folder.READ_WRITE);
 
             LocalDateTime dateTimeReceivedEmail = LocalDateTime.now();
-            Timestamp minDateTime = null;
-            if (lastDaysAccount != null) {
-                minDateTime = localDateTimeToSqlTimestamp(LocalDateTime.now().minusDays(lastDaysAccount));
-            }
 
             int count = 0;
             int messageCount = emailFolder.getMessageCount();
@@ -372,25 +377,16 @@ public class EmailReceiver {
             ServerLoggers.mailLogger.info(String.format("%sreading attachment %s of %s", prefix, i + 1, parts));
             if (disp != null && (disp.equalsIgnoreCase(BodyPart.ATTACHMENT))) {
                 String fileName = decodeFileName(bp.getFileName());
+                ServerLoggers.mailLogger.info(String.format("%sattachment name: %s, size: %s", prefix, fileName, bp.getSize()));
 
-                InputStream is = bp.getInputStream();
                 File f = File.createTempFile("attachment", "");
                 try {
-                    FileOutputStream fos = new FileOutputStream(f);
-                    byte[] buf = new byte[4096];
-                    int bytesRead;
-                    while ((bytesRead = is.read(buf)) != -1) {
-                        fos.write(buf, 0, bytesRead);
-                    }
-                    fos.close();
-
-                    ServerLoggers.mailLogger.info(String.format("%sattachment name: %s, size: %s", prefix, fileName, f.length()));
+                    copyInputStreamToFile(bp.getInputStream(), f);
                     if(bp.getContentType() != null && bp.getContentType().contains("application/ms-tnef")) {
                         attachments.putAll(extractWinMail(f).attachments);
                     } else {
                         attachments.putAll(unpack(new RawFileData(f), fileName, unpack));
                     }
-
                 } catch (IOException ioe) {
                     ServerLoggers.mailLogger.error(prefix + "Error reading attachment '" + fileName + "' from email '" + subjectEmail + "'");
                     throw ioe;
