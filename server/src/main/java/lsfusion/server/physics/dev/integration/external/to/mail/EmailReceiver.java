@@ -305,9 +305,9 @@ public class EmailReceiver {
         return folders;
     }
 
-    public static MultipartBody getEmailMessage(String subjectEmail, Message message, Object messageContent, boolean unpack) throws MessagingException, IOException {
+    public static MultipartBody getEmailMessage(String subjectEmail, Message message, Object messageContent, boolean unpack, String prefix) throws MessagingException, IOException {
         if (messageContent instanceof Multipart) {
-            return getMultipartBody(subjectEmail, (Multipart) messageContent, unpack);
+            return getMultipartBody(subjectEmail, (Multipart) messageContent, unpack, prefix);
         } else if (messageContent instanceof FilterInputStream) {
             return getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack);
         } else if (messageContent instanceof String) {

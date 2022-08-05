@@ -106,7 +106,7 @@ public class ImportEMLAction extends EmailAction {
         String subjectEmail = message.getSubject();
 
         Object messageContent = EmailReceiver.getEmailContent(message);
-        EmailReceiver.MultipartBody messageEmail = EmailReceiver.getEmailMessage(subjectEmail, message, messageContent, unpack);
+        EmailReceiver.MultipartBody messageEmail = EmailReceiver.getEmailMessage(subjectEmail, message, messageContent, unpack, "");
         if (messageEmail == null) {
             messageEmail = new EmailReceiver.MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
             ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
