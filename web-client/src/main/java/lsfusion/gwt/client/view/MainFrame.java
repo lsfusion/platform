@@ -124,11 +124,22 @@ public class MainFrame implements EntryPoint {
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
 
         GWT.setUncaughtExceptionHandler(t -> {
-            GExceptionManager.logClientError(t);
-            DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
+            if (!ignoreException(t)) {
+                GExceptionManager.logClientError(t);
+                DialogBoxHelper.showMessageBox(true, "Error", t.getMessage(), null);
+            }
         });
 
         initializeLogicsAndNavigator(0);
+    }
+
+    private static boolean ignoreException(Throwable exception) {
+        String message = exception.getMessage();
+        //ace.js has unusual behaviour, and for unknown reasons periodically gives an Uncaught NetworkError about not being able to load a worker which is already loaded
+        if(message.contains("ace") && message.contains("Uncaught NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope'"))
+            return true;
+
+        return false;
     }
     
     private static class Linker<T> {
