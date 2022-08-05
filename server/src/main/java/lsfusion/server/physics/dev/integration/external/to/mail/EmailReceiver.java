@@ -107,9 +107,12 @@ public class EmailReceiver {
             emailQuery.and(LM.findProperty("fromAddress[Email]").getExpr(emailExpr).getWhere());
 
             ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
+            ServerLoggers.mailLogger.info("reading skip emails:");
             for(ImMap<Object, Object> entry : emailResult.values()) {
-                skipEmails.add(getEmailId(localDateTimeToSqlTimestamp((LocalDateTime) entry.get("dateTimeSentEmail")), (String) entry.get("fromAddressEmail"),
-                        (String) entry.get("subjectEmail"), null));
+                String emailId = getEmailId(localDateTimeToSqlTimestamp((LocalDateTime) entry.get("dateTimeSentEmail")), (String) entry.get("fromAddressEmail"),
+                        (String) entry.get("subjectEmail"), null);
+                ServerLoggers.mailLogger.info(emailId);
+                skipEmails.add(emailId);
             }
 
         } catch (Exception e) {
@@ -251,7 +254,7 @@ public class EmailReceiver {
                         if (!skipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
-                            MultipartBody messageEmail = messageContent instanceof Multipart ? getMultipartBody(subjectEmail, (Multipart) messageContent, unpack, "") : messageContent instanceof FilterInputStream ? getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack) : messageContent instanceof String ? new MultipartBody(((String) messageContent).replace("\0", ""), null) : null;
+                            MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack);
                             if (messageEmail == null) {
                                 messageEmail = new MultipartBody(messageContent == null ? null : String.valueOf(messageContent), null);
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
@@ -297,6 +300,21 @@ public class EmailReceiver {
             }
         }
         return folders;
+    }
+
+    private MultipartBody getEmailMessage(String subjectEmail, Message message, Object messageContent, boolean unpack) throws MessagingException, IOException {
+        if(messageContent instanceof Multipart) {
+            ServerLoggers.mailLogger.info("messageContent is Multipart");
+            return getMultipartBody(subjectEmail, (Multipart) messageContent, unpack, "");
+        } else if(messageContent instanceof FilterInputStream) {
+            ServerLoggers.mailLogger.info("messageContent is FilterInputStream");
+            return getMultipartBodyStream(subjectEmail, (FilterInputStream) messageContent, decodeFileName(message.getFileName()), unpack);
+        } else if(messageContent instanceof String) {
+            ServerLoggers.mailLogger.info("messageContent is String");
+            return new MultipartBody(((String) messageContent).replace("\0", ""), null);
+        } else {
+            return null;
+        }
     }
 
     private Object getEmailContent(Message email) throws IOException, MessagingException {
