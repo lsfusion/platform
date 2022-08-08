@@ -10,6 +10,7 @@ import com.sun.mail.imap.IMAPBodyPart;
 import com.sun.mail.imap.IMAPInputStream;
 import com.sun.mail.pop3.POP3Folder;
 import com.sun.mail.util.FolderClosedIOException;
+import com.sun.mail.util.MailSSLSocketFactory;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -29,6 +30,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.service.*;
 import org.apache.http.entity.ContentType;
@@ -55,6 +57,7 @@ import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.server.physics.dev.integration.external.to.mail.AccountType.*;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
 public class EmailReceiver {
@@ -98,6 +101,31 @@ public class EmailReceiver {
         importAttachments(context, data.get(1));
 
         LM.findAction("formRefresh[]").execute(context);
+    }
+
+    public static Store getEmailStore(String receiveHost, AccountType accountType, boolean startTLS) throws GeneralSecurityException, NoSuchProviderException {
+        Properties mailProps = new Properties();
+        mailProps.setProperty(accountType == POP3 ? "mail.pop3.host" : "mail.imap.host", receiveHost);
+
+        boolean imap = accountType == IMAP;
+        boolean imaps = accountType == IMAPS;
+        if (imap || imaps) { //imaps
+            MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
+            socketFactory.setTrustAllHosts(true);
+            mailProps.put(imap ? "mail.imap.ssl.socketFactory" : "mail.imaps.ssl.socketFactory", socketFactory);
+            mailProps.setProperty("mail.store.protocol", accountType.getProtocol());
+            mailProps.setProperty(imap ? "mail.imap.timeout" : "mail.imaps.timeout", String.valueOf(Settings.get().getMailImapTimeout()));
+            if(startTLS) {
+                mailProps.setProperty("mail.imap.starttls.enable", "true");
+            }
+            if(imaps) {
+                //options to increase downloading big attachments
+                mailProps.put("mail.imaps.partialfetch", "true");
+                mailProps.put("mail.imaps.fetchsize", "819200");
+            }
+        }
+
+        return Session.getInstance(mailProps).getStore(accountType.getProtocol());
     }
 
     private Set<String> getSkipEmails(ExecutionContext context, Timestamp minDateTime) {
@@ -226,7 +254,7 @@ public class EmailReceiver {
         List<List<Object>> dataAttachments = new ArrayList<>();
         System.setProperty("mail.mime.base64.ignoreerrors", "true"); //ignore errors decoding base64
 
-        Store emailStore = EmailUtils.getEmailStore(receiveHostAccount, accountType, startTLS);
+        Store emailStore = getEmailStore(receiveHostAccount, accountType, startTLS);
         if (receivePortAccount != null)
             emailStore.connect(receiveHostAccount, receivePortAccount, nameAccount, passwordAccount);
         else
@@ -244,6 +272,7 @@ public class EmailReceiver {
             int messageCount = emailFolder.getMessageCount();
             ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messageCount));
             Set<String> usedEmails = new HashSet<>();
+            int folderClosedCount = 0;
             while(count < messageCount && (maxMessagesAccount == null ||  count < maxMessagesAccount)) {
                 try {
                     ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count + 1, messageCount, maxMessagesAccount));
@@ -276,14 +305,21 @@ public class EmailReceiver {
                         }
                     }
                     count++;
-                } catch (FolderClosedIOException e) {
-                    ServerLoggers.mailLogger.error("Ignored exception :", e);
-                    emailFolder.open(Folder.READ_WRITE);
+                    folderClosedCount = 0;
+                } catch (FolderClosedException | FolderClosedIOException e) {
+                    if(folderClosedCount < 2) {
+                        folderClosedCount++;
+                        ServerLoggers.mailLogger.error("Ignored exception :", e);
+                        emailFolder.open(Folder.READ_WRITE);
+                    } else {
+                        throw e;
+                    }
                 } catch (Exception e) {
                     if(ignoreExceptions) {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
                         context.delayUserInterfaction(new MessageClientAction(e.toString(), localize("{mail.receiving}")));
                         count++;
+                        folderClosedCount = 0;
                     } else throw e;
                 }
             }
@@ -428,6 +464,8 @@ public class EmailReceiver {
                 Object plainContent = null;
                 try {
                     plainContent = bp.getContent();
+                } catch (FolderClosedException | FolderClosedIOException e) {
+                    throw e;
                 } catch (Exception ignored) {
                 }
                 content = plainContent instanceof String ? plainContent : MimeUtility.decode(bp.getInputStream(), encoding);
