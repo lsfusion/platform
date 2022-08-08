@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
+import static lsfusion.server.physics.dev.integration.external.to.mail.EmailReceiver.getEmailStore;
 
 public class ReceiveEMLAction extends EmailAction {
     private final ClassPropertyInterface accountInterface;
@@ -107,7 +108,7 @@ public class ReceiveEMLAction extends EmailAction {
 
         Map<Long, FileData> emlMap = new HashMap<>();
 
-        Store emailStore = EmailReceiver.getEmailStore(receiveHost, accountType, startTLS);
+        Store emailStore = getEmailStore(receiveHost, accountType, startTLS);
         if (receivePort != null) emailStore.connect(receiveHost, receivePort, user, password);
         else emailStore.connect(receiveHost, user, password);
 
