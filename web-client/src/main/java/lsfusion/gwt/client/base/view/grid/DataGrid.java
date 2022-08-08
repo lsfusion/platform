@@ -1252,7 +1252,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         // mix and convert calls order in not important
         // notice: getFocusedCellBackgroundColor() and getSelectedRowBackgroundColor() return already themed color - no need of additional conversion 
         String setColor;
-        /*if (selected) {
+        if (selected) {
             if (focused) {
                 // for now focus color is not mixed with base cell color - as it is done in panel
                 setColor = background != null ? getThemedColor(background) : getFocusedCellBackgroundColor(false);
@@ -1261,9 +1261,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 if (background != null)
                     setColor = mixColors(background, setColor);
             }
-        } else {*/
+        } else {
             setColor = getThemedColor(background);
-        //}
+        }
         return setColor;
     }
 
@@ -1416,22 +1416,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             TableRowElement upperRow = row > 0 ? rows.getItem(row - 1) : headerRow;
             if(upperRow != null)
                 setFocusedCellBottomBorder(upperRow.getCells().getItem(column), focused);
-        }
-
-        //set 'focusedCell' for bootstrap
-        TableRowElement thisRow = rows.getItem(row);
-        NodeList<TableCellElement> cells = thisRow.getCells();
-        TableCellElement thisCell = cells.getItem(column);
-        setFocusedCell(thisCell, focused);
-    }
-
-    private void setFocusedCell(TableCellElement td, boolean focused) {
-        if (focused) {
-            td.addClassName("focused-cell"); //default
-            td.addClassName("table-primary"); //bootstrap
-        } else {
-            td.removeClassName("focused-cell"); //default
-            td.removeClassName("table-primary"); //bootstrap
         }
     }
 

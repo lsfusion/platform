@@ -87,20 +87,3 @@ svg {
 .align-items-center {
     align-items: center !important;
 }
-
-
-/* ------------ Colors ----------------- */
-:root {
-    /*override in StyleDefaults init*/
-    --selected-row-background-color: #000000;
-    --focused-cell-background-color: #000000;
-}
-
-td.selected-cell {
-    background-color: var(--selected-row-background-color);
-    /*background-blend-mode: multiply;*/
-}
-
-td.focused-cell {
-    background-color: var(--focused-cell-background-color);
-}

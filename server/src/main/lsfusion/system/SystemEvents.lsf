@@ -9,7 +9,7 @@ onWebClientStarted  ABSTRACT LIST ( );
 
 onWebClientLoad ABSTRACT LIST ();
 
-useBootstrap = DATA BOOLEAN();
+useBootstrap = TRUE;
 onWebClientLoad() + {
     IF useBootstrap() THEN {
         INTERNAL CLIENT 'bootstrap.min.css';
