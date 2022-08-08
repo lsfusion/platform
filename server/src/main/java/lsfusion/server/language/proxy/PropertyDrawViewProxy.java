@@ -101,6 +101,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setCharWidth(int charWidth) {
         target.setCharWidth(charWidth);
     }
+    public void setValueFlex(boolean flex) {
+        target.setValueFlex(flex);
+    }
 
     public void setChangeKey(KeyStroke changeKey) {
         target.changeKey = new KeyInputEvent(changeKey);
