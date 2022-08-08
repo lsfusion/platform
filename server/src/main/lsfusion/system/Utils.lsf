@@ -259,7 +259,7 @@ toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classe
 
 // ---------------------------------- JSON functions  ---------------------------------- //
 
-jsonObject (TEXT j, STRING key) = FORMULA STRING '($1)::json->($2)';
+jsonObject (TEXT j, STRING key) = FORMULA STRING '(($1)::json->($2))::varchar';
 
 jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)';
 jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)';
