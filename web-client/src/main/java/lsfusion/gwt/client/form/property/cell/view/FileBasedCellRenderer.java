@@ -8,7 +8,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.function.Consumer;
 
-public abstract class FileBasedCellRenderer extends CellRenderer {
+public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
     protected static final String ICON_EMPTY = "empty.png";
     protected static final String ICON_FILE = "file.png";
 

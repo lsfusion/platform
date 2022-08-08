@@ -1,13 +1,13 @@
 
-.prop {
+.prop-value {
     box-sizing: content-box; /* it's important to have content-box sizing, since we're setting explicit heights for the renderer element (and we don't want paddings to be included, since we're calculating elements heights based on contents) */
 }
 
-.prop, .prop.comp-shrink-horz {
+.prop-value, .prop-value.comp-shrink-horz {
     overflow-x: hidden;
 }
 
-.prop, .prop.comp-shrink-vert {
+.prop-value, .prop-value.comp-shrink-vert {
     overflow-y: hidden;
 }
 

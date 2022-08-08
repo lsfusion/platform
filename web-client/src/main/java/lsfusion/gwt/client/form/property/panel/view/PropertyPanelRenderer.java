@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
@@ -29,7 +28,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 //        value.getElement().setAttribute("id", property.sID);
         value.getElement().setId(property.propertyFormName);
 
-        SizedWidget valueWidget = value.setSized();
+        SizedWidget valueWidget = value.getSizedWidget();
 
         boolean editableNotNull = property.isEditableNotNull();
         if (editableNotNull || property.hasChangeAction)

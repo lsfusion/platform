@@ -1,8 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
-import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -18,7 +16,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     }
 
     public boolean renderContent(Element element, RenderContext renderContext) {
-        setPadding(element);
+        setPadding(SimpleTextBasedCellRenderer.getSizeElement(element));
 
         if(property.isEditableNotNull())
             element.addClassName("requiredValueString");
@@ -32,11 +30,9 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        clearPadding(element);
+        clearPadding(SimpleTextBasedCellRenderer.getSizeElement(element));
 
-        clearRender(property, element, renderContext);
-
-        if(property.isEditableNotNull())
+        if (property.isEditableNotNull())
             element.removeClassName("requiredValueString");
 
         clearInnerText(element);

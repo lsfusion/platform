@@ -1,0 +1,5 @@
+
+/* has to be equal to the input (form-control) border size, to have proper property toolbar position */
+:root {
+    --input-border-width: 1px;
+}

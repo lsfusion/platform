@@ -14,6 +14,7 @@ onWebClientLoad() + {
     IF useBootstrap() THEN {
         INTERNAL CLIENT 'bootstrap.min.css';
         INTERNAL CLIENT 'bootstrap-background-inherit.css';
+        INTERNAL CLIENT 'bootstrap-adapter.css';
     } ELSE {
         INTERNAL CLIENT 'table.css';
         INTERNAL CLIENT 'table-border.css';
@@ -22,6 +23,7 @@ onWebClientLoad() + {
         INTERNAL CLIENT 'caption-panel-border.css';
         INTERNAL CLIENT 'layout.css';
         INTERNAL CLIENT 'panel-renderer-border.css';
+        INTERNAL CLIENT 'property-toolbar-border.css';
         INTERNAL CLIENT 'main.css';
     }
 }

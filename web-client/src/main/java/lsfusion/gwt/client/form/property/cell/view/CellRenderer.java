@@ -11,6 +11,7 @@ import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -54,12 +55,12 @@ public abstract class CellRenderer<T> {
     // should be consistent with getWidthPadding and getHeightPadding
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
-        element.addClassName("prop");
-
         boolean renderedAlignment = renderContent(element, renderContext);
 
+        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value");
+
         if(!renderedAlignment) {
-            assert !GwtClientUtils.isTDorTH(element);
+            assert !GwtClientUtils.isTDorTH(element) && !SimpleTextBasedCellRenderer.isToolbarContainer(element);
             renderFlexAlignment(property, element);
         }
     }
@@ -179,11 +180,12 @@ public abstract class CellRenderer<T> {
 
         boolean renderedAlignment = clearRenderContent(element, renderContext);
 
-        if(!renderedAlignment)
+        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value");
+
+        if (!renderedAlignment)
             clearRenderFlexAlignment(property, element);
 
-        element.removeClassName("prop");
-
+        // update
         AbstractDataGridBuilder.clearColors(element);
 
         clearEditSelected(element, property);

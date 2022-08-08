@@ -1,9 +1,6 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -26,14 +23,13 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
         element.getStyle().setWhiteSpace(multiLine ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
     }
 
-    // td always respects the inner text size, so if it is multi line and not autosized, we have wrap the content into a div
-    private boolean isFixedMultiLine() {
-        return isMultiLine() && !property.autoSize;
-    }
-
     @Override
     public boolean canBeRenderedInTD() {
-        if (isFixedMultiLine())
+        if(isTagInput()) // input / textareas has fixed sizes, so can be used with multiline fixed sizes
+            return true;
+
+        // td always respects the inner text size, so if it is multi line and not autosized, we have wrap the content into a div
+        if (isMultiLine() && !property.autoSize)
             return false;
 
         // input we have to render in td, since input is a void element, and it can not have children (and they are needed for the toolbar)
@@ -44,9 +40,12 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
     @Override
     public Element createRenderElement() {
         if(isTagInput()) {
-            if(needToRenderToolbarContent()) // for an input with a toolbar we have to wrap it in a div to draw a toolbar
-                return Document.get().createDivElement();
-            else
+            if(needToRenderToolbarContent()) { // for an input with a toolbar we have to wrap it in a div to draw a toolbar
+                DivElement toolbarContainer = Document.get().createDivElement();
+                toolbarContainer.addClassName("prop-w-toolbar");
+                setToolbarContainer(toolbarContainer);
+                return toolbarContainer;
+            } else
                 return createInputElement(property);
         }
 
@@ -79,18 +78,41 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
         element.setPropertyObject(inputElementProp, inputElement);
     }
 
+    public static void setSizeElement(Element element, InputElement inputElement) {
+        element.setPropertyObject(inputElementProp, inputElement);
+    }
+
+    private final static String toolbarContainerProp = "toolbarContainer";
+
+    private static void setToolbarContainer(Element element) {
+        element.setPropertyBoolean(toolbarContainerProp, true);
+    }
+    public  static boolean isToolbarContainer(Element element) {
+        return element.getPropertyBoolean(toolbarContainerProp);
+    }
+    public static InputElement getSizeInputElement(Element element) {
+        if(isToolbarContainer(element))
+            return getInputElement(element);
+        return null;
+    }
+    public static Element getSizeElement(Element element) {
+        InputElement sizeElement = getSizeInputElement(element);
+        if(sizeElement != null)
+            return sizeElement;
+        return element;
+    }
+
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
-
-        super.renderContent(element, renderContext);
 
 //        boolean renderedAlignment = false;
         InputElement inputElement = null;
 
         boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
         boolean isInput = isTagInput();
-        if(isInput && (isTDOrTH || needToRenderToolbarContent())) {
-            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, isMultiLine(), renderContext, null);
+        if(isInput && (isTDOrTH || isToolbarContainer(element))) {
+            // assert isTDOrTH != isToolbarContainer(element);
+            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, isMultiLine(), renderContext, isTDOrTH, isTDOrTH);
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) { // otherwise we'll use flex alignment (however text alignment would also do)
@@ -103,9 +125,10 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
                 inputElement = (InputElement) element;
         }
 
-        if(inputElement != null) {
+        if(inputElement != null)
             setInputElement(element, inputElement);
-        }
+
+        super.renderContent(element, renderContext);
 
         return true; //renderedAlignment;
     }

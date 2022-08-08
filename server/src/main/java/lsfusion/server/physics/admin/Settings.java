@@ -2693,7 +2693,7 @@ public class Settings implements Cloneable {
 
     private boolean useInputTagForTextBasedInPanel = true;
     private boolean useInputTagForBoolean = true;
-    private boolean noToolbarForInputTagInPanel = true;
+    private boolean noToolbarForInputTagInPanel = false;
     private boolean noToolbarForBoolean = true;
 
     public boolean isUseInputTagForTextBasedInPanel() {

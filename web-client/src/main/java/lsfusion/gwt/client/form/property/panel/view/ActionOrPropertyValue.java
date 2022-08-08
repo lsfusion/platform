@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -124,24 +124,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
         GFormController.setBindingGroupObject(this,  property.groupObject);
 
         getFocusElement().setTabIndex(isFocusable() ? 0 : -1);
-    }
 
-    public void focus(FocusUtils.Reason reason) {
-        FocusUtils.focus(getFocusElement(), reason);
-    }
-
-    public SizedWidget setSized() {
-        setStyles();
-
-        boolean globalCaptionIsDrawn = this.globalCaptionIsDrawn;
-        GFont font = getFont();
-        return new SizedWidget(this,
-                property.getValueWidth(font, false, globalCaptionIsDrawn),
-                property.getValueHeight(font, false, globalCaptionIsDrawn));
-    }
-
-    private void setStyles() {
-        // we have to set border for border element and not element itself, since absolute positioning include border INSIDE div, and default behaviour is OUTSIDE
         addStyleName("panelRendererValue");
         if(property.boxed)
             addStyleName("panelRendererValueBoxed");
@@ -149,6 +132,28 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
             addStyleName("actionPanelRendererValue");
         else
             addStyleName("propertyPanelRendererValue");
+    }
+
+    public void focus(FocusUtils.Reason reason) {
+        FocusUtils.focus(getFocusElement(), reason);
+    }
+
+    public SizedWidget getSizedWidget() {
+        boolean globalCaptionIsDrawn = this.globalCaptionIsDrawn;
+        GFont font = getFont();
+        GSize valueWidth = property.getValueWidth(font, false, globalCaptionIsDrawn);
+        GSize valueHeight = property.getValueHeight(font, false, globalCaptionIsDrawn);
+
+        Element sizeElement = SimpleTextBasedCellRenderer.getSizeInputElement(getRenderElement());
+        if(sizeElement != null) {
+            FlexPanel.setPanelWidth(sizeElement, valueWidth);
+            FlexPanel.setPanelHeight(sizeElement, valueHeight);
+
+            valueWidth = null;
+            valueHeight = null;
+        }
+
+        return new SizedWidget(this, valueWidth, valueHeight);
     }
 
     @Override

@@ -209,23 +209,17 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
     }
 
-    public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, Pair<Integer, Integer> renderedSize) {
+    public static InputElement renderInputElement(Element cellParent, GPropertyDraw property, boolean multiLine, RenderContext renderContext, boolean removeAllPMB, boolean setupPercentParent) {
         InputElement inputElement = SimpleTextBasedCellRenderer.createInputElement(property);
         inputElement.setTabIndex(-1); // we don't want input to get focus if it's wrapped or in table (when editing it's not important, but just in case)
-        inputElement.addClassName("remove-all-pmb");
 
         CellRenderer.renderTextAlignment(property, inputElement, true);
 
         SimpleTextBasedCellRenderer.render(property, inputElement, renderContext, multiLine);
 
-        // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
-        if(property.autoSize && renderedSize != null) { // we have to set sizes that were rendered, since input elements have really unpredicatble content sizes
-            inputElement.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
-            inputElement.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
-            if(multiLine)
-                // https://stackoverflow.com/questions/7144843/extra-space-under-textarea-differs-along-browsers
-                inputElement.getStyle().setVerticalAlign(Style.VerticalAlign.TOP);
-        } else
+        if(removeAllPMB)
+            inputElement.addClassName("remove-all-pmb");
+        if(setupPercentParent)
             GwtClientUtils.setupPercentParent(inputElement);
         cellParent.appendChild(inputElement);
 
@@ -238,7 +232,19 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         TextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
 
-        inputElement = renderInputElement(cellParent, property, isMultiLine(), renderContext, renderedSize);
+        boolean needRenderedSize = property.autoSize && renderedSize != null;
+        boolean multiLine = isMultiLine();
+
+        inputElement = renderInputElement(cellParent, property, multiLine, renderContext, true, !needRenderedSize);
+
+        // input doesn't respect justify-content, stretch, plus we want to include paddings in input (to avoid having "selection border")
+        if(needRenderedSize) { // we have to set sizes that were rendered, since input elements have really unpredicatble content sizes
+            inputElement.getStyle().setHeight(renderedSize.second, Style.Unit.PX);
+            inputElement.getStyle().setWidth(renderedSize.first, Style.Unit.PX);
+            if(multiLine)
+                // https://stackoverflow.com/questions/7144843/extra-space-under-textarea-differs-along-browsers
+                inputElement.getStyle().setVerticalAlign(Style.VerticalAlign.TOP);
+        }
     }
 
     protected boolean isMultiLine() {

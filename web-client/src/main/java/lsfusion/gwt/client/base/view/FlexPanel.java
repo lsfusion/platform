@@ -178,12 +178,15 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
     public static void setPanelSize(Element element, boolean vertical, GSize size) {
         if(vertical)
-            setHeight(element, size);
+            setPanelHeight(element, size);
         else
             setPanelWidth(element, size);
     }
     public static void setPanelWidth(Element element, GSize size) {
         setWidth(element, size);
+    }
+    public static void setPanelHeight(Element element, GSize size) {
+        setHeight(element, size);
     }
     public static void setMinPanelWidth(Element element, GSize size) {
         setMinPanelWidth(element, size != null ? size.getString() : null);

@@ -1,6 +1,8 @@
 .property-toolbar-on-hover .property-toolbar-item-hover {
     width: 0;
     transition: width 200ms linear;
+
+    overflow: hidden;
 }
 
 .property-toolbar-on-hover:hover .property-toolbar-item-hover {
@@ -64,4 +66,37 @@
 
 .property-toolbar-item:hover {
     border: 1px solid var(--component-hover-border-color);
+}
+
+/* an input with a toolbar (input "pulls the size" from the upper container) */
+
+.prop-w-toolbar {
+    display: flex;
+}
+
+.prop-w-toolbar > .prop-input {
+    flex: 1 1 auto;
+    align-self: stretch;
+}
+
+/* otherwise box-shadow will be clipped, and with flex: 1 1, stretch we're sure that there gonna be no overflow */
+/* maybe not should be used but this way it's more modular */
+.prop-w-toolbar.comp-shrink-horz {
+    overflow-x: visible;
+}
+.prop-w-toolbar.comp-shrink-vert {
+    overflow-y: visible;
+}
+
+.prop-w-toolbar > .property-toolbar {
+    margin-top: var(--input-border-width);
+    margin-bottom: var(--input-border-width);
+}
+
+.prop-w-toolbar > .property-toolbar-end {
+    margin-right: var(--input-border-width);
+}
+
+.prop-w-toolbar > .property-toolbar-start {
+    margin-left: var(--input-border-width);
 }
