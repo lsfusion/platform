@@ -16,3 +16,39 @@ body .background-inherit {
 .table {
     --bs-table-bg: var(--bs-body-bg);
 }
+
+:root {
+    /*override in StyleDefaults init*/
+    --selected-row-background-color: #000000;
+    --focused-cell-background-color: #000000;
+}
+
+td.table-active {
+    position: relative;
+}
+
+td.table-active::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--selected-row-background-color);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+td.table-primaryX {
+    position: relative;
+}
+
+td.table-primaryX::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--focused-cell-background-color);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
