@@ -87,3 +87,41 @@ svg {
 .align-items-center {
     align-items: center !important;
 }
+
+
+/* ------------ Colors ----------------- */
+:root {
+    /*override in StyleDefaults init*/
+    --selected-row-background-color: #000000;
+    --focused-cell-background-color: #000000;
+}
+
+td.selected-cell {
+    position: relative;
+}
+
+td.selected-cell::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--selected-row-background-color);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+td.focused-cell {
+    position: relative;
+}
+
+td.focused-cell::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--focused-cell-background-color);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
