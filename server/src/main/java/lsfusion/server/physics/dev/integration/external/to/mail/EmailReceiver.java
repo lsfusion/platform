@@ -27,6 +27,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.integration.service.*;
 import org.apache.http.entity.ContentType;
@@ -221,7 +222,7 @@ public class EmailReceiver {
             socketFactory.setTrustAllHosts(true);
             mailProps.put("mail.imaps.ssl.socketFactory", socketFactory);
             mailProps.setProperty("mail.store.protocol", "imaps");
-            mailProps.setProperty("mail.imaps.timeout", "5000");
+            mailProps.setProperty("mail.imaps.timeout", String.valueOf(Settings.get().getMailImapTimeout()));
         }
         Session emailSession = Session.getInstance(mailProps);
         Store emailStore = emailSession.getStore(isPOP3 ? "pop3" : "imaps");
@@ -246,6 +247,7 @@ public class EmailReceiver {
             int messageCount = emailFolder.getMessageCount();
             ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messageCount));
             Set<String> usedEmails = new HashSet<>();
+            int folderClosedCount = 0;
             while(count < messageCount && (maxMessagesAccount == null ||  count < maxMessagesAccount)) {
                 try {
                     Message message = emailFolder.getMessage(messageCount - count);
@@ -275,14 +277,21 @@ public class EmailReceiver {
                         }
                     }
                     count++;
-                } catch (FolderClosedIOException e) {
-                    ServerLoggers.mailLogger.error("Ignored exception :", e);
-                    emailFolder.open(Folder.READ_WRITE);
+                    folderClosedCount = 0;
+                } catch (FolderClosedException | FolderClosedIOException e) {
+                    if(folderClosedCount < 2) {
+                        folderClosedCount++;
+                        ServerLoggers.mailLogger.error("Ignored exception :", e);
+                        emailFolder.open(Folder.READ_WRITE);
+                    } else {
+                        throw e;
+                    }
                 } catch (Exception e) {
                     if(ignoreExceptions) {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
                         context.delayUserInterfaction(new MessageClientAction(e.toString(), localize("{mail.receiving}")));
                         count++;
+                        folderClosedCount = 0;
                     } else throw e;
                 }
             }
@@ -413,6 +422,8 @@ public class EmailReceiver {
                 Object plainContent = null;
                 try {
                     plainContent = bp.getContent();
+                } catch (FolderClosedException | FolderClosedIOException e) {
+                    throw e;
                 } catch (Exception ignored) {
                 }
                 content = plainContent instanceof String ? plainContent : MimeUtility.decode(bp.getInputStream(), encoding);

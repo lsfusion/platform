@@ -2701,4 +2701,14 @@ public class Settings implements Cloneable {
     public void setLogExternalHttpServerBody(boolean logExternalHttpServerBody) {
         this.logExternalHttpServerBody = logExternalHttpServerBody;
     }
+
+    private int mailImapTimeout = 5000; //ms
+
+    public int getMailImapTimeout() {
+        return mailImapTimeout;
+    }
+
+    public void setMailImapTimeout(int mailImapTimeout) {
+        this.mailImapTimeout = mailImapTimeout;
+    }
 }
