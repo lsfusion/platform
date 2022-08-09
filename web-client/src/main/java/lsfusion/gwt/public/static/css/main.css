@@ -7,8 +7,6 @@
     --tab-border-radius-vert: 0 0 var(--combobox-border-radius) var(--combobox-border-radius);
     --tab-border-radius-horz: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
     --dialog-border-radius: 0.3rem;
-    --border-padding: 0.125rem;
-    --border-width: 1px;
 }
 
 /* this is is a hack class, when we want to inherit background-color but not the immediate parent, but the first non-transparent parent */

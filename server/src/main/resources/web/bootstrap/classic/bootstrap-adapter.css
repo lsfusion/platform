@@ -3,3 +3,7 @@
 :root {
     --input-border-width: 1px;
 }
+
+:root {
+    --border-padding: 0.375rem;
+}

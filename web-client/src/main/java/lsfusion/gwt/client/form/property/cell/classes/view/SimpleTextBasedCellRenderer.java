@@ -54,7 +54,10 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
 
     @Override
     public void renderPanelLabel(LabelWidget label) {
-        label.addStyleName("form-label");
+        if(property.panelCaptionVertical)
+            label.addStyleName("form-label");
+        else
+            label.addStyleName("col-form-label");
     }
 
     public static InputElement createInputElement(GPropertyDraw property) {
@@ -105,7 +108,7 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
 
-//        boolean renderedAlignment = false;
+        boolean renderedAlignment = false;
         InputElement inputElement = null;
 
         boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
@@ -113,12 +116,14 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
         if(isInput && (isTDOrTH || isToolbarContainer(element))) {
             // assert isTDOrTH != isToolbarContainer(element);
             inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, isMultiLine(), renderContext, isTDOrTH, isTDOrTH);
-//            renderedAlignment = true;
+            renderedAlignment = true;
         } else {
-//            if(isTDOrTH || isInput) { // otherwise we'll use flex alignment (however text alignment would also do)
+            // otherwise we'll use flex alignment (however text alignment would also do)
+            // there is some difference in div between align-items center and vertical align baseline / middle, and align items center seems to be more accurate (and better match input vertical align baseline / middle)
+            if(isTDOrTH || isInput) {
                 renderTextAlignment(property, element, isInput);
-//                renderedAlignment = true;
-//            }
+                renderedAlignment = true;
+            }
             SimpleTextBasedCellRenderer.render(property, element, renderContext, isMultiLine());
 
             if(isInput)
@@ -130,7 +135,7 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
 
         super.renderContent(element, renderContext);
 
-        return true; //renderedAlignment;
+        return renderedAlignment;
     }
 
     @Override
