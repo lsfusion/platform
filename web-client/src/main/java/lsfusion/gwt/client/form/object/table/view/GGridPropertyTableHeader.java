@@ -128,7 +128,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);
 
         th = GwtClientUtils.wrapDiv(th); // we need to wrap in div, since we don't want to modify th itself (it's not recreated every time for grid) + setting display flex for th breaks layouting + for th it's unclear how to make it clip text that doesn't fit height (even max-height)
-        th.addClassName("header");
+        th.addClassName("prop-header");
 
         // since it's a header we want to align it to the center (vertically and horizontally)
         th = wrapCenter(th); // we have to do it after setting height (because that's the point of that centering)
