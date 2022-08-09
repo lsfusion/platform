@@ -162,27 +162,27 @@ public class FlexPanelImpl {
         switch (alignment) {
             case START:
                 if(vertical)
-                    child.addClassName("grid-vert-start");
-                else
                     child.addClassName("grid-horz-start");
+                else
+                    child.addClassName("grid-vert-start");
                 return;
             case CENTER:
                 if(vertical)
-                    child.addClassName("grid-vert-center");
-                else
                     child.addClassName("grid-horz-center");
+                else
+                    child.addClassName("grid-vert-center");
                 return;
             case END:
                 if(vertical)
-                    child.addClassName("grid-vert-end");
-                else
                     child.addClassName("grid-horz-end");
+                else
+                    child.addClassName("grid-vert-end");
                 return;
             case STRETCH:
                 if(vertical)
-                    child.addClassName("grid-vert-stretch");
-                else
                     child.addClassName("grid-horz-stretch");
+                else
+                    child.addClassName("grid-vert-stretch");
                 return;
         }
         throw new IllegalStateException("Unknown alignment");

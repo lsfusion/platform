@@ -47,7 +47,7 @@ public class GActionType extends GDataType {
             if (image != null)
                 result = result.add(image.getWidth());
 
-            return result;
+            return result.add(GSize.CONST(30)); // paddings in btn
         }
 
         return null;

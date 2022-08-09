@@ -69,6 +69,7 @@ public abstract class CellRenderer<T> {
     }
 
     public void renderPanelContainer(SizedFlexPanel panel) {
+        panel.addStyleName("form-group");
     }
 
     public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {

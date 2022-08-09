@@ -90,28 +90,28 @@
     align-content: stretch;
 }
 
-.grid-vert-start {
+.grid-horz-start {
     justify-self: start;
 }
-.grid-vert-center {
+.grid-horz-center {
     justify-self: center;
 }
-.grid-vert-end {
+.grid-horz-end {
     justify-self: end;
 }
-.grid-vert-stretch {
+.grid-horz-stretch {
     justify-self: stretch;
 }
-.grid-horz-start {
+.grid-vert-start {
     align-self: start;
 }
-.grid-horz-center {
+.grid-vert-center {
     align-self: center;
 }
-.grid-horz-end {
+.grid-vert-end {
     align-self: end;
 }
-.grid-horz-stretch {
+.grid-vert-stretch {
     align-self: stretch;
 }
 
