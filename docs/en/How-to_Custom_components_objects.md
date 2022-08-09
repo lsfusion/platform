@@ -116,7 +116,7 @@ Example:
 let diff = controller.getDiff(list);
 for (let object of diff.add) { ... }
 for (let object of diff.update) { ... }
-for (let option of diff.remove) { ... }
+for (let object of diff.remove) { ... }
 ```
 
 After removing the old elements, for each object in the _list_ array a _div_ _card_ is created, in which the desired display elements of each property are placed.
