@@ -391,7 +391,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
 
             GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
-            String background = DataGrid.getSelectedCellBackground(isSelectedRow(cell), isFocusedColumn(cell), rowValue.getRowBackground());
+            String background = DataGrid.getSelectedCellBackground(rowValue.getRowBackground());
             String foreground = rowValue.getRowForeground();
             if(isNew || !equalsColorState(renderedState, background, foreground)) {
                 renderedState.background = background;

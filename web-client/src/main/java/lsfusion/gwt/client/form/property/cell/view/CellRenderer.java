@@ -90,11 +90,9 @@ public abstract class CellRenderer<T> {
 
     private void setSelectedCell(Element td, boolean selected) {
         if (selected) {
-            td.addClassName("selected-cell"); //default
-            td.addClassName("table-active"); //bootstrap
+            td.addClassName("selected-cell");
         } else {
-            td.removeClassName("selected-cell"); //default
-            td.removeClassName("table-active"); //bootstrap
+            td.removeClassName("selected-cell");
         }
     }
 

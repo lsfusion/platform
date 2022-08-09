@@ -8,3 +8,40 @@
     padding: 0 0.125rem;
     font-weight: normal;
 }
+
+/* ------------ background ----------------- */
+:root {
+    /*override in StyleDefaults init*/
+    --selected-row-background-color: #000000;
+    --focused-cell-background-color: #000000;
+}
+
+td.selected-cell {
+    position: relative;
+}
+
+td.selected-cell::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--selected-row-background-color);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+}
+
+td.focused-cell {
+    position: relative;
+}
+
+td.focused-cell::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--focused-cell-background-color);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+}

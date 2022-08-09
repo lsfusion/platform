@@ -50,9 +50,6 @@ import java.util.function.Function;
 
 import static java.lang.Math.min;
 import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
-import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
-import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
-import static lsfusion.gwt.client.view.StyleDefaults.getSelectedRowBackgroundColor;
 
 public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeListener, HasMaxPreferredSize {
 
@@ -1247,24 +1244,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             updateSelectedCells(newLocalSelectedRow, dataColumnsChanged);
     }
 
-    public static String getSelectedCellBackground(boolean selected, boolean focused, String background) {
-        // to achieve 'themed' color base color should be converted with getThemedColor() only once
-        // mix and convert calls order in not important
-        // notice: getFocusedCellBackgroundColor() and getSelectedRowBackgroundColor() return already themed color - no need of additional conversion 
-        String setColor;
-        /*if (selected) {
-            if (focused) {
-                // for now focus color is not mixed with base cell color - as it is done in panel
-                setColor = background != null ? getThemedColor(background) : getFocusedCellBackgroundColor(false);
-            } else {
-                setColor = getSelectedRowBackgroundColor(background != null);
-                if (background != null)
-                    setColor = mixColors(background, setColor);
-            }
-        } else {*/
-            setColor = getThemedColor(background);
-        //}
-        return setColor;
+    public static String getSelectedCellBackground(String background) {
+        return getThemedColor(background);
     }
 
     private void updateFocusedCellDOM() {
@@ -1427,11 +1408,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private void setFocusedCell(TableCellElement td, boolean focused) {
         if (focused) {
-            td.addClassName("focused-cell"); //default
-            td.addClassName("table-primaryX"); //bootstrap
+            td.addClassName("focused-cell");
         } else {
-            td.removeClassName("focused-cell"); //default
-            td.removeClassName("table-primaryX"); //bootstrap
+            td.removeClassName("focused-cell");
         }
     }
 
