@@ -147,20 +147,9 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
     }
 
-    //bootstrap property for selected row
-    private void setTableActive(TableRowElement tr, boolean selectedRow) {
-        if (selectedRow) {
-            tr.addClassName("table-active");
-        } else {
-            tr.removeClassName("table-active");
-        }
-    }
-
     @Override
     public void updateRowImpl(int rowIndex, T rowValue, int[] columnsToRedraw, TableRowElement tr, BiPredicate<Column<T, ?>, Cell> filter) {
         setRowValueIndex(tr, rowIndex, (RowIndexHolder) rowValue); // technically for updateSelectedCells it's not needed, but just in case
-
-        setTableActive(tr, rowIndex == cellTable.getSelectedRow());
 
         int columnCount = cellTable.getColumnCount();
 

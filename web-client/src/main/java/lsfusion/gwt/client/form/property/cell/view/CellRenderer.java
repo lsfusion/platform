@@ -88,14 +88,6 @@ public abstract class CellRenderer<T> {
         }
     }
 
-    private void setSelectedCell(Element td, boolean selected) {
-        if (selected) {
-            td.addClassName("selected-cell");
-        } else {
-            td.removeClassName("selected-cell");
-        }
-    }
-
     public static void renderEditSelected(Element element, GPropertyDraw property) {
         if(property.hasEditObjectAction)
             element.addClassName("selectedCellHasEdit");
@@ -283,6 +275,8 @@ public abstract class CellRenderer<T> {
         public String foreground;
         public String background;
 
+        public Selection selection;
+
         public boolean rerender;
 
         public ToolbarState toolbar;
@@ -292,6 +286,9 @@ public abstract class CellRenderer<T> {
     }
     private boolean equalsColorState(RenderedState state, String background, String foreground) {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
+    }
+    private boolean equalsSelection(RenderedState state, Selection selection) {
+        return GwtClientUtils.nullEquals(state.selection, selection);
     }
 
     private static final String RENDERED = "rendered";
@@ -313,7 +310,6 @@ public abstract class CellRenderer<T> {
             renderEditSelected(element, property);
         else
             clearEditSelected(element, property);
-        setSelectedCell(element, selected);
 
         Object value = updateContext.getValue();
         boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
@@ -335,6 +331,12 @@ public abstract class CellRenderer<T> {
             renderedState.foreground = foreground;
 
             AbstractDataGridBuilder.updateColors(element, background, foreground);
+        }
+
+        Selection selection = updateContext.getSelection();
+        if(isNew || !equalsSelection(renderedState, selection)) {
+            renderedState.selection = selection;
+            AbstractDataGridBuilder.updateSelection(element, selection);
         }
 
         boolean cleared = false;

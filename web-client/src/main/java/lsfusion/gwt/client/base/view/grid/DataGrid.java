@@ -1398,20 +1398,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             if(upperRow != null)
                 setFocusedCellBottomBorder(upperRow.getCells().getItem(column), focused);
         }
-
-        //set 'focusedCell' for bootstrap
-        TableRowElement thisRow = rows.getItem(row);
-        NodeList<TableCellElement> cells = thisRow.getCells();
-        TableCellElement thisCell = cells.getItem(column);
-        setFocusedCell(thisCell, focused);
-    }
-
-    private void setFocusedCell(TableCellElement td, boolean focused) {
-        if (focused) {
-            td.addClassName("focused-cell");
-        } else {
-            td.removeClassName("focused-cell");
-        }
     }
 
     private void setFocusedCellBottomBorder(TableCellElement td, boolean focused) {

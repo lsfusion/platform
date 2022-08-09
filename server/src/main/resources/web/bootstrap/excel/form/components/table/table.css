@@ -16,11 +16,12 @@
     --focused-cell-background-color: #000000;
 }
 
-td.selected-cell {
+/*we could use box-shadow, but it cannot mix colors as we need*/
+.table-active {
     position: relative;
 }
 
-td.selected-cell::before {
+.table-active::before {
     content: '';
     mix-blend-mode: multiply;
     background: var(--selected-row-background-color);
@@ -31,11 +32,11 @@ td.selected-cell::before {
     height: 100%;
 }
 
-td.focused-cell {
+.focused-cell {
     position: relative;
 }
 
-td.focused-cell::before {
+.focused-cell::before {
     content: '';
     mix-blend-mode: multiply;
     background: var(--focused-cell-background-color);

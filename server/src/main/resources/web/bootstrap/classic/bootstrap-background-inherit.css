@@ -18,6 +18,6 @@ body .background-inherit {
 }
 
 /*focused cell, same as table-active, but opacity 0.3 instead of 0.1*/
-.table>:not(caption)>*>*.focused-cell {
-    box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.3);
+.focused-cell {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.3);
 }

@@ -64,3 +64,7 @@ function lsfController(callerElement) {
 
     return controller;
 }
+
+function reload() {
+    document.location.reload();
+}
