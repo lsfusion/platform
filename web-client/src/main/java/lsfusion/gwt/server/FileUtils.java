@@ -105,9 +105,13 @@ public class FileUtils {
     }
     private static void deleteFile(File file) {
         try { // maybe its better to do it with some delay, but now there's no request retry for action files (except maybe beep), and form should be already closed
-            if (!file.delete())
+            GLoggers.invocationLogger.info("deleting file: " + file.getName());
+            if (!file.delete()) {
+                GLoggers.invocationLogger.error("file not deleted: " + file.getName());
                 file.deleteOnExit();
+            }
         } catch (Throwable t) { // this files are in temp dir anyway, so no big deal
+            GLoggers.invocationLogger.error("file delete failed: " + file.getName());
         }
     }
 
