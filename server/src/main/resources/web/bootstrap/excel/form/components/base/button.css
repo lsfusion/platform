@@ -1,51 +1,43 @@
-button {
-    /*margin: 0;*/
+
+.btn {
     padding: 0.125rem 0.875rem;
-    /*text-decoration: none;*/
-    /*font-size: small;*/
     border-radius: var(--button-border-radius);
     background: var(--component-background-color);
-    border: 1px solid var(--component-border-color); /* should correspond to the result in ActionOrPropertyValue.setBaseSize */
+    border: var(--border-width) solid var(--component-border-color);
+
+    cursor: pointer;
+    color: var(--text-color);
+    /*white-space: nowrap;*/
 }
 
 /*Fix buttons paddings and margins in FF*/
-button::-moz-focus-inner {
+.btn::-moz-focus-inner {
     border: 0;
     padding: 0;
     margin: 0;
-}
-
-button {
-    cursor: pointer;
-    color: var(--text-color);
-    white-space: nowrap;
-}
-
-button:hover {
-    background-color: var(--button-hover-background-color);
-}
-
-button:active { /* should come after ':hover' and ':focus' */
-    background-color: var(--button-active-background-color);
-}
-
-button[disabled] {
-    cursor: default;
-    color: var(--disabled-text-color);
-}
-button[disabled]:hover {
-    border: 1px outset var(--button-disabled-hover-border-color);
-    background: var(--background-color);
-}
-
-
-.btn {
 }
 
 .btn-primary {
 }
 
 .btn-secondary {
+}
+
+.btn:hover {
+    background-color: var(--button-hover-background-color);
+}
+
+.btn:active { /* should come after ':hover' and ':focus' */
+    background-color: var(--button-active-background-color);
+}
+
+.btn[disabled] {
+    cursor: default;
+    color: var(--disabled-text-color);
+}
+.btn[disabled]:hover {
+    border: 1px outset var(--button-disabled-hover-border-color);
+    background: var(--background-color);
 }
 
 .btn.active {
@@ -67,6 +59,23 @@ button[disabled]:hover {
     vertical-align: middle;
 }
 
-.imageButtonWithoutCaption {
-    padding: 0.0625rem;
+.btn-close {
+    box-sizing: content-box;
+    width: 0.625rem;
+    height: 0.625rem;
+    background: transparent var(--close-tab-button-x-url) center/0.5em auto no-repeat;
+    border: 0;
+    opacity: 0.5;
+
+    padding: var(--border-padding);
+}
+.btn-close:hover {
+    opacity: 0.75;
+}
+.btn-close:disabled, .btn-close.disabled {
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    opacity: 0.25;
 }

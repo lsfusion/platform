@@ -151,30 +151,9 @@
     flex-shrink: 1 !important;
 }
 
-.nav-link .btn-close {
+.tab-close-button {
     margin-left: var(--border-padding);
 }
-
-.btn-close {
-    box-sizing: content-box;
-    width: 0.625rem;
-    height: 0.625rem;
-    padding: var(--border-padding);
-    background: transparent var(--close-tab-button-x-url) center/0.5em auto no-repeat;
-    border: 0;
-    opacity: 0.5;
-}
-.btn-close:hover {
-    opacity: 0.75;
-}
-.btn-close:disabled, .btn-close.disabled {
-    pointer-events: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-    opacity: 0.25;
-}
-
 
 /* ------------ Mobile Forms Tab Panel ------------ */
 .mobileFormsTabPanel > .nav-tabs-horz {

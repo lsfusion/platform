@@ -60,10 +60,6 @@
     position:absolute;
 }
 
-.text-based-prop, .text-based-prop.dataGridCell {
-    padding: 2px 3px;
-}
-
 .prop-display-flex {
     display: flex;
 }

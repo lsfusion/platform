@@ -184,6 +184,7 @@ public final class FormDockable extends FormContainer {
                 }
             };
             closeButton.addStyleName("btn-close");
+            closeButton.addStyleName("tab-close-button");
 
             add(closeButton, GFlexAlignment.CENTER); //, 0, false, closeTabButtonWidth);
 

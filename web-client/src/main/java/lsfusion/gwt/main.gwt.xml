@@ -108,20 +108,16 @@
 
     <stylesheet src="static/css/main.css"/>
 
-    <stylesheet src="static/css/form/components/base/button.css"/>
-    <stylesheet src="static/css/form/components/base/check-box.css"/>
-    <stylesheet src="static/css/form/components/base/decorated-popup-panel.css"/>
-    <stylesheet src="static/css/form/components/base/decorator-panel.css"/>
+    <stylesheet src="static/css/form/components/property/suggest/decorated-popup-panel.css"/>
+    <stylesheet src="static/css/form/components/property/suggest/decorator-panel.css"/>
+    <stylesheet src="static/css/form/components/property/suggest/suggest-box.css"/>
+    <stylesheet src="static/css/form/components/property/suggest/popup-panel.css"/>
+    <stylesheet src="static/css/form/components/property/suggest/menu-bar.css"/>
+
     <stylesheet src="static/css/form/components/base/dialog.css"/>
-    <stylesheet src="static/css/form/components/base/menu-bar.css"/>
-    <stylesheet src="static/css/form/components/base/popup-panel.css"/>
     <stylesheet src="static/css/form/components/base/progress-bar.css"/>
     <stylesheet src="static/css/form/components/base/resizable-window.css"/>
-    <stylesheet src="static/css/form/components/base/scrollbar.css"/>
-    <stylesheet src="static/css/form/components/base/suggest-box.css"/>
-    <stylesheet src="static/css/form/components/base/text-area.css"/>
-    <stylesheet src="static/css/form/components/base/text-box.css"/>
-    
+
     <stylesheet src="static/css/form/components/property/property.css"/>
     <stylesheet src="static/css/form/components/property/property-toolbar.css"/>
     
