@@ -1,10 +1,15 @@
 package lsfusion.base;
 
+import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class ServerUtils {
@@ -30,5 +35,15 @@ public class ServerUtils {
         if(request != null)
             return request.getLocale();
         return LocaleContextHolder.getLocale(); // just in case
+    }
+
+    public static String getVersionedResources(HttpServletRequest request, String... resources) throws IOException {
+        List<String> versionedResources = new ArrayList<>();
+        for (String resource : resources) {
+            String versionedResource = resource + "?version=" + SystemUtils.generateID(IOUtils.toByteArray(request.getServletContext().getResourceAsStream("/" + resource)));
+            versionedResources.add(resource.endsWith(".js") ? "<script type='text/javascript' src='" + versionedResource + "'></script>"
+                    : "<link rel='stylesheet' type='text/css' href='" + versionedResource + "' />");
+        }
+        return new Gson().toJson(versionedResources);
     }
 }
