@@ -105,38 +105,4 @@
     <!-- GWT browser selection -->
     <inherits name='com.bfr.client.Selection'/>
     <inherits name="org.vectomatic.libgwtsvg"/>
-
-    <stylesheet src="static/css/main.css"/>
-
-    <stylesheet src="static/css/form/components/property/suggest/decorated-popup-panel.css"/>
-    <stylesheet src="static/css/form/components/property/suggest/decorator-panel.css"/>
-    <stylesheet src="static/css/form/components/property/suggest/suggest-box.css"/>
-    <stylesheet src="static/css/form/components/property/suggest/popup-panel.css"/>
-    <stylesheet src="static/css/form/components/property/suggest/menu-bar.css"/>
-
-    <stylesheet src="static/css/form/components/base/dialog.css"/>
-    <stylesheet src="static/css/form/components/base/progress-bar.css"/>
-    <stylesheet src="static/css/form/components/base/resizable-window.css"/>
-
-    <stylesheet src="static/css/form/components/property/property.css"/>
-    <stylesheet src="static/css/form/components/property/property-toolbar.css"/>
-    
-    <stylesheet src="static/css/form/components/table/table.css"/>
-    <stylesheet src="static/css/form/components/table/table-header.css"/>
-    <stylesheet src="static/css/form/components/table/table-cell.css"/>
-    <stylesheet src="static/css/form/components/table/table-container.css"/>
-    <stylesheet src="static/css/form/components/table/table-sticky.css"/>
-    <stylesheet src="static/css/form/components/table/tree.css"/>
-
-    <stylesheet src="static/css/form/components/filter.css"/>
-    <stylesheet src="static/css/form/components/property/panel-renderer.css"/>
-    <stylesheet src="static/css/form/components/toolbar.css"/>
-    <stylesheet src="static/css/form/components/user-preferences.css"/>
-    
-    <stylesheet src="static/css/form/layout/caption-panel.css"/>
-    <stylesheet src="static/css/form/layout/layout.css"/>
-    <stylesheet src="static/css/form/layout/tab-panel.css"/>
-
-    <stylesheet src="static/css/navigator/navigator.css"/>
-    <stylesheet src="static/css/navigator/split-window.css"/>
 </module>
