@@ -1,6 +1,5 @@
 package lsfusion.base;
 
-import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
@@ -8,9 +7,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerUtils {
     public static final String LOCALE_COOKIE_NAME = "LSFUSION_LOCALE";
@@ -37,13 +37,16 @@ public class ServerUtils {
         return LocaleContextHolder.getLocale(); // just in case
     }
 
-    public static String getVersionedResources(HttpServletRequest request, String... resources) throws IOException {
-        List<String> versionedResources = new ArrayList<>();
+    private static final ConcurrentHashMap<String, String> versions = new ConcurrentHashMap<>();
+    public static Map getVersionedResources(HttpServletRequest request, String... resources) throws IOException {
+        Map<String, String> versionedResources = new LinkedHashMap<>();
         for (String resource : resources) {
-            String versionedResource = resource + "?version=" + SystemUtils.generateID(IOUtils.toByteArray(request.getServletContext().getResourceAsStream("/" + resource)));
-            versionedResources.add(resource.endsWith(".js") ? "<script type='text/javascript' src='" + versionedResource + "'></script>"
-                    : "<link rel='stylesheet' type='text/css' href='" + versionedResource + "' />");
+            String version = versions.get(resource);
+            if (version == null)
+                version = versions.put(resource, SystemUtils.generateID(IOUtils.toByteArray(request.getServletContext().getResourceAsStream("/" + resource))));
+
+            versionedResources.put(resource + "?version=" + version, resource.substring(resource.lastIndexOf(".") + 1));
         }
-        return new Gson().toJson(versionedResources);
+        return versionedResources;
     }
 }
