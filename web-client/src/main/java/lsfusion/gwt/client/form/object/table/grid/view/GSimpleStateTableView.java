@@ -390,8 +390,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected static String getThemedBackgroundColor(String color, boolean isCurrentKey) {
         if (isCurrentKey && color == null) {
-            // for now focus color is not mixed with base cell color - as it is done in panel
-            return StyleDefaults.getFocusedCellBackgroundColor(false);
+            return StyleDefaults.getFocusedCellBackgroundColor();
         } else
             return ColorUtils.getThemedColor(color);
     }

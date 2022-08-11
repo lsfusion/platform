@@ -32,23 +32,8 @@ public class ColorUtils {
         return "#" + toHexString(iR) + toHexString(iG) + toHexString(iB);
     }
 
-    public static String toColorString(int iA, int iR, int iG, int iB) {
-        return toHexString(iA) + toHexString(iR) + toHexString(iG) + toHexString(iB);
-    }
-
     public static String toColorString(int iColor) {
         return toColorString(getRed(iColor), getGreen(iColor), getBlue(iColor));
-    }
-
-    public static String mixColors(String color1, String color2) {
-        int rgb1 = toRGB(color1);
-        int rgb2 = toRGB(color2);
-        if (rgb1 == -1) {
-            return rgb2 != -1 ? color2 : null;
-        } else if (rgb2 == -1) {
-            return color1;
-        }
-        return toColorString(rgb1 & rgb2);
     }
 
     public static int getRed(int color) {

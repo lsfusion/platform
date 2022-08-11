@@ -95,3 +95,19 @@
     text-shadow: 0 0 5px black;
     text-align: center;
 }
+
+:root {
+    /*override in StyleDefaults init*/
+    --selected-row-background-color: #000000;
+    --focused-cell-background-color: #000000;
+}
+
+.marker-background {
+    background-blend-mode: inherit;
+    background-color: var(--selected-row-background-color);
+}
+
+.marker-background-current {
+    background-blend-mode: multiply;
+    background-color: var(--focused-cell-background-color);
+}

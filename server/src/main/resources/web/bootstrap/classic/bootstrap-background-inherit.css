@@ -16,8 +16,3 @@ body .background-inherit {
 .table {
     --bs-table-bg: var(--bs-body-bg);
 }
-
-/*focused cell, same as table-active, but opacity 0.3 instead of 0.1*/
-.focused-cell {
-    --bs-table-accent-bg: rgba(0, 0, 0, 0.3);
-}

@@ -56,7 +56,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public Selection getSelection() {
-        return isFocused ? Selection.FOCUSED : Selection.ACTIVE;
+        return isFocused ? Selection.FOCUSED : null;
     }
 
     @Override

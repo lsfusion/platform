@@ -23,12 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.lang.Math.pow;
-import static lsfusion.gwt.client.base.view.ColorUtils.correctSB;
-import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
-import static lsfusion.gwt.client.view.StyleDefaults.getFocusColor;
-import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
+import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
     // No need to support color themes here as we apply svg filters to the icon anyway.
@@ -394,36 +390,15 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         if (color == null) {
             if (marker.icon == null) {
                 color = getFocusColor(true);
-                if (isCurrent) {
-                    color = darken(mixColors(color, getFocusedCellBackgroundColor(true)));
-                }
-            } else if (isCurrent) {
-                color = darken(getFocusedCellBackgroundColor(true));
-            }
-        } else {
-            if (isCurrent) {
-                color = darken(mixColors(color, getFocusedCellBackgroundColor(true)), 2);
-            } else {
-                color = darken(color);
-            }
+            } else
+                color = getDefaultComponentBackground();
         }
         
-        return createFilter(color);
+        return createFilter(color) + (isCurrent ? " marker-background-current" : " marker-background");
     }
 
     protected String getDisplayClusterColor(String color) {
-        return color == null ? getFocusColor(false) : darken(color);
-    }
-
-    protected String darken(String color) {
-        return darken(color, 1);
-    }
-    
-    protected String darken(String color, int times) {
-        if (color != null) {
-            return correctSB(color, (float) pow(1.8f, times), (float) pow(0.8f, times));
-        }
-        return null;
+        return color == null ? getFocusColor(false) : color;
     }
 
     protected native void removeMarker(JavaScriptObject marker, JavaScriptObject markerClusters)/*-{
@@ -554,7 +529,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     protected native void updateJsIcon(JavaScriptObject marker, String iconUrl, String filterStyle)/*-{
         var L = $wnd.L;
         var myIcon = L.divIcon({
-            html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\" " +
+            html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\"" +
+                " style=\"background-image:url(" + iconUrl + "); -webkit-mask-image:url(" + iconUrl + "); height:42px; width:42px;\"" +
+                " alt=\"\" tabindex=\"0\" " +
                 @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + "=\"true\" " +
                 @lsfusion.gwt.client.view.MainFrame::IGNORE_DBLCLICK_CHECK + "=\"true\">",
             className: ''

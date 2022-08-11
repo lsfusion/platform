@@ -26,7 +26,6 @@ public class StyleDefaults {
 
     private static String selectedRowBackgroundColor;
     private static String focusedCellBackgroundColor;
-    private static String focusedCellBackgroundColorMixed;
     private static String focusedCellBorderColor;
     private static String tableGridColor;
 
@@ -35,7 +34,7 @@ public class StyleDefaults {
     private static int[] pivotGroupLevelDarkenStepRGB;
 
     public static void init() {
-        setCustomProperties(RootPanel.get().getElement(), getTableGridColor(), getFocusedCellBorderColor(), getSelectedRowBackgroundColor(), getFocusedCellBackgroundColor(false));
+        setCustomProperties(RootPanel.get().getElement(), getTableGridColor(), getFocusedCellBorderColor(), getSelectedRowBackgroundColor(), getFocusedCellBackgroundColor());
     }
 
     private static native void setCustomProperties(Element root, String tableGridColor, String focusedCellBorderColor, String selectedRowBackgroundColor, String focusedCellBackgroundColor) /*-{
@@ -50,7 +49,6 @@ public class StyleDefaults {
     public static void reset() {
         selectedRowBackgroundColor = null;
         focusedCellBackgroundColor = null;
-        focusedCellBackgroundColorMixed = null;
         focusedCellBorderColor = null;
         tableGridColor = null;
         componentBackgroundRGB = null;
@@ -59,28 +57,23 @@ public class StyleDefaults {
         init();
     }
 
-    private static String getSelectedColor(boolean canBeMixed) {
-        if(canBeMixed) {
-            // should be the same as '--selection-color' in <theme>.css.
-            // can't use 'var(--selection-color)' because this color may be mixed with background color (converted to int)
-            return colorTheme.isLight() ? "#D3E5E8" : "#2C4751";
-        } else
-            return "var(--selection-color)";
+    private static String getSelectedColor() {
+        return "var(--selection-color)";
     }
 
     public static String calculateSelectedRowBackgroundColor() {
         ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
         if (preferredColor != null)
             return getThemedColor(preferredColor.toString());
-        return getSelectedColor(false);
+        return getSelectedColor();
     }
 
-    public static String calculateFocusedCellBackgroundColor(boolean canBeMixed) {
+    public static String calculateFocusedCellBackgroundColor() {
         ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
         if (preferredColor != null)
             return getThemedColor(preferredColor.toString());
 
-        return getSelectedColor(canBeMixed);
+        return getSelectedColor();
     }
 
     public static String getSelectedRowBackgroundColor() {
@@ -89,15 +82,9 @@ public class StyleDefaults {
         return selectedRowBackgroundColor;
     }
 
-    public static String getFocusedCellBackgroundColor(boolean canBeMixed) {
-        if(canBeMixed) {
-            if (focusedCellBackgroundColorMixed == null)
-                focusedCellBackgroundColorMixed = calculateFocusedCellBackgroundColor(true);
-            return focusedCellBackgroundColorMixed;
-        }
-
+    public static String getFocusedCellBackgroundColor() {
         if (focusedCellBackgroundColor == null && MainFrame.colorPreferences != null) // might be called before colorPreferences initialization (color theme change)
-            focusedCellBackgroundColor = calculateFocusedCellBackgroundColor(false);
+            focusedCellBackgroundColor = calculateFocusedCellBackgroundColor();
         return focusedCellBackgroundColor;
     }
 
