@@ -1,4 +1,5 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
+<%@ page import="lsfusion.base.ServerUtils" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page isELIgnored="false" %>
@@ -11,12 +12,19 @@
         <link rel="shortcut icon" href="${logicsIcon}" />
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
-        <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
-        <script>
-            loadResources([
-                'static/noauth/css/fontAwesome/css/font-awesome.min.css'
-            ]);
-        </script>
+
+        <%
+            pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(request, "static/noauth/css/fontAwesome/css/font-awesome.min.css"));
+        %>
+
+        <c:forEach items="${versionedResources}" var="versionedResource">
+            <c:if test="${versionedResource.value == 'js'}">
+                <script type='text/javascript' src=${versionedResource.key}></script>
+            </c:if>
+            <c:if test="${versionedResource.value == 'css'}">
+                <link rel='stylesheet' type='text/css' href='${versionedResource.key}' />
+            </c:if>
+        </c:forEach>
     </head>
     <body onload="document.loginForm.username.focus();">
         <div class="main">

@@ -1,6 +1,7 @@
 <%@ page import="lsfusion.base.ServerMessages" %>
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page import="lsfusion.base.ServerUtils" %>
 
 <!DOCTYPE html>
 
@@ -51,118 +52,129 @@
             }
         </style>
 
-        <script type="text/javascript" src="static/noauth/js/loadResources.js"></script>
-        <script>
-            loadResources([
+        <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(request,
+                //need jquery for pivot table
+                //version jquery above 2.2.4 causes to errors in the pivot table
+                "static/js/external/jquery.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js
+                "static/js/external/jquery-ui.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js,
 
-                <!-- need jquery for pivot table -->
-                <!-- version jquery above 2.2.4 causes to errors in the pivot table -->
-                'https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js',
+                //export pivot to excel
+                "static/js/tableToExcel.js",
 
-                <!-- export pivot to excel -->
-                'static/js/tableToExcel.js',
+                //optional: mobile support with jqueryui-touch-punch
+                "static/js/external/jquery.ui.touch-punch.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js
 
-                <!-- optional: mobile support with jqueryui-touch-punch -->
-                'https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js',
+                //pivot table
+                "static/css/pivot.css",
+                //<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
+                "static/js/pivot.js",
+                "static/js/pivot.ru.js",
 
-                <!-- pivot table -->
-                'static/css/pivot.css',
-                <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">--%>
-                'static/js/pivot.js',
-                'static/js/pivot.ru.js',
+                //math for formulas in pivoting
+                "static/js/external/math.min.js", //https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js
+                "static/js/utils.js",
 
-                <!-- math for formulas in pivoting -->
-                'https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.2/math.min.js',
-                'static/js/utils.js',
+                //subtotal.js libs : subtotal_renderers
+                "static/css/subtotal.css",
+                //<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>
+                "static/js/subtotal.js",
 
-                <!-- subtotal.js libs : subtotal_renderers -->
-                'static/css/subtotal.css',
-                <%--        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/subtotal@1.11.0-alpha.0/dist/subtotal.min.js"></script>--%>
-                'static/js/subtotal.js',
+                //plotly libs : plotly_renderers
+                "static/js/external/plotly-basic.min.js", //https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-basic.min.js
+                "static/js/external/plotly-locale-ru.js", //https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-locale-ru.js
 
-                <!--  plotly libs : plotly_renderers  -->
-                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-basic.min.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/plotly.js/1.58.4/plotly-locale-ru.js',
+                //will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis
+                //+ horizontal moved to the end
+                "static/js/plotly_renderers.js",
+                //https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js
 
-                <%-- will patch plotly_renderers with reverse parameter, since it's makes more sense to show rows on x axis, and columns on y axis --%>
-                <%-- + horizontal moved to the end --%>
-                'static/js/plotly_renderers.js',
-                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/plotly_renderers.min.js"></script>--%>
+                //c3 / d3 libs : d3_renderers
+                //https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css
+                //because d3_renderers doesn't work with v4+ d3 versions
+                "static/js/external/d3.min.js", //https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js
+                //<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>
+                //<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>
+                //<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>
+                "static/js/d3_renderers.js",
 
-                <!--  c3 / d3 libs : d3_renderers -->
-                <%--        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css">--%>
-                <%--  because d3_renderers doesn't work with v4+ d3 versions --%>
-                'https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js',
-                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>--%>
-                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/c3_renderers.min.js"></script>--%>
-                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/d3_renderers.min.js"></script>--%>
-                'static/js/d3_renderers.js',
+                //google charts: gchart_renderers
+                //<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>
+                //<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 
-                <%--        <!--  google charts: gchart_renderers  -->--%>
-                <%--        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/gchart_renderers.min.js"></script>--%>
-                <%--        <script type="text/javascript" src="https://www.google.com/jsapi"></script>--%>
+                //map
+                "static/css/external/leaflet.css", //https://unpkg.com/leaflet@1.7.1/dist/leaflet.css
+                "static/css/external/leaflet.draw.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css
+                "static/css/external/MarkerCluster.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css
+                "static/css/external/MarkerCluster.Default.css", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css
+                "static/js/external/leaflet.js", //https://unpkg.com/leaflet@1.7.1/dist/leaflet.js
+                "static/js/external/leaflet.draw.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js
+                "static/js/external/leaflet.markercluster.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js
+                "static/js/external/leaflet.polylineDecorator.min.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js
 
-                <!--  map  -->
-                'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css',
-                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css',
-                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css',
-                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css',
-                'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js',
+                //support yandex map tile in leaflet
+                "static/js/external/leaflet.yandex.plugin.min.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.min.js
+                "static/js/external/leaflet.yandex.addon.LoadApi.min.js", //https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.addon.LoadApi.min.js
 
-                <%--support yandex map tile in leaflet --%>
-                ['https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.min.js', 'leaflet.yandex.plugin.min.js'],
-                ['https://cdnjs.cloudflare.com/ajax/libs/leaflet-plugins/3.4.0/layer/tile/Yandex.addon.LoadApi.min.js', 'leaflet.yandex.addon.LoadApi.min.js'],
+                //support google map tile in leaflet
+                "static/js/external/leaflet.GoogleMutant.plugin.js", //https://unpkg.com/leaflet.gridlayer.googlemutant@latest/dist/Leaflet.GoogleMutant.js
 
-                <%--support google map tile in leaflet --%>
-                ['https://unpkg.com/leaflet.gridlayer.googlemutant@latest/dist/Leaflet.GoogleMutant.js', 'leaflet.GoogleMutant.plugin.js'],
+                "static/css/gMap.css",
 
-                'static/css/gMap.css',
+                //calendar
+                "static/js/external/fullCalendar.js", //https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.js
+                "static/css/external/fullCalendar.css", // https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.css
+                "static/css/gCalendar.css",
+                "static/js/external/fullcalendar-locales-all.js", //https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/locales-all.js
+                "static/js/fullcalendar-locale-be.js",
+                "static/js/external/popper.min.js", //https://unpkg.com/@popperjs/core@2.5.3/dist/umd/popper.min.js
+                "static/js/external/tippy-bundle.umd.min.js", //https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js
 
-                <!-- calendar-->
-                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.js', 'fullCalendar.js'],
-                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/main.css', 'fullCalendar.css'],
-                'static/css/gCalendar.css',
-                ['https://cdn.jsdelivr.net/npm/fullcalendar@5.7.2/locales-all.js', 'fullcalendar-locales-all.js'],
-                'static/js/fullcalendar-locale-be.js',
-                'https://unpkg.com/@popperjs/core@2.5.3/dist/umd/popper.min.js',
-                'https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js',
+                //dateRangePicker
+                "static/js/external/moment.min.js", //https://cdn.jsdelivr.net/momentjs/latest/moment.min.js
+                "static/js/external/daterangepicker.min.js", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js
+                "static/css/external/daterangepicker.css", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css
+                "static/css/datePicker.css",
 
-                <!-- dateRangePicker -->
-                'https://cdn.jsdelivr.net/momentjs/latest/moment.min.js',
-                'https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js',
-                'https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css',
-                'static/css/datePicker.css',
+                //Quill
+                "static/js/external/quill.js", //https://cdn.quilljs.com/1.3.6/quill.js
+                "static/css/external/quill.bubble.css", //https://cdn.quilljs.com/1.3.6/quill.bubble.css
+                "static/css/quillRichText.css",
 
-                <!-- Quill -->
-                'https://cdn.quilljs.com/1.3.6/quill.js',
-                'https://cdn.quilljs.com/1.3.6/quill.bubble.css',
-                'static/css/quillRichText.css',
+                //Ace code editor
+                "static/js/ace/src/ace.js",
+                "static/js/ace/src/mode-html.js",
+                "static/js/ace/src/mode-lsf.js",
+                "static/js/ace/src/mode-java.js",
+                "static/js/ace/src/worker-html.js",
+                "static/js/ace/src/worker-lsf.js",
+                "static/js/ace/src/ext-language_tools.js",
+                "static/js/ace/src/theme-chrome.js",
+                "static/js/ace/src/theme-ambiance.js",
 
-                <!-- Ace code editor -->
-                'static/js/ace/src/ace.js',
-                'static/js/ace/src/mode-html.js',
-                'static/js/ace/src/mode-lsf.js',
-                'static/js/ace/src/mode-java.js',
-                'static/js/ace/src/worker-html.js',
-                'static/js/ace/src/worker-lsf.js',
-                'static/js/ace/src/ext-language_tools.js',
-                'static/js/ace/src/theme-chrome.js',
-                'static/js/ace/src/theme-ambiance.js',
-                
-                <!-- MMenuLight -->
-                'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.js',
-                'https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.css',
-                'static/css/mmenu.css',
+                //MMenuLight
+                "static/js/external/mmenu-light.js", //https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.js
+                "static/css/external/mmenu-light.css", //https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.css
+                "static/css/mmenu.css",
 
-                'static/js/ddslick.js'
+                "static/js/ddslick.js",
 
-            ]);
+                //GWT
+                "static/css/gwt/WindowBox.css",
+                //GWT modified theme
+                "static/css/gwt/clean-reduced.css",
+                "static/css/gwt/MainFrame.css",
+                "static/css/gwt/DataGrid.css",
+                "static/css/gwt/layout.css"
+        ));%>
 
-        </script>
+        <c:forEach items="${versionedResources}" var="versionedResource">
+            <c:if test="${versionedResource.value == 'js'}">
+                <script type='text/javascript' src=${versionedResource.key}></script>
+            </c:if>
+            <c:if test="${versionedResource.value == 'css'}">
+                <link rel='stylesheet' type='text/css' href='${versionedResource.key}' />
+            </c:if>
+        </c:forEach>
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>
