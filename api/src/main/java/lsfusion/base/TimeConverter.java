@@ -12,8 +12,8 @@ public class TimeConverter {
 
     private static final Map<String, String> TIME_FORMAT_REGEXPS = new HashMap<>();
     static {
-        TIME_FORMAT_REGEXPS.put("^\\d{1,2}:\\d{1,2}:\\d{1,2}$", "HH:mm:ss");
-        TIME_FORMAT_REGEXPS.put("^\\d{1,2}:\\d{1,2}$", "HH:mm");
+        TIME_FORMAT_REGEXPS.put("^\\d{1,2}:\\d{2}:\\d{2}$", "H:mm:ss");
+        TIME_FORMAT_REGEXPS.put("^\\d{1,2}:\\d{2}$", "H:mm");
     }
     
     public static LocalTime smartParse(String timeString) {
