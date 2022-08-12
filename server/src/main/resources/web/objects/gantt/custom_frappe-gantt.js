@@ -23,14 +23,14 @@ function gantt_year() {
 
 function gantt(options) {
     return {
-        render: function (element, controller) {
+        render: function (element) {
             element.style.setProperty("min-height", "0px");
             element.style.setProperty("flex-shrink", "1");
         },
         update: function (element, controller, list) {
             if (list.length > 0) {
                 if (!element.gantt) {
-                    element.gantt = new Gantt(element, list, options);
+                    element.gantt = new FrappeGantt(element, list, options);
                     setTimeout(function() {
                         element.gantt.set_scroll_position();
                     }, 0);
