@@ -42,8 +42,10 @@ public class ServerUtils {
         Map<String, String> versionedResources = new LinkedHashMap<>();
         for (String resource : resources) {
             String version = versions.get(resource);
-            if (version == null)
-                version = versions.put(resource, SystemUtils.generateID(IOUtils.toByteArray(request.getServletContext().getResourceAsStream("/" + resource))));
+            if (version == null) {
+                version = SystemUtils.generateID(IOUtils.toByteArray(request.getServletContext().getResourceAsStream("/" + resource)));
+                versions.put(resource, version);
+            }
 
             versionedResources.put(resource + "?version=" + version, resource.substring(resource.lastIndexOf(".") + 1));
         }

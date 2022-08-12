@@ -1,0 +1,13 @@
+MODULE JKanban;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientLoad() + {
+    INTERNAL CLIENT 'custom_jkanban.css';
+    INTERNAL CLIENT 'custom_jkanban.js';
+
+    INTERNAL CLIENT 'jkanban.css';
+    INTERNAL CLIENT 'jkanban.js';
+}

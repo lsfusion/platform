@@ -1,0 +1,13 @@
+MODULE FrappeGantt;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientLoad() + {
+    INTERNAL CLIENT 'custom_frappe-gantt.css';
+    INTERNAL CLIENT 'custom_frappe-gantt.js';
+
+    INTERNAL CLIENT 'frappe-gantt.css';
+    INTERNAL CLIENT 'frappe-gantt.js';
+}
