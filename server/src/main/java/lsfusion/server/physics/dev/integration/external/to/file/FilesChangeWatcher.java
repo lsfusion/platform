@@ -1,6 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,11 @@ public abstract class FilesChangeWatcher {
                     if (fileName.endsWith("~"))
                         continue;
 
-                    processFile(event.kind(), new File(key.watchable().toString(), fileName));
+                    try {
+                        processFile(event.kind(), new File(key.watchable().toString(), fileName));
+                    } catch (Exception e) {
+                        ServerLoggers.systemLogger.error("FilesChangeWatcher processFile error. " + e.getMessage() + "  File: '" + fileName + "'");
+                    }
                 }
                 key.reset();
             }
