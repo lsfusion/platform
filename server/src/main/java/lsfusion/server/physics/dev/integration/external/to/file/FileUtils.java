@@ -406,7 +406,8 @@ public class FileUtils {
     }
 
     public static String runCmd(String command, String directory) throws IOException {
-        Process p = Runtime.getRuntime().exec(command, null, new File(directory));
+        Runtime runtime = Runtime.getRuntime();
+        Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
         try (BufferedInputStream err = new BufferedInputStream(p.getErrorStream())) {
             StringBuilder errS = new StringBuilder();
             byte[] b = new byte[1024];
