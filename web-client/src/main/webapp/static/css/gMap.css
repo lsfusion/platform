@@ -103,7 +103,7 @@
 }
 
 .marker-background {
-    background-blend-mode: inherit;
+    background-blend-mode: multiply;
     background-color: var(--selected-row-background-color);
 }
 

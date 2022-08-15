@@ -19,10 +19,6 @@ public class StyleDefaults {
     public static final int CELL_HORIZONTAL_PADDING = 3;
     public static final int CELL_VERTICAL_PADDING = 2;
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
-    
-    public static final int DATA_PANEL_LABEL_MARGIN = 4;
-
-    public static final int DEFAULT_FONT_PT_SIZE = 9;
 
     private static String selectedRowBackgroundColor;
     private static String focusedCellBackgroundColor;
@@ -88,13 +84,8 @@ public class StyleDefaults {
         return focusedCellBackgroundColor;
     }
 
-    public static String getFocusColor(boolean canBeMixed) {
-        if (canBeMixed) {
-            // should be the same as '--focus-color' in <theme>.css.
-            // can't use 'var(--focus-color)' because this color may be mixed with other color (converted to int)
-            return colorTheme.isLight() ? "#0489BA" : "#0790c3";
-        } else
-            return "var(--focus-color)";
+    public static String getFocusColor() {
+        return "var(--focus-color)";
     }
     
     public static String getFocusedCellBorderColor() {
@@ -103,7 +94,7 @@ public class StyleDefaults {
             if (preferredColor != null) {
                 focusedCellBorderColor = getThemedColor(preferredColor.toString());
             } else {
-                focusedCellBorderColor = getFocusColor(false);
+                focusedCellBorderColor = getFocusColor();
             }
         }
         return focusedCellBorderColor;
