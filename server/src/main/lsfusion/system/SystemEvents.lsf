@@ -36,6 +36,7 @@ onWebClientLoad() + {
         INTERNAL CLIENT 'panel-renderer-border.css';
         INTERNAL CLIENT 'property-toolbar-border.css';
         INTERNAL CLIENT 'main.css';
+        INTERNAL CLIENT 'main-border.css';
     }
 }
 

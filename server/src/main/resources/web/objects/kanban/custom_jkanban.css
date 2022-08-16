@@ -1,0 +1,26 @@
+.kanban-item p,
+.kanban-item ol,
+.kanban-item ul,
+.kanban-item pre,
+.kanban-item blockquote,
+.kanban-item h1,
+.kanban-item h2,
+.kanban-item h3,
+.kanban-item h4,
+.kanban-item h5,
+.kanban-item h6 {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+}
+
+.kanban-container {
+    margin-top: 1%;
+    margin-bottom: 1%;
+}
+
+.kanban-item {
+    animation: none !important;
+}

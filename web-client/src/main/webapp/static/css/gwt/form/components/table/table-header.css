@@ -1,5 +1,5 @@
 
-.header {
+.prop-header {
     overflow: hidden;
 }
 
@@ -49,6 +49,7 @@
 
 .dataGridHeaderCell-caption {
     white-space: normal;
+    word-break: break-word;
 }
 
 .dataGridHeaderCell-sortimg {

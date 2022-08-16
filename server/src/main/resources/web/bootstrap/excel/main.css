@@ -1,4 +1,8 @@
 
+:root {
+    --border-padding: 0.125rem;
+}
+
 body {
     font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
     font-size: 9pt;

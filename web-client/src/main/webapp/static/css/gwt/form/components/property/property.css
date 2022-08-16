@@ -60,34 +60,30 @@
     position:absolute;
 }
 
-.text-based-prop, .text-based-prop.dataGridCell {
-    padding: 2px 3px;
-}
-
 .prop-display-flex {
     display: flex;
 }
 
 .prop-flex-horz-start {
-    align-items: flex-start;
-}
-.prop-flex-horz-center {
-    align-items: center;
-}
-.prop-flex-horz-end {
-    align-items: flex-end;
-}
-.prop-flex-vert-start {
     justify-content: flex-start;
 }
-.prop-flex-vert-center {
+.prop-flex-horz-center {
     justify-content: center;
+}
+.prop-flex-horz-end {
+    justify-content: flex-end;
+}
+.prop-flex-vert-start {
+    align-items: flex-start;
+}
+.prop-flex-vert-center {
+    align-items: center;
+}
+.prop-flex-vert-end {
+    align-items: flex-end;
 }
 .prop-flex-vert-stretch {
     justify-content: stretch;
-}
-.prop-flex-vert-end {
-    justify-content: flex-end;
 }
 
 .prop-text-horz-start {

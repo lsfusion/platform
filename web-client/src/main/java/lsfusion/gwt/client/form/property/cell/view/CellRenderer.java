@@ -275,6 +275,8 @@ public abstract class CellRenderer<T> {
         public String foreground;
         public String background;
 
+        public boolean readonly;
+
         public Selection selection;
 
         public boolean rerender;
@@ -286,6 +288,9 @@ public abstract class CellRenderer<T> {
     }
     private boolean equalsColorState(RenderedState state, String background, String foreground) {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
+    }
+    private boolean equalsReadonlyState(RenderedState state, boolean readonly) {
+        return state.readonly == readonly;
     }
     private boolean equalsSelection(RenderedState state, Selection selection) {
         return GwtClientUtils.nullEquals(state.selection, selection);
@@ -321,6 +326,18 @@ public abstract class CellRenderer<T> {
             element.setPropertyObject(RENDERED, renderedState);
 
             isNew = true;
+        }
+
+        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(element);
+        if(inputElement != null) {
+            assert isTagInput();
+
+            boolean readonly = updateContext.isPropertyReadOnly();
+            if(isNew || !equalsReadonlyState(renderedState, readonly)) {
+                renderedState.readonly = readonly;
+
+                inputElement.setReadOnly(readonly);
+            }
         }
 
         // already themed colors expected
