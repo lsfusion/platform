@@ -318,13 +318,11 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             if (calendar.currentEventId != null && @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, calendar.currentEventId)) {
                 calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(false));
                 calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getThemedBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, false))
-                calendarEvent.setProp('borderColor', null);
             }
 
             if (@lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, id)) {
                 calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(true));
                 calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getThemedBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, true))
-                calendarEvent.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());
             }
         }
         calendar.currentEventId = id;
@@ -387,7 +385,6 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             classNames: @GCalendar::getClassNames(*)(isCurrentKey),
             backgroundColor: @GSimpleStateTableView::getThemedBackgroundColor(*)(backgroundColor, isCurrentKey),
             textColor: @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(foregroundColor),
-            borderColor: isCurrentKey ? @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()() : null
         };
     }-*/;
 
@@ -448,9 +445,6 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             }
             if (event.extendedProps.sourceTextColor) {
                 event.setProp('textColor', @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(event.extendedProps.sourceTextColor))
-            }
-            if (isCurrentKey) {
-                event.setProp('borderColor', @lsfusion.gwt.client.view.StyleDefaults::getFocusedCellBorderColor()());
             }
         }
     }-*/;

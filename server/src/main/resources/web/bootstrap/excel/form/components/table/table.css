@@ -12,8 +12,8 @@
 /* ------------ background ----------------- */
 :root {
     /*override in StyleDefaults init*/
-    --selected-row-background-color: #000000;
-    --focused-cell-background-color: #000000;
+    --selected-row-background-color: var(--selection-color);
+    --focused-cell-background-color: var(--selection-color);
 }
 
 /*we could use box-shadow, but it cannot mix colors as we need*/

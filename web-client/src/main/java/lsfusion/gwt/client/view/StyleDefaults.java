@@ -53,49 +53,26 @@ public class StyleDefaults {
         init();
     }
 
-    private static String getSelectedColor() {
-        return "var(--selection-color)";
-    }
-
-    public static String calculateSelectedRowBackgroundColor() {
-        ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
-        if (preferredColor != null)
-            return getThemedColor(preferredColor.toString());
-        return getSelectedColor();
-    }
-
-    public static String calculateFocusedCellBackgroundColor() {
-        ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
-        if (preferredColor != null)
-            return getThemedColor(preferredColor.toString());
-
-        return getSelectedColor();
-    }
-
     public static String getSelectedRowBackgroundColor() {
-        if (selectedRowBackgroundColor == null && MainFrame.colorPreferences != null) // might be called before colorPreferences initialization (color theme change)
-            selectedRowBackgroundColor = calculateSelectedRowBackgroundColor();
+        if (selectedRowBackgroundColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
+            ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
+            selectedRowBackgroundColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
+        }
         return selectedRowBackgroundColor;
     }
 
     public static String getFocusedCellBackgroundColor() {
-        if (focusedCellBackgroundColor == null && MainFrame.colorPreferences != null) // might be called before colorPreferences initialization (color theme change)
-            focusedCellBackgroundColor = calculateFocusedCellBackgroundColor();
+        if (focusedCellBackgroundColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
+            ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
+            focusedCellBackgroundColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
+        }
         return focusedCellBackgroundColor;
-    }
-
-    public static String getFocusColor() {
-        return "var(--focus-color)";
     }
     
     public static String getFocusedCellBorderColor() {
         if (focusedCellBorderColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBorderColor();
-            if (preferredColor != null) {
-                focusedCellBorderColor = getThemedColor(preferredColor.toString());
-            } else {
-                focusedCellBorderColor = getFocusColor();
-            }
+            focusedCellBorderColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
         }
         return focusedCellBorderColor;
     }

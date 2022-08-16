@@ -98,16 +98,10 @@
 
 :root {
     /*override in StyleDefaults init*/
-    --selected-row-background-color: #000000;
-    --focused-cell-background-color: #000000;
+    --focused-cell-background-color: var(--focused-cell-background-color);
 }
 
-.marker-background {
-    background-blend-mode: multiply;
-    background-color: var(--selected-row-background-color);
-}
-
-.marker-background-current {
+.marker-background-focused {
     background-blend-mode: multiply;
     background-color: var(--focused-cell-background-color);
 }

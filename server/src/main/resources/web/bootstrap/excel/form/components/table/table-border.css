@@ -14,7 +14,7 @@
 
 :root {
     /*override in StyleDefaults init*/
-    --focused-cell-border-color: #000000;
+    --focused-cell-border-color: var(--focus-color);
 }
 
 .dataGridHeaderCell {
