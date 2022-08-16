@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.LocaleInfo;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
@@ -17,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_CLASS;
 
 public class GCalendar extends GTippySimpleStateTableView implements ColorThemeChangeListener {
@@ -267,12 +267,12 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
 
         if (!GwtClientUtils.nullEquals(oldEvent.backgroundColor, event.backgroundColor))
             updateAction = addUpdateAction(calendarEvent -> {
-                updateCalendarProperty("backgroundColor", getThemedBackgroundColor(event.backgroundColor, false), calendarEvent);
+                updateCalendarProperty("backgroundColor", getThemedColor(event.backgroundColor), calendarEvent);
                 updateCalendarExtendedProperty("sourceBackgroundColor", event.backgroundColor, calendarEvent);
             }, updateAction);
 
         if (!GwtClientUtils.nullEquals(oldEvent.foregroundColor, event.foregroundColor))
-            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("foregroundColor", ColorUtils.getThemedColor(event.foregroundColor), calendarEvent), updateAction);
+            updateAction = addUpdateAction(calendarEvent -> updateCalendarExtendedProperty("foregroundColor", getThemedColor(event.foregroundColor), calendarEvent), updateAction);
 
         if (updateAction != null)
             eventsToUpdate.put(key, updateAction);
@@ -317,12 +317,12 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             var key = calendarEvent.extendedProps.key;
             if (calendar.currentEventId != null && @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, calendar.currentEventId)) {
                 calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(false));
-                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getThemedBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, false))
+                calendarEvent.setProp('backgroundColor', @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(calendarEvent.extendedProps.sourceBackgroundColor))
             }
 
             if (@lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(key, id)) {
                 calendarEvent.setProp('classNames', @GCalendar::getClassNames(*)(true));
-                calendarEvent.setProp('backgroundColor', @GSimpleStateTableView::getThemedBackgroundColor(*)(calendarEvent.extendedProps.sourceBackgroundColor, true))
+                calendarEvent.setProp('backgroundColor', @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(calendarEvent.extendedProps.sourceBackgroundColor))
             }
         }
         calendar.currentEventId = id;
@@ -383,7 +383,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
             sourceTextColor: foregroundColor,
 
             classNames: @GCalendar::getClassNames(*)(isCurrentKey),
-            backgroundColor: @GSimpleStateTableView::getThemedBackgroundColor(*)(backgroundColor, isCurrentKey),
+            backgroundColor: @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(backgroundColor),
             textColor: @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(foregroundColor),
         };
     }-*/;
@@ -438,8 +438,7 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
         var events = calendar.getEvents();
         for (var i = 0; i < events.length; i++) {
             var event = events[i];
-            var isCurrentKey = @lsfusion.gwt.client.base.GwtClientUtils::nullEquals(*)(calendar.currentEventId, event.extendedProps.id);
-            var displayBackgroundColor = @GSimpleStateTableView::getThemedBackgroundColor(*)(event.extendedProps.sourceBackgroundColor, isCurrentKey);
+            var displayBackgroundColor = @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(event.extendedProps.sourceBackgroundColor);
             if (displayBackgroundColor) {
                 event.setProp('backgroundColor', displayBackgroundColor)
             }

@@ -388,13 +388,6 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return value != null ? value.toString() : null;
     }
 
-    protected static String getThemedBackgroundColor(String color, boolean isCurrentKey) {
-        if (isCurrentKey && color == null) {
-            return StyleDefaults.getFocusedCellBackgroundColor();
-        } else
-            return ColorUtils.getThemedColor(color);
-    }
-
     protected void getAsyncValues(String property, String value, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
         Column column = columnMap.get(property);
         form.getAsyncValues(value, column.property, column.columnKey, ServerResponse.OBJECTS, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
@@ -522,7 +515,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return null;
             },
             getDisplayBackgroundColor: function (color, isCurrentKey) {
-                return @GSimpleStateTableView::getThemedBackgroundColor(*)(color, isCurrentKey);
+                return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(color);
             },
             getDisplayForegroundColor: function (color) {
                 return @lsfusion.gwt.client.base.view.ColorUtils::getThemedColor(Ljava/lang/String;)(color);

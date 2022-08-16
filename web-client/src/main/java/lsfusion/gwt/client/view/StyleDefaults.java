@@ -20,33 +20,22 @@ public class StyleDefaults {
     public static final int CELL_VERTICAL_PADDING = 2;
     public static final int BUTTON_HORIZONTAL_PADDING = 14;
 
-    private static String selectedRowBackgroundColor;
-    private static String focusedCellBackgroundColor;
-    private static String focusedCellBorderColor;
-    private static String tableGridColor;
-
     private static int[] componentBackgroundRGB;
     
     private static int[] pivotGroupLevelDarkenStepRGB;
 
     public static void init() {
-        setCustomProperties(RootPanel.get().getElement(), getTableGridColor(), getFocusedCellBorderColor(), getSelectedRowBackgroundColor(), getFocusedCellBackgroundColor());
+        setCustomProperties(RootPanel.get().getElement(), getSelectedRowBackgroundColor(), getFocusedCellBackgroundColor(), getFocusedCellBorderColor(), getTableGridColor());
     }
 
-    private static native void setCustomProperties(Element root, String tableGridColor, String focusedCellBorderColor, String selectedRowBackgroundColor, String focusedCellBackgroundColor) /*-{
-        if(tableGridColor != null) {
-            root.style.setProperty("--grid-separator-border-color", tableGridColor);
-        }
+    private static native void setCustomProperties(Element root, String selectedRowBackgroundColor, String focusedCellBackgroundColor, String focusedCellBorderColor, String tableGridColor) /*-{
+        root.style.setProperty("--selected-row-background-color", selectedRowBackgroundColor);
+        root.style.setProperty("--focused-cell-background-color", focusedCellBackgroundColor);
         root.style.setProperty("--focused-cell-border-color", focusedCellBorderColor);
-        root.style.setProperty("--selected-row-background-color", selectedRowBackgroundColor)
-        root.style.setProperty("--focused-cell-background-color", focusedCellBackgroundColor)
+        root.style.setProperty("--grid-separator-border-color", tableGridColor);
     }-*/;
 
     public static void reset() {
-        selectedRowBackgroundColor = null;
-        focusedCellBackgroundColor = null;
-        focusedCellBorderColor = null;
-        tableGridColor = null;
         componentBackgroundRGB = null;
         pivotGroupLevelDarkenStepRGB = null;
 
@@ -54,35 +43,43 @@ public class StyleDefaults {
     }
 
     public static String getSelectedRowBackgroundColor() {
-        if (selectedRowBackgroundColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
+        if (MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
-            selectedRowBackgroundColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
+            if (preferredColor != null) {
+                return getThemedColor(preferredColor.toString());
+            }
         }
-        return selectedRowBackgroundColor;
+        return null;
     }
 
     public static String getFocusedCellBackgroundColor() {
-        if (focusedCellBackgroundColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
+        if (MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
-            focusedCellBackgroundColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
+            if (preferredColor != null) {
+                return getThemedColor(preferredColor.toString());
+            }
         }
-        return focusedCellBackgroundColor;
+        return null;
     }
-    
+
     public static String getFocusedCellBorderColor() {
-        if (focusedCellBorderColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
+        if (MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBorderColor();
-            focusedCellBorderColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
+            if (preferredColor != null) {
+                return getThemedColor(preferredColor.toString());
+            }
         }
-        return focusedCellBorderColor;
+        return null;
     }
-    
+
     public static String getTableGridColor() {
-        if (tableGridColor == null && MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
+        if (MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getTableGridColor();
-            tableGridColor = preferredColor != null ? getThemedColor(preferredColor.toString()) : null;
+            if(preferredColor != null) {
+                return getThemedColor(preferredColor.toString());
+            }
         }
-        return tableGridColor;
+        return null;
     }
 
     public static int[] getComponentBackgroundRGB() {
