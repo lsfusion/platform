@@ -22,6 +22,8 @@ public class ClientContainer extends ClientComponent {
     public String caption;
     public boolean collapsible;
 
+    public boolean border;
+
     public boolean horizontal;
     public boolean tabbed;
 
@@ -80,6 +82,8 @@ public class ClientContainer extends ClientComponent {
         caption = pool.readString(inStream);
         
         collapsible = inStream.readBoolean();
+
+        border = inStream.readBoolean();
 
         horizontal = pool.readBoolean(inStream);
         tabbed = pool.readBoolean(inStream);

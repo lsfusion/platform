@@ -14,6 +14,7 @@ public class GetClientSettingsResult implements Result {
     public boolean showNotDefinedStrings;
     public boolean pivotOnlySelectedColumn;
     public GColorTheme colorTheme;
+    public boolean useBootstrap;
     public GColorPreferences colorPreferences;
     public String dateFormat;
     public String timeFormat;
@@ -24,7 +25,7 @@ public class GetClientSettingsResult implements Result {
 
     public GetClientSettingsResult(boolean busyDialog, long busyDialogTimeout, boolean devMode, String projectLSFDir,
                                    boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
-                                   GColorTheme colorTheme, GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL) {
+                                   GColorTheme colorTheme, boolean useBootstrap, GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL) {
         this.busyDialog = busyDialog;
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
@@ -34,6 +35,7 @@ public class GetClientSettingsResult implements Result {
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.colorTheme = colorTheme;
+        this.useBootstrap = useBootstrap;
         this.colorPreferences = colorPreferences;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;

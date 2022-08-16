@@ -16,6 +16,8 @@ public class GComponent implements Serializable {
     public GContainer container;
     public boolean defaultComponent;
 
+    public String elementClass;
+
     public int width = -1;
     public int height = -1;
     

@@ -53,6 +53,8 @@ public class ActionCellRenderer extends CellRenderer {
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
         element.addClassName("btn");
+        element.addClassName("btn-secondary");
+//        element.addClassName("btn-outline-light");
 
         element.setInnerText("..."); // need this to make getLastChild work
         JavaScriptObject node;

@@ -67,7 +67,7 @@
     border: 0;
     opacity: 0.5;
 
-    padding: var(--border-padding);
+    padding: var(--border-comp-horz-padding);
 }
 .btn-close:hover {
     opacity: 0.75;

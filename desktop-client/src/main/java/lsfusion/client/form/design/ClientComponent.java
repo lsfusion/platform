@@ -27,7 +27,9 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public ComponentDesign design;
 
     public ClientContainer container;
-    
+
+    public String elementClass;
+
     public int width;
     public int height;
 
@@ -96,6 +98,8 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         design = pool.readObject(inStream);
 
         container = pool.deserializeObject(inStream);
+
+        elementClass = pool.readString(inStream);
 
         width = inStream.readInt();
         height = inStream.readInt();

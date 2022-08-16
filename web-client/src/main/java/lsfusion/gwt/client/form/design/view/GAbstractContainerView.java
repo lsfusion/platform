@@ -133,6 +133,9 @@ public abstract class GAbstractContainerView {
             view = wrapPanel;
         }
 
+        if(child.elementClass != null)
+            view.getElement().addClassName(child.elementClass);
+
         return view;
     }
 

@@ -68,6 +68,8 @@ public class FormContainerSet {
         set.objectsContainer.setSID(DefaultFormView.getObjectsContainerSID());
         set.objectsContainer.setFlex(1);
         set.objectsContainer.setAlignment(FlexAlignment.STRETCH);
+        set.objectsContainer.setBorder(true);
+        set.objectsContainer.setElementClass("shadow");
 
         set.panelContainer = contFactory.createContainer();
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID());

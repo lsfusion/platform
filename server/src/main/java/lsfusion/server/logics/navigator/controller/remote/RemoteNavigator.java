@@ -253,6 +253,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         boolean forbidDuplicateForms;
         boolean showDetailedInfo;
         boolean devMode;
+        boolean useBootstrap;
         String projectLSFDir;
         ColorTheme colorTheme;
         ColorPreferences colorPreferences;
@@ -272,6 +273,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
             colorTheme = BaseUtils.nvl(ColorTheme.get(colorThemeString), ColorTheme.DEFAULT);
 
+            useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session) != null;
+
             Color selectedRowBackground = (Color) businessLogics.serviceLM.overrideSelectedRowBackgroundColor.read(session);
             Color selectedCellBackground = (Color) businessLogics.serviceLM.overrideSelectedCellBackgroundColor.read(session);
             Color focusedCellBackground = (Color) businessLogics.serviceLM.overrideFocusedCellBackgroundColor.read(session);
@@ -284,7 +287,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
-                Settings.get().isPivotOnlySelectedColumn(), colorTheme, colorPreferences);
+                Settings.get().isPivotOnlySelectedColumn(), colorTheme, useBootstrap, colorPreferences);
     }
 
     public void gainedFocus(FormInstance form) {

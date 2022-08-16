@@ -1,6 +1,12 @@
 
 :root {
     --border-padding: 0.125rem;
+    --border-comp-horz-padding: var(--border-padding);
+    --border-comp-vert-padding: var(--border-padding);
+    --border-label-horz-padding: var(--border-padding);
+    --border-label-vert-padding: var(--border-padding);
+    --border-cont-horz-padding: var(--border-padding);
+    --border-cont-vert-padding: var(--border-padding);
 }
 
 body {

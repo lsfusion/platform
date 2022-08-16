@@ -17,6 +17,8 @@ public class GContainer extends GComponent {
     public String caption;
     public boolean collapsible;
 
+    public boolean border;
+
     public boolean main;
 
     public boolean horizontal;

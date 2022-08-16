@@ -1,13 +1,9 @@
-.gwt-SplitLayoutPanel-HDragger {
+.split-h-dragger {
     cursor: col-resize;
-    width: 4px !important; /* is overriden by width with border in SplitLayoutPanel */
-    /*border-left: 1px solid var(--split-border-color);*/
-    border-right: 1px solid var(--split-border-color);
+    width: 4px;
 }
 
-.gwt-SplitLayoutPanel-VDragger {
+.split-v-dragger {
     cursor: row-resize;
-    height: 4px !important; /* is overriden by width with border in SplitLayoutPanel */
-    /*border-top: 1px solid var(--split-border-color);*/
-    border-bottom: 1px solid var(--split-border-color);
+    height: 4px !important;
 }

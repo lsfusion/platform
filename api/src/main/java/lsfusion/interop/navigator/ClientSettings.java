@@ -20,12 +20,13 @@ public class ClientSettings implements Serializable {
     public boolean showNotDefinedStrings;
     public boolean pivotOnlySelectedColumn;
     public ColorTheme colorTheme;
+    public boolean useBootstrap;
     public ColorPreferences colorPreferences;
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
                           boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
-                          ColorTheme colorTheme, ColorPreferences colorPreferences) {
+                          ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -39,6 +40,7 @@ public class ClientSettings implements Serializable {
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.colorTheme = colorTheme;
+        this.useBootstrap = useBootstrap;
         this.colorPreferences = colorPreferences;
     }
 }

@@ -9,7 +9,7 @@
 }
 
 .progress .progress-text {
-    padding: 0 var(--border-padding);
+    padding: 0 var(--border-comp-horz-padding);
     margin: 0;
     color: var(--text-color);
     white-space: nowrap;

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 
@@ -178,6 +179,11 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
             if (oldWidget != null)
                 oldWidget.setVisible(false);
         }
+    }
+
+    @Override
+    public FlexPanel.Border getOuterBorder() {
+        return Border.NEED;
     }
 
     public void fixFlexBasis(boolean vertical) {

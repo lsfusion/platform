@@ -48,6 +48,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LA<?> onStarted;
 
+    public LP useBootstrap;
+
     public LP computerConnection;
     public LP remoteAddressConnection;
     public LP webHostConnection;
@@ -136,6 +138,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         super.initMainLogic();
 
         onStarted = findAction("onStarted[]");
+
+        useBootstrap = findProperty("useBootstrap[]");
 
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");

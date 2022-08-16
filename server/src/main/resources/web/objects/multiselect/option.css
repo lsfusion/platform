@@ -15,7 +15,7 @@
     padding: 0 3px;
     border: var(--border-width) solid var(--component-border-color);
     border-radius: var(--button-border-radius);
-    margin: var(--border-padding);
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 
     min-height: 20px;
     display: flex;

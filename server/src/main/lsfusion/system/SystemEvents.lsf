@@ -32,11 +32,15 @@ onWebClientLoad() + {
         INTERNAL CLIENT 'table-sticky.css';
         INTERNAL CLIENT 'table-container-border.css';
         INTERNAL CLIENT 'caption-panel-border.css';
+        INTERNAL CLIENT 'split-window-border.css';
         INTERNAL CLIENT 'layout.css';
         INTERNAL CLIENT 'panel-renderer-border.css';
         INTERNAL CLIENT 'property-toolbar-border.css';
         INTERNAL CLIENT 'main.css';
         INTERNAL CLIENT 'main-border.css';
+        INTERNAL CLIENT 'scrollbar.css';
+        INTERNAL CLIENT 'property.css';
+        INTERNAL CLIENT 'button.css';
     }
 }
 

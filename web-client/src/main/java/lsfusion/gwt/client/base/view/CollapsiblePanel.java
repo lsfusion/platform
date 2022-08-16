@@ -1,31 +1,33 @@
 package lsfusion.gwt.client.base.view;
 
-import lsfusion.gwt.client.form.controller.GFormController;
+import com.google.gwt.event.dom.client.ClickEvent;
 import lsfusion.gwt.client.form.design.GContainer;
+
+import java.util.function.Consumer;
 
 public class CollapsiblePanel extends CaptionPanel {
     public boolean collapsed = false;
 
-    private GFormController formController;
-    private GContainer container;
-    
-    public CollapsiblePanel(GFormController formController, GContainer container) {
-        super(container.caption);
-        this.formController = formController;
-        this.container = container;
+    private final Consumer<Boolean> onCollapseHandler;
 
-        headerButton.setEnabled(true);
-        headerButton.addStyleName("collapsible");
-        headerButton.addClickHandler(event -> toggleCollapsed());
+    public CollapsiblePanel(GContainer container, Consumer<Boolean> onCollapseHandler) {
+        super(container);
+
+        this.onCollapseHandler = onCollapseHandler;
+
+//        headerButton.setEnabled(true);
+        header.addStyleName("collapsible");
+
+        header.addDomHandler(event -> toggleCollapsed(), ClickEvent.getType());
     }
 
     public void setCollapsed(boolean collapsed) {
         this.collapsed = collapsed;
         
         if (collapsed) {
-            headerButton.addStyleName("collapsed");
+            header.addStyleName("collapsed");
         } else {
-            headerButton.removeStyleName("collapsed");
+            header.removeStyleName("collapsed");
         }
 
         for (int i = 1; i < getChildren().size(); i++) {
@@ -36,7 +38,6 @@ public class CollapsiblePanel extends CaptionPanel {
     private void toggleCollapsed() {
         setCollapsed(!collapsed);
 
-        if (formController != null)
-            formController.setContainerCollapsed(container, collapsed);
+        onCollapseHandler.accept(collapsed);
     }
 }

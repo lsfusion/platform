@@ -40,6 +40,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public ComponentDesign design = new ComponentDesign();
 
+    public String elementClass;
+
     public Integer width;
     public Integer height;
 
@@ -200,6 +202,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.alignment = alignment;
     }
 
+    public void setElementClass(String elementClass) {
+        this.elementClass = elementClass;
+    }
+
     public void setSize(Dimension size) {
         this.width = size.width;
         this.height = size.height;
@@ -352,6 +358,8 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, getContainer());
+
+        pool.writeString(outStream, elementClass);
 
         outStream.writeInt(getWidth(pool.context.entity));
         outStream.writeInt(getHeight(pool.context.entity));

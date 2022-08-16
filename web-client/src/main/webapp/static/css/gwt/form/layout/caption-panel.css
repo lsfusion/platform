@@ -1,23 +1,21 @@
 
 .leftBorder {
-    margin-left: calc(0px - var(--border-padding));
-    padding-left: var(--border-padding);
+    margin-left: calc(0px - var(--border-cont-horz-padding));
+    padding-left: var(--border-cont-horz-padding);
 }
 
-.topBorder {
-    padding-top: var(--border-padding);
-}
-
-/* margin and not padding because we want the opposite borders to respect this padding */
-/* also to have correct size / scroll when right component is wrapped */
 .rightBorderNoWrap {
-    margin-right: calc(var(--border-padding) + var(--border-padding));
+    margin-right: calc(var(--border-cont-horz-padding) + var(--border-cont-horz-padding));
 }
 
 .flexHorzBorderWrap {
-    column-gap: calc(var(--border-padding) + var(--border-padding));
+    column-gap: calc(var(--border-cont-horz-padding) + var(--border-cont-horz-padding));
+}
+
+.topBorder {
+    padding-top: var(--border-cont-vert-padding);
 }
 
 .bottomBorder {
-    margin-bottom: var(--border-padding);
+    margin-bottom: var(--border-cont-vert-padding);
 }

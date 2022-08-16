@@ -32,7 +32,9 @@ public class ContainerView extends ComponentView {
 
     public LocalizedString caption;
     private Boolean collapsible;
-    
+
+    public boolean border;
+
     public boolean collapsed;
 
     private ContainerType type = ContainerType.CONTAINERV;
@@ -104,6 +106,10 @@ public class ContainerView extends ComponentView {
         return isDefaultCollapsible();
     }
 
+    public boolean getBorder() {
+        return border; // || hasCaption();
+    }
+
     protected boolean isDefaultCollapsible() {
         return hasCaption();
     }
@@ -111,7 +117,11 @@ public class ContainerView extends ComponentView {
     private boolean hasCaption() {
         return !PropertyDrawView.hasNoCaption(caption, propertyCaption);
     }
-    
+
+    public void setBorder(boolean border) {
+        this.border = border;
+    }
+
     public void setCollapsed(boolean collapsed) {
         this.collapsed = isCollapsible() && collapsed;
     }
@@ -397,7 +407,8 @@ public class ContainerView extends ComponentView {
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
 
         outStream.writeBoolean(isCollapsible());
-//        pool.writeObject(outStream, main);
+
+        pool.writeBoolean(outStream, getBorder());
 
         pool.writeBoolean(outStream, isHorizontal());
         pool.writeBoolean(outStream, isTabbed());

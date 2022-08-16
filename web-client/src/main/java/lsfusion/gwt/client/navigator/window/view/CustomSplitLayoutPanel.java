@@ -63,8 +63,7 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
     class HSplitter extends Splitter {
         public HSplitter(Widget target, boolean reverse) {
             super(target, reverse);
-            getElement().getStyle().setPropertyPx("width", splitterSize);
-            setStyleName("gwt-SplitLayoutPanel-HDragger");
+            setStyleName("split-h-dragger");
         }
 
         @Override
@@ -283,8 +282,7 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
     class VSplitter extends Splitter {
         public VSplitter(Widget target, boolean reverse) {
             super(target, reverse);
-            getElement().getStyle().setPropertyPx("height", splitterSize);
-            setStyleName("gwt-SplitLayoutPanel-VDragger");
+            setStyleName("split-v-dragger");
         }
 
         @Override

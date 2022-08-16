@@ -23,8 +23,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey);
 
-        value.addStyleName("dataPanelRendererPanel");
-
 //        value.getElement().setAttribute("id", property.sID);
         value.getElement().setId(property.propertyFormName);
 
@@ -44,8 +42,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return valuePanel;
 
         label = new LabelWidget();
-        label.addStyleName("alignPanelLabel");
-        label.addStyleName("dataPanelRendererPanel");
+        label.addStyleName("panel-label");
 
         label.getElement().setAttribute("for", property.propertyFormName);
 
@@ -113,9 +110,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
         boolean notEmptyText = text != null && !text.isEmpty();
         if(this.notEmptyText != notEmptyText) {
             if(notEmptyText)
-                label.addStyleName("notEmptyPanelLabel");
+                label.addStyleName("panel-not-empty-label");
             else
-                label.removeStyleName("notEmptyPanelLabel");
+                label.removeStyleName("panel-not-empty-label");
             this.notEmptyText = notEmptyText;
         }
     }

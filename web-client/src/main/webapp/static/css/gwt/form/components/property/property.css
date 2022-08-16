@@ -17,6 +17,10 @@
     color: var(--text-color);
 }
 
+.text-based-prop:not(.prop-input) {
+    cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
+}
+
 /* ------------ Colored corner triangles  ------------ */
 
 .notNullCornerTriangleHolder, .changeActionCornerTriangleHolder {

@@ -4,10 +4,6 @@
     height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
 }
 
-.table > :not(:first-child) {
-    border: none !important;
-}
-
 .cell-div {
     /* it's tricky here, this cell-div used for property rendering and in particular property "sizing"
      "sizing" needs box-sizing to be content-box to ignore paddings, but it's no good for width 100%, so we have to

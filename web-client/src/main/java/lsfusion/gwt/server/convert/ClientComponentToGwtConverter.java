@@ -17,7 +17,6 @@ import lsfusion.client.form.object.table.grid.user.toolbar.ClientCalculations;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientAsyncEventExec;
-import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.cell.EditBindingMap;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.GFormEventClose;
@@ -76,6 +75,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.container = convertOrCast(clientComponent.container);
         component.defaultComponent = clientComponent.defaultComponent;
 
+        component.elementClass = clientComponent.elementClass;
+
         component.width = clientComponent.width;
         component.height = clientComponent.height;
 
@@ -133,6 +134,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         container.caption = clientContainer.caption;
         container.collapsible = clientContainer.collapsible;
+        container.border = clientContainer.border;
         container.horizontal = clientContainer.horizontal;
         container.tabbed = clientContainer.tabbed;
         container.childrenAlignment = convertFlexAlignment(clientContainer.childrenAlignment);

@@ -70,6 +70,7 @@ public class MainFrame implements EntryPoint {
     public static String projectLSFDir;
     public static boolean showDetailedInfo;
     public static boolean forbidDuplicateForms;
+    public static boolean useBootstrap;
     public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static long updateRendererStateSetTimeout = 100;
@@ -122,6 +123,7 @@ public class MainFrame implements EntryPoint {
     public void onModuleLoad() {
         hackForGwtDnd();
 
+        RootPanel.getBodyElement().addClassName("bg-light");
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
 
         GWT.setUncaughtExceptionHandler(t -> {
@@ -265,6 +267,7 @@ public class MainFrame implements EntryPoint {
                 pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;
+                useBootstrap = result.useBootstrap;
                 StyleDefaults.init();
                 dateFormat = result.dateFormat;
                 timeFormat = result.timeFormat;

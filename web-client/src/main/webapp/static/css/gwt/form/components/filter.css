@@ -20,14 +20,14 @@
 }
 
 .userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
-    margin-left: var(--border-padding);
+    margin-left: var(--border-comp-horz-padding);
 }
 
 /* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
 .userFilterSelector {
     cursor : default;
     border: 1px solid var(--component-border-color);
-    margin: var(--border-padding);
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
     border-radius: var(--textfield-border-radius);
 
     padding-left: 0.1875rem;

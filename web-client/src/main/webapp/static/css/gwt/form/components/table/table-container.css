@@ -1,4 +1,4 @@
 
 .tableContainer {
-    margin: var(--border-padding);
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }

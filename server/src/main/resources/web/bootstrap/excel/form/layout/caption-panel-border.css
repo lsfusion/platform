@@ -1,53 +1,53 @@
-.accordion-item {
+.caption-panel {
 }
 
-.accordion-button {
+.caption-panel-header {
     border: none;
     background: var(--background-color);
     text-align: left;
     border-radius: 0;
     display: flex;
     align-items: center;
-    padding: var(--border-padding);
+    padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
     color: var(--caption-panel-header-color);
 }
 
-.accordion-button:hover, .accordion-button:focus {
+.caption-panel-header:hover, .caption-panel-header:focus {
     background-color: transparent;
 }
 
-.accordion-button[disabled] {
+.caption-panel-header[disabled] {
     color: var(--caption-panel-header-color);
 }
 
-.accordion-button[disabled]:hover {
+.caption-panel-header[disabled]:hover {
     border: none;
     color: var(--caption-panel-header-color);
 }
 
-.accordion-button::before {
+.caption-panel-header::before {
     content: "";
     width: 1rem;
     border-bottom: 1px solid var(--panel-border-color);
     margin-bottom: var(--border-width);
 }
 
-.accordion-button.collapsible::before {
+.caption-panel-header.collapsible::before {
     border-bottom: none;
     height: 1rem;
     background-image: var(--caption-panel-header-expand-icon-url);
     margin-bottom: 0;
 }
 
-.accordion-button:not(.empty-caption)::before {
-    margin-right: var(--border-padding);
+.caption-panel-header:not(.empty-caption)::before {
+    margin-right: var(--border-label-horz-padding);
 }
 
-.accordion-button.collapsible:not(.collapsed)::before {
+.caption-panel-header.collapsible:not(.collapsed)::before {
     background-image: var(--caption-panel-header-collapse-icon-url);
 }
 
-.accordion-button::after {
+.caption-panel-header::after {
     content: "";
     flex-grow: 1;
     width: 1.25rem;
@@ -55,26 +55,23 @@
     margin-bottom: var(--border-width);
 }
 
-.accordion-button:not(.empty-caption)::after {
-    margin-left: var(--border-padding);
+.caption-panel-header:not(.empty-caption)::after {
+    margin-left: var(--border-label-horz-padding);
 }
 
-.accordion-button.collapsed {
+.caption-panel-header.collapsed {
 }
 
-.accordion-body {
-}
-
-.accordion-collapse {
+.caption-panel-body {
 }
 
 .leftBorder {
     border-left: var(--border-width) solid var(--panel-border-color);
 
     /* "adding" border */
-    margin-left: calc(0px - var(--border-width) - var(--border-padding));
+    margin-left: calc(0px - var(--border-width) - var(--border-cont-horz-padding));
 }
 
 .topBorder {
-    border-top: 1px solid var(--panel-border-color);
+    border-top: var(--border-width) solid var(--panel-border-color);
 }

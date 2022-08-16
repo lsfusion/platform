@@ -1,0 +1,8 @@
+
+.split-h-dragger {
+    border-right: var(--border-width) solid var(--split-border-color);
+}
+
+.split-v-dragger {
+    border-bottom: var(--border-width) solid var(--split-border-color);
+}

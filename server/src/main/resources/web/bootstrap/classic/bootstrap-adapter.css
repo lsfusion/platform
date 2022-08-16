@@ -6,8 +6,74 @@
 
 :root {
     --border-padding: 0.375rem;
+
+    --border-comp-horz-padding: var(--border-padding);
+    --border-comp-vert-padding: var(--border-padding);
+    --border-label-horz-padding: var(--border-padding);
+    --border-label-vert-padding: var(--border-padding);
+    --border-cont-horz-padding: 1rem;
+    --border-cont-vert-padding: 1rem;
 }
 
+.caption-panel-header {
+    margin: var(--border-label-vert-padding) var(--border-label-horz-padding);
+}
+
+.card {
+    margin: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
+}
+
+/* there is a really odd style in bootstrap.min.css */
+/*.table > :not(:first-child) {*/
+/*    border-top: 2px solid currentColor*/
+/*}*/
+
+.table > :not(:first-child) {
+    border-top-width: 0;
+}
+.table > :not(:first-child) {
+    border-top-color: inherit;
+}
+
+:root {
+    --border-width: 1px;
+}
+
+/* borders in bootstrap give pretty good design */
+
+.leftBorder {
+    border-left: var(--border-width) solid var(--panel-border-color);
+
+    /* "adding" border */
+    margin-left: calc(0px - var(--border-width) - var(--border-cont-horz-padding));
+}
+
+.topBorder {
+    border-top: var(--border-width) solid var(--panel-border-color);
+}
+
+/* we don't want to use accordion, so we'll use the card class, but in this case we have to implement collapsible manually */
+
+.caption-panel-header, .card-header {
+    /* h6 has textbox cursor by default*/
+    cursor: default;
+}
+
+.caption-panel-header.collapsible::before,
+.card-header.collapsible::before {
+    font-family: "FontAwesome";
+    margin-right: var(--border-label-horz-padding);
+}
+
+.caption-panel-header.collapsible.collapsed::before,
+.card-header.collapsible.collapsed::before {
+    content: "\f107";
+}
+
+.caption-panel-header.collapsible:not(.collapsed)::before,
+.card-header.collapsible:not(.collapsed)::before {
+    content: "\f106";
+}
 
 /*focused cell, same as table-active, but opacity 0.3 instead of 0.1*/
 .focused-cell {
