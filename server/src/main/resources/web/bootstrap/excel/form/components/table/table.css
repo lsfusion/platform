@@ -8,3 +8,35 @@
     padding: 0 0.125rem;
     font-weight: normal;
 }
+
+/* ------------ background ----------------- */
+:root {
+    /*override in StyleDefaults init*/
+    --selected-row-background-color: var(--selection-color);
+    --focused-cell-background-color: var(--selection-color);
+}
+
+/*we could use box-shadow, but it cannot mix colors as we need*/
+.table-active {
+    position: relative;
+}
+
+.table-active::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--selected-row-background-color);
+    position: absolute;
+    inset:0;
+}
+
+.focused-cell {
+    position: relative;
+}
+
+.focused-cell::before {
+    content: '';
+    mix-blend-mode: multiply;
+    background: var(--focused-cell-background-color);
+    position: absolute;
+    inset:0;
+}

@@ -20,6 +20,10 @@ public interface UpdateContext {
     boolean isSelectedRow();
     default boolean isSelectedLink() { return isSelectedRow(); }
 
+    default Selection getSelection() {
+        return null;
+    }
+
     default CellRenderer.ToolbarAction[] getToolbarActions() { return CellRenderer.noToolbarActions; } ;
 
     default String getBackground(String baseColor) { return ColorUtils.getThemedColor(baseColor); }

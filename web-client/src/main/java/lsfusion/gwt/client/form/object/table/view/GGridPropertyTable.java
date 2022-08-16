@@ -28,6 +28,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.Selection;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -771,6 +772,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
 
             @Override
+            public Selection getSelection() {
+                return isSelectedRow() ? isFocusedColumn() ? Selection.FOCUSED : Selection.ACTIVE : null;
+            }
+
+            @Override
             public Object getImage() {
                 return column.getImage(property, (T) cell.getRow());
             }
@@ -784,7 +790,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             public String getBackground(String baseColor) {
                 T row = (T) cell.getRow();
                 String background = column.getBackground(property, row);
-                return DataGrid.getSelectedCellBackground(isSelectedRow(), isFocusedColumn(), background != null ? background : (baseColor != null ? baseColor : row.getRowBackground()));
+                return DataGrid.getSelectedCellBackground(background != null ? background : (baseColor != null ? baseColor : row.getRowBackground()));
             }
 
             @Override

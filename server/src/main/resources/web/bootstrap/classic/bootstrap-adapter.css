@@ -7,3 +7,9 @@
 :root {
     --border-padding: 0.375rem;
 }
+
+
+/*focused cell, same as table-active, but opacity 0.3 instead of 0.1*/
+.focused-cell {
+    --bs-table-accent-bg: rgba(0, 0, 0, 0.3);
+}

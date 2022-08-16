@@ -16,6 +16,7 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.Selection;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -51,6 +52,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public boolean isSelectedRow() {
         return true;
+    }
+
+    @Override
+    public Selection getSelection() {
+        return isFocused ? Selection.FOCUSED : null;
     }
 
     @Override

@@ -3,32 +3,21 @@ package lsfusion.gwt.client.form.object.table.grid.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.StyleElement;
 import com.google.gwt.user.client.ui.RequiresResize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
-import org.vectomatic.dom.svg.OMSVGDocument;
-import org.vectomatic.dom.svg.OMSVGFEColorMatrixElement;
-import org.vectomatic.dom.svg.OMSVGFilterElement;
-import org.vectomatic.dom.svg.OMSVGSVGElement;
-import org.vectomatic.dom.svg.utils.OMSVGParser;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.lang.Math.pow;
-import static lsfusion.gwt.client.base.view.ColorUtils.correctSB;
-import static lsfusion.gwt.client.base.view.ColorUtils.mixColors;
 import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
-import static lsfusion.gwt.client.view.StyleDefaults.getFocusColor;
-import static lsfusion.gwt.client.view.StyleDefaults.getFocusedCellBackgroundColor;
+import static lsfusion.gwt.client.view.StyleDefaults.getDefaultComponentBackground;
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
     // No need to support color themes here as we apply svg filters to the icon anyway.
@@ -158,7 +147,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             boolean refreshMarkers = false;
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color))) {
-                updateColor(marker, groupMarker.color, getDisplayClusterColor(groupMarker.color));
+                updateColor(marker, groupMarker.color, groupMarker.color != null ? groupMarker.color : getDefaultComponentBackground());
                 refreshMarkers = true;
             }
 
@@ -174,7 +163,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
                 markersToRefresh.push(marker);
 
             if(!isPoly && (oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.icon, oldGroupMarker.icon) && GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color) && groupMarker.isCurrent == oldGroupMarker.isCurrent)))
-                updateIcon(marker, groupMarker.icon, getThemedColorFilter(groupMarker));
+                updateIcon(groupMarker, marker);
 
             if(groupMarker.isEditing())
                 enableEditing(marker, isPoly);
@@ -381,49 +370,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             groupMarker.isCurrent = isCurrent;
             if (!isPoly)
-                updateIcon(marker, groupMarker.icon, getThemedColorFilter(groupMarker));
+                updateIcon(groupMarker, marker);
 
             if(groupMarker.isEditing())
                 enableEditing(marker, isPoly);
         }
-    }
-
-    private String getThemedColorFilter(GroupMarker marker) {
-        String color = marker.color;
-        boolean isCurrent = marker.isCurrent;
-        if (color == null) {
-            if (marker.icon == null) {
-                color = getFocusColor(true);
-                if (isCurrent) {
-                    color = darken(mixColors(color, getFocusedCellBackgroundColor(true)));
-                }
-            } else if (isCurrent) {
-                color = darken(getFocusedCellBackgroundColor(true));
-            }
-        } else {
-            if (isCurrent) {
-                color = darken(mixColors(color, getFocusedCellBackgroundColor(true)), 2);
-            } else {
-                color = darken(color);
-            }
-        }
-        
-        return createFilter(color);
-    }
-
-    protected String getDisplayClusterColor(String color) {
-        return color == null ? getFocusColor(false) : darken(color);
-    }
-
-    protected String darken(String color) {
-        return darken(color, 1);
-    }
-    
-    protected String darken(String color, int times) {
-        if (color != null) {
-            return correctSB(color, (float) pow(1.8f, times), (float) pow(0.8f, times));
-        }
-        return null;
     }
 
     protected native void removeMarker(JavaScriptObject marker, JavaScriptObject markerClusters)/*-{
@@ -485,44 +436,6 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         map.removeLayer(line.lineArrow);
     }-*/;
 
-    protected String createFilter(String colorStr) {
-        String svgStyle = null;
-        if (colorStr != null) {
-            int red = Integer.valueOf(colorStr.substring(1, 3), 16);
-            int green = Integer.valueOf(colorStr.substring(3, 5), 16);
-            int blue = Integer.valueOf(colorStr.substring(5, 7), 16);
-            String svgID = "svg_" + red + "_" + green + "_" + blue;
-            svgStyle = svgID + "-style";
-
-            com.google.gwt.dom.client.Element svgEl = Document.get().getElementById(svgID);
-            if (svgEl == null) {
-                OMSVGDocument doc = OMSVGParser.currentDocument();
-
-                OMSVGSVGElement svgElement = doc.createSVGSVGElement();
-                OMSVGFilterElement svgFilterElement = doc.createSVGFilterElement();
-                svgFilterElement.setId(svgID);
-                svgFilterElement.setAttribute("color-interpolation-filters", "sRGB");
-
-                OMSVGFEColorMatrixElement svgfeColorMatrixElement = doc.createSVGFEColorMatrixElement();
-                svgfeColorMatrixElement.setAttribute("type", "matrix");
-                svgfeColorMatrixElement.setAttribute("values", (float) red / 256 + " 0 0 0  0 \n" +
-                        (float) green / 256 + " 0 0 0  0  \n" +
-                        (float) blue / 256 + " 0 0 0  0 \n" +
-                        "0 0 0 1  0");
-                svgFilterElement.appendChild(svgfeColorMatrixElement);
-                svgElement.appendChild(svgFilterElement);
-
-                appendSVG(map, svgElement.getElement());
-
-                StyleElement styleElement = Document.get().createStyleElement();
-                styleElement.setType("text/css");
-                styleElement.setInnerHTML("." + svgStyle + " { filter: url(#" + svgID + ") }");
-                Document.get().getElementsByTagName("head").getItem(0).appendChild(styleElement);
-            }
-        }
-        return svgStyle;
-    }
-
     // we need to disable editing before changing icon + check for dragging because of clustering (when there is no dragging which is used by editing)
     protected native void disableEditing(JavaScriptObject object, boolean poly)/*-{
         if (poly) {
@@ -547,14 +460,19 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
         return GwtClientUtils.getParentWithAttribute(target, COLUMN_ATTRIBUTE);
     }
 
-    protected void updateIcon(JavaScriptObject marker, String icon, String filterStyle) {
-        updateJsIcon(marker, icon != null ? icon : GwtClientUtils.getStaticImageURL(DEFAULT_MARKER_ICON), filterStyle);
+    protected void updateIcon(GroupMarker groupMarker, JavaScriptObject marker) {
+        updateJsIcon(marker, groupMarker.icon != null ? groupMarker.icon : GwtClientUtils.getStaticImageURL(DEFAULT_MARKER_ICON),
+                groupMarker.color, groupMarker.isCurrent);
     }
 
-    protected native void updateJsIcon(JavaScriptObject marker, String iconUrl, String filterStyle)/*-{
+    protected native void updateJsIcon(JavaScriptObject marker, String iconUrl, String backgroundColor, boolean isCurrent)/*-{
         var L = $wnd.L;
         var myIcon = L.divIcon({
-            html: "<img class=\"" + (filterStyle ? filterStyle : "") + "\" src=" + iconUrl + " alt=\"\" tabindex=\"0\" " +
+            html: "<img " + (isCurrent ? "class=\"marker-background-focused\"" : "") +
+                " style=\"background-image:" +
+                (backgroundColor ? "linear-gradient(" + backgroundColor + "," + backgroundColor + "), " : "") +
+                "url(" + iconUrl + "); -webkit-mask-image:url(" + iconUrl + "); height:42px; width:42px;\"" +
+                " alt=\"\" tabindex=\"0\" " +
                 @lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder::COLUMN_ATTRIBUTE + "=\"true\" " +
                 @lsfusion.gwt.client.view.MainFrame::IGNORE_DBLCLICK_CHECK + "=\"true\">",
             className: ''

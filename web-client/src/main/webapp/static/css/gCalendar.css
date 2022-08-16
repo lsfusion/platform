@@ -19,7 +19,7 @@
 
 .event-highlight {
     background-color: var(--selection-color);
-    border: 1px solid var(--focus-color);
+    border: 1px solid var(--focused-cell-border-color);
 }
 
 .fc-h-event .fc-event-main, .fc-v-event .fc-event-main {
