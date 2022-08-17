@@ -1,6 +1,8 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
+import lsfusion.server.physics.admin.log.ServerLoggers;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,22 +30,39 @@ public abstract class FilesChangeWatcher {
         }
     }
 
-    public void watch() {
+    public void watch(String... excludedFileExtensions) {
         try {
             WatchKey key;
             while ((key = watchService.take()) != null) {
                 for (WatchEvent<?> event : key.pollEvents()) {
                     String fileName = event.context().toString();
-                    if (fileName.endsWith("~"))
+                    if (excludeFile(fileName, excludedFileExtensions))
                         continue;
 
-                    processFile(event.kind(), new File(key.watchable().toString(), fileName));
+                    try {
+                        processFile(event.kind(), new File(key.watchable().toString(), fileName));
+                    } catch (Exception e) {
+                        ServerLoggers.systemLogger.error("FilesChangeWatcher processFile error. " + e.getMessage() + "  File: '" + fileName + "'");
+                    }
                 }
                 key.reset();
             }
         } catch (InterruptedException e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    private boolean excludeFile(String fileName, String... excludedFileExtensions) {
+        boolean exclude = fileName.endsWith("~");
+        if (!exclude) {
+            for (String extension : excludedFileExtensions) {
+                if (FilenameUtils.getExtension(fileName).equals(extension)) {
+                    exclude = true;
+                    break;
+                }
+            }
+        }
+        return exclude;
     }
 
     protected abstract void processFile(WatchEvent.Kind<?> kind, File file);

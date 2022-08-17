@@ -6,6 +6,7 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.*;
 import org.apache.commons.net.ftp.FTPFile;
 
@@ -406,12 +407,13 @@ public class FileUtils {
     }
 
     public static String runCmd(String command, String directory) throws IOException {
-        Process p = Runtime.getRuntime().exec(command, null, new File(directory));
+        Runtime runtime = Runtime.getRuntime();
+        Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
         try (BufferedInputStream err = new BufferedInputStream(p.getErrorStream())) {
             StringBuilder errS = new StringBuilder();
             byte[] b = new byte[1024];
             while (err.read(b) != -1) {
-                errS.append(new String(b, "cp866").trim()).append("\n");
+                errS.append(new String(b, SystemUtils.IS_OS_WINDOWS ?  "cp866" : "utf-8").trim()).append("\n");
             }
             return BaseUtils.trimToNull(errS.toString());
         }
