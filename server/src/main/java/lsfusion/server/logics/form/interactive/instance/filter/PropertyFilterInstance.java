@@ -39,7 +39,13 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         this.toDraw = null;
     }
     
-    private final GroupObjectInstance toDraw; // only for user filters
+    public final GroupObjectInstance toDraw; // only for user filters
+
+    public PropertyFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw) {
+        this.property = property;
+        this.resolveAdd = resolveAdd;
+        this.toDraw = toDraw;
+    }
 
     public PropertyFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException, SQLHandledException {
         super(inStream,form);

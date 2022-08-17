@@ -130,4 +130,8 @@ public enum GCompare {
         }
         return "";
     }
+
+    public boolean escapeComma() {
+        return this == EQUALS || this == LIKE || this == MATCH;
+    }
 }

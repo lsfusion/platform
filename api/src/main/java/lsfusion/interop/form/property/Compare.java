@@ -157,4 +157,8 @@ public enum Compare {
         }
         return "";
     }
+
+    public boolean escapeComma() {
+        return this == EQUALS || this == LIKE || this == MATCH;
+    }
 }

@@ -299,7 +299,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                         @Override
                         public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                             if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
-                                suggestBox.setAutoSelectEnabled(completionType.isAnyStrict() && !emptyQuery);
+                                suggestBox.setAutoSelectEnabled((completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(","))) && !emptyQuery);
 
                                 boolean succeededEmpty = false;
                                 if(result.first != null) {
