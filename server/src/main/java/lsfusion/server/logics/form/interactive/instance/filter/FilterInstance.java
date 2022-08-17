@@ -72,19 +72,19 @@ public abstract class FilterInstance implements Updated {
 
             if (filterValueClass instanceof StringClass) {
 
-                boolean isLike = filter.compare == Compare.LIKE;
+                boolean isContains = filter.compare == Compare.CONTAINS;
                 boolean isEquals = filter.compare == Compare.EQUALS;
 
                 String filterValue = (String) ((DataObject) filter.value).object;
 
-                if ((isLike || isEquals) && (filterValue.contains(","))) {
+                if ((isContains || isEquals) && (filterValue.contains(","))) {
                     FilterInstance resultFilter = null;
                     //one or more repetitions of \ and then any one char, or any char but \ and ,
                     Matcher matcher = Pattern.compile("(?:\\\\.|[^\\\\,])+", Pattern.DOTALL).matcher(filterValue);
                     while (matcher.find()) {
                         String value = matcher.group();
-                        if (needWrapLike(value, isLike)) {
-                            value = wrapLike(value);
+                        if (needWrapContains(value, isContains)) {
+                            value = wrapContains(value);
                         }
                         CompareFilterInstance filterInstance = new CompareFilterInstance(filter.property, filter.resolveAdd, filter.toDraw, filter.negate, filter.compare, new DataObject(value, filterValueClass));
 
@@ -92,19 +92,19 @@ public abstract class FilterInstance implements Updated {
 
                     }
                     return resultFilter;
-                } else if (needWrapLike(filterValue, isLike)) {
-                    filter.value = new DataObject(wrapLike(filterValue), filterValueClass);
+                } else if (needWrapContains(filterValue, isContains)) {
+                    filter.value = new DataObject(wrapContains(filterValue), filterValueClass);
                 }
             }
         }
         return filter;
     }
 
-    private static boolean needWrapLike(String value, boolean isLike) {
-        return isLike && !value.contains("%");
+    private static boolean needWrapContains(String value, boolean isContains) {
+        return isContains && !value.contains("%");
     }
 
-    private static String wrapLike(String value) {
+    private static String wrapContains(String value) {
         return "%" + value + "%";
     }
 

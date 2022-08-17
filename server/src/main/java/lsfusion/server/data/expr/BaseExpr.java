@@ -148,7 +148,7 @@ public abstract class BaseExpr extends Expr {
                     return GreaterWhere.create(this, expr, false).or(EqualsWhere.create(expr, this));
             case NOT_EQUALS: // оба заданы и не равно
                 return getWhere().and(expr.getWhere()).and(EqualsWhere.create(expr, this).not());
-            case LIKE:
+            case CONTAINS:
                 return LikeWhere.create(expr, this);
             case MATCH:
                 return MatchWhere.create(expr, this);

@@ -7,7 +7,7 @@ import java.io.IOException;
 import static lsfusion.base.ApiResourceBundle.getString;
 
 public enum Compare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE, MATCH, INARRAY;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, CONTAINS, MATCH, INARRAY;
 
     public static Compare get(boolean min) {
         return min?Compare.LESS:Compare.GREATER;
@@ -30,7 +30,7 @@ public enum Compare {
             case 5:
                 return NOT_EQUALS;
             case 6:
-                return LIKE;
+                return CONTAINS;
             case 7:
                 return MATCH;
             case 8:
@@ -53,7 +53,7 @@ public enum Compare {
                 return 4;
             case NOT_EQUALS:
                 return 5;
-            case LIKE:
+            case CONTAINS:
                 return 6;
             case MATCH:
                 return 7;
@@ -100,7 +100,7 @@ public enum Compare {
                 return "<=";
             case NOT_EQUALS :
                 return "!=";
-            case LIKE :
+            case CONTAINS:
                 return "_";
             case MATCH:
                 return "@";
@@ -124,8 +124,8 @@ public enum Compare {
                 return "<=";
             case NOT_EQUALS :
                 return "!= (" + getString("filter.compare.not.equals") + ")";
-            case LIKE :
-                return "_ (" + getString("filter.compare.like") + ")";
+            case CONTAINS:
+                return "_ (" + getString("filter.compare.contains") + ")";
             case MATCH:
                 return "@ (" + getString("filter.compare.search") + ")";
             case INARRAY :
@@ -148,8 +148,8 @@ public enum Compare {
                 return getString("filter.compare.less.equals");
             case NOT_EQUALS :
                 return getString("filter.compare.not.equals");
-            case LIKE :
-                return getString("filter.compare.like");
+            case CONTAINS:
+                return getString("filter.compare.contains");
             case MATCH:
                 return getString("filter.compare.search");
             case INARRAY :
@@ -159,6 +159,6 @@ public enum Compare {
     }
 
     public boolean escapeComma() {
-        return this == EQUALS || this == LIKE || this == MATCH;
+        return this == EQUALS || this == CONTAINS || this == MATCH;
     }
 }

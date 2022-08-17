@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.filter.user;
 import lsfusion.gwt.client.ClientMessages;
 
 public enum GCompare {
-    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE, MATCH, INARRAY;
+    EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, CONTAINS, MATCH, INARRAY;
 
     public static GCompare get(boolean min) {
         return min? GCompare.LESS: GCompare.GREATER;
@@ -24,7 +24,7 @@ public enum GCompare {
             case 5:
                 return NOT_EQUALS;
             case 6:
-                return LIKE;
+                return CONTAINS;
             case 7:
                 return MATCH;
             case 8:
@@ -48,7 +48,7 @@ public enum GCompare {
                 return 4;
             case NOT_EQUALS:
                 return 5;
-            case LIKE:
+            case CONTAINS:
                 return 6;
             case MATCH:
                 return 7;
@@ -73,7 +73,7 @@ public enum GCompare {
                 return "<=";
             case NOT_EQUALS :
                 return "!=";
-            case LIKE :
+            case CONTAINS:
                 return "_";
             case MATCH:
                 return "@";
@@ -97,8 +97,8 @@ public enum GCompare {
                 return "<=";
             case NOT_EQUALS :
                 return "!= (" + ClientMessages.Instance.get().formFilterCompareNotEquals() + ")";
-            case LIKE :
-                return "_ (" + ClientMessages.Instance.get().formFilterCompareLike() + ")";
+            case CONTAINS:
+                return "_ (" + ClientMessages.Instance.get().formFilterCompareContains() + ")";
             case MATCH:
                 return "@ (" + ClientMessages.Instance.get().formFilterCompareSearch() + ")";
             case INARRAY :
@@ -121,8 +121,8 @@ public enum GCompare {
                 return ClientMessages.Instance.get().formFilterCompareLessEquals();
             case NOT_EQUALS :
                 return ClientMessages.Instance.get().formFilterCompareNotEquals();
-            case LIKE :
-                return ClientMessages.Instance.get().formFilterCompareLike();
+            case CONTAINS:
+                return ClientMessages.Instance.get().formFilterCompareContains();
             case MATCH:
                 return ClientMessages.Instance.get().formFilterCompareSearch();
             case INARRAY :
@@ -132,6 +132,6 @@ public enum GCompare {
     }
 
     public boolean escapeComma() {
-        return this == EQUALS || this == LIKE || this == MATCH;
+        return this == EQUALS || this == CONTAINS || this == MATCH;
     }
 }
