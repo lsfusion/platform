@@ -334,13 +334,15 @@ public class FileUtils {
                 String[] nameValues = new String[pathList.size()];
                 Boolean[] isDirectoryValues = new Boolean[pathList.size()];
                 LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[pathList.size()];
+                Long[] fileSizeValues = new Long[pathList.size()];
                 for (int i = 0; i < pathList.size(); i++) {
                     File file = pathList.get(i).toFile();
                     nameValues[i] = urlPath.relativize(pathList.get(i)).toFile().getPath();
                     isDirectoryValues[i] = file.isDirectory() ? true : null;
                     modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.lastModified()));
+                    fileSizeValues[i] = file.length();
                 }
-                result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
+                result = Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues, fileSizeValues);
             }
         } else {
             throw new RuntimeException(String.format("Path '%s' not found", url));
@@ -356,13 +358,15 @@ public class FileUtils {
                     String[] nameValues = new String[ftpFileList.length];
                     Boolean[] isDirectoryValues = new Boolean[ftpFileList.length];
                     LocalDateTime[] modifiedDateTimeValues = new LocalDateTime[ftpFileList.length];
+                    Long[] fileSizeValues = new Long[ftpFileList.length];
                     for (int i = 0; i < ftpFileList.length; i++) {
                         FTPFile file = ftpFileList[i];
                         nameValues[i] = file.getName();
                         isDirectoryValues[i] = file.isDirectory() ? true : null;
                         modifiedDateTimeValues[i] = sqlTimestampToLocalDateTime(new Timestamp(file.getTimestamp().getTimeInMillis()));
+                        fileSizeValues[i] = file.getSize();
                     }
-                    return Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues);
+                    return Arrays.asList(nameValues, isDirectoryValues, modifiedDateTimeValues, fileSizeValues);
                 } else {
                     throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path));
                 }
@@ -379,6 +383,7 @@ public class FileUtils {
                 List<String> nameValues = new ArrayList<>();
                 List<Boolean> isDirectoryValues = new ArrayList<>();
                 List<LocalDateTime> modifiedDateTimeValues = new ArrayList<>();
+                List<Long> fileSizeValues = new ArrayList<>();
                 for (int i = 0; i < result.size(); i++) {
                     ChannelSftp.LsEntry file = (ChannelSftp.LsEntry) result.elementAt(i);
                     String fileName = file.getFilename();
@@ -387,10 +392,11 @@ public class FileUtils {
                         SftpATTRS attrs = file.getAttrs();
                         isDirectoryValues.add(attrs.isDir() ? true : null);
                         modifiedDateTimeValues.add(sqlTimestampToLocalDateTime(new Timestamp(attrs.getMTime() * 1000L)));
+                        fileSizeValues.add(attrs.getSize());
                     }
                 }
                 //noinspection RedundantCast
-                return Arrays.asList((Object) nameValues.toArray(new String[0]), isDirectoryValues.toArray(new Boolean[0]), modifiedDateTimeValues.toArray(new LocalDateTime[0]));
+                return Arrays.asList((Object) nameValues.toArray(new String[0]), isDirectoryValues.toArray(new Boolean[0]), modifiedDateTimeValues.toArray(new LocalDateTime[0]), fileSizeValues.toArray(new Long[0]));
             } catch (SftpException e) {
                 if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE)
                     throw new RuntimeException(String.format("Path '%s' not found for %s", ftpPath.remoteFile, path), e);

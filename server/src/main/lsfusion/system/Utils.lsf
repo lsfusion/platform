@@ -10,6 +10,7 @@ GROUP print '{utils.group.print}' : public;
 fileName '{utils.file.name.integer}' = DATA LOCAL ISTRING[500] (INTEGER);
 fileIsDirectory '{utils.file.is.directory.integer}' = DATA LOCAL BOOLEAN (INTEGER);
 fileModifiedDateTime '{utils.file.modified.datetime.integer}' = DATA LOCAL DATETIME (INTEGER);
+fileSize '{utils.file.size.integer}' = DATA LOCAL LONG (INTEGER);
 
 //path, recursive, isClient
 listFiles '{utils.list.files}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ListFilesAction' (ISTRING, BOOLEAN, BOOLEAN); 
