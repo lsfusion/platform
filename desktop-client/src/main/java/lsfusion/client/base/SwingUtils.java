@@ -823,6 +823,6 @@ public class SwingUtils {
     }
 
     public static Object escapeComma(Object value, Compare compare) {
-        return value instanceof String && compare.escapeComma() ? ((String) value).replace(",", "\\,") : value;
+        return value instanceof String && compare != null && compare.escapeComma() ? ((String) value).replace(",", "\\,") : value;
     }
 }
