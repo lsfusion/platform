@@ -26,7 +26,7 @@ public class GStringType extends GDataType {
 
     @Override
     public GCompare[] getFilterCompares() {
-        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, LIKE, MATCH};
+        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, CONTAINS, MATCH};
     }
 
     @Override

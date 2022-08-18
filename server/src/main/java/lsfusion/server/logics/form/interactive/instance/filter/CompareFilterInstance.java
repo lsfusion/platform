@@ -48,6 +48,13 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         junction = inStream.readBoolean();
     }
 
+    public CompareFilterInstance(PropertyObjectInstance<P> property, boolean resolveAdd, GroupObjectInstance toDraw, boolean negate, Compare compare, CompareInstance value) {
+        super(property, resolveAdd, toDraw);
+        this.negate = negate;
+        this.compare = compare;
+        this.value = value;
+    }
+
     private static CompareInstance deserializeCompare(DataInputStream inStream, FormInstance form, ValueClass valueClass) throws IOException, SQLException, SQLHandledException {
         byte type = inStream.readByte();
         switch(type) {

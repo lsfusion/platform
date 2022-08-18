@@ -19,7 +19,7 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     protected Compare getCompare() {
-        return Compare.LIKE;
+        return Compare.CONTAINS;
     }
 
     protected boolean isComplex() {
