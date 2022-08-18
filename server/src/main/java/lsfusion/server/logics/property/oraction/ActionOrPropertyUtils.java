@@ -175,7 +175,7 @@ public class ActionOrPropertyUtils {
                 return Compare.NOT_EQUALS;
             case "LIKE":
             case "=*":
-                return Compare.LIKE;
+                return Compare.CONTAINS;
             case "CONTAINS": // CONTAINS is gone. Should be removed soon
             case "=@":
                 return Compare.MATCH;

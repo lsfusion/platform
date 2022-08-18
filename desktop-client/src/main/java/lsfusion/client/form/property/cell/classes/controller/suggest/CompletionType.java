@@ -7,6 +7,10 @@ public enum CompletionType {
         return this == STRICT;
     }
 
+    public boolean isSemiStrict() {
+        return this == SEMI_STRICT;
+    }
+
     public boolean isAnyStrict() {
         return this == STRICT || this == SEMI_STRICT;
     }

@@ -548,6 +548,9 @@ button {
     margin: 0 7px 0 12px;
 }
 
+.userFilterJunctionSeparatorButton {
+    margin: 0 12px 0 12px;
+}
 
 .gwt-ProgressBar-shell {
     border: 1px solid var(--component-border-color);

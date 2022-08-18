@@ -452,7 +452,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         lsoeq2 = addCFProp(Compare.LESS_EQUALS);
         less2 = addCFProp(Compare.LESS);
         diff2 = addCFProp(Compare.NOT_EQUALS);
-        like2 = addCFProp(Compare.LIKE);
+        like2 = addCFProp(Compare.CONTAINS);
 
         // Математические операции
         sum = addSumProp();
