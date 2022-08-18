@@ -162,11 +162,7 @@
 
                 "static/css/gwt/main.css",
 
-                "static/css/gwt/form/components/property/suggest/decorated-popup-panel.css",
-                "static/css/gwt/form/components/property/suggest/decorator-panel.css",
                 "static/css/gwt/form/components/property/suggest/suggest-box.css",
-                "static/css/gwt/form/components/property/suggest/popup-panel.css",
-                "static/css/gwt/form/components/property/suggest/menu-bar.css",
 
                 "static/css/gwt/form/components/base/dialog.css",
                 "static/css/gwt/form/components/base/progress-bar.css",

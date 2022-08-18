@@ -18,21 +18,20 @@ package lsfusion.gwt.client.form.property.cell.classes.controller.suggest;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
-import com.google.gwt.event.dom.client.*;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
 import com.google.gwt.user.client.ui.SuggestOracle.Response;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
 
 import java.util.Collection;
-import java.util.List;
 
-@SuppressWarnings("deprecation")
 public class SuggestBox {
 
   /**
@@ -44,7 +43,7 @@ public class SuggestBox {
 
   public static class SuggestionDisplay {
 
-    private final SuggestionMenu suggestionMenu;
+    private final MenuBar suggestionMenu;
     private final PopupPanel suggestionPopup;
 
     /**
@@ -56,7 +55,7 @@ public class SuggestBox {
     private Element lastSuggestElement = null;
 
     public SuggestionDisplay() {
-      suggestionMenu = new SuggestionMenu(true);
+      suggestionMenu = new MenuBar();
       suggestionPopup = createPopup();
       suggestionPopup.setWidget(decorateSuggestionList(suggestionMenu));
     }
@@ -69,15 +68,9 @@ public class SuggestBox {
       return suggestionPopup.isShowing();
     }
 
-    /**
-     * Create the PopupPanel that will hold the list of suggestions.
-     *
-     * @return the popup panel
-     */
     protected PopupPanel createPopup() {
-      PopupPanel p = new DecoratedPopupPanel(true, false, "suggestPopup");
+      PopupPanel p = new PopupPanel();
       p.setStyleName("gwt-SuggestBoxPopup");
-      p.setPreviewingAllNativeEvents(true);
       p.setAnimationType(PopupPanel.AnimationType.ROLL_DOWN);
       return p;
     }
@@ -99,7 +92,7 @@ public class SuggestBox {
         return null;
       }
       MenuItem item = suggestionMenu.getSelectedItem();
-      return item == null ? null : ((SuggestionMenuItem) item).getSuggestion();
+      return item == null ? null : item.getSuggestion();
     }
 
     /**
@@ -132,7 +125,7 @@ public class SuggestBox {
         // fit below the text box). In this case, users would expect to be able
         // to use the up arrow to navigate to the suggestions.
         if (suggestionMenu.getSelectedItemIndex() == -1) {
-          suggestionMenu.selectItem(suggestionMenu.getNumItems() - 1);
+          suggestionMenu.selectItem(suggestionMenu.getItems().size() - 1);
         } else {
           suggestionMenu.selectItem(suggestionMenu.getSelectedItemIndex() - 1);
         }
@@ -155,8 +148,7 @@ public class SuggestBox {
       suggestionMenu.clearItems();
 
       for (final Suggestion curSuggestion : suggestions) {
-        final SuggestionMenuItem menuItem = new SuggestionMenuItem(
-            curSuggestion, isDisplayStringHTML);
+        final MenuItem menuItem = new MenuItem(curSuggestion, isDisplayStringHTML);
         menuItem.setScheduledCommand(() -> callback.onSuggestionSelected(curSuggestion));
 
         suggestionMenu.addItem(menuItem);
@@ -179,93 +171,6 @@ public class SuggestBox {
       }
 
       suggestionPopup.showRelativeTo(suggestElement);
-    }
-  }
-
-  /**
-   * The SuggestionMenu class is used for the display and selection of
-   * suggestions in the SuggestBox widget. SuggestionMenu differs from MenuBar
-   * in that it always has a vertical orientation, and it has no submenus. It
-   * also allows for programmatic selection of items in the menu, and
-   * programmatically performing the action associated with the selected item.
-   * In the MenuBar class, items cannot be selected programatically - they can
-   * only be selected when the user places the mouse over a particlar item.
-   * Additional methods in SuggestionMenu provide information about the number
-   * of items in the menu, and the index of the currently selected item.
-   */
-  public static class SuggestionMenu extends MenuBar {
-
-    public SuggestionMenu(boolean vertical) {
-      super(vertical);
-      // Make sure that CSS styles specified for the default Menu classes
-      // do not affect this menu
-      setStyleName("");
-      setFocusOnHoverEnabled(false);
-    }
-
-    public int getNumItems() {
-      return getItems().size();
-    }
-
-    /**
-     * Returns the index of the menu item that is currently selected.
-     *
-     * @return returns the selected item
-     */
-    public int getSelectedItemIndex() {
-      // The index of the currently selected item can only be
-      // obtained if the menu is showing.
-      MenuItem selectedItem = getSelectedItem();
-      if (selectedItem != null) {
-        return getItems().indexOf(selectedItem);
-      }
-      return -1;
-    }
-
-    /**
-     * Selects the item at the specified index in the menu. Selecting the item
-     * does not perform the item's associated action; it only changes the style
-     * of the item and updates the value of SuggestionMenu.selectedItem.
-     *
-     * @param index index
-     */
-    public void selectItem(int index) {
-      List<MenuItem> items = getItems();
-      if (index > -1 && index < items.size()) {
-        itemOver(items.get(index), false);
-      }
-    }
-  }
-
-  /**
-   * Class for menu items in a SuggestionMenu. A SuggestionMenuItem differs from
-   * a MenuItem in that each item is backed by a Suggestion object. The text of
-   * each menu item is derived from the display string of a Suggestion object,
-   * and each item stores a reference to its Suggestion object.
-   */
-  private static class SuggestionMenuItem extends MenuItem {
-
-    private static final String STYLENAME_DEFAULT = "item";
-
-    private Suggestion suggestion;
-
-    public SuggestionMenuItem(Suggestion suggestion, boolean asHTML) {
-      super(suggestion.getDisplayString(), asHTML);
-      // Each suggestion should be placed in a single row in the suggestion
-      // menu. If the window is resized and the suggestion cannot fit on a
-      // single row, it should be clipped (instead of wrapping around and
-      // taking up a second row).
-      getElement().getStyle().setProperty("whiteSpace", "nowrap");
-      setStyleName(STYLENAME_DEFAULT);
-      setSuggestion(suggestion);
-    }
-
-    public Suggestion getSuggestion() {
-      return suggestion;
-    }
-
-    public void setSuggestion(Suggestion suggestion) {
-      this.suggestion = suggestion;
     }
   }
 
@@ -299,7 +204,6 @@ public class SuggestBox {
 //    addEventsToTextBox();
 
     this.oracle = oracle;
-    //    setStyleName(STYLENAME_DEFAULT);
   }
 
   /**

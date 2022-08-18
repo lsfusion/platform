@@ -21,76 +21,21 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Display;
-import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.LocaleInfo;
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.*;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.Event.NativePreviewHandler;
-import com.google.gwt.user.client.EventPreview;
-import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.PopupImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A panel that can "pop up" over other widgets. It overlays the browser's
- * client area (and any previously-created popups).
- *
- * <p>
- * A PopupPanel should not generally be added to other panels; rather, it should
- * be shown and hidden using the {@link #show()} and {@link #hide()} methods.
- * </p>
- * <p>
- * The width and height of the PopupPanel cannot be explicitly set; they are
- * determined by the PopupPanel's widget. Calls to {@link #setWidth(String)} and
- * {@link #setHeight(String)} will call these methods on the PopupPanel's
- * widget.
- * </p>
- * <p>
- * <img class='gallery' src='doc-files/PopupPanel.png'/>
- * </p>
- *
- * <p>
- * The PopupPanel can be optionally displayed with a "glass" element behind it,
- * which is commonly used to gray out the widgets behind it. It can be enabled
- * using {@link #setGlassEnabled(boolean)}. It has a default style name of
- * "gwt-PopupPanelGlass", which can be changed using
- * {@link #setGlassStyleName(String)}.
- * </p>
- *
- * <p>
- * <h3>Example</h3>
- * {@example com.google.gwt.examples.PopupPanelExample}
- * </p>
- * <h3>CSS Style Rules</h3>
- * <dl>
- * <dt>.gwt-PopupPanel</dt>
- * <dd>the outside of the popup</dd>
- * <dt>.gwt-PopupPanel .popupContent</dt>
- * <dd>the wrapper around the content</dd>
- * <dt>.gwt-PopupPanelGlass</dt>
- * <dd>the glass background behind the popup</dd>
- * </dl>
- */
 @SuppressWarnings("deprecation")
-public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
-    EventPreview, HasAnimation, HasCloseHandlers<PopupPanel> {
+public class PopupPanel extends SimplePanel implements HasAnimation, HasCloseHandlers<PopupPanel> {
 
   /**
    * A callback that is used to set the position of a {@link PopupPanel} right
@@ -120,7 +65,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    * <li>ROLL_DOWN - Expand from the top to the bottom, do not animate hiding</li>
    * </ul>
    */
-  public static enum AnimationType {
+  public enum AnimationType {
     CENTER, ONE_WAY_CORNER, ROLL_DOWN
   }
 
@@ -131,7 +76,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     /**
      * The {@link PopupPanel} being affected.
      */
-    private PopupPanel curPanel = null;
+    private PopupPanel curPanel;
 
     /**
      * Indicates whether or not the {@link PopupPanel} is in the process of
@@ -154,13 +99,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
      * The timer used to delay the show animation.
      */
     private Timer showTimer;
-
-    /**
-     * A boolean indicating whether the glass element is currently attached.
-     */
-    private boolean glassShowing;
-
-    private HandlerRegistration resizeRegistration;
 
     /**
      * Create a new {@link ResizeAnimation}.
@@ -208,7 +146,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
         // the animation. If we move this to onStart, the animation will look
         // choppy or not run at all.
         if (showing) {
-          maybeShowGlass();
 
           // Set the position attribute, and then attach to the DOM. Otherwise,
           // the PopupPanel will appear to 'jump' from its static/relative
@@ -243,7 +180,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     @Override
     protected void onComplete() {
       if (!showing) {
-        maybeShowGlass();
         if (!isUnloading) {
           RootPanel.get().remove(curPanel);
         }
@@ -293,43 +229,17 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
           break;
       }
       // Set the rect clipping
-      impl.setClip(curPanel.getElement(), getRectString(top, right, bottom,
-          left));
+      impl.setClip(curPanel.getElement(), getRectString(top, right, bottom, left));
     }
 
     /**
      * Returns a rect string.
      */
     private String getRectString(int top, int right, int bottom, int left) {
-      return "rect(" + top + "px, " + right + "px, " + bottom + "px, " + left
-          + "px)";
-    }
-
-    /**
-     * Show or hide the glass.
-     */
-    private void maybeShowGlass() {
-      if (showing) {
-        if (curPanel.isGlassEnabled) {
-          Document.get().getBody().appendChild(curPanel.glass);
-
-          resizeRegistration = Window.addResizeHandler(curPanel.glassResizer);
-          curPanel.glassResizer.onResize(null);
-
-          glassShowing = true;
-        }
-      } else if (glassShowing) {
-        Document.get().getBody().removeChild(curPanel.glass);
-
-        resizeRegistration.removeHandler();
-        resizeRegistration = null;
-
-        glassShowing = false;
-      }
+      return "rect(" + top + "px, " + right + "px, " + bottom + "px, " + left + "px)";
     }
 
     private void onInstantaneousRun() {
-      maybeShowGlass();
       if (showing) {
         // Set the position attribute, and then attach to the DOM. Otherwise,
         // the PopupPanel will appear to 'jump' from its static/relative
@@ -353,46 +263,11 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
    */
   private static final int ANIMATION_DURATION = 200;
 
-  /**
-   * The default style name.
-   */
-  private static final String DEFAULT_STYLENAME = "gwt-PopupPanel";
-
   private static final PopupImpl impl = GWT.create(PopupImpl.class);
-
-  /**
-   * Window resize handler used to keep the glass the proper size.
-   */
-  private ResizeHandler glassResizer = new ResizeHandler() {
-    public void onResize(ResizeEvent event) {
-      Style style = glass.getStyle();
-
-      int winWidth = Window.getClientWidth();
-      int winHeight = Window.getClientHeight();
-
-      // Hide the glass while checking the document size. Otherwise it would
-      // interfere with the measurement.
-      style.setDisplay(Display.NONE);
-      style.setWidth(0, Unit.PX);
-      style.setHeight(0, Unit.PX);
-
-      int width = Document.get().getScrollWidth();
-      int height = Document.get().getScrollHeight();
-
-      // Set the glass size to the larger of the window's client size or the
-      // document's scroll size.
-      style.setWidth(Math.max(width, winWidth), Unit.PX);
-      style.setHeight(Math.max(height, winHeight), Unit.PX);
-
-      // The size is set. Show the glass again.
-      style.setDisplay(Display.BLOCK);
-    }
-  };
 
   private AnimationType animType = AnimationType.CENTER;
 
-  private boolean autoHide, previewAllNativeEvents, modal, showing;
-  private boolean autoHideOnHistoryEvents;
+  private boolean showing;
 
   private List<Element> autoHidePartners;
 
@@ -400,18 +275,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   private String desiredHeight;
 
   private String desiredWidth;
-
-  /**
-   * The glass element.
-   */
-  private Element glass;
-
-  private String glassStyleName = "gwt-PopupPanelGlass";
-
-  /**
-   * A boolean indicating that a glass element should be used.
-   */
-  private boolean isGlassEnabled;
 
   private boolean isAnimationEnabled = false;
 
@@ -429,10 +292,19 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   // The top style attribute in pixels
   private int topPosition = -1;
 
-  /**
-   * Creates an empty popup panel. A child widget must be added to it before it
-   * is shown.
-   */
+  private DecoratorPanel decPanel;
+
+  @Override
+  public Widget getWidget() {
+    return decPanel.getWidget();
+  }
+
+  @Override
+  public void setWidget(Widget w) {
+    decPanel.setWidget(w);
+    maybeUpdateSize();
+  }
+
   public PopupPanel() {
     super();
     super.getContainerElement().appendChild(impl.createElement());
@@ -441,63 +313,22 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     // window. By setting a default position, the popup will not appear in
     // an undefined location if it is shown before its position is set.
     setPopupPosition(0, 0);
-    setStyleName(DEFAULT_STYLENAME);
-    setStyleName(getContainerElement(), "popupContent");
+
+    decPanel = new DecoratorPanel(new String[] {"suggestPopupTop", "suggestPopupMiddle", "suggestPopupBottom"}, 1);
+    super.setWidget(decPanel);
+    maybeUpdateSize();
   }
 
-  /**
-   * Creates an empty popup panel, specifying its "auto-hide" property.
-   *
-   * @param autoHide <code>true</code> if the popup should be automatically
-   *          hidden when the user clicks outside of it or the history token
-   *          changes.
-   */
-  public PopupPanel(boolean autoHide) {
-    this();
-    this.autoHide = autoHide;
-    this.autoHideOnHistoryEvents = autoHide;
-  }
-
-  /**
-   * Creates an empty popup panel, specifying its "auto-hide" and "modal"
-   * properties.
-   *
-   * @param autoHide <code>true</code> if the popup should be automatically
-   *          hidden when the user clicks outside of it or the history token
-   *          changes.
-   * @param modal <code>true</code> if keyboard or mouse events that do not
-   *          target the PopupPanel or its children should be ignored
-   */
-  public PopupPanel(boolean autoHide, boolean modal) {
-    this(autoHide);
-    this.modal = modal;
-  }
-
-  /**
-   * Mouse events that occur within an autoHide partner will not hide a panel
-   * set to autoHide.
-   *
-   * @param partner the auto hide partner to add
-   */
   public void addAutoHidePartner(Element partner) {
     assert partner != null : "partner cannot be null";
     if (autoHidePartners == null) {
-      autoHidePartners = new ArrayList<Element>();
+      autoHidePartners = new ArrayList<>();
     }
     autoHidePartners.add(partner);
   }
 
   public HandlerRegistration addCloseHandler(CloseHandler<PopupPanel> handler) {
     return addHandler(handler, CloseEvent.getType());
-  }
-
-  /**
-   * @deprecated Use {@link #addCloseHandler} instead
-   */
-  @Deprecated
-  public void addPopupListener(final PopupListener listener) {
-    //todo: commented, because it is deprecated and need a lot of extra classes
-    //ListenerWrapper.WrappedPopupListener.add(this, listener);
   }
 
   /**
@@ -542,16 +373,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   }
 
   /**
-   * Gets the style name to be used on the glass element. By default, this is
-   * "gwt-PopupPanelGlass".
-   *
-   * @return the glass element's style name
-   */
-  public String getGlassStyleName() {
-    return glassStyleName;
-  }
-
-  /**
    * Gets the panel's offset height in pixels. Calls to
    * {@link #setHeight(String)} before the panel's child widget is set will not
    * influence the offset height.
@@ -572,24 +393,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   @Override
   public int getOffsetWidth() {
     return super.getOffsetWidth();
-  }
-
-  /**
-   * Gets the popup's left position relative to the browser's client area.
-   *
-   * @return the popup's left position
-   */
-  public int getPopupLeft() {
-    return getElement().getAbsoluteLeft();
-  }
-
-  /**
-   * Gets the popup's top position relative to the browser's client area.
-   *
-   * @return the popup's top position
-   */
-  public int getPopupTop() {
-    return getElement().getAbsoluteTop();
   }
 
   @Override
@@ -625,57 +428,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   }
 
   /**
-   * Returns <code>true</code> if the popup should be automatically hidden when
-   * the user clicks outside of it.
-   *
-   * @return true if autoHide is enabled, false if disabled
-   */
-  public boolean isAutoHideEnabled() {
-    return autoHide;
-  }
-
-  /**
-   * Returns <code>true</code> if the popup should be automatically hidden when
-   * the history token changes, such as when the user presses the browser's back
-   * button.
-   *
-   * @return true if enabled, false if disabled
-   */
-  public boolean isAutoHideOnHistoryEventsEnabled() {
-    return autoHideOnHistoryEvents;
-  }
-
-  /**
-   * Returns <code>true</code> if a glass element will be displayed under the
-   * {@link PopupPanel}.
-   *
-   * @return true if enabled
-   */
-  public boolean isGlassEnabled() {
-    return isGlassEnabled;
-  }
-
-  /**
-   * Returns <code>true</code> if keyboard or mouse events that do not target
-   * the PopupPanel or its children should be ignored.
-   *
-   * @return true if popup is modal, false if not
-   */
-  public boolean isModal() {
-    return modal;
-  }
-
-  /**
-   * Returns <code>true</code> if the popup should preview all native events,
-   * even if the event has already been consumed by another popup.
-   *
-   * @return true if previewAllNativeEvents is enabled, false if disabled
-   */
-  public boolean isPreviewingAllNativeEvents() {
-    return previewAllNativeEvents;
-  }
-
-  /**
    * Determines whether or not this popup is showing.
    *
    * @return <code>true</code> if the popup is showing
@@ -701,59 +453,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   }
 
   /**
-   * @deprecated Use {@link #onPreviewNativeEvent} instead
-   */
-  @Deprecated
-  public boolean onEventPreview(Event event) {
-    return true;
-  }
-
-  /**
-   * Popups get an opportunity to preview keyboard events before they are passed
-   * to a widget contained by the Popup.
-   *
-   * @param key the key code of the depressed key
-   * @param modifiers keyboard modifiers, as specified in
-   *          {@link com.google.gwt.event.dom.client.KeyCodes}.
-   * @return <code>false</code> to suppress the event
-   * @deprecated Use {@link #onPreviewNativeEvent} instead
-   */
-  @Deprecated
-  public boolean onKeyDownPreview(char key, int modifiers) {
-    return true;
-  }
-
-  /**
-   * Popups get an opportunity to preview keyboard events before they are passed
-   * to a widget contained by the Popup.
-   *
-   * @param key the unicode character pressed
-   * @param modifiers keyboard modifiers, as specified in
-   *          {@link com.google.gwt.event.dom.client.KeyCodes}.
-   * @return <code>false</code> to suppress the event
-   * @deprecated Use {@link #onPreviewNativeEvent} instead
-   */
-  @Deprecated
-  public boolean onKeyPressPreview(char key, int modifiers) {
-    return true;
-  }
-
-  /**
-   * Popups get an opportunity to preview keyboard events before they are passed
-   * to a widget contained by the Popup.
-   *
-   * @param key the key code of the released key
-   * @param modifiers keyboard modifiers, as specified in
-   *          {@link com.google.gwt.event.dom.client.KeyCodes}.
-   * @return <code>false</code> to suppress the event
-   * @deprecated Use {@link #onPreviewNativeEvent} instead
-   */
-  @Deprecated
-  public boolean onKeyUpPreview(char key, int modifiers) {
-    return true;
-  }
-
-  /**
    * Remove an autoHide partner.
    *
    * @param partner the auto hide partner to remove
@@ -765,71 +464,8 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     }
   }
 
-  /**
-   * @deprecated Use the {@link HandlerRegistration#removeHandler} method on the
-   *             object returned by {@link #addCloseHandler} instead
-   */
-  @Deprecated
-  public void removePopupListener(PopupListener listener) {
-    //todo: commented, because it is deprecated and need a lot of extra classes
-    //ListenerWrapper.WrappedPopupListener.remove(this, listener);
-  }
-
   public void setAnimationEnabled(boolean enable) {
     isAnimationEnabled = enable;
-  }
-
-  /**
-   * Enable or disable the autoHide feature. When enabled, the popup will be
-   * automatically hidden when the user clicks outside of it.
-   *
-   * @param autoHide true to enable autoHide, false to disable
-   */
-  public void setAutoHideEnabled(boolean autoHide) {
-    this.autoHide = autoHide;
-  }
-
-  /**
-   * Enable or disable autoHide on history change events. When enabled, the
-   * popup will be automatically hidden when the history token changes, such as
-   * when the user presses the browser's back button. Disabled by default.
-   *
-   * @param enabled true to enable, false to disable
-   */
-  public void setAutoHideOnHistoryEventsEnabled(boolean enabled) {
-    this.autoHideOnHistoryEvents = enabled;
-  }
-
-  /**
-   * When enabled, the background will be blocked with a semi-transparent pane
-   * the next time it is shown. If the PopupPanel is already visible, the glass
-   * will not be displayed until it is hidden and shown again.
-   *
-   * @param enabled true to enable, false to disable
-   */
-  public void setGlassEnabled(boolean enabled) {
-    this.isGlassEnabled = enabled;
-    if (enabled && glass == null) {
-      glass = Document.get().createDivElement();
-      glass.setClassName(glassStyleName);
-
-      glass.getStyle().setPosition(Position.ABSOLUTE);
-      glass.getStyle().setLeft(0, Unit.PX);
-      glass.getStyle().setTop(0, Unit.PX);
-    }
-  }
-
-  /**
-   * Sets the style name to be used on the glass element. By default, this is
-   * "gwt-PopupPanelGlass".
-   *
-   * @param glassStyleName the glass element's style name
-   */
-  public void setGlassStyleName(String glassStyleName) {
-    this.glassStyleName = glassStyleName;
-    if (glass != null) {
-      glass.setClassName(glassStyleName);
-    }
   }
 
   /**
@@ -854,16 +490,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     if (height.length() == 0) {
       desiredHeight = null;
     }
-  }
-
-  /**
-   * When the popup is modal, keyboard or mouse events that do not target the
-   * PopupPanel or its children will be ignored.
-   *
-   * @param modal true to make the popup modal
-   */
-  public void setModal(boolean modal) {
-    this.modal = modal;
   }
 
   /**
@@ -908,24 +534,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     setVisible(true);
   }
 
-  /**
-   * <p>
-   * When enabled, the popup will preview all native events, even if another
-   * popup was opened after this one.
-   * </p>
-   * <p>
-   * If autoHide is enabled, enabling this feature will cause the popup to
-   * autoHide even if another non-modal popup was shown after it. If this
-   * feature is disabled, the popup will only autoHide if it was the last popup
-   * opened.
-   * </p>
-   *
-   * @param previewAllNativeEvents true to enable, false to disable
-   */
-  public void setPreviewingAllNativeEvents(boolean previewAllNativeEvents) {
-    this.previewAllNativeEvents = previewAllNativeEvents;
-  }
-
   @Override
   public void setTitle(String title) {
     Element containerElement = getContainerElement();
@@ -953,19 +561,13 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     // "holes" in displayed contents and it allows normal layout passes
     // to occur so the size of the PopupPanel can be reliably determined.
     getElement().getStyle().setProperty("visibility", visible ? "visible" : "hidden");
-
-    // If the PopupImpl creates an iframe shim, it's also necessary to hide it
-    // as well.
-    if (glass != null) {
-      glass.getStyle().setProperty("visibility", visible ? "visible" : "hidden");
-    }
   }
 
-  @Override
+/*  @Override
   public void setWidget(Widget w) {
     super.setWidget(w);
     maybeUpdateSize();
-  }
+  }*/
 
   /**
    * Sets the width of the panel's child widget. If the panel's child widget has
@@ -1027,27 +629,9 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     return impl.getContainerElement(getPopupImplElement()).cast();
   }
 
-  /**
-   * Get the glass element used by this {@link PopupPanel}. The element is not
-   * created until it is enabled via {@link #setGlassEnabled(boolean)}.
-   *
-   * @return the glass element, or null if not created
-   */
-  protected Element getGlassElement() {
-    return glass;
-  }
-
   @Override
   protected com.google.gwt.user.client.Element getStyleElement() {
     return impl.getStyleElement(getPopupImplElement()).cast();
-  }
-
-  protected void onPreviewNativeEvent(NativePreviewEvent event) {
-    // Cancel the event based on the deprecated onEventPreview() method
-    if (event.isFirstHandler()
-        && !onEventPreview(Event.as(event.getNativeEvent()))) {
-      event.cancel();
-    }
   }
 
   @Override
@@ -1089,17 +673,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   }
 
   /**
-   * Sets the animation used to animate this popup. Used by gwt-incubator to
-   * allow DropDownPanel to override the default popup animation. Not protected
-   * because the exact API may change in gwt 1.6.
-   *
-   * @param animation the animation to use for this popup
-   */
-  void setAnimation(ResizeAnimation animation) {
-    resizeAnimation = animation;
-  }
-
-  /**
    * Set the type of animation to use when opening and closing the popup.
    *
    * @see AnimationType
@@ -1108,28 +681,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
   public void setAnimationType(AnimationType type) {
     animType = type != null ? type : AnimationType.CENTER;
   }
-
-  /**
-   * Get the type of animation to use when opening and closing the popup.
-   *
-   * @see AnimationType
-   * @return the type of animation used
-   */
-  public AnimationType getAnimationType() {
-    return animType;
-  }
-
-  /**
-   * Remove focus from an Element.
-   *
-   * @param elt The Element on which <code>blur()</code> will be invoked
-   */
-  private native void blur(Element elt) /*-{
-    // Issue 2390: blurring the body causes IE to disappear to the background
-    if (elt.blur && elt != $doc.body) {
-      elt.blur();
-    }
-  }-*/;
 
   /**
    * Does the event target one of the partner elements?
@@ -1309,24 +860,14 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
     setPopupPosition(left, top);
   }
 
-  /**
-   * Preview the {@link NativePreviewEvent}.
-   *
-   * @param event the {@link NativePreviewEvent}
-   */
   private void previewNativeEvent(NativePreviewEvent event) {
     // If the event has been canceled or consumed, ignore it
-    if (event.isCanceled() || (!previewAllNativeEvents && event.isConsumed())) {
+    if (event.isCanceled()) {
       // We need to ensure that we cancel the event even if its been consumed so
       // that popups lower on the stack do not auto hide
-      if (modal) {
-        event.cancel();
-      }
       return;
     }
 
-    // Fire the event hook and return if the event is canceled
-    onPreviewNativeEvent(event);
     if (event.isCanceled()) {
       return;
     }
@@ -1340,34 +881,12 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
       event.consume();
     }
 
-    // Cancel the event if it doesn't target the modal popup. Note that the
-    // event can be both canceled and consumed.
-    if (modal) {
-      event.cancel();
-    }
-
     // Switch on the event type
     int type = nativeEvent.getTypeInt();
     switch (type) {
-      case Event.ONKEYDOWN: {
-        if (!onKeyDownPreview((char) nativeEvent.getKeyCode(),
-            KeyboardListenerCollection.getKeyboardModifiers(nativeEvent))) {
-          event.cancel();
-        }
-        return;
-      }
+      case Event.ONKEYDOWN:
+      case Event.ONKEYPRESS:
       case Event.ONKEYUP: {
-        if (!onKeyUpPreview((char) nativeEvent.getKeyCode(),
-            KeyboardListenerCollection.getKeyboardModifiers(nativeEvent))) {
-          event.cancel();
-        }
-        return;
-      }
-      case Event.ONKEYPRESS: {
-        if (!onKeyPressPreview((char) nativeEvent.getKeyCode(),
-            KeyboardListenerCollection.getKeyboardModifiers(nativeEvent))) {
-          event.cancel();
-        }
         return;
       }
 
@@ -1380,7 +899,7 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
           return;
         }
 
-        if (!eventTargetsPopupOrPartner && autoHide) {
+        if (!eventTargetsPopupOrPartner) {
           hide(true);
           return;
         }
@@ -1400,12 +919,6 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
       }
 
       case Event.ONFOCUS: {
-        Element target = nativeEvent.getTarget();
-        if (modal && !eventTargetsPopupOrPartner && (target != null)) {
-          blur(target);
-          event.cancel();
-          return;
-        }
         break;
       }
     }
@@ -1427,18 +940,62 @@ public class PopupPanel extends SimplePanel implements SourcesPopupEvents,
 
     // Create handlers if showing.
     if (showing) {
-      nativePreviewHandlerRegistration = Event.addNativePreviewHandler(new NativePreviewHandler() {
-        public void onPreviewNativeEvent(NativePreviewEvent event) {
-          previewNativeEvent(event);
+      nativePreviewHandlerRegistration = Event.addNativePreviewHandler(this::previewNativeEvent);
+      historyHandlerRegistration = History.addValueChangeHandler(event -> hide());
+    }
+  }
+
+  private static class DecoratorPanel extends SimplePanel {
+
+    private Element containerElem;
+
+    DecoratorPanel(String[] rowStyles, int containerIndex) {
+      super(DOM.createTable());
+
+      // Add a tbody
+      Element table = getElement();
+      Element tbody = DOM.createTBody();
+      DOM.appendChild(table, tbody);
+      table.setPropertyInt("cellSpacing", 0);
+      table.setPropertyInt("cellPadding", 0);
+
+      // Add each row
+      for (int i = 0; i < rowStyles.length; i++) {
+        Element row = createTR(rowStyles[i]);
+        DOM.appendChild(tbody, row);
+        if (i == containerIndex) {
+          containerElem = DOM.getFirstChild(DOM.getChild(row, 1));
         }
-      });
-      historyHandlerRegistration = History.addValueChangeHandler(new ValueChangeHandler<String>() {
-        public void onValueChange(ValueChangeEvent<String> event) {
-          if (autoHideOnHistoryEvents) {
-            hide();
-          }
-        }
-      });
+      }
+    }
+
+    Element createTR(String styleName) {
+      Element trElem = DOM.createTR();
+      setStyleName(trElem, styleName);
+      if (LocaleInfo.getCurrentLocale().isRTL()) {
+        DOM.appendChild(trElem, createTD(styleName + "Right"));
+        DOM.appendChild(trElem, createTD(styleName + "Center"));
+        DOM.appendChild(trElem, createTD(styleName + "Left"));
+      } else {
+        DOM.appendChild(trElem, createTD(styleName + "Left"));
+        DOM.appendChild(trElem, createTD(styleName + "Center"));
+        DOM.appendChild(trElem, createTD(styleName + "Right"));
+      }
+      return trElem;
+    }
+
+    private Element createTD(String styleName) {
+      Element tdElem = DOM.createTD();
+      Element inner = DOM.createDiv();
+      DOM.appendChild(tdElem, inner);
+      setStyleName(tdElem, styleName);
+      setStyleName(inner, styleName + "Inner");
+      return tdElem;
+    }
+
+    @Override
+    protected com.google.gwt.user.client.Element getContainerElement() {
+      return DOM.asOld(containerElem);
     }
   }
 }
