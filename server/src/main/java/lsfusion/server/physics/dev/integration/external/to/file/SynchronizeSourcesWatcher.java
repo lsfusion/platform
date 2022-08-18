@@ -39,10 +39,11 @@ public class SynchronizeSourcesWatcher extends FilesChangeWatcher{
                     else
                         targetFile.delete();
                 } else if (kind == ENTRY_MODIFY) {
-                    if (isDirectory)
-                        FileUtils.copyDirectory(file, targetFile);
-                    else
+                    if (isDirectory) {
+//                        FileUtils.copyDirectory(file, targetFile); // commented because we get a FileNotFoundException when try copy a directory containing temporary files
+                    } else {
                         FileUtils.copyFile(file, targetFile);
+                    }
                 }
             }
         } catch (IOException e) {
