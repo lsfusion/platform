@@ -494,7 +494,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             emptyLabel.getElement().addClassName("item"); //to be like suggestion item
             panel.add(emptyLabel);
 
-            HorizontalPanel bottomPanel = new HorizontalPanel();
+            VerticalPanel bottomPanel = new VerticalPanel();
             bottomPanel.setWidth("100%");
             bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
             bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
@@ -547,6 +547,12 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             }
 
             bottomPanel.add(buttonsPanel);
+
+            if(compare != null && compare.escapeComma()) {
+                HTML tip = new HTML("<div style='word-wrap:break-word; border-top:1px solid var(--component-border-color)'>" + messages.suggestBoxTip() + "</div>");
+                bottomPanel.add(tip);
+                tip.getParent().getParent().setWidth("100px"); //set width of td, so as not to expand the entire suggestBox
+            }
 
             return panel;
         }
