@@ -19,7 +19,6 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.busy.LoadingManager;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
@@ -68,7 +67,6 @@ public class MainFrame implements EntryPoint {
     public static String projectLSFDir;
     public static boolean showDetailedInfo;
     public static boolean forbidDuplicateForms;
-    public static boolean busyDialog;
     public static long busyDialogTimeout;
     public static long updateRendererStateSetTimeout = 100;
     public static boolean showNotDefinedStrings;
@@ -86,8 +84,7 @@ public class MainFrame implements EntryPoint {
     public static String dateFormat;
     public static String timeFormat;
     public static String dateTimeFormat;
-
-    private LoadingManager loadingManager;
+    public static String[] preDefinedDateRangesNames;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -269,6 +266,7 @@ public class MainFrame implements EntryPoint {
                 dateFormat = result.dateFormat;
                 timeFormat = result.timeFormat;
                 dateTimeFormat = result.dateFormat + " " + result.timeFormat;
+                preDefinedDateRangesNames = result.preDefinedDateRangesNames;
             }
         });
 

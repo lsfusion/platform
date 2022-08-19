@@ -21,11 +21,12 @@ public class ClientSettings implements Serializable {
     public boolean pivotOnlySelectedColumn;
     public ColorTheme colorTheme;
     public ColorPreferences colorPreferences;
+    public String[] preDefinedDateRangesNames;
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
                           boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
-                          ColorTheme colorTheme, ColorPreferences colorPreferences) {
+                          ColorTheme colorTheme, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -40,5 +41,6 @@ public class ClientSettings implements Serializable {
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.colorTheme = colorTheme;
         this.colorPreferences = colorPreferences;
+        this.preDefinedDateRangesNames = preDefinedDateRangesNames;
     }
 }
