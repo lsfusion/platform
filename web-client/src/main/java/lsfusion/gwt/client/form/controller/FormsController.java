@@ -403,7 +403,7 @@ public abstract class FormsController {
     private FormContainer createFormContainer(GWindowFormType windowType, boolean async, long editRequestIndex, String formCanonicalName, String formCaption, Event editEvent, EditContext editContext, GFormController formController) {
         FormContainer formContainer;
         if(windowType instanceof GContainerWindowFormType) {
-            formContainer = new ContainerForm(this, formCaption, async, editEvent, ((GContainerWindowFormType) windowType).getInContainerId());
+            formContainer = new ContainerForm(this, formCaption, async, editEvent, formController, ((GContainerWindowFormType) windowType).getInContainerId());
         } else if(windowType.isFloat()) {
             formContainer =  new ModalForm(this, formCaption, async, editEvent);
         } else if(windowType.isDocked()) {
