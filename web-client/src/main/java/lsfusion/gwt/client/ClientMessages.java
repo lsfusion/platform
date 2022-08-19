@@ -267,6 +267,8 @@ public interface ClientMessages extends Messages {
 
     String doYouReallyWantToCloseForm();
 
+    String suggestBoxTip();
+
     class Instance {
         private static final ClientMessages instance = GWT.create(ClientMessages.class);
 
