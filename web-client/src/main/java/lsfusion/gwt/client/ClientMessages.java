@@ -251,10 +251,16 @@ public interface ClientMessages extends Messages {
     String thirtyDaysAgo();
     String thisMonth();
     String monthStart();
+    String monthEnd();
+    String toMonthEnd();
     String previousMonth();
     String previousMonthStart();
+    String previousMonthEnd();
+    String monthStartToCurrentDate();
     String thisYear();
     String thisYearStart();
+    String thisYearEnd();
+    String toYearEnd();
     String clear();
 
     String noResults();

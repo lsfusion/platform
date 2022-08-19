@@ -702,6 +702,11 @@ EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
     PROPERTIES(u) fontSize, colorThemeName,
                   selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    OBJECTS r = DateTimePickerRanges
+    PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
+    
+    OBJECTS ir = DateTimeIntervalPickerRanges
+    PROPERTIES intervalRange(ir) READONLY, isIntervalRangeSelected(ir, u)
 ;
 
 DESIGN editProfile {
@@ -722,6 +727,45 @@ DESIGN editProfile {
                 MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
+            }
+            NEW predefinedRanges {
+                horizontal = TRUE;
+                MOVE BOX(r);
+                MOVE BOX(ir);   
+                REMOVE TOOLBARSYSTEM(r);
+                REMOVE TOOLBARSYSTEM(ir);
+            }
+        }
+    }
+}
+
+//Temporary. For migration. Сan be deleted later. Need to fill in fields for existing users
+migratedRanges = DATA BOOLEAN();
+onStarted() + {
+    IF NOT migratedRanges() THEN {
+        FOR CustomUser cu IF cu IS CustomUser DO {
+            setDefaultRanges(cu);
+        }
+        migratedRanges() <- TRUE;
+    }
+}
+
+EXTEND FORM customUser
+    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+;
+
+DESIGN customUser {
+    header {
+        NEW design AFTER security {
+            caption = '{navigator.account.edit.profile.design}';
+            MOVE PROPERTY(fontSize(u));
+            MOVE PROPERTY(colorThemeName(u));
+            NEW colors { 
+                MOVE PROPERTY(selectedRowBackgroundColor(u));
+                MOVE PROPERTY(selectedCellBackgroundColor(u));
+                MOVE PROPERTY(focusedCellBackgroundColor(u));
+                MOVE PROPERTY(focusedCellBorderColor(u));
+                MOVE PROPERTY(tableGridColor(u));
             }
         }
     }
