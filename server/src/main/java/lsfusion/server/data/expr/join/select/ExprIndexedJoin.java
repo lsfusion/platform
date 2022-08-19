@@ -153,7 +153,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
             return IntervalType.LEFT;
         if(compare == Compare.LESS || compare == Compare.LESS_EQUALS)
             return IntervalType.RIGHT;
-        if(compare == Compare.LIKE || compare == Compare.MATCH)
+        if(compare == Compare.CONTAINS || compare == Compare.MATCH)
             return IntervalType.FULL;
 
         return null;

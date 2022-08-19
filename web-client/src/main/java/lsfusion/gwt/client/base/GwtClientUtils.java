@@ -1093,7 +1093,7 @@ public class GwtClientUtils {
     }
 
     public static Object escapeComma(Object value, GCompare compare) {
-        return value instanceof String && compare == GCompare.MATCH ? ((String) value).replace(",", "\\,") : value;
+        return value instanceof String && compare != null && compare.escapeComma() ? ((String) value).replace(",", "\\,") : value;
     }
 
     public static void setInnerContent(Element element, String value) {

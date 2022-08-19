@@ -18,11 +18,13 @@ import lsfusion.gwt.client.view.MainFrame;
 
 public class ContainerForm extends FormContainer {
     private final String caption;
+    private final GFormController formController;
     private final Integer inContainerId;
 
-    public ContainerForm(FormsController formsController, String caption, boolean async, Event editEvent, Integer inContainerId) {
+    public ContainerForm(FormsController formsController, String caption, boolean async, Event editEvent, GFormController formController, Integer inContainerId) {
         super(formsController, async, editEvent);
         this.caption = caption;
+        this.formController = formController;
         this.inContainerId = inContainerId;
     }
 
@@ -38,23 +40,18 @@ public class ContainerForm extends FormContainer {
     private GFormComponent innerComponent;
 
     protected void setFormContent(Widget widget) {
-        FormContainer formContainer = MainFrame.getCurrentForm();
-        if(formContainer != null) {
-            GFormController formController = formContainer.getForm();
+        innerComponent = new GFormComponent(caption);
 
-            innerComponent = new GFormComponent(caption);
+        inContainer = formController.getForm().findContainerByID(inContainerId);
+        inContainer.add(innerComponent);
 
-            inContainer = formController.getForm().findContainerByID(inContainerId);
-            inContainer.add(innerComponent);
+        formController.putContainerForm(this);
 
-            formController.putContainerForm(this);
-
-            GFormLayout layout = formController.getFormLayout();
-            layout.addBaseComponent(innerComponent, widget, null);
-            layout.update(-1);
-            if(inContainer.tabbed)
-                ((TabbedContainerView)layout.getContainerView(inContainer)).activateTab(innerComponent);
-        }
+        GFormLayout layout = formController.getFormLayout();
+        layout.addBaseComponent(innerComponent, widget, null);
+        layout.update(-1);
+        if(inContainer.tabbed)
+            ((TabbedContainerView)layout.getContainerView(inContainer)).activateTab(innerComponent);
     }
 
     @Override

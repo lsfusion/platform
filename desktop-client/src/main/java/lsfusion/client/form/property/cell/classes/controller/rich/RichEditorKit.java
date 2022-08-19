@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.controller.rich;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.EscapeUtils;
 import net.atlanticbb.tantlinger.ui.text.CompoundUndoManager;
 import net.atlanticbb.tantlinger.ui.text.HTMLUtils;
 import net.atlanticbb.tantlinger.ui.text.WysiwygHTMLEditorKit;
@@ -133,10 +134,10 @@ public class RichEditorKit extends WysiwygHTMLEditorKit {
             if (selectedAll || empty) {
                 Element bodyParent = getBodyParent(doc.getParagraphElement(editor.getCaretPosition()));
                 if (bodyParent != null) {
-                    doc.insertAfterStart(bodyParent, html);
+                    doc.insertAfterStart(bodyParent, EscapeUtils.escapeLineBreakHTML(html));
                 }
             } else {
-                StringReader reader = new StringReader(HTMLUtils.jEditorPaneizeHTML(html));
+                StringReader reader = new StringReader(HTMLUtils.jEditorPaneizeHTML(EscapeUtils.escapeLineBreakHTML(html)));
                 kit.read(reader, doc, location);   
             }
         } catch (Exception ex) {

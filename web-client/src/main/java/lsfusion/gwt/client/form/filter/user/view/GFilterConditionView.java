@@ -205,6 +205,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             }
         };
         junctionView.addStyleName("userFilterButton");
+        junctionView.addStyleName("userFilterJunctionSeparatorButton");
         junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
         junctionView.showBackground(!condition.junction);
         rightPanel.addCentered(junctionView);

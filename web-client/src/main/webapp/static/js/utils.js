@@ -4,30 +4,64 @@ var createPlainObject = function () {
 };
 
 //this var is needed to localize daterangepicker, because GWT does not accept dynamic keys in arrays
-var getRanges = function (wnd, rangeToday, rangeYesterday, rangeLast7Days, rangeLast30Days, rangeThisMonth, rangePreviousMonth, rangeThisYear, clear) {
-    return {
-        [rangeToday]: [wnd.moment(), wnd.moment()],
-        [rangeYesterday]: [wnd.moment().subtract(1, 'days'), wnd.moment().subtract(1, 'days')],
-        [rangeLast7Days]: [wnd.moment().subtract(6, 'days'), wnd.moment()],
-        [rangeLast30Days]: [wnd.moment().subtract(29, 'days'), wnd.moment()],
-        [rangeThisMonth]: [wnd.moment().startOf('month'), wnd.moment().endOf('month')],
-        [rangePreviousMonth]: [wnd.moment().subtract(1, 'month').startOf('month'), wnd.moment().subtract(1, 'month').endOf('month')],
-        [rangeThisYear]: [wnd.moment().startOf('year'), wnd.moment().endOf('year')],
-        [clear] : [null, null]
-    };
+var getRanges = function (wnd, rangeIntervalToday, rangeIntervalYesterday, rangeLast7Days, rangeLast30Days, rangeThisMonth, rangeToMonthEnd,
+                          rangePreviousMonth, rangeMonthStartToCurrentDate, rangeThisYear, rangeToYearEnd, clear, preDefinedDateRangesNames) {
+    let ranges = {};
+    for (let i = 0; i < preDefinedDateRangesNames.length; i++) {
+        let preDefinedDateRangesName = preDefinedDateRangesNames[i];
+        if (preDefinedDateRangesName === 'rangeIntervalToday')
+            ranges[rangeIntervalToday] = [wnd.moment(), wnd.moment()];
+        else if (preDefinedDateRangesName === 'rangeIntervalYesterday')
+            ranges[rangeIntervalYesterday] = [wnd.moment().subtract(1, 'days'), wnd.moment().subtract(1, 'days')];
+        else if (preDefinedDateRangesName === 'rangeLast7Days')
+            ranges[rangeLast7Days] = [wnd.moment().subtract(6, 'days'), wnd.moment()];
+        else if (preDefinedDateRangesName === 'rangeLast30Days')
+            ranges[rangeLast30Days] = [wnd.moment().subtract(29, 'days'), wnd.moment()];
+        else if (preDefinedDateRangesName === 'rangeThisMonth')
+            ranges[rangeThisMonth] = [wnd.moment().startOf('month'), wnd.moment().endOf('month')];
+        else if (preDefinedDateRangesName === 'rangeToMonthEnd')
+            ranges[rangeToMonthEnd] = [wnd.moment(), wnd.moment().endOf('month')];
+        else if (preDefinedDateRangesName === 'rangePreviousMonth')
+            ranges[rangePreviousMonth] = [wnd.moment().subtract(1, 'month').startOf('month'), wnd.moment().subtract(1, 'month').endOf('month')];
+        else if (preDefinedDateRangesName === 'rangeMonthStartToCurrentDate')
+            ranges[rangeMonthStartToCurrentDate] = [wnd.moment().startOf('month'), wnd.moment()];
+        else if (preDefinedDateRangesName === 'rangeThisYear')
+            ranges[rangeThisYear] = [wnd.moment().startOf('year'), wnd.moment().endOf('year')];
+        else if (preDefinedDateRangesName === 'rangeToYearEnd')
+            ranges[rangeToYearEnd] = [wnd.moment(), wnd.moment().endOf('year')];
+    }
+    ranges[clear] = [null];
+    return ranges;
 }
 
-var getSingleRanges = function (wnd, rangeToday, rangeYesterday, rangeSevenDaysAgo, rangeThirtyDaysAgo, rangeMonthStart, rangePreviousMonthStart, rangeThisYearStart, clear) {
-    return {
-        [rangeToday]: [wnd.moment()],
-        [rangeYesterday]: [wnd.moment().subtract(1, 'days')],
-        [rangeSevenDaysAgo]: [wnd.moment().subtract(7, 'days')],
-        [rangeThirtyDaysAgo]: [wnd.moment().subtract(30, 'days')],
-        [rangeMonthStart]: [wnd.moment().startOf('month')],
-        [rangePreviousMonthStart]: [wnd.moment().subtract(1, 'month').startOf('month')],
-        [rangeThisYearStart]: [wnd.moment().startOf('year')],
-        [clear] : [null]
-    };
+var getSingleRanges = function (wnd, rangeToday, rangeYesterday, rangeSevenDaysAgo, rangeThirtyDaysAgo, rangeMonthStart, rangeMonthEnd,
+                                rangePreviousMonthStart, rangePreviousMonthEnd, rangeThisYearStart, rangeThisYearEnd, clear, preDefinedDateRangesNames) {
+    let ranges = {};
+    for (let i = 0; i < preDefinedDateRangesNames.length; i++) {
+        let preDefinedDateRangesName = preDefinedDateRangesNames[i];
+        if (preDefinedDateRangesName === 'rangeToday')
+            ranges[rangeToday] = [wnd.moment()];
+        else if (preDefinedDateRangesName === 'rangeYesterday')
+            ranges[rangeYesterday] = [wnd.moment().subtract(1, 'days')];
+        else if (preDefinedDateRangesName === 'rangeSevenDaysAgo')
+            ranges[rangeSevenDaysAgo] = [wnd.moment().subtract(7, 'days')];
+        else if (preDefinedDateRangesName === 'rangeThirtyDaysAgo')
+            ranges[rangeThirtyDaysAgo] = [wnd.moment().subtract(30, 'days')];
+        else if (preDefinedDateRangesName === 'rangeMonthStart')
+            ranges[rangeMonthStart] = [wnd.moment().startOf('month')];
+        else if (preDefinedDateRangesName === 'rangeMonthEnd')
+            ranges[rangeMonthEnd] = [wnd.moment().endOf('month')];
+        else if (preDefinedDateRangesName === 'rangePreviousMonthStart')
+            ranges[rangePreviousMonthStart] = [wnd.moment().subtract(1, 'month').startOf('month')];
+        else if (preDefinedDateRangesName === 'rangePreviousMonthEnd')
+            ranges[rangePreviousMonthEnd] = [wnd.moment().subtract(1, 'month').endOf('month')];
+        else if (preDefinedDateRangesName === 'rangeThisYearStart')
+            ranges[rangeThisYearStart] = [wnd.moment().startOf('year')];
+        else if (preDefinedDateRangesName === 'rangeThisYearEnd')
+            ranges[rangeThisYearEnd] = [wnd.moment().endOf('year')];
+    }
+    ranges[clear] = [null];
+    return ranges;
 }
 
 var lsfParams = {};

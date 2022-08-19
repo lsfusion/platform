@@ -148,7 +148,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                     @Override
                     public void done(Pair<List<ClientAsync>, Boolean> result) {
                         if (isThisCellEditor()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
-                            suggestBox.updateItems(result.first, completionType.isAnyStrict() && !query.isEmpty());
+                            suggestBox.updateItems(result.first, (completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(","))) && !query.isEmpty());
 
                             suggestBox.updateLoading(result.second);
 

@@ -16,6 +16,7 @@ import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -55,6 +56,10 @@ public class ListFilesAction extends InternalAction {
         writeProperty(session, property, values, LogicalClass.instance);
     }
 
+    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Long[] values) throws SQLException, SQLHandledException {
+        writeProperty(session, property, values, LongClass.instance);
+    }
+
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
 
         String sourcePath = (String) context.getKeyValue(pathInterface).getValue();
@@ -79,10 +84,12 @@ public class ListFilesAction extends InternalAction {
                 context.getSession().dropChanges((DataProperty) findProperty("fileName[INTEGER]").property);
                 context.getSession().dropChanges((DataProperty) findProperty("fileIsDirectory[INTEGER]").property);
                 context.getSession().dropChanges((DataProperty) findProperty("fileModifiedDateTime[INTEGER]").property);
+                context.getSession().dropChanges((DataProperty) findProperty("fileSize[INTEGER]").property);
 
                 writeProperty(context.getSession(), findProperty("fileName[INTEGER]"), (String[]) filesList.get(0));
                 writeProperty(context.getSession(), findProperty("fileIsDirectory[INTEGER]"), (Boolean[]) filesList.get(1));
                 writeProperty(context.getSession(), findProperty("fileModifiedDateTime[INTEGER]"), (LocalDateTime[]) filesList.get(2));
+                writeProperty(context.getSession(), findProperty("fileSize[INTEGER]"), (Long[]) filesList.get(3));
 
             } else {
                 throw new RuntimeException("ListFiles Error. Path not specified.");

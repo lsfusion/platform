@@ -60,6 +60,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -257,6 +258,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         String projectLSFDir;
         ColorTheme colorTheme;
         ColorPreferences colorPreferences;
+        List<String> preDefinedDateRangesNames = new ArrayList<>();
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -282,12 +284,22 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             Color tableGridColor = (Color) businessLogics.serviceLM.overrideTableGridColor.read(session);
             colorPreferences = new ColorPreferences(selectedRowBackground, selectedCellBackground,
                     focusedCellBackground, focusedCellBorder, tableGridColor);
+
+            fillRanges((String) businessLogics.authenticationLM.dateTimePickerRanges.read(session, user), preDefinedDateRangesNames);
+            fillRanges((String) businessLogics.authenticationLM.intervalPickerRanges.read(session, user), preDefinedDateRangesNames);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
-                Settings.get().isPivotOnlySelectedColumn(), colorTheme, useBootstrap, colorPreferences);
+                Settings.get().isPivotOnlySelectedColumn(), colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]));
+    }
+
+    private void fillRanges(String json, List<String> ranges) {
+        JSONArray rangesJson = new JSONArray(json);
+        for (int i = 0; i < rangesJson.length(); i++) {
+            ranges.add(rangesJson.getJSONObject(i).getString("range"));
+        }
     }
 
     public void gainedFocus(FormInstance form) {
