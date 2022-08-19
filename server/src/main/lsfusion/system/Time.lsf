@@ -209,3 +209,29 @@ distanceDOWDOW (DOW d1, DOW d2) = (number(d2) - number(d1)) + (IF number(d2) < n
 extractWeek = FORMULA INTEGER PG '(extract(week from ($1)))', MS 'datepart(isoww, $1)'; 
 // changes extractWeek return value for first days of the year    
 extractWeekZeroBased(DATE date) = IF extractWeek(date) > 50 AND extractMonthNumber(date) == 1 THEN 0 ELSE extractWeek(date);
+
+CLASS DateTimePickerRanges '{date.time.picker.range.predefined.date}' {
+    rangeToday '{date.time.picker.range.today}',
+    rangeYesterday '{date.time.picker.range.yesterday}',
+    rangeSevenDaysAgo '{date.time.picker.range.seven.days.ago}',
+    rangeThirtyDaysAgo '{date.time.picker.range.thirty.days.ago}',
+    rangeMonthStart '{date.time.picker.range.month.start}',
+    rangeMonthEnd '{date.time.picker.range.month.end}',
+    rangePreviousMonthStart '{date.time.picker.range.previous.month.start}',
+    rangePreviousMonthEnd '{date.time.picker.range.previous.month.end}',
+    rangeThisYearStart '{date.time.picker.range.this.year.start}',
+    rangeThisYearEnd '{date.time.picker.range.this.year.end}'
+}
+
+CLASS DateTimeIntervalPickerRanges '{date.time.picker.interval.range}' {
+    rangeIntervalToday '{date.time.picker.range.today}',
+    rangeIntervalYesterday '{date.time.picker.range.yesterday}',
+    rangeLast7Days '{date.time.picker.range.last.seven.days}',
+    rangeLast30Days '{date.time.picker.range.last.thirty.days}',
+    rangeThisMonth '{date.time.picker.range.this.month}',
+    rangeToMonthEnd '{date.time.picker.range.to.month.end}',
+    rangePreviousMonth '{date.time.picker.range.previous.month}',
+    rangeMonthStartToCurrentDate '{date.time.picker.range.month.start.to.current.date}',
+    rangeThisYear '{date.time.picker.range.this.year}',
+    rangeToYearEnd '{date.time.picker.range.to.year.end}'
+}
