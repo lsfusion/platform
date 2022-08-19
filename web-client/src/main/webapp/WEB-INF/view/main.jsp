@@ -57,6 +57,7 @@
                 //version jquery above 2.2.4 causes to errors in the pivot table
                 "static/js/external/jquery.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js
                 "static/js/external/jquery-ui.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js,
+                "static/css/external/jquery-ui.min.css", //'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css',
 
                 //export pivot to excel
                 "static/js/tableToExcel.js",
