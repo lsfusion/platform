@@ -486,11 +486,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 byte[] columnKeys = columnKeyList.get(i);
                 Boolean order = orderList.get(i);
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
-                ImMap<ObjectInstance, ObjectValue> keys = deserializeKeysValues(columnKeys);
-                PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys);
-                propertyDraw.toDraw.changeOrder(property, Order.ADD);
-                if(!order)
-                    propertyDraw.toDraw.changeOrder(property, Order.DIR);
+                if(propertyDraw != null) { //can be set by userPreferences but hidden by security policy
+                    ImMap<ObjectInstance, ObjectValue> keys = deserializeKeysValues(columnKeys);
+                    PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys);
+                    propertyDraw.toDraw.changeOrder(property, Order.ADD);
+                    if(!order)
+                        propertyDraw.toDraw.changeOrder(property, Order.DIR);
+                }
             }
 
         });
