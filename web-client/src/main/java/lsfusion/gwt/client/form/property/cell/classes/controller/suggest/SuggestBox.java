@@ -133,8 +133,7 @@ public class SuggestBox {
     }
 
     protected void showSuggestions(final Element suggestElement,
-        Collection<? extends Suggestion> suggestions,
-        boolean isDisplayStringHTML, boolean isAutoSelectEnabled,
+        Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled,
         final SuggestionCallback callback) {
       // Hide the popup if there are no suggestions to display.
 
@@ -148,7 +147,7 @@ public class SuggestBox {
       suggestionMenu.clearItems();
 
       for (final Suggestion curSuggestion : suggestions) {
-        final MenuItem menuItem = new MenuItem(curSuggestion, isDisplayStringHTML);
+        final MenuItem menuItem = new MenuItem(curSuggestion);
         menuItem.setScheduledCommand(() -> callback.onSuggestionSelected(curSuggestion));
 
         suggestionMenu.addItem(menuItem);
@@ -182,9 +181,7 @@ public class SuggestBox {
   private final boolean strict;
   private final Callback callback = new Callback() {
     public void onSuggestionsReady(Request request, Response response) {
-      display.showSuggestions(inputElement, response.getSuggestions(),
-          oracle.isDisplayStringHTML(), selectsFirstItem,
-          suggestionCallback);
+      display.showSuggestions(inputElement, response.getSuggestions(), selectsFirstItem, suggestionCallback);
     }
   };
   private final SuggestionCallback suggestionCallback;

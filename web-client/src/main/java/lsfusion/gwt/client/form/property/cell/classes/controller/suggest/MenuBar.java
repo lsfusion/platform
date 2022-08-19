@@ -21,10 +21,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.event.logical.shared.HasCloseHandlers;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
@@ -37,7 +33,9 @@ import com.google.gwt.user.client.ui.impl.FocusImpl;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<PopupPanel> {
+import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
+
+public class MenuBar extends Widget implements HasAnimation {
 
   static final FocusImpl focusImpl = FocusImpl.getFocusImplForPanel();
 
@@ -54,11 +52,6 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
     init();
   }
 
-  @Override
-  public HandlerRegistration addCloseHandler(CloseHandler<PopupPanel> handler) {
-    return addHandler(handler, CloseEvent.getType());
-  }
-
   public void addItem(MenuItem item) {
     insertItem(item, allItems.size());
   }
@@ -71,19 +64,11 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
       container.removeChild(DOM.getChild(container, 0));
     }
 
-    // Set the parent of all items to null
-    for (UIObject item : allItems) {
-      item.getElement().setPropertyInt("colSpan", 1);
-      if (item instanceof MenuItem) {
-        ((MenuItem) item).setParentMenu(null);
-      }
-    }
-
     // Clear out all of the items and separators
     items.clear();
     allItems.clear();
   }
-  
+
   public void setFocus(boolean focus) {
     // in Firefox FocusImpl calls focus() immediately
     // (in suggest box blur event is called before menu item select action, which leads to commit editing problems)
@@ -120,7 +105,6 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
 
     // Setup the menu item
     addItemElement(beforeIndex, item.getElement());
-    item.setParentMenu(this);
     item.setSelectionStyle(false);
   }
 
@@ -153,7 +137,7 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
         // Fire an item's command when the user clicks on it.
         if (item != null) {
           doItemAction(item);
-          eatEvent(event); //added to save focus on element
+          stopPropagation(event); //added to save focus on element
         }
         break;
       }
@@ -161,14 +145,14 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
       //replaced ONMOUSEOVER to ONMOUSEMOVE
       case Event.ONMOUSEMOVE: {
         if (item != null) {
-          itemOver(item);
+          selectItem(item);
         }
         break;
       }
 
       case Event.ONMOUSEOUT: {
         if (item != null) {
-          itemOver(null);
+          selectItem(null);
         }
         break;
       }
@@ -184,24 +168,21 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
         keyCode = KeyCodes.maybeSwapArrowKeysForRtl(keyCode, isRtl);
         switch (keyCode) {
           case KeyCodes.KEY_LEFT:
-            moveToPrevItem();
-            eatEvent(event);
-            break;
           case KeyCodes.KEY_RIGHT:
-            moveToNextItem();
-            eatEvent(event);
+            selectFirstItemIfNoneSelected();
+            stopPropagation(event);
             break;
           case KeyCodes.KEY_UP:
             moveSelectionUp();
-            eatEvent(event);
+            stopPropagation(event);
             break;
           case KeyCodes.KEY_DOWN:
             moveSelectionDown();
-            eatEvent(event);
+            stopPropagation(event);
             break;
           case KeyCodes.KEY_ESCAPE:
             deselectCurrentItem();
-            eatEvent(event);
+            stopPropagation(event);
             break;
           case KeyCodes.KEY_TAB:
             deselectCurrentItem();
@@ -209,7 +190,7 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
           case KeyCodes.KEY_ENTER:
             if (!selectFirstItemIfNoneSelected()) {
               doItemAction(selectedItem);
-              eatEvent(event);
+              stopPropagation(event);
             }
             break;
         } // end switch(keyCode)
@@ -221,8 +202,6 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
   }
 
   public void selectItem(MenuItem item) {
-    assert item == null || item.getParentMenu() == this;
-
     if (item == selectedItem) {
       return;
     }
@@ -233,8 +212,6 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
 
     if (item != null) {
       item.setSelectionStyle(true);
-
-      Roles.getMenubarRole().setAriaActivedescendantProperty(getElement(), Id.of(item.getElement()));
     }
 
     selectedItem = item;
@@ -268,30 +245,11 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
     return this.selectedItem;
   }
 
-  /**
-   * <b>Affected Elements:</b>
-   * <ul>
-   * <li>-item# = the {@link MenuItem} at the specified index.</li>
-   * </ul>
-   *
-   * @see UIObject#onEnsureDebugId(String)
-   */
-  @Override
-  protected void onEnsureDebugId(String baseID) {
-    super.onEnsureDebugId(baseID);
-    setMenuItemDebugIds(baseID);
-  }
-
   void deselectCurrentItem() {
     selectItem(null);
   }
 
   void doItemAction(final MenuItem item) {
-    // Should not perform any action if the item is disabled
-    if (!item.isEnabled()) {
-      return;
-    }
-
     // Ensure that the item is selected.
     selectItem(item);
 
@@ -309,28 +267,6 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
     }
   }
 
-  void itemOver(MenuItem item) {
-    if (item != null && !item.isEnabled()) {
-      return;
-    }
-
-    // Style the item selected when the mouse enters.
-    selectItem(item);
-  }
-
-  /**
-   * Set the IDs of the menu items.
-   *
-   * @param baseID the base ID
-   */
-  void setMenuItemDebugIds(String baseID) {
-    int itemCount = 0;
-    for (MenuItem item : items) {
-      item.ensureDebugId(baseID + "-item" + itemCount);
-      itemCount++;
-    }
-  }
-
   /**
    * Physically add the td element of a {@link MenuItem}.
    *
@@ -341,11 +277,6 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
       Element tr = DOM.createTR();
       DOM.insertChild(body, tr, beforeIndex);
       DOM.appendChild(tr, tdElem);
-  }
-
-  private void eatEvent(Event event) {
-    event.stopPropagation();
-    event.preventDefault();
   }
 
   private MenuItem findItem(Element hItem) {
@@ -379,17 +310,6 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
 
     // Hide focus outline in Mozilla/Webkit
     getElement().getStyle().setProperty("outline", "0px");
-
-    // Hide focus outline in IE 6/7
-    getElement().setAttribute("hideFocus", "true");
-  }
-
-  private void moveToNextItem() {
-    selectFirstItemIfNoneSelected();
-  }
-
-  private void moveToPrevItem() {
-    selectFirstItemIfNoneSelected();
   }
 
   /**
@@ -401,10 +321,8 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
   private boolean selectFirstItemIfNoneSelected() {
     if (selectedItem == null) {
       for (MenuItem nextItem : items) {
-        if (nextItem.isEnabled()) {
-          selectItem(nextItem);
-          break;
-        }
+        selectItem(nextItem);
+        break;
       }
       return true;
     }
@@ -417,32 +335,15 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
     }
 
     int index = items.indexOf(selectedItem);
-    // We know that selectedItem is set to an item that is contained in the
-    // items collection.
+    // We know that selectedItem is set to an item that is contained in the items collection.
     // Therefore, we know that index can never be -1.
     assert (index != -1);
 
-    MenuItem itemToBeSelected;
-
-    int firstIndex = index;
-    while (true) {
-      index = index + 1;
-      if (index == items.size()) {
-        // we're at the end, loop around to the start
+    index = index + 1;
+    if (index == items.size()) { // we're at the end, loop around to the start
         index = 0;
-      }
-      if (index == firstIndex) {
-        itemToBeSelected = items.get(firstIndex);
-        break;
-      } else {
-        itemToBeSelected = items.get(index);
-        if (itemToBeSelected.isEnabled()) {
-          break;
-        }
-      }
     }
-
-    selectItem(itemToBeSelected);
+    selectItem(items.get(index));
   }
 
   private void selectPrevItem() {
@@ -456,27 +357,11 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
     // Therefore, we know that index can never be -1.
     assert (index != -1);
 
-    MenuItem itemToBeSelected;
-
-    int firstIndex = index;
-    while (true) {
-      index = index - 1;
-      if (index < 0) {
-        // we're at the start, loop around to the end
+    index = index - 1;
+    if (index < 0) { // we're at the start, loop around to the end
         index = items.size() - 1;
-      }
-      if (index == firstIndex) {
-        itemToBeSelected = items.get(firstIndex);
-        break;
-      } else {
-        itemToBeSelected = items.get(index);
-        if (itemToBeSelected.isEnabled()) {
-          break;
-        }
-      }
     }
-
-    selectItem(itemToBeSelected);
+    selectItem(items.get(index));
   }
 
   public int getSelectedItemIndex() {
@@ -492,7 +377,7 @@ public class MenuBar extends Widget implements HasAnimation, HasCloseHandlers<Po
   public void selectItem(int index) {
     List<MenuItem> items = getItems();
     if (index > -1 && index < items.size()) {
-      itemOver(items.get(index));
+      selectItem(items.get(index));
     }
   }
 }

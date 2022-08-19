@@ -15,50 +15,34 @@
  */
 package lsfusion.gwt.client.form.property.cell.classes.controller.suggest;
 
-import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.safehtml.client.HasSafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.annotations.IsSafeHtml;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.UIObject;
 
-public class MenuItem extends UIObject implements HasHTML, HasEnabled, HasSafeHtml {
+public class MenuItem extends UIObject implements HasHTML, HasSafeHtml {
 
   private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
-  private static final String DEPENDENT_STYLENAME_DISABLED_ITEM = "disabled";
 
   private ScheduledCommand command;
-  private MenuBar parentMenu;
-  private boolean enabled = true;
 
-  MenuItem(@IsSafeHtml String text, boolean asHTML) {
+  MenuItem(@IsSafeHtml String text) {
     setElement(DOM.createTD());
     setSelectionStyle(false);
 
-    if (asHTML) {
-      setHTML(text);
-    } else {
-      setText(text);
-    }
+    setHTML(text);
 
-    getElement().setAttribute("id", DOM.createUniqueId());
     getElement().getStyle().setPadding(2, Style.Unit.PX);
-    // Add a11y role "menuitem"
-    Roles.getMenuitemRole().set(getElement());
   }
 
   @Override
   public String getHTML() {
     return getElement().getInnerHTML();
-  }
-
-  public MenuBar getParentMenu() {
-    return parentMenu;
   }
 
   public ScheduledCommand getScheduledCommand() {
@@ -68,21 +52,6 @@ public class MenuItem extends UIObject implements HasHTML, HasEnabled, HasSafeHt
   @Override
   public String getText() {
     return getElement().getInnerText();
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return enabled;
-  }
-
-  @Override
-  public void setEnabled(boolean enabled) {
-    if (enabled) {
-      removeStyleDependentName(DEPENDENT_STYLENAME_DISABLED_ITEM);
-    } else {
-      addStyleDependentName(DEPENDENT_STYLENAME_DISABLED_ITEM);
-    }
-    this.enabled = enabled;
   }
 
   @Override
@@ -104,11 +73,6 @@ public class MenuItem extends UIObject implements HasHTML, HasEnabled, HasSafeHt
     getElement().setInnerText(text);
   }
 
-  @Override
-  protected void onEnsureDebugId(String baseID) {
-    super.onEnsureDebugId(baseID);
-  }
-
   protected void setSelectionStyle(boolean selected) {
     if (selected) {
       addStyleDependentName(DEPENDENT_STYLENAME_SELECTED_ITEM);
@@ -117,16 +81,12 @@ public class MenuItem extends UIObject implements HasHTML, HasEnabled, HasSafeHt
     }
   }
 
-  void setParentMenu(MenuBar parentMenu) {
-    this.parentMenu = parentMenu;
-  }
-
   private static final String STYLENAME_DEFAULT = "item";
 
   private SuggestOracle.Suggestion suggestion;
 
-  public MenuItem(SuggestOracle.Suggestion suggestion, boolean asHTML) {
-    this(suggestion.getDisplayString(), asHTML);
+  public MenuItem(SuggestOracle.Suggestion suggestion) {
+    this(suggestion.getDisplayString());
     // Each suggestion should be placed in a single row in the suggestion
     // menu. If the window is resized and the suggestion cannot fit on a
     // single row, it should be clipped (instead of wrapping around and

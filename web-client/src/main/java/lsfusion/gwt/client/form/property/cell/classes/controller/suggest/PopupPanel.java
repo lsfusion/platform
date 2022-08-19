@@ -372,29 +372,6 @@ public class PopupPanel extends SimplePanel implements HasAnimation, HasCloseHan
     }
   }
 
-  /**
-   * Gets the panel's offset height in pixels. Calls to
-   * {@link #setHeight(String)} before the panel's child widget is set will not
-   * influence the offset height.
-   *
-   * @return the object's offset height
-   */
-  @Override
-  public int getOffsetHeight() {
-    return super.getOffsetHeight();
-  }
-
-  /**
-   * Gets the panel's offset width in pixels. Calls to {@link #setWidth(String)}
-   * before the panel's child widget is set will not influence the offset width.
-   *
-   * @return the object's offset width
-   */
-  @Override
-  public int getOffsetWidth() {
-    return super.getOffsetWidth();
-  }
-
   @Override
   public String getTitle() {
     return getContainerElement().getPropertyString("title");
@@ -563,12 +540,6 @@ public class PopupPanel extends SimplePanel implements HasAnimation, HasCloseHan
     getElement().getStyle().setProperty("visibility", visible ? "visible" : "hidden");
   }
 
-/*  @Override
-  public void setWidget(Widget w) {
-    super.setWidget(w);
-    maybeUpdateSize();
-  }*/
-
   /**
    * Sets the width of the panel's child widget. If the panel's child widget has
    * not been set, the width passed in will be cached and used to set the width
@@ -622,16 +593,6 @@ public class PopupPanel extends SimplePanel implements HasAnimation, HasCloseHan
   public final void showRelativeTo(final Element target) {
     // Set the position of the popup right before it is shown.
     setPopupPositionAndShow((offsetWidth, offsetHeight) -> position(target, offsetWidth, offsetHeight));
-  }
-
-  @Override
-  protected com.google.gwt.user.client.Element getContainerElement() {
-    return impl.getContainerElement(getPopupImplElement()).cast();
-  }
-
-  @Override
-  protected com.google.gwt.user.client.Element getStyleElement() {
-    return impl.getStyleElement(getPopupImplElement()).cast();
   }
 
   @Override
@@ -716,18 +677,6 @@ public class PopupPanel extends SimplePanel implements HasAnimation, HasCloseHan
       return getElement().isOrHasChild(Element.as(target));
     }
     return false;
-  }
-
-  /**
-   * Get the element that {@link PopupImpl} uses. PopupImpl creates an element
-   * that goes inside of the outer element, so all methods in PopupImpl are
-   * relative to the first child of the outer element, not the outer element
-   * itself.
-   *
-   * @return the Element that {@link PopupImpl} creates and expects
-   */
-  private com.google.gwt.user.client.Element getPopupImplElement() {
-    return DOM.getFirstChild(super.getContainerElement());
   }
 
   /**
