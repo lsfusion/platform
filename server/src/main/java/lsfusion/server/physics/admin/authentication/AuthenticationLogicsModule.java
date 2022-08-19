@@ -111,6 +111,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     
     public LA<?> syncUsers;
 
+    public LP dateTimePickerRanges;
+    public LP intervalPickerRanges;
+
     public AuthenticationLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Authentication.lsf");
     }
@@ -217,6 +220,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
         
         syncUsers = findAction("syncUsers[ISTRING[100], JSONFILE]");
+
+        dateTimePickerRanges = findProperty("dateTimePickerRanges[CustomUser]");
+        intervalPickerRanges = findProperty("intervalPickerRanges[CustomUser]");
     }
 
     //todo: replace usages to checkPassword without stack param after upgrading erp to version 5

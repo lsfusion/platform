@@ -698,14 +698,6 @@ DESIGN settings {
     }
 }
 
-//dateTimeRanges
-dateTimeRange '{date.time.picker.range.predefined.date}' (DateTimePickerRanges r) = staticCaption(r);
-isDateTimeRangeSelected '{logics.property.select}' = DATA BOOLEAN (DateTimePickerRanges, CustomUser);
-
-//dateTimeIntervalRanges
-intervalRange '{date.time.picker.range.predefined.date}' (DateTimeIntervalPickerRanges r) = staticCaption(r);
-isIntervalRangeSelected '{logics.property.select}' = DATA BOOLEAN (DateTimeIntervalPickerRanges, CustomUser);
-
 EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
     PROPERTIES(u) fontSize, colorThemeName,
@@ -747,55 +739,19 @@ DESIGN editProfile {
     }
 }
 
-selectedDateTimeRangesCount(user) = GROUP SUM 1 IF isDateTimeRangeSelected(DateTimePickerRanges r, user);
-selectedIntervalRangesCount(user) = GROUP SUM 1 IF isIntervalRangeSelected(DateTimeIntervalPickerRanges ir, user);
-CONSTRAINT selectedDateTimeRangesCount(CustomUser cu) > 7 OR selectedIntervalRangesCount(cu) > 7 MESSAGE '{date.time.picker.range.constraint}';
-
-dateTimePickerRanges(CustomUser cu) = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, cu);
-intervalPickerRanges(CustomUser cu) = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, cu);
-
-setDefaultRanges(CustomUser cu) {
-    //dateTime
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeToday, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeYesterday, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeSevenDaysAgo, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeThirtyDaysAgo, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeMonthStart, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangePreviousMonthStart, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeThisYearStart, cu) <- TRUE;
-    
-    //dateTime interval
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeIntervalToday, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeIntervalYesterday, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeLast7Days, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeLast30Days, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeThisMonth, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangePreviousMonth, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeThisYear, cu) <- TRUE;
-}
-
-firstStart = DATA BOOLEAN();
+//Temporary. For migration. Сan be deleted later. Need to fill in fields for existing users
+migratedRanges = DATA BOOLEAN();
 onStarted() + {
-    IF NOT firstStart() THEN {
+    IF NOT migratedRanges() THEN {
         FOR CustomUser cu IF cu IS CustomUser DO {
             setDefaultRanges(cu);
         }
-        firstStart() <- TRUE;
+        migratedRanges() <- TRUE;
     }
 }
 
-WHEN SET (CustomUser cu IS CustomUser) DO {
-    setDefaultRanges(cu);
-}
-
 EXTEND FORM customUser
-    PROPERTIES(u) fontSize, colorThemeName,
-                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
-    OBJECTS r = DateTimePickerRanges
-    PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
-    
-    OBJECTS ir = DateTimeIntervalPickerRanges
-    PROPERTIES intervalRange(ir) READONLY, isIntervalRangeSelected(ir, u)
+    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
 ;
 
 DESIGN customUser {
@@ -811,13 +767,6 @@ DESIGN customUser {
                 MOVE PROPERTY(focusedCellBorderColor(u));
                 MOVE PROPERTY(tableGridColor(u));
             }
-        }
-        NEW predefinedRanges AFTER design {
-            horizontal = TRUE;
-            MOVE BOX(r);
-            MOVE BOX(ir);
-            REMOVE TOOLBARSYSTEM(r);
-            REMOVE TOOLBARSYSTEM(ir);
         }
     }
 } 

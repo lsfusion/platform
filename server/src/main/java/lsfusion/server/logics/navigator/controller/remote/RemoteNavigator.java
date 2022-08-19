@@ -282,8 +282,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             colorPreferences = new ColorPreferences(selectedRowBackground, selectedCellBackground,
                     focusedCellBackground, focusedCellBorder, tableGridColor);
 
-            fillRanges((String) businessLogics.serviceLM.dateTimePickerRanges.read(session, user), preDefinedDateRangesNames);
-            fillRanges((String) businessLogics.serviceLM.intervalPickerRanges.read(session, user), preDefinedDateRangesNames);
+            fillRanges((String) businessLogics.authenticationLM.dateTimePickerRanges.read(session, user), preDefinedDateRangesNames);
+            fillRanges((String) businessLogics.authenticationLM.intervalPickerRanges.read(session, user), preDefinedDateRangesNames);
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }

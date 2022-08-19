@@ -931,3 +931,62 @@ unlock(Object object)  {
 	    APPLY locked(object) <- NULL;
 	}
 }
+
+//dateTimeRanges
+dateTimeRange '{date.time.picker.range.predefined.date}' (DateTimePickerRanges r) = staticCaption(r);
+isDateTimeRangeSelected '{logics.property.select}' = DATA BOOLEAN (DateTimePickerRanges, CustomUser);
+
+//dateTimeIntervalRanges
+intervalRange '{date.time.picker.range.predefined.date}' (DateTimeIntervalPickerRanges r) = staticCaption(r);
+isIntervalRangeSelected '{logics.property.select}' = DATA BOOLEAN (DateTimeIntervalPickerRanges, CustomUser);
+
+selectedDateTimeRangesCount(user) = GROUP SUM 1 IF isDateTimeRangeSelected(DateTimePickerRanges r, user);
+selectedIntervalRangesCount(user) = GROUP SUM 1 IF isIntervalRangeSelected(DateTimeIntervalPickerRanges ir, user);
+CONSTRAINT selectedDateTimeRangesCount(CustomUser cu) > 7 OR selectedIntervalRangesCount(cu) > 7 MESSAGE '{date.time.picker.range.constraint}';
+
+dateTimePickerRanges(CustomUser cu) = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, cu);
+intervalPickerRanges(CustomUser cu) = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, cu);
+
+setDefaultRanges(CustomUser cu) {
+    //dateTime
+    isDateTimeRangeSelected(DateTimePickerRanges.rangeToday, cu) <- TRUE;
+    isDateTimeRangeSelected(DateTimePickerRanges.rangeYesterday, cu) <- TRUE;
+    isDateTimeRangeSelected(DateTimePickerRanges.rangeSevenDaysAgo, cu) <- TRUE;
+    isDateTimeRangeSelected(DateTimePickerRanges.rangeThirtyDaysAgo, cu) <- TRUE;
+    isDateTimeRangeSelected(DateTimePickerRanges.rangeMonthStart, cu) <- TRUE;
+    isDateTimeRangeSelected(DateTimePickerRanges.rangePreviousMonthStart, cu) <- TRUE;
+    isDateTimeRangeSelected(DateTimePickerRanges.rangeThisYearStart, cu) <- TRUE;
+    
+    //dateTime interval
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeIntervalToday, cu) <- TRUE;
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeIntervalYesterday, cu) <- TRUE;
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeLast7Days, cu) <- TRUE;
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeLast30Days, cu) <- TRUE;
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeThisMonth, cu) <- TRUE;
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangePreviousMonth, cu) <- TRUE;
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeThisYear, cu) <- TRUE;
+}
+
+WHEN SET (CustomUser cu IS CustomUser) DO {
+    setDefaultRanges(cu);
+}
+
+EXTEND FORM customUser
+    OBJECTS r = DateTimePickerRanges
+    PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
+    
+    OBJECTS ir = DateTimeIntervalPickerRanges
+    PROPERTIES intervalRange(ir) READONLY, isIntervalRangeSelected(ir, u)
+;
+
+DESIGN customUser {
+    header {
+        NEW predefinedRanges {
+            horizontal = TRUE;
+            MOVE BOX(r);
+            MOVE BOX(ir);
+            REMOVE TOOLBARSYSTEM(r);
+            REMOVE TOOLBARSYSTEM(ir);
+        }
+    }
+} 

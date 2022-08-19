@@ -53,9 +53,6 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP transactTimeoutUser;
     public LP inDevMode;
 
-    public LP dateTimePickerRanges;
-    public LP intervalPickerRanges;
-
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Service.lsf");
     }
@@ -100,8 +97,5 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
-
-        dateTimePickerRanges = findProperty("dateTimePickerRanges[CustomUser]");
-        intervalPickerRanges = findProperty("intervalPickerRanges[CustomUser]");
     }
 }
