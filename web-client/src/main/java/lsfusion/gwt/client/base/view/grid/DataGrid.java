@@ -38,6 +38,7 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
+import lsfusion.gwt.client.form.property.cell.view.Selection;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -653,6 +654,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return getFocusedColumn() == cell.getColumnIndex();
     }
 
+    public Selection getSelection(Cell cell) {
+        return isSelectedRow(cell) ? isFocusedColumn(cell) ? Selection.FOCUSED : Selection.ACTIVE : null;
+    }
 
     protected TableRowElement getChildElement(int row) {
         return getRowElementNoFlush(row);
