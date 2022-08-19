@@ -163,7 +163,7 @@
 
                 "static/css/gwt/main.css",
 
-                "static/css/gwt/form/components/property/suggest/suggest-box.css",
+                "static/css/gwt/form/components/property/suggest-box.css",
 
                 "static/css/gwt/form/components/base/dialog.css",
                 "static/css/gwt/form/components/base/progress-bar.css",
