@@ -43,6 +43,13 @@ public class FormApplyAction extends FormFlowAction {
             return true;
         if (type == ChangeFlowType.HASSESSIONUSAGES)
             return true;
+        if(type == ChangeFlowType.PRIMARY)
+            return true;
         return super.hasFlow(type);
+    }
+
+    @Override
+    protected String getValueElementClass() {
+        return "btn-primary";
     }
 }

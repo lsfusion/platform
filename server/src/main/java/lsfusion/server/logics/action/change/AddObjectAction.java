@@ -185,6 +185,8 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     public boolean hasFlow(ChangeFlowType type) {
         if(type.isChange())
             return true;
+        if(type == ChangeFlowType.PRIMARY)
+            return true;
         return super.hasFlow(type);
     }
 

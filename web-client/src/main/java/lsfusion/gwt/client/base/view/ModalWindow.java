@@ -18,7 +18,7 @@ public class ModalWindow extends ResizableComplexPanel {
 
     private final ResizableComplexPanel content;
 
-    private final SimplePanel body;
+    private final SizedFlexPanel body;
 
     private final HeadingElement title;
 
@@ -79,8 +79,8 @@ public class ModalWindow extends ResizableComplexPanel {
         dialog.setWidget(content);
         content.add(header);
 
-        body = new SimplePanel();
-        body.setStyleName("modal-body");
+        body = new SizedFlexPanel(true);
+        body.addStyleName("modal-body");
         content.add(body);
 
         GwtClientUtils.draggable(dialog.getElement(), ".modal-header");
@@ -124,14 +124,19 @@ public class ModalWindow extends ResizableComplexPanel {
         title.setInnerText(caption);
     }
 
+    private Widget bodyWidget;
     public void setBodyWidget(Widget widget) {
-        body.setWidget(widget);
-        widget.getElement().getStyle().setProperty("flex", "1 1 auto");
+        if(bodyWidget != null)
+            body.removeSized(bodyWidget);
+
+        bodyWidget = widget;
+        body.addFillNoShrink(bodyWidget); // we want bodywidget to overglow in the both direction to have a scroll in the body element (see form-shrink-tabbed-container)
+//        widget.getElement().getStyle().setProperty("flex", "1 1 auto");
 //        GwtClientUtils.setupPercentParent(widget.getElement());
     }
 
-    public Widget getBodyWidget() {
-        return body.getWidget();
+    public Widget getBody() {
+        return body;
     }
 
     public void addContentWidget(Widget widget) {

@@ -22,6 +22,12 @@ public class SizedFlexPanel extends FlexPanel {
     public SizedFlexPanel() {
     }
 
+    // we want content to have it's content size minimum but 100%
+    // i.e. no shrink
+    protected void addFillNoShrink(Widget widget) {
+        addSized(widget, getWidgetCount(), 1, false, null, GFlexAlignment.STRETCH, false, null);
+    }
+
     public void addSized(Widget widget, int beforeIndex, double flex, boolean shrink, GSize size, GFlexAlignment alignment, boolean alignShrink, GSize alignSize) {
         boolean vertical = isVertical();
         Element element = widget.getElement();

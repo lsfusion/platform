@@ -19,10 +19,6 @@
     margin: var(--border-label-vert-padding) var(--border-label-horz-padding);
 }
 
-.card {
-    margin: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
-}
-
 /* there is a really odd style in bootstrap.min.css */
 /*.table > :not(:first-child) {*/
 /*    border-top: 2px solid currentColor*/
@@ -37,19 +33,6 @@
 
 :root {
     --border-width: 1px;
-}
-
-/* borders in bootstrap give pretty good design */
-
-.leftBorder {
-    border-left: var(--border-width) solid var(--panel-border-color);
-
-    /* "adding" border */
-    margin-left: calc(0px - var(--border-width) - var(--border-cont-horz-padding));
-}
-
-.topBorder {
-    border-top: var(--border-width) solid var(--panel-border-color);
 }
 
 /* we don't want to use accordion, so we'll use the card class, but in this case we have to implement collapsible manually */
@@ -78,4 +61,9 @@
 /*focused cell, same as table-active, but opacity 0.3 instead of 0.1*/
 .focused-cell {
     --bs-table-accent-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* it's odd, but modal-body has flex-shrink (flex: 1 1 auto), but min-height is not set to zero (as well as overflow:auto), what doesn't make sense */
+.modal-body {
+    min-height: 0;
 }

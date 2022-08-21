@@ -66,8 +66,12 @@ public class EmbeddedForm extends EditingForm {
 
     private Element renderElement;
 
+    private boolean autoSize;
+
     public EmbeddedForm(FormsController formsController, long editRequestIndex, boolean async, Event editEvent, EditContext editContext, GFormController contextForm) {
         super(formsController, editRequestIndex, async, editEvent, editContext, contextForm);
+
+        autoSize = editContext.getProperty().autoSize;
     }
 
     private ResizableComplexPanel getAttachContainer() {
@@ -79,7 +83,12 @@ public class EmbeddedForm extends EditingForm {
         getAttachContainer().add(widget);
 
         Element element = widget.getElement();
-        GwtClientUtils.setupPercentParent(element);
+        GwtClientUtils.setupSizedParent(element, autoSize);
+        if(!autoSize) {
+            element.addClassName("comp-shrink-horz");
+            element.addClassName("comp-shrink-vert");
+        }
+
         renderElement.appendChild(element);
     }
 
@@ -123,8 +132,8 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, boolean autoSize, int dispatchPriority, String formId) {
-        super.initForm(formsController, gForm, hiddenHandler, isDialog, autoSize, dispatchPriority, formId);
+    public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, int dispatchPriority, String formId) {
+        super.initForm(formsController, gForm, hiddenHandler, isDialog, dispatchPriority, formId);
 
         form.contextEditForm = contextForm;
         form.getWidget().getElement().setTabIndex(-1); // we need to make form focusable, because otherwise clicking on this form will lead to moving focus to the grid (not the cell), which will cause blur and stop editing

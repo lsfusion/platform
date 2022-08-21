@@ -92,17 +92,14 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         return label;
     }
 
+    // used only in error dialog
     public void addTab(Widget w, String tabText) {
-        addTab(w, createTab(tabText, false));
-    }
-
-    public void addTab(Widget w, Widget tabWidget) {
-        addTab(w, null, tabWidget);
+        addTab(w, null, createTab(tabText, false));
     }
 
     public void addTab(Widget w, Integer index, Widget tabWidget) {
         w.addStyleName("tab-pane");
-        insertTab(tabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFill(w, beforeIndex));
+        insertTab(tabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFillShrink(w, beforeIndex));
     }
 
     public void insertTab(String tabText, int beforeIndex, AddToDeck addToDeck) {
@@ -182,7 +179,12 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     }
 
     @Override
-    public FlexPanel.Border getOuterBorder() {
+    public Border getOuterTopBorder() {
+        return Border.HAS_MARGIN; //.nav-tabs-horz has top padding
+    }
+
+    @Override
+    public FlexPanel.Border getOuterRestBorder() {
         return Border.NEED;
     }
 

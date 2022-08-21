@@ -88,6 +88,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GClass returnClass;
 
     public String tag;
+    public String valueElementClass;
     public boolean toolbar;
 
     public boolean boxed = true;
@@ -647,6 +648,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return notNull && !isReadOnly();
     }
 
+    public boolean isTagInput() {
+        return tag != null && tag.equals("input");
+    }
+
     public boolean isFlex() {
         return flex == -2 || super.isFlex();
     }
@@ -663,6 +668,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GFlexAlignment getPanelCaptionAlignment() {
         return (panelCaptionAlignment != null && panelCaptionAlignment != GFlexAlignment.STRETCH) ? panelCaptionAlignment : GFlexAlignment.CENTER;
+    }
+
+    public GFlexAlignment getPanelValueAlignment() {
+        return baseType instanceof GLogicalType && isTagInput() ? GFlexAlignment.CENTER : GFlexAlignment.STRETCH; // we don't want to stretch input, since it's usually has fixed size
     }
 
     public GFlexAlignment getAlignment() {

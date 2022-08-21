@@ -2,10 +2,8 @@ package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
@@ -48,6 +46,9 @@ public class ModalForm extends FormContainer {
         window.setCaption(caption);
 
         contentWidget = window;
+
+        // this is form container, that is shrinked and needs padding
+        contentWidget.getBody().addStyleName("form-shrink-padded-container");
     }
 
     protected void initPreferredSize() {

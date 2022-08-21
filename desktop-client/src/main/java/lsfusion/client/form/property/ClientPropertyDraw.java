@@ -80,6 +80,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientClass returnClass;
 
     public String tag;
+    public String valueElementClass;
     public boolean toolbar;
 
     public ClientType externalChangeType;
@@ -549,6 +550,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         baseType = ClientTypeSerializer.deserializeClientType(inStream);
 
         tag = pool.readString(inStream);
+        valueElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
 
         if (inStream.readBoolean()) {

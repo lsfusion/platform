@@ -18,7 +18,7 @@ public class SizedWidget {
         this.height = height;
     }
 
-    private void add(SizedFlexPanel panel, GFlexAlignment alignment, double flex, boolean shrink) {
+    public void add(SizedFlexPanel panel, GFlexAlignment alignment, double flex, boolean shrink) {
         add(panel, panel.getWidgetCount(), alignment, flex, shrink);
     }
 

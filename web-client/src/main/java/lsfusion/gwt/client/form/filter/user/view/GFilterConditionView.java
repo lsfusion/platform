@@ -223,7 +223,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         if(alignCaptions) {
             addCentered(rightPanel);
 
-            return new ComponentWidget(new SizedWidget(this), new CaptionWidget(new SizedWidget(leftPanel), GFlexAlignment.START, GFlexAlignment.CENTER));
+            return new ComponentWidget(new SizedWidget(this), new CaptionWidget(new SizedWidget(leftPanel), GFlexAlignment.START, GFlexAlignment.CENTER, GFlexAlignment.STRETCH));
         }
 
         addCentered(leftPanel);

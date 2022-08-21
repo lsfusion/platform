@@ -51,10 +51,9 @@ public class SetUserFiltersHandler extends FormServerResponseActionHandler<SetUs
                         BaseUtils.serializeObject(outStream, convertedValue);
                         break;
                     case 1:
-                        outStream.writeInt((Integer) filter.filterValue.content);
-                        break;
                     case 2:
                         outStream.writeInt((Integer) filter.filterValue.content);
+                        break;
                 }
 
                 outStream.writeBoolean(filter.junction);

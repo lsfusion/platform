@@ -65,13 +65,7 @@
 .caption-panel-body {
 }
 
-.leftBorder {
-    border-left: var(--border-width) solid var(--panel-border-color);
-
-    /* "adding" border */
-    margin-left: calc(0px - var(--border-width) - var(--border-cont-horz-padding));
-}
-
-.topBorder {
-    border-top: var(--border-width) solid var(--panel-border-color);
+/* just like in the clobal tab panel we want the top padding to come from the "header" */
+.modal-body {
+    padding-top: var(--border-cont-vert-padding);
 }

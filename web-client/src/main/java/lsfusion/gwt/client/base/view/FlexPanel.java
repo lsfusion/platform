@@ -13,7 +13,6 @@ import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
-import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 
 import java.util.ArrayList;
@@ -76,7 +75,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         return !isVertical();
     }
 
-    public Border getOuterBorder() {
+    public Border getOuterTopBorder() {
+        return null;
+    }
+    public Border getOuterRestBorder() {
         return null;
     }
 
@@ -128,6 +130,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public void addFillShrink(Widget widget) {
         add(widget, GFlexAlignment.STRETCH, 1, true, null);
+    }
+
+    public void addFillShrink(Widget widget, int beforeIndex) {
+        add(widget, beforeIndex, GFlexAlignment.STRETCH, 1, true, null);
     }
 
     public void add(Widget widget, GFlexAlignment alignment, double flex, boolean shrink, GSize flexBasis) {
@@ -196,7 +202,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         setMinPanelWidth(element, size != null ? size.getString() : null);
     }
     public static void setMinPanelHeight(Element element, GSize size) {
-        setSizeProperty(element, "minHeight", size != null ? size.getString() : null);
+        setMinPanelHeight(element, size != null ? size.getString() : null);
+    }
+    public static void setMinPanelHeight(Element element, String size) { // "fit-content" doesn't work in this case
+        setSizeProperty(element, "minHeight", size);
     }
     public static void setMinPanelWidth(Element element, String size) {
         setSizeProperty(element, "minWidth", size);
@@ -525,9 +534,24 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             return widget.getElement();
         }
 
-        public void drawBorder(boolean set, boolean start, boolean vertical) {
+        public void drawBorder(Border border, boolean start, boolean vertical) {
             for(Widget widget : widgets)
-                FlexPanel.drawBorder(widget, set, start, vertical);
+                FlexPanel.drawBorder(widget, border, start, vertical);
+        }
+
+        public void clearBorder(boolean start, boolean vertical) {
+            for(Widget widget : widgets)
+                FlexPanel.clearBorder(widget, start, vertical);
+        }
+
+        public void drawWrapBorder(Border border) {
+            for(Widget widget : widgets)
+                FlexPanel.drawWrapBorder(widget, border);
+        }
+
+        public void clearWrapBorder() {
+            for(Widget widget : widgets)
+                FlexPanel.clearWrapBorder(widget);
         }
 
         public PanelParams updatePanels() {
@@ -575,42 +599,84 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                         }
 
                         @Override
-                        public void drawBorder(boolean set, boolean start, boolean vertical) {
-                            FlexPanel.drawBorder(widget, set, start, vertical);
+                        public void drawBorder(Border border, boolean start, boolean vertical) {
+                            FlexPanel.drawBorder(widget, border, start, vertical);
+                        }
+
+                        @Override
+                        public void clearBorder(boolean start, boolean vertical) {
+                            FlexPanel.clearBorder(widget, start, vertical);
+                        }
+
+                        @Override
+                        public void drawWrapBorder(Border border) {
+                            FlexPanel.drawWrapBorder(widget, border);
+                        }
+
+                        @Override
+                        public void clearWrapBorder() {
+                            FlexPanel.clearWrapBorder(widget);
                         }
                     });
                 }
-                return FlexPanel.updatePanels(true, !vertical, GFlexAlignment.START, virtualLines, null, false, false, null);
+                return FlexPanel.updatePanels(true, !vertical, GFlexAlignment.START, virtualLines, null, null, false, false, null);
             }
         }
     }
 
-    private static void drawBorder(Widget widget, boolean set, boolean start, boolean vertical) {
-        if(vertical) {
-            if(set) {
-                if (start)
-                    widget.addStyleName("topBorder");
+    private static void drawBorder(Widget widget, Border border, boolean start, boolean vertical) {
+        if(border == Border.NO)
+            return;
+
+        if (start) {
+            if(border == Border.NEED) {
+                if(vertical)
+                    widget.addStyleName("top-border");
                 else
-                    widget.addStyleName("bottomBorder");
-            } else {
-                if (start)
-                    widget.removeStyleName("topBorder");
-                else
-                    widget.removeStyleName("bottomBorder");
+                    widget.addStyleName("left-border");
             }
         } else {
-            if(set) {
-                if (start)
-                    widget.addStyleName("leftBorder");
-                else
-                    widget.addStyleName("rightBorderNoWrap"); // assert !noWrap
-            } else {
-                if (start)
-                    widget.removeStyleName("leftBorder");
-                else
-                    widget.removeStyleName("rightBorderNoWrap"); // assert !noWrap
-            }
+            if(vertical)
+                widget.addStyleName("bottom-margin");
+            else
+                widget.addStyleName("right-margin");
         }
+    }
+    private static void clearBorder(Widget widget, boolean start, boolean vertical) {
+        if (start) {
+            if(vertical)
+                widget.removeStyleName("top-border");
+            else
+                widget.removeStyleName("left-border");
+        } else {
+            if(vertical)
+                widget.removeStyleName("bottom-margin");
+            else
+                widget.removeStyleName("right-margin");
+        }
+    }
+    private static void drawWrapBorder(Widget widget, Border border) {
+        if(border == Border.NO)
+            return;
+
+        if (border == Border.NEED)
+            widget.addStyleName("left-border-wrap");
+    }
+    private static void clearWrapBorder(Widget widget) {
+        widget.removeStyleName("left-border-wrap");
+    }
+    private static void drawWrapParentBorder(Widget widget, Border border) {
+        if(border == Border.NO)
+            return;
+
+        if (border == Border.NEED)
+            widget.addStyleName("flex-horz-border-wrap");
+        else
+            widget.addStyleName("flex-horz-margin-wrap");
+    }
+    private static void clearWrapParentBorder(FlexPanel widget) {
+        widget.removeStyleName("flex-horz-border-wrap");
+        widget.removeStyleName("flex-horz-margin-wrap");
     }
 
     public boolean isGrid() {
@@ -902,25 +968,34 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     public enum Border {
-        NO, NEED, HAS;
+        NO, // has no border, no margin
+        NEED, // has no border, no margin (but need them)
+        HAS, // has border, no margin
+        HAS_MARGIN // has border and margin
+        ;
 
         public Border merge(Border border) {
+            if(this == HAS_MARGIN)
+                return border;
+            if(border == HAS_MARGIN)
+                return this;
+
             if(this == HAS)
                 return border;
-
             if(border == HAS)
                 return this;
 
             return this == NEED || border == NEED ? NEED : NO;
         }
 
-        public boolean draw(Border border) {
-            if(this == HAS)
-                return false;
-            if(border == HAS)
-                return false;
+        public Border draw(Border border) {
+            if(this == HAS_MARGIN || border == HAS_MARGIN)
+                return NO;
 
-            return this == NEED || border == NEED;
+            if(this == HAS || border == HAS)
+                return HAS;
+
+            return this == NEED || border == NEED ? NEED : NO;
         }
     }
 
@@ -968,7 +1043,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         PanelParams updatePanels();
 
-        void drawBorder(boolean set, boolean start, boolean vertical);
+        void drawBorder(Border border, boolean start, boolean vertical);
+        void clearBorder(boolean start, boolean vertical);
+        void drawWrapBorder(Border border);
+        void clearWrapBorder();
     }
 
     public static PanelParams updatePanels(Widget widget) {
@@ -987,13 +1065,14 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
 
             boolean collapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
-            return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, flexPanel.getOuterBorder(), !collapsed, collapsed, wrap ? flexPanel : null);
+            return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, flexPanel.getOuterTopBorder(), flexPanel.getOuterRestBorder(), !collapsed, collapsed, wrap ? flexPanel : null);
         } else
             return new PanelParams(widget instanceof TableContainer && ((TableContainer) widget).getTableComponent() instanceof DataGrid ? Border.HAS : Border.NO, Border.NO, Border.NO, Border.NO, false, InnerAlignment.DIFF, InnerAlignment.DIFF, false, false);
     }
 
-    private static PanelParams updatePanels(boolean grid, boolean vertical, GFlexAlignment flexAlignment, List<? extends FlexStretchLine> lines, Border forceBorder, boolean forceBottomBorder, boolean forceVertCollapsed, FlexPanel wrapPanel) {
-        Border top = Border.HAS, bottom = Border.NO, left = Border.NO, right = Border.NO;
+    private static PanelParams updatePanels(boolean grid, boolean vertical, GFlexAlignment flexAlignment, List<? extends FlexStretchLine> lines, Border forceTopBorder, Border restBorders, boolean forceBottomBorder, boolean forceVertCollapsed, FlexPanel wrapPanel) {
+        Border top = Border.HAS_MARGIN, // has to be universal i.e merge(a) = a
+                bottom = Border.NO, left = Border.NO, right = Border.NO;
 
         // STRETCH
         boolean hasBorders = false;
@@ -1014,7 +1093,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         // BORDERS
         // wrapped
-        boolean drawWrapHorzBorder = false;
+        Border drawWrapHorzBorder = Border.NO;
         Border prevWrapHorzBorder = null;
         // not wrapped
         Border prevBorder = null;
@@ -1080,7 +1159,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
             if(wrapPanel != null) { // wrapped
                 if(prevWrapHorzBorder != null)
-                    drawWrapHorzBorder = prevWrapHorzBorder.draw(childParams.left);
+                    drawWrapHorzBorder = drawWrapHorzBorder.draw(prevWrapHorzBorder.draw(childParams.left));
                 prevWrapHorzBorder = childParams.right;
 
                 left = left.merge(childParams.left);
@@ -1088,7 +1167,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 top = top.merge(childParams.top);
                 bottom = bottom.merge(childParams.bottom);
             } else { // not wrapped
-                boolean drawBorder = false;
+                Border drawBorder = Border.NO;
                 if (vertical) {
                     left = left.merge(childParams.left);
                     right = right.merge(childParams.right);
@@ -1107,10 +1186,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                         left = childParams.left;
                 }
 
-                childLine.drawBorder(false, false, vertical);
+                childLine.clearBorder(false, vertical); // clear all
+                childLine.clearBorder(true, vertical); // clear all
                 childLine.drawBorder(drawBorder, true, vertical);
-                if (drawBorder)
-                    prevLine.drawBorder(true, false, vertical);
+                if(prevLine != null)
+                    prevLine.drawBorder(drawBorder, false, vertical);
 
                 prevLine = childLine;
 
@@ -1126,12 +1206,14 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
 
         if(wrapPanel != null) { // in grid wrap should be implemented as auto-fit (however it's possible only without align-captions)
-            wrapPanel.removeStyleName("flexHorzBorderWrap");
-            if(drawWrapHorzBorder)
-                wrapPanel.addStyleName("flexHorzBorderWrap");
+            clearWrapParentBorder(wrapPanel);
+            drawWrapParentBorder(wrapPanel, drawWrapHorzBorder);
 
-            for (int i = 1, linesSize = lines.size(); i < linesSize; i++)
-                lines.get(i).drawBorder(drawWrapHorzBorder, true, false);
+            for (int i = 1, linesSize = lines.size(); i < linesSize; i++) {
+                FlexStretchLine line = lines.get(i);
+                line.clearWrapBorder();
+                line.drawWrapBorder(drawWrapHorzBorder);
+            }
             // maybe something should be done for vertical direction (bottom, top), but there is no obvious heuristics for that
         } else {
             if(prevBorder != null) {
@@ -1170,13 +1252,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         boolean vertCollapsed = vertical ? mainCollapsed : oppositeCollapsed;
 
-        if (forceBorder != null) {
+        if (forceTopBorder != null) {
             hasBorders = true;
 
-            top = Border.HAS;
-            left = right = forceBorder;
+            top = forceTopBorder;
+            left = right = restBorders;
             if(forceBottomBorder)
-                bottom = forceBorder;
+                bottom = restBorders;
         }
 
         if (forceVertCollapsed)

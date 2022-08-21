@@ -4,7 +4,7 @@ import lsfusion.server.language.ScriptingLogicsModule;
 
 public abstract class ReportClientAction extends FormToolbarAction {
 
-    public ReportClientAction(ScriptingLogicsModule lm, boolean showCaption) {
-        super(lm, showCaption);
+    public ReportClientAction(ScriptingLogicsModule lm) {
+        super(lm);
     }
 }

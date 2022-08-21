@@ -39,6 +39,7 @@ onWebClientLoad() + {
         INTERNAL CLIENT 'main.css';
         INTERNAL CLIENT 'main-border.css';
         INTERNAL CLIENT 'scrollbar.css';
+        INTERNAL CLIENT 'resizable-window.css';
         INTERNAL CLIENT 'property.css';
         INTERNAL CLIENT 'button.css';
     }

@@ -9,26 +9,24 @@ import lsfusion.gwt.client.view.MainFrame;
 public class CaptionPanel extends FlexPanel {
     protected Widget header;
 
-    private boolean border;
+    private final boolean border;
 
     private boolean emptyCaption;
 
-    public CaptionPanel(GContainer container) {
-        this(container.caption, container.border);
+    @Override
+    public Border getOuterTopBorder() {
+        return border ? Border.HAS : Border.HAS_MARGIN; // captioned not bordered container already "margined" (with min-height, label paddings)
     }
 
     @Override
-    public FlexPanel.Border getOuterBorder() {
+    public Border getOuterRestBorder() { // except the top border
         return border ? Border.HAS : Border.NEED;
     }
 
     private boolean waitingForElement;
 
-    private CaptionPanel(String caption, boolean border) {
+    public CaptionPanel(String caption, boolean border) {
         super(true);
-
-        if(!MainFrame.useBootstrap)
-            border = false;
 
         this.border = border;
 

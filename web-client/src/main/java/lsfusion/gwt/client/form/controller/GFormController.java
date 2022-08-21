@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.*;
@@ -165,7 +164,7 @@ public class GFormController implements EditManager {
         containerForms.remove(containerForm);
     }
 
-    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, boolean autoSize, int dispatchPriority, Event editEvent) {
+    public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, int dispatchPriority, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
         this.formsController = formsController;
@@ -175,7 +174,7 @@ public class GFormController implements EditManager {
 
         dispatcher = new FormDispatchAsync(this, dispatchPriority);
 
-        formLayout = new GFormLayout(this, form.mainContainer, autoSize);
+        formLayout = new GFormLayout(this, form.mainContainer);
         if (form.sID != null)
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 

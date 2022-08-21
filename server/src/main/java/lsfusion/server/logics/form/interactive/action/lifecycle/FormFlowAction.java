@@ -16,10 +16,6 @@ public abstract class FormFlowAction extends FormToolbarAction {
         super(lm);
     }
 
-    public FormFlowAction(ScriptingLogicsModule lm, boolean showCaption) {
-        super(lm, showCaption);
-    }
-
     protected boolean isSameSession() {
         return true;
     }

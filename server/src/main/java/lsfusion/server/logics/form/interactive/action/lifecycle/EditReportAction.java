@@ -15,7 +15,7 @@ public class EditReportAction extends ReportClientAction {
     private static LP showIf = createIfProperty(new Property[] {FormEntity.isDev, FormEntity.isDocked}, new boolean[] {false, false});
 
     public EditReportAction(BaseLogicsModule lm) {
-        super(lm, false);
+        super(lm);
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
@@ -25,5 +25,15 @@ public class EditReportAction extends ReportClientAction {
     @Override
     protected LP getShowIf() {
         return showIf;
+    }
+
+    @Override
+    protected boolean isShowCaption() {
+        return false;
+    }
+
+    @Override
+    protected String getValueElementClass() {
+        return "btn-outline-secondary";
     }
 }

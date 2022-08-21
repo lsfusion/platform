@@ -10,8 +10,8 @@ public class CollapsiblePanel extends CaptionPanel {
 
     private final Consumer<Boolean> onCollapseHandler;
 
-    public CollapsiblePanel(GContainer container, Consumer<Boolean> onCollapseHandler) {
-        super(container);
+    public CollapsiblePanel(String caption, boolean border, Consumer<Boolean> onCollapseHandler) {
+        super(caption, border);
 
         this.onCollapseHandler = onCollapseHandler;
 

@@ -1,21 +1,69 @@
 
-.leftBorder {
-    margin-left: calc(0px - var(--border-cont-horz-padding));
+.left-border {
     padding-left: var(--border-cont-horz-padding);
+
+    /* borders in bootstrap give pretty good design */
+    /* "adding" border */
+    border-left: var(--border-width) solid var(--panel-border-color);
 }
 
-.rightBorderNoWrap {
-    margin-right: calc(var(--border-cont-horz-padding) + var(--border-cont-horz-padding));
+.right-margin {
+    margin-right: var(--border-cont-horz-padding);
 }
 
-.flexHorzBorderWrap {
+.top-border {
+    padding-top: var(--border-cont-vert-padding);
+
+    border-top: var(--border-width) solid var(--panel-border-color);
+}
+
+.bottom-margin {
+    margin-bottom: var(--border-cont-vert-padding);
+}
+
+.left-border-wrap {
+    padding-left: var(--border-cont-horz-padding);
+
+    /* borders in bootstrap give pretty good design */
+    /* "adding" border */
+    border-left: var(--border-width) solid var(--panel-border-color);
+
+    margin-left: calc(0px - var(--border-width) - var(--border-cont-horz-padding));
+}
+
+.flex-horz-border-wrap {
     column-gap: calc(var(--border-cont-horz-padding) + var(--border-cont-horz-padding));
 }
 
-.topBorder {
-    padding-top: var(--border-cont-vert-padding);
+.flex-horz-margin-wrap {
+    column-gap: var(--border-cont-horz-padding);
 }
 
-.bottomBorder {
-    margin-bottom: var(--border-cont-vert-padding);
+/* we want header to also have at least double cont vert padding, to be consistent with bottom / left / right borders */
+.caption-panel-header {
+    min-height: calc(var(--border-cont-vert-padding) + var(--border-cont-vert-padding));
+    display: flex;
+    align-items: center;
+}
+
+/* form outer (needs padding) shrinked container */
+
+.form-shrink-padded-container {
+    overflow: auto;
+}
+
+/* it's assumed that container is already padded with caption / selection*/
+.form-shrink-padded-container .form {
+    padding-bottom: var(--border-cont-vert-padding);
+
+    padding-left: var(--border-cont-horz-padding);
+    padding-right: var(--border-cont-horz-padding);
+}
+
+/* modal-body uses padding which is not what we want since we want it to have the scroll respecting form paddings (see above) */
+.form-shrink-padded-container.modal-body {
+    padding-bottom: 0;
+
+    padding-left: 0;
+    padding-right: 0;
 }

@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
+import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class LayoutContainerView extends GAbstractContainerView {
     protected final GFormController formController;
@@ -34,10 +35,16 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
     protected FlexPanel wrapBorderImpl(GComponent child) {
         if (child instanceof GContainer) {
             GContainer childContainer = (GContainer) child;
+
+            String caption = childContainer.caption;
+            boolean border = childContainer.border;
+            if(!MainFrame.useBootstrap)
+                border = false;
+
             if (childContainer.collapsible)
-                return new CollapsiblePanel(childContainer, collapsed -> formController.setContainerCollapsed(container, collapsed));
-            else if (childContainer.caption != null || childContainer.border)
-                return new CaptionPanel(childContainer);
+                return new CollapsiblePanel(caption, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
+            else if (caption != null || border)
+                return new CaptionPanel(caption, border);
         }
         return null;
     }

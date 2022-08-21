@@ -14,7 +14,9 @@
     margin-bottom: var(--border-label-vert-padding);
 }
 
-.panelRendererValue {
+.panelRendererValue,
+.panelRendererValue.form-check-input /* form-check-input sets it's own margins */
+{
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
 

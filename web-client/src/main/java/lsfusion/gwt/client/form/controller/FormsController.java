@@ -43,7 +43,6 @@ import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
-import lsfusion.gwt.client.view.StyleDefaults;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.util.ArrayList;
@@ -52,7 +51,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
-import static lsfusion.gwt.client.navigator.window.GWindowFormType.*;
 
 public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
@@ -385,7 +383,7 @@ public abstract class FormsController {
                     (int)asyncFormController.getEditRequestIndex() * RemoteDispatchAsync.requestIndexDeepStep;
         }
 
-        initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), isAutoSized(editContext, windowType), dispatchPriority, formId);
+        initForm(formContainer, form, hiddenHandler, showFormType.isDialog(), dispatchPriority, formId);
         if(asyncOpened)
             formContainer.onAsyncInitialized();
         else
@@ -441,7 +439,7 @@ public abstract class FormsController {
     }
 
     private boolean isAutoSized(ExecContext execContext, GWindowFormType windowType) {
-        return ((windowType.isEmbedded() || windowType instanceof GContainerWindowFormType) && execContext.getProperty().autoSize) || windowType.isPopup() || windowType.isFloat() || windowType.isFloat();
+        return (windowType.isEmbedded() && execContext.getProperty().autoSize)  || windowType instanceof GContainerWindowFormType || windowType.isPopup() || windowType.isFloat();
     }
 
     private FormDockable getDuplicateForm(String canonicalName, boolean forbidDuplicate) {
@@ -468,14 +466,14 @@ public abstract class FormsController {
         }, ContextMenuEvent.getType());
     }
 
-    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, boolean autoSize, int dispatchPriority, String formId) {
+    public void initForm(FormContainer formContainer, GForm form, WindowHiddenHandler hiddenHandler, boolean dialog, int dispatchPriority, String formId) {
         formContainer.initForm(this, form, (asyncFormController, editFormCloseReason) -> {
             Pair<FormDockable, Integer> asyncClosedForm = asyncFormController.removeAsyncClosedForm();
             if(asyncClosedForm == null) {
                 formContainer.queryHide(editFormCloseReason);
             }
             hiddenHandler.onHidden();
-        }, dialog, autoSize, dispatchPriority, formId);
+        }, dialog, dispatchPriority, formId);
     }
 
     public void selectTab(FormDockable dockable) {

@@ -23,30 +23,29 @@ import static lsfusion.server.logics.property.PropertyFact.createAnd;
 import static lsfusion.server.logics.property.PropertyFact.createTrue;
 
 public abstract class FormToolbarAction extends InternalAction {
-    public final static Dimension BUTTON_SIZE = new Dimension(25, 20);
 
     public FormToolbarAction(ScriptingLogicsModule lm) {
-        this(lm, true);
-    }
-
-    public FormToolbarAction(ScriptingLogicsModule lm, final boolean showCaption) {
         super(lm);
 
-        LP propertyCaption = getShowIf();
-        LP readOnlyIf = getReadOnlyIf();
         drawOptions.addProcessor(new DefaultProcessor() {
             public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+                LP propertyCaption = getShowIf();
                 if (propertyCaption != null) {
                     entity.setPropertyExtra(form.addPropertyObject(propertyCaption), PropertyDrawExtraType.SHOWIF);
                 }
+                LP readOnlyIf = getReadOnlyIf();
                 if(readOnlyIf != null) {
                     entity.setPropertyExtra(form.addPropertyObject(readOnlyIf), PropertyDrawExtraType.READONLYIF);
                 }
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {
-                if (!showCaption) {
+                if (!isShowCaption()) {
                     propertyView.caption = LocalizedString.NONAME;
                 }
+
+                String valueElementClass = getValueElementClass();
+                if(valueElementClass != null)
+                    propertyView.valueElementClass = valueElementClass;
             }
         });
     }
@@ -56,6 +55,14 @@ public abstract class FormToolbarAction extends InternalAction {
     }
 
     protected LP getReadOnlyIf() {
+        return null;
+    }
+
+    protected boolean isShowCaption() {
+        return true;
+    }
+
+    protected String getValueElementClass() {
         return null;
     }
 

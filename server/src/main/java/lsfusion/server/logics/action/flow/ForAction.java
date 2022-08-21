@@ -463,8 +463,12 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
     public boolean hasFlow(ChangeFlowType type) {
         if (type == ChangeFlowType.BREAK)
             return false;
-        if (addObject != null && type.isChange())
-            return true;            
+        if (addObject != null) {
+            if (type.isChange())
+                return true;
+            if (type == ChangeFlowType.PRIMARY)
+                return true;
+        }
         return super.hasFlow(type);
     }
 

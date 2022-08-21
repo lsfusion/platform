@@ -273,6 +273,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.returnClass = typeConverter.convertOrCast(clientPropertyDraw.returnClass);
 
         propertyDraw.tag = clientPropertyDraw.tag;
+        propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
         propertyDraw.toolbar = clientPropertyDraw.toolbar;
 
         propertyDraw.externalChangeType = typeConverter.convertOrCast(clientPropertyDraw.externalChangeType);

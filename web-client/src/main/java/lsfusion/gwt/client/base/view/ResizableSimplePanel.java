@@ -48,11 +48,6 @@ public class ResizableSimplePanel extends SimplePanel implements RequiresResize,
     }
 
     @Override
-    public void setSizedMain(Widget main, boolean autoSize) {
-        setSizedWidget(main, autoSize);
-    }
-
-    @Override
     public Widget getPanelWidget() {
         return this;
     }

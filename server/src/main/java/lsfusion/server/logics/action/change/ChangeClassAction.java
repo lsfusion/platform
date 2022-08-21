@@ -233,6 +233,8 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
     public boolean hasFlow(ChangeFlowType type) {
         if(type.isChange())
             return true;
+        if(type == ChangeFlowType.PRIMARY && valueClass instanceof CustomClass)
+            return true;
         return super.hasFlow(type);
     }
 

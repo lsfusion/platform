@@ -165,6 +165,10 @@ public class LinearContainerView extends LayoutContainerView {
                 boolean vertical = container.isVertical();
                 captionSizedWidget.add(container, containerIndex, vertical ? captionPanel.horzAlignment : captionPanel.vertAlignment);
                 FlexPanel.setGridAlignment(captionWidget.getElement(), !vertical, vertical ? captionPanel.vertAlignment : captionPanel.horzAlignment);
+                if(captionPanel.valueVertAlignment != GFlexAlignment.STRETCH) {
+                    assert vertical; // see isAlignCaptions
+                    FlexPanel.setGridAlignment(widget.getElement(), !vertical, captionPanel.valueVertAlignment);
+                }
                 ((FlexPanel.WidgetLayoutData)captionWidget.getLayoutData()).caption = true;
                 span--;
             }

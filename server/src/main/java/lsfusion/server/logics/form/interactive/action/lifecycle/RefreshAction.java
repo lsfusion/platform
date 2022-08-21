@@ -16,7 +16,7 @@ public class RefreshAction extends FormFlowAction {
     private static LP showIf = createIfProperty(new Property[]{FormEntity.isEditing}, new boolean[]{true});
 
     public RefreshAction(BaseLogicsModule lm) {
-        super(lm, false);
+        super(lm);
     }
 
     // так как вызывают откуда попало
@@ -38,5 +38,15 @@ public class RefreshAction extends FormFlowAction {
     @Override
     protected LP getShowIf() {
         return showIf;
+    }
+
+    @Override
+    protected boolean isShowCaption() {
+        return false;
+    }
+
+    @Override
+    protected String getValueElementClass() {
+        return "btn-outline-secondary";
     }
 }

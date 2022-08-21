@@ -4,6 +4,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.Property;
@@ -23,7 +24,19 @@ public class OkAction extends FormFlowAction {
     }
 
     @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.PRIMARY)
+            return true;
+        return super.hasFlow(type);
+    }
+
+    @Override
     protected LP getShowIf() {
         return showIf;
+    }
+
+    @Override
+    protected String getValueElementClass() {
+        return "btn-primary";
     }
 }

@@ -2,7 +2,7 @@ package lsfusion.gwt.client.navigator.window;
 
 public enum GModalityWindowFormType implements GWindowFormType {
 
-    FLOAT, DOCKED, EMBEDDED, POPUP, INNER;
+    FLOAT, DOCKED, EMBEDDED, POPUP;
 
     @Override
     public boolean isFloat() {

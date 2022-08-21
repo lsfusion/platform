@@ -5,10 +5,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.FormButton;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
@@ -94,26 +91,32 @@ public final class FormDockable extends FormContainer {
         return canonicalName;
     }
 
-    public class ContentWidget extends ResizableComplexPanel {
+    public class ContentWidget extends SizedFlexPanel {
         private FocusPanel maskWrapper;
         private Widget content;
 
         // need this wrapper for paddings / margins (since content is )
         private ContentWidget() {
+            super(true);
+
             initBlockedMask();
+
+            // this is shrinked container and needs padding
+            addStyleName("form-shrink-padded-container");
         }
 
         public Widget getContent() {
             return content;
         }
 
-        public void setContent(Widget icontent) {
+        public void setContent(Widget widget) {
             if (content != null) {
-                remove(content);
+                removeSized(content);
             }
 
-            content = icontent;
-            setSizedMain(content, true); // we want to include paddings in content
+            content = widget;
+            // we want content to have it's content size minimum but 100%
+            addFillNoShrink(content);
         }
 
         private void initBlockedMask() {

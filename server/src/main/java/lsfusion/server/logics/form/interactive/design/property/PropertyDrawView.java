@@ -13,6 +13,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
@@ -82,6 +83,9 @@ public class PropertyDrawView extends BaseComponentView {
 
     private Boolean valueFlex;
 
+    public String tag;
+    public String valueElementClass;
+
     public KeyInputEvent changeKey;
     public Integer changeKeyPriority;
     public Boolean showChangeKey;
@@ -107,7 +111,6 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean notSelectAll;
     public String toolTip;
 
-    public String tag;
     public Boolean toolbar;
 
     public boolean notNull;
@@ -411,6 +414,7 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         pool.writeString(outStream, getTag(pool.context));
+        pool.writeString(outStream, getValueElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
 
         Type externalChangeType = getExternalChangeType(pool.context);
@@ -698,6 +702,13 @@ public class PropertyDrawView extends BaseComponentView {
         return entity.getEventAction(EDIT_OBJECT, context.entity, context.securityPolicy) != null;
     }
 
+    public boolean hasFlow(ServerContext context, ChangeFlowType type) {
+        ActionObjectEntity<?> eventAction = entity.getEventAction(CHANGE, context.entity, context.securityPolicy);
+        if(eventAction != null)
+            return eventAction.property.hasFlow(type);
+        return false;
+    }
+
     public FlexAlignment getValueAlignment() {
         if (valueAlignment == null && isProperty()) {
             Type type = getType();
@@ -720,10 +731,34 @@ public class PropertyDrawView extends BaseComponentView {
             if(changeType == null)
                 return "button";
         } else {
+            if(isLink(context))
+                return "a";
+
             Type type = getType();
             if(type != null && changeType != null && type.getCompatible(changeType) != null &&
                     type.useInputTag(!entity.isList(context.entity)))
                 return "input";
+        }
+
+        return null;
+    }
+
+    private boolean isLink(ServerContext context) {
+        return hasFlow(context, ChangeFlowType.INTERACTIVEFORM) && !hasFlow(context, ChangeFlowType.READONLYCHANGE);
+    }
+
+    public String getValueElementClass(ServerContext context) {
+        if(valueElementClass != null)
+            return valueElementClass;
+
+        if(!isProperty()) {
+            if(hasFlow(context, ChangeFlowType.PRIMARY))
+                return "btn-primary";
+
+            if(isLink(context))
+                return "btn-link";
+
+            return "btn-secondary";
         }
 
         return null;

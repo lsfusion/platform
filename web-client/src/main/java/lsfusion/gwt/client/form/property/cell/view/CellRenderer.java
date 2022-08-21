@@ -31,22 +31,33 @@ public abstract class CellRenderer<T> {
     protected final String REQUIRED_VALUE = messages.formRendererRequired();
 
     protected boolean isTagInput() {
-        String tag = getTag();
-        return tag != null && tag.equals("input");
+        return property.isTagInput();
     }
 
     protected String getTag() {
         return property.tag;
     }
 
+    protected String getValueElementClass() {
+        return property.valueElementClass;
+    }
+
     public Element createRenderElement() {
         assert !isTagInput();
 
-        String tag = getTag();
-        if(tag == null)
-            return Document.get().createDivElement();
+        Element renderElement;
 
-        return Document.get().createElement(tag);
+        String tag = getTag();
+        if(tag != null)
+            renderElement = Document.get().createElement(tag);
+        else
+            renderElement = Document.get().createDivElement();
+
+        String valueElementClass = getValueElementClass();
+        if(valueElementClass != null)
+            renderElement.addClassName(valueElementClass);
+
+        return renderElement;
     }
     public boolean canBeRenderedInTD() {
         return false;

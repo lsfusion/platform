@@ -12,7 +12,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -49,11 +48,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (this.property.captionFont != null)
             this.property.captionFont.apply(label.getElement().getStyle());
 
-        // for
-        CellRenderer cellRenderer = property.getCellRenderer();
-        cellRenderer.renderPanelLabel(label);
+        // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
+//        CellRenderer cellRenderer = property.getCellRenderer();
+//        cellRenderer.renderPanelLabel(label);
 
         GFlexAlignment panelCaptionAlignment = property.getPanelCaptionAlignment(); // vertical alignment
+        GFlexAlignment panelValueAlignment = property.getPanelValueAlignment(); // vertical alignment
         boolean captionLast = property.isPanelCaptionLast();
         SizedWidget sizedLabel = new SizedWidget(label, property.getCaptionWidth(), property.getCaptionHeight());
 
@@ -61,7 +61,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             if(!panelCaptionAlignment.equals(GFlexAlignment.END))
                 captionLast = false; // it's odd having caption last for alignments other than END
 
-            captionContainer.set(new CaptionWidget(captionLast ? valuePanel : sizedLabel, GFlexAlignment.START, panelCaptionAlignment));
+            captionContainer.set(new CaptionWidget(captionLast ? valuePanel : sizedLabel, GFlexAlignment.START, panelCaptionAlignment, panelValueAlignment));
 
             return captionLast ? sizedLabel : valuePanel;
         }
@@ -71,12 +71,13 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (!captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
-        valuePanel.addFill(panel);
+        valuePanel.add(panel, panelValueAlignment, 1, true);
 
         if (captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
-        cellRenderer.renderPanelContainer(panel);
+        // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
+//        cellRenderer.renderPanelContainer(panel);
 
         return new SizedWidget(panel);
     }

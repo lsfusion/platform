@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
@@ -36,21 +35,20 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public final ResizableComplexPanel attachContainer;
 
-    private final boolean autoSize;
-    public GFormLayout(GFormController iform, GContainer mainContainer, boolean autoSize) {
+    public GFormLayout(GFormController iform, GContainer mainContainer) {
         this.form = iform;
         this.mainContainer = mainContainer;
-        this.autoSize = autoSize;
 
         attachContainer = new ResizableComplexPanel();
         attachContainer.setVisible(false);
         addContainers(mainContainer);
 
         Widget view = getMainView();
-        setSizedMain(view, autoSize);
-        view.getElement().getStyle().setOverflow(Style.Overflow.AUTO);
+        setPercentMain(view);
 
         add(attachContainer);
+
+        addStyleName("form");
 
         DataGrid.initSinkMouseEvents(this);
     }
@@ -246,9 +244,7 @@ public class GFormLayout extends ResizableComplexPanel {
     }
 
     public Pair<Integer, Integer> setPreferredSize(boolean set, GSize width, GSize height, GSize maxWidth, GSize maxHeight) {
-        assert autoSize;
-//        GwtClientUtils.changePercentFillWidget(main, set);
-
+        Widget main = getMainView();
         Element element = main.getElement();
         FlexPanel.setPrefHeight(element, height);
         FlexPanel.setPrefWidth(element, width);
