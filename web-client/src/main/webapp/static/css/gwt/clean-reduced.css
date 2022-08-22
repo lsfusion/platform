@@ -891,6 +891,12 @@ button {
     overflow: hidden;
 }
 
+.suggestBoxTip {
+    border-top:1px solid var(--component-border-color);
+    color: var(--disabled-text-color);
+    word-wrap:break-word;
+}
+
 .gwt-TabBar-vert {
     padding-left: var(--border-padding);
 }
