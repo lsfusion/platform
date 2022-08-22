@@ -1,0 +1,11 @@
+MODULE Chart;
+
+REQUIRE SystemEvents;
+
+NAMESPACE Utils;
+
+onWebClientLoad() + {
+    INTERNAL CLIENT 'custom_chart.js';
+
+    INTERNAL CLIENT 'chart.js';
+}
