@@ -85,3 +85,8 @@
     height: 0;
     overflow: hidden;
 }
+.suggestBoxTip {
+    border-top:1px solid var(--component-border-color);
+    color: var(--disabled-text-color);
+    word-wrap:break-word;
+}
