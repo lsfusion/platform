@@ -207,7 +207,7 @@ public class JDBCTable {
         MAddCol<Type> types = ListFact.mAddCol(cc);
         o.writeInt(cc);
         for(int i=1;i<=cc;i++) {
-            String field = metaData.getColumnName(i);
+            String field = metaData.getColumnLabel(i);
             //если имени колонки нет (например, используется coalesce), то генерим его самостоятельно
             if(field.isEmpty())
                 field = "zxcvb" + i;
