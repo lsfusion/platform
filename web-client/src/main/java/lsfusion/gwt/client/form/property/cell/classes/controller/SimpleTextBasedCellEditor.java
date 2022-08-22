@@ -37,6 +37,7 @@ import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
 
 // now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on isInputAsRenderElement)
 public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellEditor {
@@ -602,7 +603,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             bottomPanel.add(buttonsPanel);
 
             if(compare != null && compare.escapeComma()) {
-                HTML tip = new HTML("<div style='word-wrap:break-word; border-top:1px solid var(--component-border-color)'>" + messages.suggestBoxTip() + "</div>");
+                HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip());
+                tip.getElement().addClassName("suggestBoxTip");
                 bottomPanel.add(tip);
                 tip.getParent().getParent().setWidth("100px"); //set width of td, so as not to expand the entire suggestBox
             }
