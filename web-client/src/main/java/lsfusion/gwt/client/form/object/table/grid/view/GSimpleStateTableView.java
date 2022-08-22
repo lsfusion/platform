@@ -311,6 +311,14 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             onExec.accept(form.asyncExecutePropertyEventAction(actionSID, null, null, properties, externalChanges, fullKeys, pushAsyncResults));
     }
 
+    protected String getCaption(String property) {
+        Column column = columnMap.get(property);
+        if(column == null)
+            return null;
+
+        return column.property.getCaption();
+    }
+
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
         Column column = columnMap.get(property);
         if(column == null)
@@ -320,6 +328,28 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected boolean isReadOnly(String property, JavaScriptObject object) {
         return isReadOnly(property, getKey(object));
+    }
+
+    protected Object getBackground(String property, GGroupObjectValue object) {
+        Column column = columnMap.get(property);
+        if(column == null)
+            return null;
+        return getBackground(column.property, object, column.columnKey);
+    }
+
+    protected Object getBackground(String property, JavaScriptObject object) {
+        return getBackground(property, getKey(object));
+    }
+
+    protected Object getForeground(String property, GGroupObjectValue object) {
+        Column column = columnMap.get(property);
+        if(column == null)
+            return null;
+        return getForeground(column.property, object, column.columnKey);
+    }
+
+    protected Object getForeground(String property, JavaScriptObject object) {
+        return getForeground(property, getKey(object));
     }
 
     protected boolean isCurrentObjectKey(JavaScriptObject object){
@@ -495,8 +525,17 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             isCurrent: function (object) {
                 return thisObj.@GSimpleStateTableView::isCurrentObjectKey(*)(object);
             },
+            getCaption: function (property) {
+                return thisObj.@GSimpleStateTableView::getCaption(Ljava/lang/String;)(property);
+            },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getBackground: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getBackground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getForeground: function (property, object) {
+                return thisObj.@GSimpleStateTableView::getForeground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             changeObject: function (object, rendered, elementClicked) {
                 if(rendered === undefined)
