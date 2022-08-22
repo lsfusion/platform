@@ -532,10 +532,12 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
             },
             getBackground: function (property, object) {
-                return thisObj.@GSimpleStateTableView::getBackground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+                var color = thisObj.@GSimpleStateTableView::getBackground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+                return color ? color.toString() : null;
             },
             getForeground: function (property, object) {
-                return thisObj.@GSimpleStateTableView::getForeground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+                var color = thisObj.@GSimpleStateTableView::getForeground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+                return color ? color.toString() : null;
             },
             changeObject: function (object, rendered, elementClicked) {
                 if(rendered === undefined)
