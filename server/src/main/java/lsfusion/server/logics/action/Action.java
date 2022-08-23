@@ -717,6 +717,16 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
         return !hasFlow(ChangeFlowType.READONLYCHANGE);
     }
 
+    private boolean ignoreSecurityPolicy;
+
+    public boolean isIgnoreSecurityPolicy() {
+        return ignoreSecurityPolicy;
+    }
+
+    public void setIgnoreSecurityPolicy(boolean ignoreSecurityPolicy) {
+        this.ignoreSecurityPolicy = ignoreSecurityPolicy;
+    }
+
     @Override
     public ApplyGlobalEvent getApplyEvent() {
         if (getSessionEnv(SystemEvent.APPLY)!=null) {

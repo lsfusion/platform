@@ -352,6 +352,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
             PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, object, null, null));
 
+            request.action.setIgnoreSecurityPolicy(true);
+
             return request.mapObjects(mapObjects.reverse());
         }
         return null;
