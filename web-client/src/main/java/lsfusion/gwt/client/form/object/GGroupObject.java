@@ -52,6 +52,7 @@ public class GGroupObject implements Serializable, HasNativeSID {
 
     public GRowBackgroundReader rowBackgroundReader;
     public GRowForegroundReader rowForegroundReader;
+    public GCustomOptionsReader customOptionsReader;
 
     // transient
     public transient GSize columnSumWidth = GSize.ZERO;

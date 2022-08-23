@@ -40,6 +40,7 @@ public class ScriptingGroupObject {
     public ScriptingLogicsModule.FormLPUsage foreground;
 
     public String customRenderFunction;
+    public ScriptingLogicsModule.FormLPUsage customOptions;
     public String mapTileProvider;
 
     public ScriptingGroupObject(String name, List<String> objects, List<String> classes, List<LocalizedString> captions, List<ActionObjectEntity> events, List<String> integrationSIDs) {
@@ -68,6 +69,10 @@ public class ScriptingGroupObject {
 
     public void setCustomTypeRenderFunction(String customRenderFunction) {
         this.customRenderFunction = customRenderFunction;
+    }
+
+    public void setCustomOptions(ScriptingLogicsModule.FormLPUsage customOptions) {
+        this.customOptions = customOptions;
     }
 
     public void setMapTileProvider(String mapTileProvider) {

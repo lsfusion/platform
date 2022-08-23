@@ -66,6 +66,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
     public RowBackgroundReader rowBackgroundReader = new RowBackgroundReader();
     public RowForegroundReader rowForegroundReader = new RowForegroundReader();
+    public CustomOptionsReader customOptionsReader = new CustomOptionsReader();
 
     // transient
     public int columnSumWidth;
@@ -272,6 +273,24 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
 
         public byte getType() {
             return PropertyReadType.ROW_FOREGROUND;
+        }
+    }
+
+    public class CustomOptionsReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientGroupObject.this;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            //do nothing in desktop
+        }
+
+        public int getID() {
+            return ClientGroupObject.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CUSTOM_OPTIONS;
         }
     }
 }

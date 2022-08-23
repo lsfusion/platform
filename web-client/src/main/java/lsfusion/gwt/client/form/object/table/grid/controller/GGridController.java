@@ -461,6 +461,13 @@ public class GGridController extends GAbstractTableController {
         }
     }
 
+    @Override
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
+        if (isList()) {
+            table.updateCustomOptionsValues(values);
+        }
+    }
+
     public GGroupObjectValue getSelectedKey() {
         GGroupObjectValue result = null;
         if (isList()) {
