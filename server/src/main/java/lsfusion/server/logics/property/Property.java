@@ -1234,7 +1234,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
 
         AlgType algType = type.getAlg();
-        assert !assertFull || isFull(algType.getAlgInfo());
+//        assert !assertFull || isFull(algType.getAlgInfo());
         return call.call(algType);
     }
 

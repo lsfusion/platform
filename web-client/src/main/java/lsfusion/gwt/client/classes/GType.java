@@ -32,10 +32,6 @@ public abstract class GType implements Serializable {
         return null;
     }
 
-    public GCompare getDefaultCompare() {
-        return GCompare.EQUALS;
-    }
-
     // not null
     public static GSize getFullWidthString(String widthString, GFont font) {
         GFontWidthString fontWidthString = new GFontWidthString(font == null ? GFont.DEFAULT_FONT : font, widthString);

@@ -2484,7 +2484,16 @@ public class Settings implements Cloneable {
         this.useGroupLastOpt = useGroupLastOpt;
     }
 
-    // In 5.0 CONTAINS is gone. It sets MATCH(SEARCH) instead. Maybe should be renamed.
+    private boolean defaultCompareSearchInsteadOfContains = true;
+
+    public boolean isDefaultCompareSearchInsteadOfContains() {
+        return defaultCompareSearchInsteadOfContains;
+    }
+
+    public void setDefaultCompareSearchInsteadOfContains(boolean defaultCompareSearchInsteadOfContains) {
+        this.defaultCompareSearchInsteadOfContains = defaultCompareSearchInsteadOfContains;
+    }
+
     private boolean defaultCompareForStringContains = false;
 
     public boolean isDefaultCompareForStringContains() {

@@ -43,11 +43,6 @@ public abstract class ClientLinkClass extends ClientDataClass implements ClientT
     }
 
     @Override
-    public Compare getDefaultCompare() {
-        return EQUALS;
-    }
-
-    @Override
     public String formatString(Object obj) throws ParseException {
         return obj == null ? "" : obj.toString();
     }

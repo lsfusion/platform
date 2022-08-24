@@ -34,11 +34,6 @@ public class GStringType extends GDataType {
         return s;
     }
 
-    @Override
-    public GCompare getDefaultCompare() {
-        return caseInsensitive ? MATCH : EQUALS;
-    }
-
     public GStringType() {}
 
     public GStringType(GExtInt length, boolean caseInsensitive, boolean blankPadded) {

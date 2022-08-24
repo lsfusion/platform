@@ -42,11 +42,6 @@ public class ClientStringClass extends ClientDataClass {
         return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, CONTAINS, MATCH};
     }
 
-    @Override
-    public Compare getDefaultCompare() {
-        return caseInsensitive ? MATCH : EQUALS;
-    }
-
     public final static Map<Pair<Boolean, Boolean>, ClientTypeClass> types = new HashMap<>();
 
     protected String sID;
