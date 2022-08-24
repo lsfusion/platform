@@ -43,28 +43,34 @@ public class LSFTooltipManager {
 
     public static void initTooltip(JComponent component, String tooltipText, String path, String creationPath) {
         setComponentMouseListeners(component, new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath),
-                new LSFTooltipStyle(), false)));
+                new LSFTooltipStyle(), false)), null);
+    }
+
+    private static JPanel tooltipPanel;
+    private static void setTooltipPanel(Object model, JTable gridTable) {
+        if (gridTable instanceof GridTable) {
+            int modelIndex = gridTable.getColumnModel().getColumn(index).getModelIndex();
+            GridTable table = (GridTable) gridTable;
+            tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
+                    table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
+        } else {
+            ClientPropertyDraw property = ((GroupTreeTableModel) model).getColumnProperty(index);
+
+            //if first column
+            if (property == null) {
+                tooltipPanel = null;
+                return;
+            }
+
+            tooltipPanel = createTooltipPanel(property.getTooltipText(((GroupTreeTableModel) model).getColumnName(index)),
+                    property.path, property.creationPath);
+        }
     }
 
     public static void initTooltip(JComponent component, Object model, JTable gridTable) {
         Timer tooltipTimer = new Timer(1500, evt -> {
-
-            JPanel tooltipPanel;
-            if (gridTable instanceof GridTable) {
-                int modelIndex = gridTable.getColumnModel().getColumn(index).getModelIndex();
-                GridTable table = (GridTable) gridTable;
-                tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
-                        table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
-            } else {
-                ClientPropertyDraw property = ((GroupTreeTableModel) model).getColumnProperty(index);
-
-                //if first column
-                if (property == null)
-                    return;
-
-                tooltipPanel = createTooltipPanel(property.getTooltipText(((GroupTreeTableModel) model).getColumnName(index)),
-                        property.path, property.creationPath);
-            }
+            if (tooltipPanel == null)
+                return;
 
             BasicBalloonTipPositioner positioner = new BasicBalloonTipPositioner(15, 15) {
 
@@ -110,16 +116,17 @@ public class LSFTooltipManager {
                 else if (model instanceof GroupTreeTableModel)
                     newIndex = ((GroupTreeTableModel) model).getColumnIndexAtX(e.getPoint().x, (TreeGroupTable) gridTable);
 
-                if (!tooltipTimer.isRunning() && balloonTip != null && !balloonTip.isShowing() && newIndex != -1)
+                if (!tooltipTimer.isRunning() && balloonTip != null && !balloonTip.isShowing() && newIndex != -1) {
+                    setTooltipPanel(model, gridTable);
                     tooltipTimer.start();
-                else if (index != newIndex)
+                } else if (index != newIndex)
                     closeBalloon();
 
                 index = newIndex;
             }
         });
 
-        setComponentMouseListeners(component, tooltipTimer);
+        setComponentMouseListeners(component, tooltipTimer, () -> setTooltipPanel(model, gridTable));
     }
 
     private static class LSFTooltipStyle extends ToolTipBalloonStyle {
@@ -158,12 +165,15 @@ public class LSFTooltipManager {
         }
     }
 
-    private static void setComponentMouseListeners(JComponent component, Timer tooltipTimer) {
+    private static void setComponentMouseListeners(JComponent component, Timer tooltipTimer, Runnable setTooltipPanel) {
         tooltipTimer.setRepeats(false);
         component.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 closeBalloon();
+                if (setTooltipPanel != null)
+                    setTooltipPanel.run();
+
                 tooltipTimer.start();
             }
 
