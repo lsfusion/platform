@@ -1546,12 +1546,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if (!session.apply(BL, stack, interaction, applyActions.mergeOrder(getEventsOnApply()), keepProperties, this, applyMessage))
             return false;
 
-        fireOnAfterApply(stack);
-
         environmentIncrement.add(FormEntity.isAdd, PropertyChange.STATIC(false));
         
         refreshData();
         dataChanged = true;
+
+        // has to be after refreshData to have object classes refreshed
+        fireOnAfterApply(stack);
 
         return true;
     }
