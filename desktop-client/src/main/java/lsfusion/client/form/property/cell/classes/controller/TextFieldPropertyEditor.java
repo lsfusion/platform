@@ -487,6 +487,15 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 //            });
 
             comboBoxEditorComponent = (JTextField) comboBox.getEditor().getEditorComponent();
+            EditorContextMenu contextMenu = new EditorContextMenu(comboBoxEditorComponent);
+            comboBoxEditorComponent.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+                    if (mouseEvent.isPopupTrigger())
+                        contextMenu.show(comboBoxEditorComponent, mouseEvent.getX(), mouseEvent.getY());
+                }
+
+            });
             setDesign(comboBoxEditorComponent);
 
             //need to catch key events
