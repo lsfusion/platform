@@ -269,7 +269,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GCompare defaultCompare;
 
     public GCompare getDefaultCompare() {
-        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+        return defaultCompare != null ? defaultCompare : GCompare.EQUALS;
     }
 
     public GCompare[] getFilterCompares() {

@@ -96,11 +96,6 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     @Override
-    public Compare getDefaultCompare() {
-        return EQUALS;
-    }
-
-    @Override
     public EditBindingMap.EditEventFilter getEditEventFilter() {
         return null;
     }

@@ -100,11 +100,6 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     @Override
-    public Compare getDefaultCompare() {
-        return EQUALS;
-    }
-
-    @Override
     public EditBindingMap.EditEventFilter getEditEventFilter() {
         return null;
     }

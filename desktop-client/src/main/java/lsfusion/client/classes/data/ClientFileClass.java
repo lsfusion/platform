@@ -43,9 +43,4 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
     public Compare[] getFilterCompares() {
         return new Compare[] {EQUALS, NOT_EQUALS};
     }
-
-    @Override
-    public Compare getDefaultCompare() {
-        return EQUALS;
-    }
 }

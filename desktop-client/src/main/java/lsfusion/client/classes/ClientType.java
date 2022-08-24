@@ -34,8 +34,6 @@ public interface ClientType {
 
     Compare[] getFilterCompares();
 
-    Compare getDefaultCompare();
-
     EditBindingMap.EditEventFilter getEditEventFilter();
 
     // добавляет поправку на кнопки и другие элементы 

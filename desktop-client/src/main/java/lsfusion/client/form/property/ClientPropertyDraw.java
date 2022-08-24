@@ -169,7 +169,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Compare getDefaultCompare() {
-        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+        return defaultCompare != null ? defaultCompare : Compare.EQUALS;
     }
 
     public Compare[] getFilterCompares() {
