@@ -24,6 +24,7 @@ public class GCustom extends GTippySimpleStateTableView {
     @Override
     public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
         customOptions = values.firstValue();
+        dataUpdated = true;
     }
 
     @Override
