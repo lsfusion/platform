@@ -55,10 +55,10 @@ public class LSFTooltipManager {
                 GridTable table = (GridTable) gridTable;
                 panel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
                         table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
-            } else if (index < ((GroupTreeTableModel) model).getColumnCount() - 1) {
+            } else if (model instanceof GroupTreeTableModel && index < ((GroupTreeTableModel) model).getColumnCount() - 1) {
                 ClientPropertyDraw property = ((GroupTreeTableModel) model).getColumnProperty(index);
-                panel = property != null/*if first column*/ ? createTooltipPanel(property.getTooltipText(((GroupTreeTableModel) model).getColumnName(index)),
-                        property.path, property.creationPath) : null;
+                panel = property != null ? createTooltipPanel(property.getTooltipText(((GroupTreeTableModel) model).getColumnName(index)),
+                        property.path, property.creationPath) : null /*if first column*/;
             }
         }
         tooltipPanel = panel;
