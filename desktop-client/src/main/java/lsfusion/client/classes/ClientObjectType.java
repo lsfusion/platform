@@ -92,7 +92,7 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
 
     @Override
     public Compare[] getFilterCompares() {
-        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
+        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS};
     }
 
     @Override
