@@ -251,11 +251,12 @@ public class EmailReceiver {
             }
 
             int count = 0;
+            int received = 0;
             int messageCount = emailFolder.getMessageCount();
             ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", user, emailFolder.getFullName(), messageCount));
             Set<String> usedEmails = new HashSet<>();
             int folderClosedCount = 0;
-            while(count < messageCount && (maxMessages == null ||  count < maxMessages)) {
+            while(count < messageCount && (maxMessages == null ||  received < maxMessages)) {
                 try {
                     ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count + 1, messageCount, maxMessages));
                     Message message = emailFolder.getMessage(messageCount - count);
@@ -269,6 +270,7 @@ public class EmailReceiver {
                         ServerLoggers.mailLogger.info("idEmail: " + idEmail);
                         usedEmails.add(idEmail);
                         if (!skipEmails.contains(idEmail)) {
+                            received++;
                             message.setFlag(deleteMessages ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
                             MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack);

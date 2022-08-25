@@ -37,6 +37,7 @@ import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -509,7 +510,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         });
     }
 
-    public <P extends PropertyInterface> InputFilterEntity<?, P> getInputFilterEntity(ObjectEntity object, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
+    public <P extends PropertyInterface> Pair<InputFilterEntity<?, P>, ImOrderMap<InputOrderEntity<?, P>, Boolean>> getInputFilterAndOrderEntities(ObjectEntity object, ImSet<ContextFilterEntity<?, P, ObjectEntity>> contextFilters, ImRevMap<ObjectEntity, P> mapObjects) {
         assert object.baseClass instanceof CustomClass;
         GroupObjectEntity groupObject = object.groupTo;
         assert groupObject.getObjects().size() == 1;
@@ -525,7 +526,22 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         if(contextGroupFilters == null)
             contextGroupFilters = SetFact.EMPTY();
 
-        return groupObject.getInputFilterEntity(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects);
+        ImOrderMap<OrderEntity, Boolean> orders = getGroupOrdersList(SetFact.EMPTY()).get(groupObject);
+        if(orders == null)
+            orders = MapFact.EMPTYORDER();
+
+        InputFilterEntity<?, P> inputFilter = groupObject.getInputFilterEntity(SetFact.addExclSet(contextFilterEntities, contextGroupFilters), mapObjects);
+
+        MOrderExclMap<InputOrderEntity<?, P>, Boolean> mInputOrders = MapFact.mOrderExclMapMax(orders.size());
+        for(int i = 0, size = orders.size(); i < size ; i++) {
+            OrderEntity<?> key = orders.getKey(i);
+            InputOrderEntity<?, P> inputOrder = key.getInputOrderEntity(object, mapObjects);
+            if(inputOrder != null)
+                mInputOrders.exclAdd(inputOrder, orders.getValue(i));
+        }
+        ImOrderMap<InputOrderEntity<?, P>, Boolean> inputOrders = mInputOrders.immutableOrder();
+
+        return new Pair<>(inputFilter, inputOrders);
     }
 
     // correlated with FormGroupHierarchyCreator.addDependenciesToGraph

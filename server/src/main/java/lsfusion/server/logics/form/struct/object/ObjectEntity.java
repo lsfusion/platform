@@ -22,6 +22,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -147,5 +148,10 @@ public class ObjectEntity extends IdentityObject implements OrderEntity<Property
     @Override
     public ImSet<ObjectEntity> getObjects() {
         return SetFact.singleton(this);
+    }
+
+    @Override
+    public <T extends PropertyInterface> InputOrderEntity<?, T> getInputOrderEntity(ObjectEntity object, ImRevMap<ObjectEntity, T> mapObjects) {
+        return null; // temporary
     }
 }

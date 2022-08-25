@@ -989,7 +989,7 @@ public abstract class LogicsModule {
 
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue,
                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
-                                                             FormSessionScope contextScope, InputFilterSelector<T> filterList,
+                                                             FormSessionScope contextScope, InputContextSelector<T> contextSelector,
                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
         if(contextList != null) {
 
@@ -1008,7 +1008,7 @@ public abstract class LogicsModule {
             }
         }
         
-        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, filterList, contextActions, customEditorFunction)));
+        return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextSelector, contextActions, customEditorFunction)));
     }
 
     public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, LP targetProp, FormSessionScope scope, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> list, ImRevMap<T, StaticParamNullableExpr> listMapParamExprs, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters, String customChangeFunction, boolean notNull) {
@@ -1055,12 +1055,12 @@ public abstract class LogicsModule {
                     PropertyFact.createListAction(formAction.interfaces,
                             formImplement, mappedList.result.getAsyncUpdateAction(baseLM, inputProp.getImplement()));
 
-            InputFilterSelector<ClassPropertyInterface> inputFilter = new FormInputFilterSelector<>(form, formAction.getContextFilterSelectors(), inputObject, formAction.mapObjects);
+            InputContextSelector<ClassPropertyInterface> inputSelector = new FormInputContextSelector<>(form, formAction.getContextFilterSelectors(), inputObject, formAction.mapObjects);
 
             // the order will / have to be the same as in formAction itself
             return addInputAProp(form.getBaseClass(inputObject), inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
-                    mappedList.result, scope, inputFilter, ListFact.toList(new InputContextAction<>("dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>("dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));
