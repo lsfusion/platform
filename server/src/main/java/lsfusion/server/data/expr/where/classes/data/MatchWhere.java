@@ -37,7 +37,7 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
         return "to_tsvector('" + language + "', " + source + ")";
     }
     public static String getPrefixSearchQuery(SQLSyntax syntax, String source, String language) {
-        return syntax.getPrefixSearchQuery() + "('" + language + "', " + source + ")";
+        return syntax.getPrefixSearchQuery() + "('" + language + "', " + source + ", '" + Settings.get().getMatchSearchSeparator() + "')";
     }
     public static String getMatch(SQLSyntax syntax, String search, String match, String language) {
         return getPrefixSearchVector(syntax, search, language) + " @@ " + getPrefixSearchQuery(syntax, match, language);
