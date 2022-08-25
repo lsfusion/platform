@@ -83,6 +83,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.data.StoredDataProperty;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectImplement;
 import lsfusion.server.logics.property.implement.PropertyObjectInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -970,23 +971,44 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     // dropping caches when there are changes depending on inputListProperties
-    private static class Param {
-        public final ImMap<?, ObjectValue> mapValues;
+    public static class Param<P extends PropertyInterface> {
+        public final ImMap<P, ObjectValue> mapValues;
+        public final ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders; // it's not pretty clean solution, but it's the easiest way to implement this
         public final String value;
         public final boolean objects;
 
-        public Param(ImMap<?, ObjectValue> mapValues, String value, boolean objects) {
+        public Param(ImMap<P, ObjectValue> mapValues, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, String value, boolean objects) {
             this.mapValues = mapValues;
+            this.orders = orders;
             this.value = value;
             this.objects = objects;
         }
 
+        private static <P extends PropertyInterface> boolean equalsMap(ImOrderMap<PropertyInterfaceImplement<P>, Boolean> ordersA, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> ordersB) {
+            if(ordersA.size() != ordersB.size())
+                return false;
+
+            for(int i = 0, size = ordersA.size(); i < size; i++) {
+                if(!(ordersA.getKey(i).equalsMap(ordersB.getKey(i)) && ordersA.getValue(i).equals(ordersB.getValue(i))))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static <P extends PropertyInterface> int hashMap(ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders) {
+            int hashCode = 1;
+            for (int i=0,size=orders.size();i<size;i++)
+                hashCode = 31 * hashCode + (orders.getKey(i).hashMap() ^ BaseUtils.nullHash(orders.getValue(i)));
+            return hashCode;
+        }
+
         public boolean equals(Object o) {
-            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value) && objects == ((Param) o).objects;
+            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value) && objects == ((Param) o).objects && equalsMap(orders, ((Param<P>) o).orders);
         }
 
         public int hashCode() {
-            return 31 * (mapValues.hashCode() * 31 + value.hashCode()) + (objects ? 1 : 0);
+            return 31 * (31 * (mapValues.hashCode() * 31 + value.hashCode()) + (objects ? 1 : 0)) + hashMap(orders);
         }
     }
     private static class ParamRef {
@@ -1026,7 +1048,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
         LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
-        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || !list.mapValues.isEmpty()) {
+        if(value.length() >= Settings.get().getAsyncValuesLongCacheThreshold() || list.hasValues()) {
             asyncValuesPropCache = asyncValuesPropCache1;
             asyncValuesValueCache = asyncValuesValueCache1;
         } else {
@@ -1034,24 +1056,24 @@ public class DBManager extends LogicsManager implements InitializingBean {
             asyncValuesValueCache = asyncValuesValueCache2;
         }
 
-        // strict param is transient (it is used only for optimization purposes, so we won't use it in cache)
-        Param param = new Param(list.mapValues, value, mode == AsyncMode.OBJECTS);
+        Property<?> key = list.getCacheKey();
+        Param param = list.getCacheParam(value, mode);
 
-        ValueRef<P> valueRef = asyncValuesValueCache.get(list.property, param);
+        ValueRef<P> valueRef = asyncValuesValueCache.get(key, param);
         if(valueRef != null && valueRef.ref.param != null)
             return valueRef.values;
 
         // has to be before reading to be sure that ref will be dropped when changes are made
         ParamRef ref = new ParamRef(param);
-        ConcurrentIdentityWeakHashSet<ParamRef> paramRefs = asyncValuesPropCache.get(list.property);
+        ConcurrentIdentityWeakHashSet<ParamRef> paramRefs = asyncValuesPropCache.get(key);
         if(paramRefs == null) {
             paramRefs = new ConcurrentIdentityWeakHashSet<>();
-            asyncValuesPropCache.put(list.property, paramRefs);
+            asyncValuesPropCache.put(key, paramRefs);
         }
         paramRefs.add(ref);
 
         PropertyAsync<P>[] values = readAsyncValues(list, value, mode);
-        asyncValuesValueCache.put(list.property, param, new ValueRef<>(ref, values));
+        asyncValuesValueCache.put(key, param, new ValueRef<>(ref, values));
 
         return values;
     }

@@ -2282,6 +2282,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
     }
 
+    public Stat getInterfaceStat(ImSet<T> interfaces) {
+        ImRevMap<T, StaticParamNullableExpr> paramExprs = getInterfaceParamExprs(interfaces);
+        return getInterfaceStat(paramExprs);
+    }
+
     public Stat getDistinctStat(ImSet<T> interfaces) {
         ImRevMap<T, StaticParamNullableExpr> paramExprs = getInterfaceParamExprs(interfaces);
         return getInterfaceStat(paramExprs).div(getValueStat(paramExprs));
