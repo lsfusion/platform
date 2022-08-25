@@ -14,7 +14,8 @@ $$ LANGUAGE 'sql' IMMUTABLE;
 CREATE OR REPLACE FUNCTION prefixSearch(config regconfig, querytext text, isOld boolean) RETURNS tsquery AS
 $$
 SELECT CASE
-           -- use websearch/plain if query contains special characters or is empty
+           -- use websearch if query contains special characters or is empty
+           -- use plainto_tsquery for old pgsql (websearch_to_tsquery appeared in pgsql 11)
            WHEN queryText ~ '^.*(\(|\)|\&|\:|\*|\!).*$' OR querytext = '' IS NOT FALSE THEN
 			(CASE WHEN isOld THEN plainto_tsquery(config, querytext) ELSE websearch_to_tsquery(config, querytext) END)
         ELSE to_tsquery(config,
