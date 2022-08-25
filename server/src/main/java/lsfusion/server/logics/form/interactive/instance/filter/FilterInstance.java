@@ -101,7 +101,7 @@ public abstract class FilterInstance implements Updated {
     }
 
     private static boolean needWrapContains(String value, boolean isContains) {
-        return isContains && !value.contains("%");
+        return isContains && !value.startsWith("%") && !value.endsWith("%");
     }
 
     private static String wrapContains(String value) {
