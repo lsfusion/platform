@@ -1,11 +1,11 @@
-CREATE OR REPLACE FUNCTION prefixSearchPrepareQuery(querytext text) RETURNS text AS
+CREATE OR REPLACE FUNCTION prefixSearchPrepareQuery(querytext text, separator text) RETURNS text AS
 $$
 SELECT
     TRIM( -- 4. trim spaces
             TRIM(BOTH '\|' FROM -- 3. remove leading and trailing '|'
                  REPLACE(
-                         REGEXP_REPLACE(querytext, '(?<!\\),', '|', 'g'), -- 1. replace unquoted ',' to '|'
-                         '\,', ',') -- 2. replace quoted ',' to unquoted ','
+                         REGEXP_REPLACE(querytext, CONCAT('(?<!\\)', separator), '|', 'g'), -- 1. replace unquoted separator to '|'
+                         CONCAT('\', separator), separator) -- 2. replace quoted separator to unquoted
                 )
         )
 ;
@@ -31,12 +31,12 @@ SELECT CASE
 $$ LANGUAGE 'sql' IMMUTABLE;
 
 
-CREATE OR REPLACE FUNCTION prefixSearch(config regconfig, querytext text) RETURNS tsquery AS
+CREATE OR REPLACE FUNCTION prefixSearch(config regconfig, querytext text, separator text) RETURNS tsquery AS
 $$
-SELECT prefixSearch(config, prefixSearchPrepareQuery(querytext), false);
+SELECT prefixSearch(config, prefixSearchPrepareQuery(querytext, separator), false);
 $$ LANGUAGE 'sql' IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION prefixSearchOld(config regconfig, querytext text) RETURNS tsquery AS
+CREATE OR REPLACE FUNCTION prefixSearchOld(config regconfig, querytext text, separator text) RETURNS tsquery AS
 $$
-SELECT prefixSearch(config, prefixSearchPrepareQuery(querytext), true);
+SELECT prefixSearch(config, prefixSearchPrepareQuery(querytext, separator), true);
 $$ LANGUAGE 'sql' IMMUTABLE;
