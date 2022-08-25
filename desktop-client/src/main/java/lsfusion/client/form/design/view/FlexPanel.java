@@ -151,8 +151,8 @@ public class FlexPanel extends PanelWidget {
         }
 
         @Override
-        public void resizeChild(int index, int delta) {
-            resizeWidget(index, delta);
+        public double resizeChild(int index, int delta) {
+            return resizeWidget(index, delta);
         }
         @Override
         public boolean isChildResizable(int index) {
@@ -229,7 +229,7 @@ public class FlexPanel extends PanelWidget {
         return null;
     }
 
-    public void resizeWidget(int widgetNumber, double delta) {
+    public double resizeWidget(int widgetNumber, double delta) {
         Pair<FlexPanel, Integer> parentSameFlexPanel = getParentSameFlexPanel(vertical);
 
         List<Widget> children = new ArrayList<>();
@@ -300,7 +300,7 @@ public class FlexPanel extends PanelWidget {
         double restDelta = SwingUtils.calculateNewFlexes(widgetNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  parentSameFlexPanel == null);
 
         if(parentSameFlexPanel != null && !SwingUtils.equals(restDelta, 0.0))
-            parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);
+            restDelta = parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);
 
         i = 0;
         for(Widget widget : children) {
@@ -319,6 +319,7 @@ public class FlexPanel extends PanelWidget {
 
         // need revalidate to repaint
         formLayout.revalidate();
+        return restDelta;
     }
 
     private static void setFlexModifier(FlexLayout layout, boolean vertical, LayoutData layoutData, Widget child, FlexModifier modifier) {
