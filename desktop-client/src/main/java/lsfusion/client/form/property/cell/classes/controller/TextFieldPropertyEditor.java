@@ -491,10 +491,13 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBoxEditorComponent.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent mouseEvent) {
-                    if (mouseEvent.isPopupTrigger())
-                        contextMenu.show(comboBoxEditorComponent, mouseEvent.getX(), mouseEvent.getY());
+                    showContextMenuOnMouseEvent(mouseEvent, contextMenu);
                 }
 
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+                    showContextMenuOnMouseEvent(mouseEvent, contextMenu);
+                }
             });
             setDesign(comboBoxEditorComponent);
 
@@ -573,6 +576,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             // install custom actions for the arrow keys in the Apple Aqua L&F
             actionMap.put("aquaSelectPrevious", upAction);
             actionMap.put("aquaSelectNext", downAction);
+        }
+
+        private void showContextMenuOnMouseEvent(MouseEvent e, JPopupMenu contextMenu) {
+            if (e.isPopupTrigger())
+                contextMenu.show(comboBoxEditorComponent, e.getX(), e.getY());
         }
     }
 
