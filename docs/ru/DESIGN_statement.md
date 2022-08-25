@@ -111,7 +111,7 @@ title: 'Инструкция DESIGN'
 |`flex`|Коэффициент расширения. Значение свойства, аналогичного свойству [CSS flex-grow](http://www.w3schools.com/cssref/css3_pr_flex-grow.asp). Задает насколько компонент должен расти в размерах относительно других компонентов|[Литерал типа `NUMERIC`](Literals.md#numericliteral)|`0`|`0.25`|
 |`fill`|Аналогично свойству `flex`, но кроме того, если устанавливается нулевое значение, то свойство `align` устанавливается в `START`, иначе `align` устанавливается в `STRETCH`|Литерал типа `NUMERIC`|`0`|`1.5`|
 |`noSort`|Запрет сортировки|[Логический литерал](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`defaultCompare`|Фильтр по умолчанию. Допустимые значения: `EQUALS`, `GREATER`, `LESS`, `GREATER_EQUALS`, `LESS_EQUALS`, `NOT_EQUALS`, `START_WITH`, `CONTAINS`, `ENDS_WITH`, `LIKE`.|Строковый литерал|`CONTAINS`|`START_WITH`|
+|`defaultCompare`|Фильтр по умолчанию. Допустимые значения: `EQUALS`, `GREATER`, `LESS`, `GREATER_EQUALS`, `LESS_EQUALS`, `NOT_EQUALS`, `CONTAINS`, `LIKE`.|Строковый литерал|`CONTAINS`|`GREATER`|
 |`marginTop`|Отступ сверху|Целочисленный литерал|`0`|`3`|
 |`marginRight`|Отступ справа|Целочисленный литерал|`0`|`1`|
 |`marginBottom`|Отступ снизу|Целочисленный литерал|`0`|`4`|
