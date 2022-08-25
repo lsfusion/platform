@@ -15,7 +15,6 @@ import java.text.ParseException;
 import java.util.List;
 
 import static lsfusion.gwt.client.form.filter.user.GCompare.EQUALS;
-import static lsfusion.gwt.client.form.filter.user.GCompare.NOT_EQUALS;
 
 public abstract class GFileType extends GDataType {
     public boolean multiple;
@@ -35,7 +34,7 @@ public abstract class GFileType extends GDataType {
 
     @Override
     public GCompare[] getFilterCompares() {
-        return new GCompare[] {EQUALS, NOT_EQUALS};
+        return new GCompare[] {EQUALS};
     }
 
     @Override

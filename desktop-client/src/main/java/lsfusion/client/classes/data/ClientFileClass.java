@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import static lsfusion.interop.form.property.Compare.EQUALS;
-import static lsfusion.interop.form.property.Compare.NOT_EQUALS;
 
 public abstract class ClientFileClass extends ClientDataClass implements ClientTypeClass {
 
@@ -41,6 +40,6 @@ public abstract class ClientFileClass extends ClientDataClass implements ClientT
 
     @Override
     public Compare[] getFilterCompares() {
-        return new Compare[] {EQUALS, NOT_EQUALS};
+        return new Compare[] {EQUALS};
     }
 }
