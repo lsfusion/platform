@@ -162,7 +162,7 @@ The following set of options is supported (the syntax of each option is indicate
 
     - `compare`
 
-        Default filter type. [String literal](Literals.md#strliteral). Can be one the following values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `START_WITH`, `CONTAINS`, `ENDS_WITH`, `LIKE`. The default value is `=` for all data types except case-insensitive string types, for which the default value is `CONTAINS`. If `System.defaultCompareForStringContains` is enabled, default value is `CONTAINS` for all string data regardless of case sensitivity. Can be overridden in the `DESIGN` statement.
+        Default filter type. [String literal](Literals.md#strliteral). Can be one the following values: `=`, `>`, `<`, `>=`, `<=`, `!=`, `CONTAINS`, `LIKE`. The default value is `=` for all data types except case-insensitive string types, for which the default value is `CONTAINS`. If `System.defaultCompareForStringContains` is enabled, default value is `CONTAINS` for all string data regardless of case sensitivity. Can be overridden in the `DESIGN` statement.
 
 ## Examples
 
