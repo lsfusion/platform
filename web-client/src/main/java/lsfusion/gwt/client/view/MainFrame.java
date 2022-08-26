@@ -71,6 +71,7 @@ public class MainFrame implements EntryPoint {
     public static long updateRendererStateSetTimeout = 100;
     public static boolean showNotDefinedStrings;
     public static boolean pivotOnlySelectedColumn;
+    public static String matchSearchSeparator;
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
     public static String staticImagesURL;
@@ -260,6 +261,7 @@ public class MainFrame implements EntryPoint {
                 forbidDuplicateForms = result.forbidDuplicateForms;
                 showNotDefinedStrings = result.showNotDefinedStrings;
                 pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
+                matchSearchSeparator = result.matchSearchSeparator;
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;
                 StyleDefaults.init();

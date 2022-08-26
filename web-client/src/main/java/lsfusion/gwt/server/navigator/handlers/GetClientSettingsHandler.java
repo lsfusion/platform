@@ -33,7 +33,7 @@ public class GetClientSettingsHandler extends NavigatorActionHandler<GetClientSe
         );
         
         return new GetClientSettingsResult(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
-                clientSettings.forbidDuplicateForms, clientSettings.showNotDefinedStrings, clientSettings.pivotOnlySelectedColumn, colorTheme, colorPreferences,
+                clientSettings.forbidDuplicateForms, clientSettings.showNotDefinedStrings, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator, colorTheme, colorPreferences,
                 clientSettings.localePreferences.dateFormat, clientSettings.localePreferences.timeFormat, servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames);
     }
 }

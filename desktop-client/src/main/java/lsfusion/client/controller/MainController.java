@@ -65,6 +65,7 @@ public class MainController {
     public static long busyDialogTimeout;
     public static boolean useRequestTimeout;
     public static boolean showNotDefinedStrings;
+    public static String matchSearchSeparator;
     public static boolean showDetailedInfo;
     public static String projectLSFDir;
     public static boolean inDevMode;
