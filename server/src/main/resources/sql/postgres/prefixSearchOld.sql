@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION prefixSearchPrepareQuery(querytext text, separator text) RETURNS text AS
+CREATE OR REPLACE FUNCTION prefixSearchOldPrepareQuery(querytext text, separator text) RETURNS text AS
 $$
 SELECT
     TRIM( -- 4. trim spaces
@@ -11,11 +11,12 @@ SELECT
 ;
 $$ LANGUAGE 'sql' IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION prefixSearch(config regconfig, querytext text) RETURNS tsquery AS
+CREATE OR REPLACE FUNCTION prefixSearchOld(config regconfig, querytext text) RETURNS tsquery AS
 $$
 SELECT CASE
-           -- use websearch if query contains special characters or is empty
-           WHEN queryText ~ '^.*(\(|\)|\&|\:|\*|\!).*$' OR querytext = '' IS NOT FALSE THEN websearch_to_tsquery(config, querytext)
+           -- use plainto_tsquery if query contains special characters or is empty
+           -- use plainto_tsquery for old pgsql (websearch_to_tsquery appeared in pgsql 11)
+           WHEN queryText ~ '^.*(\(|\)|\&|\:|\*|\!).*$' OR querytext = '' IS NOT FALSE THEN plainto_tsquery(config, querytext)
         ELSE to_tsquery(config,
             CONCAT (
                 REPLACE(
@@ -28,8 +29,7 @@ SELECT CASE
             ':*')) END; -- 4. add ':*' in the end
 $$ LANGUAGE 'sql' IMMUTABLE;
 
-
-CREATE OR REPLACE FUNCTION prefixSearch(config regconfig, querytext text, separator text) RETURNS tsquery AS
+CREATE OR REPLACE FUNCTION prefixSearchOld(config regconfig, querytext text, separator text) RETURNS tsquery AS
 $$
-SELECT prefixSearch(config, prefixSearchPrepareQuery(querytext, separator));
+SELECT prefixSearchOld(config, prefixSearchOldPrepareQuery(querytext, separator));
 $$ LANGUAGE 'sql' IMMUTABLE;
