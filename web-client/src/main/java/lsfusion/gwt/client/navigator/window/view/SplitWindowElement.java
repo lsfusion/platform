@@ -9,6 +9,8 @@ import java.util.*;
 import static com.google.gwt.user.client.ui.DockLayoutPanel.Direction.*;
 
 public class SplitWindowElement extends WindowElement {
+    private final static String SIMPLE_WINDOW_CHILD_STYLE = "split-simple-window";
+    
     // with visibility
     private HashMap<WindowElement, Boolean> children = new HashMap<>();
 
@@ -59,7 +61,9 @@ public class SplitWindowElement extends WindowElement {
         List<WindowElement> windowsLeft = new ArrayList<>(leftToPut);
         for (WindowElement window : leftToPut) {
             if (windowsLeft.size() == 1) {
-                splitPanel.add(windowsLeft.get(0).initializeView());
+                Widget view = windowsLeft.get(0).initializeView();
+                splitPanel.add(view);
+                addStyleClasses(window);
                 windowDirections.put(windowsLeft.get(0), CENTER);
                 return;
             }  
@@ -201,10 +205,12 @@ public class SplitWindowElement extends WindowElement {
     private boolean attachHorizontally(WindowElement window, int rectX, int rectWidth) {
         if (window.x == rectX) {
             splitPanel.addWest(window.initializeView(), window.getPixelWidth());
+            addStyleClasses(window);
             windowDirections.put(window, WEST);
             return true;
         } else if (window.x + window.width == rectX + rectWidth) {
             splitPanel.addEast(window.initializeView(), window.getPixelWidth());
+            addStyleClasses(window);
             windowDirections.put(window, EAST);
             return true;
         }
@@ -214,14 +220,22 @@ public class SplitWindowElement extends WindowElement {
     private boolean attachVertically(WindowElement window, int rectY, int rectHeight) {
         if (window.y == rectY) {
             splitPanel.addNorth(window.initializeView(), window.getPixelHeight());
+            addStyleClasses(window);
             windowDirections.put(window, NORTH);
             return true;
         } else if (window.y + window.height == rectY + rectHeight) {
             splitPanel.addSouth(window.initializeView(), window.getPixelHeight());
+            addStyleClasses(window);
             windowDirections.put(window, SOUTH);
             return true;
         }
         return false;
+    }
+
+    private void addStyleClasses(WindowElement window) {
+        if (window instanceof SimpleWindowElement && !((SimpleWindowElement) window).isFormsWindow()) {
+            window.getView().addStyleName(SIMPLE_WINDOW_CHILD_STYLE);
+        }
     }
 
     public Widget getView() {
@@ -243,9 +257,10 @@ public class SplitWindowElement extends WindowElement {
     @Override
     public void setWindowInvisible(WindowElement window) {
         children.put(window, false);
-        if (splitPanel.getWidgetIndex(window.getView()) != -1) {
+        Widget windowView = window.getView();
+        if (splitPanel.getWidgetIndex(windowView) != -1) {
             DockLayoutPanel.Direction direction = windowDirections.get(window);
-            Double widgetSize = splitPanel.getWidgetSize(window.getView());
+            Double widgetSize = splitPanel.getWidgetSize(windowView);
             if (direction == NORTH || direction == SOUTH) {
                 window.pixelHeight = widgetSize;
             } else if (direction == EAST || direction == WEST) {
@@ -269,14 +284,15 @@ public class SplitWindowElement extends WindowElement {
                 WindowElement window = visibleWindows.get(i);
                 
                 DockLayoutPanel.Direction direction = windowDirections.get(window);
+                Widget windowView = window.getView();
                 if (direction == NORTH) {
-                    splitPanel.addNorth(window.getView(), window.getPixelHeight()); // нужно проверить. скорее всего тут нужно не getter'ы использовать. иначе с fullScreenMode будет прыгать
+                    splitPanel.addNorth(windowView, window.getPixelHeight()); // нужно проверить. скорее всего тут нужно не getter'ы использовать. иначе с fullScreenMode будет прыгать
                 } else if (direction == SOUTH) {
-                    splitPanel.addSouth(window.getView(), window.getPixelHeight());
+                    splitPanel.addSouth(windowView, window.getPixelHeight());
                 } else if (direction == WEST) {
-                    splitPanel.addWest(window.getView(), window.getPixelWidth());
+                    splitPanel.addWest(windowView, window.getPixelWidth());
                 } else  {
-                    splitPanel.addEast(window.getView(), window.getPixelWidth());
+                    splitPanel.addEast(windowView, window.getPixelWidth());
                 }
             }
             splitPanel.add(visibleWindows.get(visibleWindows.size() - 1).getView());
@@ -295,8 +311,9 @@ public class SplitWindowElement extends WindowElement {
     @Override
     protected void setChildSize(WindowElement child) {
         if (isChildVisible(child)) {
-            if (splitPanel.getWidgetDirection(child.getView()) != CENTER) {
-                splitPanel.setWidgetSize(child.getView(), getChildSize(child));
+            Widget childView = child.getView();
+            if (splitPanel.getWidgetDirection(childView) != CENTER) {
+                splitPanel.setWidgetSize(childView, getChildSize(child));
             }
         }
     }
@@ -313,20 +330,7 @@ public class SplitWindowElement extends WindowElement {
 
     @Override
     public String getSID() {
-        List<String> childrenSIDs = new ArrayList<>();
-        for (WindowElement child : children.keySet()) {
-            childrenSIDs.add(child.getSID());
-        }
-        Collections.sort(childrenSIDs, String.CASE_INSENSITIVE_ORDER);
-        
-        StringBuilder sid = new StringBuilder();
-        for (String childSID : childrenSIDs) {
-            sid.append(childSID);
-            if (childrenSIDs.indexOf(childSID) < childrenSIDs.size() - 1) {
-                sid.append("_");
-            }
-        }
-        return sid.toString();
+        return getSID(children.keySet());
     }
 
     @Override
@@ -359,8 +363,9 @@ public class SplitWindowElement extends WindowElement {
                         child.pixelWidth = storedSize;
                     }
                     if (isChildVisible(child)) {
-                        if (splitPanel.getWidgetDirection(child.getView()) != CENTER) {
-                            splitPanel.setWidgetSize(child.getView(), storedSize); // для сохранения при setInvisible
+                        Widget childView = child.getView();
+                        if (splitPanel.getWidgetDirection(childView) != CENTER) {
+                            splitPanel.setWidgetSize(childView, storedSize); // для сохранения при setInvisible
                         }
                     }
                     child.sizeStored = true;
@@ -373,11 +378,12 @@ public class SplitWindowElement extends WindowElement {
     public void resetDefaultSizes() {
         for (WindowElement windowElement : children.keySet()) {
             if (children.get(windowElement)) {
-                DockLayoutPanel.Direction direction = splitPanel.getWidgetDirection(windowElement.getView());
+                Widget windowView = windowElement.getView();
+                DockLayoutPanel.Direction direction = splitPanel.getWidgetDirection(windowView);
                 if (direction == NORTH || direction == SOUTH) {
-                    splitPanel.setWidgetSize(windowElement.getView(), windowElement.getInitialHeight());
+                    splitPanel.setWidgetSize(windowView, windowElement.getInitialHeight());
                 } else if (direction != CENTER) {
-                    splitPanel.setWidgetSize(windowElement.getView(), windowElement.getInitialWidth());
+                    splitPanel.setWidgetSize(windowView, windowElement.getInitialWidth());
                 }
 
                 if (windowElement instanceof SplitWindowElement) {

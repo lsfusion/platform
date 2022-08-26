@@ -97,60 +97,6 @@
     /*margin: 0 1px 1px;*/
 }
 
-.gwt-TabLayoutPanel {
-}
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTabs {
-    top: 0;
-    display: flex;
-    /*width: 100% !important;*/
-}
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelContentContainer {
-    border-color: var(--panel-border-color);
-    border-style: solid;
-    border-width: 1px;
-    border-radius: var(--panel-border-radius);
-}
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelContent {
-    overflow: hidden;
-    border-top: 1px solid transparent;
-}
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab {
-    margin: 0 0.125rem;
-    padding: 0 0.1875rem 0.0625rem 0.3125rem;
-    cursor: pointer;
-    cursor: hand;
-    font-weight: normal;
-    text-align: center;
-    border-top: 1px solid var(--panel-border-color);
-    border-left: 1px solid var(--panel-border-color);
-    border-right: 1px solid var(--panel-border-color);
-    /*border-radius: var(--tab-border-radius);*/
-    min-width: 19px;
-}
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTabInner {
-    height: 100%;
-}
-
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected {
-    cursor: default;
-    background: var(--selection-color);
-}
-
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab:hover {
-    border-top: 1px solid var(--component-hover-border-color);
-    border-left: 1px solid var(--component-hover-border-color);
-    border-right: 1px solid var(--component-hover-border-color);
-    background: var(--component-hover-background-color);
-}
-
-.gwt-TabLayoutPanel .gwt-TabLayoutPanelTab-selected:hover {
-    background: var(--selection-color);
-}
-
-.tabLayoutPanelTabTitleWrapper {
-    flex-shrink: 1 !important;
-}
-
 .tab-close-button {
 }
 

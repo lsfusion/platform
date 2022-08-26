@@ -28,7 +28,6 @@ import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.controller.dispatch.LogicsDispatchAsync;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
 import lsfusion.gwt.client.controller.remote.action.*;
@@ -290,6 +289,11 @@ public class MainFrame implements EntryPoint {
                     view = commonWindowsLink.link.get(window);
                 }
                 return view;
+            }
+
+            @Override
+            public boolean isFormsWindow(GAbstractWindow window) {
+                return window.equals(formsWindowLink.link);
             }
         };
 

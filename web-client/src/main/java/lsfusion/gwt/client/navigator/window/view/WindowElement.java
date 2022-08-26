@@ -5,6 +5,10 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 public abstract class WindowElement {
     protected WindowElement parent;
     protected WindowsController main;
@@ -59,6 +63,24 @@ public abstract class WindowElement {
     public abstract Widget getView();
     
     public abstract String getSID();
+
+    protected String getSID(Collection<WindowElement> windows) {
+        List<String> childrenSIDs = new ArrayList<>();
+        for (WindowElement child : windows) {
+            childrenSIDs.add(child.getSID());
+        }
+        
+        childrenSIDs.sort(String.CASE_INSENSITIVE_ORDER);
+
+        StringBuilder sid = new StringBuilder();
+        for (String childSID : childrenSIDs) {
+            sid.append(childSID);
+            if (childrenSIDs.indexOf(childSID) < childrenSIDs.size() - 1) {
+                sid.append("_");
+            }
+        }
+        return sid.toString();
+    }
     
     public String getStorageSizeKey() {
         return GwtClientUtils.getLogicsName() + "_" + getSID() + "_size";

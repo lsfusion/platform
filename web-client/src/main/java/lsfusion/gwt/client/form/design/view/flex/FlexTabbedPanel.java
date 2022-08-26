@@ -94,7 +94,11 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
 
     // used only in error dialog
     public void addTab(Widget w, String tabText) {
-        addTab(w, null, createTab(tabText, false));
+        addTab(w, null, tabText);
+    }
+
+    public void addTab(Widget w, Integer index, String tabText) {
+        addTab(w, index, createTab(tabText, false));
     }
 
     public void addTab(Widget w, Integer index, Widget tabWidget) {

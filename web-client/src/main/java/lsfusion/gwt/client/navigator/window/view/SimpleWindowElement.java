@@ -8,12 +8,18 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.GTreeNavigatorWindow;
 
 public class SimpleWindowElement extends WindowElement {
+    public final static String SIMPLE_WINDOW_ELEMENT_STYLE = "bg-white rounded shadow-sm";
+    
     public GAbstractWindow window;
 
     public SimpleWindowElement(WindowsController main, GAbstractWindow window, int x, int y, int width, int height) {
         super(main, x, y, width, height);
         this.window = window;
         main.registerWindow(window, this);
+
+        if (!isFormsWindow()) {
+            main.getWindowView(window).addStyleName(SIMPLE_WINDOW_ELEMENT_STYLE);
+        }
     }
 
     @Override
@@ -29,6 +35,10 @@ public class SimpleWindowElement extends WindowElement {
     @Override
     public Widget getView() {
         return main.getWindowView(window);
+    }
+    
+    public boolean isFormsWindow() {
+        return main.isFormsWindow(window);
     }
 
     @Override
