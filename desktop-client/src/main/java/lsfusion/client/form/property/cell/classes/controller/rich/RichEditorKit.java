@@ -99,7 +99,7 @@ public class RichEditorKit extends WysiwygHTMLEditorKit {
                     if (String.class.isAssignableFrom(flavor.getRepresentationClass())) {
                         if (checkFlavor(flavor)) {
                             String txt = content.getTransferData(flavor).toString();
-                            txt = HTMLUtils.jEditorPaneizeHTML(RichEditorPane.removeInvalidTags(txt));
+                            txt = EscapeUtils.escapeLineBreakHTML(HTMLUtils.jEditorPaneizeHTML(RichEditorPane.removeInvalidTags(txt)));
                             insertHTML(editor, document, ekit, txt, editor.getSelectionStart());
                             return;
                         }
@@ -132,17 +132,20 @@ public class RichEditorKit extends WysiwygHTMLEditorKit {
             int selectionEnd = editor.getSelectionEnd();
             doc.remove(selectionStart, selectionEnd - selectionStart);
             if (selectedAll || empty) {
-                Element bodyParent = getBodyParent(doc.getParagraphElement(editor.getCaretPosition()));
-                if (bodyParent != null) {
-                    doc.insertAfterStart(bodyParent, EscapeUtils.escapeLineBreakHTML(html));
-                }
+                doc.insertString(0, " ", null); // fixed BadLocationException: Invalid location. Needed for ctrl+v fix. Without this hack on paste content with linebreaks this content shown in center and with empty lines. Add empty symbol and after inserting content remove them
+                insert(html, kit, doc, location);
+                doc.remove(doc.getLength() - 1, 1);
             } else {
-                StringReader reader = new StringReader(HTMLUtils.jEditorPaneizeHTML(EscapeUtils.escapeLineBreakHTML(html)));
-                kit.read(reader, doc, location);   
+                insert(html, kit, doc, location);
             }
         } catch (Exception ex) {
             Throwables.propagate(ex);
         }
+    }
+
+    private static void insert(String html, HTMLEditorKit kit, HTMLDocument doc, int location) throws IOException, BadLocationException {
+        StringReader reader = new StringReader(HTMLUtils.jEditorPaneizeHTML(html));
+        kit.read(reader, doc, location);
     }
 
     @Override
