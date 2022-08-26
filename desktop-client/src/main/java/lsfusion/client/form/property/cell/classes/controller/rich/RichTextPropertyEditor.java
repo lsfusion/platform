@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.controller.rich;
 
+import lsfusion.base.EscapeUtils;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
@@ -25,9 +26,9 @@ public class RichTextPropertyEditor extends JPanel implements PropertyEditor, Cl
     public RichTextPropertyEditor(Component owner, Object value, ComponentDesign design) {
         super(new BorderLayout());
         richArea = new RichEditorPane();
-        richArea.setText(value == null ? "" : value.toString());
-        
-        //не показываем тулбар сразу, чтобы он не ловил событие начала редактирования
+        richArea.setText(value == null ? "" : EscapeUtils.escapeLineBreakHTML(value.toString()));
+
+        //do not show the toolbar immediately so that does not catch start editing event
         richArea.setToolbarVisible(false);
         add(richArea);
 
