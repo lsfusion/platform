@@ -28,7 +28,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.Selection;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTable;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -769,11 +768,6 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
             public boolean isFocusedColumn() {
                 return GGridPropertyTable.this.isFocusedColumn(cell);
-            }
-
-            @Override
-            public Selection getSelection() {
-                return isSelectedRow() ? isFocusedColumn() ? Selection.FOCUSED : Selection.ACTIVE : null;
             }
 
             @Override

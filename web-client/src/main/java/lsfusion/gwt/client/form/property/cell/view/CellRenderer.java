@@ -288,8 +288,6 @@ public abstract class CellRenderer<T> {
 
         public boolean readonly;
 
-        public Selection selection;
-
         public boolean rerender;
 
         public ToolbarState toolbar;
@@ -302,9 +300,6 @@ public abstract class CellRenderer<T> {
     }
     private boolean equalsReadonlyState(RenderedState state, boolean readonly) {
         return state.readonly == readonly;
-    }
-    private boolean equalsSelection(RenderedState state, Selection selection) {
-        return GwtClientUtils.nullEquals(state.selection, selection);
     }
 
     private static final String RENDERED = "rendered";
@@ -359,12 +354,6 @@ public abstract class CellRenderer<T> {
             renderedState.foreground = foreground;
 
             AbstractDataGridBuilder.updateColors(element, background, foreground);
-        }
-
-        Selection selection = updateContext.getSelection();
-        if(isNew || !equalsSelection(renderedState, selection)) {
-            renderedState.selection = selection;
-            AbstractDataGridBuilder.updateSelection(element, selection);
         }
 
         boolean cleared = false;

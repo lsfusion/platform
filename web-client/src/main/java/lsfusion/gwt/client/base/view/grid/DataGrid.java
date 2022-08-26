@@ -38,7 +38,6 @@ import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
-import lsfusion.gwt.client.form.property.cell.view.Selection;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -654,10 +653,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return getFocusedColumn() == cell.getColumnIndex();
     }
 
-    public Selection getSelection(Cell cell) {
-        return isSelectedRow(cell) ? isFocusedColumn(cell) ? Selection.FOCUSED : Selection.ACTIVE : null;
-    }
-
     protected TableRowElement getChildElement(int row) {
         return getRowElementNoFlush(row);
     }
@@ -928,9 +923,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         if (columnsChanged || dataChanged)
             updateDataDOM(columnsChanged, dataColumnsChanged); // updating data (rows + column values)
 
-        if((selectedRowChanged || selectedColumnChanged || focusedChanged)
-                && !columnsChanged && !(dataChanged && dataColumnsChanged == null)) // this is the check that all columns are already updated
-            updateSelectedDOM(dataColumnsChanged);
+        if((selectedRowChanged || selectedColumnChanged || focusedChanged)) // this is the check that all columns are already updated
+            updateSelectedDOM(dataColumnsChanged, !columnsChanged && !(dataChanged && dataColumnsChanged == null));
 
         if (columnsChanged || selectedRowChanged || selectedColumnChanged || focusedChanged)
             updateFocusedCellDOM(); // updating focus cell border
@@ -1195,9 +1189,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         }
     }
 
-    private void updateSelectedCells(int rowIndex, ArrayList<Column> dataColumnsChanged) {
-        // last parameter is an optimization (not to update already updated cells)
-        tableBuilder.updateRowImpl(rowIndex, getRowValue(rowIndex), null, getChildElement(rowIndex), (tColumn, cell) -> (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
+    private void updateSelectedCells(int rowIndex, ArrayList<Column> dataColumnsChanged, boolean updateRowImpl, boolean selectedRow) {
+        TableRowElement rowElement = getChildElement(rowIndex);
+        if(updateRowImpl) {
+            // last parameter is an optimization (not to update already updated cells)
+            tableBuilder.updateRowImpl(rowIndex, getRowValue(rowIndex), null, rowElement, (tColumn, cell) -> (dataColumnsChanged == null || !dataColumnsChanged.contains(tColumn)));
+        }
+
+        setTableActive(rowElement, selectedRow);
     }
 
     private void updateDataDOM(boolean columnsChanged, ArrayList<Column> dataColumnsChanged) {
@@ -1232,7 +1231,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return stickyColumns;
     }
 
-    private void updateSelectedDOM(ArrayList<Column> dataColumnsChanged) {
+    private void updateSelectedDOM(ArrayList<Column> dataColumnsChanged, boolean updateRowImpl) {
         NodeList<TableRowElement> rows = tableWidget.getDataRows();
         int rowCount = rows.getLength();
 
@@ -1241,11 +1240,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         // CLEAR PREVIOUS STATE
         if (renderedSelectedRow >= 0 && renderedSelectedRow < rowCount &&
                 renderedSelectedRow != newLocalSelectedRow)
-            updateSelectedCells(renderedSelectedRow, dataColumnsChanged);
+            updateSelectedCells(renderedSelectedRow, dataColumnsChanged, updateRowImpl, false);
 
         // SET NEW STATE
         if (newLocalSelectedRow >= 0 && newLocalSelectedRow < rowCount)
-            updateSelectedCells(newLocalSelectedRow, dataColumnsChanged);
+            updateSelectedCells(newLocalSelectedRow, dataColumnsChanged, updateRowImpl, true);
     }
 
     public static String getSelectedCellBackground(String background) {
@@ -1394,6 +1393,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 // RIGHT BORDER
                 setFocusedCellRightBorder(thisCell, focused);
             }
+
+            setFocusedCell(thisCell, focused);
         }
 
         // TOP BORDER (BOTTOM of upper row)
@@ -1401,6 +1402,22 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             TableRowElement upperRow = row > 0 ? rows.getItem(row - 1) : headerRow;
             if(upperRow != null)
                 setFocusedCellBottomBorder(upperRow.getCells().getItem(column), focused);
+        }
+    }
+
+    private void setFocusedCell(Element element, boolean focused) {
+        if (focused) {
+            element.addClassName("focused-cell");
+        } else {
+            element.removeClassName("focused-cell");
+        }
+    }
+
+    private void setTableActive(Element element, boolean active) {
+        if (active) {
+            element.addClassName("table-active");
+        } else {
+            element.removeClassName("table-active");
         }
     }
 

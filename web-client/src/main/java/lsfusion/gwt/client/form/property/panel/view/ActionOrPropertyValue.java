@@ -7,7 +7,10 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.CopyPasteUtils;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
@@ -16,7 +19,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
-import lsfusion.gwt.client.form.property.cell.view.Selection;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -52,11 +54,6 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     @Override
     public boolean isSelectedRow() {
         return true;
-    }
-
-    @Override
-    public Selection getSelection() {
-        return isFocused ? Selection.FOCUSED : null;
     }
 
     @Override

@@ -19,7 +19,6 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.property.cell.view.Selection;
 
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -221,26 +220,5 @@ public abstract class AbstractDataGridBuilder<T> {
     public static void clearColors(Element element) {
         GFormController.setBackgroundColor(element, null);
         GFormController.setForegroundColor(element, null);
-    }
-
-    public static void updateSelection(Element element, Selection selection) {
-        setFocusedCell(element, selection == Selection.FOCUSED);
-        setTableActive(element, selection == Selection.ACTIVE);
-    }
-
-    private static void setFocusedCell(Element element, boolean focused) {
-        if (focused) {
-            element.addClassName("focused-cell");
-        } else {
-            element.removeClassName("focused-cell");
-        }
-    }
-
-    private static void setTableActive(Element element, boolean active) {
-        if (active) {
-            element.addClassName("table-active");
-        } else {
-            element.removeClassName("table-active");
-        }
     }
 }

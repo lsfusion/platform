@@ -36,7 +36,6 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
-import lsfusion.gwt.client.form.property.cell.view.Selection;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
@@ -322,8 +321,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         public String foreground;
         public String background;
-
-        public Selection selection;
     }
 
     // actually singleton
@@ -403,12 +400,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                 AbstractDataGridBuilder.updateColors(cellElement, background, foreground);
             }
 
-            Selection selection = getSelection(cell);
-            if(isNew || !equalsSelection(renderedState, selection)) {
-                renderedState.selection = selection;
-                AbstractDataGridBuilder.updateSelection(cellElement, selection);
-            }
-
             GTreeColumnValue treeValue = getTreeValue(cell);
             if(isNew || !equalsDynamicState(renderedState, treeValue)) {
                 renderedState.value = treeValue;
@@ -422,9 +413,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
         private boolean equalsColorState(RenderedState state, String background, String foreground) {
             return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
-        }
-        private boolean equalsSelection(RenderedState state, Selection selection) {
-            return GwtClientUtils.nullEquals(state.selection, selection);
         }
 
         private void renderDynamicContent(TableCellElement cellElement, GTreeColumnValue treeValue) {
