@@ -93,7 +93,9 @@ public abstract class FilterInstance implements Updated {
                         resultFilter = resultFilter == null ? filterInstance : new OrFilterInstance(resultFilter, filterInstance);
 
                     }
-                    return resultFilter;
+                    if(resultFilter !=null) {
+                        return resultFilter;
+                    }
                 } else if (needWrapContains(filterValue, isContains)) {
                     filter.value = new DataObject(wrapContains(filterValue), filterValueClass);
                 }
