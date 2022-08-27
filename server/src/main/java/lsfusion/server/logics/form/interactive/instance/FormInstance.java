@@ -1147,7 +1147,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         Expr listExpr = listExprKeys.expr.and(listExprKeys.expr.compare(new DataObject(value), Compare.MATCH));
 
         if(listExprKeys.orders.isEmpty()) {
-            double estDistinctRate = (asyncMode == AsyncMode.VALUES ? list.getDistinctStat().getCount() : 1) * extraReadCoeff;
+            double estDistinctRate = (asyncMode.isValues() ? list.getSelectStat().getCount() : 1) * extraReadCoeff;
             int estNeededRead = (int) BaseUtils.min(((double) neededCount * estDistinctRate), maxLimitRead);
             while (estNeededRead <= maxLimitRead) {
                 // t(o) = LIMIT estX BY t(o)
@@ -1156,9 +1156,17 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 PropertyAsync<P>[] resultValues = result.first;
                 int count = result.second;
 
-                if (resultValues.length >= neededCount || // found it
-                        count < estNeededRead) // or we've read all the records, no need to read more
+                boolean foundNeeded = resultValues.length >= neededCount;
+                if (foundNeeded || // found it
+                        count < estNeededRead) { // or we've read all the records, no need to read more
+                    // if we're looking for objects (strict mode) we have to check if there is the exact match (otherwise it won't be possible to enter such value)
+                    if(foundNeeded && asyncMode.isStrict() && !containsValue(resultValues, value)) {
+                        ImMap<P, DataObject> asyncKey = getAsyncKey(listExprKeys, session, new DataObject(value));
+                        if(asyncKey != null)
+                            resultValues = BaseUtils.addElement(new PropertyAsync<>("<b>" + value + "</b>", value, asyncMode.isObjects() ? asyncKey : null), resultValues, PropertyAsync[]::new);
+                    }
                     return resultValues;
+                }
 
                 // continue reading - we've read estNeededRead records and got resultValues.length, so we'll increase estNeededRead on that ratio (but not less than coeff)
                 estNeededRead = (int) (estNeededRead * BaseUtils.max((double) neededCount * extraReadCoeff / (double) resultValues.length, statDegree));
@@ -1168,13 +1176,20 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return getAsyncValues(session, listExpr, listExprKeys.orders, listExprKeys.mapKeys, asyncMode, neededCount, value).first;
     }
 
+    private static <P extends PropertyInterface> boolean containsValue(PropertyAsync<P>[] resultValues, String value) {
+        for(PropertyAsync<P> resultValue : resultValues)
+            if(resultValue.rawString.trim().equals(value))
+                return true;
+        return false;
+    }
+
     private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Integer> getAsyncValues(DataSession session, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value) throws SQLException, SQLHandledException {
         // z = GROUP SUM 1 BY t(o)
         Expr countExpr;
         Expr listExpr;
         Where listWhere;
         ImRevMap<Q, KeyExpr> groupListKeys;
-        boolean needObjects = asyncMode == AsyncMode.OBJECTS;
+        boolean needObjects = asyncMode.isObjects();
         boolean readObjects = needObjects || !orderExprs.isEmpty();
         if(readObjects) {
             groupListKeys = (ImRevMap<Q, KeyExpr>) baseKeys;
@@ -1230,13 +1245,20 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public static <P extends PropertyInterface> ObjectValue getAsyncKey(InputValueList<P> list, DataSession session, Modifier modifier, ObjectValue value) throws SQLException, SQLHandledException {
         InputListExpr<P> listExprKeys = list.getListExpr(modifier);
+        ImMap<P, DataObject> row = getAsyncKey(listExprKeys, session, value);
+        if(row == null)
+            return NullValue.instance;
+        return row.get(list.singleInterface());
+    }
+
+    public static <P extends PropertyInterface> ImMap<P, DataObject> getAsyncKey(InputListExpr<P> listExprKeys, DataSession session, ObjectValue value) throws SQLException, SQLHandledException {
         ImSet<ImMap<P, DataObject>> keys =
                 new Query<>(listExprKeys.mapKeys, listExprKeys.expr, "value", listExprKeys.expr.compare(value.getExpr(), Compare.EQUALS))
                 .executeClasses(session, 1)
                 .keys();
         if(keys.isEmpty())
-            return NullValue.instance;
-        return keys.get(0).get(list.singleInterface());
+            return null;
+        return keys.get(0);
     }
 
     private static <P extends PropertyInterface> Async[] convertPropertyAsyncs(ImRevMap<P, ObjectInstance> mapObjects, PropertyAsync<P>[] propAsyncs) {

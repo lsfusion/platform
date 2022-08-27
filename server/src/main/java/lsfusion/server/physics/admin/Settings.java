@@ -2735,6 +2735,8 @@ public class Settings implements Cloneable {
     private double asyncValuesExtraReadCoeff = 1.5;
     private int asyncValuesNeededCount = 15;
     private int asyncValuesMaxReadCount = 1000;
+    private int asyncValuesMaxReadOrderCount = 1000;
+    private int asyncValuesMaxReadDataCompletionCount = 10000;
 
     public int getAsyncValuesLongCacheThreshold() {
         return asyncValuesLongCacheThreshold;
@@ -2766,6 +2768,22 @@ public class Settings implements Cloneable {
 
     public void setAsyncValuesMaxReadCount(int asyncValuesMaxReadCount) {
         this.asyncValuesMaxReadCount = asyncValuesMaxReadCount;
+    }
+
+    public int getAsyncValuesMaxReadOrderCount() {
+        return asyncValuesMaxReadOrderCount;
+    }
+
+    public void setAsyncValuesMaxReadOrderCount(int asyncValuesMaxReadOrderCount) {
+        this.asyncValuesMaxReadOrderCount = asyncValuesMaxReadOrderCount;
+    }
+
+    public int getAsyncValuesMaxReadDataCompletionCount() {
+        return asyncValuesMaxReadDataCompletionCount;
+    }
+
+    public void setAsyncValuesMaxReadDataCompletionCount(int asyncValuesMaxReadDataCompletionCount) {
+        this.asyncValuesMaxReadDataCompletionCount = asyncValuesMaxReadDataCompletionCount;
     }
 
     private int externalHttpServerThreadCount = 10;

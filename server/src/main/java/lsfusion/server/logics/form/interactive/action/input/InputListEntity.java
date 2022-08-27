@@ -123,13 +123,18 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         }
         ImOrderMap<PropertyInterfaceImplement<J>, Boolean> mergeOrders = mMergeOrders.immutableOrder();
 
+        Stat interfaceStat = mergeFilter.property.getInterfaceStat(mergeFilter.mapValues.keys());
+        boolean tooManyRows = interfaceStat.getCount() > Settings.get().getAsyncValuesMaxReadOrderCount();
+
         // we could do it in getListExpr (at the bottom stack point),
         // but it seems better to do it here (at the top stack point), to properly handle caches ("global read" caches in particular)
         // the check is that when we have too much rows, we remove the order for the optimization purposes
         if(!mergeOrders.isEmpty()) {
-            Stat interfaceStat = mergeFilter.property.getInterfaceStat(mergeFilter.mapValues.keys());
-            if(interfaceStat.getCount() > Settings.get().getAsyncValuesMaxReadCount())
+            if(tooManyRows)
                 mergeOrders = MapFact.EMPTYORDER();
+        } else {
+            if(!tooManyRows)
+                mergeOrders = MapFact.singletonOrder(mergeFilter.singleInterface(), false);
         }
 
         return new InputListEntity<>(mergeFilter.property, mergeOrders, mergeFilter.mapValues, newSession);

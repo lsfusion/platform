@@ -115,7 +115,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 (result, commitReason) -> acceptCommit(getValue(result), commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
-                ServerResponse.VALUES, null);
+                inputList.completionType.isAnyStrict() ? ServerResponse.STRICTVALUES : ServerResponse.VALUES, null);
     }
 
     private void acceptCommit(Object result, boolean enterPressed) {
@@ -150,7 +150,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     public void changeInputList(GCompare compare) {
         inputList = new GInputList(new GInputListAction[]{new GInputListAction("reset", null, null, null, null)},
-//                compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT :
+                compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT :
                 GCompletionType.NON_STRICT,
                 compare);
     }

@@ -357,6 +357,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         return checks;
     }
 
+    public static String removeCarriageReturn(String s) {
+        return s.replace("\r\n", "\n");
+    }
+
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod());
@@ -2325,7 +2329,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, new InputActionContextSelector<>(contextEntity.where), contextEntity.contextActions, customEditorFunction, notNull);
+            action = addInputAProp((DataClass) requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, new InputActionContextSelector<>(contextEntity.where), contextEntity.contextActions, customEditorFunction, notNull);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();
@@ -4207,7 +4211,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
         }
-        
+
         if(rootProperty != null)
             mapping.add(rootProperty);
         if(tagProperty != null)

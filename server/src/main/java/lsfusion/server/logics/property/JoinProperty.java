@@ -431,7 +431,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
 
     @Override
-    public InputListEntity<?, Interface> getFilterInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
+    public InputListEntity<?, Interface> getInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(!noJoin) {
             ImRevMap<T, Interface> mapInterfaces = BaseUtils.immutableCast(implement.mapping.filterFnValues(element -> element instanceof Interface && fixedExprs.containsKey((Interface) element)).toRevMap());
             ImMap<T, StaticParamNullableExpr> mapFixedExprs = mapInterfaces.join(fixedExprs);
@@ -439,10 +439,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             if (implement.property.isValueFull(mapFixedExprs) && (
                     implement.property.isValueUnique(mapFixedExprs, true) ||
                             !isValueFull(fixedExprs) ||
-                            isValueUnique(getValueStat(fixedExprs), implement.property.getValueStat(mapFixedExprs))))
+                            !implement.property.getValueStat(mapFixedExprs).less(getValueStat(fixedExprs))))
                 return new InputListEntity<>(implement.property, mapInterfaces);
         }
 
-        return super.getFilterInputList(fixedExprs, noJoin);
+        return super.getInputList(fixedExprs, noJoin);
     }
 }

@@ -975,13 +975,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public final ImMap<P, ObjectValue> mapValues;
         public final ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders; // it's not pretty clean solution, but it's the easiest way to implement this
         public final String value;
-        public final boolean objects;
+        public final Object mode;
 
-        public Param(ImMap<P, ObjectValue> mapValues, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, String value, boolean objects) {
+        public Param(ImMap<P, ObjectValue> mapValues, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, String value, Object mode) {
             this.mapValues = mapValues;
             this.orders = orders;
             this.value = value;
-            this.objects = objects;
+            this.mode = mode;
         }
 
         private static <P extends PropertyInterface> boolean equalsMap(ImOrderMap<PropertyInterfaceImplement<P>, Boolean> ordersA, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> ordersB) {
@@ -1004,11 +1004,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public boolean equals(Object o) {
-            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value) && objects == ((Param) o).objects && equalsMap(orders, ((Param<P>) o).orders);
+            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value) && mode == ((Param) o).mode && equalsMap(orders, ((Param<P>) o).orders);
         }
 
         public int hashCode() {
-            return 31 * (31 * (mapValues.hashCode() * 31 + value.hashCode()) + (objects ? 1 : 0)) + hashMap(orders);
+            return 31 * (31 * (mapValues.hashCode() * 31 + value.hashCode()) + mode.hashCode()) + hashMap(orders);
         }
     }
     private static class ParamRef {

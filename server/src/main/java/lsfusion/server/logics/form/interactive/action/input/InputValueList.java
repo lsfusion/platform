@@ -56,8 +56,8 @@ public class InputValueList<P extends PropertyInterface> {
         return !mapValues.isEmpty();
     }
 
-    public Stat getDistinctStat() {
-        return property.getDistinctStat(mapValues.keys());
+    public Stat getSelectStat() {
+        return property.getSelectStat(mapValues.keys());
     }
 
     public ImSet<Property> getChangeProps() {
@@ -75,7 +75,6 @@ public class InputValueList<P extends PropertyInterface> {
         return property;
     }
     public DBManager.Param<?> getCacheParam(String value, AsyncMode mode) {
-        // strict param is transient (it is used only for optimization purposes, so we won't use it in cache)
-        return new DBManager.Param<P>(mapValues, orders, value, mode == AsyncMode.OBJECTS);
+        return new DBManager.Param<P>(mapValues, orders, value, mode.getCacheMode());
     }
 }
