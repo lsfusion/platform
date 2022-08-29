@@ -267,7 +267,7 @@ public interface ClientMessages extends Messages {
 
     String doYouReallyWantToCloseForm();
 
-    String suggestBoxMatchTip();
+    String suggestBoxMatchTip(String separator);
     String suggestBoxContainsTip();
 
     class Instance {
