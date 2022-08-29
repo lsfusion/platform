@@ -1045,8 +1045,9 @@ public abstract class LogicsModule {
 
         LA<?> resultAction;
         O inputObject;
+        ValueClass objectClass;
         // wrapping dialog into input operator
-        if(inputObjects.size() == 1 && list != null && form.getBaseClass(inputObject = inputObjects.single()) instanceof CustomClass
+        if(inputObjects.size() == 1 && list != null && (objectClass = form.getBaseClass(inputObject = inputObjects.single())) instanceof CustomClass
                 && form.isSingleGroup(inputObject)) { // just like in InputListEntity.mapInner we will ignore the cases when there are not all objects
             LP<?> inputProp = inputProps.single();
 
@@ -1058,7 +1059,7 @@ public abstract class LogicsModule {
             InputContextSelector<ClassPropertyInterface> inputSelector = new FormInputContextSelector<>(form, formAction.getContextFilterSelectors(), inputObject, formAction.mapObjects);
 
             // the order will / have to be the same as in formAction itself
-            return addInputAProp(form.getBaseClass(inputObject), inputProp, false, listInterfaces,
+            return addInputAProp((CustomClass)objectClass, inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
                     mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>("dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
         }

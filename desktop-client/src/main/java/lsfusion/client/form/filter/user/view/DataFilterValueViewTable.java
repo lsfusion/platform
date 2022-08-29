@@ -209,7 +209,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
 
     @Override
     public String getCurrentActionSID() {
-        return ServerResponse.VALUES;
+        return inputList.completionType.isAnyStrict() ? ServerResponse.STRICTVALUES : ServerResponse.VALUES;
     }
 
     @Override
@@ -313,7 +313,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
 
     public void changeInputList(Compare compare) {
         inputList = new ClientInputList(new ClientInputListAction[0],
-//                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT :
+                compare == Compare.EQUALS || compare == Compare.NOT_EQUALS ? CompletionType.SEMI_STRICT :
                 CompletionType.NON_STRICT, compare);
     }
 

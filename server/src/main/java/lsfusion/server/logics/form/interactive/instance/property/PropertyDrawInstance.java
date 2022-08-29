@@ -76,19 +76,19 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         boolean newSession;
         AsyncMode asyncMode;
 
-        boolean values = actionSID.equals(ServerResponse.VALUES);
-        if(values || actionSID.equals(ServerResponse.OBJECTS)) {
-            boolean useFilters = !values || Settings.get().isUseGroupFiltersInAsyncFilterCompletion();
-            boolean needObjects = !values;
+        boolean needObjects = actionSID.equals(ServerResponse.OBJECTS);
+        boolean strictValues = actionSID.equals(ServerResponse.STRICTVALUES);
+        if(needObjects || strictValues || actionSID.equals(ServerResponse.VALUES)) { // filter or custom view
+            boolean useFilters = needObjects || Settings.get().isUseGroupFiltersInAsyncFilterCompletion();
 
             Result<ImRevMap<X, ObjectInstance>> rMapObjects = needObjects ? new Result<>() : null;
 
             list = getInputValueList(valuesGetter, rMapObjects, useFilters);
             if(list == null)
                 return null;
-            newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, values ? PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE : PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE) == FormSessionScope.NEWSESSION;
+            newSession = BaseUtils.nvl(this.entity.defaultChangeEventScope, needObjects ? PropertyDrawEntity.DEFAULT_OBJECTS_EVENTSCOPE : PropertyDrawEntity.DEFAULT_VALUES_EVENTSCOPE) == FormSessionScope.NEWSESSION;
             mapObjects = needObjects ? rMapObjects.result : null;
-            asyncMode = needObjects ? AsyncMode.OBJECTS : AsyncMode.VALUES;
+            asyncMode = needObjects ? AsyncMode.OBJECTS : (strictValues ? AsyncMode.STRICTVALUES : AsyncMode.VALUES);
         } else {
             ActionObjectEntity<P> eventAction = (ActionObjectEntity<P>) this.entity.getEventAction(actionSID, formInstance.entity);
             AsyncMapInput<P> asyncExec = (AsyncMapInput<P>) eventAction.property.getAsyncEventExec(this.entity.optimisticAsync);

@@ -5,7 +5,9 @@ import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 
 public class GCustom extends GTippySimpleStateTableView {
@@ -16,6 +18,13 @@ public class GCustom extends GTippySimpleStateTableView {
         super(form, grid);
         this.renderFunction = GwtClientUtils.getGlobalField(renderFunction);
         this.renderFunctionWithoutArguments = !GwtClientUtils.isFunctionContainsArguments(this.renderFunction);
+    }
+
+    private Object customOptions;
+    @Override
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
+        customOptions = values.firstValue();
+        dataUpdated = true;
     }
 
     @Override
@@ -33,7 +42,7 @@ public class GCustom extends GTippySimpleStateTableView {
     @Override
     protected void onUpdate(Element element, JsArray<JavaScriptObject> list) {
         if (renderFunctionWithoutArguments)
-            update(renderFunction, element, controller, list);
+            update(renderFunction, element, controller, list, customOptions);
         else
             runFunction(element, list, renderFunction, controller);
     }
@@ -51,8 +60,8 @@ public class GCustom extends GTippySimpleStateTableView {
         renderFunction().render(element, controller, event);
     }-*/;
 
-    protected native void update(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, JsArray<JavaScriptObject> list)/*-{
-        renderFunction().update(element, controller, list);
+    protected native void update(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, JsArray<JavaScriptObject> list, Object customOptions)/*-{
+        renderFunction().update(element, controller, list, customOptions);
     }-*/;
 
     protected native void clear(JavaScriptObject renderFunction, Element element)/*-{

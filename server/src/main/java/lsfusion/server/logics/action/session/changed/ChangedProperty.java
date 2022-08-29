@@ -45,12 +45,6 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
 
     private final IncrementType type;
 
-    public static class Interface extends PropertyInterface<Interface> {
-        Interface(int ID) {
-            super(ID);
-        }
-    }
-
     public ChangedProperty(Property<T> property, IncrementType type, PrevScope scope) {
         super(LocalizedString.concat("(" + type + ") ", property.localizedToString()), property, scope);
         this.type = type;

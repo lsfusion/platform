@@ -123,7 +123,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return pageSizeWidget;
     }
 
-    private boolean dataUpdated = false;
+    protected boolean dataUpdated = false;
 
     @Override
     public void setCurrentKey(GGroupObjectValue currentKey) {
