@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION prefixSearchPrepareQuery(querytext text, separator text) RETURNS text AS
+CREATE OR REPLACE FUNCTION prefixSearchOldPrepareQuery(querytext text, separator text) RETURNS text AS
 $$
 SELECT TRIM(BOTH ' \|' FROM -- 3. trim leading and trailing '|' and spaces
             REPLACE(
