@@ -1667,8 +1667,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             InputListEntity<?, PropertyInterface> inputList = null;
 
             // completion
-            if(isDefaultWYSInput(valueClass) && !Property.this.disableInputList && // if string and not disabled
-                    getSelectCost(SetFact.EMPTY()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()))) // if cost-per-row * numberRows > max read count, won't read
+            if(isDefaultWYSInput(valueClass) && !Property.this.disableInputList) // && // if string and not disabled
+//                    getSelectCost(SetFact.EMPTY()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()))) // if cost-per-row * numberRows > max read count, won't read
                     inputList = new InputListEntity<>(this, MapFact.EMPTYREV());
 
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
