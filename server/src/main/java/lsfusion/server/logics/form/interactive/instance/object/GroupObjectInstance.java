@@ -96,12 +96,14 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public final PropertyObjectInstance propertyBackground;
     public final PropertyObjectInstance propertyForeground;
+    public final PropertyObjectInstance propertyCustomOptions;
     final static int DIRECTION_DOWN = 1;
     final static int DIRECTION_UP = 2;
     final static int DIRECTION_CENTER = 3;
 
     public RowBackgroundReaderInstance rowBackgroundReader = new RowBackgroundReaderInstance();
     public RowForegroundReaderInstance rowForegroundReader = new RowForegroundReaderInstance();
+    public CustomOptionsReaderInstance customOptionsReader = new CustomOptionsReaderInstance();
 
     public final GroupObjectEntity entity;
 
@@ -201,7 +203,9 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
     public Integer order = 0;
 
-    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects, PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
+    public GroupObjectInstance(GroupObjectEntity entity, ImOrderSet<ObjectInstance> objects,
+                               PropertyObjectInstance propertyBackground, PropertyObjectInstance propertyForeground, PropertyObjectInstance propertyCustomOptions,
+                               ImMap<ObjectInstance, PropertyObjectInstance> parent, ImMap<GroupObjectProp, PropertyRevImplement<ClassPropertyInterface, ObjectInstance>> props) {
 
         this.entity = entity;
 
@@ -210,6 +214,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
 
         this.propertyBackground = propertyBackground;
         this.propertyForeground = propertyForeground;
+        this.propertyCustomOptions = propertyCustomOptions;
 
         for(ObjectInstance object : objects)
             object.groupTo = this;
@@ -1407,6 +1412,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     private GroupObjectInstance() {
         propertyBackground = null;
         propertyForeground = null;
+        propertyCustomOptions = null;
 
         entity = null;
 
@@ -1615,6 +1621,25 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         @Override
         public Object getProfiledObject() {
             return entity.propertyForeground;
+        }
+    }
+
+    public class CustomOptionsReaderInstance implements PropertyReaderInstance {
+        public PropertyObjectInstance getPropertyObjectInstance() {
+            return propertyCustomOptions;
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.CUSTOM_OPTIONS;
+        }
+
+        public int getID() {
+            return GroupObjectInstance.this.getID();
+        }
+
+        @Override
+        public Object getProfiledObject() {
+            return entity.propertyCustomOptions;
         }
     }
 }

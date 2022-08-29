@@ -145,6 +145,8 @@ public class GFormChanges {
                 return form.findContainerByID(readerId).customDesignCaptionReader;
             case GPropertyReadType.COMPONENT_SHOWIF:
                 return form.findComponentByID(readerId).showIfReader;
+            case GPropertyReadType.CUSTOM_OPTIONS:
+                return form.getGroupObject(readerId).customOptionsReader;
             default:
                 return null;
         }
@@ -166,5 +168,6 @@ public class GFormChanges {
         public final static byte IMAGE = 11;
         public final static byte CUSTOM = 12;
         public final static byte COMPONENT_SHOWIF = 13;
+        public final static byte CUSTOM_OPTIONS = 14;
     }
 }

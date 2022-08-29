@@ -28,4 +28,6 @@ public class PropertyReadType {
     public final static byte CUSTOM = 12;
 
     public final static byte COMPONENT_SHOWIF = 13;
+
+    public final static byte CUSTOM_OPTIONS = 14;
 }

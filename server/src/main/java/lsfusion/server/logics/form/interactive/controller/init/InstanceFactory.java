@@ -73,8 +73,9 @@ public class InstanceFactory {
             }
 
             groupInstance = new GroupObjectInstance(entity, objects, entity.propertyBackground != null ? getInstance(entity.propertyBackground) : null,
-                    entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null, parentInstances,
-                    getInstance(entity.getProperties()));
+                    entity.propertyForeground != null ? getInstance(entity.propertyForeground) : null,
+                    entity.propertyCustomOptions != null ? getInstance(entity.propertyCustomOptions) : null,
+                    parentInstances, getInstance(entity.getProperties()));
             groupInstances.exclAdd(entity, groupInstance);
         }
 

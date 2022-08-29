@@ -486,6 +486,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         return reader == null ? null : new GRowForegroundReader(reader.getID());
     }
 
+    public GCustomOptionsReader convertCustomOptionsReader(ClientGroupObject.CustomOptionsReader reader) {
+        return reader == null ? null : new GCustomOptionsReader(reader.getID());
+    }
+
     @Cached
     @Converter(from = PropertyEditType.class)
     public GPropertyEditType convertEditType(PropertyEditType editType) {
@@ -586,6 +590,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         groupObject.rowBackgroundReader = convertRowBackgroundReader(clientGroupObject.rowBackgroundReader);
         groupObject.rowForegroundReader = convertRowForegroundReader(clientGroupObject.rowForegroundReader);
+        groupObject.customOptionsReader = convertCustomOptionsReader(clientGroupObject.customOptionsReader);
 
         return groupObject;
     }
