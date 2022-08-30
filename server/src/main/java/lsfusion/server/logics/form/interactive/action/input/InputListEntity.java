@@ -106,12 +106,23 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     }
 
     public <J extends PropertyInterface, X extends PropertyInterface> InputListEntity<?, V> merge(Pair<InputFilterEntity<?, V>, ImOrderMap<InputOrderEntity<?, V>, Boolean>> filterAndOrders) {
-        assert singleInterface() != null;
+        if(filterAndOrders == null)
+            return null;
+
         InputFilterEntity<?, V> filter = filterAndOrders.first;
         ImOrderMap<InputOrderEntity<?, V>, Boolean> orders = filterAndOrders.second;
 
+        if(filter == null && orders.isEmpty()) // it's not only the optimization, but also needed for the singleInterface assertion (and all the rest assertions)
+            return this;
+
+        assert singleInterface() != null;
+
         InputFilterEntity<J, V> mergeFilter = (InputFilterEntity<J, V>) InputFilterEntity.and(new InputFilterEntity<>(property, mapValues), filter);
 
+        return new InputListEntity<>(mergeFilter.property, mergeOrders(mergeFilter, orders), mergeFilter.mapValues, newSession);
+    }
+
+    private static <J extends PropertyInterface, X extends PropertyInterface, V extends PropertyInterface> ImOrderMap<PropertyInterfaceImplement<J>, Boolean> mergeOrders(InputFilterEntity<J, V> mergeFilter, ImOrderMap<InputOrderEntity<?, V>, Boolean> orders) {
         MOrderExclMap<PropertyInterfaceImplement<J>, Boolean> mMergeOrders = MapFact.mOrderExclMapMax(orders.size());
         for(int i = 0, size = orders.size(); i < size; i++) {
             InputOrderEntity<X, V> order = (InputOrderEntity<X, V>) orders.getKey(i);
@@ -136,8 +147,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
             if(!tooManyRows)
                 mergeOrders = MapFact.singletonOrder(mergeFilter.singleInterface(), false);
         }
-
-        return new InputListEntity<>(mergeFilter.property, mergeOrders, mergeFilter.mapValues, newSession);
+        return mergeOrders;
     }
 
     public DataClass getDataClass() {
