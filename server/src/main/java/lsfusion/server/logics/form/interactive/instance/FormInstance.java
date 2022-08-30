@@ -1145,7 +1145,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         InputListExpr<P> listExprKeys = list.getListExpr(modifier);
 //        t(o) = list AND list match request
-        Expr listExpr = listExprKeys.expr.and(listExprKeys.expr.compare(new DataObject(value), Compare.MATCH));
+
+        Expr listExpr = listExprKeys.expr;
+        Where filter;
+        if(Settings.get().isDefaultCompareSearchInsteadOfContains())
+            filter = listExpr.compare(new DataObject(value), Compare.MATCH);
+        else
+            filter = listExpr.compare(new DataObject(FilterInstance.needWrapContains(value, true) ? FilterInstance.wrapContains(value) : value), Compare.CONTAINS);
+        listExpr = listExpr.and(filter);
 
         if(listExprKeys.orders.isEmpty()) {
             double estDistinctRate = (asyncMode.isValues() ? list.getSelectStat().getCount() : 1) * extraReadCoeff;
