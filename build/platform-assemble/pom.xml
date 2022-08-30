@@ -91,7 +91,7 @@
                                 <Implementation-Version>${project.version}</Implementation-Version>
                                 <Permissions>all-permissions</Permissions>
                                 <Add-Opens>java.desktop/sun.swing java.desktop/sun.font java.desktop/javax.swing java.desktop/javax.swing.text java.desktop/javax.swing.plaf.basic</Add-Opens>
-                                <Add-Exports>java.desktop/sun.swing java.desktop/sun.awt</Add-Exports>
+                                <Add-Exports>java.desktop/sun.font java.desktop/sun.swing java.desktop/sun.awt</Add-Exports>
                             </manifestEntries>
                         </transformer>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
