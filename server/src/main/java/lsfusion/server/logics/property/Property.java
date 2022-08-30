@@ -85,7 +85,7 @@ import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
@@ -1665,14 +1665,27 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         } else {
             // INPUT valueCLass
             InputListEntity<?, PropertyInterface> inputList = null;
+            InputContextSelector<PropertyInterface> inputContextSelector = null;
 
             // completion
-            if(isDefaultWYSInput(valueClass) && !Property.this.disableInputList) // && // if string and not disabled
-//                    getSelectCost(SetFact.EMPTY()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()))) // if cost-per-row * numberRows > max read count, won't read
-                    inputList = new InputListEntity<>(this, MapFact.EMPTYREV());
+            if(isDefaultWYSInput(valueClass) && !Property.this.disableInputList) { // && // if string and not disabled
+                inputList = new InputListEntity<>(this, MapFact.EMPTYREV());
+                // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
+                inputContextSelector = new InputContextSelector<PropertyInterface>() {
+                    public Pair<InputFilterEntity<?, PropertyInterface>, ImOrderMap<InputOrderEntity<?, PropertyInterface>, Boolean>> getFilterAndOrders() {
+                        if(!getSelectCost(SetFact.EMPTY()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount())))  // if cost-per-row * numberRows > max read count, won't read
+                            return null;
+                        return new Pair<>(null, MapFact.EMPTYORDER());
+                    }
+
+                    public <C extends PropertyInterface> InputContextSelector<C> map(ImRevMap<PropertyInterface, C> map) {
+                        return (InputContextSelector<C>) this;
+                    }
+                };
+            }
 
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    inputList, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
+                    inputList, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), inputContextSelector, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
         }
 
         ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
