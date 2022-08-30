@@ -60,11 +60,17 @@ public class LSFTooltipManager {
                 tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
                         table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
             } else {
-                ClientPropertyDraw property = ((GroupTreeTableModel) model).getColumnProperty(index);
-                if (index < 0 && index >= ((GroupTreeTableModel) model).getColumnCount() || property == null/*if first column*/)
+                GroupTreeTableModel treeTableModel = (GroupTreeTableModel) model;
+                if (index < 0 && index >= treeTableModel.getColumnCount())
                     return;
 
-                tooltipPanel = createTooltipPanel(property.getTooltipText(((GroupTreeTableModel) model).getColumnName(index)),
+                ClientPropertyDraw property = treeTableModel.getColumnProperty(index);
+
+                /*if first column*/
+                if (property == null)
+                    return;
+
+                tooltipPanel = createTooltipPanel(property.getTooltipText(treeTableModel.getColumnName(index)),
                         property.path, property.creationPath);
             }
 
