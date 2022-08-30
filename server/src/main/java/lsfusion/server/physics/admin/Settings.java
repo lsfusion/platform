@@ -2484,6 +2484,16 @@ public class Settings implements Cloneable {
         this.useGroupLastOpt = useGroupLastOpt;
     }
 
+    private boolean inputListSearchInsteadOfContains = true;
+
+    public boolean isInputListSearchInsteadOfContains() {
+        return inputListSearchInsteadOfContains;
+    }
+
+    public void setInputListSearchInsteadOfContains(boolean inputListSearchInsteadOfContains) {
+        this.inputListSearchInsteadOfContains = inputListSearchInsteadOfContains;
+    }
+
     private boolean defaultCompareSearchInsteadOfContains = true;
 
     public boolean isDefaultCompareSearchInsteadOfContains() {
