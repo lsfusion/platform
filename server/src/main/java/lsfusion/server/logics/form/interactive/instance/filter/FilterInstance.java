@@ -105,11 +105,11 @@ public abstract class FilterInstance implements Updated {
         return filter;
     }
 
-    private static boolean needWrapContains(String value, boolean isContains) {
+    public static boolean needWrapContains(String value, boolean isContains) {
         return isContains && !value.startsWith("%") && !value.endsWith("%");
     }
 
-    private static String wrapContains(String value) {
+    public static String wrapContains(String value) {
         return "%" + value + "%";
     }
 
