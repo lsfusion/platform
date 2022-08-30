@@ -3247,7 +3247,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
                 String str = unquote((String) value);
-                if (str.startsWith(INLINE_PREFIX) && str.endsWith(String.valueOf(CLOSE_CH))) {
+                if (isInlineSequence(str)) {
                     return Pair.create(addStringInlineProp(str, lineNumber, context, dynamic), null);
                 } else if (containsInterpolationSequence(str)) {
                     return Pair.create(addStringInterpolateProp(str, lineNumber, context, dynamic), null);

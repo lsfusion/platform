@@ -23,6 +23,8 @@ public class ScriptedStringUtils {
 
     public static final String INLINE_PREFIX = String.valueOf(INTERP_CH) + INLINE_CH + OPEN_CH; // $I{
 
+    private static final String SLASH_ERR_TEXT = "wrong escape sequence at the end of the string";
+
     public static class TransformationError extends Exception {
         public TransformationError(String text) {
             super(text);
@@ -42,7 +44,7 @@ public class ScriptedStringUtils {
         for (int i = 1; i+1 < literal.length(); i++) {
             if (literal.charAt(i) == '\\') {
                 if (i+2 == literal.length()) {
-                    throw new TransformationError("wrong escape sequence at the end of the string");
+                    throw new TransformationError(SLASH_ERR_TEXT);
                 }
                 
                 char nextCh = literal.charAt(i+1);
@@ -121,20 +123,20 @@ public class ScriptedStringUtils {
     private static Pair<Integer, Integer> specialMetacodeReverseI18NSequencePosition(String literal, int index) {
         int len = literal.length();
         if (literal.charAt(index) == OPEN_CH && index + 1 < len && literal.charAt(index+1) == OPEN_CH) {
-            int idOpenIndex = indexOfUnqouted(literal, OPEN_CH, index+2);
+            int idOpenIndex = indexOfUnquoted(literal, OPEN_CH, index+2);
             if (idOpenIndex == -1) return null;
-            int idCloseIndex = indexOfUnqouted(literal, CLOSE_CH, idOpenIndex+1);
+            int idCloseIndex = indexOfUnquoted(literal, CLOSE_CH, idOpenIndex+1);
             if (idCloseIndex == -1) return null;
-            int nextCloseIndex = indexOfUnqouted(literal, CLOSE_CH, idCloseIndex+1);
+            int nextCloseIndex = indexOfUnquoted(literal, CLOSE_CH, idCloseIndex+1);
             if (nextCloseIndex == -1) return null;
-            int lastCloseIndex = indexOfUnqouted(literal, CLOSE_CH, nextCloseIndex+1);
+            int lastCloseIndex = indexOfUnquoted(literal, CLOSE_CH, nextCloseIndex+1);
             if (lastCloseIndex == -1) return null;
             return new Pair<>(nextCloseIndex, lastCloseIndex);
         }
         return null;
     } 
     
-    private static int indexOfUnqouted(String s, char target, int startIndex) {
+    private static int indexOfUnquoted(String s, char target, int startIndex) {
         int len = s.length();
         for (int i = startIndex; i < len; ++i) {
             if (s.charAt(i) == '\\') {
@@ -209,7 +211,7 @@ public class ScriptedStringUtils {
         for (int i = start; i < end; i++) {
             if (s.charAt(i) == '\\') {
                 if (i+1 == end) {
-                    throw new TransformationError("wrong escape sequence at the end of the string");
+                    throw new TransformationError(SLASH_ERR_TEXT);
                 }
 
                 char nextCh = s.charAt(i+1);
@@ -292,7 +294,7 @@ public class ScriptedStringUtils {
         return true;
     }
 
-    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE };
+    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE }
 
     public static List<String> parseStringInterpolateProp(String source) throws TransformationError {
         List<String> literals = new ArrayList<>();
@@ -308,7 +310,7 @@ public class ScriptedStringUtils {
             newState = prefixState(source, pos);
             if (c == '\\') {
                 if (pos+1 == source.length()) {
-                    throw new TransformationError("wrong escape sequence at the end of the string");
+                    throw new TransformationError(SLASH_ERR_TEXT);
                 }
                 char nextc = source.charAt(pos + 1);
                 // removes quote's escaping when at top level inside interpolation
@@ -411,6 +413,27 @@ public class ScriptedStringUtils {
             }
         }
         return builder.toString();
+    }
+
+    public static boolean isInlineSequence(String s) {
+        if (!s.startsWith(INLINE_PREFIX)) return false;
+        int depth = 0;
+        for (int i = 0; i < s.length(); ++i) {
+            char ch = s.charAt(i);
+            if (ch == '\\') {
+                if (i+1 == s.length()) {
+                    return false;
+                } else {
+                    ++i;
+                }
+            } else if (ch == OPEN_CH) {
+                ++depth;
+            } else if (ch == CLOSE_CH) {
+                --depth;
+                if (depth < 0 || depth == 0 && i+1 < s.length()) return false;
+            }
+        }
+        return depth == 0;
     }
 
     public static boolean containsInterpolationSequence(String s) {
