@@ -1148,7 +1148,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         Expr listExpr = listExprKeys.expr;
         Where filter;
-        if(Settings.get().isDefaultCompareSearchInsteadOfContains())
+        if(Settings.get().isInputListSearchInsteadOfContains())
             filter = listExpr.compare(new DataObject(value), Compare.MATCH);
         else
             filter = listExpr.compare(new DataObject(FilterInstance.needWrapContains(value, true) ? FilterInstance.wrapContains(value) : value), Compare.CONTAINS);
