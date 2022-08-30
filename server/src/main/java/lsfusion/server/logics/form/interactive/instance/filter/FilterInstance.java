@@ -94,6 +94,7 @@ public abstract class FilterInstance implements Updated {
 
                     }
                     if(resultFilter !=null) {
+                        resultFilter.junction = filter.junction;
                         return resultFilter;
                     }
                 } else if (needWrapContains(filterValue, isContains)) {
