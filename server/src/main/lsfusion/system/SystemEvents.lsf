@@ -327,6 +327,7 @@ showStack() {
     showJavaStack() <- NOT showJavaStack(); 
 }
 
+//Do not remove createAutoReport. Used in plugin. DesignView evalServer()
 createAutoReport (STRING formName) INTERNAL 'lsfusion.server.logics.classes.data.utils.CreateAutoReportAction' (TEXT);
 
 evalServerResult = DATA STRING(); //return value of evalServer
