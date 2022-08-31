@@ -13,7 +13,9 @@
 
         <title>${title}</title>
         <link rel="shortcut icon" href="${logicsIcon}" />
-        <link id="themeCss" rel="stylesheet" type="text/css" href="static/css/light.css"/>
+
+        <% pageContext.setAttribute("themeCSS", ServerUtils.getVersionedResource(config.getServletContext(), "static/css/light.css")); %>
+        <link id="themeCss" rel="stylesheet" type="text/css" href="${themeCSS}"/>
 
         <style>
             @import url('static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
@@ -52,7 +54,7 @@
             }
         </style>
 
-        <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(request,
+        <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
                 //need jquery for pivot table
                 //version jquery above 2.2.4 causes to errors in the pivot table
                 "static/js/external/jquery.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js

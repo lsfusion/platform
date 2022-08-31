@@ -4,6 +4,8 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.view.GColorTheme;
 import net.customware.gwt.dispatch.shared.Result;
 
+import java.util.Map;
+
 public class GetClientSettingsResult implements Result {
     public long busyDialogTimeout;
     public boolean devMode;
@@ -14,6 +16,7 @@ public class GetClientSettingsResult implements Result {
     public boolean pivotOnlySelectedColumn;
     public String matchSearchSeparator;
     public GColorTheme colorTheme;
+    public Map<String, String> versionedColorThemesCss;
     public GColorPreferences colorPreferences;
     public String dateFormat;
     public String timeFormat;
@@ -23,9 +26,9 @@ public class GetClientSettingsResult implements Result {
     public GetClientSettingsResult() {
     }
 
-    public GetClientSettingsResult(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms,
-                                   boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, GColorPreferences colorPreferences,
-                                   String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames) {
+    public GetClientSettingsResult(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
+                                   boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, Map<String, String> versionedColorThemesCss,
+                                   GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -35,6 +38,7 @@ public class GetClientSettingsResult implements Result {
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
         this.matchSearchSeparator = matchSearchSeparator;
         this.colorTheme = colorTheme;
+        this.versionedColorThemesCss = versionedColorThemesCss;
         this.colorPreferences = colorPreferences;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
