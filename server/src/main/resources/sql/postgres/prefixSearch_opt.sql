@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION prefixSearch(config regconfig, querytext text) RETURN
 $$
 SELECT CASE
            -- use websearch if query contains special characters or is empty
-           WHEN queryText ~ '^.*(\(|\)|\&|\:|\*|\!).*$' OR querytext = '' IS NOT FALSE THEN websearch_to_tsquery(config, querytext)
+           WHEN queryText ~ '^.*(\(|\)|\&|\:|\*|\!|<|>).*$' OR querytext = '' IS NOT FALSE THEN websearch_to_tsquery(config, querytext)
         ELSE to_tsquery(config,
             CONCAT (
                 REPLACE(
