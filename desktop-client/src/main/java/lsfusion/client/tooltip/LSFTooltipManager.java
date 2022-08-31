@@ -48,29 +48,29 @@ public class LSFTooltipManager {
 
     public static void initTooltip(JComponent component, Object model, JTable gridTable) {
         Timer tooltipTimer = new Timer(1500, evt -> {
-
+            int currentIndex = index;
             JPanel tooltipPanel;
             if (gridTable instanceof GridTable) {
                 TableColumnModel columnModel = gridTable.getColumnModel();
-                if (index < 0 && index >= columnModel.getColumnCount())
+                if (currentIndex < 0 && currentIndex >= columnModel.getColumnCount())
                     return;
 
-                int modelIndex = columnModel.getColumn(index).getModelIndex();
+                int modelIndex = columnModel.getColumn(currentIndex).getModelIndex();
                 GridTable table = (GridTable) gridTable;
                 tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
                         table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
             } else {
                 GroupTreeTableModel treeTableModel = (GroupTreeTableModel) model;
-                if (index < 0 && index >= treeTableModel.getColumnCount())
+                if (currentIndex < 0 && currentIndex >= treeTableModel.getColumnCount())
                     return;
 
-                ClientPropertyDraw property = treeTableModel.getColumnProperty(index);
+                ClientPropertyDraw property = treeTableModel.getColumnProperty(currentIndex);
 
                 /*if first column*/
                 if (property == null)
                     return;
 
-                tooltipPanel = createTooltipPanel(property.getTooltipText(treeTableModel.getColumnName(index)),
+                tooltipPanel = createTooltipPanel(property.getTooltipText(treeTableModel.getColumnName(currentIndex)),
                         property.path, property.creationPath);
             }
 
