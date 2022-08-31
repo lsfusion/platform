@@ -327,7 +327,14 @@ showStack() {
     showJavaStack() <- NOT showJavaStack(); 
 }
 
-//Do not remove properties showError() and openedFormId(). Used in plugin. FormDesignChangeDetector.eval()
+createAutoReport (STRING formName) INTERNAL 'lsfusion.server.logics.classes.data.utils.CreateAutoReportAction' (TEXT);
+
+evalServerResult = DATA STRING(); //return value of evalServer
+evalServer(TEXT code) {
+    EVAL code;
+}
+
+//Do not remove properties showError() and openedFormId(). Used in plugin. FormDesignChangeDetector.evalClient()
 showError = DATA LOCAL BOOLEAN();
 openedFormId = DATA STRING();
 
