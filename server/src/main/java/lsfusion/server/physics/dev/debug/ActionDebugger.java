@@ -312,7 +312,23 @@ public class ActionDebugger implements DebuggerService {
     }
 
     public LogicsInstance logicsInstance;
-    public void eval(String evalCode, String param) {
+
+    public Object evalServer(String evalCode) {
+        TopExecutionStack stack = new TopExecutionStack("debugServiceEval");
+        EventThreadInfo debugServiceEval = new EventThreadInfo("debugServiceEval");
+        ThreadLocalContext.aspectBeforeEvent(logicsInstance, stack, debugServiceEval, false, SyncType.NOSYNC);
+        Object result;
+        try (DataSession dataSession = logicsInstance.getDbManager().createSession()){
+            logicsInstance.getBusinessLogics().systemEventsLM.findAction("evalServer[TEXT]").execute(dataSession, stack, new DataObject(evalCode));
+            result = logicsInstance.getBusinessLogics().systemEventsLM.findProperty("evalServerResult[]").read(dataSession);
+        } catch (ScriptingErrorLog.SemanticErrorException | SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+        ThreadLocalContext.aspectAfterEvent(debugServiceEval);
+        return result;
+    }
+
+    public void evalClient(String evalCode, String param) {
         TopExecutionStack stack = new TopExecutionStack("debugServiceEval");
         EventThreadInfo debugServiceEval = new EventThreadInfo("debugServiceEval");
         ThreadLocalContext.aspectBeforeEvent(logicsInstance, stack, debugServiceEval, false, SyncType.NOSYNC);
