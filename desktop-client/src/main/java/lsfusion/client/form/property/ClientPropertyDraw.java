@@ -87,6 +87,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hasEditObjectAction;
     public boolean hasChangeAction;
 
+    public boolean dialogMode;
+
     public String[] interfacesCaptions;
     public ClientClass[] interfacesTypes;
 
@@ -563,6 +565,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hasEditObjectAction = inStream.readBoolean();
         hasChangeAction = inStream.readBoolean();
         hasDynamicImage = inStream.readBoolean();
+
+        dialogMode = inStream.readBoolean();
 
         namespace = pool.readString(inStream);
         sID = pool.readString(inStream);

@@ -1712,6 +1712,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public boolean disableInputList;
 
+    public boolean dialogMode;
+
     protected ActionOrPropertyClassImplement<T, ?> createClassImplement(ImOrderSet<ValueClassWrapper> classes, ImOrderSet<T> mapping) {
         return new PropertyClassImplement<>(this, classes, mapping);
     }
