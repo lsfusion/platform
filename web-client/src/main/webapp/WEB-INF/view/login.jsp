@@ -13,8 +13,16 @@
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
 
-        <% pageContext.setAttribute("fontAwesome", ServerUtils.getVersionedResource(config.getServletContext(), "static/noauth/css/fontAwesome/css/font-awesome.min.css")); %>
-        <link rel='stylesheet' type='text/css' href='${fontAwesome}' />
+        <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(), "static/noauth/css/fontAwesome/css/font-awesome.min.css")); %>
+
+        <c:forEach items="${versionedResources}" var="versionedResource">
+            <c:if test="${versionedResource.value == 'js'}">
+                <script type='text/javascript' src=${versionedResource.key}></script>
+            </c:if>
+            <c:if test="${versionedResource.value == 'css'}">
+                <link rel='stylesheet' type='text/css' href='${versionedResource.key}' />
+            </c:if>
+        </c:forEach>
 
     </head>
     <body onload="document.loginForm.username.focus();">
