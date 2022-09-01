@@ -55,6 +55,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public LP storedProperty;
     public LP isSetNotNullProperty;
     public LP disableInputListProperty;
+    public LP dialogModeProperty;
     public LP returnProperty;
     public LP classProperty;
     public LP complexityProperty;
@@ -197,10 +198,6 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
     public final StringClass propertyClassValueClass = StringClass.get(100);
     public final StringClass propertyTableValueClass = StringClass.get(100);
     public final StringClass propertyDrawSIDClass = StringClass.get(100);
-    public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
-    public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
-    public final LogicalClass propertyIsSetNotNullValueClass = LogicalClass.instance;
-    public final LogicalClass propertyDisableInputListValueClass = LogicalClass.instance;
 
     public LP currentForm;
 
@@ -261,6 +258,7 @@ public class ReflectionLogicsModule extends ScriptingLogicsModule {
         storedProperty = findProperty("stored[Property]");
         isSetNotNullProperty = findProperty("isSetNotNull[Property]");
         disableInputListProperty = findProperty("disableInputList[Property]");
+        dialogModeProperty = findProperty("dialogMode[Property]");
         returnProperty = findProperty("return[Property]");
         classProperty = findProperty("class[Property]");
         complexityProperty = findProperty("complexity[Property]");
