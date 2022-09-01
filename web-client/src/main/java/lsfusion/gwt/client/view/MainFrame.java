@@ -78,6 +78,7 @@ public class MainFrame implements EntryPoint {
     public static List<Runnable> staticImagesURLListeners = new ArrayList<>();
     
     public static GColorTheme colorTheme = GColorTheme.DEFAULT;
+    public static Map<String, String> versionedColorThemesCss;
     public static List<ColorThemeChangeListener> colorThemeChangeListeners = new ArrayList<>(); 
     
     public static GColorPreferences colorPreferences;
@@ -248,6 +249,7 @@ public class MainFrame implements EntryPoint {
         navigatorDispatchAsync.executePriority(new GetClientSettings(), new PriorityErrorHandlingCallback<GetClientSettingsResult>() {
             @Override
             public void onSuccess(GetClientSettingsResult result) {
+                versionedColorThemesCss = result.versionedColorThemesCss;
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
 
                 staticImagesURL = result.staticImagesURL;
@@ -405,8 +407,8 @@ public class MainFrame implements EntryPoint {
             colorTheme = newColorTheme;
 
             Element cssLink = Document.get().getElementById("themeCss");
-            cssLink.setAttribute("href", "static/css/" + colorTheme.getSid() + ".css");
-            
+            cssLink.setAttribute("href", versionedColorThemesCss.get(colorTheme.getSid()));
+
             StyleDefaults.reset();
 
             for (ColorThemeChangeListener colorThemeChangeListener : colorThemeChangeListeners) {
