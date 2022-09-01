@@ -35,8 +35,8 @@ public class ResizeHandler {
             ResizedChild resizedChild = getResizedChild(helper, event/*, childIndexSupplier*/);
             //Style cursorStyle = cursorElement.getStyle();
             if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index)) {
-                cursorElement.setCursor(Cursor.getPredefinedCursor(helper.isVertical() ? Cursor.N_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR));
-
+                if (event.getSource().equals(cursorElement))
+                    cursorElement.setCursor(Cursor.getPredefinedCursor(helper.isVertical() ? Cursor.N_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR));
                 if (eventType == MouseEvent.MOUSE_PRESSED) {
                     resizeHandler = new ResizeHandler(helper, resizedChild.index);
 
