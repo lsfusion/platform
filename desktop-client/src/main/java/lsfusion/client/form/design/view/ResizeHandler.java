@@ -35,6 +35,7 @@ public class ResizeHandler {
             ResizedChild resizedChild = getResizedChild(helper, event/*, childIndexSupplier*/);
             //Style cursorStyle = cursorElement.getStyle();
             if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index)) {
+                //hack for buttons: ActionPanelView is wrapped into PropertyPanelController.Panel. Show resize cursor only if event source is the same as cursorElement (PropertyPanelController.Panel)
                 if (event.getSource().equals(cursorElement))
                     cursorElement.setCursor(Cursor.getPredefinedCursor(helper.isVertical() ? Cursor.N_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR));
                 if (eventType == MouseEvent.MOUSE_PRESSED) {
