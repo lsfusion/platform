@@ -52,6 +52,7 @@ public abstract class AbstractTableController implements TableController {
         if (addFilterConditionButton != null) {
             addToToolbar(addFilterConditionButton);
         }
+        addToToolbar(filter.getApplyButton());
         addToToolbar(filter.getResetFiltersButton());
     }
 

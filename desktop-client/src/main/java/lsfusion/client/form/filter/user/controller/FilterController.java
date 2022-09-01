@@ -29,6 +29,7 @@ import static lsfusion.interop.form.event.KeyStrokes.getFilterKeyStroke;
 
 public abstract class FilterController implements FilterConditionView.UIHandler {
     public static final String ADD_ICON_PATH = "filtadd.png";
+    public static final String APPLY_ICON_PATH = "ok.png";
     public static final String RESET_ICON_PATH = "filtreset.png";
     public static final String FILTER_ICON_PATH = "filt.png";
     
@@ -37,6 +38,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     
     private final ToolbarGridButton toolbarButton;
     private ToolbarGridButton addConditionButton;
+    private ToolbarGridButton applyButton;
     private ToolbarGridButton resetConditionsButton;
 
     private JComponent filtersContainerComponent;
@@ -64,6 +66,10 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
             addConditionButton.addActionListener(ae -> addCondition());
             addConditionButton.setVisible(false);
         }
+        
+        applyButton = new ToolbarGridButton(APPLY_ICON_PATH, getString("form.queries.filter.apply"));
+        applyButton.addActionListener(ae -> applyFilters(true));
+        applyButton.setVisible(false);
 
         resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
         resetConditionsButton.addActionListener(e -> {
@@ -85,6 +91,10 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
     public ToolbarGridButton getAddFilterConditionButton() {
         return addConditionButton;
+    }
+    
+    public ToolbarGridButton getApplyButton() {
+        return applyButton;
     }
 
     public ToolbarGridButton getResetFiltersButton() {
@@ -188,6 +198,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         if (addConditionButton != null) {
             addConditionButton.setVisible(toolsVisible);
         }
+        applyButton.setVisible(toolsVisible);
         resetConditionsButton.setVisible(toolsVisible);
 
         toolbarButton.setToolTipText(toolsVisible ? getString("form.queries.filter.tools.hide") : getString("form.queries.filter.tools.show"));
@@ -303,7 +314,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         conditionViews.remove(condition);
 
         updateConditionsLastState();
-        applyFilters(true);
+        conditionsChanged(true);
     }
 
     public void resetAllConditions() {
@@ -330,6 +341,12 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         }
     }
 
+    public void conditionsChanged(boolean focusFirstComponent) {
+        if (!toolsVisible) {
+            applyFilters(focusFirstComponent);
+        }
+    }
+
     public void applyFilters(boolean focusFirstComponent) {
         ArrayList<ClientPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
@@ -340,7 +357,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
             } else {
                 conditionView.setApplied(false);
             }
-            conditionView.isConfirmed = true;
         }
 
         applyFilters(result, focusFirstComponent);

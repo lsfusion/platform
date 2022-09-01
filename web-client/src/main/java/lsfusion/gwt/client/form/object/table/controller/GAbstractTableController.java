@@ -208,6 +208,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
         if (addFilterConditionButton != null) {
             addToToolbar(addFilterConditionButton);
         }
+        addToToolbar(filter.getApplyButton());
         addToToolbar(filter.getResetFiltersButton());
     }
 

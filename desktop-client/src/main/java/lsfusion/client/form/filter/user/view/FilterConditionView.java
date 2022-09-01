@@ -31,7 +31,7 @@ import static lsfusion.client.form.object.ClientGroupObjectValue.EMPTY;
 public class FilterConditionView extends FlexPanel implements CaptionContainerHolder {
     public interface UIHandler {
         void removeCondition(ClientPropertyFilter condition);
-        void applyFilters(boolean focusFirstComponent);
+        void conditionsChanged(boolean focusFirstComponent);
     }
 
     private final UIHandler uiHandler;
@@ -66,7 +66,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     private boolean toolsVisible;
     
     // may not be applied without "Allow NULL", but we want to keep condition visible
-    public boolean isConfirmed;
+    public boolean confirmed;
 
     private boolean innerValueChange = false;
     
@@ -130,20 +130,20 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                uiHandler.applyFilters(false);
+                conditionChanged();
             }
 
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                uiHandler.applyFilters(false);
+                conditionChanged();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                uiHandler.applyFilters(false);
+                conditionChanged();
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -155,14 +155,15 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
                 if (!innerValueChange) { // to avoid multiple apply calls
-                    uiHandler.applyFilters(valueTable.editorEnterPressed());
+                    conditionChanged(valueTable.editorEnterPressed());
+                    confirmed = true;
                 }
             }
 
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isConfirmed && !isFixed()) {
+                if (!confirmed && !isFixed()) {
                     FilterConditionView.this.remove();
                 }
             }
@@ -192,7 +193,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 addActionListener(e -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    uiHandler.applyFilters(false);
+                    conditionChanged();
                 });
             }
         };
@@ -204,6 +205,14 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         setToolsVisible(toolsVisible);
 
         propertyView.setSelectedValue(currentColumn, currentCaption);
+    }
+
+    private void conditionChanged() {
+        conditionChanged(false);
+    }
+
+    private void conditionChanged(boolean focusFirstComponent) {
+        uiHandler.conditionsChanged(focusFirstComponent);
     }
 
     public void initView() {

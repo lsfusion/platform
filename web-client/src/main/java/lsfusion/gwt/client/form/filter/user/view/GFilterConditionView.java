@@ -35,6 +35,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     public interface UIHandler {
         void addEnterBinding(Widget widget);
         void removeCondition(GPropertyFilter condition);
+        void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView);
         void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
     }
 
@@ -69,7 +70,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     private boolean toolsVisible;
 
     // may not be applied without "Allow NULL", but we want to keep condition visible
-    public boolean isConfirmed;
+    public boolean confirmed;
 
     private static int idCounter = 0;
     private final String sID;
@@ -139,13 +140,13 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                applyFilters();
+                conditionChanged();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                applyFilters();
+                conditionChanged();
             }
 
             @Override
@@ -154,7 +155,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                applyFilters();
+                conditionChanged();
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -165,13 +166,14 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                applyFilters(cell.enterPressed);
+                conditionChanged(cell.enterPressed);
+                confirmed = true;
             }
 
             @Override
             public void editingCancelled(CancelReason cancelReason) {
                 super.editingCancelled(cancelReason);
-                if (!isConfirmed && !isFixed() && cancelReason == CancelReason.ESCAPE_PRESSED) {
+                if (!confirmed && !isFixed() && cancelReason == CancelReason.ESCAPE_PRESSED) {
                     GFilterConditionView.this.remove();
                 }
             }
@@ -201,7 +203,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    applyFilters();
+                    conditionChanged();
                 };
             }
         };
@@ -212,11 +214,12 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         rightPanel.addCentered(junctionView);
     }
 
-    private void applyFilters() {
-        applyFilters(false);
+    private void conditionChanged() {
+        conditionChanged(false);
     }
-    private void applyFilters(boolean focusFirstComponent) {
-        uiHandler.applyFilters(focusFirstComponent, this);
+    
+    private void conditionChanged(boolean focusFirstComponent) {
+        uiHandler.conditionsChanged(focusFirstComponent, this);
     }
 
     public void initView() {
