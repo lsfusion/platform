@@ -716,13 +716,17 @@ public class GFormController implements EditManager {
             }
         }
 
-        for (Map.Entry<Long, ModifyObject> e : pendingModifyObjectRequests.entrySet()) {
-            ArrayList<GGroupObjectValue> gridObjects = fc.gridObjects.get(e.getValue().object.groupObject);
+        for (Iterator<Map.Entry<Long, ModifyObject>> iterator = pendingModifyObjectRequests.entrySet().iterator(); iterator.hasNext(); ) {
+            Map.Entry<Long, ModifyObject> cell = iterator.next();
+            ModifyObject modifyObject = cell.getValue();
+            ArrayList<GGroupObjectValue> gridObjects = fc.gridObjects.get(modifyObject.object.groupObject);
             if (gridObjects != null) {
-                if (e.getValue().add) {
-                    gridObjects.add(e.getValue().value);
+                if (modifyObject.add) {
+                    gridObjects.add(modifyObject.value);
                 } else {
-                    gridObjects.remove(e.getValue().value);
+                    if(!gridObjects.remove(modifyObject.value)) { //could be removed in previous formChange (for example, two async groupChanges)
+                        iterator.remove();
+                    }
                 }
             }
         }
