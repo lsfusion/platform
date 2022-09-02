@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.base.SwingUtils;
@@ -882,7 +883,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             return false;
         }
 
-        String actionSID = getPropertyEventActionSID(e, property, editBindingMap);
+        Result<Integer> contextAction = new Result<>();
+        String actionSID = getPropertyEventActionSID(e, contextAction, property, editBindingMap);
         if (actionSID == null) {
             return false;
         }
@@ -901,17 +903,17 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         //здесь немного запутанная схема...
         //executePropertyEventAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
         //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-        editPerformed = edit(actionSID, property, columnKey, row, column, e);
+        editPerformed = edit(actionSID, property, columnKey, row, column, e, contextAction.result);
         return editorComp != null;
     }
 
-    public boolean edit(String actionSID, ClientPropertyDraw property, ClientGroupObjectValue columnKey, int row, int column, EventObject e) {
+    public boolean edit(String actionSID, ClientPropertyDraw property, ClientGroupObjectValue columnKey, int row, int column, EventObject e, Integer contextAction) {
         editRow = row;
         editCol = column;
         commitingValue = false;
         editEvent = e;
 
-        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent);
+        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent, contextAction);
     }
 
     public boolean requestValue(ClientType valueType, Object oldValue, ClientInputList inputList, String actionSID) {
@@ -1053,7 +1055,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             if (property != null && columnKey != null) {
                 String keyPressedActionSID = EditBindingMap.getPropertyKeyPressActionSID(e, property);
                 if (keyPressedActionSID != null) {
-                    edit(keyPressedActionSID, property, columnKey, row, column, new InternalEditEvent(this, keyPressedActionSID));
+                    edit(keyPressedActionSID, property, columnKey, row, column, new InternalEditEvent(this, keyPressedActionSID), null);
                 }
             }
         }

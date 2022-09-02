@@ -52,7 +52,7 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
         return handler.getForm();
     }
 
-    public boolean executePropertyEventAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, EventObject editEvent) {
+    public boolean executePropertyEventAction(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, EventObject editEvent, Integer contextAction) {
         valueRequested = false;
         oldValueRequested = null;
         oldValue = null;
@@ -69,13 +69,13 @@ public class EditPropertyDispatcher extends ClientFormActionDispatcher {
             ClientFormController form = getFormController();
 
             //async actions
-            ClientAsyncEventExec asyncEventExec = property.getAsyncEventExec(actionSID);
+            ClientAsyncEventExec asyncEventExec = contextAction != null ? property.getInputList().actions[contextAction].asyncExec : property.getAsyncEventExec(actionSID);
             if (asyncEventExec != null && asyncEventExec.isDesktopEnabled(canShowDockedModal()))
                 return showConfirmDialog(property) || asyncEventExec.exec(form, this, property, columnKey, actionSID);
             else if (showConfirmDialog(property)) return true;
 
             editPerformed = true;
-            ServerResponse response = form.executeEventAction(property, columnKey, actionSID);
+            ServerResponse response = form.executeEventAction(property, columnKey, actionSID, contextAction != null ? new ClientPushAsyncInput(null, contextAction) : null);
             try {
                 return internalDispatchServerResponse(response);
             } finally {
