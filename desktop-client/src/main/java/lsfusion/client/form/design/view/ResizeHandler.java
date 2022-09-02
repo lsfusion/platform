@@ -1,6 +1,7 @@
 package lsfusion.client.form.design.view;
 
 import lsfusion.client.form.design.view.widget.Widget;
+import lsfusion.client.form.property.panel.view.ActionPanelView;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -34,7 +35,7 @@ public class ResizeHandler {
         if ((eventType == MouseEvent.MOUSE_MOVED || eventType == MouseEvent.MOUSE_PRESSED || eventType == MouseEvent.MOUSE_ENTERED) && resizeHandler == null) {
             ResizedChild resizedChild = getResizedChild(helper, event/*, childIndexSupplier*/);
             //Style cursorStyle = cursorElement.getStyle();
-            if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index)) {
+            if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index) && !eventSourceIsButton(event)) {
                 cursorElement.setCursor(Cursor.getPredefinedCursor(helper.isVertical() ? Cursor.N_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR));
 
                 if (eventType == MouseEvent.MOUSE_PRESSED) {
@@ -77,6 +78,12 @@ public class ResizeHandler {
                 cursorElement.setCursor(null); // need this for the same reason that we need MOUSE_EXITED
             }
         }
+    }
+
+    //hack for buttons: ActionPanelView is wrapped into PropertyPanelController.Panel. Show resize cursor only if event source is PropertyPanelController.Panel
+    //(show resize cursor only at the borders of the button, not inside of it)
+    private static boolean eventSourceIsButton(MouseEvent event) {
+        return event.getSource() instanceof ActionPanelView;
     }
 
     public static int getAbsolutePosition(boolean vertical, Component element, boolean left) {
