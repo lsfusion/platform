@@ -422,7 +422,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(hasChangeAction(pool.context));
         outStream.writeBoolean(entity.hasDynamicImage);
 
-        outStream.writeBoolean(entity.getDrawProperty().property.dialogMode);
+        outStream.writeBoolean(entity.getDrawProperty().property.disableInputList);
 
         ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip

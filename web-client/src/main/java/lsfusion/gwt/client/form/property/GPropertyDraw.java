@@ -256,7 +256,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return customRenderFunction == null || externalChangeType == null;
     }
 
-    public boolean dialogMode;
+    public boolean disableInputList;
 
     public GEditBindingMap editBindingMap;
 
@@ -371,7 +371,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         GType changeType = getChangeType();
-        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction(), dialogMode, this::getDialogInputActionIndex);
+        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction(), disableInputList, this::getDialogInputActionIndex);
     }
 
     public Integer getInputActionIndex(Event editEvent, boolean isEditing) {

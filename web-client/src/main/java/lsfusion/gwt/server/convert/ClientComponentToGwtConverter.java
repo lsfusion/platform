@@ -283,7 +283,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.hasEditObjectAction = clientPropertyDraw.hasEditObjectAction;
         propertyDraw.hasChangeAction = clientPropertyDraw.hasChangeAction;
 
-        propertyDraw.dialogMode = clientPropertyDraw.dialogMode;
+        propertyDraw.disableInputList = clientPropertyDraw.disableInputList;
 
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
