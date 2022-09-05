@@ -53,9 +53,9 @@ public class ResizeHandler {
                 // so we push this event down to that container
                 // in theory we should check that event is trigger to the right of this child widget, but since this child widget can have paddings / margins, we'll just do some extra work
                 if(resizedChild != null && resizedChild.outsideBorder) {
-                    Widget childWidget = helper.getChildWidget(resizedChild.index);
-                    if (childWidget instanceof FlexPanel)
-                        ((FlexPanel)childWidget).checkResizeEvent(event, cursorElement);
+                    FlexPanel childFlexPanel = FlexPanel.asFlexPanel(helper.getChildWidget(resizedChild.index));
+                    if (childFlexPanel != null)
+                        childFlexPanel.checkResizeEvent(event, cursorElement);
                 }
             }
         }

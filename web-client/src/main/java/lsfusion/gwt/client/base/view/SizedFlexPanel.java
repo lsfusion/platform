@@ -55,6 +55,7 @@ public class SizedFlexPanel extends FlexPanel {
 
             if(!fixed) {
                 FlexPanel wrapPanel = new FlexPanel(!vertical);
+                wrapPanel.transparentResize = true;
                 wrapPanel.setStyleName("oppositeSizeCssFixPanel"); // just to identify this div in dom
                 wrapPanel.add(widget, GFlexAlignment.STRETCH, isStretch ? 1 : 0, alignShrink, alignSize);
                 if (!isStretch)

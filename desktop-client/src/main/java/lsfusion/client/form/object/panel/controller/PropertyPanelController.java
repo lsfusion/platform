@@ -63,6 +63,7 @@ public class PropertyPanelController {
         });
 
         renderersPanel = new Panel(property.panelColumnVertical);
+        renderersPanel.transparentResize = true;
         renderersPanel.setDebugContainer("CONTROLLER [" + property + "]");
     }
 
