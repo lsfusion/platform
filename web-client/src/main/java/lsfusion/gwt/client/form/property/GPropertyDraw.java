@@ -262,6 +262,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return customRenderFunction == null || externalChangeType == null;
     }
 
+    public boolean disableInputList;
+
     public GEditBindingMap editBindingMap;
 
     public ImageHolder imageHolder;
@@ -275,7 +277,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GCompare defaultCompare;
 
     public GCompare getDefaultCompare() {
-        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+        return defaultCompare != null ? defaultCompare : GCompare.EQUALS;
     }
 
     public GCompare[] getFilterCompares() {
@@ -419,7 +421,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
         if (GMouseStroke.isChangeEvent(editEvent)) {
             Integer actionIndex = (Integer) GEditBindingMap.getToolbarAction(editEvent);
-            if(actionIndex == null && FormsController.isDialogMode()) {
+            if(actionIndex == null && (disableInputList || FormsController.isDialogMode())) {
                 actionIndex = ((Supplier<Integer>) this::getDialogInputActionIndex).get();
             }
             contextAction.set(actionIndex);

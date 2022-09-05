@@ -71,6 +71,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (!captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
+        panel.transparentResize = true;
         valuePanel.add(panel, panelValueAlignment, 1, true);
 
         if (captionLast)

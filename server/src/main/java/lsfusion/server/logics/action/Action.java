@@ -42,7 +42,6 @@ import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapRemove;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
@@ -716,6 +715,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     public boolean ignoreReadOnlyPolicy() {
         return !hasFlow(ChangeFlowType.READONLYCHANGE);
     }
+
+    public boolean ignoreChangeSecurityPolicy;
 
     @Override
     public ApplyGlobalEvent getApplyEvent() {

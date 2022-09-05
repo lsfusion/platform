@@ -359,10 +359,9 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
 
+        Compare defaultCompare = getDefaultCompare();
         if(defaultCompare != null)
             defaultCompare.serialize(outStream);
-        else if(Settings.get().isDefaultCompareForStringContains() && isProperty() && getType() instanceof StringClass)
-            Compare.MATCH.serialize(outStream);
         else
             outStream.writeByte(-1);
 
@@ -436,6 +435,8 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
         outStream.writeBoolean(entity.hasDynamicImage);
+
+        outStream.writeBoolean(entity.getDrawProperty().property.disableInputList);
 
         ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
@@ -611,6 +612,16 @@ public class PropertyDrawView extends BaseComponentView {
     @Override
     public String toString() {
         return ThreadLocalContext.localize(getCaption()) + " " + super.toString();
+    }
+
+    public Compare getDefaultCompare() {
+        if(defaultCompare != null)
+            return defaultCompare;
+
+        if(isProperty())
+            return getType().getDefaultCompare();
+
+        return null;
     }
 
     public int getCharHeight() {

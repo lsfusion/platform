@@ -9,6 +9,7 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.async.ClientInputListAction;
@@ -148,7 +149,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                     @Override
                     public void done(Pair<List<ClientAsync>, Boolean> result) {
                         if (isThisCellEditor()) { // && suggestBox.comboBox.isPopupVisible() it can become visible after callback is completed
-                            suggestBox.updateItems(result.first, (completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(","))) && !query.isEmpty());
+                            suggestBox.updateItems(result.first, (completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainController.matchSearchSeparator))) && !query.isEmpty());
 
                             suggestBox.updateLoading(result.second);
 
@@ -487,6 +488,18 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 //            });
 
             comboBoxEditorComponent = (JTextField) comboBox.getEditor().getEditorComponent();
+            EditorContextMenu contextMenu = new EditorContextMenu(comboBoxEditorComponent);
+            comboBoxEditorComponent.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent mouseEvent) {
+                    showContextMenuOnMouseEvent(mouseEvent, contextMenu);
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent mouseEvent) {
+                    showContextMenuOnMouseEvent(mouseEvent, contextMenu);
+                }
+            });
             setDesign(comboBoxEditorComponent);
 
             //need to catch key events
@@ -564,6 +577,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             // install custom actions for the arrow keys in the Apple Aqua L&F
             actionMap.put("aquaSelectPrevious", upAction);
             actionMap.put("aquaSelectNext", downAction);
+        }
+
+        private void showContextMenuOnMouseEvent(MouseEvent e, JPopupMenu contextMenu) {
+            if (e.isPopupTrigger())
+                contextMenu.show(comboBoxEditorComponent, e.getX(), e.getY());
         }
     }
 

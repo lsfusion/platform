@@ -4,6 +4,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.sql.SQLSession;
@@ -60,6 +61,10 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     int getReportMinimumWidth();
     int getReportPreferredWidth();
+
+    default Compare getDefaultCompare() {
+        return null;
+    }
 
     void fillReportDrawField(ReportDrawField reportField);
     

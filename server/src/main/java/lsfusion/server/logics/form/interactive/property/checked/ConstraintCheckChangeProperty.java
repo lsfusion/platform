@@ -22,6 +22,11 @@ import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.classes.infer.Equals;
+import lsfusion.server.logics.property.classes.infer.ExClassSet;
+import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.classes.infer.Inferred;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.hint.AutoHintsAspect;
@@ -41,6 +46,18 @@ public class ConstraintCheckChangeProperty<T extends PropertyInterface,P extends
         StructChanges changeModifier = propChanges.replace(SetFact.EMPTY(), changeProps.toMap(ChangeType.get(true, null, true, false)));
 
         return SetFact.add(toChange.getUsedDataChanges(propChanges, CalcDataType.PULLEXPR), onChange.getUsedChanges(changeModifier).remove(changeProps));
+    }
+
+    @Override
+    protected Inferred<Interface<P>> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
+//      we need this because getInterfaceClasses is now used in getInterfaceParamExprs (which is used in getSelectCostStat, etc.), and this method needs classes to be inferred (and ConstraintCheckChangeProperty can be used in that props - input list wheres)
+        Pair<ImRevMap<Interface<P>, P>, Interface<P>> mapInterfaces = getMapInterfaces();
+        return Inferred.create(new Equals<>(new PropertyMapImplement<>(toChange, mapInterfaces.first.reverse()), mapInterfaces.second), inferType, false);
+    }
+
+    @Override
+    protected ExClassSet calcInferValueClass(ImMap<Interface<P>, ExClassSet> inferred, InferType inferType) {
+        return ExClassSet.logical;
     }
 
     public ImSet<Property> calculateUsedChanges(StructChanges propChanges) {

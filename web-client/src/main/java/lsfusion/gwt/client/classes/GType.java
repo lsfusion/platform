@@ -36,10 +36,6 @@ public abstract class GType implements Serializable {
         return null;
     }
 
-    public GCompare getDefaultCompare() {
-        return GCompare.EQUALS;
-    }
-
     // not null
     public GSize getDefaultWidth(GFont font, GPropertyDraw propertyDraw, boolean needNotNull, boolean globalCaptionIsDrawn) {
         String widthString = getDefaultWidthString(propertyDraw);

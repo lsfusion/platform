@@ -2484,7 +2484,26 @@ public class Settings implements Cloneable {
         this.useGroupLastOpt = useGroupLastOpt;
     }
 
-    // In 5.0 CONTAINS is gone. It sets MATCH(SEARCH) instead. Maybe should be renamed.
+    private boolean inputListSearchInsteadOfContains = true;
+
+    public boolean isInputListSearchInsteadOfContains() {
+        return inputListSearchInsteadOfContains;
+    }
+
+    public void setInputListSearchInsteadOfContains(boolean inputListSearchInsteadOfContains) {
+        this.inputListSearchInsteadOfContains = inputListSearchInsteadOfContains;
+    }
+
+    private boolean defaultCompareSearchInsteadOfContains = true;
+
+    public boolean isDefaultCompareSearchInsteadOfContains() {
+        return defaultCompareSearchInsteadOfContains;
+    }
+
+    public void setDefaultCompareSearchInsteadOfContains(boolean defaultCompareSearchInsteadOfContains) {
+        this.defaultCompareSearchInsteadOfContains = defaultCompareSearchInsteadOfContains;
+    }
+
     private boolean defaultCompareForStringContains = false;
 
     public boolean isDefaultCompareForStringContains() {
@@ -2494,7 +2513,17 @@ public class Settings implements Cloneable {
     public void setDefaultCompareForStringContains(boolean defaultCompareForStringContains) {
         this.defaultCompareForStringContains = defaultCompareForStringContains;
     }
-    
+
+    private String matchSearchSeparator = ",";
+
+    public String getMatchSearchSeparator() {
+        return matchSearchSeparator;
+    }
+
+    public void setMatchSearchSeparator(String matchSearchSeparator) {
+        this.matchSearchSeparator = matchSearchSeparator;
+    }
+
     // should be enabled only when there will be constraint that AGGR property should not be changed
     private boolean disableCorrelations = true; // enable onl;y when sinpleApplyRemoveClasses is on (if singleApply is on), otherwise when singleApply is on, aggregation property changes (correlations) are applied, and in changes where this aggregation properties are used, no one refresh their values
 
@@ -2753,6 +2782,8 @@ public class Settings implements Cloneable {
     private double asyncValuesExtraReadCoeff = 1.5;
     private int asyncValuesNeededCount = 15;
     private int asyncValuesMaxReadCount = 1000;
+    private int asyncValuesMaxReadOrderCount = 1000;
+    private int asyncValuesMaxReadDataCompletionCount = 10000;
 
     public int getAsyncValuesLongCacheThreshold() {
         return asyncValuesLongCacheThreshold;
@@ -2784,6 +2815,22 @@ public class Settings implements Cloneable {
 
     public void setAsyncValuesMaxReadCount(int asyncValuesMaxReadCount) {
         this.asyncValuesMaxReadCount = asyncValuesMaxReadCount;
+    }
+
+    public int getAsyncValuesMaxReadOrderCount() {
+        return asyncValuesMaxReadOrderCount;
+    }
+
+    public void setAsyncValuesMaxReadOrderCount(int asyncValuesMaxReadOrderCount) {
+        this.asyncValuesMaxReadOrderCount = asyncValuesMaxReadOrderCount;
+    }
+
+    public int getAsyncValuesMaxReadDataCompletionCount() {
+        return asyncValuesMaxReadDataCompletionCount;
+    }
+
+    public void setAsyncValuesMaxReadDataCompletionCount(int asyncValuesMaxReadDataCompletionCount) {
+        this.asyncValuesMaxReadDataCompletionCount = asyncValuesMaxReadDataCompletionCount;
     }
 
     private int externalHttpServerThreadCount = 10;

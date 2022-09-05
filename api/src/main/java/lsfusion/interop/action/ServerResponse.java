@@ -23,6 +23,7 @@ public class ServerResponse implements Serializable {
 
     public static final String INPUT = "input";
     public static final String VALUES = "values";
+    public static final String STRICTVALUES = "strictValues";
     public static final String OBJECTS = "objects";
 
     public final ClientAction[] actions;

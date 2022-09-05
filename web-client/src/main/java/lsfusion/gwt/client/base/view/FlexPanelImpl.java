@@ -211,7 +211,7 @@ public class FlexPanelImpl {
     }
 
     public void setNoFlex(Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {
-        setFlex(child, 0, layoutData.flexBasis, layoutData.gridLine, vertical, grid, false);
+        setFlex(child, 0, layoutData.baseFlexBasis, layoutData.gridLine, vertical, grid, false);
     }
 
     public void setPreferredSize(boolean set, Element child, FlexPanel.FlexLayoutData layoutData, boolean vertical, boolean grid) {

@@ -165,6 +165,8 @@ public class ClientFormChanges {
                 return clientForm.findContainerByID(inStream.readInt()).customPropertyDesignReader;
             case PropertyReadType.COMPONENT_SHOWIF:
                 return clientForm.findComponentByID(inStream.readInt()).showIfReader;
+            case PropertyReadType.CUSTOM_OPTIONS:
+                return clientForm.getGroupObject(inStream.readInt()).customOptionsReader;
             default:
                 throw new IOException();
         }

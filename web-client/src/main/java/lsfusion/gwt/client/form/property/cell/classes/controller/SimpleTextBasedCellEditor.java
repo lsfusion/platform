@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -354,10 +355,10 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                             cancelAndFlushDelayed(execTimer);
                     }
 
-                    @Override
-                    public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                        if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
-                            suggestBox.setAutoSelectEnabled(completionType.isAnyStrict() && !emptyQuery);
+                        @Override
+                        public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                            if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
+                                suggestBox.setAutoSelectEnabled((completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainFrame.matchSearchSeparator))) && !emptyQuery);
 
                             boolean succeededEmpty = false;
                             if(result.first != null) {
@@ -603,7 +604,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             bottomPanel.add(buttonsPanel);
 
             if(compare != null && compare.escapeComma()) {
-                HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip());
+                HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
                 tip.getElement().addClassName("suggestBoxTip");
                 bottomPanel.add(tip);
                 tip.getParent().getParent().setWidth("100px"); //set width of td, so as not to expand the entire suggestBox

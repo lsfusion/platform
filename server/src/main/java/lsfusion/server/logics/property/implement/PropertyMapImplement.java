@@ -151,10 +151,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     public int mapHashCode() {
-        return property.hashCode() * 31 + mapping.hashCode();
+        return hashMap();
     }
     public boolean mapEquals(PropertyInterfaceImplement<T> implement) {
-        return implement instanceof PropertyMapImplement && property.equals(((PropertyMapImplement) implement).property) && mapping.equals(((PropertyMapImplement) implement).mapping);
+        return implement instanceof PropertyMapImplement && equalsMap(implement);
     }
 
     public ImSet<OldProperty> mapOldDepends() {

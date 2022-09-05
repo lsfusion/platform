@@ -187,6 +187,10 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
     public GGroupObjectValue getSelectedKey() {
         return tree.getSelectedKey();
     }

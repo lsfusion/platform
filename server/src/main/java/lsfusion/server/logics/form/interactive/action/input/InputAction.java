@@ -12,9 +12,6 @@ import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
-import lsfusion.server.logics.form.interactive.action.async.InputList;
-import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputList;
@@ -47,7 +44,7 @@ public class InputAction extends SystemExplicitAction {
     protected final ImSet<ClassPropertyInterface> contextInterfaces;
     
     protected final InputListEntity<?, ClassPropertyInterface> contextList;
-    protected final InputFilterSelector<ClassPropertyInterface> contextFilter;
+    protected final InputContextSelector<ClassPropertyInterface> contextSelector;
     protected final ImList<InputContextAction<?, ClassPropertyInterface>> contextActions; // + value param
     private final String customChangeFunction;
 
@@ -56,7 +53,7 @@ public class InputAction extends SystemExplicitAction {
     }
 
     public <C extends PropertyInterface> InputAction(LocalizedString caption, ValueClass valueClass, LP targetProp, boolean hasOldValue,
-                                                     ImOrderSet<C> orderContextInterfaces, InputListEntity<?, C> contextList, InputFilterSelector<C> contextFilter, ImList<InputContextAction<?, C>> contextActions, String customChangeFunction) {
+                                                     ImOrderSet<C> orderContextInterfaces, InputListEntity<?, C> contextList, InputContextSelector<C> contextSelector, ImList<InputContextAction<?, C>> contextActions, String customChangeFunction) {
         super(caption, getValueClasses(hasOldValue, valueClass, orderContextInterfaces.size()));
 
         this.valueClass = valueClass;
@@ -72,20 +69,23 @@ public class InputAction extends SystemExplicitAction {
         this.contextInterfaces = mapContextInterfaces.valuesSet();
         this.contextList = contextList != null ? contextList.map(mapContextInterfaces) : null;
         assert valueClass instanceof DataClass || contextList.singleInterface() != null;
-        this.contextFilter = contextFilter != null ? contextFilter.map(mapContextInterfaces) : null;
+        this.contextSelector = contextSelector != null ? contextSelector.map(mapContextInterfaces) : null;
         
         this.contextActions = contextActions.mapListValues((InputContextAction<?, C> value) -> value.map(mapContextInterfaces));
     }
 
     @IdentityInstanceLazy
     private InputListEntity<?, ClassPropertyInterface> mergeFullContextList() {
-        return contextList.and(contextFilter.getEntity());
+        InputListEntity<?, ClassPropertyInterface> result = this.contextList;
+        if(contextSelector != null)
+            result = result.merge(contextSelector.getFilterAndOrders());
+        return result;
     }
     private InputListEntity<?, ClassPropertyInterface> getFullContextList() {
         if(contextList == null)
             return null;
 
-        if(contextFilter == null)
+        if(contextSelector == null)
             return contextList;
 
         return mergeFullContextList();

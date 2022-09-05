@@ -19,6 +19,7 @@ public class ClientSettings implements Serializable {
     public boolean forbidDuplicateForms;
     public boolean showNotDefinedStrings;
     public boolean pivotOnlySelectedColumn;
+    public String matchSearchSeparator;
     public ColorTheme colorTheme;
     public boolean useBootstrap;
     public ColorPreferences colorPreferences;
@@ -26,7 +27,8 @@ public class ClientSettings implements Serializable {
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
-                          boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings, boolean pivotOnlySelectedColumn,
+                          boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
+                          boolean pivotOnlySelectedColumn, String matchSearchSeparator,
                           ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
@@ -40,6 +42,7 @@ public class ClientSettings implements Serializable {
         this.forbidDuplicateForms = forbidDuplicateForms;
         this.showNotDefinedStrings = showNotDefinedStrings;
         this.pivotOnlySelectedColumn = pivotOnlySelectedColumn;
+        this.matchSearchSeparator = matchSearchSeparator;
         this.colorTheme = colorTheme;
         this.useBootstrap = useBootstrap;
         this.colorPreferences = colorPreferences;

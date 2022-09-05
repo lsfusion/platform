@@ -1,23 +1,17 @@
 package lsfusion.server.logics.form.interactive.action.input;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
 import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.implement.PropertyImplement;
-import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-public class InputFilterEntity<P extends PropertyInterface, V extends PropertyInterface> implements InputFilterSelector<V> {
+public class InputFilterEntity<P extends PropertyInterface, V extends PropertyInterface> {
     
     public final Property<P> property;
     
@@ -30,13 +24,7 @@ public class InputFilterEntity<P extends PropertyInterface, V extends PropertyIn
         assert singleInterface() != null;
     }
 
-    @Override
-    public InputFilterEntity<P, V> getEntity() {
-        return this;
-    }
-
-    @Override
-    public <C extends PropertyInterface> InputFilterSelector<C> map(ImRevMap<V, C> map) {
+    public <C extends PropertyInterface> InputFilterEntity<P, C> map(ImRevMap<V, C> map) {
         return new InputFilterEntity<>(property, mapValues.join(map));
     }
 

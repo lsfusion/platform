@@ -154,12 +154,12 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         SFunctionSet<PropertyObjectInterfaceInstance> gridObjects = value -> (value instanceof ObjectInstance && toDraw.objects.contains((ObjectInstance) value));
         ImMap<P, PropertyObjectInterfaceInstance> outerMapping = mapping.filterFnValues(new NotFunctionSet<>(gridObjects));
 
-        InputListEntity<?, P> filterInputList = property.getFilterInputList(getParamExprs(property, outerMapping), innerMapping != null);
-        if(filterInputList == null)
+        InputListEntity<?, P> inputList = property.getInputList(getParamExprs(property, outerMapping), innerMapping != null);
+        if(inputList == null)
             return null;
 
         if(innerMapping != null)
             innerMapping.set(BaseUtils.immutableCast(mapping.filterFnValues(gridObjects).toRevExclMap()));
-        return filterInputList.map(outerMapping.mapValues(valuesGetter));
+        return inputList.map(outerMapping.mapValues(valuesGetter));
     }
 }

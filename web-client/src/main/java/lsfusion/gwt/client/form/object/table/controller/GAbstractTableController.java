@@ -169,6 +169,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public abstract void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values);
+    public abstract void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values);
 
     // вызов focus() у getFocusHolderElement() грида по какой-то причине приводит к подскролливанию нашего скролла
     // (если грид заключён в скролл и не влезает по высоте) до первого ряда таблицы, скрывая заголовок (видимо вызывается scrollIntoView(), 

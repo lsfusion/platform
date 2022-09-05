@@ -91,6 +91,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean hasEditObjectAction;
     public boolean hasChangeAction;
 
+    public boolean disableInputList;
+
     public String[] interfacesCaptions;
     public ClientClass[] interfacesTypes;
 
@@ -173,7 +175,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Compare getDefaultCompare() {
-        return defaultCompare != null ? defaultCompare : baseType.getDefaultCompare();
+        return defaultCompare != null ? defaultCompare : Compare.EQUALS;
     }
 
     public Compare[] getFilterCompares() {
@@ -452,6 +454,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return null;
     }
 
+    public Integer getDialogInputActionIndex() {
+        ClientInputList inputList = getInputList();
+        if (inputList != null) {
+            for (int i = 0; i < inputList.actions.length; i++) {
+                ClientInputListAction action = inputList.actions[i];
+                //addDialogInputAProp from server
+                if (action.action.equals("dialog")) {
+                    return i;
+                }
+            }
+        }
+        return null;
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
@@ -571,6 +587,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         hasEditObjectAction = inStream.readBoolean();
         hasChangeAction = inStream.readBoolean();
         hasDynamicImage = inStream.readBoolean();
+
+        disableInputList = inStream.readBoolean();
 
         namespace = pool.readString(inStream);
         sID = pool.readString(inStream);

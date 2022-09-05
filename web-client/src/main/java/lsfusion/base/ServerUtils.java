@@ -5,6 +5,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -38,17 +39,21 @@ public class ServerUtils {
     }
 
     private static final ConcurrentHashMap<String, String> versions = new ConcurrentHashMap<>();
-    public static Map getVersionedResources(HttpServletRequest request, String... resources) throws IOException {
+    public static Map getVersionedResources(ServletContext servletContext, String... resources) throws IOException {
         Map<String, String> versionedResources = new LinkedHashMap<>();
         for (String resource : resources) {
             String version = versions.get(resource);
             if (version == null) {
-                version = SystemUtils.generateID(IOUtils.toByteArray(request.getServletContext().getResourceAsStream("/" + resource)));
+                version = SystemUtils.generateID(IOUtils.toByteArray(servletContext.getResourceAsStream("/" + resource)));
                 versions.put(resource, version);
             }
 
             versionedResources.put(resource + "?version=" + version, resource.substring(resource.lastIndexOf(".") + 1));
         }
         return versionedResources;
+    }
+
+    public static String getVersionedResource(ServletContext servletContext, String resource) throws IOException {
+        return (String) getVersionedResources(servletContext, resource).keySet().iterator().next();
     }
 }

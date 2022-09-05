@@ -15,7 +15,6 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import java.text.ParseException;
 
 import static lsfusion.gwt.client.form.filter.user.GCompare.EQUALS;
-import static lsfusion.gwt.client.form.filter.user.GCompare.NOT_EQUALS;
 
 public abstract class GLinkType extends GDataType {
     public boolean multiple;
@@ -30,7 +29,7 @@ public abstract class GLinkType extends GDataType {
 
     @Override
     public GCompare[] getFilterCompares() {
-        return new GCompare[] {EQUALS, NOT_EQUALS};
+        return new GCompare[] {EQUALS};
     }
 
     @Override

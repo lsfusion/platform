@@ -107,6 +107,7 @@ public abstract class MainFrame extends JFrame {
             MainController.showDetailedInfo = clientSettings.showDetailedInfo;
             MainController.forbidDuplicateForms = clientSettings.forbidDuplicateForms;
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
+            MainController.matchSearchSeparator = clientSettings.matchSearchSeparator;
             MainController.colorPreferences = clientSettings.colorPreferences;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();

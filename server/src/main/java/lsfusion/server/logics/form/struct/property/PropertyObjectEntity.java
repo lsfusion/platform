@@ -11,7 +11,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -83,5 +83,17 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     @Override
     public ImSet<ObjectEntity> getObjects() {
         return mapping.valuesSet();
+    }
+
+    @Override
+    public <T extends PropertyInterface> InputOrderEntity<?, T> getInputOrderEntity(ObjectEntity object, ImRevMap<ObjectEntity, T> mapObjects) {
+        assert mapping.containsValue(object);
+        assert !mapObjects.containsKey(object);
+        ImRevMap<P, T> mapOrderObjects = mapping.innerJoin(mapObjects);
+        // just like in ContextFilterEntity.getInputFilterEntity we will ignore the cases when there are not all objects
+        if(mapOrderObjects.size() != mapping.size() - 1)
+            return null;
+
+        return new InputOrderEntity<P, T>(property, mapOrderObjects);
     }
 }

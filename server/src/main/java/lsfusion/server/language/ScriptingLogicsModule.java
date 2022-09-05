@@ -87,6 +87,7 @@ import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseConta
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
+import lsfusion.server.logics.form.interactive.action.input.InputActionContextSelector;
 import lsfusion.server.logics.form.interactive.action.input.InputContextAction;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
@@ -357,7 +358,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static String removeCarriageReturn(String s) {
         return s.replace("\r\n", "\n");
     }
-    
+
     public String transformStringLiteral(String s) throws ScriptingErrorLog.SemanticErrorException {
         try {
             return ScriptedStringUtils.transformStringLiteral(s, BL.getIdFromReversedI18NDictionaryMethod());
@@ -2325,7 +2326,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp(requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, contextEntity.where, contextEntity.contextActions, customEditorFunction, notNull);
+            action = addInputAProp((DataClass) requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, new InputActionContextSelector<>(contextEntity.where), contextEntity.contextActions, customEditorFunction, notNull);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();
@@ -3246,7 +3247,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             case REAL: lp =  addUnsafeCProp(DoubleClass.instance, value); break;
             case STRING:
                 String str = unquote((String) value);
-                if (str.startsWith(INLINE_PREFIX) && str.endsWith(String.valueOf(CLOSE_CH))) {
+                if (isInlineSequence(str)) {
                     return Pair.create(addStringInlineProp(str, lineNumber, context, dynamic), null);
                 } else if (containsInterpolationSequence(str)) {
                     return Pair.create(addStringInterpolateProp(str, lineNumber, context, dynamic), null);

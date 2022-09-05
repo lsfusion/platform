@@ -11,7 +11,7 @@ public interface ResizeHelper {
     /*Element*/Component getChildElement(int index);
     /*Widget*/Widget getChildWidget(int index);
 
-    void resizeChild(int index, int delta);
+    double resizeChild(int index, int delta);
     boolean isChildResizable(int index);
     boolean isChildVisible(int index);
 

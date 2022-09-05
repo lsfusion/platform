@@ -38,7 +38,7 @@ public class TimeClass extends HasTimeClass<LocalTime> {
     private final static Collection<TimeClass> timeClasses = new ArrayList<>();
     public final static TimeClass instance = get(ExtInt.UNLIMITED);
     public static TimeClass get(ExtInt millisLength) {
-        return getCached(timeClasses, millisLength, () -> new TimeClass(LocalizedString.create("{classes.date.with.time.with.zone}"), millisLength));
+        return getCached(timeClasses, millisLength, () -> new TimeClass(LocalizedString.create("{classes.time}"), millisLength));
     }
 
     public DataClass getCompatible(DataClass compClass, boolean or) {

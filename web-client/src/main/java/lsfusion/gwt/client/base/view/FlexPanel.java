@@ -2,10 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Result;
@@ -481,6 +478,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             return getFlexLayoutData().isFlex();
         }
 
+        public boolean isFlexPref() {
+            assert !isFlex();
+            return FlexPanel.isFlexPref(widget, isVertical());
+        }
+
         public boolean contains(Widget widget) {
             return widgets.contains(widget);
         }
@@ -622,6 +624,27 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 return FlexPanel.updatePanels(true, !vertical, GFlexAlignment.START, virtualLines, null, null, false, false, null);
             }
         }
+    }
+
+    private static boolean isFlexPref(Widget widget, boolean vertical) {
+        if(widget instanceof FlexPanel)
+            return ((FlexPanel)widget).isFlexPref(vertical);
+        return false;
+    }
+
+    private boolean isFlexPref(boolean vertical) {
+        WidgetCollection children = getChildren();
+        if(transparentResize)
+            return isFlexPref(children.get(0), vertical);
+
+        boolean sameDirection = isVertical() == vertical;
+
+        for(Widget child : children) {
+            WidgetLayoutData layoutData = (WidgetLayoutData) child.getLayoutData();
+            if(sameDirection ? layoutData.flex.isFlex() : layoutData.aligment.baseAlignment.equals(GFlexAlignment.STRETCH))
+                return true;
+        }
+        return false;
     }
 
     private static void drawBorder(Widget widget, Border border, boolean start, boolean vertical) {
@@ -767,7 +790,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
             @Override
             public boolean isChildResizable(int index) {
-                if (!isChildrenResizable(lines, index))
+                if(transparentResize)
+                    return false;
+
+                if (!isChildrenResizable(lines, index, true))
                     return false;
 
                 // optimization, if it is the last element, and there is a "resizable" parent, we consider this element to be not resizable (assuming that this "resizable" parent will be resized)
@@ -785,17 +811,21 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     // the resize algorithm assumes that there should be flex column to the left, to make
-    public boolean isChildrenResizable(List<FlexLine> lines, int widgetNumber) {
+    public boolean isChildrenResizable(List<FlexLine> lines, int widgetNumber, boolean onlyThisWidget) {
+        assert !transparentResize;
+
         if(!childrenResizable)
             return false;
 
-        for(int i=widgetNumber;i>=0;i--) {
-            if (lines.get(i).isFlex())
+        for(int i=widgetNumber;i>=(onlyThisWidget ? widgetNumber : 0);i--) {
+            FlexLine line = lines.get(i);
+            if (line.isFlex() || line.isFlexPref())
                 return true;
         }
         return false;
     }
 
+    public boolean transparentResize;
     // we need to guarantee somehow that resizing this parent container will lead to the same resizing of this container
     public void fillParentSameFlexPanels(boolean vertical, List<ParentSameFlexPanel> fillParents, int oppositePosition, boolean onlyFirst) {
 //        if(1==1) return null;
@@ -805,20 +835,23 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         FlexPanel flexParent = (FlexPanel) parent;
         if(vertical != flexParent.vertical) {
-            AlignmentLayoutData layoutData = ((WidgetLayoutData) getLayoutData()).aligment;
-            if(layoutData.alignment == GFlexAlignment.STRETCH)
+            if(((WidgetLayoutData) getLayoutData()).aligment.baseAlignment.equals(GFlexAlignment.STRETCH))
                 flexParent.fillParentSameFlexPanels(vertical, fillParents, oppositePosition, onlyFirst);
         } else {
-            List<FlexLine> lines = flexParent.getLines(oppositePosition);
-            for (int i = 0; i < lines.size(); i++) {
-                FlexLine line = lines.get(i);
-                if (line.contains(this)) {
-                    if(flexParent.isChildrenResizable(lines, i)) {
-                        fillParents.add(new ParentSameFlexPanel(flexParent, lines, i));
-                        if(!onlyFirst)
-                            flexParent.fillParentSameFlexPanels(vertical, fillParents, oppositePosition, onlyFirst);
+            if(flexParent.transparentResize)
+                flexParent.fillParentSameFlexPanels(vertical, fillParents, oppositePosition, onlyFirst);
+            else {
+                List<FlexLine> lines = flexParent.getLines(oppositePosition);
+                for (int i = 0; i < lines.size(); i++) {
+                    FlexLine line = lines.get(i);
+                    if (line.contains(this)) {
+                        if (flexParent.isChildrenResizable(lines, i, false)) {
+                            fillParents.add(new ParentSameFlexPanel(flexParent, lines, i));
+                            if (!onlyFirst)
+                                flexParent.fillParentSameFlexPanels(vertical, fillParents, oppositePosition, onlyFirst);
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -833,6 +866,8 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
         int[] basePrefs = new int[size];
         double[] baseFlexes = new double[size];
+
+        boolean[] flexPrefs = new boolean[size];
 
         Element element = getElement();
         if(wrap) // in theory there should be recursive drop wrap, but on the other hand we'are dropping flex / shrink and flexbasis, so there will be no wrap inside
@@ -850,6 +885,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             flexes[i] = layoutData.flex;
             basePrefs[i] = pxBaseFlexBasis != null ? pxBaseFlexBasis : -1;
             baseFlexes[i] = layoutData.getBaseFlex();
+            flexPrefs[i] = !line.isFlex() && line.isFlexPref();
             i++;
         }
 
@@ -871,7 +907,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         ParentSameFlexPanel parentSameFlexPanel = parents.size() > 0 ? parents.get(0) : null;
 
         int viewWidth = impl.getActualSize(element, vertical) - margins;
-        double restDelta = GwtClientUtils.calculateNewFlexes(lineNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  parentSameFlexPanel == null);
+        double restDelta = GwtClientUtils.calculateNewFlexes(lineNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  flexPrefs, parentSameFlexPanel == null);
 
         if(parentSameFlexPanel != null && !GwtClientUtils.equals(restDelta, 0.0))
             restDelta = parentSameFlexPanel.panel.resizeWidget(restDelta, parentSameFlexPanel.lines, parentSameFlexPanel.index, parents.subList(1, parents.size()));

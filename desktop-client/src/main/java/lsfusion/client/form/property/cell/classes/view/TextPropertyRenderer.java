@@ -1,5 +1,6 @@
 package lsfusion.client.form.property.cell.classes.view;
 
+import lsfusion.base.EscapeUtils;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.controller.MainController;
@@ -82,7 +83,7 @@ public class TextPropertyRenderer extends PropertyRenderer {
             String text = value.toString().isEmpty() && !MainController.showNotDefinedStrings ? EMPTY_STRING : value.toString();
             if (rich) {
                 getComponent().setContentType("text/html");
-                RichEditorPane.setText(getComponent(), text);
+                RichEditorPane.setText(getComponent(), EscapeUtils.escapeLineBreakHTML(text));
             } else {
                 getComponent().setContentType("text");
                 getComponent().setText(text);

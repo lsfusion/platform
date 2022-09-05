@@ -10,7 +10,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class SequentialRequestLock {
 
-    private static final Object LOCK_OBJECT = new Object();
+    private final Object LOCK_OBJECT = new Object();
     private long waitingForRequestIndex = 0;
 
     public void acquireRequestLock(String ownerSID, long requestIndex) {

@@ -38,7 +38,11 @@ public interface GTableView extends TableComponent {
     // keys
     void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values);
     void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values);
-    
+
+    default void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
+        //implemented only in GCustom
+    }
+
     // columns
     void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);
     void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values);

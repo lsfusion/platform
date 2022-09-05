@@ -96,12 +96,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     @Override
     public Compare[] getFilterCompares() {
-        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
-    }
-
-    @Override
-    public Compare getDefaultCompare() {
-        return EQUALS;
+        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS};
     }
 
     @Override

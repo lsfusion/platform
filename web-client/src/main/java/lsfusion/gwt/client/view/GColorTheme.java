@@ -1,22 +1,28 @@
 package lsfusion.gwt.client.view;
 
 public enum GColorTheme {
-    LIGHT("light", null), DARK("dark", 0.33f);
-    
+    LIGHT("light", null, "static/css/theme/light.css"), DARK("dark", 0.33f, "static/css/theme/dark.css");
+
     public final static GColorTheme DEFAULT = LIGHT; 
 
     private final String sid;
     private final Float colorInvertFactor;
+    private final String url;
 
-    GColorTheme(String sid, Float invertFactor) {
+    GColorTheme(String sid, Float invertFactor, String url) {
         this.sid = sid;
         this.colorInvertFactor = invertFactor;
+        this.url = url;
     }
 
     public String getSid() {
         return sid;
     }
-    
+
+    public String getUrl() {
+        return url;
+    }
+
     public Float getColorInvertFactor() {
         return colorInvertFactor;
     }

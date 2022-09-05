@@ -151,12 +151,15 @@ public class FlexPanel extends PanelWidget {
         }
 
         @Override
-        public void resizeChild(int index, int delta) {
-            resizeWidget(index, delta);
+        public double resizeChild(int index, int delta) {
+            return resizeWidget(index, delta);
         }
         @Override
         public boolean isChildResizable(int index) {
-            if(!isWidgetResizable(index))
+            if(transparentResize)
+                return false;
+
+            if(!isChildrenResizable(index, true))
                 return false;
 
             // optimization, if it is the last element, and there is a "resizable" parent, we consider this element to be not resizable (assuming that this "resizable" parent will be resized)
@@ -178,12 +181,51 @@ public class FlexPanel extends PanelWidget {
     };
 
     // the resize algorithm assumes that there should be flex column to the left, to make
-    public boolean isWidgetResizable(int widgetNumber) {
+    public boolean isChildrenResizable(int widgetNumber, boolean onlyThisWidget) {
+        assert !transparentResize;
+
         List<Widget> children = getChildren();
-        for (int i = widgetNumber; i >= 0; i--) {
+        for (int i = widgetNumber; i >= (onlyThisWidget ? widgetNumber : 0); i--) {
             Widget child = children.get(i);
             LayoutData layoutData = child.getLayoutData();
-            if (layoutData != null && layoutData.getBaseFlex() > 0 && child.isVisible())
+            if (layoutData != null && child.isVisible() && (
+                    layoutData.isFlex() || isFlexPref(child)))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean transparentResize;
+    public boolean isFlexPref(Widget child) {
+//        assert !isFlex();
+        return FlexPanel.isFlexPref(child, isVertical());
+    }
+
+    public static FlexPanel asFlexPanel(Widget widget) {
+        if(widget instanceof FlexPanel)
+            return (FlexPanel) widget;
+        if(widget instanceof ScrollPaneWidget)
+            return ((ScrollPaneWidget) widget).wrapFlexPanel;
+        return null;
+    }
+
+    private static boolean isFlexPref(Widget widget, boolean vertical) {
+        FlexPanel flexPanel = asFlexPanel(widget);
+        if(flexPanel != null)
+            return flexPanel.isFlexPref(vertical);
+        return false;
+    }
+
+    private boolean isFlexPref(boolean vertical) {
+        List<Widget> children = getChildren();
+        if(transparentResize)
+            return isFlexPref(children.get(0), vertical);
+
+        boolean sameDirection = isVertical() == vertical;
+
+        for(Widget child : children) {
+            LayoutData layoutData = child.getLayoutData();
+            if(sameDirection ? layoutData.isFlex() : layoutData.alignment.equals(FlexAlignment.STRETCH))
                 return true;
         }
         return false;
@@ -222,14 +264,18 @@ public class FlexPanel extends PanelWidget {
             if(layoutData.alignment == FlexAlignment.STRETCH)
                 return flexParent.getParentSameFlexPanel(vertical);
         } else {
-            int index = flexParent.getChildren().indexOf(directChildWidget);
-            if(flexParent.isWidgetResizable(index))
-                return new Pair<>(flexParent, index);
+            if(flexParent.transparentResize)
+                return flexParent.getParentSameFlexPanel(vertical);
+            else {
+                int index = flexParent.getChildren().indexOf(directChildWidget);
+                if (flexParent.isChildrenResizable(index, false))
+                    return new Pair<>(flexParent, index);
+            }
         }
         return null;
     }
 
-    public void resizeWidget(int widgetNumber, double delta) {
+    public double resizeWidget(int widgetNumber, double delta) {
         Pair<FlexPanel, Integer> parentSameFlexPanel = getParentSameFlexPanel(vertical);
 
         List<Widget> children = new ArrayList<>();
@@ -252,6 +298,8 @@ public class FlexPanel extends PanelWidget {
         int[] basePrefs = new int[size];
         double[] baseFlexes = new double[size];
 
+        boolean[] flexPrefs = new boolean[size];
+
         i = 0;
         for(Widget widget : children) {
             LayoutData layoutData = widget.getLayoutData();
@@ -266,6 +314,7 @@ public class FlexPanel extends PanelWidget {
             if (layoutData.baseFlexBasis != null)
                 basePrefs[i] = layoutData.baseFlexBasis;
             baseFlexes[i] = layoutData.getBaseFlex();
+            flexPrefs[i] = !layoutData.isFlex() && isFlexPref(widget);
             i++;
         }
 
@@ -297,10 +346,10 @@ public class FlexPanel extends PanelWidget {
 //        int body = ;
         // important to calculate viewWidth before setting new flexes
         int viewWidth = impl.getSize(this, vertical) - margins;
-        double restDelta = SwingUtils.calculateNewFlexes(widgetNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  parentSameFlexPanel == null);
+        double restDelta = SwingUtils.calculateNewFlexes(widgetNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  flexPrefs, parentSameFlexPanel == null);
 
         if(parentSameFlexPanel != null && !SwingUtils.equals(restDelta, 0.0))
-            parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);
+            restDelta = parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);
 
         i = 0;
         for(Widget widget : children) {
@@ -319,6 +368,7 @@ public class FlexPanel extends PanelWidget {
 
         // need revalidate to repaint
         formLayout.revalidate();
+        return restDelta;
     }
 
     private static void setFlexModifier(FlexLayout layout, boolean vertical, LayoutData layoutData, Widget child, FlexModifier modifier) {
@@ -338,56 +388,44 @@ public class FlexPanel extends PanelWidget {
     }
 
     public static PanelParams updatePanels(Widget widget) {
-        if (widget instanceof FlexPanel) {
-            FlexPanel flexPanel = (FlexPanel) widget;
-            boolean vertical = flexPanel.vertical;
-            boolean forceVertCollapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
-            boolean oppositeCollapsed = true;
+        FlexPanel flexPanel = (FlexPanel) widget;
+        boolean vertical = flexPanel.vertical;
+        boolean forceVertCollapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
+        boolean oppositeCollapsed = true;
 
-            int flexCount = 0;
-            boolean flexCollapsed = false;
+        int flexCount = 0;
+        boolean flexCollapsed = false;
 
-            for (Widget child : flexPanel.getChildren()) {
-                FlexPanel flexPanelChild = null;
-                LayoutData flexLayoutData = child.getLayoutData();
-                if (child instanceof FlexPanel) {
-                    flexPanelChild = (FlexPanel) child;
-                } else if (child instanceof ScrollPaneWidget) {
-                    Component view = ((ScrollPaneWidget) child).getViewport().getView();
-                    if (view instanceof FlexPanel) {
-                        flexPanelChild = (FlexPanel) view;
-                    }
-                }
-                
-                if (flexPanelChild != null) {
-                    PanelParams childParams = updatePanels(flexPanelChild);
+        for (Widget child : flexPanel.getChildren()) {
+            FlexPanel flexPanelChild = FlexPanel.asFlexPanel(child);
+            LayoutData flexLayoutData = child.getLayoutData();
 
-                    boolean childOppositeCollapsed = vertical ? false : childParams.vertCollapsed;
-                    oppositeCollapsed = oppositeCollapsed && childOppositeCollapsed;
+            if (flexPanelChild != null) {
+                PanelParams childParams = updatePanels(flexPanelChild);
 
-                    boolean childMainCollapsed = vertical ? childParams.vertCollapsed : false;
-                    if (childMainCollapsed)
-                        flexCollapsed = true;
+                boolean childOppositeCollapsed = vertical ? false : childParams.vertCollapsed;
+                oppositeCollapsed = oppositeCollapsed && childOppositeCollapsed;
 
-                    setFlexModifier(flexPanelChild.getFlexLayout(), vertical, flexLayoutData, child, childMainCollapsed ? FlexModifier.COLLAPSE : null);
+                boolean childMainCollapsed = vertical ? childParams.vertCollapsed : false;
+                if (childMainCollapsed)
+                    flexCollapsed = true;
 
-                    boolean childMainFlex = flexLayoutData.isFlex();
-                    if (childMainFlex)
-                        flexCount++;
-                } else if (((Component) child).isVisible()) {
-                    return new PanelParams(false);
-                }
+                setFlexModifier(flexPanelChild.getFlexLayout(), vertical, flexLayoutData, child, childMainCollapsed ? FlexModifier.COLLAPSE : null);
+
+                boolean childMainFlex = flexLayoutData.isFlex();
+                if (childMainFlex)
+                    flexCount++;
+            } else if (((Component) child).isVisible()) {
+                return new PanelParams(false);
             }
-
-            // no flex elements left, but there are collapsed elements, we're collapsing this container
-            boolean mainCollapsed = flexCount == 0 && flexCollapsed;
-
-            boolean vertCollapsed = forceVertCollapsed || (vertical ? mainCollapsed : oppositeCollapsed);
-
-            return new PanelParams(vertCollapsed);
-        } else {
-            return new PanelParams(false);
         }
+
+        // no flex elements left, but there are collapsed elements, we're collapsing this container
+        boolean mainCollapsed = flexCount == 0 && flexCollapsed;
+
+        boolean vertCollapsed = forceVertCollapsed || (vertical ? mainCollapsed : oppositeCollapsed);
+
+        return new PanelParams(vertCollapsed);
     }
 
     public enum FlexModifier {

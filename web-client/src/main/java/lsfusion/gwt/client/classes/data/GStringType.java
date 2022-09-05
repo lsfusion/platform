@@ -27,17 +27,12 @@ public class GStringType extends GTextBasedType {
 
     @Override
     public GCompare[] getFilterCompares() {
-        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, CONTAINS, MATCH};
+        return new GCompare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, CONTAINS, MATCH};
     }
 
     @Override
     public Object parseString(String s, String pattern) throws ParseException {
         return s;
-    }
-
-    @Override
-    public GCompare getDefaultCompare() {
-        return caseInsensitive ? MATCH : EQUALS;
     }
 
     public GStringType() {}

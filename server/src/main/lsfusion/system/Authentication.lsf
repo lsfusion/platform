@@ -949,22 +949,24 @@ intervalPickerRanges(CustomUser cu) = JSON FROM range = getWord(staticName(DateT
 
 setDefaultRanges(CustomUser cu) {
     //dateTime
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeToday, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeYesterday, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeSevenDaysAgo, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeThirtyDaysAgo, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeMonthStart, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangePreviousMonthStart, cu) <- TRUE;
-    isDateTimeRangeSelected(DateTimePickerRanges.rangeThisYearStart, cu) <- TRUE;
+    isDateTimeRangeSelected(DateTimePickerRanges r, cu) <- TRUE WHERE 
+    r == DateTimePickerRanges.rangeToday OR 
+    r == DateTimePickerRanges.rangeYesterday OR 
+    r == DateTimePickerRanges.rangeSevenDaysAgo OR 
+    r == DateTimePickerRanges.rangeThirtyDaysAgo OR 
+    r == DateTimePickerRanges.rangeMonthStart OR 
+    r == DateTimePickerRanges.rangePreviousMonthStart OR 
+    r == DateTimePickerRanges.rangeThisYearStart;
     
     //dateTime interval
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeIntervalToday, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeIntervalYesterday, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeLast7Days, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeLast30Days, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeThisMonth, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangePreviousMonth, cu) <- TRUE;
-    isIntervalRangeSelected(DateTimeIntervalPickerRanges.rangeThisYear, cu) <- TRUE;
+    isIntervalRangeSelected(DateTimeIntervalPickerRanges r, cu) <- TRUE WHERE
+    r == DateTimeIntervalPickerRanges.rangeIntervalToday OR 
+    r == DateTimeIntervalPickerRanges.rangeIntervalYesterday OR 
+    r == DateTimeIntervalPickerRanges.rangeLast7Days OR 
+    r == DateTimeIntervalPickerRanges.rangeLast30Days OR 
+    r == DateTimeIntervalPickerRanges.rangeThisMonth OR 
+    r == DateTimeIntervalPickerRanges.rangePreviousMonth OR 
+    r == DateTimeIntervalPickerRanges.rangeThisYear;
 }
 
 WHEN SET (CustomUser cu IS CustomUser) DO {

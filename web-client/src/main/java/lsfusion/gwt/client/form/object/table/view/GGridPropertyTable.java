@@ -391,6 +391,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
+    private boolean[] flexPrefs;
     public double resizeColumn(int column, int delta) {
 //        int body = ;
         int columnCount = getColumnCount();
@@ -398,11 +399,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             resized = true;
             doublePrefs = new double[columnCount];
             intBasePrefs = new int[columnCount];
+            flexPrefs = new boolean[columnCount];
             for (int i = 0; i < columnCount; i++) {
                 Double pxPref = prefs[i].getResizeSize();
                 Integer pxBasePref = basePrefs[i].getIntResizeSize();
                 doublePrefs[i] = pxPref != null ? pxPref : -1.0;
                 intBasePrefs[i] = pxBasePref != null ? pxBasePref : -1;
+                flexPrefs[i] = false;
             }
             prefs = null;
             basePrefs = null;
@@ -421,7 +424,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         int viewWidth = getViewportWidth() - margins;
-        double restDelta = GwtClientUtils.calculateNewFlexes(column, delta, viewWidth, doublePrefs, flexes, intBasePrefs, baseFlexes, true);
+        double restDelta = GwtClientUtils.calculateNewFlexes(column, delta, viewWidth, doublePrefs, flexes, intBasePrefs, baseFlexes, flexPrefs, true);
 
         for (int i = 0; i < columnCount; i++) {
             setUserWidth(i, (int) Math.round(doublePrefs[i]));
@@ -480,6 +483,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         resized = false;
         doublePrefs = null;
         intBasePrefs = null;
+        flexPrefs = null;
         margins = 0;
 
         flexes = new double[columnsCount];

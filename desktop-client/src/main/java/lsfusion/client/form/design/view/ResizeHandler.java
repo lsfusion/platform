@@ -1,6 +1,7 @@
 package lsfusion.client.form.design.view;
 
 import lsfusion.client.form.design.view.widget.Widget;
+import lsfusion.client.form.property.panel.view.ActionPanelView;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -34,7 +35,7 @@ public class ResizeHandler {
         if ((eventType == MouseEvent.MOUSE_MOVED || eventType == MouseEvent.MOUSE_PRESSED || eventType == MouseEvent.MOUSE_ENTERED) && resizeHandler == null) {
             ResizedChild resizedChild = getResizedChild(helper, event/*, childIndexSupplier*/);
             //Style cursorStyle = cursorElement.getStyle();
-            if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index)) {
+            if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index) && !eventSourceIsButton(event)) {
                 cursorElement.setCursor(Cursor.getPredefinedCursor(helper.isVertical() ? Cursor.N_RESIZE_CURSOR : Cursor.E_RESIZE_CURSOR));
 
                 if (eventType == MouseEvent.MOUSE_PRESSED) {
@@ -52,9 +53,9 @@ public class ResizeHandler {
                 // so we push this event down to that container
                 // in theory we should check that event is trigger to the right of this child widget, but since this child widget can have paddings / margins, we'll just do some extra work
                 if(resizedChild != null && resizedChild.outsideBorder) {
-                    Widget childWidget = helper.getChildWidget(resizedChild.index);
-                    if (childWidget instanceof FlexPanel)
-                        ((FlexPanel)childWidget).checkResizeEvent(event, cursorElement);
+                    FlexPanel childFlexPanel = FlexPanel.asFlexPanel(helper.getChildWidget(resizedChild.index));
+                    if (childFlexPanel != null)
+                        childFlexPanel.checkResizeEvent(event, cursorElement);
                 }
             }
         }
@@ -77,6 +78,12 @@ public class ResizeHandler {
                 cursorElement.setCursor(null); // need this for the same reason that we need MOUSE_EXITED
             }
         }
+    }
+
+    //hack for buttons: ActionPanelView is wrapped into PropertyPanelController.Panel. Show resize cursor only if event source is PropertyPanelController.Panel
+    //(show resize cursor only at the borders of the button, not inside of it)
+    private static boolean eventSourceIsButton(MouseEvent event) {
+        return event.getSource() instanceof ActionPanelView;
     }
 
     public static int getAbsolutePosition(boolean vertical, Component element, boolean left) {
@@ -151,8 +158,8 @@ public class ResizeHandler {
     private static void resizeHeaders(int clientX) {
         int dragX = clientX - initialMouse;
         if (Math.abs(dragX) > 2) {
-            helper.resizeChild(index, dragX);
-            initialMouse = Math.max(clientX, getAbsoluteRight()); // делается max, чтобы при resize'е влево растягивание шло с момента когда курсор вернется на правый край колонки (вправо там другие проблемы)
+            double restDelta = helper.resizeChild(index, dragX);
+            initialMouse += dragX - Math.round(restDelta);
         }
     }
 }

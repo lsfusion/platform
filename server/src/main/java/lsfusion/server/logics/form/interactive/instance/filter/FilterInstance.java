@@ -28,6 +28,7 @@ import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -77,10 +78,11 @@ public abstract class FilterInstance implements Updated {
 
                 String filterValue = (String) ((DataObject) filter.value).object;
 
-                if ((isContains || isEquals) && (filterValue.contains(","))) {
+                String separator = Settings.get().getMatchSearchSeparator();
+                if ((isContains || isEquals) && (filterValue.contains(separator))) {
                     FilterInstance resultFilter = null;
-                    //one or more repetitions of \ and then any one char, or any char but \ and ,
-                    Matcher matcher = Pattern.compile("(?:\\\\.|[^\\\\,])+", Pattern.DOTALL).matcher(filterValue);
+                    //one or more repetitions of \ and then any one char, or any char but \ and separator
+                    Matcher matcher = Pattern.compile("(?:\\\\.|[^\\\\" + separator + "])+", Pattern.DOTALL).matcher(filterValue);
                     while (matcher.find()) {
                         String value = matcher.group();
                         if (needWrapContains(value, isContains)) {
@@ -91,7 +93,10 @@ public abstract class FilterInstance implements Updated {
                         resultFilter = resultFilter == null ? filterInstance : new OrFilterInstance(resultFilter, filterInstance);
 
                     }
-                    return resultFilter;
+                    if(resultFilter !=null) {
+                        resultFilter.junction = filter.junction;
+                        return resultFilter;
+                    }
                 } else if (needWrapContains(filterValue, isContains)) {
                     filter.value = new DataObject(wrapContains(filterValue), filterValueClass);
                 }
@@ -100,11 +105,11 @@ public abstract class FilterInstance implements Updated {
         return filter;
     }
 
-    private static boolean needWrapContains(String value, boolean isContains) {
-        return isContains && !value.contains("%");
+    public static boolean needWrapContains(String value, boolean isContains) {
+        return isContains && !value.startsWith("%") && !value.endsWith("%");
     }
 
-    private static String wrapContains(String value) {
+    public static String wrapContains(String value) {
         return "%" + value + "%";
     }
 

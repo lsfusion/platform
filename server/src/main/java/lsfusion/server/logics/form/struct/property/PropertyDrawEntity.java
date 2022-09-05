@@ -332,7 +332,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             LP targetProp = lm.getRequestedValueProperty(customClass);
 
             // now we don't respect contextFilters (3rd parameter), however later, maybe we can pass it here from formInstance in most call trees
-            InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterEntity(object, SetFact.EMPTY(), mapObjects);
+            InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterAndOrderEntities(object, SetFact.EMPTY(), mapObjects).first;
             assert !filter.mapValues.valuesSet().contains(objectInterface);
 
             PropertyObjectEntity<X> listProperty = (PropertyObjectEntity<X>) getDrawProperty();
@@ -351,6 +351,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                     object.getSeekPanelAction(lm, targetProp), null);
 
             PropertyFact.setResetAsync(request.action, new AsyncMapChange<>(null, object, null, null));
+
+            request.action.ignoreChangeSecurityPolicy = true;
 
             return request.mapObjects(mapObjects.reverse());
         }

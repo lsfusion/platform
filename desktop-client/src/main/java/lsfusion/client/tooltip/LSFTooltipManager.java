@@ -48,21 +48,29 @@ public class LSFTooltipManager {
 
     public static void initTooltip(JComponent component, Object model, JTable gridTable) {
         Timer tooltipTimer = new Timer(1500, evt -> {
-
+            int currentIndex = index;
             JPanel tooltipPanel;
             if (gridTable instanceof GridTable) {
-                int modelIndex = gridTable.getColumnModel().getColumn(index).getModelIndex();
+                TableColumnModel columnModel = gridTable.getColumnModel();
+                if (currentIndex < 0 && currentIndex >= columnModel.getColumnCount())
+                    return;
+
+                int modelIndex = columnModel.getColumn(currentIndex).getModelIndex();
                 GridTable table = (GridTable) gridTable;
                 tooltipPanel = createTooltipPanel(table.getModel().getColumnProperty(modelIndex).getTooltipText(table.getColumnCaption(index)),
                         table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
             } else {
-                ClientPropertyDraw property = ((GroupTreeTableModel) model).getColumnProperty(index);
+                GroupTreeTableModel treeTableModel = (GroupTreeTableModel) model;
+                if (currentIndex < 0 && currentIndex >= treeTableModel.getColumnCount())
+                    return;
 
-                //if first column
+                ClientPropertyDraw property = treeTableModel.getColumnProperty(currentIndex);
+
+                /*if first column*/
                 if (property == null)
                     return;
 
-                tooltipPanel = createTooltipPanel(property.getTooltipText(((GroupTreeTableModel) model).getColumnName(index)),
+                tooltipPanel = createTooltipPanel(property.getTooltipText(treeTableModel.getColumnName(currentIndex)),
                         property.path, property.creationPath);
             }
 
@@ -92,6 +100,7 @@ public class LSFTooltipManager {
                 }
             };
 
+            closeBalloon(); //helps close tooltips on dialog opening
             balloonTip = new BalloonTip(component, tooltipPanel, new LSFTooltipStyle(), positioner, null);
 
             //Tooltips in tables are not displayed on elements located close to the borders

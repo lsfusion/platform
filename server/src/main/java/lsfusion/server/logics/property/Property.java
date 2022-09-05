@@ -85,7 +85,7 @@ import lsfusion.server.logics.classes.user.set.ResolveUpClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
@@ -1234,7 +1234,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
 
         AlgType algType = type.getAlg();
-        assert !assertFull || isFull(algType.getAlgInfo());
+//        assert !assertFull || isFull(algType.getAlgInfo());
         return call.call(algType);
     }
 
@@ -1664,8 +1664,28 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
+            InputListEntity<?, PropertyInterface> inputList = null;
+            InputContextSelector<PropertyInterface> inputContextSelector = null;
+
+            // completion
+            if(isDefaultWYSInput(valueClass) && !Property.this.disableInputList) { // && // if string and not disabled
+                inputList = new InputListEntity<>(this, MapFact.EMPTYREV());
+                // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
+                inputContextSelector = new InputContextSelector<PropertyInterface>() {
+                    public Pair<InputFilterEntity<?, PropertyInterface>, ImOrderMap<InputOrderEntity<?, PropertyInterface>, Boolean>> getFilterAndOrders() {
+                        if(!getSelectCost(SetFact.EMPTY()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount())))  // if cost-per-row * numberRows > max read count, won't read
+                            return null;
+                        return new Pair<>(null, MapFact.EMPTYORDER());
+                    }
+
+                    public <C extends PropertyInterface> InputContextSelector<C> map(ImRevMap<PropertyInterface, C> map) {
+                        return (InputContextSelector<C>) this;
+                    }
+                };
+            }
+
             action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    isDefaultWYSInput(valueClass) && !Property.this.disableInputList ? new InputListEntity<>(this, MapFact.EMPTYREV()) : null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), null, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
+                    inputList, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), inputContextSelector, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
         }
 
         ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
@@ -2231,8 +2251,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getInterfaceStat(false);
     }
 
-    private static <T> Stat getStatRows(ImRevMap<T, KeyExpr> mapKeys, Where where) {
-        return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS).getRows();
+    private static <T> StatKeys<KeyExpr> getStatRows(ImRevMap<T, KeyExpr> mapKeys, Where where) {
+        return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS);
     }
 
     private Stat getInterfaceStat(boolean alotHeur) {
@@ -2258,39 +2278,56 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Where where = expr.getWhere();
 
         innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
-        return getStatRows(innerKeys, where);
+        return getStatRows(innerKeys, where).getRows();
+    }
+
+    private Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+        return getSelectCostStat(fixedExprs).first;
     }
 
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    public Stat getValueStat(ImMap<T, ? extends Expr> fixedExprs) {
+    private Pair<Stat, Cost> getSelectCostStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
-        Expr expr = getExpr(innerExprs); // check if is called after stats if filled
-//        Expr expr = calculateStatExpr(innerExprs, false);
+        Where where = getExpr(innerExprs).compare(getValueParamExpr(), Compare.EQUALS);
 
-        ImRevMap<Integer, KeyExpr> mapKeys = KeyExpr.getMapKeys(SetFact.singleton(0));
-        Where where = GroupExpr.create(MapFact.singleton(0, expr), Where.TRUE(), mapKeys).getWhere();
+        innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
+        StatKeys<KeyExpr> statRows = getStatRows(innerKeys, where);
+        return new Pair<>(statRows.getRows(), statRows.getCost());
+    }
 
-        mapKeys = mapKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys just like in getInterfaceStat (needed because where for example can be FALSE)
-        return getStatRows(mapKeys, where);
+    public Stat getValueStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+        return getInterfaceStat(fixedExprs).div(getSelectStat(fixedExprs));
     }
 
     protected ImRevMap<T, NullableKeyExpr> getMapNotNullKeys() {
         return interfaces.mapRevValues((i, value) -> new NullableKeyExpr(i));
     }
 
-    public Stat getDistinctStat(ImSet<T> interfaces) {
-        ImRevMap<T, StaticParamNullableExpr> paramExprs = getInterfaceParamExprs(interfaces);
-        return getInterfaceStat(paramExprs).div(getValueStat(paramExprs));
+    public Stat getInterfaceStat(ImSet<T> interfaces) {
+        return getInterfaceStat(getInterfaceParamExprs(interfaces));
+    }
+
+    public Stat getSelectStat(ImSet<T> fixedInterfaces) {
+        return getSelectStat(getInterfaceParamExprs(fixedInterfaces));
+    }
+
+    public Cost getSelectCost(ImSet<T> fixedInterfaces) {
+        return getSelectCostStat(getInterfaceParamExprs(fixedInterfaces)).second;
     }
 
     @IdentityLazy
     public ImRevMap<T, StaticParamNullableExpr> getInterfaceParamExprs(ImSet<T> interfaces) {
         // maybe later it makes sense to fill params without classes with some "default" classes
         return getInterfaceClasses(ClassType.forPolicy).filter(interfaces).mapRevValues(StaticParamNullableExpr::new);
+    }
+    @IdentityLazy
+    public StaticParamNullableExpr getValueParamExpr() {
+        // maybe later it makes sense to fill params without classes with some "default" classes
+        return new StaticParamNullableExpr(getValueClass(ClassType.forPolicy));
     }
 
     // it's heuristics anyway, so why not to try to guess uniqueness by name
@@ -2300,16 +2337,15 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         String name = getName();
         if(name != null && predefinedValueUniqueNames.contains(name))
             return true;
-        Stat interfaceStat = getInterfaceStat(fixedExprs);
-        return isValueUnique(interfaceStat, getValueStat(fixedExprs)) &&
-                (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(interfaceStat)));
+        return getSelectStat(fixedExprs).equals(Stat.ONE) &&
+                (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(getInterfaceStat(fixedExprs))));
     }
 
     public boolean isValueFull(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return isFull(interfaces.removeIncl(fixedExprs.keys()), AlgType.statAlotType);
     }
 
-    public InputListEntity<?, T> getFilterInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
+    public InputListEntity<?, T> getInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(isValueFull(fixedExprs))
             return new InputListEntity<>(this, fixedExprs.keys().toRevMap());
         return null;
@@ -2334,8 +2370,5 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     private final static Stat ALOT_THRESHOLD = Stat.ALOT.reduce(2); // ALOT stat can be reduced a little bit, but there still will be ALOT keys, so will take sqrt
     private static boolean hasAlotKeys(Stat stat) {
         return ALOT_THRESHOLD.lessEquals(stat);
-    }
-    protected static boolean isValueUnique(Stat rowStat, Stat valueStat) {
-        return !valueStat.less(rowStat);
     }
 }

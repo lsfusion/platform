@@ -3,6 +3,7 @@ package lsfusion.server.logics.classes.data;
 import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
@@ -11,6 +12,7 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.file.*;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataOutputStream;
@@ -345,5 +347,13 @@ public class StringClass extends TextBasedClass<String> {
     @Override
     public ValueClass getFilterMatchValueClass() {
         return text;
+    }
+
+    @Override
+    public Compare getDefaultCompare() {
+        if(caseInsensitive || Settings.get().isDefaultCompareForStringContains())
+            return Settings.get().isDefaultCompareSearchInsteadOfContains() ? Compare.MATCH : Compare.CONTAINS;
+
+        return super.getDefaultCompare();
     }
 }

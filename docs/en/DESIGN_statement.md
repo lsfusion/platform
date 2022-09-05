@@ -111,7 +111,7 @@ To access design components, you can use their names or address property compone
 |`flex`|Extension coefficient. Value of a property similar to the [CSS flex-grow](http://www.w3schools.com/cssref/css3_pr_flex-grow.asp) property. Defines how much the component should grow in size relative to other components.|[`NUMERIC` type literal](Literals.md#numericliteral)|`0`|`0.25`|
 |`fill`|Similar to the `flex` property, the only difference being that if a zero value is set, the `align` property is set to `START`, otherwise `align` is set to `STRETCH`|`NUMERIC` type literal|`0`|`1.5`|
 |noSort |No sorting|[Logical literal](Literals.md#booleanliteral)|`FALSE`|`TRUE`<br/>`FALSE`|
-|`defaultCompare`|Default filter. Acceptable values: `EQUALS`, `GREATER`, `LESS`, `GREATER_EQUALS`, `LESS_EQUALS`, `NOT_EQUALS`, `START_WITH`, `CONTAINS`, `ENDS_WITH`, `LIKE`.|String literal|`CONTAINS`|`START_WITH`|
+|`defaultCompare`|Default filter. Acceptable values: `EQUALS`, `GREATER`, `LESS`, `GREATER_EQUALS`, `LESS_EQUALS`, `NOT_EQUALS`, `CONTAINS`, `LIKE`.|String literal|`CONTAINS`|`GREATER`|
 |`marginTop`|Top margin|Integer literal|`0`|`3`|
 |`marginRight`|Right margin|Integer literal|`0`|`1`|
 |`marginBottom`|Bottom margin|Integer literal|`0`|`4`|
