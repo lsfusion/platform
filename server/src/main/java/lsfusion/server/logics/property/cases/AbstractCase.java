@@ -106,7 +106,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
                 if (match12 && !match21)
                     return -1;
             }
-            return Integer.compare(list.indexOf(o1), list.indexOf(o2));
+            return Integer.compare(list.indexOf(o2), list.indexOf(o1));
         };
 
         ImOrderSet<A> orderSet = list.toOrderSet(); // может повторяться implementation
