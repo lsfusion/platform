@@ -17,11 +17,11 @@
 }
 
 /*we could use box-shadow, but it cannot mix colors as we need*/
-.table-active {
+.table-active > td {
     position: relative;
 }
 
-.table-active::before {
+.table-active > td::before {
     content: '';
     mix-blend-mode: multiply;
     background: var(--selected-row-background-color);
