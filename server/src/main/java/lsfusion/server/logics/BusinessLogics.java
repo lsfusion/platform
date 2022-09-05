@@ -1988,7 +1988,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             result.add(getChangeDataCurrentDateTimeTask(scheduler));
         }
         result.add(getFlushAsyncValuesCachesTask(scheduler));
-        result.addAll(resetResourcesCacheTasks(scheduler));
+        result.add(resetResourcesCacheTasks(scheduler));
 
         if(!SystemProperties.inDevMode) { // чтобы не мешать при включенных breakPoint'ах
             result.add(getOpenFormCountUpdateTask(scheduler));
@@ -2111,17 +2111,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return scheduler.createSystemTask(stack -> updateThreadAllocatedBytesMap(), false, Settings.get().getThreadAllocatedMemoryPeriod() / 2, false, "Allocated Bytes");
     }
 
-    private List<Scheduler.SchedulerTask> resetResourcesCacheTasks(Scheduler scheduler) {
+    private Scheduler.SchedulerTask resetResourcesCacheTasks(Scheduler scheduler) {
         ClearCacheWatcher clearCacheWatcher = new ClearCacheWatcher();
-        return Arrays.stream(ResourceUtils.getClassPathElements())
+        clearCacheWatcher.walkAndRegisterDirectories(Arrays.stream(ResourceUtils.getClassPathElements())
                 .filter(element -> !isRedundantString(element) && !element.endsWith("*"))
                 .map(element -> Paths.get(element + "/"))
                 .filter(Files::isDirectory)
-                .map(path -> {
-                    clearCacheWatcher.walkAndRegisterDirectories(path);
-                    return scheduler.createSystemTask(stack -> clearCacheWatcher.watch(), true, null, false, "Reset resources cache");
-                })
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
+
+        return scheduler.createSystemTask(stack -> clearCacheWatcher.watch(), true, null, false, "Reset resources cache");
     }
 
     private class AllocatedInfo {

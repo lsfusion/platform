@@ -15,6 +15,7 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
@@ -67,16 +68,18 @@ public abstract class FilesChangeWatcher {
 
     protected abstract void processFile(WatchEvent.Kind<?> kind, File file);
 
-    public void walkAndRegisterDirectories(Path path) {
+    public void walkAndRegisterDirectories(List<Path> paths) {
         // register directory and sub-directories
         try {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+            for (Path path : paths) {
+                Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                        dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
+            }
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
