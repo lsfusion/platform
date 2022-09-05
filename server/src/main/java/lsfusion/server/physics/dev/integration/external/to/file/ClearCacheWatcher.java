@@ -8,9 +8,9 @@ import java.nio.file.WatchEvent;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
-public class ClearCashWatcher extends FilesChangeWatcher {
+public class ClearCacheWatcher extends FilesChangeWatcher {
 
-    public ClearCashWatcher() {
+    public ClearCacheWatcher() {
         super();
     }
 

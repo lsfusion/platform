@@ -108,7 +108,7 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
-import lsfusion.server.physics.dev.integration.external.to.file.ClearCashWatcher;
+import lsfusion.server.physics.dev.integration.external.to.file.ClearCacheWatcher;
 import lsfusion.server.physics.dev.integration.external.to.file.SynchronizeSourcesWatcher;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
@@ -2112,14 +2112,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private List<Scheduler.SchedulerTask> resetResourcesCacheTasks(Scheduler scheduler) {
-        ClearCashWatcher clearCashWatcher = new ClearCashWatcher();
+        ClearCacheWatcher clearCacheWatcher = new ClearCacheWatcher();
         return Arrays.stream(ResourceUtils.getClassPathElements())
                 .filter(element -> !isRedundantString(element) && !element.endsWith("*"))
                 .map(element -> Paths.get(element + "/"))
                 .filter(Files::isDirectory)
                 .map(path -> {
-                    clearCashWatcher.walkAndRegisterDirectories(path);
-                    return scheduler.createSystemTask(stack -> clearCashWatcher.watch(), true, null, false, "Reset resources cache");
+                    clearCacheWatcher.walkAndRegisterDirectories(path);
+                    return scheduler.createSystemTask(stack -> clearCacheWatcher.watch(), true, null, false, "Reset resources cache");
                 })
                 .collect(Collectors.toList());
     }
