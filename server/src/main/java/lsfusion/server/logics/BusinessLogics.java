@@ -108,7 +108,7 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.resolve.*;
-import lsfusion.server.physics.dev.integration.external.to.file.ClearCashWatcher;
+import lsfusion.server.physics.dev.integration.external.to.file.ClearCacheWatcher;
 import lsfusion.server.physics.dev.integration.external.to.file.SynchronizeSourcesWatcher;
 import lsfusion.server.physics.dev.integration.external.to.mail.EmailLogicsModule;
 import lsfusion.server.physics.dev.module.ModuleList;
@@ -2112,7 +2112,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     private Scheduler.SchedulerTask resetResourcesCacheTasks(Scheduler scheduler) {
-        ClearCashWatcher clearCacheWatcher = new ClearCashWatcher();
+        ClearCacheWatcher clearCacheWatcher = new ClearCacheWatcher();
         clearCacheWatcher.walkAndRegisterDirectories(Arrays.stream(ResourceUtils.getClassPathElements())
                 .filter(element -> !isRedundantString(element) && !element.endsWith("*"))
                 .map(element -> Paths.get(element + "/"))

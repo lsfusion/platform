@@ -52,7 +52,7 @@ public class LSFTooltipManager {
             JPanel tooltipPanel;
             if (gridTable instanceof GridTable) {
                 TableColumnModel columnModel = gridTable.getColumnModel();
-                if (currentIndex < 0 && currentIndex >= columnModel.getColumnCount())
+                if (currentIndex < 0 || currentIndex >= columnModel.getColumnCount())
                     return;
 
                 int modelIndex = columnModel.getColumn(currentIndex).getModelIndex();
@@ -61,7 +61,7 @@ public class LSFTooltipManager {
                         table.getModel().getColumnProperty(modelIndex).path, table.getModel().getColumnProperty(modelIndex).creationPath);
             } else {
                 GroupTreeTableModel treeTableModel = (GroupTreeTableModel) model;
-                if (currentIndex < 0 && currentIndex >= treeTableModel.getColumnCount())
+                if (currentIndex < 0 || currentIndex >= treeTableModel.getColumnCount())
                     return;
 
                 ClientPropertyDraw property = treeTableModel.getColumnProperty(currentIndex);
