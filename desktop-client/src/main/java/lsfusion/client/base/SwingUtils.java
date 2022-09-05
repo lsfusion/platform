@@ -657,19 +657,21 @@ public class SwingUtils {
     }
 
     // viewfixed if view is fixed we can convert flex to pref, otherwise we can't
-    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean viewFixed) {
-        boolean removeLeftPref = true; // вообще так как removeLeftFlex false, логично иметь симметричное поведение, но больше не меньше (removeRightPref и add*Pref не имеют смысла, так как вся delta просто идет в pref колонки)
+    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean[] flexPrefs, boolean viewFixed) {
 
         // ищем первую динамическую компоненту слева (она должна получить +delta, соответственно правая часть -delta)
         // тут есть варианты -delta идет одной правой колонке, или всем правых колонок, но так как
         // a) так как выравнивание по умолчанию левое, интуитивно при перемещении изменяют именно размер левой колонки, б) так как есть де-факто ограничение Preferred, вероятность получить нужный размер уменьшая все колонки куда выше
         // будем распределять между всеми правыми колонками
 
-        // находим левую flex
-        while (column >= 0 && baseFlexes[column] == 0)
-            column--;
-        if (column < 0) // нет левой flex колонки - ничего не делаем
-            return delta;
+        int flexColumn = column;
+        while (flexColumn >= 0 && baseFlexes[flexColumn] == 0)
+            flexColumn--;
+
+        if (flexColumn < 0) {
+            return -reducePrefs(-delta, column, prefs, basePrefs, flexPrefs);
+        }
+        column = flexColumn;
 
         // считаем общий текущий preferred
         double totalPref = 0;
@@ -683,14 +685,7 @@ public class SwingUtils {
         if (greaterEquals(exceedPrefWidth, 0.0)) {
             double prefReduceDelta = Math.min(-delta, exceedPrefWidth);
             delta += prefReduceDelta;
-            for (int i = column; i >= 0; i--) {
-                double maxReduce = prefs[i] - basePrefs[i];
-                double reduce = Math.min(prefReduceDelta, maxReduce);
-                prefs[i] -= reduce;
-                prefReduceDelta -= reduce;
-                if (!removeLeftPref || equals(prefReduceDelta, 0.0)) // если delta не осталось нет смысла продолжать, у нас либо viewWidth либо уже все расписали
-                    break;
-            }
+            reducePrefs(prefReduceDelta, column, prefs, basePrefs, null);
 
             assert greaterEquals(0.0, delta);
 
@@ -763,6 +758,20 @@ public class SwingUtils {
         return restFlex * flexWidth / totalFlex;
     }
 
+    private static double reducePrefs(double delta, int column, double[] prefs, int[] basePrefs, boolean[] filterColumns) {
+        for (int i = column; i >= 0; i--) {
+            if(filterColumns == null || filterColumns[i]) {
+                double maxReduce = prefs[i] - basePrefs[i];
+                double reduce = Math.min(delta, maxReduce);
+                prefs[i] -= reduce;
+                delta -= reduce;
+                if (equals(delta, 0.0))
+                    break;
+            }
+        }
+        return delta;
+    }
+
     private static void adjustFlexesToFixedTableLayout(int viewWidth, double[] prefs, boolean[] flexes, double[] flexValues) {
         double minRatio = Double.MAX_VALUE;
         double totalPref = 0;
@@ -786,6 +795,7 @@ public class SwingUtils {
     public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
         double[] flexValues = new double[prefs.length];
         double[] baseFlexValues = new double[prefs.length];
+        boolean[] flexPrefs = new boolean[prefs.length];
         for(int i=0;i<prefs.length;i++) {
             if(flexes[i]) {
                 flexValues[i] = prefs[i];
@@ -794,9 +804,10 @@ public class SwingUtils {
                 flexValues[i] = 0.0;
                 baseFlexValues[i] = 0.0;
             }
+            flexPrefs[i] = false;
         }
 
-        calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, true);
+        calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, flexPrefs, true);
 
         adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
     }

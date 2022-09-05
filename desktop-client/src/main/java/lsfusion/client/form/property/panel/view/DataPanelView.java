@@ -81,6 +81,7 @@ public class DataPanelView extends FlexPanel implements PanelView {
             add(label, property.getPanelCaptionAlignment(), 0.0, vertical ? captionHeight : captionWidth);
         }
 
+        transparentResize = true;
         Pair<Integer, Integer> valueSizes;
         if(property.autoSize) {
             assert captionContainer == null;
