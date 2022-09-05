@@ -450,6 +450,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return null;
     }
 
+    public Integer getDialogInputActionIndex() {
+        ClientInputList inputList = getInputList();
+        if (inputList != null) {
+            for (int i = 0; i < inputList.actions.length; i++) {
+                ClientInputListAction action = inputList.actions[i];
+                //addDialogInputAProp from server
+                if (action.action.equals("dialog")) {
+                    return i;
+                }
+            }
+        }
+        return null;
+    }
+
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
