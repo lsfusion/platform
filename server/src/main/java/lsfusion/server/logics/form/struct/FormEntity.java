@@ -1,6 +1,5 @@
 package lsfusion.server.logics.form.struct;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -24,13 +23,11 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptParsingException;
-import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule.InsertType;
-import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
@@ -64,12 +61,12 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -1227,30 +1224,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             }
         }
 
-        NFList<ActionObjectEntity<?>> eventActionsNFList = eventActions.getNFList(FormEventType.INIT);
-        if (eventActionsNFList != null) {
-            boolean isLastActionSync = true;
-            for (ActionObjectEntity<?> actionObjectEntity : eventActionsNFList.getNFList(Version.last())) {
-                for (ActionMapImplement<?, ?> actionMapImplement : actionObjectEntity.property.getList()) {
-                    for (Action dependAction : actionMapImplement.action.getDependActions()) {
-                        if (dependAction instanceof InternalClientAction)
-                            isLastActionSync = ((InternalClientAction) dependAction).isSyncType();
-                    }
-                }
-            }
-
-            if (!isLastActionSync) {
-                try {
-                    ValueProperty valueProperty = new ValueProperty(LocalizedString.NONAME, LocalizedString.create("empty.js", false), StringClass.text);
-                    ScriptingLogicsModule.LAWithParams laWithParams = ThreadLocalContext.getBaseLM()
-                            .addScriptedInternalClientAction(new ScriptingLogicsModule.LPWithParams(new LP<>(valueProperty)), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true);
-                    eventActions.addAll(FormEventType.INIT, Collections.singletonList(new ActionObjectEntity<>(laWithParams.getLP().action, MapFact.EMPTYREV())), Version.last());
-                } catch (Exception e) {
-                    throw Throwables.propagate(e);
-                }
-            }
-        }
-
+        checkInternalClientAction();
 
         groups.finalizeChanges();
         treeGroups.finalizeChanges();
@@ -1286,6 +1260,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 //            }
         }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
 //        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
+    }
+
+    private void checkInternalClientAction() {
+        NFList<ActionObjectEntity<?>> eventActionsNFList = eventActions.getNFList(FormEventType.INIT);
+        if (eventActionsNFList != null) {
+            for (ActionObjectEntity<?> actionObjectEntity : eventActionsNFList.getNFList(Version.last())) {
+                for (ActionMapImplement<?, ?> actionMapImplement : actionObjectEntity.property.getList()) {
+                    if (actionMapImplement.hasFlow(ChangeFlowType.INTERNALASYNC)) {
+                        ActionMapImplement<?, PropertyInterface> internalClientAction = PropertyFact
+                                .createJoinAction(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), true),
+                                        PropertyFact.createStatic(LocalizedString.create("empty.js", false), StringClass.text));
+                        eventActions.addAll(FormEventType.INIT, Collections.singletonList(new ActionObjectEntity<>(internalClientAction.action, MapFact.EMPTYREV())), Version.last());
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     public ImSet<Property> asyncInitPropertyChanges = SetFact.EMPTY();
