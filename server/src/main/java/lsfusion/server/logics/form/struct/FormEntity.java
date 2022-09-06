@@ -29,9 +29,11 @@ import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
@@ -59,6 +61,7 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
@@ -68,6 +71,7 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -1220,6 +1224,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             }
         }
 
+        checkInternalClientAction();
+
         groups.finalizeChanges();
         treeGroups.finalizeChanges();
         propertyDraws.finalizeChanges();
@@ -1254,6 +1260,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 //            }
         }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
 //        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
+    }
+
+    private void checkInternalClientAction() {
+        NFList<ActionObjectEntity<?>> eventActionsNFList = eventActions.getNFList(FormEventType.INIT);
+        if (eventActionsNFList != null) {
+            for (ActionObjectEntity<?> actionObjectEntity : eventActionsNFList.getNFList(Version.last())) {
+                for (ActionMapImplement<?, ?> actionMapImplement : actionObjectEntity.property.getList()) {
+                    if (actionMapImplement.hasFlow(ChangeFlowType.INTERNALASYNC)) {
+                        ActionMapImplement<?, PropertyInterface> internalClientAction = PropertyFact
+                                .createJoinAction(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), true),
+                                        PropertyFact.createStatic(LocalizedString.create("empty.js", false), StringClass.text));
+                        eventActions.addAll(FormEventType.INIT, Collections.singletonList(new ActionObjectEntity<>(internalClientAction.action, MapFact.EMPTYREV())), Version.last());
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     public ImSet<Property> asyncInitPropertyChanges = SetFact.EMPTY();
