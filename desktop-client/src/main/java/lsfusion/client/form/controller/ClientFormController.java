@@ -1334,7 +1334,7 @@ public class ClientFormController implements AsyncListener {
             @Override
             protected void onResponse(long requestIndex, ClientAsync[] result) throws Exception {
                 super.onResponse(requestIndex, result);
-                callback.done(Pair.create(Arrays.asList(result), false));
+                callback.done(new Pair(result != null ? Arrays.asList(result) : null, false));
             }
 
             @Override
