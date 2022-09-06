@@ -256,7 +256,7 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         if (!(action instanceof BaseAction) || ((BaseAction) action).logRemoteException()) {
             String actionTry = "";
             if(action instanceof BaseAction) {
-                actionTry = "\n" + action + " try: " + ((BaseAction) action).requestTry + ", maxTries: " + et.maxTries;
+                actionTry = "\n" + action + " try: " + ((BaseAction) action).requestAttempt + ", maxTries: " + et.maxTries;
             }
             logger.error("Error in LogicsAwareDispatchServlet.execute: " + actionTry, et);
         }
