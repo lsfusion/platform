@@ -28,8 +28,7 @@ public class EditBindingMap {
     }
 
     public String getEventSID(EventObject editEvent, Result<Integer> contextAction, EditEventFilter editEventFilter,
-                              boolean hasEditObjectAction, boolean hasChangeAction, boolean disableInputList,
-                              Supplier<Integer> dialogActionIndexSupplier) {
+                              boolean hasEditObjectAction, boolean hasChangeAction, Supplier<Integer> dialogActionIndexSupplier) {
         if (KeyStrokes.isEditObjectEvent(editEvent, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return ServerResponse.EDIT_OBJECT;
 
@@ -38,9 +37,7 @@ public class EditBindingMap {
                 return null;
             }
         } else if (editEvent instanceof MouseEvent) {
-            if (disableInputList) {
-                contextAction.set(dialogActionIndexSupplier.get());
-            }
+            contextAction.set(dialogActionIndexSupplier.get());
             return mouseBinding;
         } else if (editEvent instanceof InternalEditEvent) {
             return ((InternalEditEvent) editEvent).action;
@@ -98,13 +95,13 @@ public class EditBindingMap {
 
         String actionSID = null;
         if (property.editBindingMap != null) {
-            actionSID = property.editBindingMap.getEventSID(e, contextAction, eventFilter, property.hasEditObjectAction, property.hasChangeAction, property.disableInputList, property::getDialogInputActionIndex);
+            actionSID = property.editBindingMap.getEventSID(e, contextAction, eventFilter, property.hasEditObjectAction, property.hasChangeAction, property::getDialogInputActionIndex);
         }
 
         if (actionSID == null) {
             actionSID = overrideMap.getKeyPressAction(e);
             if (actionSID == null) {
-                actionSID = overrideMap.getEventSID(e, contextAction, eventFilter, property.hasEditObjectAction, property.hasChangeAction, property.disableInputList, property::getDialogInputActionIndex);
+                actionSID = overrideMap.getEventSID(e, contextAction, eventFilter, property.hasEditObjectAction, property.hasChangeAction, property::getDialogInputActionIndex);
             }
         }
         return actionSID;

@@ -75,6 +75,12 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     @Override
     public void start(Event event, Element parent, Object oldValue) {
+        Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
+        if (dialogInputActionIndex != null) {
+            commitFinish(parent, oldValue, dialogInputActionIndex, CommitReason.OTHER);
+            return;
+        }
+
         String value = property.clearText ? "" : tryFormatInputText(oldValue);
         if(hasList) {
             suggestBox.showSuggestionList();
