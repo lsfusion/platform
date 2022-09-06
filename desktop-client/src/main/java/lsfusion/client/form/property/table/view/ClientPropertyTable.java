@@ -444,7 +444,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
                     String formattedValue;
                     try {
                         formattedValue = cellProperty.formatString(value);
-                    } catch (ParseException e1) {
+                    } catch (ParseException | IllegalArgumentException e1) {
                         formattedValue = String.valueOf(value);
                     }
 
