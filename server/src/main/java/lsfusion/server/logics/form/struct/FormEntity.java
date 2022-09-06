@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.struct;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
@@ -23,15 +24,19 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule.InsertType;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
+import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
@@ -64,10 +69,12 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.logics.property.value.ValueProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
+import lsfusion.server.physics.dev.integration.external.to.InternalClientAction;
 import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -1219,6 +1226,31 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 throw new RuntimeException(getCreationPath() + " none of required CALENDAR propertyDraws found (date, dateFrom, dateTime or dateTimeFrom)");
             }
         }
+
+        NFList<ActionObjectEntity<?>> eventActionsNFList = eventActions.getNFList(FormEventType.INIT);
+        if (eventActionsNFList != null) {
+            boolean isLastActionSync = true;
+            for (ActionObjectEntity<?> actionObjectEntity : eventActionsNFList.getNFList(Version.last())) {
+                for (ActionMapImplement<?, ?> actionMapImplement : actionObjectEntity.property.getList()) {
+                    for (Action dependAction : actionMapImplement.action.getDependActions()) {
+                        if (dependAction instanceof InternalClientAction)
+                            isLastActionSync = ((InternalClientAction) dependAction).isSyncType();
+                    }
+                }
+            }
+
+            if (!isLastActionSync) {
+                try {
+                    ValueProperty valueProperty = new ValueProperty(LocalizedString.NONAME, LocalizedString.create("empty.js", false), StringClass.text);
+                    ScriptingLogicsModule.LAWithParams laWithParams = ThreadLocalContext.getBaseLM()
+                            .addScriptedInternalClientAction(new ScriptingLogicsModule.LPWithParams(new LP<>(valueProperty)), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true);
+                    eventActions.addAll(FormEventType.INIT, Collections.singletonList(new ActionObjectEntity<>(laWithParams.getLP().action, MapFact.EMPTYREV())), Version.last());
+                } catch (Exception e) {
+                    throw Throwables.propagate(e);
+                }
+            }
+        }
+
 
         groups.finalizeChanges();
         treeGroups.finalizeChanges();

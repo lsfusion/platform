@@ -39,6 +39,10 @@ public class InternalClientAction extends CallAction {
         this.resourceName = resourceName;
     }
 
+    public boolean isSyncType() {
+        return syncType;
+    }
+
     @Override
     protected FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
         ArrayList<byte[]> values = new ArrayList<>();
