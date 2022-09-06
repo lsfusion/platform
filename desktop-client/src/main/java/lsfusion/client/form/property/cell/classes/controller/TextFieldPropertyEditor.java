@@ -106,19 +106,6 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         setComponentPopupMenu(new EditorContextMenu(this));
     }
 
-    public Integer getDialogInputActionIndex() {
-        if (actions != null) {
-            for (int i = 0; i < actions.length; i++) {
-                ClientInputListAction action = actions[i];
-                //addDialogInputAProp from server
-                if (action.action.equals("dialog")) {
-                    return i;
-                }
-            }
-        }
-        return null;
-    }
-
     protected boolean disableSuggest() {
         return true;
     }
@@ -621,12 +608,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         @Override
         public void initEditor(boolean selectAll) {
-            if (property.disableInputList) {
-                Integer dialogInputActionIndex = getDialogInputActionIndex();
-                if (dialogInputActionIndex != null) {
-                    suggestBox.suggestButtonPressed(dialogInputActionIndex);
-                    return;
-                }
+            Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
+            if (dialogInputActionIndex != null) {
+                suggestBox.suggestButtonPressed(dialogInputActionIndex);
+                return;
             }
 
             //need because we extend JComboBox

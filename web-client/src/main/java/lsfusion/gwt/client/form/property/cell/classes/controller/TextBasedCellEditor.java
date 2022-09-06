@@ -75,12 +75,10 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
     @Override
     public void start(Event event, Element parent, Object oldValue) {
-        if (property.disableInputList) {
-            Integer dialogInputActionIndex = getDialogInputActionIndex();
-            if (dialogInputActionIndex != null) {
-                commitFinish(parent, oldValue, dialogInputActionIndex, CommitReason.ENTERPRESSED);
-                return;
-            }
+        Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
+        if (dialogInputActionIndex != null) {
+            commitFinish(parent, oldValue, dialogInputActionIndex, CommitReason.OTHER);
+            return;
         }
 
         String value = property.clearText ? "" : tryFormatInputText(oldValue);
@@ -100,19 +98,6 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         if (selectAll) {
             inputElement.select();
         }
-    }
-
-    public Integer getDialogInputActionIndex() {
-        if (actions != null) {
-            for (int i = 0; i < actions.length; i++) {
-                GInputListAction action = actions[i];
-                //addDialogInputAProp from server
-                if (action.action.equals("dialog")) {
-                    return i;
-                }
-            }
-        }
-        return null;
     }
 
     protected void setInputValue(InputElement element, String value) {
