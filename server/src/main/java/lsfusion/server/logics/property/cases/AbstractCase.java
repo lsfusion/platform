@@ -105,6 +105,10 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
                     return 1;
                 if (match12 && !match21)
                     return -1;
+                if(match21) {
+                    assert match12;
+                    return -Integer.compare(list.indexOf(o1), list.indexOf(o2));
+                }
             }
             return Integer.compare(list.indexOf(o2), list.indexOf(o1));
         };
