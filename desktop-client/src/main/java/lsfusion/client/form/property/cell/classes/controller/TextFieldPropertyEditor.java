@@ -608,6 +608,12 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
         @Override
         public void initEditor(boolean selectAll) {
+            Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
+            if (dialogInputActionIndex != null) {
+                suggestBox.suggestButtonPressed(dialogInputActionIndex);
+                return;
+            }
+
             //need because we extend JComboBox
             suggestBox.comboBoxEditorComponent.putClientProperty("doNotCancelPopup",  BasicComboBoxUI.HIDE_POPUP_KEY());
 

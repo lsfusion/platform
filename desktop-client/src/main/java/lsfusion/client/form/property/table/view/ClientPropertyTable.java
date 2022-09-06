@@ -219,7 +219,9 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
             ((AsyncInputComponent) editorComp).initEditor(!KeyStrokes.isChangeAppendKeyEvent(editEvent));
         }
 
-        editorComp.requestFocusInWindow();
+        if(editorComp != null) {
+            editorComp.requestFocusInWindow();
+        }
 
         form.setCurrentEditingTable(this);
 

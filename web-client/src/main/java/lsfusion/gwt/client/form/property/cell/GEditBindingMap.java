@@ -61,13 +61,12 @@ public class GEditBindingMap implements Serializable {
 
     public static final String TOOLBAR_ACTION = "toolbarAction";
     public static String getDefaultEventSID(Event event, Result<Integer> contextAction, EditEventFilter editEventFilter,
-                                            boolean hasEditObjectAction, boolean hasChangeAction, boolean disableInputList,
-                                            Supplier<Integer> dialogActionIndexSupplier) {
+                                            boolean hasEditObjectAction, boolean hasChangeAction, Supplier<Integer> dialogActionIndexSupplier) {
         if (isEditObjectEvent(event, hasEditObjectAction, hasChangeAction)) // has to be before isChangeEvent, since also handles MOUSE CHANGE event
             return EDIT_OBJECT;
         if (GMouseStroke.isChangeEvent(event)) {
             Integer actionIndex = (Integer) getToolbarAction(event);
-            if(actionIndex == null && (disableInputList || FormsController.isDialogMode())) {
+            if(actionIndex == null) {
                 actionIndex = dialogActionIndexSupplier.get();
             }
             contextAction.set(actionIndex);
