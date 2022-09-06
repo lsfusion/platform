@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.RpcRequestBuilder;
 import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import lsfusion.gwt.client.GRequestAttemptInfo;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.controller.remote.GConnectionLostManager;
@@ -81,12 +82,12 @@ public class GWTDispatch {
         private boolean canceled;
 
         public void cancel() {
+            canceled = true;
             if(request == null) { // might be timered for the retry
                 timer.cancel();
             } else {
                 assert timer == null;
                 request.cancel();
-                canceled = true;
             }
         }
 
@@ -95,7 +96,6 @@ public class GWTDispatch {
 
 //            executingAction = this;
 
-            final Integer finalRequestTry = ++action.requestTry;
             getRealServiceInstance().execute(action, new AsyncCallback<Result>() {
                 public void onFailure(Throwable caught) {
                     request = null;
@@ -105,10 +105,14 @@ public class GWTDispatch {
                     }
 
                     int maxTries = PriorityErrorHandlingCallback.getMaxTries(caught); // because we set invalidate-session to false (for some security reasons) there is no need to retry request in the case of auth problem
+
+                    int attemptIndex = (action.requestAttempt != null ? action.requestAttempt.index : 0) + 1;
+                    action.requestAttempt = new GRequestAttemptInfo(attemptIndex, caught.getMessage(), maxTries);
+
                     boolean isAuthException = PriorityErrorHandlingCallback.isAuthException(caught);
-                    if (finalRequestTry <= maxTries) {
+                    if (attemptIndex <= maxTries) {
                         assert !isAuthException; // because maxTries is 0 in that case
-                        if (finalRequestTry == 2) //first retry
+                        if (attemptIndex == 1) //first retry
                             GConnectionLostManager.registerFailedRmiRequest();
                         GExceptionManager.addFailedRmiRequest(caught, action);
 
@@ -148,10 +152,14 @@ public class GWTDispatch {
 
                 public void onSuccess(Result result) {
                     request = null;
+                    if(canceled) { // in theory onSuccess shouldn't be called if the request is canceled, but just in case
+                        assert false;
+                        return;
+                    }
 
                     onExecuted(ExecutingAction.this);
 
-                    if(finalRequestTry > 1) //had retries
+                    if(action.requestAttempt != null) //had retries
                         GConnectionLostManager.unregisterFailedRmiRequest();
                     GExceptionManager.flushFailedNotFatalRequests(action);
 
