@@ -161,7 +161,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     }
 
     private boolean executePropertyEventAction(String actionSID) {
-        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null);
+        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, null, null);
     }
 
     private void showContextMenu(Point point) {

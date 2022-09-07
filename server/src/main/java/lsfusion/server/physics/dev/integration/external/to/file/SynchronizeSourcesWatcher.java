@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
@@ -18,7 +19,7 @@ public class SynchronizeSourcesWatcher extends FilesChangeWatcher{
     public SynchronizeSourcesWatcher() {
         super();
         sourceToBuildDirs = ResourceUtils.getSourceToBuildDirs();
-        sourceToBuildDirs.keySet().forEach(src -> walkAndRegisterDirectories(Paths.get(src)));
+        walkAndRegisterDirectories(sourceToBuildDirs.keySet().stream().map(Paths::get).collect(Collectors.toList()));
     }
 
     @Override

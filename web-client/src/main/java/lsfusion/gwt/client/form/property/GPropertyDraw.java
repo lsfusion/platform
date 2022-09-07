@@ -18,6 +18,7 @@ import lsfusion.gwt.client.classes.data.GHTMLTextType;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.classes.data.GLongType;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GFont;
@@ -256,7 +257,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return customRenderFunction == null || externalChangeType == null;
     }
 
-    public boolean dialogMode;
+    public boolean disableInputList;
 
     public GEditBindingMap editBindingMap;
 
@@ -371,7 +372,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         GType changeType = getChangeType();
-        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction(), dialogMode, this::getDialogInputActionIndex);
+        return GEditBindingMap.getDefaultEventSID(editEvent, contextAction, changeType == null ? null : changeType.getEditEventFilter(), hasEditObjectAction, hasUserChangeAction(), this::getDialogInputActionIndex);
     }
 
     public Integer getInputActionIndex(Event editEvent, boolean isEditing) {
@@ -395,8 +396,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public Integer getDialogInputActionIndex() {
         GInputList inputList = getInputList();
         if (inputList != null) {
-            for (int i = 0; i < inputList.actions.length; i++) {
-                GInputListAction action = inputList.actions[i];
+            return getDialogInputActionIndex(inputList.actions);
+        }
+        return null;
+    }
+
+    public Integer getDialogInputActionIndex(GInputListAction[] actions) {
+        if (actions != null && (disableInputList || FormsController.isDialogMode())) {
+            for (int i = 0; i < actions.length; i++) {
+                GInputListAction action = actions[i];
                 //addDialogInputAProp from server
                 if (action.action.equals("dialog")) {
                     return i;

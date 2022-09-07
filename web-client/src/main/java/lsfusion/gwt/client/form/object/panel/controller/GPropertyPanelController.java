@@ -54,6 +54,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderers = new NativeHashMap<>();
 
         renderersPanel = new Panel(property.panelColumnVertical); // needed for groups-to-columns
+        renderersPanel.transparentResize = true;
         renderersPanel.setStyleName("propertyContainerPanel");
     }
 

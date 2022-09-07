@@ -1,7 +1,9 @@
 package lsfusion.gwt.server;
 
 import lsfusion.base.ServerUtils;
+import lsfusion.gwt.client.GRequestAttemptInfo;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
+import lsfusion.gwt.client.controller.remote.action.BaseAction;
 import lsfusion.http.provider.SessionInvalidatedException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.server.SimpleActionHandler;
@@ -41,7 +43,15 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
     public abstract R executeEx(A action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException; // last exception throws only LogicsActionHandler
 
     protected String getActionDetails(A action) throws SessionInvalidatedException {
-        return " by " + ServerUtils.getAuthorizedUserName() + ": " + action.getClass().getSimpleName();
+        String message = " by " + ServerUtils.getAuthorizedUserName() + ": " + action.getClass().getSimpleName();
+
+        if(action instanceof BaseAction) {
+            GRequestAttemptInfo requestAttempt = ((BaseAction<?>) action).requestAttempt;
+            if(requestAttempt != null)
+                message += " attempt : " + requestAttempt;
+        }
+
+        return message;
     }
 
 }

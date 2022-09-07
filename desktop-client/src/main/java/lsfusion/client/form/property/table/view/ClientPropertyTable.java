@@ -2,6 +2,7 @@ package lsfusion.client.form.property.table.view;
 
 import com.google.common.base.Preconditions;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Result;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientType;
@@ -154,7 +155,8 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         ClientPropertyDraw property = getProperty(row, column);
         ClientGroupObjectValue columnKey = getColumnKey(row, column);
 
-        String actionSID = getPropertyEventActionSID(e, property, editBindingMap);
+        Result<Integer> contextAction = new Result<>();
+        String actionSID = getPropertyEventActionSID(e, contextAction, property, editBindingMap);
 
         if (actionSID == null) {
             return false;
@@ -172,17 +174,17 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         //здесь немного запутанная схема...
         //executePropertyEventAction возвращает true, если редактирование произошло на сервере, необязательно с вводом значения...
         //но из этого editCellAt мы должны вернуть true, только если началось редактирование значения
-        editPerformed = edit(property, columnKey, actionSID, row, column, e);
+        editPerformed = edit(property, columnKey, actionSID, row, column, e, contextAction.result);
         return editorComp != null;
     }
 
-    public boolean edit(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, int row, int column, EventObject e) {
+    public boolean edit(ClientPropertyDraw property, ClientGroupObjectValue columnKey, String actionSID, int row, int column, EventObject e, Integer contextAction) {
         editRow = row;
         editCol = column;
         commitingValue = false;
         editEvent = e;
 
-        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent);
+        return editDispatcher.executePropertyEventAction(property, columnKey, actionSID, editEvent, contextAction);
     }
 
     public abstract int getCurrentRow();
@@ -217,7 +219,9 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
             ((AsyncInputComponent) editorComp).initEditor(!KeyStrokes.isChangeAppendKeyEvent(editEvent));
         }
 
-        editorComp.requestFocusInWindow();
+        if(editorComp != null) {
+            editorComp.requestFocusInWindow();
+        }
 
         form.setCurrentEditingTable(this);
 
@@ -380,7 +384,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
 
             String keyPressedActionSID = getPropertyKeyPressActionSID(e, property);
             if (keyPressedActionSID != null) {
-                edit(property, columnKey, keyPressedActionSID, row, column, new InternalEditEvent(this, keyPressedActionSID));
+                edit(property, columnKey, keyPressedActionSID, row, column, new InternalEditEvent(this, keyPressedActionSID), null);
             }
         }
         
@@ -442,7 +446,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
                     String formattedValue;
                     try {
                         formattedValue = cellProperty.formatString(value);
-                    } catch (ParseException e1) {
+                    } catch (ParseException | IllegalArgumentException e1) {
                         formattedValue = String.valueOf(value);
                     }
 

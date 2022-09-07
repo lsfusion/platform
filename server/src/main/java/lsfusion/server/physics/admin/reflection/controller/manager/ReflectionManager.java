@@ -536,7 +536,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         ImportField storedPropertyField = new ImportField(LogicalClass.instance);
         ImportField isSetNotNullPropertyField = new ImportField(LogicalClass.instance);
         ImportField disableInputListPropertyField = new ImportField(LogicalClass.instance);
-        ImportField dialogModePropertyField = new ImportField(LogicalClass.instance);
         ImportField returnPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
         ImportField classPropertyField = new ImportField(reflectionLM.propertyClassValueClass);
         ImportField complexityPropertyField = new ImportField(LongClass.instance);
@@ -586,7 +585,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).userNotNull ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).disableInputList ? true : null,
-                            actionOrProperty instanceof Property && ((Property) actionOrProperty).dialogMode ? true : null,
                             returnClass, classProperty, complexityProperty, tableSID, actionOrProperty.annotation,
                             (Settings.get().isDisableSyncStatProps() || !(actionOrProperty instanceof Property) ? (Integer)Stat.DEFAULT.getCount() : DBManager.getPropertyInterfaceStat((Property)actionOrProperty))));
                 }
@@ -601,7 +599,6 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             properties.add(new ImportProperty(storedPropertyField, reflectionLM.storedProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(isSetNotNullPropertyField, reflectionLM.isSetNotNullProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(disableInputListPropertyField, reflectionLM.disableInputListProperty.getMapping(keyProperty)));
-            properties.add(new ImportProperty(dialogModePropertyField, reflectionLM.dialogModeProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(returnPropertyField, reflectionLM.returnProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(classPropertyField, reflectionLM.classProperty.getMapping(keyProperty)));
             properties.add(new ImportProperty(complexityPropertyField, reflectionLM.complexityProperty.getMapping(keyProperty)));
@@ -613,7 +610,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             deletes.add(new ImportDelete(keyProperty, LM.is(customClass).getMapping(keyProperty), false));
 
             ImportTable table = new ImportTable(asList(canonicalNamePropertyField, dbNamePropertyField, captionPropertyField, loggablePropertyField,
-                    storedPropertyField, isSetNotNullPropertyField, disableInputListPropertyField, dialogModePropertyField, returnPropertyField,
+                    storedPropertyField, isSetNotNullPropertyField, disableInputListPropertyField, returnPropertyField,
                     classPropertyField, complexityPropertyField, tableSIDPropertyField, annotationPropertyField, statsPropertyField), dataProperty);
 
             try (DataSession session = createSyncSession()) {

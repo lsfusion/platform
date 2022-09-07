@@ -42,7 +42,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         this.deferredCommitOnBlur = deferredCommitOnBlur;
     }
 
-    private void commitFinish(Element parent, Object value, Integer contextAction, CommitReason commitReason) {
+    protected void commitFinish(Element parent, Object value, Integer contextAction, CommitReason commitReason) {
         editManager.commitEditing(new GUserInputResult(value, contextAction), commitReason);
     }
 

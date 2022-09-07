@@ -220,11 +220,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     startLogger.info("Disabling input list");
                     setDisableInputListProperties(sql);
                 }
-
-                if (getOldDBStructure(sql).version >= 35) {
-                    startLogger.info("Setting dialog mode for properties");
-                    setDialogModeProperties(sql);
-                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -345,20 +340,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             if(prop != null)
                 LM.disableInputList(prop);
-        }
-    }
-
-    private void setDialogModeProperties(SQLSession sql) throws SQLException, SQLHandledException {
-        ImRevMap<Object, KeyExpr> keys = LM.is(reflectionLM.property).getMapKeys();
-        KeyExpr key = keys.singleValue();
-        QueryBuilder<Object, Object> query = new QueryBuilder<>(keys);
-        query.addProperty("CNProperty", reflectionLM.canonicalNameProperty.getExpr(key));
-        query.and(reflectionLM.dialogModeProperty.getExpr(key).getWhere());
-
-        for (ImMap<Object, Object> values : query.execute(sql, OperationOwner.unknown).valueIt()) {
-            LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
-            if(prop != null)
-                LM.setDialogMode(prop);
         }
     }
 
