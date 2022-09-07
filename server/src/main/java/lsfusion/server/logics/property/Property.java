@@ -1673,7 +1673,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
                 inputContextSelector = new InputContextSelector<PropertyInterface>() {
                     public Pair<InputFilterEntity<?, PropertyInterface>, ImOrderMap<InputOrderEntity<?, PropertyInterface>, Boolean>> getFilterAndOrders() {
-                        if(!getSelectCost(SetFact.EMPTY()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount())))  // if cost-per-row * numberRows > max read count, won't read
+                        if(tooMuchSelectData(MapFact.EMPTY()))  // if cost-per-row * numberRows > max read count, won't read
                             return null;
                         return new Pair<>(null, MapFact.EMPTYORDER());
                     }
@@ -1696,6 +1696,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         setResetAsync(result);
 
         return result;
+    }
+
+    protected boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+        return !getSelectCost(fixedExprs.keys()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
     }
 
     private <X extends PropertyInterface> void setResetAsync(ActionMapImplement<X, T> action) {
@@ -2319,12 +2323,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getSelectCostStat(getInterfaceParamExprs(fixedInterfaces)).second;
     }
 
-    @IdentityLazy
+    @IdentityInstanceLazy
     public ImRevMap<T, StaticParamNullableExpr> getInterfaceParamExprs(ImSet<T> interfaces) {
         // maybe later it makes sense to fill params without classes with some "default" classes
         return getInterfaceClasses(ClassType.forPolicy).filter(interfaces).mapRevValues(StaticParamNullableExpr::new);
     }
-    @IdentityLazy
+    @IdentityInstanceLazy
     public StaticParamNullableExpr getValueParamExpr() {
         // maybe later it makes sense to fill params without classes with some "default" classes
         return new StaticParamNullableExpr(getValueClass(ClassType.forPolicy));
@@ -2345,8 +2349,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return isFull(interfaces.removeIncl(fixedExprs.keys()), AlgType.statAlotType);
     }
 
-    public InputListEntity<?, T> getInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
-        if(isValueFull(fixedExprs))
+    public <X extends PropertyInterface> InputListEntity<?, T> getInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
+        if(isValueFull(fixedExprs) && !tooMuchSelectData(fixedExprs))
             return new InputListEntity<>(this, fixedExprs.keys().toRevMap());
         return null;
     }
