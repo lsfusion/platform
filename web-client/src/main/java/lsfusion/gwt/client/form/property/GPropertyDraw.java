@@ -421,8 +421,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
         if (GMouseStroke.isChangeEvent(editEvent)) {
             Integer actionIndex = (Integer) GEditBindingMap.getToolbarAction(editEvent);
-            if(actionIndex == null && (disableInputList || FormsController.isDialogMode())) {
-                actionIndex = ((Supplier<Integer>) this::getDialogInputActionIndex).get();
+            if(actionIndex == null) {
+                actionIndex = getDialogInputActionIndex();
             }
             contextAction.set(actionIndex);
             return CHANGE;

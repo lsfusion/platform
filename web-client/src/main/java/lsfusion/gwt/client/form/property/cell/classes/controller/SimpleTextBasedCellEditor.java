@@ -92,6 +92,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
     @Override
     public void start(EventHandler handler, Element parent, Object oldValue) {
+
+        Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
+        if (dialogInputActionIndex != null) {
+            commitFinish(parent, oldValue, dialogInputActionIndex, CommitReason.FORCED);
+            return;
+        }
+
         boolean allSuggestions = true;
         if(inputElement == null) {
             inputElement = getRenderInputElement(parent);
