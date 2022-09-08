@@ -5024,7 +5024,7 @@ groupObjectTreeComponentSelector returns [String sid]
 
 groupObjectTreeComponentSelectorType
     :
-    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID' | 'FILTERS'
+    	'TOOLBARSYSTEM' | 'FILTERGROUPS' | 'USERFILTER' | 'GRIDBOX' | 'CLASSCHOOSER' | 'GRID' | 'FILTERBOX' | 'FILTERS' | 'FILTERCONTROLS'
     ;
 
 propertySelector[ScriptingFormView formView] returns [PropertyDrawView propertyView = null]

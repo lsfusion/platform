@@ -11,6 +11,7 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.object.table.ClientToolbar;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.ClientGrid;
@@ -57,6 +58,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     public boolean asyncInit;
 
     public ClientContainer filtersContainer;
+    public ClientFilterControls filterControls;
     public List<ClientFilter> filters = new ArrayList<>();
     public ClientGrid grid;
     public ClientToolbar toolbar;
@@ -145,6 +147,11 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
     }
 
     @Override
+    public ClientFilterControls getFilterControls() {
+        return filterControls;
+    }
+
+    @Override
     public ClientComponent getCalculations() {
         return calculations;
     }
@@ -154,6 +161,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, toolbar);
         pool.serializeObject(outStream,filtersContainer);
+        pool.serializeObject(outStream, filterControls);
         pool.serializeCollection(outStream, filters);
         pool.serializeObject(outStream, calculations);
         outStream.writeBoolean(needVerticalScroll);
@@ -175,6 +183,7 @@ public class ClientGroupObject extends IdentityObject implements ClientIdentityS
         grid = pool.deserializeObject(inStream);
         toolbar = pool.deserializeObject(inStream);
         filtersContainer = pool.deserializeObject(inStream);
+        filterControls = pool.deserializeObject(inStream);
         pool.deserializeCollection(filters, inStream);
         calculations = pool.deserializeObject(inStream);
 

@@ -101,8 +101,8 @@ public interface ClientMessages extends Messages {
     String formFilterApply();
     String formFilterRemoveCondition();
     String formFilterResetConditions();
-    String formFilterShowTools();
-    String formFilterHideTools();
+    String formFilterShowControls();
+    String formFilterHideControls();
 
     String tooltipPath();
 

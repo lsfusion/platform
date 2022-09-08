@@ -10,6 +10,7 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -244,6 +245,11 @@ public class GTreeGroupController extends GAbstractTableController {
     @Override
     public GContainer getFiltersContainer() {
         return treeGroup.filtersContainer;
+    }
+
+    @Override
+    public GFilterControls getFilterControls() {
+        return treeGroup.filterControls;
     }
 
     public boolean focusFirstWidget() {

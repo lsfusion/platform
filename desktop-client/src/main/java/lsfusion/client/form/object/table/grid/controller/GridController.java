@@ -90,7 +90,7 @@ public class GridController extends AbstractTableController {
             formLayout.addBaseComponent(groupObject.calculations, calculationsView);
 
             ClientContainerView filtersContainer = formLayout.getContainerView(groupObject.filtersContainer);
-            filter = new FilterController(this, groupObject.filters, filtersContainer) {
+            filter = new FilterController(this, groupObject.filters, filtersContainer, groupObject.filterControls) {
                 public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
                     RmiQueue.runAction(() -> {
                         try {

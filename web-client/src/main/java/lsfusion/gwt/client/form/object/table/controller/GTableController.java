@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.object.table.controller;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
+import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
@@ -23,6 +24,7 @@ public interface GTableController {
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
     List<Pair<Column, String>> getSelectedColumns();
     GContainer getFiltersContainer();
+    GFilterControls getFilterControls();
 
     GFormController getForm();
 

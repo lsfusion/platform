@@ -8,8 +8,11 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.design.view.ClientContainerView;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.filter.user.view.FilterConditionView;
+import lsfusion.client.form.filter.user.view.FilterControlsView;
+import lsfusion.client.form.filter.user.view.FiltersHandler;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
@@ -27,19 +30,14 @@ import java.util.*;
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.interop.form.event.KeyStrokes.getFilterKeyStroke;
 
-public abstract class FilterController implements FilterConditionView.UIHandler {
-    public static final String ADD_ICON_PATH = "filtadd.png";
-    public static final String APPLY_ICON_PATH = "ok.png";
-    public static final String RESET_ICON_PATH = "filtreset.png";
+public abstract class FilterController implements FilterConditionView.UIHandler, FiltersHandler {
     public static final String FILTER_ICON_PATH = "filt.png";
     
     private final TableController logicsSupplier;
     private Map<Column, String> columns = new HashMap<>();
     
     private final ToolbarGridButton toolbarButton;
-    private ToolbarGridButton addConditionButton;
-    private ToolbarGridButton applyButton;
-    private ToolbarGridButton resetConditionsButton;
+    
 
     private JComponent filtersContainerComponent;
 
@@ -47,58 +45,35 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
 
     private List<ClientFilter> initialFilters;
     
-    private boolean toolsVisible;
+    private boolean controlsVisible;
+    private FilterControlsView controlsView;
     
-    public FilterController(TableController logicsSupplier, List<ClientFilter> filters, ClientContainerView filtersContainer) {
+    public FilterController(TableController logicsSupplier, List<ClientFilter> filters, ClientContainerView filtersContainer, ClientFilterControls filterControls) {
         this.logicsSupplier = logicsSupplier;
         this.initialFilters = filters;
         if (filtersContainer != null) {
             filtersContainerComponent = filtersContainer.getView().getComponent();
         }
 
-        toolbarButton = new ToolbarGridButton(FILTER_ICON_PATH, getString("form.queries.filter.tools.show"));
+        toolbarButton = new ToolbarGridButton(FILTER_ICON_PATH, getString("form.queries.filter.controls.show"));
         toolbarButton.addActionListener(ae -> {
-            toggleToolsVisible();
+            toggleControlsVisible();
         });
 
-        if (hasFiltersContainer()) {
-            addConditionButton = new ToolbarGridButton(ADD_ICON_PATH, getString("form.queries.filter.add.condition"));
-            addConditionButton.addActionListener(ae -> addCondition());
-            addConditionButton.setVisible(false);
-        }
-        
-        applyButton = new ToolbarGridButton(APPLY_ICON_PATH, getString("form.queries.filter.apply"));
-        applyButton.addActionListener(ae -> applyFilters(true));
-        applyButton.setVisible(false);
-
-        resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
-        resetConditionsButton.addActionListener(e -> {
-            resetAllConditions();
-            toggleToolsVisible();
-        });
-        resetConditionsButton.setVisible(false);
 
         if (hasFiltersContainer()) {
             filtersContainerComponent.setFocusable(false);
         }
+        
+        controlsView = new FilterControlsView(this);
+        controlsView.setVisible(controlsVisible);
+        logicsSupplier.getFormController().getLayout().addBaseComponent(filterControls, controlsView);
 
         initUIHandlers();
     }
 
     public JButton getToolbarButton() {
         return toolbarButton;
-    }
-
-    public ToolbarGridButton getAddFilterConditionButton() {
-        return addConditionButton;
-    }
-    
-    public ToolbarGridButton getApplyButton() {
-        return applyButton;
-    }
-
-    public ToolbarGridButton getResetFiltersButton() {
-        return resetConditionsButton;
     }
 
     private void initUIHandlers() {
@@ -184,25 +159,23 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         };
     }
 
-    public void toggleToolsVisible() {
-        toolsVisible = !toolsVisible;
+    public void toggleControlsVisible() {
+        controlsVisible = !controlsVisible;
 
         if (!conditionViews.isEmpty()) {
             for (FilterConditionView view : conditionViews.values()) {
-                view.setToolsVisible(toolsVisible);
+                view.setControlsVisible(controlsVisible);
             }
-        } else if (toolsVisible) {
+        } else if (controlsVisible) {
             addCondition();
         }
 
-        if (addConditionButton != null) {
-            addConditionButton.setVisible(toolsVisible);
-        }
-        applyButton.setVisible(toolsVisible);
-        resetConditionsButton.setVisible(toolsVisible);
+        controlsView.setVisible(controlsVisible);
+        logicsSupplier.getFormController().getLayout().autoShowHideContainers();
+        logicsSupplier.getFormController().revalidate();
 
-        toolbarButton.setToolTipText(toolsVisible ? getString("form.queries.filter.tools.hide") : getString("form.queries.filter.tools.show"));
-        toolbarButton.showBackground(toolsVisible);
+        toolbarButton.setToolTipText(controlsVisible ? getString("form.queries.filter.controls.hide") : getString("form.queries.filter.controls.show"));
+        toolbarButton.showBackground(controlsVisible);
     }
 
     public ClientContainer getFiltersContainer() {
@@ -279,7 +252,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
         logicsSupplier.getFormController().commitOrCancelCurrentEditing();
 
-        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, () -> columns, toolsVisible, readSelectedValue);
+        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, () -> columns, controlsVisible, readSelectedValue);
         conditionViews.put(condition, conditionView);
 
         addConditionView(condition, conditionView); 
@@ -317,6 +290,12 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
         conditionsChanged(true);
     }
 
+    @Override
+    public void resetConditions() {
+        resetAllConditions();
+        toggleControlsVisible();
+    }
+
     public void resetAllConditions() {
         resetAllConditions(true);
     }
@@ -342,7 +321,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler 
     }
 
     public void conditionsChanged(boolean focusFirstComponent) {
-        if (!toolsVisible) {
+        if (!controlsVisible) {
             applyFilters(focusFirstComponent);
         }
     }

@@ -4,6 +4,7 @@ import lsfusion.interop.form.remote.serialization.SerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterGroupView;
 import lsfusion.server.logics.form.interactive.design.filter.RegularFilterView;
@@ -28,6 +29,7 @@ public class ServerSerializationPool extends SerializationPool<ServerContext> {
         addMapping2(GridView.class);
         addMapping2(ToolbarView.class);
         addMapping2(FilterView.class);
+        addMapping2(FilterControlsView.class);
         addMapping2(CalculationsView.class);
         addMapping2(ObjectView.class);
         addMapping2(PropertyDrawView.class);

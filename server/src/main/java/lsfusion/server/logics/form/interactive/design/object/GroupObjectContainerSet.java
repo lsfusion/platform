@@ -11,7 +11,9 @@ import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 // сейчас полный клон TreeGroupContainerSet, потом надо рефакторить
 public class GroupObjectContainerSet {
     public static final String BOX_CONTAINER = "BOX";
-        public static final String FILTERS_CONTAINER = "FILTERS";
+        public static final String FILTERBOX_CONTAINER = "FILTERBOX";
+            public static final String FILTERS_CONTAINER = "FILTERS";
+            public static final String FILTER_CONTROLS_COMPONENT = "FILTERCONTROLS";
         public static final String GRID_COMPONENT = "GRID";
         public static final String TOOLBARBOX_CONTAINER = "TOOLBARBOX";
             public static final String TOOLBARLEFT_CONTAINER = "TOOLBARLEFT";
@@ -24,6 +26,7 @@ public class GroupObjectContainerSet {
             public static final String GROUP_CONTAINER = "GROUP";
     
     private ContainerView boxContainer;
+    private ContainerView filterBoxContainer;
     private ContainerView panelContainer;
     private ContainerView groupContainer;
     private ContainerView toolbarBoxContainer;
@@ -34,6 +37,10 @@ public class GroupObjectContainerSet {
 
     public ContainerView getBoxContainer() {
         return boxContainer;
+    }
+    
+    public ContainerView getFilterBoxContainer() {
+        return filterBoxContainer;
     }
 
     public ContainerView getPanelContainer() {
@@ -72,6 +79,9 @@ public class GroupObjectContainerSet {
         set.boxContainer = factory.createContainer(); // контейнер всей группы
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setCaption(group.getCaption());
+        
+        set.filterBoxContainer = factory.createContainer();
+        set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));
 
         set.panelContainer = factory.createContainer(); // контейнер панели
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID(sid));
@@ -97,10 +107,14 @@ public class GroupObjectContainerSet {
         set.boxContainer.setType(ContainerType.CONTAINERV);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
-        set.boxContainer.add(group.filtersContainer, version);
+        set.boxContainer.add(set.filterBoxContainer, version);
         set.boxContainer.add(group.getGrid(), version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
+        
+        set.filterBoxContainer.setType(ContainerType.CONTAINERH);
+        set.filterBoxContainer.add(group.filtersContainer, version);
+        set.filterBoxContainer.add(group.filterControls, version);
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);
