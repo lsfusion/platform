@@ -218,6 +218,9 @@ public class FlexPanel extends PanelWidget {
 
     private boolean isFlexPref(boolean vertical) {
         List<Widget> children = getChildren();
+        if(children.isEmpty())
+            return false;
+
         if(transparentResize)
             return isFlexPref(children.get(0), vertical);
 
