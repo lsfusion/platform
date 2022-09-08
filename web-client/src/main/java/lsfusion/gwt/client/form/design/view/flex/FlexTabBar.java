@@ -84,7 +84,7 @@ public class FlexTabBar extends Composite implements TabBar {
         checkInsertBeforeTabIndex(beforeIndex);
 
         ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
-        delWidget.setStyleName("nav-item");
+        delWidget.addStyleName("nav-item");
 //        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
 //        final Style delWidgetStyle = delWidget.getElement().getStyle();
 //        delWidgetStyle.setDisplay(Style.Display.FLEX);
@@ -184,10 +184,11 @@ public class FlexTabBar extends Composite implements TabBar {
         ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
         SimplePanel focusablePanel = delPanel.getFocusablePanel();
 
+        ((Label)focusablePanel.getWidget()).setText(text);
         // It is not safe to check if the current widget is an instanceof Label and
         // reuse it here because HTML is an instanceof Label. Leaving an HTML would
         // throw off the results of getTabHTML(int).
-        focusablePanel.setWidget(new Label(text, false));
+//        focusablePanel.setWidget(new Label(text, false));
     }
 
     private void checkInsertBeforeTabIndex(int beforeIndex) {

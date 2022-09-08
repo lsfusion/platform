@@ -57,6 +57,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         final Button button = new NavigatorImageButton(element.image, element.caption);
         button.addStyleName("nav-item");
         button.addStyleName("nav-link");
+        button.addStyleName("link-dark");
 
         button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
         button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);

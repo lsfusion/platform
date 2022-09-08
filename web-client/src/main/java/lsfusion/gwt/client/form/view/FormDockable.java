@@ -157,8 +157,6 @@ public final class FormDockable extends FormContainer {
         private String tooltip;
 
         public TabWidget(String title) {
-            addStyleName("nav-link");
-
             setTitle(title);
 
             TooltipManager.registerWidget(this, new TooltipManager.TooltipHelper() {

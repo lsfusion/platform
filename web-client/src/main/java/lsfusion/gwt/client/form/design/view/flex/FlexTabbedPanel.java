@@ -87,9 +87,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     }
 
     private Label createTab(String tabText, boolean wordWrap) {
-        Label label = new Label(tabText, false);
-        label.setStyleName("nav-link");
-        return label;
+        return new Label(tabText, wordWrap);
     }
 
     // used only in error dialog
@@ -111,6 +109,9 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     }
 
     public void insertTab(Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
+        tabWidget.addStyleName("nav-link");
+        tabWidget.addStyleName("link-dark");
+
         tabBar.insertTab(tabWidget, beforeIndex);
 
         int tabIndex = getTabIndex(beforeIndex);
