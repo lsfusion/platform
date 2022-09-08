@@ -13,6 +13,8 @@
 }
 
 .gwt-SuggestBoxPopup .item {
+    padding: 2px;
+    white-space: nowrap;
     color: var(--text-color);
     cursor: default;
 }
@@ -35,57 +37,8 @@
     border-radius: var(--button-border-radius);
     margin: 0.125rem;
 }
-.gwt-SuggestBoxPopup .suggestPopupTopCenterInner,
-.gwt-SuggestBoxPopup .suggestPopupBottomCenterInner {
-    height: 1px;
-    line-height: 1px;
-}
-.gwt-SuggestBoxPopup .suggestPopupMiddleLeftInner,
-.gwt-SuggestBoxPopup .suggestPopupMiddleRightInner {
-    width: 1px;
-    line-height: 1px;
-}
-.gwt-SuggestBoxPopup .suggestPopupTopLeftInner {
-    width: 0;
-    height: 0;
-    zoom: 1;
-}
-.gwt-SuggestBoxPopup .suggestPopupTopRightInner {
-    width: 0;
-    height: 0;
-    zoom: 1;
-}
-.gwt-SuggestBoxPopup .suggestPopupBottomLeftInner {
-    width: 0;
-    height: 0;
-    zoom: 1;
-}
-.gwt-SuggestBoxPopup .suggestPopupBottomRightInner {
-    width: 0;
-    height: 0;
-    zoom: 1;
-}
-* html .gwt-SuggestBoxPopup .suggestPopupTopLeftInner {
-    width: 0;
-    height: 0;
-    overflow: hidden;
-}
-* html .gwt-SuggestBoxPopup .suggestPopupTopRightInner {
-    width: 0;
-    height: 0;
-    overflow: hidden;
-}
-* html .gwt-SuggestBoxPopup .suggestPopupBottomLeftInner {
-    width: 0;
-    height: 0;
-    overflow: hidden;
-}
-* html .gwt-SuggestBoxPopup .suggestPopupBottomRightInner {
-    width: 0;
-    height: 0;
-    overflow: hidden;
-}
 .suggestBoxTip {
+    width: 100%;
     border-top:1px solid var(--component-border-color);
     color: var(--disabled-text-color);
     word-wrap:break-word;

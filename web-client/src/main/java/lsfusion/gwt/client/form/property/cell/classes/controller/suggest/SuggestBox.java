@@ -56,43 +56,29 @@ public class SuggestBox {
 
     public SuggestionDisplay() {
       suggestionMenu = new MenuBar();
-      suggestionPopup = createPopup();
-      suggestionPopup.setWidget(decorateSuggestionList(suggestionMenu));
+      suggestionPopup = new PopupPanel();
+      suggestionPopup.setStyleName("gwt-SuggestBoxPopup");
+      decorateSuggestionList(suggestionPopup, suggestionMenu);
     }
 
     public void hideSuggestions() {
       suggestionPopup.hide();
     }
 
-    public boolean isSuggestionListShowing() {
+    private boolean isSuggestionListShowing() {
       return suggestionPopup.isShowing();
     }
 
-    protected PopupPanel createPopup() {
-      PopupPanel p = new PopupPanel();
-      p.setStyleName("gwt-SuggestBoxPopup");
-      p.setAnimationType(PopupPanel.AnimationType.ROLL_DOWN);
-      return p;
-    }
-
-    /**
-     * Wrap the list of suggestions before adding it to the popup. You can
-     * override this method if you want to wrap the suggestion list in a
-     * decorator.
-     *
-     * @param suggestionList the widget that contains the list of suggestions
-     * @return the suggestList, optionally inside of a wrapper
-     */
-    protected Widget decorateSuggestionList(Widget suggestionList) {
-      return suggestionList;
+    protected void decorateSuggestionList(PopupPanel popupPanel, MenuBar suggestionList) {
+      popupPanel.add(suggestionList);
     }
 
     protected Suggestion getCurrentSelection() {
-      if (!isSuggestionListShowing()) {
+      if (isSuggestionListShowing()) {
+        return suggestionMenu.getSelectedItemSuggestion();
+      } else {
         return null;
       }
-      MenuItem item = suggestionMenu.getSelectedItem();
-      return item == null ? null : item.getSuggestion();
     }
 
     /**
@@ -105,30 +91,14 @@ public class SuggestBox {
     }
 
     protected void moveSelectionDown() {
-      // Make sure that the menu is actually showing. These keystrokes
-      // are only relevant when choosing a suggestion.
       if (isSuggestionListShowing()) {
-        // If nothing is selected, getSelectedItemIndex will return -1 and we
-        // will select index 0 (the first item) by default.
-        suggestionMenu.selectItem(suggestionMenu.getSelectedItemIndex() + 1);
+        suggestionMenu.moveSelectionDown();
       }
     }
 
     protected void moveSelectionUp() {
-      // Make sure that the menu is actually showing. These keystrokes
-      // are only relevant when choosing a suggestion.
       if (isSuggestionListShowing()) {
-        // if nothing is selected, then we should select the last suggestion by
-        // default. This is because, in some cases, the suggestions menu will
-        // appear above the text box rather than below it (for example, if the
-        // text box is at the bottom of the window and the suggestions will not
-        // fit below the text box). In this case, users would expect to be able
-        // to use the up arrow to navigate to the suggestions.
-        if (suggestionMenu.getSelectedItemIndex() == -1) {
-          suggestionMenu.selectItem(suggestionMenu.getItems().size() - 1);
-        } else {
-          suggestionMenu.selectItem(suggestionMenu.getSelectedItemIndex() - 1);
-        }
+        suggestionMenu.moveSelectionUp();
       }
     }
 
@@ -146,16 +116,12 @@ public class SuggestBox {
 
       suggestionMenu.clearItems();
 
-      for (final Suggestion curSuggestion : suggestions) {
-        final MenuItem menuItem = new MenuItem(curSuggestion);
-        menuItem.setScheduledCommand(() -> callback.onSuggestionSelected(curSuggestion));
-
-        suggestionMenu.addItem(menuItem);
+      for (final Suggestion suggestion : suggestions) {
+        suggestionMenu.addItem(suggestion, callback);
       }
 
       if (isAutoSelectEnabled && suggestions.size() > 0) {
-        // Select the first item in the suggestion menu.
-        suggestionMenu.selectItem(0);
+        suggestionMenu.selectFirstItem();
       }
 
       // Link the popup autoHide to the TextBox.
@@ -169,7 +135,7 @@ public class SuggestBox {
         suggestionPopup.addAutoHidePartner(suggestElement);
       }
 
-      suggestionPopup.showRelativeTo(suggestElement);
+      suggestionPopup.setPopupPositionAndShow(suggestElement);
     }
   }
 
@@ -198,27 +164,13 @@ public class SuggestBox {
       callback.onSuggestionSelected(suggestion);
     };
 
-//    addEventsToTextBox();
-
     this.oracle = oracle;
   }
 
-  /**
-   * Check if the {@link SuggestionDisplay} is showing.
-   *
-   * @return true if the list of suggestions is currently showing, false if not
-   */
   public boolean isSuggestionListShowing() {
     return display.isSuggestionListShowing();
   }
 
-  /**
-   * Turns on or off the behavior that automatically selects the first suggested
-   * item. This behavior is on by default.
-   *
-   * @param selectsFirstItem Whether or not to automatically select the first
-   *          suggestion
-   */
   public void setAutoSelectEnabled(boolean selectsFirstItem) {
     this.selectsFirstItem = selectsFirstItem;
   }
@@ -286,15 +238,9 @@ public class SuggestBox {
       case KeyCodes.KEY_ENTER:
       case KeyCodes.KEY_TAB:
         Suggestion suggestion = display.getCurrentSelection();
-        //todo: replaced, do not hide if no results
         if (suggestion != null && strict) {
           setNewSelection(suggestion);
         }
-        /*if (suggestion == null) {
-          display.hideSuggestions();
-        } else {
-          setNewSelection(suggestion);
-        }*/
         break;
     }
   }

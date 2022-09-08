@@ -4,16 +4,20 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -23,6 +27,8 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.MenuBar;
+import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.PopupPanel;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
@@ -110,8 +116,6 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             oldStringValue = getInputValue(parent);
             handler.consume(true, false);
         } else {
-            InputElement inputElement = getInputElement(parent);
-
             onInputReady(parent, oldValue);
 
             //we need this order (focus before setValue) for single click editing IntegralCellEditor (type=number)
@@ -132,7 +136,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
 
         if(hasList) {
-            suggestBox = createSuggestBox(getInputElement(parent), parent);
+            suggestBox = createSuggestBox(inputElement, parent);
             suggestBox.showSuggestionList(allSuggestions);
         }
     }
@@ -154,13 +158,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     protected void setInputValue(Element parent, String value) {
-        setInputValue(getInputElement(parent), value);
+        setInputValue(inputElement, value);
     }
     public static void setInputValue(InputElement element, String value) {
         element.setValue(value);
     }
     private String getInputValue(Element parent) {
-        return getInputValue(getInputElement(parent));
+        return getInputValue(inputElement);
     }
     public static String getInputValue(InputElement element) {
         return element.getValue();
@@ -199,9 +203,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     private boolean checkInputValidity(Element parent, String stringToAdd) {
-        InputElement input = getInputElement(parent);
-        int cursorPosition = textBoxImpl.getCursorPos(input);
-        int selectionLength = textBoxImpl.getSelectionLength(input);
+        int cursorPosition = textBoxImpl.getCursorPos(inputElement);
+        int selectionLength = textBoxImpl.getSelectionLength(inputElement);
         String currentValue = getInputValue(parent);
         String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
         String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
@@ -286,9 +289,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
     protected boolean isThisCellEditor() {
         assert hasList;
-        boolean showing = suggestBox != null;
-//        assert (editManager.isEditing() && this == editManager.getCellEditor()) == showing;
-        return showing;
+        return suggestBox != null;
     }
 
     private CustomSuggestBox createSuggestBox(InputElement element, Element parent) {
@@ -459,10 +460,6 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         };
     }
 
-    protected InputElement getInputElement(Element parent) {
-        return inputElement;
-    }
-
     protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         if(inputText == null || inputText.isEmpty())
             return null;
@@ -543,28 +540,26 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
 
         @Override
-        protected Widget decorateSuggestionList(Widget suggestionList) {
-            VerticalPanel panel = new VerticalPanel();
-            panel.add(suggestionList);
+        protected void decorateSuggestionList(PopupPanel popupPanel, MenuBar suggestionList) {
+            super.decorateSuggestionList(popupPanel, suggestionList);
 
             noResultsLabel = new Label(messages.noResults());
             noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
             noResultsLabel.getElement().addClassName("noResultsLabel");
-            panel.add(noResultsLabel);
+            popupPanel.add(noResultsLabel);
 
             emptyLabel = new Label();
             emptyLabel.getElement().addClassName("item"); //to be like suggestion item
-            panel.add(emptyLabel);
+            popupPanel.add(emptyLabel);
 
-            VerticalPanel bottomPanel = new VerticalPanel();
+            FlexPanel bottomPanel = new FlexPanel(true);
             bottomPanel.setWidth("100%");
-            bottomPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_LEFT);
             bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
             // block mouse down events to prevent focus issues
             bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
-            panel.add(bottomPanel);
+            popupPanel.add(bottomPanel);
 
-            HorizontalPanel buttonsPanel = new HorizontalPanel();
+            FlexPanel buttonsPanel = new FlexPanel();
 
             buttonsPanel.add(refreshButton = new SuggestPopupButton(REFRESH_IMAGE_PATH) {
                 @Override
@@ -614,10 +609,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
                 tip.getElement().addClassName("suggestBoxTip");
                 bottomPanel.add(tip);
-                tip.getParent().getParent().setWidth("100px"); //set width of td, so as not to expand the entire suggestBox
             }
-
-            return panel;
         }
 
         public boolean isLoading;

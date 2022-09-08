@@ -41,7 +41,7 @@ public class CustomTextCellEditor extends SimpleTextBasedCellEditor implements C
 
     // we're working with input element here
     public InputElement getCustomElement(Element parent) {
-        return getInputElement(parent);
+        return inputElement;
     }
 
     @Override
