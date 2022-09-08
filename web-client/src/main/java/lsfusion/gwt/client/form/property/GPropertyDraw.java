@@ -460,8 +460,15 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public Integer getDialogInputActionIndex() {
         GInputList inputList = getInputList();
         if (inputList != null) {
-            for (int i = 0; i < inputList.actions.length; i++) {
-                GInputListAction action = inputList.actions[i];
+            return getDialogInputActionIndex(inputList.actions);
+        }
+        return null;
+    }
+
+    public Integer getDialogInputActionIndex(GInputListAction[] actions) {
+        if (actions != null && (disableInputList || FormsController.isDialogMode())) {
+            for (int i = 0; i < actions.length; i++) {
+                GInputListAction action = actions[i];
                 //addDialogInputAProp from server
                 if (action.action.equals("dialog")) {
                     return i;

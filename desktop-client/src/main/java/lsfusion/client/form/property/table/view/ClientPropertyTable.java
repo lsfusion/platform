@@ -219,7 +219,9 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
             ((AsyncInputComponent) editorComp).initEditor(!KeyStrokes.isChangeAppendKeyEvent(editEvent));
         }
 
-        editorComp.requestFocusInWindow();
+        if(editorComp != null) {
+            editorComp.requestFocusInWindow();
+        }
 
         form.setCurrentEditingTable(this);
 
@@ -444,7 +446,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
                     String formattedValue;
                     try {
                         formattedValue = cellProperty.formatString(value);
-                    } catch (ParseException e1) {
+                    } catch (ParseException | IllegalArgumentException e1) {
                         formattedValue = String.valueOf(value);
                     }
 

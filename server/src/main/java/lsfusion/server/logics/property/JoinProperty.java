@@ -185,7 +185,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges), Compare.EQUALS))), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges, type);
     }
     
-    // для And - data changes, тут чтобы не мусорить в Property
     private static <T extends PropertyInterface> T getObjectAndInterface(Property<T> property) {
         if(property instanceof AndFormulaProperty)
             return (T) ((AndFormulaProperty)property).objectInterface;
@@ -431,16 +430,35 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
 
     @Override
-    public InputListEntity<?, Interface> getInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
+    public <X extends PropertyInterface> InputListEntity<?, Interface> getInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(!noJoin) {
-            ImRevMap<T, Interface> mapInterfaces = BaseUtils.immutableCast(implement.mapping.filterFnValues(element -> element instanceof Interface && fixedExprs.containsKey((Interface) element)).toRevMap());
-            ImMap<T, StaticParamNullableExpr> mapFixedExprs = mapInterfaces.join(fixedExprs);
-            // using top most property or bottom most property / property itself
-            if (implement.property.isValueFull(mapFixedExprs) && (
-                    implement.property.isValueUnique(mapFixedExprs, true) ||
-                            !isValueFull(fixedExprs) ||
-                            !implement.property.getValueStat(mapFixedExprs).less(getValueStat(fixedExprs))))
-                return new InputListEntity<>(implement.property, mapInterfaces);
+            Property<X> mapProperty = null;
+            ImRevMap<X, Interface> mapImplements = null;
+            T andInterface = getObjectAndInterface(implement.property);
+            if(andInterface != null) {
+                PropertyInterfaceImplement<Interface> andImplement = implement.mapping.get(andInterface);
+                if(andImplement instanceof PropertyMapImplement) {
+                    PropertyMapImplement<X, Interface> andMapImplement = (PropertyMapImplement<X, Interface>) andImplement;
+                    mapProperty = andMapImplement.property;
+                    mapImplements = andMapImplement.mapping;
+                }
+            } else {
+                mapProperty = (Property<X>) implement.property;
+                mapImplements = BaseUtils.immutableCast(implement.mapping.filterFnValues(element -> element instanceof Interface).toRevMap());
+            }
+
+            if(mapProperty != null) {
+                ImRevMap<X, Interface> mapFixedInterfaces = mapImplements.filterFnValuesRev(fixedExprs.keys());
+                ImMap<X, StaticParamNullableExpr> mapFixedExprs = mapFixedInterfaces.join(fixedExprs);
+                // using top most property or bottom most property / property itself
+                InputListEntity<?, X> mapInputList = mapProperty.getInputList(mapFixedExprs, noJoin);
+                if (mapInputList != null && (
+                        mapProperty.isValueUnique(mapFixedExprs, true) ||
+                                !isValueFull(fixedExprs) ||
+                                !getValueStat(fixedExprs).less(mapProperty.getValueStat(mapFixedExprs)))) {
+                    return mapInputList.map(mapFixedInterfaces);
+                }
+            }
         }
 
         return super.getInputList(fixedExprs, noJoin);

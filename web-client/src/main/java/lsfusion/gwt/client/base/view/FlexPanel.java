@@ -634,6 +634,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     private boolean isFlexPref(boolean vertical) {
         WidgetCollection children = getChildren();
+        if(children.size() == 0) // there was a bug in the desktop-client, not sure that it is needed here, but just in case
+            return false;
+
         if(transparentResize)
             return isFlexPref(children.get(0), vertical);
 

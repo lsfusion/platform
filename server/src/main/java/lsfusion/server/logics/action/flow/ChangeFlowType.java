@@ -7,7 +7,8 @@ public enum ChangeFlowType {
     READONLYCHANGE, // has changes in this session (no other opening forms, because in that case security policy will work)
     INTERACTIVEFORM, // has opening interactive forms inside
     HASSESSIONUSAGES, // checks if action uses this session (used for formAction WAIT | NOWAIT heuristic)
-    NEEDMORESESSIONUSAGES // optimization, checks if action needs to fill moreSessionUsages (used for formAction WAIT | NOWAIT heuristic),
+    NEEDMORESESSIONUSAGES, // optimization, checks if action needs to fill moreSessionUsages (used for formAction WAIT | NOWAIT heuristic),
+    INTERNALASYNC // checks if InternalClientAction is async
     ; 
 
     public boolean isChange() {
