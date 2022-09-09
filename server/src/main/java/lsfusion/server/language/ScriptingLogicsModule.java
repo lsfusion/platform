@@ -3249,7 +3249,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 String str = unquote((String) value);
                 if (isInlineSequence(str)) {
                     return Pair.create(addStringInlineProp(str, lineNumber, context, dynamic), null);
-                } else if (containsInterpolationSequence(str)) {
+                } else if (containsSpecialSequence(str)) {
                     return Pair.create(addStringInterpolateProp(str, lineNumber, context, dynamic), null);
                 } else {
                     LocalizedString lstr = transformLocalizedStringLiteral((String) value);
