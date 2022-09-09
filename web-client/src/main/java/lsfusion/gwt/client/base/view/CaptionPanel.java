@@ -36,8 +36,9 @@ public class CaptionPanel extends FlexPanel {
             header = new SimpleWidget("h6");
         else
             header = new DivWidget();
-        header.addStyleName("text-muted");
-        header.addStyleName("fw-normal");
+        header.addStyleName("text-secondary");
+        header.addStyleName("fw-semibold");
+//        header.addStyleName("fw-normal");
 
         add(header, GFlexAlignment.STRETCH);
 

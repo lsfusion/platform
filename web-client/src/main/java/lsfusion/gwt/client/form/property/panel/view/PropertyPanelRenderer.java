@@ -43,6 +43,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         label = new LabelWidget();
         label.addStyleName("panel-label");
         label.addStyleName("text-secondary");
+//        label.addStyleName("fw-semibold");
 
         label.getElement().setAttribute("for", property.propertyFormName);
 

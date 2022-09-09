@@ -106,7 +106,8 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
 
     public void insertTab(String tabText, int beforeIndex, AddToDeck addToDeck) {
         Label tab = createTab(tabText, false);
-        tab.addStyleName("text-secondary");
+//        tab.addStyleName("text-secondary");
+//        tab.addStyleName("fw-semibold");
         insertTab(tab, beforeIndex, addToDeck);
     }
 
