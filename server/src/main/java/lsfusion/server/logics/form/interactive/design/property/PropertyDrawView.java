@@ -738,17 +738,17 @@ public class PropertyDrawView extends BaseComponentView {
             return null;
 
         Type changeType = getChangeType(context, false);
-        if(!isProperty()) {
-            if(changeType == null)
-                return "button";
-        } else {
-            if(isLink(context))
-                return "a";
-
+        if (isProperty()) {
             Type type = getType();
             if(type != null && changeType != null && type.getCompatible(changeType) != null &&
                     type.useInputTag(!entity.isList(context.entity)))
                 return "input";
+
+            if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))
+                return "a";
+        } else {
+            if(changeType == null)
+                return "button";
         }
 
         return null;
@@ -762,7 +762,16 @@ public class PropertyDrawView extends BaseComponentView {
         if(valueElementClass != null)
             return valueElementClass;
 
-        if(!isProperty()) {
+        if (isProperty()) {
+            String tag = getTag(context);
+            if(tag == null) {
+                if (hasFlow(context, ChangeFlowType.INPUT))
+                    return "form-control";
+
+                if (hasChangeAction(context))
+                    return "btn btn-light";
+            }
+        } else {
             if(hasFlow(context, ChangeFlowType.PRIMARY))
                 return "btn-primary";
 

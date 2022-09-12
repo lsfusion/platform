@@ -10,6 +10,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
@@ -170,5 +171,12 @@ public class InputAction extends SystemExplicitAction {
     @Override
     protected ImMap<Property, Boolean> aspectChangeExtProps() {
         return getRequestChangeExtProps(1, index -> valueClass.getType(), index -> targetProp);
+    }
+
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.INPUT)
+            return true;
+        return super.hasFlow(type);
     }
 }

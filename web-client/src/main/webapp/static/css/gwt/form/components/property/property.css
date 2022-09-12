@@ -40,7 +40,7 @@
     position:absolute;
 }
 
-.prop-display-flex {
+.prop-display-flex, .prop-display-flex.btn {
     display: flex;
 }
 
