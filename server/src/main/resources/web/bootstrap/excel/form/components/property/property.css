@@ -6,3 +6,28 @@
 }
 
 /* action */
+
+
+/* ------------ Colored corner triangles  ------------ */
+
+.property-not-null, .property-has-change {
+    position: relative;
+}
+.property-not-null::after, .property-has-change::after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 0 5px 5px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+.property-has-change::after {
+    border-color: transparent transparent var(--focus-color) transparent;
+}
+
+.property-not-null::after {
+    border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
+}

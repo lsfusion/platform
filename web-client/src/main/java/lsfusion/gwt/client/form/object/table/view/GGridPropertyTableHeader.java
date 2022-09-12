@@ -7,7 +7,6 @@ import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
-import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -113,8 +112,7 @@ public class GGridPropertyTableHeader extends Header<String> {
             th.addClassName("background-inherit");
         }
 
-        if(notNull || hasChangeAction)
-            PropertyPanelRenderer.appendCorners(notNull, th);
+        PropertyPanelRenderer.setStyles(th, notNull, hasChangeAction);
     }
 
     public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);

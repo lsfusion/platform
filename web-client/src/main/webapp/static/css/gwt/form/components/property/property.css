@@ -21,30 +21,6 @@
     cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
 }
 
-/* ------------ Colored corner triangles  ------------ */
-
-.notNullCornerTriangleHolder, .changeActionCornerTriangleHolder {
-    position: relative;
-}
-.notNullCornerTriangleHolder::after, .changeActionCornerTriangleHolder::after {
-    content: "";
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 0 5px 5px;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-}
-
-.notNullCornerTriangleHolder::after {
-    border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
-}
-
-.changeActionCornerTriangleHolder::after {
-    border-color: transparent transparent var(--focus-color) transparent;
-}
-
 .emptyValueString {
     color: var(--null-value-string-color);
 }

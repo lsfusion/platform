@@ -27,13 +27,18 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         SizedWidget valueWidget = value.getSizedWidget();
 
-        boolean editableNotNull = property.isEditableNotNull();
-        if (editableNotNull || property.hasChangeAction)
-            appendCorners(editableNotNull, valueWidget.widget.getElement());
+        setStyles(valueWidget.widget.getElement(), property.isEditableNotNull(), property.hasChangeAction);
 
         sizedView = initCaption(valueWidget, property, captionContainer);
 
         finalizeInit();
+    }
+
+    public static void setStyles(Element panelElement, boolean notNull, boolean hasChangeAction) {
+        if (notNull)
+            panelElement.addClassName("property-not-null");
+        else if(hasChangeAction)
+            panelElement.addClassName("property-has-change");
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
@@ -83,13 +88,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
 //        cellRenderer.renderPanelContainer(panel);
 
         return new SizedWidget(panel);
-    }
-
-    public static void appendCorners(boolean notNull, Element panelElement) {
-        if(notNull)
-            panelElement.addClassName("notNullCornerTriangleHolder");
-        else
-            panelElement.addClassName("changeActionCornerTriangleHolder");
     }
 
     @Override
