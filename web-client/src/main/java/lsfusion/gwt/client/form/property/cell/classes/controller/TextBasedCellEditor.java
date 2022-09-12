@@ -270,6 +270,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
                         return;
 
+                    //disable selection while loading
+                    suggestBox.clearSelectedItem();
+
                     suggestBox.updateDecoration(false, true, true);
 
                     if (emptyQuery) { // to show empty popup immediately
@@ -469,6 +472,10 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
         public Element getPopupElement() {
             return display.getPopupElement();
+        }
+
+        public void clearSelectedItem() {
+            display.suggestionMenu.selectItem(null);
         }
     }
 
