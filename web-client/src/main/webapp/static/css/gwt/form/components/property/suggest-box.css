@@ -12,20 +12,11 @@
     z-index: 2000;
 }
 
-.gwt-SuggestBoxPopup .item {
-    padding: 2px;
-    white-space: nowrap;
-    color: var(--text-color);
-    cursor: default;
-}
-.gwt-SuggestBoxPopup .item-selected {
+.gwt-SuggestBoxPopup .dropdown-item-selected {
     background: var(--selection-color);
 }
 .gwt-SuggestBoxPopup .suggestPopupContent {
     background: var(--component-background-color);
-}
-.gwt-SuggestBoxPopup .noResultsLabel {
-    margin: 0.1875rem 0.125rem;
 }
 
 .gwt-SuggestBoxPopup .suggestPopupBottomPanel {

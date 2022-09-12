@@ -346,7 +346,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
                     return;
 
-                suggestBox.updateDecoration(false, true, true);
+                suggestBox.updateDecoration(true);
 
                 if (emptyQuery) { // to show empty popup immediately
                     // add timer to avoid blinking when empty popup is followed by non-empty one
@@ -410,7 +410,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                                 succeededEmpty = suggestionList.isEmpty();
                             }
 
-                            suggestBox.updateDecoration(succeededEmpty, false, result.second);
+                            suggestBox.updateDecoration(result.second);
 
                             if(!result.second) {
                                 if (succeededEmpty)
@@ -437,7 +437,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 // assert that delaytimer is equal to execTimer
                 delayTimer = null;
 
-                if(currentRequest != null) // there was pending request
+                if(currentRequest != null && suggestBox != null) // there was pending request
                     updateAsyncValues();
             }
 
@@ -446,7 +446,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             }
 
             private native void setMinWidth(Element element, int minWidth) /*-{
-                Array.prototype.forEach.call(element.getElementsByClassName("item"), function(item) {
+                Array.prototype.forEach.call(element.getElementsByClassName("dropdown-item"), function(item) {
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
@@ -455,7 +455,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             public boolean isDisplayStringHTML() {
                 return true;
             }
-        }, element, new DefaultSuggestionDisplayString(parent), suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
+        }, element, parent, new DefaultSuggestionDisplayString(), suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
             @Override
             public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                 // canceling query
@@ -503,9 +503,10 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         private DefaultSuggestionDisplayString display;
         private List<String> latestSuggestions = new ArrayList<>();
 
-        public CustomSuggestBox(SuggestOracle oracle, InputElement inputElement, DefaultSuggestionDisplayString display, SuggestionCallback callback) {
+        public CustomSuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, DefaultSuggestionDisplayString display, SuggestionCallback callback) {
             super(oracle, inputElement, display, completionType.isAnyStrict(), callback);
             this.display = display;
+            setBottomPanel(createBottomPanel(parent));
         }
 
         public void setLatestSuggestions(List<String> latestSuggestions) {
@@ -523,8 +524,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         protected boolean isLoading() {
             return display.isLoading;
         }
-        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean isLoading) {
-            display.updateDecoration(showNoResult, showEmptyLabel, isLoading);
+        public void updateDecoration(boolean isLoading) {
+            display.updateDecoration(isLoading);
         }
 
         public Element getPopupElement() {
@@ -544,37 +545,16 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 }
             }
         }
-    }
 
-    private class DefaultSuggestionDisplayString extends SuggestBox.SuggestionDisplay {
-        private Label noResultsLabel;
-        private Label emptyLabel; //for loading
         private GToolbarButton refreshButton;
         private boolean refreshButtonPressed;
-        private final Element parent;
-        public DefaultSuggestionDisplayString(Element parent) {
-            this.parent = parent;
-        }
 
-        @Override
-        protected void decorateSuggestionList(PopupPanel popupPanel, MenuBar suggestionList) {
-            super.decorateSuggestionList(popupPanel, suggestionList);
-
-            noResultsLabel = new Label(messages.noResults());
-            noResultsLabel.getElement().addClassName("item"); //to be like suggestion item
-            noResultsLabel.getElement().addClassName("noResultsLabel");
-            popupPanel.add(noResultsLabel);
-
-            emptyLabel = new Label();
-            emptyLabel.getElement().addClassName("item"); //to be like suggestion item
-            popupPanel.add(emptyLabel);
-
+        private FlexPanel createBottomPanel(Element parent) {
             FlexPanel bottomPanel = new FlexPanel(true);
             bottomPanel.setWidth("100%");
             bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
             // block mouse down events to prevent focus issues
             bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
-            popupPanel.add(bottomPanel);
 
             FlexPanel buttonsPanel = new FlexPanel();
 
@@ -627,14 +607,16 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 tip.getElement().addClassName("suggestBoxTip");
                 bottomPanel.add(tip);
             }
+            return bottomPanel;
         }
+    }
+
+    private class DefaultSuggestionDisplayString extends SuggestBox.SuggestionDisplay {
 
         public boolean isLoading;
-        public void updateDecoration(boolean showNoResult, boolean showEmptyLabel, boolean isLoading) {
-            noResultsLabel.setVisible(showNoResult);
-            emptyLabel.setVisible(showEmptyLabel);
+        public void updateDecoration(boolean isLoading) {
             if (this.isLoading != isLoading) {
-                refreshButton.setModuleImagePath(isLoading ? LOADING_IMAGE_PATH : REFRESH_IMAGE_PATH);
+                suggestBox.refreshButton.setModuleImagePath(isLoading ? LOADING_IMAGE_PATH : REFRESH_IMAGE_PATH);
                 this.isLoading = isLoading;
             }
         }
@@ -658,11 +640,11 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
 
         public boolean isRefreshButtonPressed() {
-            return refreshButtonPressed;
+            return suggestBox.refreshButtonPressed;
         }
 
         public void setRefreshButtonPressed(boolean refreshButtonPressed) {
-            this.refreshButtonPressed = refreshButtonPressed;
+            suggestBox.refreshButtonPressed = refreshButtonPressed;
         }
 
         public Element getPopupElement() {
