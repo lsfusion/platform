@@ -231,11 +231,24 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         if(removeAllPMB)
             inputElement.addClassName("remove-all-pmb");
-        if(setupPercentParent)
-            GwtClientUtils.setupPercentParent(inputElement);
         cellParent.appendChild(inputElement);
+        if(setupPercentParent) {
+            // the problem of the height:100% is that: when it is set for the input element, line-height is ignored (and line-height is used for example in bootstrap, so when the data is drawn with the regular div, but input with the input element, they have different sizes, which is odd)
+            // but flex works fine for the input element, but we cannot set display flex for the table cell element
+            // so we'll use 100% for table cells (it's not that big deal for table cells, because usually there are a lot of cells without input in a row, and they will respect line-height)
+            if(GwtClientUtils.isTDorTH(cellParent))
+                GwtClientUtils.setupPercentParent(inputElement);
+            else
+                GwtClientUtils.setupFlexParent(inputElement);
+        }
 
         return inputElement;
+    }
+
+    public static void clearInputElement(Element cellParent, boolean setupPercentParent) {
+        if(setupPercentParent)
+            if(!GwtClientUtils.isTDorTH(cellParent))
+                GwtClientUtils.clearFlexParentElement(cellParent);
     }
 
     @Override
@@ -244,7 +257,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         TextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
 
-        boolean needRenderedSize = property.autoSize && renderedSize != null;
+        boolean needRenderedSize = property.autoSize;
         boolean multiLine = isMultiLine();
 
         inputElement = renderInputElement(cellParent, property, multiLine, renderContext, true, !needRenderedSize);
@@ -269,9 +282,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         TextBasedCellRenderer.clearPadding(cellParent);
 
+        boolean needRenderedSize = property.autoSize;
+
 //        TextBasedCellRenderer.clearBasedTextFonts(property, element.getStyle(), renderContext);
 
 //        TextBasedCellRenderer.clearRender(property, element.getStyle(), renderContext);
+
+        clearInputElement(cellParent, needRenderedSize);
 
         super.clearRender(cellParent, renderContext, cancel);
     }

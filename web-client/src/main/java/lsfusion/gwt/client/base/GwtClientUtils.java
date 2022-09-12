@@ -397,6 +397,22 @@ public class GwtClientUtils {
             setupFillParent(element);
     }
 
+    public static void setupFlexParentElement(Element parentElement) {
+        assert !GwtClientUtils.isTDorTH(parentElement);
+        parentElement.addClassName("fill-parent-flex-cont");
+    }
+
+    public static void clearFlexParentElement(Element parentElement) {
+        assert !GwtClientUtils.isTDorTH(parentElement);
+        parentElement.addClassName("fill-parent-flex-cont");
+    }
+
+    public static void setupFlexParent(Element element) {
+        setupFlexParentElement(element.getParentElement());
+
+        element.addClassName("fill-parent-flex");
+    }
+
     public static void setupPercentParent(Element element) {
         element.addClassName("fill-parent-perc");
 //        element.getStyle().setWidth(100, Style.Unit.PCT);

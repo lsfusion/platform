@@ -11,10 +11,11 @@
     min-width: -moz-available;
 }
 
-.remove-all-pmb, .remove-all-pmb.form-control {
+.remove-all-pmb, .remove-all-pmb.form-control, .remove-all-pmb.form-control:focus {
     padding: 0;
     margin: 0;
     border: none;
+    box-shadow: none;
 }
 
 .comp-shrink-horz {
@@ -29,6 +30,15 @@
     width: 100%;
     height: 100%;
     box-sizing: border-box;
+}
+
+.fill-parent-flex-cont {
+    display: flex;
+}
+
+.fill-parent-flex {
+    flex: 1 1 auto;
+    align-self: stretch;
 }
 
 .display-flex {

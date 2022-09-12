@@ -115,7 +115,7 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
         boolean isInput = isTagInput();
         if(isInput && (isTDOrTH || isToolbarContainer(element))) {
             // assert isTDOrTH != isToolbarContainer(element);
-            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, isMultiLine(), renderContext, isTDOrTH, isTDOrTH);
+            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, isMultiLine(), renderContext, isTDOrTH, true);
             renderedAlignment = true;
         } else {
             // otherwise we'll use flex alignment (however text alignment would also do)
@@ -148,6 +148,7 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
         boolean isInput = isTagInput();
         if (isInput && (isTDOrTH || needToRenderToolbarContent())) {
             inputElement = true;
+            SimpleTextBasedCellEditor.clearInputElement(element, true);
 //            renderedAlignment = true;
         } else {
 //            if(isTDOrTH || isInput) {
