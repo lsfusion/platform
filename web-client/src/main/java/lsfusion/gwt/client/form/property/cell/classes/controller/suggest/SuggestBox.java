@@ -271,7 +271,7 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
   public static class DefaultSuggestionDisplay extends SuggestionDisplay
       implements HasAnimation {
 
-    private final SuggestionMenu suggestionMenu;
+    public final SuggestionMenu suggestionMenu;
     private final PopupPanel suggestionPopup;
 
     /**
@@ -515,6 +515,10 @@ public class SuggestBox extends Composite implements HasText, HasFocus, HasAnima
       else {
         suggestionPopup.showRelativeTo(suggestBox);
       }
+    }
+
+    public void clearSelectedItem() {
+      suggestionMenu.selectItem(null);
     }
 
     @Override

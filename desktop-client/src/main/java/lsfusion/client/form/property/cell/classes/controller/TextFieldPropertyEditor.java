@@ -130,6 +130,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
             return;
 
+
+        //disable selection while loading
+        suggestBox.clearSelectedIndex();
+
         suggestBox.updateLoading(true);
 
         assert delayTimer == null;
@@ -394,6 +398,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             if(index < size) {
                 comboBox.setSelectedIndex(index);
             }
+        }
+
+        private void clearSelectedIndex() {
+            comboBox.setSelectedIndex(-1);
         }
 
         private class MoveAction extends AbstractAction {
