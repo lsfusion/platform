@@ -217,7 +217,11 @@ public class SuggestBox {
     public void onBrowserEvent(EventHandler handler) {
         String type = handler.event.getType();
 
-        if (BrowserEvents.KEYDOWN.equals(type)) onKeyDown(handler);
+        if (BrowserEvents.KEYDOWN.equals(type)) {
+            onKeyDown(handler);
+        } else if(BrowserEvents.KEYUP.equals(type)) {
+            onKeyUp(handler);
+        }
 
         if (handler.consumed) return;
 
@@ -245,6 +249,13 @@ public class SuggestBox {
                     setNewSelection(suggestion);
                 }
                 break;
+        }
+    }
+
+    public void onKeyUp(EventHandler handler) {
+        // After every user key input, refresh the popup's suggestions.
+        if (GKeyStroke.isSuitableEditKeyEvent(handler.event)) {
+            updateSuggestionList();
         }
     }
 
