@@ -348,6 +348,9 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
                 suggestBox.updateDecoration(true);
 
+                //disable selection while loading
+                suggestBox.display.clearSelectedItem();
+
                 if (emptyQuery) { // to show empty popup immediately
                     // add timer to avoid blinking when empty popup is followed by non-empty one
                     Timer t = new Timer() {

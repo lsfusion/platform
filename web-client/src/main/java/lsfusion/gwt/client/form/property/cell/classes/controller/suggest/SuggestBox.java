@@ -100,6 +100,10 @@ public class SuggestBox {
             }
         }
 
+        public void clearSelectedItem() {
+            suggestionMenu.selectItem(null);
+        }
+
         protected void showSuggestions(final Element suggestElement, boolean emptyQuery, Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final SuggestionCallback callback) {
             // Hide the popup if there are no suggestions to display.
 
