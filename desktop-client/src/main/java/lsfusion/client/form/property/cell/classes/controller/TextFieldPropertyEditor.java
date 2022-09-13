@@ -13,6 +13,7 @@ import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.async.ClientInputList;
 import lsfusion.client.form.property.async.ClientInputListAction;
+import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.client.form.property.cell.classes.controller.suggest.BasicComboBoxUI;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
@@ -20,7 +21,6 @@ import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
 import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.form.property.table.view.AsyncInputComponent;
 import lsfusion.interop.form.event.KeyStrokes;
-import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.interop.form.property.Compare;
 import org.jdesktop.swingx.autocomplete.AutoCompleteComboBoxEditor;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
@@ -526,7 +526,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBoxEditorComponent.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
-                    if (!KeyStrokes.isSuitableStartFilteringEvent(editEvent) && !(editEvent instanceof ActionEvent)) {
+                    if (!KeyStrokes.isCharAddKeyEvent(editEvent) && !(editEvent instanceof ActionEvent)) {
                         comboBoxEditorComponent.selectAll();
                     }
                 }
@@ -619,7 +619,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         }
 
         @Override
-        public void initEditor(boolean selectAll) {
+        public void initEditor(EventObject editEvent, boolean selectAll) {
             Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
             if (dialogInputActionIndex != null) {
                 suggestBox.suggestButtonPressed(dialogInputActionIndex);
@@ -642,7 +642,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             showSuggestionsTimer.setRepeats(false);
             showSuggestionsTimer.start();
 
-            requestSuggestions();
+            // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
+            // wait for editor key listener to catch the event
+            if (KeyStrokes.isCharAddKeyEvent(editEvent)) {
+                requestSuggestions();
+            }
 
             suggestBox.setComboBoxEditorText(initValue);
             if (selectAll)

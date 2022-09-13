@@ -31,7 +31,10 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.text.ParseException;
 import java.util.EventObject;
 
@@ -216,7 +219,7 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         prepareTextEditor();
 
         if (editorComp instanceof AsyncInputComponent) {
-            ((AsyncInputComponent) editorComp).initEditor(!KeyStrokes.isChangeAppendKeyEvent(editEvent));
+            ((AsyncInputComponent) editorComp).initEditor(editEvent, !KeyStrokes.isChangeAppendKeyEvent(editEvent));
         }
 
         if(editorComp != null) {
