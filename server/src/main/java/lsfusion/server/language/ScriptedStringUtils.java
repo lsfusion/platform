@@ -51,6 +51,7 @@ public class ScriptedStringUtils {
                 switch (nextCh) {
                     case '\\': b.append('\\'); break;
                     case QUOTE: b.append(QUOTE); break;
+                    case INTERP_CH: b.append(INTERP_CH); break;
                     case 'n': b.append('\n'); break;
                     case 'r': b.append('\r'); break;
                     case 't': b.append('\t'); break;
@@ -436,7 +437,7 @@ public class ScriptedStringUtils {
         return depth == 0;
     }
 
-    public static boolean containsInterpolationSequence(String s) {
+    public static boolean containsSpecialSequence(String s) {
         for (int i = 0; i < s.length(); ++i) {
             if (s.charAt(i) == '\\') {
                 ++i;
