@@ -209,8 +209,7 @@ public class CustomRestoreAction extends InternalAction {
                                     if (object == null) return NullValue.instance;
                                     ValueClass classValue = ((StoredDataProperty) prop.property).value;
                                     if (classValue instanceof CustomClass) {
-                                        //TODO: убрать new Long, когда все базы перейдут на LONG
-                                        return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, object instanceof Integer ? new Long((Integer) object) : object);
+                                        return context.getSession().getDataObject(((StoredDataProperty) prop.property).value, object);
                                     } else if (classValue instanceof LogicalClass) {
                                         return getBooleanObject(object);
                                     } else if (object instanceof String)
