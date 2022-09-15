@@ -10,7 +10,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
@@ -27,8 +26,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
-import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.MenuBar;
-import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.PopupPanel;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
@@ -135,7 +132,9 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 inputElement.select();
         }
 
-        if(hasList) {
+        // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
+        // wait for editor key listener to catch the event
+        if (hasList && !GKeyStroke.isCharAddKeyEvent(handler.event)) {
             suggestBox = createSuggestBox(inputElement, parent);
             suggestBox.showSuggestionList(allSuggestions);
         }
