@@ -9,6 +9,7 @@ import lsfusion.client.form.filter.user.ClientPropertyFilter;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.property.panel.view.CaptureKeyEventsDispatcher;
+import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
@@ -25,7 +26,7 @@ public abstract class DataFilterValueView extends FlexPanel {
 
     private ClientGroupObjectValue columnKey;
 
-    public DataFilterValueView(ClientPropertyFilter condition, TableController ilogicsSupplier, boolean readSelectedValue) {
+    public DataFilterValueView(ClientPropertyFilter condition, TableController ilogicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
         this.filterValue = condition.value;
         logicsSupplier = ilogicsSupplier;
 
@@ -36,7 +37,7 @@ public abstract class DataFilterValueView extends FlexPanel {
 
         addFill(valueTable);
         
-        changeProperty(condition, readSelectedValue);
+        changeProperty(condition, keyEvent, readSelectedValue);
     }
 
     public boolean requestFocusInWindow() {
@@ -59,15 +60,18 @@ public abstract class DataFilterValueView extends FlexPanel {
         if (cellEditor != null) {
             cellEditor.cancelCellEditing();
         }
-        changeProperty(condition, true);
+        changeProperty(condition, null, true);
     }
 
-    public void changeProperty(ClientPropertyFilter condition, boolean readSelectedValue) {
+    public void changeProperty(ClientPropertyFilter condition, EventObject keyEvent, boolean readSelectedValue) {
         valueTable.setProperty(condition.property);
-        if (readSelectedValue) {
-            setValue(SwingUtils.escapeComma(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare));
-        } else {
-            setValue(filterValue.value);
+        // with quick filter first value of current cell is cleared and then key symbol is put - we have 2 server requests  
+        if (keyEvent == null || KeyStrokes.isChangeAppendKeyEvent(keyEvent)) {
+            if (readSelectedValue) {
+                setValue(SwingUtils.escapeComma(logicsSupplier.getSelectedValue(condition.property, condition.columnKey), condition.compare));
+            } else {
+                setValue(filterValue.value);
+            }
         }
     }
 

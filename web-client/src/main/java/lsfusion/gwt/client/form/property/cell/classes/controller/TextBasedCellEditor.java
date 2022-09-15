@@ -5,14 +5,18 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.data.GFormatType;
@@ -82,7 +86,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
         }
 
         String value = property.clearText ? "" : tryFormatInputText(oldValue);
-        if(hasList) {
+        // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
+        // wait for editor key listener to catch the event
+        if(hasList && !GKeyStroke.isCharAddKeyEvent(event)) {
             suggestBox.showSuggestionList();
             suggestBox.setValue(value);
         }
