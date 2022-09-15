@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.GToolbar;
@@ -14,6 +15,7 @@ public class GTreeGroup extends GComponent {
     public ArrayList<GGroupObject> groups = new ArrayList<>();
 
     public GContainer filtersContainer;
+    public GFilterControls filterControls;
     public ArrayList<GFilter> filters = new ArrayList<>();
 
     public boolean autoSize;

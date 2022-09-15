@@ -91,7 +91,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public void initFilters() {
         GToolbarButtonGroup filterButtonGroup = new GToolbarButtonGroup();
-        filter = new GFilterController(this, getFilters(), getFormLayout().getContainerView(getFiltersContainer()) != null) {
+        filter = new GFilterController(this, getFilters(), getFilterControls(), getFormLayout().getContainerView(getFiltersContainer()) != null) {
             @Override
             public void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent) {
                 long requestIndex = changeFilter(conditions);
@@ -111,11 +111,6 @@ public abstract class GAbstractTableController extends GPropertyController imple
         };
 
         filterButtonGroup.add(filter.getToolbarButton());
-        GToolbarButton addFilterConditionButton = filter.getAddFilterConditionButton();
-        if (addFilterConditionButton != null) {
-            filterButtonGroup.add(addFilterConditionButton);
-        }
-        filterButtonGroup.add(filter.getResetFiltersButton());
 
         addToToolbar(filterButtonGroup);
     }

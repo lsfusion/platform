@@ -12,6 +12,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 public class TreeGroupContainerSet {
 
     private ContainerView boxContainer;
+    private ContainerView filterBoxContainer;
     private ContainerView panelContainer;
     private ContainerView groupContainer;
     private ContainerView toolbarBoxContainer;
@@ -22,6 +23,9 @@ public class TreeGroupContainerSet {
 
     public ContainerView getBoxContainer() {
         return boxContainer;
+    }
+    public ContainerView getFilterBoxContainer() {
+        return filterBoxContainer;
     }
 
     public ContainerView getPanelContainer() {
@@ -59,6 +63,9 @@ public class TreeGroupContainerSet {
         set.boxContainer = factory.createContainer();
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"));
+        
+        set.filterBoxContainer = factory.createContainer();
+        set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));
 
         set.panelContainer = factory.createContainer(); // контейнер панели
         set.panelContainer.setSID(DefaultFormView.getPanelContainerSID(sid));
@@ -84,10 +91,14 @@ public class TreeGroupContainerSet {
         set.boxContainer.setType(ContainerType.CONTAINERV);
         set.boxContainer.setAlignment(FlexAlignment.STRETCH);
         set.boxContainer.setFlex(1);
-        set.boxContainer.add(treeGroup.filtersContainer, version);
+        set.boxContainer.add(set.filterBoxContainer, version);
         set.boxContainer.add(treeGroup, version);
         set.boxContainer.add(set.toolbarBoxContainer, version);
         set.boxContainer.add(set.panelContainer, version);
+        
+        set.filterBoxContainer.setType(ContainerType.CONTAINERH);
+        set.filterBoxContainer.add(treeGroup.filtersContainer, version);
+        set.filterBoxContainer.add(treeGroup.filterControls, version);
 
         set.toolbarBoxContainer.setType(ContainerType.CONTAINERH);
         set.toolbarBoxContainer.setAlignment(FlexAlignment.STRETCH);

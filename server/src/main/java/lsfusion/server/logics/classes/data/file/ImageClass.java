@@ -4,6 +4,13 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
+import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
+import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -69,5 +76,24 @@ public class ImageClass extends StaticFormatFileClass {
     @Override
     public FormIntegrationType getIntegrationType() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void formatXLS(RawFileData object, Cell cell, ExportXLSWriter.Styles styles) {
+
+        if (object != null) {
+            String extension = getOpenExtension(object);
+            int format = extension.equals("jpg") ? Workbook.PICTURE_TYPE_JPEG : extension.equals("png") ? Workbook.PICTURE_TYPE_PNG : 0;
+            if (format != 0) {
+                int inputImagePicture = cell.getSheet().getWorkbook().addPicture(object.getBytes(), format);
+                ClientAnchor anchor = cell instanceof XSSFCell ?
+                        new XSSFClientAnchor(0, 0, 0, 0, cell.getColumnIndex(), cell.getRowIndex(), cell.getColumnIndex() + 1, cell.getRowIndex() + 1) :
+                        new HSSFClientAnchor(0, 0, 0, 0, (short) cell.getColumnIndex(), cell.getRowIndex(), (short) (cell.getColumnIndex() + 1), cell.getRowIndex() + 1);
+                cell.getSheet().createDrawingPatriarch().createPicture(anchor, inputImagePicture);
+                return;
+            }
+        }
+
+        super.formatXLS(object, cell, styles);
     }
 }

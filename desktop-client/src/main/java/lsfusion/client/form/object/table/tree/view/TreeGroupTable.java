@@ -936,7 +936,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         }
 
         if (editorComp instanceof AsyncInputComponent) {
-            ((AsyncInputComponent) editorComp).initEditor(!KeyStrokes.isChangeAppendKeyEvent(editEvent));
+            ((AsyncInputComponent) editorComp).initEditor(editEvent, !KeyStrokes.isChangeAppendKeyEvent(editEvent));
         }
 
         editorComp.requestFocusInWindow();
