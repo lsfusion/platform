@@ -56,7 +56,7 @@ public class TreeGroupController extends AbstractTableController {
 
         if (!treeGroup.plainTreeMode) {
             ClientContainerView filtersContainer = formLayout.getContainerView(treeGroup.filtersContainer);
-            filter = new FilterController(this, treeGroup.filters, filtersContainer) {
+            filter = new FilterController(this, treeGroup.filters, filtersContainer, treeGroup.filterControls) {
                 public void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent) {
                     RmiQueue.runAction(new Runnable() {
                         @Override

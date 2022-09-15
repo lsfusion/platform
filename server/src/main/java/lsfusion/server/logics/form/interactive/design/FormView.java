@@ -299,6 +299,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             setComponentSID(groupObjectView.getGrid(), getGridSID(groupObjectView), version);
             setComponentSID(groupObjectView.getToolbarSystem(), getToolbarSystemSID(groupObjectView), version);
             setComponentSID(groupObjectView.getFiltersContainer(), getFiltersContainerSID(groupObjectView), version);
+            setComponentSID(groupObjectView.getFilterControls(), getFilterControlsComponentSID(groupObjectView), version);
             setComponentSID(groupObjectView.getCalculations(), getCalculationsSID(groupObjectView), version);
         }
 
@@ -340,6 +341,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         setComponentSID(treeGroupView, getGridSID(treeGroupView), version);
         setComponentSID(treeGroupView.getToolbarSystem(), getToolbarSystemSID(treeGroupView), version);
         setComponentSID(treeGroupView.getFiltersContainer(), getFiltersContainerSID(treeGroupView), version);
+        setComponentSID(treeGroupView.getFilterControls(), getFilterControlsComponentSID(treeGroupView), version);
     }
 
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, InsertType insertType, Version version) {
@@ -682,6 +684,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     private static String getFiltersContainerSID(PropertyGroupContainerView entity) {
         return FILTERS_CONTAINER + "(" + entity.getPropertyGroupContainerSID() + ")";
+    }
+    
+    private static String getFilterControlsComponentSID(PropertyGroupContainerView entity) {
+        return FILTER_CONTROLS_COMPONENT + "(" + entity.getPropertyGroupContainerSID() + ")";
     }
     
     private static String getCalculationsSID(PropertyGroupContainerView entity) {

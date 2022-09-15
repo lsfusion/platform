@@ -12,6 +12,7 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
@@ -39,6 +40,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return filters.getIt();
     }
     public ContainerView filtersContainer;
+    public FilterControlsView filterControls; 
     public CalculationsView calculations;
 
     public Boolean needVerticalScroll = true;
@@ -76,6 +78,9 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
+        filterControls = new FilterControlsView(idGen.idShift());
+        filterControls.setAlignment(FlexAlignment.STRETCH);
+        
         filters = NFFact.orderSet();
         calculations = new CalculationsView(idGen.idShift());
     }
@@ -103,6 +108,11 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     @Override
     public ContainerView getFiltersContainer() {
         return filtersContainer;
+    }
+
+    @Override
+    public FilterControlsView getFilterControls() {
+        return filterControls;
     }
 
     @Override
@@ -143,6 +153,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         pool.serializeObject(outStream, grid);
         pool.serializeObject(outStream, toolbarSystem);
         pool.serializeObject(outStream, filtersContainer);
+        pool.serializeObject(outStream, filterControls);
         pool.serializeCollection(outStream, getFilters());
         pool.serializeObject(outStream, calculations);
 
@@ -174,6 +185,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         grid = pool.deserializeObject(inStream);
         toolbarSystem = pool.deserializeObject(inStream);
         filtersContainer = pool.deserializeObject(inStream);
+        filterControls = pool.deserializeObject(inStream);
         filters = NFFact.finalSet(pool.deserializeSet(inStream));
         calculations = pool.deserializeObject(inStream);
 

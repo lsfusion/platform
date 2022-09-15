@@ -9,6 +9,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.ClientToolbar;
@@ -30,6 +31,7 @@ import lsfusion.gwt.client.form.filter.GRegularFilter;
 import lsfusion.gwt.client.form.filter.GRegularFilterGroup;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
@@ -202,6 +204,12 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GFilter filter = initGwtComponent(clientFilter, new GFilter());
         filter.property = convertOrCast(clientFilter.property);
         return filter;
+    }
+
+    @Cached
+    @Converter(from = ClientFilterControls.class)
+    public GFilterControls convertFilterControls(ClientFilterControls clientControls) {
+        return initGwtComponent(clientControls, new GFilterControls());
     }
     
     @Cached
@@ -520,6 +528,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GTreeGroup treeGroup = initGwtComponent(clientTreeGroup, new GTreeGroup());
         
         treeGroup.filtersContainer = convertOrCast(clientTreeGroup.filtersContainer);
+        treeGroup.filterControls = convertOrCast(clientTreeGroup.filterControls);
         for (ClientFilter filter : clientTreeGroup.filters) {
             treeGroup.filters.add(convertOrCast(filter));
         }
@@ -560,6 +569,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         }
         
         groupObject.filtersContainer = convertOrCast(clientGroupObject.filtersContainer);
+        groupObject.filtersControls = convertOrCast(clientGroupObject.filterControls);
         for (ClientFilter filter : clientGroupObject.filters) {
             groupObject.filters.add(convertOrCast(filter));
         }
