@@ -121,6 +121,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbarSystem);
         pool.serializeObject(outStream, filtersContainer);
+        pool.serializeObject(outStream, filterControls);
         pool.serializeCollection(outStream, getFilters());
 
         outStream.writeBoolean(entity.plainTreeMode);
