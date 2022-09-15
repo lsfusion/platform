@@ -15,6 +15,7 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GAbstractContainerView;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -57,6 +58,11 @@ public class GGridController extends GAbstractTableController {
     @Override
     public GContainer getFiltersContainer() {
         return groupObject.filtersContainer;
+    }
+
+    @Override
+    public GFilterControls getFilterControls() {
+        return groupObject.filtersControls;
     }
 
     public GPivotOptions getPivotOptions() {

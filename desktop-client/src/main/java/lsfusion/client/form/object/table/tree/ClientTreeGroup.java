@@ -6,9 +6,9 @@ import lsfusion.client.form.controller.remote.serialization.ClientSerializationP
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.table.ClientToolbar;
-import lsfusion.client.form.object.table.grid.ClientGrid;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
 
 import java.io.DataInputStream;
@@ -22,6 +22,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public List<ClientGroupObject> groups = new ArrayList<>();
 
     public ClientContainer filtersContainer;
+    public ClientFilterControls filterControls;
     public List<ClientFilter> filters = new ArrayList<>();
     
     public ClientToolbar toolbar;
@@ -50,7 +51,12 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     public ClientContainer getFiltersContainer() {
         return filtersContainer;
     }
-    
+
+    @Override
+    public ClientFilterControls getFilterControls() {
+        return filterControls;
+    }
+
     public List<ClientFilter> getFilters() {
         return filters;
     }
@@ -65,7 +71,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
         pool.serializeCollection(outStream, groups);
         pool.serializeObject(outStream, toolbar);
-        pool.serializeObject(outStream,filtersContainer);
+        pool.serializeObject(outStream, filtersContainer);
+        pool.serializeObject(outStream, filterControls);
         pool.serializeCollection(outStream, filters);
         
         outStream.writeBoolean(expandOnClick);
@@ -85,6 +92,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         groups = pool.deserializeList(inStream);
         toolbar = pool.deserializeObject(inStream);
         filtersContainer = pool.deserializeObject(inStream);
+        filterControls = pool.deserializeObject(inStream);
         pool.deserializeCollection(filters, inStream);
 
         plainTreeMode = inStream.readBoolean();

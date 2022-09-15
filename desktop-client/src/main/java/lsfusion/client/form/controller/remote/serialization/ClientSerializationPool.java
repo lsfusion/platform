@@ -7,6 +7,7 @@ import lsfusion.client.form.design.ClientContainer;
 import lsfusion.client.form.filter.ClientRegularFilter;
 import lsfusion.client.form.filter.ClientRegularFilterGroup;
 import lsfusion.client.form.filter.user.ClientFilter;
+import lsfusion.client.form.filter.user.ClientFilterControls;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.object.table.ClientToolbar;
@@ -40,6 +41,7 @@ public class ClientSerializationPool extends SerializationPool<ClientForm> {
         addMapping(ClientGrid.class);
         addMapping(ClientToolbar.class);
         addMapping(ClientFilter.class);
+        addMapping(ClientFilterControls.class);
         addMapping(ClientCalculations.class);
         addMapping(ClientObject.class);
         addMapping(ClientPropertyDraw.class);

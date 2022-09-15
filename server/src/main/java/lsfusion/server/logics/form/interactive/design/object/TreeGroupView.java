@@ -5,7 +5,6 @@ import lsfusion.base.identity.IDGenerator;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.object.table.tree.AbstractTreeGroup;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
@@ -14,13 +13,12 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -45,6 +43,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     }
 
     public ContainerView filtersContainer;
+    public FilterControlsView filterControls;
     
     public boolean expandOnClick = true;
 
@@ -80,6 +79,8 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
+        filterControls = new FilterControlsView(idGenerator.idShift());
+
         filters = NFFact.orderSet();
     }
 
@@ -91,6 +92,11 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     @Override
     public ContainerView getFiltersContainer() {
         return filtersContainer;
+    }
+
+    @Override
+    public FilterControlsView getFilterControls() {
+        return filterControls;
     }
 
     public void add(GroupObjectView group) {

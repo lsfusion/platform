@@ -53,6 +53,7 @@ public class DefaultFormView extends FormView {
     public ContainerView getBoxContainer(PropertyGroupContainerView groupObject) { return boxContainers.get(groupObject); }
     public ContainerView getBoxContainer(GroupObjectEntity groupObject) { return getBoxContainer(get(groupObject)); }
 
+    protected transient final Map<PropertyGroupContainerView, ContainerView> filterBoxContainers = synchronizedMap(new HashMap<>());
     protected transient final Map<PropertyGroupContainerView, ContainerView> filtersContainers = synchronizedMap(new HashMap<>());
     public ContainerView getFiltersContainer(PropertyDrawEntity propertyDraw, Version version) { return filtersContainers.get(getPropertyContainer(propertyDraw, version)); }
     
@@ -163,6 +164,10 @@ public class DefaultFormView extends FormView {
     public static String getBoxContainerSID(String goName) {
         return GroupObjectContainerSet.BOX_CONTAINER + "(" + goName + ")";
     }
+    
+    public static String getFilterBoxContainerSID(String goName) {
+        return GroupObjectContainerSet.FILTERBOX_CONTAINER + "(" + goName + ")";
+    }
 
     public static String getPanelContainerSID(String goName) {
         return GroupObjectContainerSet.PANEL_CONTAINER + "(" + goName + ")";
@@ -257,6 +262,7 @@ public class DefaultFormView extends FormView {
             addPropertyGroupContainerView(groupSet.getBoxContainer(), neighbourGroupObject, insertType, version);
 
             registerComponent(boxContainers, groupSet.getBoxContainer(), groupObject, version);
+            registerComponent(filterBoxContainers, groupSet.getFilterBoxContainer(), groupObject, version);
             registerComponent(filtersContainers, groupObject.getFiltersContainer(), groupObject, version);
             registerComponent(panelContainers, groupSet.getPanelContainer(), groupObject, version);
             registerComponent(groupContainers, groupSet.getGroupContainer(), groupObject, version);
@@ -297,6 +303,7 @@ public class DefaultFormView extends FormView {
         addPropertyGroupContainerView(treeSet.getBoxContainer(), neighbour, insertType, version);
 
         registerComponent(boxContainers, treeSet.getBoxContainer(), treeGroup, version);
+        registerComponent(filterBoxContainers, treeSet.getFilterBoxContainer(), treeGroup, version);
         registerComponent(filtersContainers, treeGroup.getFiltersContainer(), treeGroup, version);
         registerComponent(panelContainers, treeSet.getPanelContainer(), treeGroup, version);
         registerComponent(groupContainers, treeSet.getGroupContainer(), treeGroup, version);

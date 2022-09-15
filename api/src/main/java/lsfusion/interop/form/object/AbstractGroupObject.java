@@ -11,5 +11,6 @@ public interface AbstractGroupObject<T extends AbstractComponent, Str> {
     T getGrid();
     T getToolbarSystem();
     T getFiltersContainer();
+    T getFilterControls();
     T getCalculations();
 }

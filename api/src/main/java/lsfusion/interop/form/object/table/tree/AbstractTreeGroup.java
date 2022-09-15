@@ -9,4 +9,5 @@ public interface AbstractTreeGroup<T extends AbstractComponent> extends Abstract
 
     T getToolbarSystem();
     T getFiltersContainer();
+    T getFilterControls();
 }

@@ -31,7 +31,7 @@ import static lsfusion.client.form.object.ClientGroupObjectValue.EMPTY;
 public class FilterConditionView extends FlexPanel implements CaptionContainerHolder {
     public interface UIHandler {
         void removeCondition(ClientPropertyFilter condition);
-        void applyFilters(boolean focusFirstComponent);
+        void conditionsChanged(boolean focusFirstComponent);
     }
 
     private final UIHandler uiHandler;
@@ -63,19 +63,19 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     public boolean allowNull;
 
     private boolean isLast = false;
-    private boolean toolsVisible;
+    private boolean controlsVisible;
     
     // may not be applied without "Allow NULL", but we want to keep condition visible
-    public boolean isConfirmed;
+    public boolean confirmed;
 
     private boolean innerValueChange = false;
     
-    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean toolsVisible, EventObject keyEvent, boolean readSelectedValue) {
+    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, EventObject keyEvent, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
         condition = ifilter;
         uiHandler = iuiHandler;
         this.columnsProvider = columnsProvider;
-        this.toolsVisible = toolsVisible;
+        this.controlsVisible = controlsVisible;
 
         allowNull = !condition.isFixed();
 
@@ -116,7 +116,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         compareLabel = new LabelWidget();
         updateCompareLabelText();
         compareLabel.setBorder(labelBorder);
-        compareLabel.setVisible(isFixed() && !toolsVisible);
+        compareLabel.setVisible(isFixed() && !controlsVisible);
         leftPanel.addCentered(compareLabel);
 
         Compare[] filterCompares = condition.property.getFilterCompares();
@@ -130,24 +130,24 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                uiHandler.applyFilters(false);
+                conditionChanged();
             }
 
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                uiHandler.applyFilters(false);
+                conditionChanged();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                uiHandler.applyFilters(false);
+                conditionChanged();
             }
         };
         compareView.setSelectedValue(condition.compare);
-        compareView.setVisible(!isFixed() || toolsVisible);
+        compareView.setVisible(!isFixed() || controlsVisible);
         leftPanel.addCentered(compareView);
 
         valueView = new DataFilterValueView(condition, logicsSupplier, keyEvent, readSelectedValue) {
@@ -155,14 +155,15 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
                 if (!innerValueChange) { // to avoid multiple apply calls
-                    uiHandler.applyFilters(valueTable.editorEnterPressed());
+                    conditionChanged(valueTable.editorEnterPressed());
+                    confirmed = true;
                 }
             }
 
             @Override
             public void editingCancelled() {
                 super.editingCancelled();
-                if (!isConfirmed && !isFixed()) {
+                if (!confirmed && !isFixed()) {
                     FilterConditionView.this.remove();
                 }
             }
@@ -175,7 +176,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         deleteButton.addActionListener(e -> RmiQueue.runAction(FilterConditionView.this::remove));
         deleteButtonWrapper.add((Widget)deleteButton);
         deleteButtonWrapper.add(Filler.createHorizontalStrut(2));
-        deleteButtonWrapper.setVisible(!isFixed() || toolsVisible);
+        deleteButtonWrapper.setVisible(!isFixed() || controlsVisible);
         rightPanel.addCentered(deleteButtonWrapper);
 
         junctionSeparator = new FlexPanel(false, FlexAlignment.START);
@@ -192,7 +193,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 addActionListener(e -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    uiHandler.applyFilters(false);
+                    conditionChanged();
                 });
             }
         };
@@ -201,9 +202,17 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         junctionViewWrapper.add(Filler.createHorizontalStrut(2));
         rightPanel.addCentered(junctionViewWrapper);
 
-        setToolsVisible(toolsVisible);
+        setControlsVisible(controlsVisible);
 
         propertyView.setSelectedValue(currentColumn, currentCaption);
+    }
+
+    private void conditionChanged() {
+        conditionChanged(false);
+    }
+
+    private void conditionChanged(boolean focusFirstComponent) {
+        uiHandler.conditionsChanged(focusFirstComponent);
     }
 
     public void initView() {
@@ -241,15 +250,15 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         updateJunctionVisibility();
     }
     
-    public void setToolsVisible(boolean visible) {
-        this.toolsVisible = visible;
+    public void setControlsVisible(boolean visible) {
+        this.controlsVisible = visible;
 
-        propertyLabel.setVisible(!toolsVisible);
-        propertyView.setVisible(toolsVisible);
+        propertyLabel.setVisible(!controlsVisible);
+        propertyView.setVisible(controlsVisible);
 
         if (isFixed()) {
-            compareLabel.setVisible(!toolsVisible);
-            compareView.setVisible(toolsVisible);
+            compareLabel.setVisible(!controlsVisible);
+            compareView.setVisible(controlsVisible);
             
             deleteButtonWrapper.setVisible(visible);
         }
@@ -258,8 +267,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     }
 
     public void updateJunctionVisibility() {
-        junctionSeparator.setVisible(!toolsVisible && !isLast && !condition.junction);
-        junctionViewWrapper.setVisible(toolsVisible && !isLast);
+        junctionSeparator.setVisible(!controlsVisible && !isLast && !condition.junction);
+        junctionViewWrapper.setVisible(controlsVisible && !isLast);
     }
 
     void propertyChanged() {

@@ -15,8 +15,11 @@ import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.event.*;
 import lsfusion.gwt.client.form.filter.user.GFilter;
+import lsfusion.gwt.client.form.filter.user.GFilterControls;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.filter.user.view.GFilterConditionView;
+import lsfusion.gwt.client.form.filter.user.view.GFilterControlsView;
+import lsfusion.gwt.client.form.filter.user.view.GFiltersHandler;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -27,18 +30,15 @@ import java.util.*;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
-public abstract class GFilterController implements GFilterConditionView.UIHandler {
+public abstract class GFilterController implements GFilterConditionView.UIHandler, GFiltersHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String ADD_ICON_PATH = "filtadd.png";
-    private static final String RESET_ICON_PATH = "filtreset.png";
+
     private static final String FILTER_ICON_PATH = "filt.png";
 
     private GTableController logicsSupplier;
     private Map<Column, String> columns = new HashMap<>();
     
     private GToolbarButton toolbarButton;
-    private GToolbarButton addConditionButton;
-    private GToolbarButton resetConditionsButton;
 
     private boolean hasFiltersContainer;
 
@@ -46,9 +46,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     private List<GFilter> initialFilters;
     
-    private boolean toolsVisible = false;
+    private boolean controlsVisible = false;
+    private GFilterControlsView controlsView;
 
-    public GFilterController(GTableController logicsSupplier, List<GFilter> filters, boolean hasFiltersContainer) {
+    public GFilterController(GTableController logicsSupplier, List<GFilter> filters, GFilterControls filterControls, boolean hasFiltersContainer) {
         this.logicsSupplier = logicsSupplier;
         this.initialFilters = filters;
         this.hasFiltersContainer = hasFiltersContainer;
@@ -57,48 +58,20 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
-                    toggleToolsVisible();
+                    toggleControlsVisible();
                     updateToolbarButton();
                 };
             }
         };
         updateToolbarButton();
-
-        if (hasFiltersContainer()) {
-            addConditionButton = new GToolbarButton(ADD_ICON_PATH, messages.formFilterAddCondition()) {
-                @Override
-                public ClickHandler getClickHandler() {
-                    return event -> addCondition();
-                }
-            };
-            addConditionButton.addStyleName("userFilterButton");
-            addConditionButton.setVisible(false);
-        }
-
-        resetConditionsButton = new GToolbarButton(RESET_ICON_PATH, messages.formFilterResetConditions()) {
-            @Override
-            public ClickHandler getClickHandler() {
-                return event -> {
-                    resetAllConditions();
-                    toggleToolsVisible();
-                    updateToolbarButton();
-                };
-            }
-        };
-        resetConditionsButton.addStyleName("userFilterButton");
-        resetConditionsButton.setVisible(false);
+        
+        controlsView = new GFilterControlsView(this);
+        controlsView.setVisible(controlsVisible);
+        logicsSupplier.getForm().formLayout.addBaseComponent(filterControls, controlsView, null);
     }
 
     public Button getToolbarButton() {
         return toolbarButton;
-    }
-
-    public GToolbarButton getAddFilterConditionButton() {
-        return addConditionButton;
-    }
-
-    public GToolbarButton getResetFiltersButton() {
-        return resetConditionsButton;
     }
 
     // similar to GFormController.processBinding
@@ -112,29 +85,27 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public void addEnterBinding(Widget widget) {
         addBinding(new GKeyInputEvent(new GKeyStroke(KeyCodes.KEY_ENTER)),
                 new GBindingEnv(null, GBindingMode.ALL, null, GBindingMode.ONLY, null, null, GBindingMode.ONLY, null),
-                event -> processBinding(event, () -> applyFilters(true, null)),
+                event -> processBinding(event, () -> applyFilters()),
                 widget);
     }
 
-    public void toggleToolsVisible() {
-        toolsVisible = !toolsVisible;
+    public void toggleControlsVisible() {
+        controlsVisible = !controlsVisible;
 
         if (!conditionViews.isEmpty()) {
             for (GFilterConditionView view : conditionViews.values()) {
-                view.setToolsVisible(toolsVisible);
+                view.setControlsVisible(controlsVisible);
             }
-        } else if (toolsVisible && hasFiltersContainer()) {
+        } else if (controlsVisible && hasFiltersContainer()) {
             addCondition();
         }
 
-        if (addConditionButton != null) {
-            addConditionButton.setVisible(toolsVisible);
-        }
-        resetConditionsButton.setVisible(toolsVisible);
+        controlsView.setVisible(controlsVisible);
+        logicsSupplier.getForm().formLayout.update(-1);
     }
     private void updateToolbarButton() {
-        toolbarButton.setTitle(toolsVisible ? messages.formFilterHideTools() : messages.formFilterShowTools());
-        toolbarButton.showBackground(toolsVisible);
+        toolbarButton.setTitle(controlsVisible ? messages.formFilterHideControls() : messages.formFilterShowControls());
+        toolbarButton.showBackground(controlsVisible);
     }
     
     public GContainer getFiltersContainer() {
@@ -199,7 +170,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             resetAllConditions(false);
         }
         if (condition != null) {
-            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, () -> columns, toolsVisible, readSelectedValue);
+            GFilterConditionView conditionView = new GFilterConditionView(condition, logicsSupplier, this, () -> columns, controlsVisible, readSelectedValue);
             conditionViews.put(condition, conditionView);
 
             addConditionView(condition, conditionView);
@@ -249,7 +220,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
         updateConditionsLastState();
 
-        applyFilters(true, null);
+        conditionsChanged(true, null);
     }
 
     public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply() {
@@ -264,6 +235,13 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             }
         }
         return changed;
+    }
+
+    @Override
+    public void resetConditions() {
+        resetAllConditions();
+        toggleControlsVisible();
+        updateToolbarButton();
     }
 
     public void resetAllConditions() {
@@ -289,6 +267,16 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             cView.setLast(i == conditionViews.size());
         }
     }
+    
+    public void applyFilters() {
+        applyFilters(true, null);
+    }
+
+    public void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView) {
+        if (!controlsVisible) {
+            applyFilters(focusFirstComponent, changedView);
+        }
+    }
 
     public void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView) {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
@@ -300,7 +288,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             } else {
                 conditionView.setApplied(false);
             }
-            conditionView.isConfirmed = true;
         }
         ArrayList<GFilterConditionView> changed = new ArrayList<>();
         if(changedView != null)
