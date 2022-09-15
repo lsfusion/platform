@@ -1,8 +1,8 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.client.base.SwingUtils;
-import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -110,7 +110,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
             }
 
             if (editorComp instanceof AsyncInputComponent) {
-                ((AsyncInputComponent) editorComp).initEditor(true);
+                ((AsyncInputComponent) editorComp).initEditor(editEvent, true);
             }
         }
 
