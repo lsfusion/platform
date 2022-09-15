@@ -150,6 +150,10 @@ public class KeyStrokes {
     }
 
     public static boolean isSuitableStartFilteringEvent(EventObject event) {
+        return isCharAddKeyEvent(event);
+    }
+    
+    public static boolean isCharAddKeyEvent(EventObject event) {
         if (event instanceof KeyEvent) {
             KeyEvent keyEvent = (KeyEvent) event;
             return isSuitableEditKeyEvent(event) &&

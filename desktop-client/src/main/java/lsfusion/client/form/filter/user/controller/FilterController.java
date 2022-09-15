@@ -252,7 +252,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
         logicsSupplier.getFormController().commitOrCancelCurrentEditing();
 
-        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, () -> columns, controlsVisible, readSelectedValue);
+        FilterConditionView conditionView = new FilterConditionView(condition, logicsSupplier, this, () -> columns, controlsVisible, keyEvent, readSelectedValue);
         conditionViews.put(condition, conditionView);
 
         addConditionView(condition, conditionView); 

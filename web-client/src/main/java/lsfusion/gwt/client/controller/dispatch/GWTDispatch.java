@@ -65,6 +65,8 @@ public class GWTDispatch {
         public final Object id;
         public final AsyncCallback<R> callback;
 
+        public int canceledCount;
+
 //        private final int idn;
 
         public ExecutingAction(A action, Supplier<Integer> priority, Object id, AsyncCallback<R> callback) {
@@ -86,6 +88,7 @@ public class GWTDispatch {
             if(request == null) { // might be timered for the retry
                 timer.cancel();
             } else {
+                canceledCount++;
                 assert timer == null;
                 request.cancel();
             }
@@ -260,6 +263,14 @@ public class GWTDispatch {
         onPriorityIncreased(ids, index + 1);
     }
 
+    private int getCanceledAdjustment() {
+        int pendingCanceled = 0;
+        for(ExecutingAction pendingAction : pendingActions)
+            pendingCanceled += pendingAction.canceledCount;
+        // every 5 cancels we shrink the queue
+        return pendingCanceled == 0 ? 0 : ((pendingCanceled - pendingCanceled % 10) / 10 + 1);
+    }
+
     public <A extends BaseAction<R>, R extends Result> void execute(final A action, Supplier<Integer> priority, Object id, final AsyncCallback<R> callback) {
         ExecutingAction<A, R> newExecutingAction = new ExecutingAction<>(action, priority, id, callback);
         if(executingActions.size() < maxExecutingActions) {
@@ -284,7 +295,8 @@ public class GWTDispatch {
             return;
 
         // we need to check since some action might be already executed
-        if(executingActions.size() < maxExecutingActions)
+        // we're shrinking the queue size to avoid request bloating (for example when getRemoteActionMessage is executed every 1000 millis and thus pulling / pushing some request, which leads to rmi thread bloating at the app server)
+        if(executingActions.size() < Math.max(maxExecutingActions - getCanceledAdjustment(), 1))
             flushMaxPendingAction();
     }
 

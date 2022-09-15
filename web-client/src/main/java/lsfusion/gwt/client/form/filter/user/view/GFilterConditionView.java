@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
@@ -300,8 +299,12 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     }
 
     public void startEditing(Event keyEvent) {
-        // scheduleDeferred to fix focus issues with quick filter (adding condition by char key) 
-        Scheduler.get().scheduleDeferred(() -> valueView.startEditing(keyEvent));
+        // scheduleDeferred to fix focus issues with quick filter (adding condition by char key)
+        // UPD (quick filter): with scheduleDeferred() keyUp event often doesn't reach suggest box and initial suggestions don't appear
+        // As focus issue is not reproducible now, comment scheduleDeferred() out  
+//        Scheduler.get().scheduleDeferred(() -> {
+            valueView.startEditing(keyEvent);
+//        });
     }
 
     public boolean clearValueView() {

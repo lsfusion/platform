@@ -122,6 +122,10 @@ public abstract class AbstractDataGridBuilder<T> {
 
         buildRowImpl(rowIndex, rowValue, tr);
 
+        if(cellTable.renderedSelectedRow >= rowIndex) {
+            cellTable.renderedSelectedRow += 1;
+        }
+
         // indexes will be shifted in the model
     }
     public void incUpdateRow(TableSectionElement tbodyElement, int rowIndex, int[] columnsToRedraw, T rowValue) {
@@ -129,6 +133,10 @@ public abstract class AbstractDataGridBuilder<T> {
     }
     public void incDeleteRows(TableSectionElement tbodyElement, int fromIndex, int toIndex) {
         deleteRows(tbodyElement, fromIndex, toIndex);
+
+        if(cellTable.renderedSelectedRow > toIndex) {
+            cellTable.renderedSelectedRow -= toIndex - fromIndex;
+        }
 
         // indexes will be shifted in the model
     }

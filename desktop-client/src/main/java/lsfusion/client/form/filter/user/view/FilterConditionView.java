@@ -70,7 +70,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
     private boolean innerValueChange = false;
     
-    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, boolean readSelectedValue) {
+    public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, EventObject keyEvent, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
         condition = ifilter;
         uiHandler = iuiHandler;
@@ -150,7 +150,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         compareView.setVisible(!isFixed() || controlsVisible);
         leftPanel.addCentered(compareView);
 
-        valueView = new DataFilterValueView(condition, logicsSupplier, readSelectedValue) {
+        valueView = new DataFilterValueView(condition, logicsSupplier, keyEvent, readSelectedValue) {
             @Override
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
