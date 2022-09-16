@@ -644,7 +644,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 
             // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
             // wait for editor key listener to catch the event
-            if (KeyStrokes.isCharAddKeyEvent(editEvent)) {
+            if (!KeyStrokes.isCharAddKeyEvent(editEvent)) {
                 requestSuggestions();
             }
 
