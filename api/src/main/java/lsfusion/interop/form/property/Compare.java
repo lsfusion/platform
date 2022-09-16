@@ -158,6 +158,7 @@ public enum Compare {
         return "";
     }
 
+    //todo: rename to escapeSeparator
     public boolean escapeComma() {
         return this == EQUALS || this == CONTAINS || this == MATCH;
     }

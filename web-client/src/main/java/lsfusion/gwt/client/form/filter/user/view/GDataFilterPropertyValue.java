@@ -23,7 +23,6 @@ import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValue;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.interop.action.ServerResponse;
 
-import java.text.ParseException;
 import java.util.function.Consumer;
 
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
@@ -135,7 +134,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     private void updateAndCommit(Object value) {
-        value = GwtClientUtils.escapeComma(value, inputList.compare);
+        value = GwtClientUtils.escapeSeparator(value, inputList.compare);
         updateValue(value);
         afterCommit.accept(value);
     }

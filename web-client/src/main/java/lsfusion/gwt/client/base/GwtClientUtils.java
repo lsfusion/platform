@@ -1183,8 +1183,8 @@ public class GwtClientUtils {
         return isRedundantString(value) || Boolean.parseBoolean(value);
     }
 
-    public static Object escapeComma(Object value, GCompare compare) {
-        return value instanceof String && compare != null && compare.escapeComma() ? ((String) value).replace(",", "\\,") : value;
+    public static Object escapeSeparator(Object value, GCompare compare) {
+        return value instanceof String && compare != null && compare.escapeSeparator() ? ((String) value).replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator) : value;
     }
 
     public static void setInnerContent(Element element, String value) {

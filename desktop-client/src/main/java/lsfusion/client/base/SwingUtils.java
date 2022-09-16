@@ -6,6 +6,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ReflectionUtils;
 import lsfusion.base.lambda.ERunnable;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.form.design.view.ClientFormLayout;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.property.table.view.TableTransferHandler;
@@ -833,7 +834,7 @@ public class SwingUtils {
         return isRedundantString(value) || Boolean.parseBoolean((String) value);
     }
 
-    public static Object escapeComma(Object value, Compare compare) {
-        return value instanceof String && compare != null && compare.escapeComma() ? ((String) value).replace(",", "\\,") : value;
+    public static Object escapeSeparator(Object value, Compare compare) {
+        return value instanceof String && compare != null && compare.escapeComma() ? ((String) value).replace(MainController.matchSearchSeparator, "\\" + MainController.matchSearchSeparator) : value;
     }
 }
