@@ -2925,4 +2925,15 @@ public class Settings implements Cloneable {
     public void setMailImapTimeout(int mailImapTimeout) {
         this.mailImapTimeout = mailImapTimeout;
     }
+    
+    // makes FILTERS container vertical 3-column by default 
+    private boolean verticalColumnsFiltersContainer = false;
+    
+    public boolean isVerticalColumnsFiltersContainer() {
+        return verticalColumnsFiltersContainer;
+    }
+    
+    public void setVerticalColumnsFiltersContainer(boolean verticalColumnsFiltersContainer) {
+        this.verticalColumnsFiltersContainer = verticalColumnsFiltersContainer;
+    }
 }

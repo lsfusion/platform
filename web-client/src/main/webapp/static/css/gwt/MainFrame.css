@@ -513,6 +513,11 @@ button {
     margin: 0 3px 0 5px;
 }
 
+.userFilterButton {
+    margin-top: var(--border-padding);
+    margin-bottom: var(--border-padding);
+}
+
 .userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
     margin-left: var(--border-padding);
 }

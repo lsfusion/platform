@@ -138,6 +138,7 @@
                 <entry key="editActionOnSingleClick" value="${settings.editActionOnSingleClick:}"/>
                 <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
                 <entry key="filterMatchLanguage" value="${settings.filterMatchLanguage:}"/>
+                <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
             </map>
         </property>
         </bean>
