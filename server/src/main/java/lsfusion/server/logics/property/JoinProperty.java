@@ -272,16 +272,15 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return result.add(getCompareDataChanges(change.and(compareChangedWhere.toWhere().not()), type, changedWhere, propChanges, op2, op1));
         }
 
-        if(implement.property instanceof AndFormulaProperty) {
+        if (implement.property instanceof AndFormulaProperty) {
 
             AndFormulaProperty.ObjectInterface objectInterface = ((AndFormulaProperty) implement.property).objectInterface;
             ImSet<AndFormulaProperty.AndInterface> andInterfaces = ((AndFormulaProperty) implement.property).andInterfaces;
 
-            ImMap<Interface, Expr> mapExprs = change.getMapExprs();
-            DataChanges result = implement.mapping.get((T) objectInterface).mapJoinDataChanges(mapExprs, change.expr,
-                    change.where, GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges, type);
+            DataChanges result = implement.mapping.get((T) objectInterface).mapJoinDataChanges(change, type,
+                    GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges);
 
-            for(AndFormulaProperty.AndInterface andInterface : andInterfaces) {
+            for (AndFormulaProperty.AndInterface andInterface : andInterfaces) {
                 result = result.add(implement.mapping.get((T) andInterface).mapJoinDataChanges(change, type,
                         GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges));
             }
