@@ -7,6 +7,7 @@ import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GIntegralType;
 import lsfusion.gwt.client.form.GUpdateMode;
@@ -229,7 +230,7 @@ public class GGridController extends GAbstractTableController {
         assert isList();
 
         GToolbarButtonGroup viewButtonGroup = new GToolbarButtonGroup();
-        gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
+        gridTableButton = new GToolbarButton(StaticImage.GRID, messages.formGridTableView()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
@@ -239,7 +240,7 @@ public class GGridController extends GAbstractTableController {
         };
         viewButtonGroup.add(gridTableButton);
 
-        pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
+        pivotTableButton = new GToolbarButton(StaticImage.PIVOT, messages.formGridPivotView()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
@@ -250,7 +251,7 @@ public class GGridController extends GAbstractTableController {
         viewButtonGroup.add(pivotTableButton);
 
         if (groupObject.customRenderFunction != null){
-            customViewButton = new GToolbarButton("custom_view.png", messages.formGridCustomView()) {
+            customViewButton = new GToolbarButton(StaticImage.CUSTOMVIEW, messages.formGridCustomView()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> {
@@ -262,7 +263,7 @@ public class GGridController extends GAbstractTableController {
         }
 
         if(groupObject.isMap) {
-            mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
+            mapTableButton = new GToolbarButton(StaticImage.MAP, messages.formGridMapView()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> {
@@ -274,7 +275,7 @@ public class GGridController extends GAbstractTableController {
         }
 
         if(getCalendarDateType() != null) {
-            calendarTableButton = new GToolbarButton("calendar_view.png", messages.formGridCalendarView()) {
+            calendarTableButton = new GToolbarButton(StaticImage.CALENDAR, messages.formGridCalendarView()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> {
@@ -296,7 +297,7 @@ public class GGridController extends GAbstractTableController {
             if (groupObject.toolbar.showGridSettings) {
                 GToolbarButtonGroup settingsButtonGroup = new GToolbarButtonGroup();
 
-                settingsButton = new GToolbarButton("userPreferences.png", messages.formGridPreferences()) {
+                settingsButton = new GToolbarButton(StaticImage.USERPREFERENCES, messages.formGridPreferences()) {
                     @Override
                     public ClickHandler getClickHandler() {
                         return event -> {
@@ -351,7 +352,7 @@ public class GGridController extends GAbstractTableController {
         if(groupObject.toolbar.showPrintGroupXls) {
             GToolbarButtonGroup printButtonGroup = new GToolbarButtonGroup();
 
-            printButtonGroup.add(new GToolbarButton("excelbw.png", messages.formGridExport()) {
+            printButtonGroup.add(new GToolbarButton(StaticImage.EXCELBW, messages.formGridExport()) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> table.runGroupReport();
@@ -363,7 +364,7 @@ public class GGridController extends GAbstractTableController {
 
         GToolbarButtonGroup updateButtonGroup = new GToolbarButtonGroup();
 
-        manualUpdateTableButton = new GToolbarButton("update.png", messages.formGridManualUpdate()) {
+        manualUpdateTableButton = new GToolbarButton(StaticImage.UPDATE, messages.formGridManualUpdate()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
@@ -374,7 +375,7 @@ public class GGridController extends GAbstractTableController {
         };
         updateButtonGroup.add(manualUpdateTableButton);
 
-        forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), "ok.png", messages.formGridUpdate(), false) {
+        forceUpdateTableButton = new GToolbarButton(messages.formGridUpdate(), StaticImage.OK, messages.formGridUpdate(), false) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {

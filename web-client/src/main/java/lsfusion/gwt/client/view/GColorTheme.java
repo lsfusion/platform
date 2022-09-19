@@ -40,13 +40,11 @@ public enum GColorTheme {
     }
 
     public String getImagePath(String path) {
-        if (path != null) {
-            int dotInd = path.lastIndexOf(".");
-            if (dotInd != -1) {
-                return path.substring(0, dotInd) + getFileNameSuffix() + path.substring(dotInd);
-            }
+        assert !isDefault();
+        int dotInd = path.lastIndexOf(".");
+        if (dotInd != -1) {
+            return path.substring(0, dotInd) + getFileNameSuffix() + path.substring(dotInd);
         }
-
         return path;
     }
 }

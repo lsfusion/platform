@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class GMobileNavigatorView implements ColorThemeChangeListener {
     private GINavigatorController navigatorController;
-    private Map<GNavigatorElement, ImageElement> icons = new HashMap<>();
+    private Map<GNavigatorElement, Element> icons = new HashMap<>();
 
     public GMobileNavigatorView(GNavigatorElement root, GINavigatorController navigatorController) {
         this.navigatorController = navigatorController;
@@ -43,11 +43,10 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
     private Element createMenuItem(GNavigatorElement navigatorElement) {
         LIElement liElement = Document.get().createLIElement();
 
-        ImageElement iconImageElement = null;
+        Element iconImageElement = null;
         if (navigatorElement.image != null) {
-            iconImageElement = Document.get().createImageElement();
+            iconImageElement = navigatorElement.image.createImage();
             icons.put(navigatorElement, iconImageElement);
-            setImageSrc(navigatorElement);
         }
 
         Element textElement;
@@ -85,10 +84,6 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
         return liElement;
     }
 
-    private void setImageSrc(GNavigatorElement navigatorElement) {
-        icons.get(navigatorElement).setSrc(GwtClientUtils.getAppStaticImageURL(navigatorElement.image.getImage().getUrl()));
-    }
-
     public final native void enableMMenu(Element element, String title) /*-{
         menu = new $wnd.MmenuLight(element);
         navigator = menu.navigation({
@@ -107,8 +102,7 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
 
     @Override
     public void colorThemeChanged() {
-        for (GNavigatorElement navigatorElement : icons.keySet()) {
-            setImageSrc(navigatorElement);
-        }
+        for (Map.Entry<GNavigatorElement, Element> icon : icons.entrySet())
+            icon.getKey().image.setImageSrc(icon.getValue());
     }
 }

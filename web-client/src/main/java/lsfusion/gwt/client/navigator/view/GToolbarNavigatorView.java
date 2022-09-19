@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.*;
@@ -54,7 +52,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        final Button button = new NavigatorImageButton(element.image, element.caption);
+        Button button = new NavigatorImageButton(element);
         button.addStyleName("nav-item");
         button.addStyleName("nav-link");
         button.addStyleName("link-dark");

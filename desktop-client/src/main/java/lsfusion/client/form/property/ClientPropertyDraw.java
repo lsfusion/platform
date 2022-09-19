@@ -467,7 +467,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             for (int i = 0; i < actions.length; i++) {
                 ClientInputListAction action = actions[i];
                 //addDialogInputAProp from server
-                if (action.action.equals("dialog")) {
+                if (action.id != null && action.id.equals("dialog")) {
                     return i;
                 }
             }

@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -40,9 +41,6 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView);
         void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
     }
-
-    private static final String DELETE_ICON_PATH = "filtdel.png";
-    private static final String SEPARATOR_ICON_PATH = "filtseparator.png";
 
     private GPropertyFilter condition;
     
@@ -184,7 +182,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         rightPanel.addCentered(valueView);
         uiHandler.addEnterBinding(valueView.cell);
 
-        deleteButton = new GToolbarButton(DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
+        deleteButton = new GToolbarButton(StaticImage.DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> GFilterConditionView.this.remove();
@@ -198,7 +196,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         junctionSeparator.addStyleName("userFilterJunctionSeparator");
         rightPanel.addCentered(junctionSeparator);
 
-        junctionView = new GToolbarButton(SEPARATOR_ICON_PATH, messages.formFilterConditionViewOr()) {
+        junctionView = new GToolbarButton(StaticImage.SEPARATOR_ICON_PATH, messages.formFilterConditionViewOr()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {

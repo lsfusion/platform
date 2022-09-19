@@ -1,53 +1,38 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.user.client.ui.Image;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.BaseStaticImage;
+import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.navigator.view.GToolbarNavigatorView;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class ImageButton extends FormButton implements ColorThemeChangeListener {
-    protected final Image image;
-
-    protected String imagePath; // default
+public abstract class ImageButton extends FormButton implements ColorThemeChangeListener {
 
     private boolean focusable = true;
 
-    public ImageButton(String caption, String imagePath) {
+    protected Element imageElement;
+
+    protected BaseStaticImage baseImage;
+
+    public ImageButton(String caption, BaseStaticImage baseImage) {
         setStyleName("btn-image");
 
         setText(caption);
         updateStyle(caption);
 
-        image = new Image();
-        image.setVisible(false);
-        image.setStyleName("btn-image-img");
+        this.baseImage = baseImage;
 
-        getElement().insertFirst(image.getElement());
+        if(baseImage != null) {
+            imageElement = baseImage.createImage();
 
-        setModuleImagePath(imagePath);
+            imageElement.addClassName("btn-image-img");
+            getElement().insertFirst(imageElement);
 
-        MainFrame.addColorThemeChangeListener(this);
+            MainFrame.addColorThemeChangeListener(this);
+        }
 
 //        setFocusable(false);
-    }
-
-    public void setModuleImagePath(String imagePath) {
-        this.imagePath = imagePath;
-        ensureAndSet(imagePath);
-    }
-
-    private void ensureAndSet(String imagePath) {
-        GwtClientUtils.setThemeImage(imagePath, this::setAbsoluteImagePath);
-    }
-
-    protected void setAbsoluteImagePath(String imagePath) {
-        if (imagePath != null && !imagePath.equals("")) {
-            image.setVisible(true);
-            image.setUrl(imagePath);
-        } else {
-            image.setVisible(false);
-            image.setUrl("");
-        }
     }
 
     @Override
@@ -79,6 +64,6 @@ public class ImageButton extends FormButton implements ColorThemeChangeListener 
 
     @Override
     public void colorThemeChanged() {
-        ensureAndSet(imagePath);
+        baseImage.setImageSrc(imageElement);
     }
 }

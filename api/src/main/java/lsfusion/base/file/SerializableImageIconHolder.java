@@ -13,8 +13,16 @@ import java.util.Map;
 public class SerializableImageIconHolder implements Serializable {
     public static final long serialVersionUID = 42L;
 
+    public SerializableImageIconHolder() {
+    }
+
+    public SerializableImageIconHolder(String imagePath) {
+        setImage(imagePath);
+    }
+
     private final Map<ColorTheme, String> imagePathes = new HashMap<>();
     private final Map<ColorTheme, RawFileData> images = new HashMap<>();
+    public String fontImage;
 
     public transient Object desktopClientImages;
 

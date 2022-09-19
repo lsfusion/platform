@@ -1483,7 +1483,7 @@ public class GFormController implements EditManager {
     }
     public void showAsync(boolean set) {
         if(asyncView != null)
-            asyncView.setLoadingImage(set ? "loading.gif" : null);
+            asyncView.setForceLoading(set);
     }
 
     public boolean previewEvent(Element target, Event event) {

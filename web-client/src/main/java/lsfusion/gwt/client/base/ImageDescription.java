@@ -31,9 +31,6 @@ public class ImageDescription implements Serializable {
         this.height = height;
     }
 
-    public String getUrl() {
-        return getUrl(true);
-    }
     public String getUrl(boolean enabled) {
         return enabled ? url : disabledUrl;
     }

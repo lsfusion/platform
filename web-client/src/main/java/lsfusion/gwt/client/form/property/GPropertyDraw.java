@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.KEYDOWN;
 import static lsfusion.gwt.client.base.EscapeUtils.escapeLineBreakHTML;
@@ -131,7 +130,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public static class QuickAccessAction implements CellRenderer.ToolbarAction {
-        public final String action;
+        public final BaseStaticImage action;
         public final GKeyStroke keyStroke;
         public final int index;
         public final boolean hover;
@@ -147,12 +146,12 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         }
 
         @Override
-        public String getImage() {
+        public BaseStaticImage getImage() {
             return action;
         }
 
         @Override
-        public void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext) {
+        public void setOnPressed(Element actionImgElement, UpdateContext updateContext) {
             setToolbarAction(actionImgElement, index);
 //            setToolbarAction(actionImgElement, () -> updateContext.executeContextAction(index));
         }
@@ -165,7 +164,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             return isHover() == action.isHover() && index == ((QuickAccessAction) action).index;
         }
 
-        public QuickAccessAction(String action, GKeyStroke keyStroke, int index, boolean hover) {
+        public QuickAccessAction(BaseStaticImage action, GKeyStroke keyStroke, int index, boolean hover) {
             this.action = action;
             this.keyStroke = keyStroke;
             this.index = index;
@@ -266,7 +265,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GEditBindingMap editBindingMap;
 
-    public ImageHolder imageHolder;
+    public AppStaticImage appStaticImage;
     public boolean hasDynamicImage;
     public Boolean focusable;
     public boolean checkEquals;
@@ -285,7 +284,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean hasStaticImage() {
-        return imageHolder != null;
+        return appStaticImage != null;
     }
     public boolean hasDynamicImage() { // when it's an action and has dynamic image
         return isAction() && hasDynamicImage;
@@ -470,7 +469,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             for (int i = 0; i < actions.length; i++) {
                 GInputListAction action = actions[i];
                 //addDialogInputAProp from server
-                if (action.action.equals("dialog")) {
+                if (action.id != null && action.id.equals("dialog")) {
                     return i;
                 }
             }
@@ -641,7 +640,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public ImageDescription getImage() {
-        return imageHolder != null ? imageHolder.getImage() : null;
+        return appStaticImage != null ? appStaticImage.getImage() : null;
     }
 
     @Override

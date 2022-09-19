@@ -14,7 +14,9 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.ClientObject;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.ClientPropertyReader;
+import lsfusion.client.form.property.cell.ClientAsync;
 import lsfusion.gwt.client.GFormChangesDTO;
+import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.form.object.GCustomObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GGroupObjectValueBuilder;
@@ -242,5 +244,14 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     @Converter(from = Instant.class)
     public GZDateTimeDTO convertDateTime(Instant dateTime) {
         return new GZDateTimeDTO(dateTime.toEpochMilli());
+    }
+
+    @Converter(from = ClientAsync.class)
+    public GAsync convertAsync(ClientAsync async) {
+        if(async.equals(ClientAsync.CANCELED))
+            return GAsync.CANCELED;
+        if(async.equals(ClientAsync.RECHECK))
+            return GAsync.RECHECK;
+        return new GAsync(async.displayString, async.rawString, convertOrCast(async.key));
     }
 }

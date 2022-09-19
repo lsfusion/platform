@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -24,8 +25,8 @@ public class GBusyDialog extends DialogModalWindow {
 
     ResizableComplexPanel content;
     boolean pauseTopProgressBar = false;
-    private final Image topProgressBarDynamic;
-    private final Image topProgressBarStatic;
+    private final StaticImageWidget topProgressBarDynamic;
+    private final StaticImageWidget topProgressBarStatic;
 
     private final ResizableComplexPanel message;
     private final FormButton btnExit;
@@ -48,24 +49,18 @@ public class GBusyDialog extends DialogModalWindow {
         content = new ResizableComplexPanel();
         content.addStyleName("dialog-busy-content");
 
-        topProgressBarDynamic = new GImage("loading_bar.gif");
-        topProgressBarStatic = new GImage("loading_bar.png");
+        topProgressBarDynamic = new StaticImageWidget(StaticImage.LOADING_BAR_GIF);
+        topProgressBarStatic = new StaticImageWidget(StaticImage.LOADING_BAR);
         topProgressBarStatic.setVisible(false);
-        topProgressBarDynamic.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                pauseTopProgressBar = true;
-                topProgressBarDynamic.setVisible(false);
-                topProgressBarStatic.setVisible(true);
-            }
+        topProgressBarDynamic.addClickHandler(clickEvent -> {
+            pauseTopProgressBar = true;
+            topProgressBarDynamic.setVisible(false);
+            topProgressBarStatic.setVisible(true);
         });
-        topProgressBarStatic.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent clickEvent) {
-                pauseTopProgressBar = false;
-                topProgressBarDynamic.setVisible(true);
-                topProgressBarStatic.setVisible(false);
-            }
+        topProgressBarStatic.addClickHandler(clickEvent -> {
+            pauseTopProgressBar = false;
+            topProgressBarDynamic.setVisible(true);
+            topProgressBarStatic.setVisible(false);
         });
 
         content.add(topProgressBarDynamic);

@@ -83,6 +83,19 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
         return oldValue;
     }
 
+    private boolean forceLoading;
+
+    public void setForceLoading(boolean forceLoading) {
+        this.forceLoading = forceLoading;
+
+        update();
+    }
+
+    @Override
+    public boolean isLoading() {
+        return super.isLoading() || forceLoading;
+    }
+
     private boolean forceSetFocus;
     @Override
     public Object forceSetFocus() {

@@ -5,13 +5,9 @@ import lsfusion.gwt.client.view.StyleDefaults;
 
 import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
-public class SimpleImageButton extends ImageButton {
+public class SimpleImageButton extends StaticImageButton {
     public SimpleImageButton(String caption) {
-        this(caption, null);
-    }
-
-    public SimpleImageButton(String caption, String imagePath) {
-        super(caption, imagePath);
+        super(caption, null);
 
         setHeight(StyleDefaults.COMPONENT_HEIGHT_STRING);
         

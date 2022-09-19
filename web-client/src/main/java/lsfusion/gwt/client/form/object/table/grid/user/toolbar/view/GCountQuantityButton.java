@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.TooltipManager;
 
 public abstract class GCountQuantityButton extends GToolbarButton {
@@ -9,7 +10,7 @@ public abstract class GCountQuantityButton extends GToolbarButton {
     private final NumberFormat format;
 
     public GCountQuantityButton() {
-        super("quantity.png", messages.formQueriesNumberOfEntries());
+        super(StaticImage.QUANTITY, messages.formQueriesNumberOfEntries());
         format = NumberFormat.getDecimalFormat();
     }
 

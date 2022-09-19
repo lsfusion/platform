@@ -6,12 +6,7 @@ import com.google.gwt.user.client.ui.Label;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-import java.util.function.Consumer;
-
 public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
-    protected static final String ICON_EMPTY = "empty.png";
-    protected static final String ICON_FILE = "file.png";
-
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
         return false;
@@ -21,7 +16,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
     public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
         element.setInnerText(null);
 
-        ImageElement img = null;
+        Element img = null;
         if (value == null && property.isEditableNotNull()) {
             setBasedEmptyElement(element);
         } else {
@@ -29,7 +24,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
             element.removeClassName("requiredValueString");
             element.setTitle("");
 
-            img = Document.get().createImageElement();
+            img = createImage(value);
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
@@ -41,15 +36,13 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
             } else {
                 img.removeClassName("selectedFileCellHasEdit");
             }
-
-            setImage(value, img::setSrc);
         }
         element.appendChild(wrapImage(img));
 
         return true;
     }
 
-    private Element wrapImage(ImageElement img) {
+    private Element wrapImage(Element img) {
         Label dropFilesLabel = new Label();
         dropFilesLabel.setAutoHorizontalAlignment(HasAutoHorizontalAlignment.ALIGN_CENTER);
         dropFilesLabel.setWidth("100%");
@@ -84,7 +77,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
         element.addClassName("requiredValueString");
     }
 
-    protected abstract void setImage(Object value, Consumer<String> consumer);
+    protected abstract Element createImage(Object value);
 
     protected FileBasedCellRenderer(GPropertyDraw property) {
         super(property);

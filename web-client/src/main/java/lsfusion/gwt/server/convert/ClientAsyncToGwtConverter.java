@@ -12,24 +12,20 @@ import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.event.BindingMode;
+import lsfusion.interop.logics.ServerSettings;
 
+import javax.servlet.ServletContext;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
-public class ClientAsyncToGwtConverter extends ObjectConverter {
-    private static final class InstanceHolder {
-        private static final ClientAsyncToGwtConverter instance = new ClientAsyncToGwtConverter();
-    }
+public class ClientAsyncToGwtConverter extends CachedObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
 
-    public static ClientAsyncToGwtConverter getInstance() {
-        return InstanceHolder.instance;
-    }
-
-    private ClientAsyncToGwtConverter() {
+    public ClientAsyncToGwtConverter(ServletContext servletContext, ServerSettings settings) {
+        super(servletContext, settings);
     }
 
     @Cached
@@ -49,7 +45,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
         for(int i = 0; i < clientInputListAction.quickAccessList.size(); i++) {
             quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));
         }
-        return new GInputListAction(clientInputListAction.action, convertOrCast(clientInputListAction.asyncExec),
+        return new GInputListAction(createImage(clientInputListAction.action, false), clientInputListAction.id, convertOrCast(clientInputListAction.asyncExec),
                 convertOrCast(clientInputListAction.keyStroke), convertOrCast(clientInputListAction.editingBindingMode), quickAccessList);
     }
 

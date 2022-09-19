@@ -167,7 +167,7 @@ public class TooltipManager {
             horizontalPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
             horizontalPanel.add(getCommand(tooltipHelper, debugPath == null ? "use_default_path" : debugPath));
 
-            GToolbarButton preferencesButton = new GToolbarButton("userPreferences.png") {
+            GToolbarButton preferencesButton = new GToolbarButton(StaticImage.USERPREFERENCES) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> verticalPanel.setVisible(!verticalPanel.isVisible());

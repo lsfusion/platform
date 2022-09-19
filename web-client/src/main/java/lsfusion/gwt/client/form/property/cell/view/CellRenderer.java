@@ -2,7 +2,9 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
@@ -16,8 +18,6 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class CellRenderer<T> {
-
-    public static final String ICON_LOADING = "loading.gif";
 
     protected final GPropertyDraw property;
 
@@ -413,14 +413,14 @@ public abstract class CellRenderer<T> {
 
         boolean isHover();
         GKeyStroke getKeyStroke();
-        String getImage();
+        BaseStaticImage getImage();
 
         boolean matches(ToolbarAction action);
 
         // there are to ways of working with toolbar actions
         // 1 is setting some mark for the target element (s) and then checking it in regular event handler (this  is more flexible, for example in editOnSingleClick scenario, however needs some assertions)
         // 2 setting onMouseDown and stopping propagation (this way the row change won't be handled, when using ALL, and maybe some mor things)
-        default void setToolbarAction(ImageElement actionImgElement, Object value) {
+        default void setToolbarAction(Element actionImgElement, Object value) {
             // we're setting TOOLBAR_ACTION for all containers to avoid recursive run in getToolbarAction (optimization)
             actionImgElement.setPropertyObject(GEditBindingMap.TOOLBAR_ACTION, value);
             Element parentElement = actionImgElement.getParentElement();
@@ -435,7 +435,7 @@ public abstract class CellRenderer<T> {
             });
         }
 
-        void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext);
+        void setOnPressed(Element actionImgElement, UpdateContext updateContext);
     }
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
@@ -477,8 +477,7 @@ public abstract class CellRenderer<T> {
                 GwtClientUtils.removeAllChildren(toolbarElement);
 
             if(loading) {
-                ImageElement loadingImage = Document.get().createImageElement();
-                GwtClientUtils.setThemeImage(ICON_LOADING, loadingImage::setSrc);
+                Element loadingImage = StaticImage.LOADING_IMAGE_PATH.createImage();
                 loadingImage.addClassName("property-toolbar-loading");
                 setToolbarBackground(loadingImage, background);
 
@@ -499,12 +498,13 @@ public abstract class CellRenderer<T> {
                 for (ToolbarAction toolbarAction : toolbarActions) {
                     // there is an assertion that the DOM structure will be exactly like that in setOnPressed / for optimization reasons
                     DivElement actionDivElement = Document.get().createDivElement();
-                    ImageElement actionImgElement = Document.get().createImageElement();
+
+                    Element actionImgElement = toolbarAction.getImage().createImage();
+
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
                     setToolbarBackground(actionDivElement, background);
 
-                    GwtClientUtils.setThemeImage(toolbarAction.getImage() + ".png", actionImgElement::setSrc);
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
                     GKeyStroke keyStroke = toolbarAction.getKeyStroke();

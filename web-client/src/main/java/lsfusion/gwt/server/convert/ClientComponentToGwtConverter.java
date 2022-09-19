@@ -62,11 +62,13 @@ import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
 public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
-    private final ClientAsyncToGwtConverter asyncConverter = ClientAsyncToGwtConverter.getInstance();
+    private final ClientAsyncToGwtConverter asyncConverter;
     private GForm form;
 
     public ClientComponentToGwtConverter(ServletContext servletContext, ServerSettings settings) {
         super(servletContext, settings);
+
+        asyncConverter = new ClientAsyncToGwtConverter(servletContext, settings);
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {
@@ -301,7 +303,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.imageHolder = createImage(clientPropertyDraw.design.getImageHolder(), canIconBeDisabled);
+        propertyDraw.appStaticImage = createImage(clientPropertyDraw.design.getImageHolder(), canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

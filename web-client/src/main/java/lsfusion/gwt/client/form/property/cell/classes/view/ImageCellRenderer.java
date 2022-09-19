@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
+import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.data.GImageType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.FileBasedCellRenderer;
-
-import java.util.function.Consumer;
 
 public class ImageCellRenderer extends FileBasedCellRenderer {
 
@@ -14,11 +13,11 @@ public class ImageCellRenderer extends FileBasedCellRenderer {
     }
 
     @Override
-    protected void setImage(Object value, Consumer<String> consumer) {
+    protected Element createImage(Object value) {
         String extension = ((GImageType) property.baseType).extension;
-        if (value instanceof String)
-            consumer.accept(GwtClientUtils.getAppDownloadURL((String) value, null, extension));
-        else
-            GwtClientUtils.setThemeImage(ICON_EMPTY, consumer);
+//        if (value instanceof String)
+        return GwtClientUtils.createAppDownloadImage(value, extension);
+//        else
+//            return GwtClientUtils.createStaticImage(ICON_EMPTY);
     }
 }

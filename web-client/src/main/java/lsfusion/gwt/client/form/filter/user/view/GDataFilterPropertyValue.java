@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.ImageElement;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -150,7 +151,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new GInputListAction[]{new GInputListAction("reset", null, null, null, null)},
+        inputList = new GInputList(new GInputListAction[]{new GInputListAction(StaticImage.RESET, "reset", null, null, null, null)},
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT :
                 GCompletionType.NON_STRICT,
                 compare);
@@ -168,12 +169,12 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         }
 
         @Override
-        public String getImage() {
-            return "reset";
+        public BaseStaticImage getImage() {
+            return StaticImage.RESET;
         }
 
         @Override
-        public void setOnPressed(ImageElement actionImgElement, UpdateContext updateContext) {
+        public void setOnPressed(Element actionImgElement, UpdateContext updateContext) {
             setToolbarAction(actionImgElement, true);
 //            setToolbarAction(actionImgElement, () -> updateContext.changeProperty(null));
         }

@@ -56,7 +56,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
-    private final ClientAsyncToGwtConverter asyncConverter = ClientAsyncToGwtConverter.getInstance();
 
     private ClientActionToGwtConverter() {
     }
@@ -162,12 +161,14 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = RequestUserInputClientAction.class)
-    public GRequestUserInputAction convertAction(RequestUserInputClientAction action) throws IOException {
+    public GRequestUserInputAction convertAction(RequestUserInputClientAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
         GType type = typeConverter.convertOrCast(
                 ClientTypeSerializer.deserializeClientType(action.readType)
         ) ;
 
         Object value = deserializeServerValue(action.oldValue);
+
+        ClientAsyncToGwtConverter asyncConverter = new ClientAsyncToGwtConverter(servlet.getServletContext(), servlet.getNavigatorProvider().getServerSettings(formSessionObject.navigatorID));
 
         GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
 
@@ -221,20 +222,6 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     @Converter(from = ExternalHttpMethod.class)
     public GExternalHttpMethod convertMethod(ExternalHttpMethod method) {
         return GExternalHttpMethod.valueOf(method.name());
-    }
-
-    @Converter(from = ProgressBar.class)
-    public GProgressBar convertProgressBar(ProgressBar progressBar) {
-        return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.getParams());
-    }
-
-    @Converter(from = ClientAsync.class)
-    public GAsync convertAsync(ClientAsync async) {
-        if(async.equals(ClientAsync.CANCELED))
-            return GAsync.CANCELED;
-        if(async.equals(ClientAsync.RECHECK))
-            return GAsync.RECHECK;
-        return new GAsync(async.displayString, async.rawString, valuesConverter.convertOrCast(async.key));
     }
 
     @Converter(from = LoadLinkClientAction.class)

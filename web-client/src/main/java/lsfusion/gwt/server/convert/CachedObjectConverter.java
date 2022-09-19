@@ -1,7 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.file.SerializableImageIconHolder;
-import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.interop.logics.ServerSettings;
 
@@ -23,7 +23,7 @@ public class CachedObjectConverter extends ObjectConverter {
         this.settings = settings;
     }
 
-    protected ImageHolder createImage(SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
+    protected AppStaticImage createImage(SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
         return FileUtils.createImageFile(servletContext, settings, imageHolder, canBeDisabled);
     }
 

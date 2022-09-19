@@ -13,7 +13,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.base.lambda.EConsumer;
 import lsfusion.client.base.view.ClientColorUtils;
-import lsfusion.gwt.client.base.ImageHolder;
+import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.http.provider.form.FormSessionObject;
@@ -120,9 +120,9 @@ public class FileUtils {
         return APP_STATIC_FOLDER_SUBPATH + "/" + settings.logicsName;
     }
 
-    public static ImageHolder createImageFile(ServletContext servletContext, ServerSettings settings, SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
+    public static AppStaticImage createImageFile(ServletContext servletContext, ServerSettings settings, SerializableImageIconHolder imageHolder, boolean canBeDisabled) {
         if (imageHolder != null) {
-            ImageHolder imageDescription = new ImageHolder();
+            AppStaticImage imageDescription = new AppStaticImage(imageHolder.fontImage);
                 
             for (GColorTheme gColorTheme : GColorTheme.values()) {
                 ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());

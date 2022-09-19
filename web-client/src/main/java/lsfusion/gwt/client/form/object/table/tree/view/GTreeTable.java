@@ -182,6 +182,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     private final static String ICON_PASSBY = "tree_dots_passby.png";
     private final static String ICON_EMPTY = "tree_empty.png";
     private final static String ICON_BRANCH = "tree_dots_branch.png";
+    private final static String ICON_LOADING = "loading.png";
 
     private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
@@ -311,7 +312,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             case CLOSED:
                 return ICON_CLOSED;
             case LOADING:
-                return CellRenderer.ICON_LOADING;
+                return ICON_LOADING;
         }
         throw new UnsupportedOperationException();
     }

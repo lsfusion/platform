@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
@@ -29,7 +30,8 @@ public class AsyncSerializer {
     public static void serializeInputList(InputList inputList, DataOutputStream dataStream) throws IOException {
         dataStream.write(inputList.actions.length);
         for(InputListAction action : inputList.actions) {
-            dataStream.writeUTF(action.action);
+            BaseUtils.writeObject(dataStream, action.action);
+            dataStream.writeUTF(action.id);
             AsyncSerializer.serializeEventExec(action.asyncExec, dataStream);
             SerializationUtil.writeString(dataStream, action.keyStroke);
 

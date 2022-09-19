@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.size.GSize;
@@ -136,7 +137,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         if(height != null)
             th.getStyle().setProperty("maxHeight", height.getString());
 
-        Consumer<ImageElement> imgProcessor = getSortImgProcesspr(sortDir);
+        Supplier<Element> imgProcessor = getSortImgProcesspr(sortDir);
         if(imgProcessor != null)
             th = wrapImg(th, imgProcessor);
 //            th = wrapAlignedFlexImg(th, imgProcessor);
@@ -157,16 +158,15 @@ public class GGridPropertyTableHeader extends Header<String> {
         return wrappedTh;
     }
 
-    public static Element wrapImg(Element th, Consumer<ImageElement> imgProcessor) {
+    public static Element wrapImg(Element th, Supplier<Element> imgProcessor) {
         th.addClassName("wrap-wrapimgdiv");
 
         Element wrappedTh = Document.get().createDivElement();
         wrappedTh.addClassName("wrap-imgdiv");
 
-        ImageElement img = Document.get().createImageElement();
+        Element img = imgProcessor.get();
         img.addClassName("wrap-img-margins");
         img.addClassName("wrap-img");
-        imgProcessor.accept(img);
         th.appendChild(img);
 
         th.appendChild(wrappedTh);
@@ -174,15 +174,12 @@ public class GGridPropertyTableHeader extends Header<String> {
         return wrappedTh;
     }
 
-    public static Consumer<ImageElement> getSortImgProcesspr(Boolean sortDir) {
-        return sortDir != null ? img -> {
+    public static Supplier<Element> getSortImgProcesspr(Boolean sortDir) {
+        return sortDir != null ? () -> {
+            Element img = (sortDir ? StaticImage.ARROWUP : StaticImage.ARROWDOWN).createImage();
             img.addClassName("dataGridHeaderCell-sortimg");
-            GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
+            return img;
         } : null;
-    }
-
-    public static void changeDirection(ImageElement img, boolean sortDir) {
-        GwtClientUtils.setThemeImage(sortDir ? "arrowup.png" : "arrowdown.png", img::setSrc);
     }
 
     private static void renderCaption(Element captionElement, String caption) {

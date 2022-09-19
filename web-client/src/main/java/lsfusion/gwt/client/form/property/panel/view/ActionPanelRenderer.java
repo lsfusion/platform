@@ -8,8 +8,6 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 
-import static lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer.ASYNCIMAGE;
-
 public class ActionPanelRenderer extends PanelRenderer {
 
 //    private final GFormController form;
@@ -39,11 +37,7 @@ public class ActionPanelRenderer extends PanelRenderer {
     }
 
     // interface for refresh button
-    public void setLoadingImage(String iconPath) {
-        Element renderElement = value.getRenderElement();
-        if(iconPath == null) {
-            ActionCellRenderer.setImage(renderElement, renderElement.getPropertyString(ASYNCIMAGE), false);
-        } else
-            GwtClientUtils.setThemeImage(iconPath, imageUrl -> ActionCellRenderer.setImage(renderElement, imageUrl, false));
+    public void setForceLoading(boolean set) {
+        value.setForceLoading(set);
     }
 }

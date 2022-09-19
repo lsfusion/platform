@@ -102,13 +102,14 @@ public class GwtClientUtils {
     // the one that is in gwt(main)/public/static/images
     // FileUtils.STATIC_IMAGE_FOLDER_PATH
     public static String getStaticImageURL(String imagePath) {
-        if(imagePath != null && MainFrame.staticImagesURL == null)
+        if(MainFrame.staticImagesURL == null)
             return GWT.getModuleBaseURL() + "static/images/" + imagePath;
-        return getURL(imagePath != null ? MainFrame.staticImagesURL + imagePath : null); // myapp/imagepath
+        return getURL(MainFrame.staticImagesURL + imagePath); // myapp/imagepath
 //        return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath; // myapp/main/static/images/myimage/imagepath
     }
     // the on that is in the app server resources
     public static String getAppStaticImageURL(String imagePath) {
+        assert imagePath != null;
         return getURL(imagePath);
     }
 
@@ -126,15 +127,49 @@ public class GwtClientUtils {
         return getURL("uploadFile" + (fileName != null ? "?sid=" + fileName : ""));
     }
 
-    public static void setThemeImage(String imagePath, Consumer<String> modifier) {
-        if (imagePath != null && !colorTheme.isDefault()) {
-            modifier.accept(getStaticImageURL(colorTheme.getImagePath(imagePath)));
-        } else {
-            modifier.accept(getStaticImageURL(imagePath));
+    public static Element createImage(String url) {
+        ImageElement imageElement = Document.get().createImageElement();
+        imageElement.setSrc(url);
+        return imageElement;
+    }
+    public static Element createAppDownloadImage(Object value, String extension) {
+        Element imageElement = Document.get().createImageElement();
+        setAppDownloadImageSrc(imageElement, value, extension);
+        return imageElement;
+    }
+    public static void setAppDownloadImageSrc(Element element, Object value, String extension) {
+        ((ImageElement)element).setSrc(value instanceof String ? getAppDownloadURL((String) value, null, extension) : "");
+    }
+    public static Element createStaticImage(StaticImage image) {
+        ImageElement imageElement = Document.get().createImageElement();
+        setStaticImageSrc(imageElement, image);
+        return imageElement;
+    }
+    public static void setStaticImageSrc(Element element, StaticImage image) {
+        setThemeImage(image.path, src -> {
+            ((ImageElement) element).setSrc(src);
+        });
+    }
+    public static Element createAppStaticImage(AppStaticImage appStaticImage) {
+        ImageElement imageElement = Document.get().createImageElement();
+        setAppStaticImageSrc(imageElement, appStaticImage, true);
+        return imageElement;
+    }
+    public static void setAppStaticImageSrc(Element element, AppStaticImage appStaticImage, boolean enabled) {
+        ((ImageElement)element).setSrc(GwtClientUtils.getAppStaticImageURL(appStaticImage.getImage().getUrl(enabled)));
+    }
 
-            if(MainFrame.staticImagesURL == null)
-                MainFrame.staticImagesURLListeners.add(() -> setThemeImage(imagePath, modifier));
+    public static void setThemeImage(String imagePath, Consumer<String> modifier) {
+        assert imagePath != null;
+        if (!colorTheme.isDefault())
+            imagePath = colorTheme.getImagePath(imagePath);
+        else {
+            if(MainFrame.staticImagesURL == null) {
+                String fImagePath = imagePath;
+                MainFrame.staticImagesURLListeners.add(() -> setThemeImage(fImagePath, modifier));
+            }
         }
+        modifier.accept(getStaticImageURL(imagePath));
     }
 
     public static Map<String, String> getPageParameters() {

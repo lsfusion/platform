@@ -3,19 +3,16 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-import java.util.function.Consumer;
-
 import static lsfusion.gwt.client.view.StyleDefaults.BUTTON_HORIZONTAL_PADDING;
 
 // actually extends TextBasedCellRenderer for optimization purposes, when there are no images
 public class ActionCellRenderer extends CellRenderer {
-
-    private static final String ICON_EXECUTE = "action.png";
 
     public ActionCellRenderer(GPropertyDraw property) {
         super(property);
@@ -42,14 +39,6 @@ public class ActionCellRenderer extends CellRenderer {
         return hasImage(updateContext.globalCaptionIsDrawn());
     }
 
-    private static void addImage(Element th, Consumer<ImageElement> imgProcessor) {
-        ImageElement img = Document.get().createImageElement();
-        img.addClassName("wrap-img-margins");
-        imgProcessor.accept(img);
-
-        th.insertFirst(img);
-    }
-
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
         element.addClassName("btn");
@@ -59,14 +48,24 @@ public class ActionCellRenderer extends CellRenderer {
         if(hasImage(renderContext)) { // optimization;
             if(property.panelCaptionVertical)
                 element.getStyle().setProperty("flexDirection", "column");
-            addImage(element, imageElement -> { // assert that in renderStatic it is wrapped into wrap-center
-                element.setPropertyObject(IMAGE, imageElement);
-            });
+
+            Element img;
+            if(property.hasDynamicImage()) // app download image
+                img = GwtClientUtils.createAppDownloadImage(null, null);
+            else if(property.hasStaticImage()) // app static image
+                img = property.appStaticImage.createImage();
+            else // static image
+                img = StaticImage.EXECUTE.createImage();
+
+            img.addClassName("wrap-img-margins");
+
+            element.setPropertyObject(IMAGE, img);
+            element.insertFirst(img);
         }
         node = element.getLastChild();
 
         element.setPropertyObject(TEXT, node);
-        setLabelText(element, null);
+        setLabelText(element, null); // to remove "..."
 
         setBasedTextFonts(property, element, renderContext);
         // we can't use text alignment for several reasons:
@@ -106,18 +105,6 @@ public class ActionCellRenderer extends CellRenderer {
         ((Node)element.getPropertyObject(TEXT)).setNodeValue(text != null ? text : "");
     }
 
-    public static void setImage(Element element, String absolutePath, boolean dynamicMargins) {
-        ImageElement img = (ImageElement) element.getPropertyObject(IMAGE);
-        if(dynamicMargins) {
-            if(absolutePath.isEmpty()) {
-                img.removeClassName("wrap-img-margins");
-            } else {
-                img.addClassName("wrap-img-margins");
-            }
-        }
-        img.setSrc(absolutePath);
-    }
-
     @Override
     public int getWidthPadding() {
         return BUTTON_HORIZONTAL_PADDING;
@@ -134,35 +121,18 @@ public class ActionCellRenderer extends CellRenderer {
 
         // we have it here and not in renderStaticContent because of using enabled
         if(hasImage(updateContext)) {
-            String imagePath;
-            boolean absolute = true;
+            Element imageElement = (Element) element.getPropertyObject(IMAGE);
 
-            Object image;
-            if(updateContext.isLoading() && property.isLoadingReplaceImage()) {
-                imagePath = ICON_LOADING;
-                absolute = false;
-            } else if(property.hasDynamicImage()) {
-                if ((image = updateContext.getImage()) instanceof String)
-                    imagePath = GwtClientUtils.getAppDownloadURL((String) image, null, null);
+            boolean loadingReplaceImage = updateContext.isLoading() && property.isLoadingReplaceImage();
+            if(property.hasDynamicImage()) { // app download image
+                if(loadingReplaceImage) // temp, should be always image (not font)
+                    StaticImage.LOADING_IMAGE_PATH.setImageSrc(imageElement);
                 else
-                    imagePath = "";
-            } else if(property.hasStaticImage())
-                imagePath = GwtClientUtils.getAppStaticImageURL(property.getImage().getUrl(enabled));
-            else {
-                imagePath = ICON_EXECUTE;
-                absolute = false;
-            }
-
-            Consumer<String> setImage = absolutePath -> setImage(element, absolutePath, false);
-
-            if(absolute)
-                setImage.accept(imagePath);
-            else
-                GwtClientUtils.setThemeImage(imagePath, setImage);
-
-            if(property.drawAsync) {
-                element.setPropertyObject(ASYNCIMAGE, imagePath);
-            }
+                    GwtClientUtils.setAppDownloadImageSrc(imageElement, updateContext.getImage(), null);
+            } else if(property.hasStaticImage()) // app static image
+                property.appStaticImage.setImageSrc(imageElement, enabled, loadingReplaceImage);
+            else // static image
+                StaticImage.EXECUTE.setImageSrc(imageElement, loadingReplaceImage);
         }
 
         element.setPropertyBoolean("disabled", !enabled);

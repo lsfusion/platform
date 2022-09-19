@@ -1,9 +1,9 @@
 package lsfusion.gwt.server.form.handlers;
 
+import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.base.result.ListResult;
 import lsfusion.gwt.client.controller.remote.action.form.GetRemoteActionMessageList;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.gwt.server.convert.ClientActionToGwtConverter;
 import lsfusion.gwt.server.form.FormActionHandler;
 import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.ProgressBar;
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemoteActionMessageList, ListResult> {
-    private static ClientActionToGwtConverter clientActionConverter = ClientActionToGwtConverter.getInstance();
 
     public GetRemoteActionMessageListHandler(MainDispatchServlet servlet) {
         super(servlet);
@@ -25,6 +24,10 @@ public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemo
         return null; // too many logs
     }
 
+    public static GProgressBar convertProgressBar(ProgressBar progressBar) {
+        return new GProgressBar(progressBar.message, progressBar.progress, progressBar.total, progressBar.getParams());
+    }
+
     @Override
     public ListResult executeEx(GetRemoteActionMessageList action, ExecutionContext context) throws RemoteException {
         FormSessionObject form = getFormSessionObject(action.formSessionID);
@@ -33,7 +36,7 @@ public class GetRemoteActionMessageListHandler extends FormActionHandler<GetRemo
 
             for (Object object : form.remoteForm.getRemoteActionMessageList()) {
                 if (object instanceof ProgressBar)
-                    result.add(clientActionConverter.convertProgressBar((ProgressBar) object));
+                    result.add(convertProgressBar((ProgressBar) object));
                 else
                     result.add(object);
             }

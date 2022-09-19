@@ -69,7 +69,7 @@
 }
 
 /* need this since we're using form-control not only for input fields, but for other divs with dynamic content and we want this form-control elements have the same behaviour as the regular form-control inputs */
-/* it could be solved another way buy removing form-control and prop-value from the parent element, but we don't usually do this */
+/* it could be solved another way buy removing form-control and prop-value from the parent element (and not setting remove-all-pmb), but we don't usually do this */
 .form-control:focus-within {
     color: #212529;
     background-color: #fff;

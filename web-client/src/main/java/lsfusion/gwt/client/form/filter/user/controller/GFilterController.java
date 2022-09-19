@@ -9,6 +9,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
@@ -32,8 +33,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 public abstract class GFilterController implements GFilterConditionView.UIHandler, GFiltersHandler {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    private static final String FILTER_ICON_PATH = "filt.png";
-
     private GTableController logicsSupplier;
     private Map<Column, String> columns = new HashMap<>();
     
@@ -53,7 +52,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         this.initialFilters = filters;
         this.hasFiltersContainer = hasFiltersContainer;
 
-        toolbarButton = new GToolbarButton(FILTER_ICON_PATH) {
+        toolbarButton = new GToolbarButton(StaticImage.FILTER_ICON_PATH) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
@@ -63,7 +62,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             }
         };
         updateToolbarButton();
-        
+
         controlsView = new GFilterControlsView(this);
         controlsView.setVisible(controlsVisible);
         logicsSupplier.getForm().formLayout.addBaseComponent(filterControls, controlsView, null);
@@ -260,7 +259,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             cView.setLast(i == conditionViews.size());
         }
     }
-    
+
     public void applyFilters() {
         applyFilters(true, null);
     }

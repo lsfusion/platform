@@ -16,6 +16,7 @@ import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -84,7 +85,7 @@ public abstract class FormsController {
         setupEditModeButton();
 
         if (!MainFrame.mobile) {
-            fullScreenButton = new GToolbarButton(null) {
+            fullScreenButton = new GToolbarButton(StaticImage.MAXIMIZE) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> switchFullScreenMode();
@@ -93,7 +94,7 @@ public abstract class FormsController {
             toolbarView.addComponent(fullScreenButton);
             updateFullScreenButton();
         } else {
-            mobileMenuButton = new GToolbarButton("hamburger.png") {
+            mobileMenuButton = new GToolbarButton(StaticImage.HAMBURGER) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> MainFrame.openNavigatorMenu();
@@ -322,7 +323,7 @@ public abstract class FormsController {
 
     public void updateFullScreenButton(){
         fullScreenButton.setTitle(fullScreenMode ? messages.fullScreenModeDisable() : messages.fullScreenModeEnable() + " (ALT+F11)");
-        fullScreenButton.setModuleImagePath(fullScreenMode ? "minimize.png" : "maximize.png");
+        fullScreenButton.changeImage(fullScreenMode ? StaticImage.MINIMIZE : StaticImage.MAXIMIZE);
     }
 
     public void switchFullScreenMode() {

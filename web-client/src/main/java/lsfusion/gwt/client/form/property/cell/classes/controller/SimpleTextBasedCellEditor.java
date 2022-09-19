@@ -46,8 +46,6 @@ import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
 // now it's a sort of mix of RequestKeepValueCellEditor and RequestReplaceValueCellEditor (depending on isInputAsRenderElement)
 public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellEditor {
     private static final ClientMessages messages = ClientMessages.Instance.get();
-    private static final String LOADING_IMAGE_PATH = "loading.gif";
-    private static final String REFRESH_IMAGE_PATH = "refresh.png";
     private static final TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     protected final GPropertyDraw property;
@@ -560,7 +558,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
             FlexPanel buttonsPanel = new FlexPanel();
 
-            buttonsPanel.add(refreshButton = new SuggestPopupButton(REFRESH_IMAGE_PATH) {
+            buttonsPanel.add(refreshButton = new SuggestPopupButton(StaticImage.REFRESH_IMAGE_PATH) {
                 @Override
                 public ClickHandler getClickHandler() {
                     return event -> {
@@ -572,7 +570,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
             for(int i = 0; i < actions.length; i++) {
                 int index = i;
-                SuggestPopupButton actionButton = new SuggestPopupButton(actions[index].action + ".png") {
+                SuggestPopupButton actionButton = new SuggestPopupButton(actions[index].action) {
                     @Override
                     public ClickHandler getClickHandler() {
                         return event -> validateAndCommit(parent, index, true, CommitReason.SUGGEST);
@@ -618,7 +616,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         public boolean isLoading;
         public void updateDecoration(boolean isLoading) {
             if (this.isLoading != isLoading) {
-                suggestBox.refreshButton.setModuleImagePath(isLoading ? LOADING_IMAGE_PATH : REFRESH_IMAGE_PATH);
+                suggestBox.refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : StaticImage.REFRESH_IMAGE_PATH);
                 this.isLoading = isLoading;
             }
         }
@@ -655,8 +653,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     private abstract static class SuggestPopupButton extends GToolbarButton {
-        public SuggestPopupButton(String imagePath) {
-            super(imagePath);
+        public SuggestPopupButton(BaseStaticImage image) {
+            super(image);
             getElement().addClassName("suggestPopupButton");
         }
 

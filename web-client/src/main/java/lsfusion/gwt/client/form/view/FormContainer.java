@@ -8,7 +8,9 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.result.NumberResult;
+import lsfusion.gwt.client.base.view.StaticImageWidget;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -172,10 +174,6 @@ public abstract class FormContainer {
     }
 
     public void setContentLoading() {
-        GwtClientUtils.setThemeImage(loadingAsyncImage, imageUrl -> setContent(createLoadingWidget(imageUrl)));
-    }
-    protected static String loadingAsyncImage = "loading_async.gif";
-    protected static Widget createLoadingWidget(String imageUrl) {
         VerticalPanel loadingWidget = new VerticalPanel();
         loadingWidget.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         loadingWidget.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
@@ -185,13 +183,15 @@ public abstract class FormContainer {
         topPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
         topPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
         topPanel.setSpacing(5);
-        Image image = new Image(imageUrl);
+
+        StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
+
         image.setSize("32px", "32px");
         topPanel.add(image);
         topPanel.add(new HTML(messages.loading()));
 
         loadingWidget.add(topPanel);
 
-        return loadingWidget;
+        setContent(loadingWidget);
     }
 }

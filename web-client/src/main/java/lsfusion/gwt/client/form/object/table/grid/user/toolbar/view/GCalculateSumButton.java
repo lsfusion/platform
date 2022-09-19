@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.object.table.grid.user.toolbar.view;
 
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -11,7 +12,7 @@ public abstract class GCalculateSumButton extends GToolbarButton {
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
     public GCalculateSumButton() {
-        super("sum.png", messages.formQueriesCalculateSum());
+        super(StaticImage.SUM, messages.formQueriesCalculateSum());
     }
 
     public void showPopup(Number result, GPropertyDraw property, int clientX, int clientY) {
