@@ -182,7 +182,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         Expr toChangeExpr = valueImp.mapExpr(mapExprs, propChanges);
         Where toChangeWhere = change.expr.getWhere();
         return changeImp.mapJoinDataChanges(mapExprs, toChangeExpr.and(toChangeWhere), // меняем на новое значение, если надо и скидываем в null если было какое-то
-                change.where.and(toChangeWhere.or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges), Compare.EQUALS))), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges, type);
+                change.where.and(toChangeWhere.and(toChangeExpr.getWhere()).or(toChangeExpr.compare(changeImp.mapExpr(mapExprs, propChanges), Compare.EQUALS))), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges, type);
     }
     
     private static <T extends PropertyInterface> T getObjectAndInterface(Property<T> property) {
@@ -272,11 +272,20 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return result.add(getCompareDataChanges(change.and(compareChangedWhere.toWhere().not()), type, changedWhere, propChanges, op2, op1));
         }
 
-        T andInterface = getObjectAndInterface(implement.property);
-        if(andInterface!=null) {
-            ImMap<Interface, Expr> mapExprs = change.getMapExprs();
-            return implement.mapping.get(andInterface).mapJoinDataChanges(mapExprs, change.expr,
-                    change.where.and(getAndWhere(this, mapExprs, propChanges)), GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges, type);
+        if (implement.property instanceof AndFormulaProperty) {
+
+            AndFormulaProperty.ObjectInterface objectInterface = ((AndFormulaProperty) implement.property).objectInterface;
+            ImSet<AndFormulaProperty.AndInterface> andInterfaces = ((AndFormulaProperty) implement.property).andInterfaces;
+
+            DataChanges result = implement.mapping.get((T) objectInterface).mapJoinDataChanges(change, type,
+                    GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges);
+
+            for (AndFormulaProperty.AndInterface andInterface : andInterfaces) {
+                result = result.add(implement.mapping.get((T) andInterface).mapJoinDataChanges(change, type,
+                        GroupType.ASSERTSINGLE_CHANGE(), changedWhere, propChanges));
+            }
+
+            return result;
         }
 
         if(isIdentity) // groupBy'им выбирая max
