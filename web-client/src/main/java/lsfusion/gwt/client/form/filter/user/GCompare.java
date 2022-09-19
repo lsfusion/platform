@@ -131,7 +131,7 @@ public enum GCompare {
         return "";
     }
 
-    public boolean escapeComma() {
+    public boolean escapeSeparator() {
         return this == EQUALS || this == CONTAINS || this == MATCH;
     }
 }

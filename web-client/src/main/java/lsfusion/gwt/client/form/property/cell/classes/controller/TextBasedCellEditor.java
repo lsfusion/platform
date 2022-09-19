@@ -332,7 +332,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
                                             @Override
                                             public String getReplacementString() {
-                                                return (String) GwtClientUtils.escapeComma(suggestion.rawString, compare);
+                                                return (String) GwtClientUtils.escapeSeparator(suggestion.rawString, compare);
                                             }
                                         });
                                     }
@@ -569,7 +569,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
             bottomPanel.add(buttonsPanel);
 
-            if(compare != null && compare.escapeComma()) {
+            if(compare != null && compare.escapeSeparator()) {
                 HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
                 tip.getElement().addClassName("suggestBoxTip");
                 bottomPanel.add(tip);
