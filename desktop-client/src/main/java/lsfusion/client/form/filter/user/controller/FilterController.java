@@ -22,9 +22,11 @@ import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.List;
 import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
@@ -144,6 +146,10 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         comp.getActionMap().put("removeAll", createResetAllAction());
     }
 
+    public static ActionEvent createAddUserFilterEvent(Component component) {
+        return new ActionEvent(component, ActionEvent.ACTION_PERFORMED, "");
+    }
+
     private AbstractAction createResetAllAction() {
         return new AbstractAction() {
             @Override
@@ -213,7 +219,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
 
     public void addCondition() {
         if (hasFiltersContainer()) {
-            addCondition(KeyStrokes.createAddUserFilterKeyEvent(filtersContainerComponent));
+            addCondition(createAddUserFilterEvent(filtersContainerComponent));
         }
     }
 
