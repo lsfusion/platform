@@ -44,7 +44,7 @@ public class AddObjectAction<T extends PropertyInterface, I extends PropertyInte
     private final boolean autoSet;
 
     protected PropertyMapImplement<T, I> where;
-    private PropertyMapImplement<?, I> result; // только extend интерфейсы
+    protected PropertyMapImplement<?, I> result; // только extend интерфейсы
 
     private final ImOrderMap<PropertyInterfaceImplement<I>, Boolean> orders; // calculate
     private final boolean ordersNotNull;

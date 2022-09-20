@@ -59,7 +59,11 @@ public class LA<T extends PropertyInterface> extends LAP<T, Action<T>> {
     }
 
     public void execute(ExecutionEnvironment session, ExecutionStack stack, ObjectValue... objects) throws SQLException, SQLHandledException {
-        action.execute(getMapValues(objects), session, stack, null);
+        execute(session, stack, null, objects);
+    }
+
+    public void execute(ExecutionEnvironment session, ExecutionStack stack, FormEnvironment<T> formEnv, ObjectValue... objects) throws SQLException, SQLHandledException {
+        action.execute(getMapValues(objects), session, stack, formEnv);
     }
 
     public FlowResult execute(ExecutionContext<?> context, ObjectValue... objects) throws SQLException, SQLHandledException {
