@@ -64,7 +64,7 @@
                 //export pivot to excel
                 "static/js/tableToExcel.js",
 
-                "static/noauth/css/fontAwesome/css/font-awesome.min.css",
+                "static/noauth/css/fontAwesome/css/fontawesome.min.css",
 
                 //optional: mobile support with jqueryui-touch-punch
                 "static/js/external/jquery.ui.touch-punch.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js
