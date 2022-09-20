@@ -1168,13 +1168,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if (foundNeeded || // found it
                         count < estNeededRead) { // or we've read all the records, no need to read more
                     // if we're looking for objects (strict mode) we have to check if there is the exact match (otherwise it won't be possible to enter such value)
-                    if (foundNeeded && asyncMode.isStrict()) {
+                    if (asyncMode.isStrict()) {
                         int valueIndex = getValueIndex(resultValues, value);
-                        if (valueIndex < 0) {
+                        if (foundNeeded && valueIndex < 0) {
                             ImMap<P, DataObject> asyncKey = getAsyncKey(listExprKeys, session, new DataObject(value));
                             if (asyncKey != null)
                                 resultValues = BaseUtils.addElement(new PropertyAsync<>("<b>" + value + "</b>", value, asyncMode.isObjects() ? asyncKey : null), resultValues, PropertyAsync[]::new);
-                        } else if(valueIndex > 0) { // optimization
+                        } else if(valueIndex > 0) {
                             // somewhy postgres doesn't give the equal value the highest rank, so we move it to the top
                             PropertyAsync<P> equalValue = resultValues[valueIndex];
                             resultValues[valueIndex] = resultValues[0];
