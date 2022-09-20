@@ -45,6 +45,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
@@ -62,11 +63,13 @@ import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.changed.ChangedData;
 import lsfusion.server.logics.form.interactive.changed.MFormChanges;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
+import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
+import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
@@ -1401,12 +1404,47 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             ImFilterValueMap<ObjectInstance, DataObject> mvObjectKeys = objects.mapFilterValues();
             for (int j=0,size=objects.size();j<size;j++) {
                 ObjectInstance objectInstance = objects.get(j);
-                if (objectInstance.getBaseClass() instanceof ConcreteCustomClass)
-                    mvObjectKeys.mapValue(j, form.addFormObject((CustomObjectInstance)objectInstance, (ConcreteCustomClass) objectInstance.getBaseClass(), null, stack));
+                if (objectInstance.getBaseClass() instanceof ConcreteCustomClass) {
+                    PropertyDrawInstance newActionProperty = getNewPropertyDrawInstance(form, objectInstance.getSID());
+                    if(newActionProperty != null) {
+                        ((ActionObjectInstance) newActionProperty.getValueProperty()).getValueImplement(form).execute(session, stack);
+                    } else {
+                        LA addObjectAction = form.BL.LM.getAddObjectAction(form.entity, objectInstance.entity, (ConcreteCustomClass) objectInstance.getBaseClass());
+                        addObjectAction.execute(form, stack, new FormEnvironment<>(null, null, form));
+                    }
+
+                    ObjectValue dataObject = form.BL.LM.getAddedObjectProperty().readClasses(session, MapFact.EMPTY(), session.getModifier(), session.getQueryEnv());
+                    mvObjectKeys.mapValue(j, (DataObject) dataObject);
+                }
             }
             mResultSet.exclAdd(mvObjectKeys.immutableValue());
         }
         return mResultSet.immutableOrder();
+    }
+
+    public PropertyDrawInstance getNewPropertyDrawInstance(FormInstance form, String objectSID) {
+        String propertySID = "new";
+        String integrationSID = propertySID + "[" + objectSID + "]";
+
+        //search 'new' with object
+        for (PropertyDrawInstance property : form.properties) {
+            if (integrationSID.equals(property.getIntegrationSID())) {
+                return property;
+            }
+        }
+
+        //search 'new' without object
+        PropertyDrawInstance result = null;
+        for (PropertyDrawInstance property : form.properties) {
+            if (propertySID.equals(property.getIntegrationSID())) {
+                if (result != null) {
+                    throw new RuntimeException("Form has more than one '" + propertySID + "' property");
+                }
+                result = property;
+            }
+        }
+
+        return result;
     }
 
     private GroupObjectInstance() {
