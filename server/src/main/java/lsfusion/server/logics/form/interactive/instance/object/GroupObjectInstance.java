@@ -1405,21 +1405,24 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             for (int j=0,size=objects.size();j<size;j++) {
                 ObjectInstance objectInstance = objects.get(j);
                 if (objectInstance.getBaseClass() instanceof ConcreteCustomClass) {
-                    PropertyDrawInstance newActionProperty = getNewPropertyDrawInstance(form, objectInstance.getSID());
-                    if(newActionProperty != null) {
-                        ((ActionObjectInstance) newActionProperty.getValueProperty()).getValueImplement(form).execute(session, stack);
-                    } else {
-                        LA addObjectAction = form.BL.LM.getAddObjectAction(form.entity, objectInstance.entity, (ConcreteCustomClass) objectInstance.getBaseClass());
-                        addObjectAction.execute(form, stack, new FormEnvironment<>(null, null, form));
-                    }
-
-                    ObjectValue dataObject = form.BL.LM.getAddedObjectProperty().readClasses(session, MapFact.EMPTY(), session.getModifier(), session.getQueryEnv());
-                    mvObjectKeys.mapValue(j, (DataObject) dataObject);
+                    mvObjectKeys.mapValue(j, createObject(form, objectInstance, session, stack));
                 }
             }
             mResultSet.exclAdd(mvObjectKeys.immutableValue());
         }
         return mResultSet.immutableOrder();
+    }
+
+    private DataObject createObject(FormInstance form, ObjectInstance objectInstance, DataSession session, ExecutionStack stack) throws SQLException, SQLHandledException {
+        PropertyDrawInstance newActionProperty = getNewPropertyDrawInstance(form, objectInstance.getSID());
+        if(newActionProperty != null) {
+            ((ActionObjectInstance) newActionProperty.getValueProperty()).getValueImplement(form).execute(session, stack);
+        } else {
+            LA addObjectAction = form.BL.LM.getAddObjectAction(form.entity, objectInstance.entity, (ConcreteCustomClass) objectInstance.getBaseClass());
+            addObjectAction.execute(form, stack, new FormEnvironment<>(null, null, form));
+        }
+
+        return (DataObject) form.BL.LM.getAddedObjectProperty().readClasses(form);
     }
 
     public PropertyDrawInstance getNewPropertyDrawInstance(FormInstance form, String objectSID) {
@@ -1438,7 +1441,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         for (PropertyDrawInstance property : form.properties) {
             if (propertySID.equals(property.getIntegrationSID())) {
                 if (result != null) {
-                    throw new RuntimeException("Form has more than one '" + propertySID + "' property");
+                    return null; //form has more than one 'new' property
                 }
                 result = property;
             }
