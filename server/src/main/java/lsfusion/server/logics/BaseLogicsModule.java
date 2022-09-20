@@ -952,7 +952,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         CustomClass cls = explicitClass;
         if(explicitClass == null)
             cls = (CustomClass)obj.baseClass;
-        LA result = addAProp(new FormAddObjectAction(cls, obj));
+        LA result = addAProp(new FormAddObjectAction(cls, BL.LM.getAddedObjectProperty(), obj));
         
         setAddActionOptions(result, obj);
         
