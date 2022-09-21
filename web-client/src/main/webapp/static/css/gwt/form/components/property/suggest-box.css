@@ -1,34 +1,22 @@
-.gwt-SuggestBox {
-    padding: 0.3125rem 0.25rem;
-    border: 1px solid var(--component-border-color);
-    border-top: 1px solid #999;
-    font-size: 100%;
-}
-
-.gwt-SuggestBoxPopup {
+.dropdown-menu {
     background: var(--component-background-color);
     border: 1px solid var(--component-border-color);
 
     z-index: 2000;
 }
 
-.gwt-SuggestBoxPopup .dropdown-item-selected {
+.dropdown-item-selected {
     background: var(--selection-color);
 }
-.gwt-SuggestBoxPopup .suggestPopupContent {
-    background: var(--component-background-color);
-}
 
-.gwt-SuggestBoxPopup .suggestPopupBottomPanel {
+.dropdown-menu-bottom-panel {
     background: var(--background-color);
 }
 
-.gwt-SuggestBoxPopup .suggestPopupButton {
-    background: var(--component-background-color);
-    border-radius: var(--button-border-radius);
+.dropdown-menu .suggestPopupButton {
     margin: 0.125rem;
 }
-.suggestBoxTip {
+.dropdown-menu-tip {
     width: 100%;
     border-top:1px solid var(--component-border-color);
     color: var(--disabled-text-color);

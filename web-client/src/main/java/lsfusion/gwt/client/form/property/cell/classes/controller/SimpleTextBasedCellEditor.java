@@ -552,7 +552,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         private FlexPanel createBottomPanel(Element parent) {
             FlexPanel bottomPanel = new FlexPanel(true);
             bottomPanel.setWidth("100%");
-            bottomPanel.getElement().addClassName("suggestPopupBottomPanel");
+            bottomPanel.getElement().addClassName("dropdown-menu-bottom-panel");
             // block mouse down events to prevent focus issues
             bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
 
@@ -604,7 +604,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
             if(compare != null && compare.escapeComma()) {
                 HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
-                tip.getElement().addClassName("suggestBoxTip");
+                tip.getElement().addClassName("dropdown-menu-tip");
                 bottomPanel.add(tip);
             }
             return bottomPanel;

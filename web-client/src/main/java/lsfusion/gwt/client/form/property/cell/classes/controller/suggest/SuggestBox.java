@@ -46,7 +46,6 @@ public class SuggestBox {
 
     public static class SuggestionDisplay {
 
-        private final MenuBar suggestionMenu;
         private final PopupPanel suggestionPopup;
 
         /**
@@ -58,9 +57,7 @@ public class SuggestBox {
         private Element lastSuggestElement = null;
 
         public SuggestionDisplay() {
-            suggestionMenu = new MenuBar();
             suggestionPopup = new PopupPanel();
-            suggestionPopup.add(suggestionMenu);
         }
 
         public void hideSuggestions() {
@@ -73,7 +70,7 @@ public class SuggestBox {
 
         protected Suggestion getCurrentSelection() {
             if (isSuggestionListShowing()) {
-                return suggestionMenu.getSelectedItemSuggestion();
+                return suggestionPopup.getSelectedItemSuggestion();
             } else {
                 return null;
             }
@@ -90,45 +87,36 @@ public class SuggestBox {
 
         protected void moveSelectionDown() {
             if (isSuggestionListShowing()) {
-                suggestionMenu.moveSelectionDown();
+                suggestionPopup.moveSelectionDown();
             }
         }
 
         protected void moveSelectionUp() {
             if (isSuggestionListShowing()) {
-                suggestionMenu.moveSelectionUp();
+                suggestionPopup.moveSelectionUp();
             }
         }
 
         public void clearSelectedItem() {
-            suggestionMenu.selectItem(null);
+            suggestionPopup.clearSelectedItem();
         }
 
         protected void showSuggestions(final Element suggestElement, boolean emptyQuery, Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final SuggestionCallback callback) {
-            // Hide the popup if there are no suggestions to display.
-
-            // Hide the popup before we manipulate the menu within it. If we do not
-            // do this, some browsers will redraw the popup as items are removed
-            // and added to the menu.
-            if (suggestionPopup.isAttached()) {
-                suggestionPopup.hide();
-            }
-
-            suggestionMenu.clearItems();
+            suggestionPopup.clearItems();
 
             if (suggestions.isEmpty()) {
                 //show empty item for initial loading
-                suggestionMenu.addTextItem(emptyQuery ? "" : messages.noResults());
+                suggestionPopup.addTextItem(emptyQuery ? "" : messages.noResults());
             }
 
             for (final Suggestion suggestion : suggestions) {
-                suggestionMenu.addItem(suggestion, callback);
+                suggestionPopup.addItem(suggestion, callback);
             }
 
-            suggestionMenu.addBottomPanelItem(bottomPanel, suggestionPopup);
+            suggestionPopup.addBottomPanelItem(bottomPanel);
 
             if (isAutoSelectEnabled && suggestions.size() > 0) {
-                suggestionMenu.selectFirstItem();
+                suggestionPopup.selectFirstItem();
             }
 
             // Link the popup autoHide to the TextBox.
