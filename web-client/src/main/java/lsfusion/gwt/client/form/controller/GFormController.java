@@ -2095,11 +2095,12 @@ public class GFormController implements EditManager {
 
         editContext.startEditing();
 
+        if(!editContext.isFocusable()) // assert that otherwise it's already has focus
+            forceSetFocus = editContext.forceSetFocus();
+
         RenderContext renderContext;
         if (cellEditor instanceof ReplaceCellEditor && ((ReplaceCellEditor) cellEditor).needReplace(element, renderContext = editContext.getRenderContext())) {
             focusedElement = GwtClientUtils.getFocusedElement();
-            if(!editContext.isFocusable()) // assert that otherwise it's already has focus
-                forceSetFocus = editContext.forceSetFocus();
 
             GPropertyDraw property = editContext.getProperty();
             CellRenderer cellRenderer = property.getCellRenderer();
@@ -2183,11 +2184,12 @@ public class GFormController implements EditManager {
 
         update(editContext);
 
+        if(forceSetFocus != null) {
+            editContext.restoreSetFocus(forceSetFocus);
+            forceSetFocus = null;
+        }
+
         if(isReplace) {
-            if(forceSetFocus != null) {
-                editContext.restoreSetFocus(forceSetFocus);
-                forceSetFocus = null;
-            }
 
             if(blurred) { // when editing is commited (thus editing element is removed), set last blurred element to main widget to keep focus there
                 if(editContext.isSetLastBlurred())
