@@ -28,7 +28,7 @@ public class AppImage implements Serializable {
     private static MAddExclMap<String, String> predefinedFontClasses = MapFact.mAddExclMap();
     static {
         predefinedFontClasses.exclAdd("apply.png", "bi bi-save");
-        predefinedFontClasses.exclAdd("cancel.png", "bi bi-trash");
+        predefinedFontClasses.exclAdd("cancel.png", "bi bi-archive");
         predefinedFontClasses.exclAdd("ok.png", "bi bi-check");
         predefinedFontClasses.exclAdd("close.png", "bi bi-x");
         predefinedFontClasses.exclAdd("editReport.png", "bi bi-pencil-square");

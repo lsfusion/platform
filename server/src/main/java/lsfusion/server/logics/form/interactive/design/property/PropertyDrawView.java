@@ -776,7 +776,7 @@ public class PropertyDrawView extends BaseComponentView {
                 return "btn-primary";
 
             if(isLink(context))
-                return "btn-link";
+                return "btn-link text-decoration-none";
 
             return "btn-outline-secondary";
         }
