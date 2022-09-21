@@ -42,7 +42,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.path = clientElement.path;
         element.children = new ArrayList<>();
 
-        element.image = createImage(clientElement.imageHolder, false);
+        element.image = createImage(clientElement.image, false);
 
         element.asyncExec = convertOrCast(clientElement.asyncExec);
 

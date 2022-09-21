@@ -6,7 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
-import lsfusion.base.file.AppImage;
+import lsfusion.base.file.AppImages;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -162,7 +162,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
     public static <X extends PropertyInterface, V extends PropertyInterface> InputContextAction<?, V> getResetAction(BaseLogicsModule baseLM, LP targetProp) {
         assert targetProp.listInterfaces.isEmpty();
         LA<X> reset = (LA<X>) baseLM.addResetAProp(targetProp);
-        return new InputContextAction<>(AppImage.RESET, "reset", (String)null, null, null, QuickAccess.DEFAULT, reset.getActionOrProperty(), MapFact.EMPTYREV());
+        return new InputContextAction<>(AppImages.RESET, "reset", (String)null, null, null, QuickAccess.DEFAULT, reset.getActionOrProperty(), MapFact.EMPTYREV());
     }
 
     public <X extends PropertyInterface> InputContextAction<?, V> getNewEditAction(BaseLogicsModule baseLM, ConcreteCustomClass baseClass, LP targetProp, FormSessionScope scope) {
@@ -177,7 +177,7 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
                 BaseUtils.add(BaseUtils.add(lp, ActionOrPropertyUtils.getIntParams(lp, singleIndex, contextParams + 1)), // remapping single interface to the new object
                         singleIndex)); // replacing property with the string
 
-        return new InputContextAction<>(AppImage.ADD, "new", "INSERT", Collections.singletonMap("editing", BindingMode.ONLY), null, QuickAccess.EMPTY, newEdit.getActionOrProperty(),
+        return new InputContextAction<>(AppImages.ADD, "new", "INSERT", Collections.singletonMap("editing", BindingMode.ONLY), null, QuickAccess.EMPTY, newEdit.getActionOrProperty(),
                 listInterfaces.mapSet(newEdit.listInterfaces).removeRev(singleInterface).crossJoin(mapValues));
     }
 

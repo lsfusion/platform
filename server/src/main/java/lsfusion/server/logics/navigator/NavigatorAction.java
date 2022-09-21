@@ -1,6 +1,7 @@
 package lsfusion.server.logics.navigator;
 
 import lsfusion.base.file.AppImage;
+import lsfusion.base.file.AppImages;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
@@ -20,8 +21,8 @@ public class NavigatorAction extends NavigatorElement {
     @Override
     protected AppImage getDefaultIcon(boolean top) {
         if(form != null)
-            return top ? AppImage.FORMTOP : AppImage.FORM;
-        return top ? AppImage.ACTIONTOP : AppImage.ACTION;
+            return top ? AppImages.FORMTOP : AppImages.FORM;
+        return top ? AppImages.ACTIONTOP : AppImages.ACTION;
     }
 
     @Override

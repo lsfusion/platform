@@ -27,7 +27,7 @@ public abstract class ClientNavigatorElement {
     
     public List<ClientNavigatorElement> parents = new ArrayList<>();
     public List<ClientNavigatorElement> children = new ArrayList<>();
-    public AppImage imageHolder;
+    public AppImage image;
 
     public ClientAsyncExec asyncExec;
 
@@ -47,7 +47,7 @@ public abstract class ClientNavigatorElement {
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);
 
-        imageHolder = IOUtils.readImageIcon(inStream);
+        image = IOUtils.readImageIcon(inStream);
 
         asyncExec = (ClientAsyncExec) ClientAsyncSerializer.deserializeEventExec(inStream);
     }

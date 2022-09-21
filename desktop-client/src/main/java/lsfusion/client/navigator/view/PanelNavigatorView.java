@@ -67,7 +67,7 @@ public class PanelNavigatorView extends NavigatorView {
     }
 
     private JButton createButton(ClientNavigatorElement element) {
-        JButton button = new FlatRolloverButton(ClientImages.getImage(element.imageHolder), element.toString()) {
+        JButton button = new FlatRolloverButton(ClientImages.getImage(element.image), element.toString()) {
             @Override
             public Insets getInsets() {
                 return new Insets(4, 4, 4, 4);
