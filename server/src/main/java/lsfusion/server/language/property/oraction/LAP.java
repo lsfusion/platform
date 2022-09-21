@@ -4,6 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
@@ -88,8 +89,8 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setFlexCharWidth(charWidth, flex);
     }
 
-    public void setImage(String name) {
-        getActionOrProperty().drawOptions.setImage(name);
+    public void setImage(AppImage image) {
+        getActionOrProperty().drawOptions.setImage(image);
     }
 
     public void setDefaultCompare(String defaultCompare) {

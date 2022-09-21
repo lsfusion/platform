@@ -44,7 +44,7 @@
 
 .caption-panel-header.collapsible::before,
 .card-header.collapsible::before {
-    font-family: "FontAwesome";
+    font-family: "Font Awesome 6 Free";
     margin-right: var(--border-label-horz-padding);
 }
 

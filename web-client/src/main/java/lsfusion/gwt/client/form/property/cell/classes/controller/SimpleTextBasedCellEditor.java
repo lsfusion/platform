@@ -616,7 +616,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         public boolean isLoading;
         public void updateDecoration(boolean isLoading) {
             if (this.isLoading != isLoading) {
-                suggestBox.refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : StaticImage.REFRESH_IMAGE_PATH);
+                suggestBox.refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : null);
                 this.isLoading = isLoading;
             }
         }

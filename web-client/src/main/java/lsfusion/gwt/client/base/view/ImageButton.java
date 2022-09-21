@@ -14,6 +14,7 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
     protected Element imageElement;
 
     protected BaseStaticImage baseImage;
+    protected BaseStaticImage overrideImage;
 
     public ImageButton(String caption, BaseStaticImage baseImage) {
         setStyleName("btn-image");
@@ -24,15 +25,28 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
         this.baseImage = baseImage;
 
         if(baseImage != null) {
-            imageElement = baseImage.createImage();
+            // we want useBootstrap to be initialized (to know what kind of image should be used)
+            if(MainFrame.staticImagesURL != null)
+                initImage(baseImage);
+            else
+                MainFrame.staticImagesURLListeners.add(() -> {
+                    initImage(baseImage);
 
-            imageElement.addClassName("btn-image-img");
-            getElement().insertFirst(imageElement);
-
-            MainFrame.addColorThemeChangeListener(this);
+                    if(overrideImage != null) // overrideImage could be set
+                        updateImageSrc();
+                });
         }
 
 //        setFocusable(false);
+    }
+
+    private void initImage(BaseStaticImage baseImage) {
+        imageElement = baseImage.createImage();
+
+        imageElement.addClassName("btn-image-img");
+        getElement().insertFirst(imageElement);
+
+        MainFrame.addColorThemeChangeListener(this);
     }
 
     @Override
@@ -62,8 +76,18 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
         }
     }
 
+    public void changeImage(StaticImage overrideImage) {
+        this.overrideImage = overrideImage;
+        updateImageSrc();
+    }
+
     @Override
     public void colorThemeChanged() {
-        baseImage.setImageSrc(imageElement);
+        updateImageSrc();
+    }
+
+    private void updateImageSrc() {
+        if(imageElement != null) // might not be initialized, see the constructor
+            baseImage.setImageSrc(imageElement, overrideImage);
     }
 }

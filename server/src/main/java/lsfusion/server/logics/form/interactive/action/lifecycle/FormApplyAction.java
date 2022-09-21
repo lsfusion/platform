@@ -50,6 +50,6 @@ public class FormApplyAction extends FormFlowAction {
 
     @Override
     protected String getValueElementClass() {
-        return "btn-primary";
+        return "btn-outline-primary";
     }
 }

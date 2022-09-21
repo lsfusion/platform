@@ -9,10 +9,4 @@ public class StaticImageButton extends ImageButton implements ColorThemeChangeLi
     public StaticImageButton(String caption, BaseStaticImage baseImage) {
         super(caption, baseImage);
     }
-
-    public void changeImage(StaticImage staticImage) {
-        assert staticImage != null;
-        this.baseImage = staticImage;
-        baseImage.setImageSrc(imageElement);
-    }
 }

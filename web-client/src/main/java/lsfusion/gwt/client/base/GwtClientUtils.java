@@ -23,6 +23,7 @@ import java.util.function.Predicate;
 import static java.lang.Math.max;
 import static lsfusion.gwt.client.base.GwtSharedUtils.isRedundantString;
 import static lsfusion.gwt.client.view.MainFrame.colorTheme;
+import static lsfusion.gwt.client.view.MainFrame.useBootstrap;
 
 public class GwtClientUtils {
 
@@ -134,29 +135,67 @@ public class GwtClientUtils {
     }
     public static Element createAppDownloadImage(Object value, String extension) {
         Element imageElement = Document.get().createImageElement();
-        setAppDownloadImageSrc(imageElement, value, extension);
+        setAppDownloadImageSrc(imageElement, value, extension, null);
         return imageElement;
     }
-    public static void setAppDownloadImageSrc(Element element, Object value, String extension) {
-        ((ImageElement)element).setSrc(value instanceof String ? getAppDownloadURL((String) value, null, extension) : "");
+    public static void setAppDownloadImageSrc(Element element, Object value, String extension, BaseStaticImage overrideImage) {
+        if(overrideImage != null)
+            setBaseStaticImageSrc(false, element, overrideImage, true);
+        else
+            ((ImageElement)element).setSrc(value instanceof String ? getAppDownloadURL((String) value, null, extension) : "");
     }
+    private static boolean useStaticImageIcon(BaseStaticImage image) {
+        return useBootstrap && image.getFontClasses() != null;
+    }
+    private static Element createBaseStaticImage(BaseStaticImage image) {
+        if(useStaticImageIcon(image)) {
+            Element element = Document.get().createElement("i");
+            element.addClassName("fa-solid");
+            return element;
+        } else
+            return Document.get().createImageElement();
+    }
+
+    public static final String FONT_CLASSES_ATTRIBUTE = "font_icon_attr";
+    private static void setBaseStaticImageSrc(boolean useIcon, Element element, BaseStaticImage image, boolean enabled) {
+        if(useIcon) {
+            Element iconElement = element;
+
+            String prevFontClasses = iconElement.getPropertyString(FONT_CLASSES_ATTRIBUTE);
+            if(prevFontClasses != null)
+                GwtClientUtils.removeClassNames(iconElement, prevFontClasses);
+
+            String fontClasses = image.getFontClasses();
+
+            // it seems that enabled is not needed, since it is handled with the text color
+            GwtClientUtils.addClassNames(iconElement, fontClasses);
+
+            iconElement.setPropertyString(FONT_CLASSES_ATTRIBUTE, fontClasses);
+        } else {
+            ImageElement imageElement = (ImageElement) element;
+
+            image.setImageElementSrc(imageElement, enabled);
+        }
+    }
+    private static void setBaseStaticImageSrc(Element element, BaseStaticImage image, BaseStaticImage overrideImage, boolean enabled) {
+        setBaseStaticImageSrc(useStaticImageIcon(image), element, overrideImage != null ? overrideImage : image,  enabled);
+    }
+
     public static Element createStaticImage(StaticImage image) {
-        ImageElement imageElement = Document.get().createImageElement();
-        setStaticImageSrc(imageElement, image);
+        Element imageElement = createBaseStaticImage(image);
+        setStaticImageSrc(imageElement, image, null);
         return imageElement;
     }
-    public static void setStaticImageSrc(Element element, StaticImage image) {
-        setThemeImage(image.path, src -> {
-            ((ImageElement) element).setSrc(src);
-        });
+    public static void setStaticImageSrc(Element element, StaticImage image, BaseStaticImage overrideImage) {
+        setBaseStaticImageSrc(element, image, overrideImage, true);
     }
-    public static Element createAppStaticImage(AppStaticImage appStaticImage) {
-        ImageElement imageElement = Document.get().createImageElement();
-        setAppStaticImageSrc(imageElement, appStaticImage, true);
+    public static Element createAppStaticImage(AppStaticImage image) {
+        Element imageElement = createBaseStaticImage(image);
+        setAppStaticImageSrc(imageElement, image, true, null);
         return imageElement;
     }
-    public static void setAppStaticImageSrc(Element element, AppStaticImage appStaticImage, boolean enabled) {
-        ((ImageElement)element).setSrc(GwtClientUtils.getAppStaticImageURL(appStaticImage.getImage().getUrl(enabled)));
+    public static void setAppStaticImageSrc(Element element, AppStaticImage appStaticImage, boolean enabled, BaseStaticImage overrideImage) {
+        setBaseStaticImageSrc(element, appStaticImage, overrideImage, enabled);
     }
 
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
@@ -194,6 +233,13 @@ public class GwtClientUtils {
         }
 
         return params;
+    }
+
+    public static void addClassNames(Element element, String classNames) {
+        element.addClassName(classNames);
+    }
+    public static void removeClassNames(Element element, String classNames) {
+        element.removeClassName(classNames);
     }
 
     public static String getPageParameter(String parameterName) {

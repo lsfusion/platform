@@ -14,8 +14,8 @@ import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.comb.ListPermutations;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.action.ServerResponse;
-import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -635,7 +635,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private String eventID;
 
         // для всех
-        private String imagePath;
+        private AppImage image;
 
         // для всех
         private Compare defaultCompare;
@@ -696,8 +696,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.setCaptionWidth(captionWidth);
             if(propertyView.captionHeight == null)
                 propertyView.setCaptionHeight(captionHeight);
-            if (propertyView.design.getImageHolder() == null && imagePath != null) {
-                propertyView.design.setImage(imagePath);
+            if (propertyView.design.getImage() == null && image != null) {
+                propertyView.design.setImage(image);
             }
             if (propertyView.changeKey == null)
                 propertyView.changeKey = changeKey != null ? new KeyInputEvent(changeKey, keyBindingsModes) : null;
@@ -733,8 +733,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             if(charWidth == 0)
                 setCharWidth(options.charWidth);
 
-            if (imagePath == null) {
-                setImagePath(options.imagePath);
+            if (image == null) {
+                setImage(options.image);
             }
 
             if(defaultCompare == null)
@@ -794,8 +794,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             setValueFlex(flex);
         }
 
-        public void setImage(String imagePath) {
-            this.setImagePath(imagePath);
+        public void setImage(AppImage image) {
+            this.image = image;
         }
 
         public Compare getDefaultCompare() {
@@ -840,10 +840,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setEventID(String eventID) {
             this.eventID = eventID;
-        }
-
-        public void setImagePath(String imagePath) {
-            this.imagePath = imagePath;
         }
 
         public void setChangeKey(KeyStroke changeKey) {

@@ -44,9 +44,4 @@ public class RefreshAction extends FormFlowAction {
     protected boolean isShowCaption() {
         return false;
     }
-
-    @Override
-    protected String getValueElementClass() {
-        return "btn-outline-secondary";
-    }
 }

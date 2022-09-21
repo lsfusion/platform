@@ -281,7 +281,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             height = SwingDefaults.getValueHeight();
         }
         
-        ImageIcon image = ClientImages.getImage(design.getImageHolder());
+        ImageIcon image = ClientImages.getImage(design.getImage());
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(image.getIconHeight() + insetsHeight, height);
         return height;

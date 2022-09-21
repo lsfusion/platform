@@ -1,7 +1,7 @@
 package lsfusion.client.base.view;
 
 import lsfusion.base.file.RawFileData;
-import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.base.file.AppImage;
 import lsfusion.client.controller.MainController;
 import lsfusion.interop.base.view.ColorTheme;
 
@@ -36,11 +36,11 @@ public class ClientImages {
         images.clear();
     }
 
-    public static ImageIcon getImage(SerializableImageIconHolder imageHolder) {
+    public static ImageIcon getImage(AppImage imageHolder) {
         return getImage(imageHolder, MainController.colorTheme);
     }
 
-    public static ImageIcon getImage(SerializableImageIconHolder imageHolder, ColorTheme colorTheme) {
+    public static ImageIcon getImage(AppImage imageHolder, ColorTheme colorTheme) {
         if (imageHolder == null) {
             return null;
         }
@@ -59,7 +59,7 @@ public class ClientImages {
         return themeImageIcon;
     }
 
-    public static ImageIcon calculateImage(SerializableImageIconHolder imageHolder, ColorTheme colorTheme) {
+    public static ImageIcon calculateImage(AppImage imageHolder, ColorTheme colorTheme) {
         RawFileData themeImage = imageHolder.getImage(colorTheme);
         if (themeImage == null)
             return ClientColorUtils.createFilteredImageIcon(getImage(imageHolder, DEFAULT));

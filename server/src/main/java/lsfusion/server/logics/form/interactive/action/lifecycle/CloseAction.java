@@ -41,4 +41,9 @@ public class CloseAction extends FormFlowAction {
     protected LP getShowIf() {
         return showIf;
     }
+
+    @Override
+    protected String getValueElementClass() {
+        return "btn-secondary";
+    }
 }

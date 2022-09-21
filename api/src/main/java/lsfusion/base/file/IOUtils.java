@@ -103,18 +103,18 @@ public class IOUtils {
         return strBuf.toString();
     }
 
-    public static void writeImageIcon(DataOutputStream outStream, SerializableImageIconHolder imageHolder) throws IOException {
+    public static void writeImageIcon(DataOutputStream outStream, AppImage imageHolder) throws IOException {
         outStream.writeBoolean(imageHolder != null);
         if (imageHolder != null) {
             new ObjectOutputStream(outStream).writeObject(imageHolder);
         }
     }
 
-    public static SerializableImageIconHolder readImageIcon(DataInputStream inStream) throws IOException {
+    public static AppImage readImageIcon(DataInputStream inStream) throws IOException {
         if (inStream.readBoolean()) {
             ObjectInputStream in = new ObjectInputStream(inStream);
             try {
-                return ((SerializableImageIconHolder) in.readObject());
+                return ((AppImage) in.readObject());
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }

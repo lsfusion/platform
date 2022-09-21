@@ -4,7 +4,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.IOUtils;
-import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -30,9 +30,9 @@ import static lsfusion.base.col.MapFact.singletonOrder;
 
 public abstract class NavigatorElement {
     
-    private SerializableImageIconHolder imageHolder;
+    private AppImage image;
 
-    protected abstract String getDefaultIcon(boolean top);
+    protected abstract AppImage getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
 
@@ -206,17 +206,15 @@ public abstract class NavigatorElement {
 
     public abstract AsyncExec getAsyncExec();
 
-    public void setImage(String imagePath) {
-        if(imageHolder == null)
-            imageHolder = new SerializableImageIconHolder();
-        imageHolder.setImage(imagePath);
+    public void setImage(AppImage image) {
+        this.image = image;
     }
 
     public void finalizeAroundInit(BaseLogicsModule LM) {
         parent.finalizeChanges();
         children.finalizeChanges();
 
-        if(imageHolder == null)
+        if(image == null)
             setImage(getDefaultIcon(LM.root.equals(getParent())));
     }
 
@@ -255,7 +253,7 @@ public abstract class NavigatorElement {
             window.serialize(outStream);
         }
 
-        IOUtils.writeImageIcon(outStream, imageHolder);
+        IOUtils.writeImageIcon(outStream, image);
 
         AsyncSerializer.serializeEventExec(getAsyncExec(), outStream);
     }

@@ -5,7 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class InputContextAction<P extends PropertyInterface, V extends PropertyInterface> {
 
-    public final SerializableImageIconHolder image;
+    public final AppImage image;
     public final String id;
     public final String keyStroke;
     public final Map<String, BindingMode> bindingModesMap;
@@ -33,13 +33,10 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
 
     public final ImRevMap<P, V> mapValues; // external context
 
-    public InputContextAction(String id, String keyStroke, Map<String, BindingMode> bindingModesMap, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
-        this(new SerializableImageIconHolder(id + ".png"), id, keyStroke, bindingModesMap, null, quickAccessList, action, mapValues);
-    }
     public InputContextAction(String image, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
-        this(new SerializableImageIconHolder(image), BaseUtils.getFileName(image), keyStroke, bindingModesMap, priority, quickAccessList, action, mapValues);
+        this(new AppImage(image), BaseUtils.getFileName(image), keyStroke, bindingModesMap, priority, quickAccessList, action, mapValues);
     }
-    public InputContextAction(SerializableImageIconHolder image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
+    public InputContextAction(AppImage image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
         this.image = image;
         this.id = id;
         this.keyStroke = keyStroke;

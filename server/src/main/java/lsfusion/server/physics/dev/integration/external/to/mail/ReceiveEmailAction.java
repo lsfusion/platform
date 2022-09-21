@@ -31,7 +31,7 @@ public class ReceiveEmailAction extends InternalAction {
         this.emailLM = LM;
 
         drawOptions.setAskConfirm(true);
-        drawOptions.setImage("email.png");
+        SendEmailAction.setDrawOptions(this);
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {

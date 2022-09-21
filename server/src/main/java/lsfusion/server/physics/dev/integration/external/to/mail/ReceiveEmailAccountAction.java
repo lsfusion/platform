@@ -27,8 +27,7 @@ public class ReceiveEmailAccountAction extends InternalAction {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         accountInterface = i.next();
 
-        drawOptions.setAskConfirm(true);
-        drawOptions.setImage("email.png");
+        SendEmailAction.setDrawOptions(this);
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {

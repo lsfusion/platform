@@ -11,6 +11,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
@@ -1352,7 +1353,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setImage(LAP property, String path) {
-        property.setImage(path);
+        property.setImage(new AppImage(path));
     }
 
     public void setDefaultCompare(LAP property, String defaultCompare) {
@@ -4941,7 +4942,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         setNavigatorElementWindow(element, options.windowName);
-        setNavigatorElementImage(element, parent, options.imagePath);
+        setNavigatorElementImage(element, parent, options.imagePath != null ? new AppImage(options.imagePath) : null);
 
         if (parent != null && (!isEditOperation || options.position != InsertType.IN)) {
             moveElement(element, parent, options.position, options.anchor, isEditOperation);
@@ -4974,9 +4975,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, String imagePath) {
-        if (imagePath != null)
-            element.setImage(imagePath);
+    public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, AppImage image) {
+        if (image != null)
+            element.setImage(image);
     }
 
     public LPWithParams propertyExpressionCreated(LPWithParams property, List<TypedParameter> context, boolean needFullContext) {

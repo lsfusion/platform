@@ -4,6 +4,7 @@ import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.file.AppImage;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
@@ -15,6 +16,7 @@ import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.ExplicitAction;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
@@ -61,11 +63,15 @@ public class SendEmailAction extends SystemExplicitAction {
     private final List<PropertyInterfaceImplement> inlineFiles = new ArrayList<>();
     private final Boolean syncType;
 
+    public static void setDrawOptions(ExplicitAction action) {
+        action.drawOptions.setAskConfirm(true);
+        action.drawOptions.setImage(AppImage.EMAIL);
+    }
+
     public SendEmailAction(LocalizedString caption, ValueClass[] classes, boolean syncType) {
         super(caption, classes);
 
-        this.drawOptions.setAskConfirm(true);
-        this.drawOptions.setImage("email.png");
+        setDrawOptions(this);
         this.syncType = syncType;
     }
 

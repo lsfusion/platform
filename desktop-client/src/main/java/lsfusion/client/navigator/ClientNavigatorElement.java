@@ -1,7 +1,7 @@
 package lsfusion.client.navigator;
 
 import lsfusion.base.file.IOUtils;
-import lsfusion.base.file.SerializableImageIconHolder;
+import lsfusion.base.file.AppImage;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
@@ -27,7 +27,7 @@ public abstract class ClientNavigatorElement {
     
     public List<ClientNavigatorElement> parents = new ArrayList<>();
     public List<ClientNavigatorElement> children = new ArrayList<>();
-    public SerializableImageIconHolder imageHolder;
+    public AppImage imageHolder;
 
     public ClientAsyncExec asyncExec;
 

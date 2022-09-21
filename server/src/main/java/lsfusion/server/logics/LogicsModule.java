@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -1061,7 +1062,7 @@ public abstract class LogicsModule {
             // the order will / have to be the same as in formAction itself
             return addInputAProp((CustomClass)objectClass, inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
-                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>("dialog", "F8", null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>(AppImage.DIALOG, "dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));
@@ -1836,7 +1837,7 @@ public abstract class LogicsModule {
     protected void setDeleteActionOptions(LA property) {
         setFormActions(property);
 
-        property.setImage("delete.png");
+        property.setImage(AppImage.DELETE);
         property.setChangeKey(KeyStrokes.getDeleteActionKeyStroke());
         property.setShowChangeKey(false);
     }
@@ -1934,7 +1935,7 @@ public abstract class LogicsModule {
 
         setFormActions(property);
 
-        property.setImage("add.png");
+        property.setImage(AppImage.ADD);
         property.setChangeKey(KeyStrokes.getAddActionKeyStroke());
         property.setShowChangeKey(false);
 
@@ -1968,7 +1969,7 @@ public abstract class LogicsModule {
     private void setEditActionOptions(LA result) {
         setFormActions(result);
         
-        result.setImage("edit.png");
+        result.setImage(AppImage.EDIT);
         Map<String, BindingMode> bindingModes = new HashMap<>();
         bindingModes.put("preview", BindingMode.ONLY);
         bindingModes.put("group", BindingMode.ONLY);

@@ -55,7 +55,7 @@ public abstract class CellRenderer<T> {
 
         String valueElementClass = getValueElementClass();
         if(valueElementClass != null)
-            renderElement.addClassName(valueElementClass);
+            GwtClientUtils.addClassNames(renderElement, valueElementClass);
 
         return renderElement;
     }

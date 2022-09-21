@@ -37,8 +37,8 @@ public class CaptionPanel extends FlexPanel {
         else
             header = new DivWidget();
         header.addStyleName("text-secondary");
-        header.addStyleName("fw-semibold");
-//        header.addStyleName("fw-normal");
+//        header.addStyleName("fw-semibold");
+        header.addStyleName("fw-normal");
 
         add(header, GFlexAlignment.STRETCH);
 

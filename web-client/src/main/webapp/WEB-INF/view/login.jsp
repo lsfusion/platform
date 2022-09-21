@@ -13,7 +13,13 @@
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
 
-        <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(), "static/noauth/css/fontAwesome/css/fontawesome.min.css")); %>
+        <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
+
+                "static/noauth/css/fontAwesome/css/fontawesome.min.css",
+                "static/noauth/css/fontAwesome/css/brands.min.css",
+                "static/noauth/css/fontAwesome/css/solid.min.css"
+
+                )); %>
 
         <c:forEach items="${versionedResources}" var="versionedResource">
             <c:if test="${versionedResource.value == 'js'}">
@@ -81,7 +87,7 @@
                             <div class="oauth-title"><%= ServerMessages.getString(request, "sign.in.with") %></div>
                             <div class="oauth-links">
                                 <c:forEach var="url" items="${urls}">
-                                    <a href="${url.value}" class="oauth-link fa fa-${url.key}" title="${url.key}"></a>
+                                    <a href="${url.value}" class="oauth-link fa-brands fa-solid fa-${url.key}" title="${url.key}"></a>
                                 </c:forEach>
                             </div>
                         </div>

@@ -1,5 +1,6 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.design.FontInfo;
@@ -142,7 +143,7 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
     }
 
     public void setImagePath(LocalizedString imagePath) {
-        target.design.setImage(imagePath.getSourceString());
+        target.design.setImage(new AppImage(imagePath.getSourceString()));
     }
 
     public void setShowIf(PropertyObjectEntity<?> showIf) {

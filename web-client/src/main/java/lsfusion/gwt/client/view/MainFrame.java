@@ -256,6 +256,7 @@ public class MainFrame implements EntryPoint {
                 busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
 
                 staticImagesURL = result.staticImagesURL;
+                useBootstrap = result.useBootstrap;
                 for(Runnable listener : staticImagesURLListeners)
                     listener.run();
                 staticImagesURLListeners = null;
@@ -268,7 +269,6 @@ public class MainFrame implements EntryPoint {
                 matchSearchSeparator = result.matchSearchSeparator;
                 changeColorTheme(result.colorTheme);
                 colorPreferences = result.colorPreferences;
-                useBootstrap = result.useBootstrap;
                 StyleDefaults.init();
                 dateFormat = result.dateFormat;
                 timeFormat = result.timeFormat;

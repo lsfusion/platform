@@ -49,7 +49,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     private LabelWidget label;
 
     public ActionPanelView(final ClientPropertyDraw iproperty, final ClientGroupObjectValue icolumnKey, final ClientFormController iform, LinearCaptionContainer captionContainer) {
-        super((String)null, ClientImages.getImage(iproperty.design.getImageHolder()));
+        super((String)null, ClientImages.getImage(iproperty.design.getImage()));
 
         this.property = iproperty;
         this.columnKey = icolumnKey;
@@ -156,7 +156,7 @@ public class ActionPanelView extends ButtonWidget implements PanelView, EditProp
     public void updateUI() {
         super.updateUI();
         if (property != null) { // first call from constructor
-            setIcon(ClientImages.getImage(property.design.getImageHolder()));
+            setIcon(ClientImages.getImage(property.design.getImage()));
         }
     }
 

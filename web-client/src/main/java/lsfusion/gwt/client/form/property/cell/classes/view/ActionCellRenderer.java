@@ -123,16 +123,13 @@ public class ActionCellRenderer extends CellRenderer {
         if(hasImage(updateContext)) {
             Element imageElement = (Element) element.getPropertyObject(IMAGE);
 
-            boolean loadingReplaceImage = updateContext.isLoading() && property.isLoadingReplaceImage();
-            if(property.hasDynamicImage()) { // app download image
-                if(loadingReplaceImage) // temp, should be always image (not font)
-                    StaticImage.LOADING_IMAGE_PATH.setImageSrc(imageElement);
-                else
-                    GwtClientUtils.setAppDownloadImageSrc(imageElement, updateContext.getImage(), null);
-            } else if(property.hasStaticImage()) // app static image
-                property.appStaticImage.setImageSrc(imageElement, enabled, loadingReplaceImage);
+            StaticImage overrideImage = updateContext.isLoading() && property.isLoadingReplaceImage() ? StaticImage.LOADING_IMAGE_PATH : null;
+            if(property.hasDynamicImage()) // app download image
+                GwtClientUtils.setAppDownloadImageSrc(imageElement, updateContext.getImage(), null, overrideImage);
+            else if(property.hasStaticImage()) // app static image
+                property.appStaticImage.setImageSrc(imageElement, enabled, overrideImage);
             else // static image
-                StaticImage.EXECUTE.setImageSrc(imageElement, loadingReplaceImage);
+                StaticImage.EXECUTE.setImageSrc(imageElement, overrideImage);
         }
 
         element.setPropertyBoolean("disabled", !enabled);

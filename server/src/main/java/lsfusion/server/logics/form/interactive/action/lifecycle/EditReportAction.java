@@ -31,9 +31,4 @@ public class EditReportAction extends ReportClientAction {
     protected boolean isShowCaption() {
         return false;
     }
-
-    @Override
-    protected String getValueElementClass() {
-        return "btn-outline-secondary";
-    }
 }

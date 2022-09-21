@@ -67,7 +67,7 @@ public abstract class FormsController {
     private final WindowsController windowsController;
 
     private int prevModeButton;
-    private final EditModeButton editModeButton;
+    private EditModeButton editModeButton;
 
     private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;

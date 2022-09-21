@@ -1,8 +1,7 @@
 package lsfusion.interop.form.design;
 
 import lsfusion.base.context.ContextObject;
-import lsfusion.base.file.SerializableImageIconHolder;
-import lsfusion.interop.base.view.ColorTheme;
+import lsfusion.base.file.AppImage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,19 +16,17 @@ public class ComponentDesign extends ContextObject implements Serializable {
     public Color background;
     public Color foreground;
 
-    private SerializableImageIconHolder imageHolder;
+    private AppImage image;
 
     public ComponentDesign() {
     }
 
-    public void setImage(String imagePath) {
-        if (imageHolder == null)
-            imageHolder = new SerializableImageIconHolder();
-        imageHolder.setImage(imagePath);
+    public void setImage(AppImage imageHolder) {
+        this.image = imageHolder;
     }
 
-    public SerializableImageIconHolder getImageHolder() {
-        return imageHolder;
+    public AppImage getImage() {
+        return image;
     }
 
     public void installFont(JComponent comp) {

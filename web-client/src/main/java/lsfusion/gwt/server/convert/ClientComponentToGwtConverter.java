@@ -303,7 +303,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.appStaticImage = createImage(clientPropertyDraw.design.getImageHolder(), canIconBeDisabled);
+        propertyDraw.appStaticImage = createImage(clientPropertyDraw.design.getImage(), canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

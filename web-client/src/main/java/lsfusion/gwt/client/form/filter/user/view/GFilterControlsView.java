@@ -37,7 +37,7 @@ public class GFilterControlsView extends FlexPanel {
         applyButton.addStyleName("userFilterButton");
         add(applyButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
 
-        GToolbarButton resetConditionsButton = new GToolbarButton(StaticImage.RESET, messages.formFilterResetConditions()) {
+        GToolbarButton resetConditionsButton = new GToolbarButton(StaticImage.RESET_ICON_PATH, messages.formFilterResetConditions()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {

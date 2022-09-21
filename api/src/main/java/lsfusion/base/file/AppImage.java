@@ -1,42 +1,71 @@
 package lsfusion.base.file;
 
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.interop.base.view.ColorTheme;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SerializableImageIconHolder implements Serializable {
+public class AppImage implements Serializable {
     public static final long serialVersionUID = 42L;
 
-    public SerializableImageIconHolder() {
+    public AppImage() {
     }
 
-    public SerializableImageIconHolder(String imagePath) {
-        setImage(imagePath);
+    private Map<ColorTheme, String> imagePathes;
+    private Map<ColorTheme, RawFileData> images;
+
+    public String imagePath;
+    public String fontClasses;
+
+    private static final boolean useFA = false;
+
+    private static MAddExclMap<String, String> predefinedFontClasses = MapFact.mAddExclMap();
+    static {
+        predefinedFontClasses.exclAdd("apply.png", "bi bi-save");
+        predefinedFontClasses.exclAdd("cancel.png", "bi bi-trash");
+        predefinedFontClasses.exclAdd("ok.png", "bi bi-check");
+        predefinedFontClasses.exclAdd("close.png", "bi bi-x");
+        predefinedFontClasses.exclAdd("editReport.png", "bi bi-pencil-square");
+        predefinedFontClasses.exclAdd("refresh.png", "bi bi-arrow-repeat");
+
+        predefinedFontClasses.exclAdd("add.png", "fa-solid fa-plus");
+        predefinedFontClasses.exclAdd("edit.png", "fa-solid fa-pen");
+        predefinedFontClasses.exclAdd("delete.png", "fa-solid fa-minus");
+
+        predefinedFontClasses.exclAdd("email.png", "fa-regular fa-envelope");
+
+        predefinedFontClasses.exclAdd("dialog.png", "fa-solid fa-ellipsis");
+        predefinedFontClasses.exclAdd("reset.png", "fa-solid fa-xmark");
     }
 
-    private final Map<ColorTheme, String> imagePathes = new HashMap<>();
-    private final Map<ColorTheme, RawFileData> images = new HashMap<>();
-    public String fontImage;
+    public AppImage(String imagePath) {
+        Map<ColorTheme, String> imagePathes = new HashMap<>();
+        Map<ColorTheme, RawFileData> images = new HashMap<>();
 
-    public transient Object desktopClientImages;
-
-    public void setImage(String imagePath) {
         for (ColorTheme colorTheme : ColorTheme.values()) {
             Result<String> fullPath = new Result<>();
-            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !colorTheme.isDefault(), false, fullPath, "images");
-            if(themedImageFile != null) {
+            boolean defaultTheme = colorTheme.isDefault();
+            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !defaultTheme, false, fullPath, "images");
+            if(defaultTheme || themedImageFile != null) {
                 themedImageFile.getID(); // to calculate the cache
                 images.put(colorTheme, themedImageFile);
                 imagePathes.put(colorTheme, fullPath.result);
             }
         }
+
+        this.imagePathes = imagePathes;
+        this.images = images;
+
+        this.fontClasses = predefinedFontClasses.get(BaseUtils.getFileNameAndExtension(imagePath));
     }
+
+    public transient Object desktopClientImages;
 
     public RawFileData getImage(ColorTheme colorTheme) {
         return images.get(colorTheme);
@@ -49,6 +78,26 @@ public class SerializableImageIconHolder implements Serializable {
     public boolean isGif(ColorTheme colorTheme) {
         return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
     }
+
+    // constants
+
+    public static final AppImage FORMTOP = new AppImage("formTop.png");
+    public static final AppImage FORM = new AppImage("form.png");
+
+    public static final AppImage ACTIONTOP = new AppImage("actionTop.png");
+    public static final AppImage ACTION = new AppImage("action.png");
+
+    public static final AppImage OPENTOP = new AppImage("openTop.png");
+    public static final AppImage OPEN = new AppImage("open.png");
+
+    public static final AppImage ADD = new AppImage("add.png");
+    public static final AppImage EDIT = new AppImage( "edit.png");
+    public static final AppImage DELETE = new AppImage( "delete.png");
+
+    public static final AppImage EMAIL = new AppImage( "email.png");
+
+    public static final AppImage DIALOG = new AppImage( "dialog.png");
+    public static final AppImage RESET = new AppImage( "reset.png");
 
 //    private void readObject(ObjectInputStream s) throws ClassNotFoundException, IOException {
 //        images = new HashMap<>();
