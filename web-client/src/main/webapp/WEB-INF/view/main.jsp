@@ -161,6 +161,8 @@
                 "static/css/external/mmenu-light.css", //https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.css
                 "static/css/mmenu.css",
 
+                "static/css/bootstrap-icons/bootstrap-icons.css",
+
                 "static/js/ddslick.js",
 
                 "static/css/gwt/main.css",
