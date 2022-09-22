@@ -669,12 +669,14 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // Окна
         baseWindows = new Windows();
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
+        baseWindows.root.elementClass = "text-bg-dark bg-opacity-10";
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
 
         baseWindows.tree = (NavigatorWindow) findWindow("tree");
 
         baseWindows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
+        baseWindows.forms.elementClass = null;
 
         baseWindows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
 

@@ -82,6 +82,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.width = clientWindow.width;
         window.height = clientWindow.height;
         window.visible = clientWindow.visible;
+        window.elementClass = clientWindow.elementClass;
         return window;
     }
 

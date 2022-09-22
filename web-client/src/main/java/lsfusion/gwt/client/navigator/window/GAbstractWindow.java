@@ -17,5 +17,7 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     public boolean titleShown;
     public boolean visible;
 
+    public String elementClass;
+
     public boolean initialSizeSet = false;
 }

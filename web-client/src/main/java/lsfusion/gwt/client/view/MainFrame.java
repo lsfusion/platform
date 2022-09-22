@@ -294,11 +294,6 @@ public class MainFrame implements EntryPoint {
                 }
                 return view;
             }
-
-            @Override
-            public boolean isFormsWindow(GAbstractWindow window) {
-                return window.equals(formsWindowLink.link);
-            }
         };
 
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();

@@ -1,3 +1,3 @@
-.tab-simple-window {
+.tab-simple-window.margined-window {
     margin: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
 }

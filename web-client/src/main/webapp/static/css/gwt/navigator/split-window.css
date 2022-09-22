@@ -8,6 +8,6 @@
     height: 4px !important;
 }
 
-.split-simple-window {
+.split-simple-window.margined-window {
     inset: var(--border-cont-vert-padding) var(--border-cont-horz-padding) !important; /* is overriden by split panel */
 }

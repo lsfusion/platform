@@ -193,7 +193,6 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);
-    public abstract boolean isFormsWindow(GAbstractWindow window);
 
     public void storeWindowsSizes() {
         Storage storage = Storage.getLocalStorageIfSupported();

@@ -21,6 +21,8 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
 
     public boolean titleShown;
     public boolean visible;
+    
+    public String elementClass;
 
     public ClientAbstractWindow(DataInputStream inStream) throws IOException {
         canonicalName = inStream.readUTF();
@@ -39,6 +41,10 @@ public class ClientAbstractWindow<C extends JComponent> implements Serializable 
 
         titleShown = inStream.readBoolean();
         visible = inStream.readBoolean();
+        
+        if (inStream.readBoolean()) {
+            elementClass = inStream.readUTF();
+        }
     }
 
     @Override

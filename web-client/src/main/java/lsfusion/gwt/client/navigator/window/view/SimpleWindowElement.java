@@ -2,14 +2,13 @@ package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GPanelNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.GTreeNavigatorWindow;
 
 public class SimpleWindowElement extends WindowElement {
-    public final static String SIMPLE_WINDOW_ELEMENT_STYLE = "bg-white rounded shadow-sm";
-    
     public GAbstractWindow window;
 
     public SimpleWindowElement(WindowsController main, GAbstractWindow window, int x, int y, int width, int height) {
@@ -17,8 +16,8 @@ public class SimpleWindowElement extends WindowElement {
         this.window = window;
         main.registerWindow(window, this);
 
-        if (!isFormsWindow()) {
-            main.getWindowView(window).addStyleName(SIMPLE_WINDOW_ELEMENT_STYLE);
+        if (!GwtSharedUtils.isRedundantString(window.elementClass)) {
+            main.getWindowView(window).addStyleName(window.elementClass);
         }
     }
 
@@ -37,10 +36,6 @@ public class SimpleWindowElement extends WindowElement {
         return main.getWindowView(window);
     }
     
-    public boolean isFormsWindow() {
-        return main.isFormsWindow(window);
-    }
-
     @Override
     public void changeInitialSize(int width, int height) {
         if (window != null && !sizeStored) {

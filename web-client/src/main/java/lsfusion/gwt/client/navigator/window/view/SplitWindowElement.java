@@ -233,7 +233,7 @@ public class SplitWindowElement extends WindowElement {
     }
 
     private void addStyleClasses(WindowElement window) {
-        if (window instanceof SimpleWindowElement && !((SimpleWindowElement) window).isFormsWindow()) {
+        if (window instanceof SimpleWindowElement) {
             window.getView().addStyleName(SIMPLE_WINDOW_CHILD_STYLE);
         }
     }

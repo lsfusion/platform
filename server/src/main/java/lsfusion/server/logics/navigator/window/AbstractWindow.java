@@ -25,6 +25,8 @@ public class AbstractWindow {
     public boolean titleShown = true;
 
     public boolean visible = true;
+    
+    public String elementClass = "bg-white rounded shadow-sm margined-window";
 
     public AbstractWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
         this(canonicalName, caption);
@@ -60,6 +62,11 @@ public class AbstractWindow {
 
         outStream.writeBoolean(titleShown);
         outStream.writeBoolean(visible);
+
+        outStream.writeBoolean(elementClass != null);
+        if (elementClass != null) {
+            outStream.writeUTF(elementClass);
+        }
     }
 
     public void setDockPosition(int x, int y, int width, int height) {

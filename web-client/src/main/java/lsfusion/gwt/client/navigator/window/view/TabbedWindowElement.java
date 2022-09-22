@@ -44,7 +44,7 @@ public class TabbedWindowElement extends WindowElement {
             visibleChildren.add(child);
             tabPanel.selectTab(visibleChildren.indexOf(child));
             
-            if (child instanceof SimpleWindowElement && !((SimpleWindowElement) child).isFormsWindow()) {
+            if (child instanceof SimpleWindowElement) {
                 windowView.addStyleName(SIMPLE_WINDOW_CHILD_STYLE);
             }
         }
