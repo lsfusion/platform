@@ -132,7 +132,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
         // don't update suggestions if editing started with char key event. as editor text is empty on init - request is being sent twice
         // wait for editor key listener to catch the event
-        if (hasList && !GKeyStroke.isCharAddKeyEvent(handler.event)) {
+        //commented !isCharAddKeyEvent, because suggestBox is not created at start and then npe at stop
+        if (hasList/* && !GKeyStroke.isCharAddKeyEvent(handler.event)*/) {
             suggestBox = createSuggestBox(inputElement, parent);
             suggestBox.showSuggestionList(allSuggestions);
         }

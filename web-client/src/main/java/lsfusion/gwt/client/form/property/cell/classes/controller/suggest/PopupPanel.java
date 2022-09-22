@@ -195,6 +195,8 @@ public class PopupPanel extends ComplexPanel {
         return false;
     }
 
+    boolean popupIsAbove;
+
     /**
      * Positions the popup, called after the offset width and height of the popup
      * are known.
@@ -312,9 +314,11 @@ public class PopupPanel extends ComplexPanel {
         // popup below the text box.
         if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
             top -= offsetHeight;
+            popupIsAbove = true;
         } else {
             // Position above the text box
             top += relativeObject.getOffsetHeight();
+            popupIsAbove = false;
         }
         setPopupPosition(left, top);
     }
@@ -577,7 +581,7 @@ public class PopupPanel extends ComplexPanel {
 
     private boolean selectFirstItemIfNoneSelected() {
         if (selectedItem == null) {
-            return selectFirstItem();
+            return popupIsAbove ? selectLastItem() : selectFirstItem();
         }
         return false;
     }
@@ -585,6 +589,14 @@ public class PopupPanel extends ComplexPanel {
     public boolean selectFirstItem() {
         if (!items.isEmpty()) {
             selectItem(items.get(0));
+            return true;
+        }
+        return false;
+    }
+
+    public boolean selectLastItem() {
+        if (!items.isEmpty()) {
+            selectItem(items.get(items.size() - 1));
             return true;
         }
         return false;
