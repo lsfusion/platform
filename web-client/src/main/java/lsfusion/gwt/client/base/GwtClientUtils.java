@@ -149,9 +149,7 @@ public class GwtClientUtils {
     }
     private static Element createBaseStaticImage(BaseStaticImage image) {
         if(useStaticImageIcon(image)) {
-            Element element = Document.get().createElement("i");
-            element.addClassName("fa-solid");
-            return element;
+            return Document.get().createElement("i");
         } else
             return Document.get().createImageElement();
     }

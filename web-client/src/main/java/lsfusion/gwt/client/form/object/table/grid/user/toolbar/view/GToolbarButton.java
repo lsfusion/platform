@@ -19,6 +19,7 @@ public abstract class GToolbarButton extends UnFocusableImageButton {
     public GToolbarButton(String caption, BaseStaticImage image, String tooltipText, boolean compact) {
         super(caption, image);
         addStyleName("btn");
+        addStyleName("btn-toolbar");
 
         setTitle(tooltipText);
         

@@ -43,7 +43,7 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
     private void initImage(BaseStaticImage baseImage) {
         imageElement = baseImage.createImage();
 
-        imageElement.addClassName("btn-image-img");
+        imageElement.addClassName("btn-image");
         getElement().insertFirst(imageElement);
 
         MainFrame.addColorThemeChangeListener(this);

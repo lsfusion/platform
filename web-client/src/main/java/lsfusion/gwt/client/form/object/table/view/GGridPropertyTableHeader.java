@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.DBLCLICK;
@@ -176,7 +175,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     public static Supplier<Element> getSortImgProcesspr(Boolean sortDir) {
         return sortDir != null ? () -> {
-            Element img = (sortDir ? StaticImage.ARROWUP : StaticImage.ARROWDOWN).createImage();
+            Element img = (sortDir ? StaticImage.SORTUP : StaticImage.SORTDOWN).createImage();
             img.addClassName("dataGridHeaderCell-sortimg");
             return img;
         } : null;

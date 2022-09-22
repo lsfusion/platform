@@ -26,6 +26,11 @@ public class AppImages {
 
         AppImages.predefinedFontClasses.exclAdd("dialog.png", "fa-solid fa-ellipsis");
         AppImages.predefinedFontClasses.exclAdd("reset.png", "fa-solid fa-xmark");
+
+        AppImages.predefinedFontClasses.exclAdd("print.png", "bi bi-printer");
+        AppImages.predefinedFontClasses.exclAdd("form.png", "fa-regular fa-clone");
+        AppImages.predefinedFontClasses.exclAdd("action.png", "fa-regular fa-square-caret-right");
+        AppImages.predefinedFontClasses.exclAdd("open.png", "fa-regular fa-folder");
     }
 
     public static final AppImage FORMTOP = new AppImage("formTop.png");
@@ -34,10 +39,13 @@ public class AppImages {
     public static final AppImage ACTION = new AppImage("action.png");
     public static final AppImage OPENTOP = new AppImage("openTop.png");
     public static final AppImage OPEN = new AppImage("open.png");
+
     public static final AppImage ADD = new AppImage("add.png");
     public static final AppImage EDIT = new AppImage( "edit.png");
     public static final AppImage DELETE = new AppImage( "delete.png");
+
     public static final AppImage EMAIL = new AppImage( "email.png");
+
     public static final AppImage DIALOG = new AppImage( "dialog.png");
     public static final AppImage RESET = new AppImage( "reset.png");
 }

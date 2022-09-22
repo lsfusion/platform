@@ -44,18 +44,20 @@
 
 .caption-panel-header.collapsible::before,
 .card-header.collapsible::before {
-    font-family: "Font Awesome 6 Free";
+    /*font-family: "Font Awesome 6 Free";*/
     margin-right: var(--border-label-horz-padding);
 }
 
 .caption-panel-header.collapsible.collapsed::before,
 .card-header.collapsible.collapsed::before {
     content: "\f107";
+    font: var(--fa-font-solid);
 }
 
 .caption-panel-header.collapsible:not(.collapsed)::before,
 .card-header.collapsible:not(.collapsed)::before {
     content: "\f106";
+    font: var(--fa-font-solid);
 }
 
 /*focused cell, same as table-active, but opacity 0.3 instead of 0.1*/
@@ -76,4 +78,9 @@
     border-color: #86b7fe;
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* default toolbar with not solid icons looks pretty awkward, so we increase their size to look more autnentic / similar to regular buttons */
+.btn-toolbar > .btn-image {
+    font-size: 1.25rem;
 }
