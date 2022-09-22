@@ -78,7 +78,7 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
             List<String> row = table.get(0);
             if (!row.isEmpty()) {
                 try {
-                    setValueAt(SwingUtils.escapeComma(getProperty().parseBasePaste(row.get(0)), inputList.compare), 0, 0);
+                    setValueAt(SwingUtils.escapeSeparator(getProperty().parseBasePaste(row.get(0)), inputList.compare), 0, 0);
                 } catch (ParseException ignored) {
                 }
             }

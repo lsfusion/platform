@@ -137,7 +137,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     private void updateAndCommit(Object value) {
-        value = GwtClientUtils.escapeComma(value, inputList.compare);
+        value = GwtClientUtils.escapeSeparator(value, inputList.compare);
         updateValue(value);
         afterCommit.accept(value);
     }

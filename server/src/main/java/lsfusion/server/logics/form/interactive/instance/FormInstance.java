@@ -1173,10 +1173,18 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 if (foundNeeded || // found it
                         count < estNeededRead) { // or we've read all the records, no need to read more
                     // if we're looking for objects (strict mode) we have to check if there is the exact match (otherwise it won't be possible to enter such value)
-                    if(foundNeeded && asyncMode.isStrict() && !containsValue(resultValues, value)) {
-                        ImMap<P, DataObject> asyncKey = getAsyncKey(listExprKeys, session, new DataObject(value));
-                        if(asyncKey != null)
-                            resultValues = BaseUtils.addElement(new PropertyAsync<>("<b>" + value + "</b>", value, asyncMode.isObjects() ? asyncKey : null), resultValues, PropertyAsync[]::new);
+                    if (asyncMode.isStrict()) {
+                        int valueIndex = getValueIndex(resultValues, value);
+                        if (foundNeeded && valueIndex < 0) {
+                            ImMap<P, DataObject> asyncKey = getAsyncKey(listExprKeys, session, new DataObject(value));
+                            if (asyncKey != null)
+                                resultValues = BaseUtils.addElement(new PropertyAsync<>("<b>" + value + "</b>", value, asyncMode.isObjects() ? asyncKey : null), resultValues, PropertyAsync[]::new);
+                        } else if(valueIndex > 0) {
+                            // somewhy postgres doesn't give the equal value the highest rank, so we move it to the top
+                            PropertyAsync<P> equalValue = resultValues[valueIndex];
+                            resultValues[valueIndex] = resultValues[0];
+                            resultValues[0] = equalValue;
+                        }
                     }
                     return resultValues;
                 }
@@ -1189,11 +1197,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return getAsyncValues(session, listExpr, listExprKeys.orders, listExprKeys.mapKeys, asyncMode, neededCount, value).first;
     }
 
-    private static <P extends PropertyInterface> boolean containsValue(PropertyAsync<P>[] resultValues, String value) {
-        for(PropertyAsync<P> resultValue : resultValues)
-            if(resultValue.rawString.trim().equals(value))
-                return true;
-        return false;
+    private static <P extends PropertyInterface> int getValueIndex(PropertyAsync<P>[] resultValues, String value) {
+        for (int i = 0, resultValuesLength = resultValues.length; i < resultValuesLength; i++) {
+            PropertyAsync<P> resultValue = resultValues[i];
+            if (resultValue.rawString.trim().equals(value))
+                return i;
+        }
+        return -1;
     }
 
     private static <P extends PropertyInterface, Q> Pair<PropertyAsync<P>[], Integer> getAsyncValues(DataSession session, Expr listBaseExpr, ImOrderMap<Expr, Boolean> orderExprs, ImRevMap<P, KeyExpr> baseKeys, AsyncMode asyncMode, int neededCount, String value) throws SQLException, SQLHandledException {

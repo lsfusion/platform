@@ -10,12 +10,12 @@ import lsfusion.client.form.design.view.widget.LabelWidget;
 import lsfusion.client.form.design.view.widget.SeparatorWidget;
 import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.filter.user.ClientPropertyFilter;
+import lsfusion.client.form.filter.user.controller.FilterController;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.base.view.FlexAlignment;
-import lsfusion.interop.form.event.KeyStrokes;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
@@ -104,7 +104,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 
                 propertyChanged();
 
-                startEditing(KeyStrokes.createAddUserFilterKeyEvent(valueView));
+                startEditing(FilterController.createAddUserFilterEvent(valueView));
             }
         };
 

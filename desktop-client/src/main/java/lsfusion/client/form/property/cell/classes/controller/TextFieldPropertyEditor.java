@@ -435,7 +435,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         private void updateSelectedEditorText() {
             ClientAsync selectedItem = (ClientAsync) comboBox.getSelectedItem();
             if(selectedItem != null)
-                setComboBoxEditorText((String) SwingUtils.escapeComma(selectedItem.rawString, compare));
+                setComboBoxEditorText((String) SwingUtils.escapeSeparator(selectedItem.rawString, compare));
         }
 
         public void updateItems(List<ClientAsync> result, boolean selectFirst) {
@@ -465,7 +465,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBox.setEditor(new AutoCompleteComboBoxEditor(new BasicComboBoxEditor() {
                 @Override
                 public void setItem(Object anObject) {
-                    super.setItem(SwingUtils.escapeComma(anObject, compare));
+                    super.setItem(SwingUtils.escapeSeparator(anObject, compare));
                     tableEditor.stopCellEditing();
                 }
             }, new ObjectToStringConverter() {

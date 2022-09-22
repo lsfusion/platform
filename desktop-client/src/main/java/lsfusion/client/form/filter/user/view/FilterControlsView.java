@@ -5,6 +5,8 @@ import lsfusion.client.form.design.view.widget.Widget;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.interop.base.view.FlexAlignment;
 
+import javax.swing.*;
+
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class FilterControlsView extends FlexPanel {
@@ -13,6 +15,8 @@ public class FilterControlsView extends FlexPanel {
     public static final String RESET_ICON_PATH = "filtreset.png";
 
     public FilterControlsView(FiltersHandler handler) {
+        setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+        
         if (handler.hasFiltersContainer()) {
             ToolbarGridButton addConditionButton = new ToolbarGridButton(ADD_ICON_PATH, getString("form.queries.filter.add.condition"));
             addConditionButton.addActionListener(ae -> handler.addCondition());

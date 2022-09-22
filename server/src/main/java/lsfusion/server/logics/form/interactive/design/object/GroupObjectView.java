@@ -12,12 +12,14 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
@@ -70,16 +72,19 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         toolbarSystem = new ToolbarView(idGen.idShift());
 
         filtersContainer = new ContainerView(idGen.idShift());
-        filtersContainer.setType(ContainerType.CONTAINERH);
-//        filtersContainer.setType(ContainerType.CONTAINERV);
-//        filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+        if (Settings.get().isVerticalColumnsFiltersContainer()) {
+            filtersContainer.setType(ContainerType.CONTAINERV);
+            filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+        } else {
+            filtersContainer.setType(ContainerType.CONTAINERH);
+        }
         filtersContainer.setAlignment(FlexAlignment.STRETCH);
 //        filtersContainer.setAlignCaptions(true);
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filterControls = new FilterControlsView(idGen.idShift());
-        filterControls.setAlignment(FlexAlignment.STRETCH);
+        filterControls.setAlignment(FlexAlignment.END);
         
         filters = NFFact.orderSet();
         calculations = new CalculationsView(idGen.idShift());

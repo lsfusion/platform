@@ -48,7 +48,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
 
         Object value;
         if (readSelectedValue) {
-            value = GwtClientUtils.escapeComma(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
+            value = GwtClientUtils.escapeSeparator(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
         } else {
             value = filterValue.value;
         }

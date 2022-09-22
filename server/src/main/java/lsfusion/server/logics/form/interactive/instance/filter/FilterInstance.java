@@ -84,7 +84,7 @@ public abstract class FilterInstance implements Updated {
                     //one or more repetitions of \ and then any one char, or any char but \ and separator
                     Matcher matcher = Pattern.compile("(?:\\\\.|[^\\\\" + separator + "])+", Pattern.DOTALL).matcher(filterValue);
                     while (matcher.find()) {
-                        String value = matcher.group();
+                        String value = matcher.group().replace("\\" + separator, separator); //unescape escaped separator
                         if (needWrapContains(value, isContains)) {
                             value = wrapContains(value);
                         }

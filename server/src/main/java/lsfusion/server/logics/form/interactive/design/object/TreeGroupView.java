@@ -13,12 +13,14 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterControlsView;
 import lsfusion.server.logics.form.interactive.design.filter.FilterView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
+import lsfusion.server.physics.admin.Settings;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -71,15 +73,19 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         toolbarSystem = new ToolbarView(idGenerator.idShift());
 
         filtersContainer = new ContainerView(idGenerator.idShift());
-        filtersContainer.setType(ContainerType.CONTAINERH);
-//        filtersContainer.setType(ContainerType.CONTAINERV);
-//        filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+        if (Settings.get().isVerticalColumnsFiltersContainer()) {
+            filtersContainer.setType(ContainerType.CONTAINERV);
+            filtersContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
+        } else {
+            filtersContainer.setType(ContainerType.CONTAINERH);
+        }
         filtersContainer.setAlignment(FlexAlignment.STRETCH);
 //        filtersContainer.setAlignCaptions(true);
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
         filterControls = new FilterControlsView(idGenerator.idShift());
+        filterControls.setAlignment(FlexAlignment.END);
 
         filters = NFFact.orderSet();
     }
