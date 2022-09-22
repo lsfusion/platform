@@ -80,7 +80,14 @@
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-/* default toolbar with not solid icons looks pretty awkward, so we increase their size to look more autnentic / similar to regular buttons */
-.btn-toolbar > .btn-image {
+/* default toolbar with "regular" (not solid) icons looks pretty awkward, so we increase their size to look more autnentic / similar to regular buttons */
+
+.btn-toolbar .btn-image-img {
     font-size: 1.25rem;
+}
+
+/* we don't want the toolbar to have transparent background, but we still want hover background (just like for the navigator) */
+
+.btn-toolbar .btn-image:hover {
+    background-color: var(--component-hover-background-color);
 }

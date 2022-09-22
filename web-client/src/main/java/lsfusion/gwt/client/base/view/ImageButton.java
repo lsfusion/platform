@@ -16,21 +16,20 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
     protected BaseStaticImage baseImage;
     protected BaseStaticImage overrideImage;
 
-    public ImageButton(String caption, BaseStaticImage baseImage) {
-        setStyleName("btn-image");
+    public ImageButton(String caption, BaseStaticImage baseImage, boolean vertical) {
+        addStyleName("btn-image");
+
+        this.baseImage = baseImage; // need to do it before setText for the updateStyle call
 
         setText(caption);
-        updateStyle(caption);
-
-        this.baseImage = baseImage;
 
         if(baseImage != null) {
             // we want useBootstrap to be initialized (to know what kind of image should be used)
             if(MainFrame.staticImagesURL != null)
-                initImage(baseImage);
+                initImage(baseImage, vertical);
             else
                 MainFrame.staticImagesURLListeners.add(() -> {
-                    initImage(baseImage);
+                    initImage(baseImage, vertical);
 
                     if(overrideImage != null) // overrideImage could be set
                         updateImageSrc();
@@ -40,11 +39,16 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
 //        setFocusable(false);
     }
 
-    private void initImage(BaseStaticImage baseImage) {
+    private void initImage(BaseStaticImage baseImage, boolean vertical) {
         imageElement = baseImage.createImage();
 
-        imageElement.addClassName("btn-image");
+        imageElement.addClassName("btn-image-img");
         getElement().insertFirst(imageElement);
+
+        if (vertical)
+            imageElement.addClassName("wrap-img-vert-margins");
+        else
+            imageElement.addClassName("wrap-img-horz-margins");
 
         MainFrame.addColorThemeChangeListener(this);
     }
@@ -56,10 +60,12 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
     }
 
     private void updateStyle(String text) {
-        if (text != null && !text.equals("")) {
-            removeStyleName("btn-image-no-caption");
-        } else {
-            addStyleName("btn-image-no-caption");
+        if(baseImage != null) { // optimization
+            if (text != null && !text.isEmpty()) {
+                addStyleName("wrap-text-not-empty");
+            } else {
+                removeStyleName("wrap-text-not-empty");
+            }
         }
     }
 

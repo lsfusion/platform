@@ -24,9 +24,18 @@
     /*overflow: hidden; !* important for "removing outer grid borders", since they are removed with margin -1 overflow should be hidden *!*/
 }
 
-.wrap-img-margins {
+.wrap-text-not-empty {
+}
+.wrap-text-not-empty > .wrap-img-horz-margins {
     /*overflow: hidden;*/
-    margin: 0.0625rem 0.125rem;
+    /*margin: 0.0625rem 0.125rem;*/
+    margin-right: 0.25rem;
+}
+
+.wrap-text-not-empty > .wrap-img-vert-margins {
+    /*overflow: hidden;*/
+    /*margin: 0.0625rem 0.125rem;*/
+    margin-bottom: 0.25rem;
 }
 
 .dataGridRow {

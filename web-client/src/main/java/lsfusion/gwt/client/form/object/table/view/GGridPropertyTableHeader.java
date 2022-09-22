@@ -136,9 +136,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         if(height != null)
             th.getStyle().setProperty("maxHeight", height.getString());
 
-        Supplier<Element> imgProcessor = getSortImgProcesspr(sortDir);
-        if(imgProcessor != null)
-            th = wrapImg(th, imgProcessor);
+        th = wrapSortImg(th, sortDir);
 //            th = wrapAlignedFlexImg(th, imgProcessor);
 
         th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers
@@ -157,28 +155,24 @@ public class GGridPropertyTableHeader extends Header<String> {
         return wrappedTh;
     }
 
-    public static Element wrapImg(Element th, Supplier<Element> imgProcessor) {
+    public static Element wrapSortImg(Element th, Boolean sortDir) {
+        if(sortDir == null)
+            return th;
+
         th.addClassName("wrap-wrapimgdiv");
+        th.addClassName("wrap-text-not-empty");
 
-        Element wrappedTh = Document.get().createDivElement();
-        wrappedTh.addClassName("wrap-imgdiv");
-
-        Element img = imgProcessor.get();
-        img.addClassName("wrap-img-margins");
+        Element img = (sortDir ? StaticImage.SORTUP : StaticImage.SORTDOWN).createImage();
+        img.addClassName("sort-img");
+        img.addClassName("wrap-img-horz-margins");
         img.addClassName("wrap-img");
         th.appendChild(img);
 
+        Element wrappedTh = Document.get().createDivElement();
+        wrappedTh.addClassName("wrap-imgdiv");
         th.appendChild(wrappedTh);
 
         return wrappedTh;
-    }
-
-    public static Supplier<Element> getSortImgProcesspr(Boolean sortDir) {
-        return sortDir != null ? () -> {
-            Element img = (sortDir ? StaticImage.SORTUP : StaticImage.SORTDOWN).createImage();
-            img.addClassName("dataGridHeaderCell-sortimg");
-            return img;
-        } : null;
     }
 
     private static void renderCaption(Element captionElement, String caption) {

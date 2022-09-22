@@ -1196,7 +1196,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if (isLastCol && sortDir != null) { // last column may have a sortDir
                     jsElement = GwtClientUtils.wrapDiv(jsElement); // we need to wrap jsElement since all other wraps modify upper container
 
-                    jsElement = GGridPropertyTableHeader.wrapImg(jsElement, GGridPropertyTableHeader.getSortImgProcesspr(sortDir));
+                    jsElement = GGridPropertyTableHeader.wrapSortImg(jsElement, sortDir);
                 }
 
                 GPropertyTableBuilder.renderTD(jsElement);
@@ -2102,7 +2102,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     }
 
     private native void unwrapOthers(Element element, Element currentElement) /*-{
-        $wnd.$(element).find(".dataGridHeaderCell-sortimg").each(function () {
+        $wnd.$(element).find(".sort-img").each(function () {
             if(!@GPivot::isDescendant(*)(currentElement, this)) {
                 this.remove();
             }

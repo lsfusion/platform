@@ -46,9 +46,6 @@ public class ActionCellRenderer extends CellRenderer {
         element.setInnerText("..."); // need this to make getLastChild work
         JavaScriptObject node;
         if(hasImage(renderContext)) { // optimization;
-            if(property.panelCaptionVertical)
-                element.getStyle().setProperty("flexDirection", "column");
-
             Element img;
             if(property.hasDynamicImage()) // app download image
                 img = GwtClientUtils.createAppDownloadImage(null, null);
@@ -57,7 +54,11 @@ public class ActionCellRenderer extends CellRenderer {
             else // static image
                 img = StaticImage.EXECUTE.createImage();
 
-            img.addClassName("wrap-img-margins");
+            if(property.panelCaptionVertical) {
+                element.getStyle().setProperty("flexDirection", "column");
+                img.addClassName("wrap-img-vert-margins");
+            } else
+                img.addClassName("wrap-img-horz-margins");
 
             element.setPropertyObject(IMAGE, img);
             element.insertFirst(img);
@@ -103,6 +104,14 @@ public class ActionCellRenderer extends CellRenderer {
 
     public static void setLabelText(Element element, String text) {
         ((Node)element.getPropertyObject(TEXT)).setNodeValue(text != null ? text : "");
+
+        if(element.getPropertyObject(IMAGE) != null) { // optimization
+            if (text != null && !text.equals("")) {
+                element.addClassName("wrap-text-not-empty");
+            } else {
+                element.removeClassName("wrap-text-not-empty");
+            }
+        }
     }
 
     @Override
@@ -120,8 +129,9 @@ public class ActionCellRenderer extends CellRenderer {
         boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
 
         // we have it here and not in renderStaticContent because of using enabled
-        if(hasImage(updateContext)) {
-            Element imageElement = (Element) element.getPropertyObject(IMAGE);
+        Element imageElement = (Element) element.getPropertyObject(IMAGE);
+        if(imageElement != null) {
+            assert hasImage(updateContext);
 
             StaticImage overrideImage = updateContext.isLoading() && property.isLoadingReplaceImage() ? StaticImage.LOADING_IMAGE_PATH : null;
             if(property.hasDynamicImage()) // app download image

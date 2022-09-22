@@ -52,7 +52,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        Button button = new NavigatorImageButton(element);
+        Button button = new NavigatorImageButton(element, verticalTextAlign);
         button.addStyleName("nav-item");
         button.addStyleName("nav-link");
         button.addStyleName("link-dark");

@@ -75,8 +75,8 @@ public class StaticImage extends BaseStaticImage {
     public static final StaticImage LOADING_BAR = new StaticImage("loading_bar.png");
     public static final StaticImage LOADING_ASYNC = new StaticImage("fa-solid fa-spinner fa-spin", "loading_async.gif");
 
-    public static final StaticImage SORTUP = new StaticImage("fa-solid fa-sort-up", "arrowup.png");
-    public static final StaticImage SORTDOWN = new StaticImage("fa-solid fa-sort-down", "arrowdown.png");
+    public static final StaticImage SORTUP = new StaticImage("fa-solid fa-arrow-up-short-wide", "arrowup.png");
+    public static final StaticImage SORTDOWN = new StaticImage("fa-solid fa-arrow-down-short-wide", "arrowdown.png");
 
     public static final StaticImage EXECUTE = new StaticImage("bi bi-play", "action.png");
     public static final StaticImage EMPTY = new StaticImage("empty.png");
