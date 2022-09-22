@@ -22,42 +22,6 @@ import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
 public class PopupPanel extends ComplexPanel {
 
-    static class ResizeAnimation {
-        private PopupPanel curPanel;
-
-        public ResizeAnimation(PopupPanel panel) {
-            this.curPanel = panel;
-        }
-
-        /**
-         * Open or close the content. This method always called immediately after
-         * the PopupPanel showing state has changed, so we base the animation on the
-         * current state.
-         *
-         * @param showing true if the popup is showing, false if not
-         */
-        public void setState(boolean showing) {
-            // Update the logical state.
-            curPanel.showing = showing;
-            curPanel.updateHandlers();
-
-            if (showing) {
-                // Set the position attribute, and then attach to the DOM. Otherwise,
-                // the PopupPanel will appear to 'jump' from its static/relative
-                // position to its absolute position (issue #1231).
-                curPanel.getElement().getStyle().setProperty("position", "absolute");
-                if (curPanel.topPosition != -1) {
-                    curPanel.setPopupPosition(curPanel.leftPosition, curPanel.topPosition);
-                }
-                RootPanel.get().add(curPanel);
-            } else {
-                RootPanel.get().remove(curPanel);
-            }
-            curPanel.getElement().getStyle().setProperty("overflow", "visible");
-
-        }
-    }
-
     private ArrayList<MenuItem> items = new ArrayList<>();
 
     private MenuItem selectedItem;
@@ -70,11 +34,6 @@ public class PopupPanel extends ComplexPanel {
     private int leftPosition = -1;
 
     private HandlerRegistration nativePreviewHandlerRegistration;
-
-    /**
-     * The {@link ResizeAnimation} used to open and close the {@link PopupPanel}s.
-     */
-    private ResizeAnimation resizeAnimation = new ResizeAnimation(this);
 
     // The top style attribute in pixels
     private int topPosition = -1;
@@ -99,7 +58,7 @@ public class PopupPanel extends ComplexPanel {
         if (!isShowing()) {
             return;
         }
-        resizeAnimation.setState(false);
+        setState(false);
     }
 
     public boolean isShowing() {
@@ -160,7 +119,7 @@ public class PopupPanel extends ComplexPanel {
             // since PopupPanel is a Widget, its legal.
             this.removeFromParent();
         }
-        resizeAnimation.setState(true);
+        setState(true);
     }
 
     /**
@@ -600,6 +559,27 @@ public class PopupPanel extends ComplexPanel {
             return true;
         }
         return false;
+    }
+
+    public void setState(boolean showing) {
+        // Update the logical state.
+        this.showing = showing;
+        updateHandlers();
+
+        if (showing) {
+            // Set the position attribute, and then attach to the DOM. Otherwise,
+            // the PopupPanel will appear to 'jump' from its static/relative
+            // position to its absolute position (issue #1231).
+            getElement().getStyle().setProperty("position", "absolute");
+            if (topPosition != -1) {
+                setPopupPosition(leftPosition, topPosition);
+            }
+            RootPanel.get().add(this);
+        } else {
+            RootPanel.get().remove(this);
+        }
+        getElement().getStyle().setProperty("overflow", "visible");
+
     }
 
     private class MenuItem extends SimplePanel {
