@@ -641,13 +641,10 @@ public class PopupPanel extends ComplexPanel {
         return element;
     }
 
-    private static final String STYLENAME_DEFAULT = "item";
-
     private LIElement createLIElement(String text, boolean interactive) {
         LIElement element = Document.get().createLIElement();
         element.setInnerHTML(text);
         element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
-        element.addClassName(STYLENAME_DEFAULT);
         return element;
     }
 
@@ -655,7 +652,6 @@ public class PopupPanel extends ComplexPanel {
         LIElement element = Document.get().createLIElement();
         element.appendChild(panel.getElement());
         element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
-        element.addClassName(STYLENAME_DEFAULT);
         return element;
     }
 }

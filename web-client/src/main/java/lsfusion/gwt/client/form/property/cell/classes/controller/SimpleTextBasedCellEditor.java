@@ -347,7 +347,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 suggestBox.updateDecoration(true);
 
                 //disable selection while loading
-                suggestBox.display.clearSelectedItem();
+                suggestBox.clearSelectedItem();
 
                 if (emptyQuery) { // to show empty popup immediately
                     // add timer to avoid blinking when empty popup is followed by non-empty one
@@ -456,12 +456,12 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             public boolean isDisplayStringHTML() {
                 return true;
             }
-        }, element, parent, new DefaultSuggestionDisplayString(), suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
+        }, element, parent, suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
             @Override
             public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                 // canceling query
 //                    assert isThisCellEditor(); // can be broken when for example tab is changed, it sets display to none before blur occurs
-                if (isLoading())
+                if (isLoading)
                     editManager.getAsyncValues(null, new AsyncCallback<Pair<ArrayList<GAsync>, Boolean>>() {
                         @Override
                         public void onFailure(Throwable caught) {
@@ -501,36 +501,17 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     private class CustomSuggestBox extends SuggestBox {
-        private DefaultSuggestionDisplayString display;
-        private List<String> latestSuggestions = new ArrayList<>();
-
-        public CustomSuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, DefaultSuggestionDisplayString display, SuggestionCallback callback) {
-            super(oracle, inputElement, display, completionType.isAnyStrict(), callback);
-            this.display = display;
+        public CustomSuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, SuggestionCallback callback) {
+            super(oracle, inputElement, completionType.isAnyStrict(), callback);
             setBottomPanel(createBottomPanel(parent));
         }
 
-        public void setLatestSuggestions(List<String> latestSuggestions) {
-            this.latestSuggestions = latestSuggestions;
-        }
-
-        public boolean isValidValue(String value) {
-            return value.isEmpty() || latestSuggestions.contains(value);
-        }
-
-        public void hideSuggestions() {
-            display.hideSuggestions();
-        }
-
-        protected boolean isLoading() {
-            return display.isLoading;
-        }
+        public boolean isLoading;
         public void updateDecoration(boolean isLoading) {
-            display.updateDecoration(isLoading);
-        }
-
-        public Element getPopupElement() {
-            return display.getPopupElement();
+            if (this.isLoading != isLoading) {
+                refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : null);
+                this.isLoading = isLoading;
+            }
         }
 
         @Override
@@ -539,15 +520,15 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
             if (!handler.consumed && BLUR.equals(handler.event.getType())) {
                 //restore focus and ignore blur if refresh button pressed
-                if (display.isRefreshButtonPressed()) {
-                    display.setRefreshButtonPressed(false);
+                if (refreshButtonPressed) {
+                    refreshButtonPressed = false;
                     handler.consume();
                     focus();
                 }
             }
         }
 
-        private GToolbarButton refreshButton;
+        private SuggestPopupButton refreshButton;
         private boolean refreshButtonPressed;
 
         private FlexPanel createBottomPanel(Element parent) {
@@ -609,47 +590,6 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 bottomPanel.add(tip);
             }
             return bottomPanel;
-        }
-    }
-
-    private class DefaultSuggestionDisplayString extends SuggestBox.SuggestionDisplay {
-
-        public boolean isLoading;
-        public void updateDecoration(boolean isLoading) {
-            if (this.isLoading != isLoading) {
-                suggestBox.refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : null);
-                this.isLoading = isLoading;
-            }
-        }
-
-        private void updateSuggestBox() {
-            if (!completionType.isAnyStrict()) {
-                suggestBox.setSelection(getCurrentSelection());
-            }
-        }
-
-        @Override
-        protected void moveSelectionDown() {
-            super.moveSelectionDown();
-            updateSuggestBox();
-        }
-
-        @Override
-        protected void moveSelectionUp() {
-            super.moveSelectionUp();
-            updateSuggestBox();
-        }
-
-        public boolean isRefreshButtonPressed() {
-            return suggestBox.refreshButtonPressed;
-        }
-
-        public void setRefreshButtonPressed(boolean refreshButtonPressed) {
-            suggestBox.refreshButtonPressed = refreshButtonPressed;
-        }
-
-        public Element getPopupElement() {
-            return getPopupPanel().getElement();
         }
     }
 

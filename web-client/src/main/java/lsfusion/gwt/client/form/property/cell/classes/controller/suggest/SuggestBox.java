@@ -1,18 +1,3 @@
-/*
- * Copyright 2009 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package lsfusion.gwt.client.form.property.cell.classes.controller.suggest;
 
 import com.google.gwt.dom.client.BrowserEvents;
@@ -31,135 +16,109 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class SuggestBox {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
-    /**
-     * The callback used when a user selects a {@link Suggestion}.
-     */
-    public interface SuggestionCallback {
-        void onSuggestionSelected(Suggestion suggestion);
-    }
+    private List<String> latestSuggestions = new ArrayList<>();
 
-    public static class SuggestionDisplay {
-
-        private final PopupPanel suggestionPopup;
-
-        /**
-         * We need to keep track of the last {@link SuggestBox} because it acts as
-         * an autoHide partner for the {@link PopupPanel}. If we use the same
-         * display for multiple {@link SuggestBox}, we need to switch the autoHide
-         * partner.
-         */
-        private Element lastSuggestElement = null;
-
-        public SuggestionDisplay() {
-            suggestionPopup = new PopupPanel();
-        }
-
-        public void hideSuggestions() {
-            suggestionPopup.hide();
-        }
-
-        private boolean isSuggestionListShowing() {
-            return suggestionPopup.isShowing();
-        }
-
-        protected Suggestion getCurrentSelection() {
-            if (isSuggestionListShowing()) {
-                return suggestionPopup.getSelectedItemSuggestion();
-            } else {
-                return null;
-            }
-        }
-
-        /**
-         * Get the {@link PopupPanel} used to display suggestions.
-         *
-         * @return the popup panel
-         */
-        protected PopupPanel getPopupPanel() {
-            return suggestionPopup;
-        }
-
-        protected void moveSelectionDown() {
-            if (isSuggestionListShowing()) {
-                suggestionPopup.moveSelectionDown();
-            }
-        }
-
-        protected void moveSelectionUp() {
-            if (isSuggestionListShowing()) {
-                suggestionPopup.moveSelectionUp();
-            }
-        }
-
-        public void clearSelectedItem() {
-            suggestionPopup.clearSelectedItem();
-        }
-
-        protected void showSuggestions(final Element suggestElement, boolean emptyQuery, Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final SuggestionCallback callback) {
-            suggestionPopup.clearItems();
-
-            if (suggestions.isEmpty()) {
-                //show empty item for initial loading
-                suggestionPopup.addTextItem(emptyQuery ? "" : messages.noResults());
-            }
-
-            for (final Suggestion suggestion : suggestions) {
-                suggestionPopup.addItem(suggestion, callback);
-            }
-
-            suggestionPopup.addBottomPanelItem(bottomPanel);
-
-            if (isAutoSelectEnabled && suggestions.size() > 0) {
-                suggestionPopup.selectFirstItem();
-            }
-
-            // Link the popup autoHide to the TextBox.
-            if (lastSuggestElement != suggestElement) {
-                // If the suggest box has changed, free the old one first.
-                if (lastSuggestElement != null) {
-                    assert false;
-                    suggestionPopup.removeAutoHidePartner(lastSuggestElement);
-                }
-                lastSuggestElement = suggestElement;
-                suggestionPopup.addAutoHidePartner(suggestElement);
-            }
-
-            suggestionPopup.setPopupPositionAndShow(suggestElement);
-        }
-    }
+    private Element lastSuggestElement = null;
 
     private boolean selectsFirstItem = true;
     private final SuggestOracle oracle;
     private String currentText;
-    private final SuggestionDisplay display;
+    private final PopupPanel suggestionPopup;
     private final InputElement inputElement;
     private FlexPanel bottomPanel;
     private final boolean strict;
     private final Callback callback = new Callback() {
         public void onSuggestionsReady(Request request, Response response) {
-            display.showSuggestions(inputElement, request.getQuery() == null, response.getSuggestions(), selectsFirstItem, bottomPanel, suggestionCallback);
+            showSuggestions(inputElement, request.getQuery() == null, response.getSuggestions(), selectsFirstItem, bottomPanel, suggestionCallback);
         }
     };
+
+    public interface SuggestionCallback {
+        void onSuggestionSelected(Suggestion suggestion);
+    }
+
     private final SuggestionCallback suggestionCallback;
 
-    public SuggestBox(SuggestOracle oracle, InputElement inputElement, SuggestionDisplay suggestDisplay, boolean strict, SuggestionCallback callback) {
+    public SuggestBox(SuggestOracle oracle, InputElement inputElement, boolean strict, SuggestionCallback callback) {
+        this.oracle = oracle;
         this.inputElement = inputElement;
-        this.display = suggestDisplay;
         this.strict = strict;
-        suggestionCallback = suggestion -> {
+
+        this.suggestionPopup = new PopupPanel();
+        this.suggestionCallback = suggestion -> {
             focus();
             setNewSelection(suggestion);
 
             callback.onSuggestionSelected(suggestion);
         };
+    }
 
-        this.oracle = oracle;
+    protected Suggestion getCurrentSelection() {
+        if (isSuggestionListShowing()) {
+            return suggestionPopup.getSelectedItemSuggestion();
+        } else {
+            return null;
+        }
+    }
+
+    public Element getPopupElement() {
+        return suggestionPopup.getElement();
+    }
+
+    public void clearSelectedItem() {
+        suggestionPopup.clearSelectedItem();
+    }
+
+    protected void showSuggestions(final Element suggestElement, boolean emptyQuery, Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final SuggestionCallback callback) {
+        suggestionPopup.clearItems();
+
+        if (suggestions.isEmpty()) {
+            //show empty item for initial loading
+            suggestionPopup.addTextItem(emptyQuery ? "" : messages.noResults());
+        }
+
+        for (final Suggestion suggestion : suggestions) {
+            suggestionPopup.addItem(suggestion, callback);
+        }
+
+        suggestionPopup.addBottomPanelItem(bottomPanel);
+
+        if (isAutoSelectEnabled && suggestions.size() > 0) {
+            suggestionPopup.selectFirstItem();
+        }
+
+        // Link the popup autoHide to the TextBox.
+        if (lastSuggestElement != suggestElement) {
+            // If the suggest box has changed, free the old one first.
+            if (lastSuggestElement != null) {
+                assert false;
+                suggestionPopup.removeAutoHidePartner(lastSuggestElement);
+            }
+            lastSuggestElement = suggestElement;
+            suggestionPopup.addAutoHidePartner(suggestElement);
+        }
+
+        suggestionPopup.setPopupPositionAndShow(suggestElement);
+    }
+
+    public void setLatestSuggestions(List<String> latestSuggestions) {
+        this.latestSuggestions = latestSuggestions;
+    }
+
+    public boolean isValidValue(String value) {
+        return value.isEmpty() || latestSuggestions.contains(value);
+    }
+
+    public void hideSuggestions() {
+        suggestionPopup.hide();
     }
 
     public void setBottomPanel(FlexPanel bottomPanel) {
@@ -167,7 +126,7 @@ public class SuggestBox {
     }
 
     public boolean isSuggestionListShowing() {
-        return display.isSuggestionListShowing();
+        return suggestionPopup.isShowing();
     }
 
     public void setAutoSelectEnabled(boolean selectsFirstItem) {
@@ -201,11 +160,6 @@ public class SuggestBox {
         return SimpleTextBasedCellEditor.getInputValue(inputElement);
     }
 
-//  private void addEventsToTextBox() {
-//    inputElement.addKeyDownHandler(this::onKeyDown);
-//    inputElement.addKeyUpHandler(this::onKeyUp);
-//  }
-
     public void onBrowserEvent(EventHandler handler) {
         String type = handler.event.getType();
 
@@ -223,20 +177,22 @@ public class SuggestBox {
     public void onKeyDown(EventHandler handler) {
         switch (handler.event.getKeyCode()) {
             case KeyCodes.KEY_DOWN:
-                display.moveSelectionDown();
                 if (isSuggestionListShowing()) {
+                    suggestionPopup.moveSelectionDown();
+                    updateSuggestBox();
                     handler.consume();
                 }
                 break;
             case KeyCodes.KEY_UP:
-                display.moveSelectionUp();
                 if (isSuggestionListShowing()) {
+                    suggestionPopup.moveSelectionUp();
+                    updateSuggestBox();
                     handler.consume();
                 }
                 break;
             case KeyCodes.KEY_ENTER:
             case KeyCodes.KEY_TAB:
-                Suggestion suggestion = display.getCurrentSelection();
+                Suggestion suggestion = getCurrentSelection();
                 if (suggestion != null && strict) {
                     setNewSelection(suggestion);
                 }
@@ -251,6 +207,12 @@ public class SuggestBox {
         }
     }
 
+    private void updateSuggestBox() {
+        if (!strict) {
+            setSelection(getCurrentSelection());
+        }
+    }
+
     /**
      * Set the new suggestion in the text box.
      *
@@ -258,7 +220,7 @@ public class SuggestBox {
      */
     private void setNewSelection(Suggestion curSuggestion) {
         setSelection(curSuggestion);
-        display.hideSuggestions();
+        suggestionPopup.hide();
     }
 
     public void setSelection(Suggestion suggestion) {
