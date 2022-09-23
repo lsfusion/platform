@@ -159,14 +159,18 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
 
             public void actionPerformed(ActionEvent ae) {
                 if (!logicsSupplier.getFormController().isEditing()) {
-                    RmiQueue.runAction(() -> resetAllConditions());
+                    RmiQueue.runAction(() -> resetConditions());
                 }
             }
         };
     }
 
     public void toggleControlsVisible() {
-        controlsVisible = !controlsVisible;
+        setControlsVisible(!controlsVisible);
+    }
+    
+    public void setControlsVisible(boolean visible) {
+        controlsVisible = visible;
 
         if (!conditionViews.isEmpty()) {
             for (FilterConditionView view : conditionViews.values()) {
@@ -293,16 +297,16 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         conditionViews.remove(condition);
 
         updateConditionsLastState();
+        
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
+        
         conditionsChanged(true);
     }
 
     @Override
     public void resetConditions() {
-        resetAllConditions();
-        toggleControlsVisible();
-    }
-
-    public void resetAllConditions() {
         resetAllConditions(true);
     }
 

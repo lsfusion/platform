@@ -239,7 +239,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public void resetFilters() {
         if (filter != null) {
-            filter.resetAllConditions();
+            filter.resetConditions();
         }
     }
 

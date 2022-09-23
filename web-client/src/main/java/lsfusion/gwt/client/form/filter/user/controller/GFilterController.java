@@ -59,7 +59,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             public ClickHandler getClickHandler() {
                 return event -> {
                     toggleControlsVisible();
-                    updateToolbarButton();
                 };
             }
         };
@@ -90,7 +89,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void toggleControlsVisible() {
-        controlsVisible = !controlsVisible;
+        setControlsVisible(!controlsVisible);
+    }
+    
+    public void setControlsVisible(boolean visible) {
+        controlsVisible = visible;
 
         if (!conditionViews.isEmpty()) {
             for (GFilterConditionView view : conditionViews.values()) {
@@ -102,7 +105,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
         controlsView.setVisible(controlsVisible);
         logicsSupplier.getForm().formLayout.update(-1);
+
+        updateToolbarButton();
     }
+    
     private void updateToolbarButton() {
         toolbarButton.setTitle(controlsVisible ? messages.formFilterHideControls() : messages.formFilterShowControls());
         toolbarButton.showBackground(controlsVisible);
@@ -239,12 +245,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     @Override
     public void resetConditions() {
-        resetAllConditions();
-        toggleControlsVisible();
-        updateToolbarButton();
-    }
-
-    public void resetAllConditions() {
         resetAllConditions(true);
     }
 
@@ -258,6 +258,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         removeConditionView(filter);
         GFilterConditionView filterView = conditionViews.remove(filter);
         filterView.isRemoved = true;
+
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
     }
 
     private void updateConditionsLastState() {
