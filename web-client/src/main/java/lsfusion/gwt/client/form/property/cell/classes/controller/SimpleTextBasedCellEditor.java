@@ -10,7 +10,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
@@ -108,7 +107,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
             parent.addClassName("property-hide-toolbar");
 
-            oldStringValue = getInputValue(parent);
+            oldStringValue = getInputValue();
             handler.consume(true, false);
         } else {
             onInputReady(parent, oldValue);
@@ -164,7 +163,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     public static void setInputValue(InputElement element, String value) {
         element.setValue(value);
     }
-    private String getInputValue(Element parent) {
+    private String getInputValue() {
         return getInputValue(inputElement);
     }
     public static String getInputValue(InputElement element) {
@@ -206,7 +205,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     private boolean checkInputValidity(Element parent, String stringToAdd) {
         int cursorPosition = textBoxImpl.getCursorPos(inputElement);
         int selectionLength = textBoxImpl.getSelectionLength(inputElement);
-        String currentValue = getInputValue(parent);
+        String currentValue = getInputValue();
         String firstPart = currentValue == null ? "" : currentValue.substring(0, cursorPosition);
         String secondPart = currentValue == null ? "" : currentValue.substring(cursorPosition + selectionLength);
 
@@ -295,7 +294,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     public Object getValue(Element parent, Integer contextAction) {
-        String stringValue = getInputValue(parent);
+        String stringValue = getInputValue();
         if(hasList && completionType.isStrict() && contextAction == null && !suggestBox.isValidValue(stringValue))
             return RequestValueCellEditor.invalid;
         try {
@@ -311,24 +310,15 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     private CustomSuggestBox createSuggestBox(InputElement element, Element parent) {
-        return new CustomSuggestBox(new SuggestOracle() {
+        return new CustomSuggestBox(new SuggestBox.SuggestOracle() {
             private Timer delayTimer;
-            private Request currentRequest; // current pending request
-            private Callback currentCallback;
+            private SuggestBox.Request currentRequest; // current pending request
+            private SuggestBox.Callback currentCallback;
 
             private String prevSucceededEmptyQuery;
 
             @Override
-            public void requestDefaultSuggestions(Request request, Callback callback) {
-                requestAsyncSuggestions(request, callback);
-            }
-
-            @Override
-            public void requestSuggestions(Request request, Callback callback) {
-                requestAsyncSuggestions(request, callback);
-            }
-
-            private void requestAsyncSuggestions(Request request, Callback callback) {
+            public void requestSuggestions(SuggestBox.Request request, SuggestBox.Callback callback) {
                 currentRequest = request;
                 currentCallback = callback;
 
@@ -337,13 +327,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             }
 
             private void updateAsyncValues() {
-                final Request request = currentRequest;
+                final SuggestBox.Request request = currentRequest;
                 currentRequest = null;
-                final Callback callback = currentCallback;
+                final SuggestBox.Callback callback = currentCallback;
                 currentCallback = null;
 
-                boolean emptyQuery = request.getQuery() == null;
-                String query = nvl(request.getQuery(), "");
+                boolean emptyQuery = request.query == null;
+                String query = nvl(request.query, "");
                 if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
                     return;
 
@@ -358,7 +348,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                         @Override
                         public void run() {
                             if (isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
-                                callback.onSuggestionsReady(request, new Response(new ArrayList<>()));
+                                callback.onSuggestionsReady(request, new SuggestBox.Response(new ArrayList<>(), true));
                                 setMinWidth(element, suggestBox, false);
                             }
                         }
@@ -392,10 +382,10 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                             boolean succeededEmpty = false;
                             if(result.first != null) {
                                 List<String> rawSuggestions = new ArrayList<>();
-                                List<Suggestion> suggestionList = new ArrayList<>();
+                                ArrayList<SuggestBox.Suggestion> suggestionList = new ArrayList<>();
                                 for (GAsync suggestion : result.first) {
                                     rawSuggestions.add(suggestion.rawString);
-                                    suggestionList.add(new Suggestion() {
+                                    suggestionList.add(new SuggestBox.Suggestion() {
                                         @Override
                                         public String getDisplayString() {
                                             return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
@@ -408,7 +398,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                                     });
                                 }
                                 suggestBox.setLatestSuggestions(rawSuggestions);
-                                callback.onSuggestionsReady(request, new Response(suggestionList));
+                                callback.onSuggestionsReady(request, new SuggestBox.Response(suggestionList, false));
                                 setMinWidth(element, suggestBox, true);
 
                                 succeededEmpty = suggestionList.isEmpty();
@@ -454,11 +444,6 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
-
-            @Override
-            public boolean isDisplayStringHTML() {
-                return true;
-            }
         }, element, parent, suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
             @Override
             public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly

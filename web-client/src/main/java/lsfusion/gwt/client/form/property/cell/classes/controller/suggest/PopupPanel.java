@@ -12,7 +12,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.SuggestOracle;
 import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.util.ArrayList;
@@ -382,7 +381,7 @@ public class PopupPanel extends ComplexPanel {
         addItem(new MenuItem(null, null, bottomPanel, false));
     }
 
-    public void addItem(SuggestOracle.Suggestion suggestion, SuggestBox.SuggestionCallback callback) throws IndexOutOfBoundsException {
+    public void addItem(SuggestBox.Suggestion suggestion, SuggestBox.SuggestionCallback callback) throws IndexOutOfBoundsException {
         addItem(new MenuItem(suggestion, () -> callback.onSuggestionSelected(suggestion), suggestion.getDisplayString(), true));
     }
 
@@ -507,7 +506,7 @@ public class PopupPanel extends ComplexPanel {
         }
     }
 
-    protected SuggestOracle.Suggestion getSelectedItemSuggestion() {
+    protected SuggestBox.Suggestion getSelectedItemSuggestion() {
         return selectedItem != null ? selectedItem.suggestion : null;
     }
 
@@ -583,21 +582,21 @@ public class PopupPanel extends ComplexPanel {
     }
 
     private class MenuItem extends SimplePanel {
-        private SuggestOracle.Suggestion suggestion;
+        private SuggestBox.Suggestion suggestion;
         private Scheduler.ScheduledCommand command;
         private boolean interactive;
 
         //menu items
-        public MenuItem(SuggestOracle.Suggestion suggestion, Scheduler.ScheduledCommand command, String text, boolean interactive) {
+        public MenuItem(SuggestBox.Suggestion suggestion, Scheduler.ScheduledCommand command, String text, boolean interactive) {
             this(createLIElement(text, interactive), suggestion, command, interactive);
         }
 
         //bottom panel
-        public MenuItem(SuggestOracle.Suggestion suggestion, Scheduler.ScheduledCommand command, FlexPanel panel, boolean interactive) {
+        public MenuItem(SuggestBox.Suggestion suggestion, Scheduler.ScheduledCommand command, FlexPanel panel, boolean interactive) {
             this(createLIElement(panel, interactive), suggestion, command, interactive);
         }
 
-        public MenuItem(LIElement liElement, SuggestOracle.Suggestion suggestion, Scheduler.ScheduledCommand command, boolean interactive) {
+        public MenuItem(LIElement liElement, SuggestBox.Suggestion suggestion, Scheduler.ScheduledCommand command, boolean interactive) {
             super(liElement);
             this.suggestion = suggestion;
             this.command = command;

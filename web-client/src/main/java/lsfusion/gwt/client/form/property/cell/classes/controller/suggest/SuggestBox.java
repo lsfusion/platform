@@ -4,11 +4,6 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.SuggestOracle.Callback;
-import com.google.gwt.user.client.ui.SuggestOracle.Request;
-import com.google.gwt.user.client.ui.SuggestOracle.Response;
-import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -35,9 +30,14 @@ public class SuggestBox {
     private final InputElement inputElement;
     private FlexPanel bottomPanel;
     private final boolean strict;
+
+    public interface Callback {
+        void onSuggestionsReady(SuggestBox.Request request, SuggestBox.Response response);
+    }
+    
     private final Callback callback = new Callback() {
         public void onSuggestionsReady(Request request, Response response) {
-            showSuggestions(inputElement, request.getQuery() == null, response.getSuggestions(), selectsFirstItem, bottomPanel, suggestionCallback);
+            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanel, suggestionCallback);
         }
     };
 
@@ -77,12 +77,12 @@ public class SuggestBox {
         suggestionPopup.clearSelectedItem();
     }
 
-    protected void showSuggestions(final Element suggestElement, boolean emptyQuery, Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final SuggestionCallback callback) {
+    protected void showSuggestions(final Element suggestElement, boolean initial, Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final SuggestionCallback callback) {
         suggestionPopup.clearItems();
 
         if (suggestions.isEmpty()) {
             //show empty item for initial loading
-            suggestionPopup.addTextItem(emptyQuery ? "" : messages.noResults());
+            suggestionPopup.addTextItem(initial ? "" : messages.noResults());
         }
 
         for (final Suggestion suggestion : suggestions) {
@@ -139,8 +139,11 @@ public class SuggestBox {
 
     public void showSuggestionList(boolean all) {
         currentText = getCurrentText();
-        if (all) oracle.requestDefaultSuggestions(new Request(null, 20), callback);
-        else refreshSuggestionList();
+        if (all) {
+            oracle.requestSuggestions(new Request(null), callback);
+        } else {
+            refreshSuggestionList();
+        }
     }
 
     public void updateSuggestionList() {
@@ -153,7 +156,7 @@ public class SuggestBox {
     }
 
     public void refreshSuggestionList() {
-        oracle.requestSuggestions(new Request(currentText, 20), callback);
+        oracle.requestSuggestions(new Request(currentText), callback);
     }
 
     public String getCurrentText() {
@@ -226,5 +229,33 @@ public class SuggestBox {
     public void setSelection(Suggestion suggestion) {
         currentText = suggestion != null ? suggestion.getReplacementString() : null;
         SimpleTextBasedCellEditor.setInputValue(inputElement, currentText);
+    }
+
+    public static abstract class SuggestOracle {
+        public abstract void requestSuggestions(SuggestBox.Request request, SuggestBox.Callback callback);
+    }
+
+    public interface Suggestion {
+        String getDisplayString();
+
+        String getReplacementString();
+    }
+    
+    public static class Request {
+        public String query;
+
+        public Request(String query) {
+            this.query = query;
+        }
+    }
+
+    public static class Response {
+        ArrayList<Suggestion> suggestions;
+        boolean initial;
+
+        public Response(ArrayList<Suggestion> suggestions, boolean initial) {
+            this.suggestions = suggestions;
+            this.initial = initial;
+        }
     }
 }
