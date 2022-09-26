@@ -12,7 +12,7 @@ title: 'Оператор EXPORT'
 `exportFormat` может задаваться одним из следующих вариантов:
 
     JSON [CHARSET charsetStr]
-    XML [ATTR] [CHARSET charsetStr]
+    XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
     CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
     XLS [SHEET sheetProperty] [HEADER | NOHEADER]
     XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
@@ -91,6 +91,8 @@ title: 'Оператор EXPORT'
     Ключевые слова, указывающие на присутствие (`HEADER`) или отсутствие (`NOHEADER`) в **CSV**, **XLS**, **XLSX** файле строки заголовка. По умолчанию используется `NOHEADER`.
 
     При использовании опции `NOHEADER`, если имя колонки одно из предопределенных (`A`, `B`, ..., `Z`, `AA`, ...,  `AE`), то оно экспортируются в колонку с соответствующем номером, и при этом следующие колонки экспортируются в колонки следующие по порядку за этой колонкой.
+
+    Имеет другое назначение для **XML**: с опцией `HEADER` файл результата содержит первую строку <?xml version="1.0" encoding="UTF-8"?>. С опцией `NOHEADER` экспортируется без этой строки. По умолчанию используется `HEADER`.
 
 - `ESCAPE | NOESCAPE`
 

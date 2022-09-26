@@ -2452,7 +2452,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
     List<LPWithParams> orderProperties = new ArrayList<>();
     List<Boolean> orderDirections = new ArrayList<>();
 	String separator = null;
-	boolean hasHeader = false;
+	Boolean hasHeader = null;
 	boolean noEscape = false;
 	String charset = null;
 	LPWithParams sheetName = null;
@@ -2464,7 +2464,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 @after {
 	if (inMainParseState()) {
 			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
-			                                                 sheetName, root, tag, separator, !hasHeader, noEscape, selectTop, charset, attr, orderProperties, orderDirections);
+			                                                 sheetName, root, tag, separator, hasHeader, noEscape, selectTop, charset, attr, orderProperties, orderDirections);
 	}
 } 
 	:	'EXPORT'
@@ -3453,7 +3453,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 
     FormIntegrationType format = null;
 	String separator = null;
-	boolean hasHeader = false;
+	Boolean hasHeader = null;
 	boolean noEscape = false;
 	String charset = null;
 	boolean attr = false;
@@ -3463,7 +3463,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, !hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages,
+		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
 }
@@ -3492,13 +3492,14 @@ contextFiltersClause[List<TypedParameter> oldContext, List<TypedParameter> objec
         (',' decl=propertyExpression[context, true] { contextFilters.add($decl.property); })*
     ;
 
-exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, boolean hasHeader, boolean noEscape, String charset, LPWithParams sheetName, LPWithParams root, LPWithParams tag, boolean attr]
+exportSourceFormat [List<TypedParameter> context, boolean dynamic] returns [FormIntegrationType format, String separator, Boolean hasHeader, boolean noEscape, String charset, LPWithParams sheetName, LPWithParams root, LPWithParams tag, boolean attr]
 	:	'CSV' { $format = FormIntegrationType.CSV; } (separatorVal = stringLiteral { $separator = $separatorVal.val; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? (noEscapeVal = noEscapeOption { $noEscape = $noEscapeVal.noEscape; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
     |	'DBF' { $format = FormIntegrationType.DBF; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
     |   'XLS' { $format = FormIntegrationType.XLS; } (sheet = sheetExpression[context, dynamic] { $sheetName = $sheet.sheetName; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
     |   'XLSX' { $format = FormIntegrationType.XLSX; } (sheet = sheetExpression[context, dynamic] { $sheetName = $sheet.sheetName; })? (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })?
 	|	'JSON' { $format = FormIntegrationType.JSON; } ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
-	|	'XML' { $format = FormIntegrationType.XML; } ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })? ('TAG' tagProperty = propertyExpression[context, dynamic] {$tag = $tagProperty.property; })? ('ATTR' { $attr = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
+	|	'XML' { $format = FormIntegrationType.XML; } (hasHeaderVal = hasHeaderOption { $hasHeader = $hasHeaderVal.hasHeader; })? ('ROOT' rootProperty = propertyExpression[context, dynamic] {$root = $rootProperty.property; })?
+	                                                 ('TAG' tagProperty = propertyExpression[context, dynamic] {$tag = $tagProperty.property; })? ('ATTR' { $attr = true; })? ('CHARSET' charsetVal = stringLiteral { $charset = $charsetVal.val; })?
 	|	'TABLE' { $format = FormIntegrationType.TABLE; }
 	;
 
@@ -5188,7 +5189,7 @@ metaCodeLiteral returns [String sid]
 metaCodeStringLiteral returns [String val]
 	:	slit=multilineStringLiteral { $val = $slit.val; }
 	;
-	
+
 metaCodeNonStringLiteral
 	:	UINT_LITERAL
 	|	UNUMERIC_LITERAL
@@ -5477,9 +5478,9 @@ colorLiteral returns [Color val]
 	;
 
 multilineStringLiteral returns [String val]
-	:	s=STRING_LITERAL { $val = self.removeCarriageReturn($s.text); } 
+	:	s=STRING_LITERAL { $val = self.removeCarriageReturn($s.text); }
 	;
-	
+
 stringLiteral returns [String val]
 	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.val); }
     |   id=ID { $val = null; }
@@ -5625,16 +5626,16 @@ fragment NEXT_ID_LETTER		: ('a'..'z'|'A'..'Z'|'_'|'0'..'9');
 fragment OPEN_CODE_BRACKET	: '<{';
 fragment CLOSE_CODE_BRACKET : '}>';
 
-fragment STR_LITERAL_CHAR 
-	:	('\\'.) 
+fragment STR_LITERAL_CHAR
+	:	('\\'.)
 	|	~('\''|'\\'|'$')
-	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$' 
+	| 	{input.LA(1) == '$' && input.LA(2) != '{'}?=> '$'
 	;
 
 fragment ESCAPED_STR_LITERAL_CHAR:	('\\'.) | ~('\\'|'{'|'}');
-fragment BLOCK: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}'; 
-fragment INTERPOLATION_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';	 
-fragment STRING_LITERAL_FRAGMENT:	'\'' (INTERPOLATION_BLOCK | STR_LITERAL_CHAR)* '\''; 
+fragment BLOCK: '{' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';
+fragment INTERPOLATION_BLOCK: '${' (BLOCK | ESCAPED_STR_LITERAL_CHAR)* '}';
+fragment STRING_LITERAL_FRAGMENT:	'\'' (INTERPOLATION_BLOCK | STR_LITERAL_CHAR)* '\'';
 
 fragment ID_FRAGMENT : FIRST_ID_LETTER NEXT_ID_LETTER*;
 fragment NEXTID_FRAGMENT : NEXT_ID_LETTER+;

@@ -588,24 +588,24 @@ public abstract class LogicsModule {
     }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                                                       FormIntegrationType staticType, boolean noHeader, String separator, boolean noEscape, Integer selectTop, String charset,
+                                                       FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape, Integer selectTop, String charset,
                                                        LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass sheetName, ValueClass root, ValueClass tag) {
         ExportAction<O> exportAction;
         switch(staticType) {
             case XML:
-                exportAction = new ExportXMLAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, charset, root, tag);
+                exportAction = new ExportXMLAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, hasHeader != null && !hasHeader, charset, root, tag);
                 break;
             case JSON:
                 exportAction = new ExportJSONAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, noHeader, separator, noEscape);
+                exportAction = new ExportCSVAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, hasHeader == null || !hasHeader, separator, noEscape);
                 break;
             case XLS:
-                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, noHeader, sheetName);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, hasHeader == null || !hasHeader, sheetName);
                 break;
             case XLSX:
-                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, true, noHeader, sheetName);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, true, hasHeader == null || !hasHeader, sheetName);
                 break;
             case DBF:
                 exportAction = new ExportDBFAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset);
@@ -733,7 +733,7 @@ public abstract class LogicsModule {
     // ------------------- Export property action ----------------- //
     protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<String> aliases, List<Boolean> literals, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
-                                        boolean noHeader, boolean noEscape, Integer selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
+                                        Boolean hasHeader, boolean noEscape, Integer selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, aliases, literals, orders, hasWhere, params);
         IntegrationFormEntity<PropertyInterface> form = integrationForm.form;
 
@@ -744,7 +744,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, noHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, sheetName, root, tag);
+        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, sheetName, root, tag);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LP<?> whereLCP,
