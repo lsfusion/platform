@@ -230,7 +230,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
                 GInputListAction action = inputList.actions[i];
                 if (enable) {
-                    actions.add(new QuickAccessAction(action.action, action.keyStroke, i, hover));
+                    actions.add(new QuickAccessAction(action.action, action.keyStroke, action.index, hover));
                 }
             }
         }
@@ -385,7 +385,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                     if (keyStroke == null)
                         keyStroke = getKeyStroke(editEvent);
                     if (keyStroke.equals(action.keyStroke) && bindEditing(action.editingBindingMode, isEditing)) {
-                        return i;
+                        return action.index;
                     }
                 }
             }
@@ -407,7 +407,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 GInputListAction action = actions[i];
                 //addDialogInputAProp from server
                 if (action.action.equals("dialog")) {
-                    return i;
+                    return action.index;
                 }
             }
         }

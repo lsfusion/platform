@@ -536,17 +536,17 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             });
 
             for(int i = 0; i < actions.length; i++) {
-                int index = i;
-                SuggestPopupButton actionButton = new SuggestPopupButton(actions[index].action + ".png") {
+                GInputListAction action = actions[i];
+                SuggestPopupButton actionButton = new SuggestPopupButton(action.action + ".png") {
                     @Override
                     public ClickHandler getClickHandler() {
-                        return event -> validateAndCommit(parent, index, true, CommitReason.OTHER);
+                        return event -> validateAndCommit(parent, action.index, true, CommitReason.OTHER);
                     }
                 };
                 buttonsPanel.add(actionButton);
 
-                String tooltip = property.getQuickActionTooltipText(actions[index].keyStroke);
-                if(tooltip != null) {
+                String tooltip = property.getQuickActionTooltipText(action.keyStroke);
+                if (tooltip != null) {
                     TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
                         public String getTooltip() {
                             return tooltip;

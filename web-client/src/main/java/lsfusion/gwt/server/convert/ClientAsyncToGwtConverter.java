@@ -48,7 +48,8 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
             quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));
         }
         return new GInputListAction(clientInputListAction.action, convertOrCast(clientInputListAction.asyncExec),
-                convertOrCast(clientInputListAction.keyStroke), convertOrCast(clientInputListAction.editingBindingMode), quickAccessList);
+                convertOrCast(clientInputListAction.keyStroke), convertOrCast(clientInputListAction.editingBindingMode),
+                quickAccessList, clientInputListAction.index);
     }
 
     @Converter(from = KeyStroke.class)

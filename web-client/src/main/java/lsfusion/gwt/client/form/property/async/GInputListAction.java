@@ -12,16 +12,18 @@ public class GInputListAction implements Serializable {
     public GKeyStroke keyStroke;
     public GBindingMode editingBindingMode;
     public ArrayList<GQuickAccess> quickAccessList;
+    public int index;
 
     @SuppressWarnings("unused")
     public GInputListAction() {
     }
 
-    public GInputListAction(String action, GAsyncEventExec asyncExec, GKeyStroke keyStroke, GBindingMode editingBindingMode, ArrayList<GQuickAccess> quickAccessList) {
+    public GInputListAction(String action, GAsyncEventExec asyncExec, GKeyStroke keyStroke, GBindingMode editingBindingMode, ArrayList<GQuickAccess> quickAccessList, int index) {
         this.action = action;
         this.asyncExec = asyncExec;
         this.keyStroke = keyStroke;
         this.editingBindingMode = editingBindingMode;
         this.quickAccessList = quickAccessList;
+        this.index = index;
     }
 }

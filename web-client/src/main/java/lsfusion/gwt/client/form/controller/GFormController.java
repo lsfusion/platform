@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
@@ -10,7 +9,6 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.ListBox;
@@ -1039,9 +1037,20 @@ public class GFormController implements EditManager {
     private final static GAsyncNoWaitExec asyncExec = new GAsyncNoWaitExec();
 
     private void executePropertyEventAction(Event event, EditContext editContext, GInputList inputList, GUserInputResult value, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        Integer contextAction = value != null ? value.getContextAction() : null;
-        executePropertyEventAction(contextAction != null ? inputList.actions[contextAction].asyncExec : asyncExec,
+        GInputListAction contextAction = getContextAction(inputList, value);
+        executePropertyEventAction(contextAction != null ? contextAction.asyncExec : asyncExec,
                 event, editContext, editContext, actionSID, value != null ? new GPushAsyncInput(value) : null, externalChange, onExec);
+    }
+
+    private GInputListAction getContextAction(GInputList inputList, GUserInputResult value) {
+        Integer contextActionIndex = value != null ? value.getContextAction() : null;
+        if (contextActionIndex != null) {
+            for (GInputListAction action : inputList.actions) {
+                if (action.index == contextActionIndex)
+                    return action;
+            }
+        }
+        return null;
     }
 
     public void asyncOpenForm(GAsyncOpenForm asyncOpenForm, EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
