@@ -10,6 +10,7 @@ import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.LogicsInstance;
+import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -27,6 +28,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnectionContext;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -190,8 +192,8 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
         uiContext.unlockInputContext();
     }
 
-    public InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
-        return uiContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
+    public InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList) {
+        return uiContext.inputUserData(securityProperty, dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
     }
 
     public ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete) {

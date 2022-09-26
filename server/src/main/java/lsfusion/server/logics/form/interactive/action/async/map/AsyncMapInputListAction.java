@@ -14,7 +14,9 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.util.Map;
 
@@ -41,9 +43,9 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
         return new InputListAction(action, Action.getAsyncExec(asyncExec), keyStroke, bindingModesMap, priority, quickAccessList);
     }
 
-    public InputListAction map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+    public InputListAction map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
         // here we can switch from sync to async
-        AsyncEventExec mappedAsyncExec = this.asyncExec != null ? this.asyncExec.map(mapObjects, form, toDraw) : null;
+        AsyncEventExec mappedAsyncExec = this.asyncExec != null ? this.asyncExec.map(mapObjects, form, policy, securityProperty, toDraw) : null;
         if(mappedAsyncExec == null && !PropertyDrawView.defaultSync)
             mappedAsyncExec = AsyncNoWaitExec.instance;
         return new InputListAction(action, mappedAsyncExec, keyStroke, bindingModesMap, priority, quickAccessList);

@@ -9,12 +9,14 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMapEventExec<T> {
 
     public AsyncExec map() {
-        return (AsyncExec) map(MapFact.EMPTYREV(), null, null);
+        return (AsyncExec) map(MapFact.EMPTYREV(), null, null, null, null);
     }
 
     private final static AsyncMapExec RECURSIVE = new AsyncMapExec<PropertyInterface>() {
@@ -40,7 +42,7 @@ public abstract class AsyncMapExec<T extends PropertyInterface> extends AsyncMap
         }
 
         @Override
-        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+        public AsyncEventExec map(ImRevMap<PropertyInterface, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
             return null;
         }
 

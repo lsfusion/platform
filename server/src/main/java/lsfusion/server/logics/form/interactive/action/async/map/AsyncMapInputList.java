@@ -12,7 +12,9 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.util.function.Function;
 
@@ -30,8 +32,8 @@ public class AsyncMapInputList<T extends PropertyInterface> {
         return new InputList(actions.mapListValues((Function<AsyncMapInputListAction<T>, InputListAction>) AsyncMapInputListAction::map).toArray(new InputListAction[actions.size()]), strict);
     }
 
-    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
-        return new InputList(actions.mapListValues(action -> action.map(mapObjects, form, toDraw)).toArray(new InputListAction[actions.size()]), strict);
+    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
+        return new InputList(actions.mapListValues(action -> action.map(mapObjects, form, policy, securityProperty, toDraw)).toArray(new InputListAction[actions.size()]), strict).filter(policy, securityProperty);
     }
 
     public <P extends PropertyInterface> AsyncMapInputList<P> map(ImRevMap<T, P> mapping) {
