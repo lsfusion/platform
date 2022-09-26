@@ -331,9 +331,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
 
     public void conditionsChanged(boolean focusFirstComponent) {
-        if (!controlsVisible) {
-            applyFilters(focusFirstComponent);
-        }
+        applyFilters(focusFirstComponent);
     }
 
     public void applyFilters(boolean focusFirstComponent) {

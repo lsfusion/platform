@@ -277,9 +277,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView) {
-        if (!controlsVisible) {
-            applyFilters(focusFirstComponent, changedView);
-        }
+        applyFilters(focusFirstComponent, changedView);
     }
 
     public void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView) {
