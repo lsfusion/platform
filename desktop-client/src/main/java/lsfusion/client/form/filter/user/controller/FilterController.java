@@ -154,7 +154,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     private void performAddFilterAction(ActionEvent ae) {
         if (!logicsSupplier.getFormController().isEditing()) {
             boolean added = addCondition(ae, false, true);
-            if (added && conditionViews.size() == 1) {
+            if (added) {
                 setControlsVisible(true);
             }
         }

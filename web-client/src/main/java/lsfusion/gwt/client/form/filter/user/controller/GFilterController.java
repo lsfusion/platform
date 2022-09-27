@@ -349,10 +349,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         return !conditionViews.isEmpty();
     }
     
-    public int getConditionsCount() {
-        return conditionViews.size();
-    }
-
     public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent);
     public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
 }
