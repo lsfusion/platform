@@ -1,14 +1,17 @@
 package lsfusion.gwt.client.form.design;
 
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GFixedSize;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.function.Function;
 
 public class GFontMetrics {
     //    private static final HashMap<MetricsCallback, Integer> calculationsInProgress = new HashMap<>();
@@ -111,7 +114,6 @@ public class GFontMetrics {
 //        }
 //    }
 //
-    private static final HashMap<GFontWidthString, FontMeasure> calculatedMeasures = new HashMap<>();
     private static final HashMap<GFont, HashMap<Integer, Integer>> calculatedCharWidth = new HashMap<>();
 
     public static int getCharWidthString(GFont font, int pixelWidth) {
@@ -124,7 +126,7 @@ public class GFontMetrics {
             int delta = 1;
 
             while (delta >= 1) {
-                while (getCalcMeasure(new GFontWidthString(font, GwtSharedUtils.replicate('0', charWidth + delta * 2))).width.getPivotSize() < pixelWidth) {
+                while (getCalcMeasure(new GFontWidthString(font, GwtSharedUtils.replicate('0', charWidth + delta * 2))).first.getPivotSize() < pixelWidth) {
                     delta = delta * 2;
                 }
                 charWidth += delta;
@@ -136,8 +138,9 @@ public class GFontMetrics {
         }
     }
 
-    private static FontMeasure getCalcMeasure(GFontWidthString font) {
-        FontMeasure measure = calculatedMeasures.get(font);
+    private static final HashMap<GFontWidthString, Pair<GSize, GSize>> calculatedMeasures = new HashMap<>();
+    private static Pair<GSize, GSize> getCalcMeasure(GFontWidthString fontWidth) {
+        Pair<GSize, GSize> measure = calculatedMeasures.get(fontWidth);
         if(measure != null)
             return measure;
 
@@ -145,7 +148,16 @@ public class GFontMetrics {
 
         Style style = element.getStyle();
 
-        font.font.apply(style);
+        int fontSize = -1;
+        GFont font = fontWidth.font;
+        if(font != null) {
+            fontSize = font.size;
+            font.apply(style);
+        }
+        if(fontSize <= 0) {
+            fontSize = 12;
+            style.setFontSize(fontSize, Style.Unit.PX);
+        }
 
         style.setDisplay(Style.Display.INLINE_BLOCK);
         style.setPadding(0, Style.Unit.PX);
@@ -162,44 +174,114 @@ public class GFontMetrics {
         if(GFixedSize.VALUE_TYPE != GFixedSize.Type.PX)
             style.setFontSize(GFixedSize.convertFontSize, Style.Unit.PX);
 
-        String string = font.sampleString;
+        String string = fontWidth.sampleString;
         element.setInnerText(string);
         style.setWhiteSpace(string.contains("\n") ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
 
-        final com.google.gwt.dom.client.Element body = RootPanel.getBodyElement();
+        int fFontSize = fontSize;
+        measure = calcSize(element, size -> GSize.getCalcValueSize(size, fFontSize));
+        calculatedMeasures.put(fontWidth, measure);
+        return measure;
+    }
+
+    private static <T> Pair<T, T> calcSize(Element element, Function<Integer, T> sizeCalc) {
+        final Element body = RootPanel.getBodyElement();
         DOM.appendChild(body, element);
 
         try {
             final int width = element.getOffsetWidth();
             final int height = element.getOffsetHeight();
 
-            GSize widthSize = GSize.getCalcValueSize((int) Math.round((double) width)); //.add(GSize.TEMP_PADDING_ADJ_2);
-            GSize heightSize = GSize.getCalcValueSize((int) Math.round((double) height)); //.add(GSize.TEMP_PADDING_ADJ_2);
+            int roundedWidth = (int) Math.round((double) width);
+            int roundedHeight = (int) Math.round((double) height);
 
-            measure = new FontMeasure(widthSize, heightSize);
+            return new Pair<>(sizeCalc.apply(roundedWidth), sizeCalc.apply(roundedHeight));
         } finally {
             element.getParentElement().removeChild(element);
         }
-        calculatedMeasures.put(font, measure);
-        return measure;
     }
 
     public static GSize getStringWidth(GFont font, String widthString) {
-        return getCalcMeasure(new GFontWidthString(font == null ? GFont.DEFAULT_FONT : font, widthString)).width;
+        return getCalcMeasure(new GFontWidthString(font, widthString)).first;
     }
 
     public static GSize getStringHeight(GFont font, String heightString) {
-        return getCalcMeasure(new GFontWidthString(font == null ? GFont.DEFAULT_FONT : font, heightString)).height;
+        return getCalcMeasure(new GFontWidthString(font, heightString)).second;
     }
 
-    private static class FontMeasure {
-        final GSize width;
-        final GSize height;
+    private static class GridParams {
 
-        private FontMeasure(GSize width, GSize height) {
-            this.width = width;
-            this.height = height;
+        private final int lineCount;
+        private final int columnCount;
+        private final boolean hasHeaders;
+        private final boolean hasFooters;
+
+        public GridParams(int lineCount, int columnCount, boolean hasHeaders, boolean hasFooters) {
+            this.lineCount = lineCount;
+            this.columnCount = columnCount;
+            this.hasHeaders = hasHeaders;
+            this.hasFooters = hasFooters;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o || o instanceof GridParams && lineCount == ((GridParams) o).lineCount &&
+                    columnCount == ((GridParams) o).columnCount &&
+                    hasHeaders == ((GridParams) o).hasHeaders &&
+                    hasFooters == ((GridParams) o).hasFooters;
+        }
+
+        @Override
+        public int hashCode() {
+            return (31 * lineCount + columnCount) + (hasHeaders ? 13 : 0) + (hasFooters ? 5 : 0);
+        }
+    }
+    private static final HashMap<GridParams, Pair<GSize, GSize>> calculatedPaddings = new HashMap<>();
+    public static Pair<GSize, GSize> getGridPaddings(int linesCount, int columnCount, boolean hasHeaders, boolean hasFooters) {
+        GridParams gridParams = new GridParams(linesCount, columnCount, hasHeaders, hasFooters);
+        Pair<GSize, GSize> measure = calculatedPaddings.get(gridParams);
+        if(measure != null)
+            return measure;
+
+        TableElement tableElement = Document.get().createTableElement();
+
+        tableElement.getStyle().setProperty("width", "fit-content"); // because bootstrap sets table width to 100%
+        tableElement.addClassName("table");
+
+        if(hasHeaders) {
+            TableSectionElement headerElement = tableElement.createTHead();
+            addCells(headerElement.insertRow(-1), columnCount);
+        }
+
+        TableSectionElement bodyElement = GwtClientUtils.createTBody(tableElement);
+        for(int i = 0; i < linesCount; i++)
+            addCells(bodyElement.insertRow(-1), columnCount);
+
+        if(hasFooters) {
+            TableSectionElement headerElement = tableElement.createTHead();
+            addCells(headerElement.insertRow(-1), columnCount);
+        }
+
+        int remSize = getRemSize();
+        measure = calcSize(tableElement, size -> GSize.getCalcComponentSize(size, remSize));
+        calculatedPaddings.put(gridParams, measure);
+        return measure;
+    }
+
+    private static void addCells(TableRowElement headerRow, int cellsCount) {
+        for(int i = 0; i< cellsCount; i++)
+            headerRow.insertCell(-1);
+    }
+
+    private static Integer calculatedRemSize;
+    private static int getRemSize() {
+        if(calculatedRemSize == null) {
+            final Element element = DOM.createDiv();
+            element.getStyle().setProperty("width", "1rem");
+
+            calculatedRemSize = calcSize(element, size -> size).first;
+        }
+        return calculatedRemSize;
     }
 
 //    public interface MetricsCallback {

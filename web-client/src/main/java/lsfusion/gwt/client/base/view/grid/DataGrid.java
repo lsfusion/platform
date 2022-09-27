@@ -53,8 +53,6 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 
 public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeListener, HasMaxPreferredSize {
 
-    public final static int BORDER_VERT_SIZE = 1;
-
     public static int nativeScrollbarWidth = AbstractNativeScrollbar.getNativeScrollbarWidth();
     public static int nativeScrollbarHeight = AbstractNativeScrollbar.getNativeScrollbarHeight();
 

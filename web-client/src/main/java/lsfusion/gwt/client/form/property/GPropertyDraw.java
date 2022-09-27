@@ -738,9 +738,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GSize getValueWidthWithPadding(GFont parentFont) {
         return getValueWidth(parentFont, true, true).add(getCellRenderer().getWidthPadding() * 2);
     }
-    public GSize getValueHeightWithPadding(GFont parentFont) {
-        return getValueHeight(parentFont, true, true).add(getCellRenderer().getHeightPadding() * 2);
-    }
 
     // not null
     public GSize getValueWidth(GFont parentFont, boolean needNotNull, boolean globalCaptionIsDrawn) {
@@ -771,7 +768,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         if(parentFont != null)
             return parentFont;
 
-        return GFont.DEFAULT_FONT;
+        return null;
     }
 
     public GSize getCaptionWidth() {

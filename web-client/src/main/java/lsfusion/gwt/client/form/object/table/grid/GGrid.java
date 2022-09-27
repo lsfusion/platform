@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.grid;
 
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -28,12 +29,16 @@ public class GGrid extends GComponent {
 
     @Override
     protected GSize getDefaultWidth() {
-        return groupObject.getWidth(lineWidth);
+        return getDefaultSize().first;
     }
 
     @Override
     protected GSize getDefaultHeight() {
-        return groupObject.getHeight(lineHeight, getHeaderHeight());
+        return getDefaultSize().second;
+    }
+
+    private Pair<GSize, GSize> getDefaultSize() {
+        return groupObject.getSize(lineHeight, lineWidth,  false, getHeaderHeight());
     }
 
     public boolean isBoxed(GTableView table) {

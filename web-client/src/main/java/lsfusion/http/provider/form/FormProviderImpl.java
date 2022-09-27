@@ -119,7 +119,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
             }
             userFont.family = groupObj.grid.font.family;
         } else {
-            userFont.family = GFont.DEFAULT_FONT_FAMILY;
+            userFont.family = "";
         }
         return new GGroupObjectUserPreferences(gColumnUPMap, groupObjectUP.groupObjectSID, userFont, groupObjectUP.pageSize, groupObjectUP.headerHeight, groupObjectUP.hasUserPreferences);
     }

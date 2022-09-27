@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.design;
 
+import lsfusion.gwt.client.base.GwtClientUtils;
+
 import java.io.Serializable;
 
 public class GFontWidthString implements Serializable {
@@ -20,7 +22,7 @@ public class GFontWidthString implements Serializable {
     @Override
     public int hashCode() {
         if (hashComputed) {
-            hash = font.hashCode();
+            hash = font != null ? font.hashCode() : null;
             hash = 31 * hash + sampleString.hashCode();
             hashComputed = true;
         }
@@ -33,7 +35,7 @@ public class GFontWidthString implements Serializable {
             return false;
         }
         GFontWidthString fontWidthString = (GFontWidthString) obj;
-        return font.equals(fontWidthString.font) &&
+        return GwtClientUtils.nullEquals(font, fontWidthString.font) &&
                 sampleString.equals(fontWidthString.sampleString);
     }
 }

@@ -28,11 +28,14 @@ public class GFixedSize extends GSimpleSize {
 
     public static double convertFontSize = 12.0; // default font size used to convert usually from constants;
     public static GFixedSize getSize(double pixels, Type type) {
-        return new GFixedSize(type == GFixedSize.Type.PX ? pixels : ((double)pixels / convertFontSize), type);
+        return getSize(pixels, type, convertFontSize);
+    }
+    public static GFixedSize getSize(double pixels, Type type, double fontSize) {
+        return new GFixedSize(type == GFixedSize.Type.PX ? pixels : ((double)pixels / fontSize), type);
     }
     @Override
     protected double getPixelSize() {
-        return type == GFixedSize.Type.PX ? value : value * convertFontSize;
+        return type == GFixedSize.Type.PX ? value : value * convertFontSize; // used with SIZE_TYPE so we don't really care about the convertFontSize
     }
 
     @Override

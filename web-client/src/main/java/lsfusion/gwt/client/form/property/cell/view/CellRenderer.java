@@ -578,9 +578,6 @@ public abstract class CellRenderer<T> {
     public int getWidthPadding() {
         return 0;
     }
-    public int getHeightPadding() {
-        return 0;
-    }
 
     public abstract String format(T value);
 

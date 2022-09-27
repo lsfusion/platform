@@ -19,7 +19,7 @@ public abstract class GSize implements Serializable {
         return getSize(pixels, SIZE_TYPE);
     }
 
-    // everything about explicit components sizing
+    // everything about explicit components sizing (this pixels are virtual, closer to rem and should be converted more like rems)
     public static GSize getComponentSize(int pixels) {
         return getSize(pixels, COMPONENT_TYPE);
     }
@@ -29,8 +29,13 @@ public abstract class GSize implements Serializable {
     public static GSize getValueSize(int pixels) {
         return getSize(pixels, VALUE_TYPE);
     }
-    public static GSize getCalcValueSize(int pixels) { // "font dependent" pixels (not explicit constants like in getValueSize)
-        return getValueSize(pixels);
+
+    /* the trickiest part we have the exact size but we want the relative size */
+    public static GSize getCalcValueSize(int pixels, int fontSize) { // "font dependent" pixels (not explicit constants like in getValueSize)
+        return GFixedSize.getSize(pixels, VALUE_TYPE, fontSize);
+    }
+    public static GSize getCalcComponentSize(int pixels, int remFontSize) { // "font dependent" pixels (not explicit constants like in getValueSize)
+        return GFixedSize.getSize(pixels, COMPONENT_TYPE, remFontSize);
     }
 
     // used for flexing values with the same value as size

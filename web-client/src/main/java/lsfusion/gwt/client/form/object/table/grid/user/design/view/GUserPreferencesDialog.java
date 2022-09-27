@@ -26,7 +26,6 @@ import java.util.Map;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createHorizontalStrut;
 import static lsfusion.gwt.client.base.GwtClientUtils.createVerticalStrut;
-import static lsfusion.gwt.client.form.design.GFont.DEFAULT_FONT_FAMILY;
 
 public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private static final ClientMessages messages = ClientMessages.Instance.get();
@@ -266,7 +265,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
 
     private GFont getInitialFont() {
         GFont designFont = grid.getDesignFont();
-        return designFont == null ? new GFont(grid.font != null ? grid.font.family : DEFAULT_FONT_FAMILY, 0, false, false) : designFont;
+        return designFont == null ? new GFont(grid.font != null ? grid.font.family : "", 0, false, false) : designFont;
     }
     
     private void resetPressed() {

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.tree;
 
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -53,12 +54,16 @@ public class GTreeGroup extends GComponent {
 
     @Override
     protected GSize getDefaultWidth() {
-        return getLastGroup().getWidth(lineWidth).add(getExpandWidth());
+        return getDefaultSize().first.add(getExpandWidth());
     }
 
     @Override
     protected GSize getDefaultHeight() {
-        return getLastGroup().getHeight(lineHeight, getHeaderHeight());
+        return getDefaultSize().second;
+    }
+
+    protected Pair<GSize, GSize> getDefaultSize() {
+        return getLastGroup().getSize(lineHeight, lineWidth, true, getHeaderHeight());
     }
 
     public GGroupObjectValue filterRowKeys(GGroupObject groupObject, GGroupObjectValue fullCurrentKey) {

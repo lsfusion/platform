@@ -7,7 +7,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 
 public abstract class GridPropertyView extends BaseComponentView {
 
-    public int headerHeight = 54;
+    public int headerHeight = 54; // actually it is the max height
 
     public GridPropertyView() {
     }

@@ -48,9 +48,6 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
     public int getWidthPadding() {
         return CELL_HORIZONTAL_PADDING;
     }
-    public int getHeightPadding() {
-        return CELL_VERTICAL_PADDING;
-    }
     public static void setPadding(Element element) {
         element.addClassName("text-based-prop");
 //        Style style = element.getStyle();
