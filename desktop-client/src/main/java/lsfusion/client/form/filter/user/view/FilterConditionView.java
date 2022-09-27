@@ -298,7 +298,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             updateCompareLabelText();
         }
 
-        validate();
+        logicsSupplier.getFormController().revalidate();
     }
 
     public void startEditing(EventObject initFilterEvent) {

@@ -300,6 +300,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void update() {
+        columns.clear();
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+            columns.put(column.first, column.second);
+        }
+        
         if (initialFilters != null) {
             for (GFilter filter : initialFilters) {
                 if (filter.container != null) { // removed in design
@@ -308,11 +313,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 }
             }
             initialFilters = null;
-        }
-
-        columns.clear();
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
-            columns.put(column.first, column.second);
         }
     }
 
