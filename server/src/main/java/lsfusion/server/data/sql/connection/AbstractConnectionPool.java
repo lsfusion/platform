@@ -206,10 +206,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
 
     private static void logConnection(String type, long l, long cc, int backendPID) {
         String message = type + " CONNECTION : " + backendPID + (l > 0 ? ", Time : " + (System.currentTimeMillis() - l) : "") + ", Current connections count : " + cc;
-        if(Settings.get().isExtendedSQLConnectionLog())
-            ServerLoggers.sqlConnectionLog(message);
-        else
-            ServerLoggers.sqlConnectionLogger.info(message);
+        ServerLoggers.sqlConnectionLog(message);
     }
 
     @Override

@@ -733,19 +733,17 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 
                 form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack);
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-                    if (logger.isTraceEnabled()) {
-                        if (keys.size() > 0) {
-                            logger.trace("   columnKeys: ");
-                            for (int i = 0, size = keys.size(); i < size; i++) {
-                                logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
-                            }
+                logger.info(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
+                if (logger.isTraceEnabled()) {
+                    if (keys.size() > 0) {
+                        logger.trace("   columnKeys: ");
+                        for (int i = 0, size = keys.size(); i < size; i++) {
+                            logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
                         }
-                        logger.trace("   current object's values: ");
-                        for (ObjectInstance obj : form.getObjects()) {
-                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                        }
+                    }
+                    logger.trace("   current object's values: ");
+                    for (ObjectInstance obj : form.getObjects()) {
+                        logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
                     }
                 }
             }
