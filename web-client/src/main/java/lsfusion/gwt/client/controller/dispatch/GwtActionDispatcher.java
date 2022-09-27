@@ -16,6 +16,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
 import lsfusion.gwt.client.classes.GType;
@@ -377,56 +378,39 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             }
         }
 
+        private final NativeStringMap<String> resources = new NativeStringMap<>();
         private void executeFile(GClientWebAction action) {
-            executeFile(action, GwtClientUtils.getAppStaticWebURL(action.resource), action.resourceName, action.originalResourceName);
+            String resource = action.resource;
+            if (resources.containsKey(resource)) {
+                onFileExecuted(action);
+            } else {
+                resources.put(resource, null);
+                executeFile(action, GwtClientUtils.getAppStaticWebURL(resource), action.resourceName, action.originalResourceName);
+            }
         }
 
         private native void executeFile(GClientWebAction action, String resourcePath, String resourceName, String originalResourceName)/*-{
             var thisObj = this;
 
             if (resourceName.endsWith('js')) {
-                var documentScripts = $wnd.document.scripts;
-                for (var i = 0; i < documentScripts.length; i++) {
-                    var src = documentScripts[i].src;
-                    if (src != null && src.endsWith(resourcePath)) {
-                        thisObj.@JSExecutor::onFileExecuted(*)(action)
-                        return;
-                    }
-                }
                 var scr = document.createElement('script');
                 scr.src = resourcePath;
                 scr.type = 'text/javascript';
                 $wnd.document.head.appendChild(scr);
                 scr.onload = function() {thisObj.@JSExecutor::onFileExecuted(*)(action); }
             } else if (resourceName.endsWith('css')) {
-                var documentStyleSheets = $wnd.document.styleSheets;
-                for (var j = 0; j < documentStyleSheets.length; j++) {
-                    var href = documentStyleSheets[j].href;
-                    if (href != null && href.endsWith(resourcePath)) {
-                        thisObj.@JSExecutor::onFileExecuted(*)(action)
-                        return;
-                    }
-                }
                 var link = document.createElement("link");
                 link.href = resourcePath;
                 link.type = "text/css";
                 link.rel = "stylesheet";
                 $wnd.document.head.appendChild(link);
                 thisObj.@JSExecutor::onFileExecuted(*)(action);
-            } else if(resourceName.endsWith('ttf') || resourceName.endsWith('otf')) {
-                if(document.loadedFonts == null) {
-                    document.loadedFonts = [];
-                }
-                if (document.loadedFonts.includes(originalResourceName)) {
+            } else if (resourceName.endsWith('ttf') || resourceName.endsWith('otf')) {
+                var fontFace = new FontFace(originalResourceName, 'url(' + resourcePath + ')');
+                fontFace.load().then(function (loaded_face) {
+                    document.fonts.add(fontFace);
                     thisObj.@JSExecutor::onFileExecuted(*)(action);
-                } else {
-                    var fontFace = new FontFace(originalResourceName, 'url(' + resourcePath + ')');
-                    fontFace.load().then(function (loaded_face) {
-                        document.fonts.add(fontFace);
-                        thisObj.@JSExecutor::onFileExecuted(*)(action);
-                    });
-                    document.loadedFonts.push(originalResourceName);
-                }
+                });
             } else {
                 $wnd.lsfFiles[originalResourceName] = resourcePath;
                 thisObj.@JSExecutor::onFileExecuted(*)(action);

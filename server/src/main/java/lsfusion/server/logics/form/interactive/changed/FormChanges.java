@@ -408,12 +408,11 @@ public class FormChanges {
     }
 
     public void logChanges(FormInstance bv, Logger logger) {
-        logger.trace("getFormChanges:");
         logger.trace("  GROUPOBJECTS ---------------");
         for (GroupObjectInstance group : bv.getGroups()) {
             ImOrderSet<ImMap<ObjectInstance, DataObject>> groupGridObjects = gridObjects.get(group);
             if (groupGridObjects != null) {
-                logger.trace("   " + group.getID() + " - Current grid objects chaned to:");
+                logger.trace("   " + group.getID() + " - Current grid objects changed to:");
                 for (ImMap<ObjectInstance, DataObject> value : groupGridObjects)
                     logger.trace("     " + value);
             }
@@ -433,7 +432,7 @@ public class FormChanges {
                 logger.trace("      " + propertyValues.getKey(i) + " -> " + propertyValues.getValue(i));
         }
 
-        logger.trace("   Droped ---------------");
+        logger.trace("   Dropped ---------------");
         for (PropertyDrawInstance property : dropProperties)
             logger.trace("     " + property);
 

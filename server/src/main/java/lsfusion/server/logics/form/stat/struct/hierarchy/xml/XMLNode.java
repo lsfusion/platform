@@ -207,8 +207,8 @@ public class XMLNode implements Node<XMLNode> {
     }
 
     //check if it's XML inside
-    private static List<Content> parseObject(String str) {
-        if (str.contains("<") && str.contains("/") && str.contains(">")) {
+    private static List<Content> parseObject(String str, boolean escapeInnerXML) {
+        if (!escapeInnerXML && str.contains("<") && str.contains("/") && str.contains(">")) {
             try {
                 List<Content> children = new ArrayList<>(new SAXBuilder().build(IOUtils.toInputStream("<wrap>" + str + "</wrap>")).getRootElement().getContent());
                 children.forEach(Content::detach);
@@ -242,7 +242,15 @@ public class XMLNode implements Node<XMLNode> {
         if(attr) {
             addXMLAttributeValue(node.element, key, stringValue);
         } else {
-            addXMLChild(node.element, key, parseObject(stringValue));
+
+            boolean escapeInnerXML = false;
+            String escapeInnerXMLKey = ":escapeInnerXML";
+            if(key.endsWith(escapeInnerXMLKey)) {
+                escapeInnerXML = true;
+                key = key.substring(0, key.lastIndexOf(escapeInnerXMLKey));
+            }
+
+            addXMLChild(node.element, key, parseObject(stringValue, escapeInnerXML));
         }
     }
 
