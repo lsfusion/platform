@@ -34,6 +34,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         void conditionsChanged(boolean focusFirstComponent);
     }
 
+    private TableController logicsSupplier;
     private final UIHandler uiHandler;
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
@@ -73,6 +74,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, EventObject keyEvent, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
         condition = ifilter;
+        this.logicsSupplier = logicsSupplier;
         uiHandler = iuiHandler;
         this.columnsProvider = columnsProvider;
         this.controlsVisible = controlsVisible;
@@ -137,6 +139,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
+                
+                FilterConditionView.this.logicsSupplier.getFormController().revalidate();
             }
 
             @Override
