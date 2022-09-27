@@ -106,7 +106,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(0), "addFilter");
             comp.getActionMap().put("addFilter", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
-                    performNewFilterAction(ae);
+                    performAddFilterAction(ae);
                 }
             });
         }
