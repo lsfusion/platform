@@ -237,9 +237,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
         if (filter != null && filter.hasFiltersContainer()) {
             filter.addCondition(event, false);
             
-            if (filter.getConditionsCount() == 1) {
-                filter.setControlsVisible(true);
-            }
+            filter.setControlsVisible(true);
         }
     }
 
