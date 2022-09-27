@@ -34,6 +34,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         void conditionsChanged(boolean focusFirstComponent);
     }
 
+    private TableController logicsSupplier;
     private final UIHandler uiHandler;
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
@@ -73,6 +74,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
     public FilterConditionView(ClientPropertyFilter ifilter, TableController logicsSupplier, UIHandler iuiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, EventObject keyEvent, boolean readSelectedValue) {
         super(false, FlexAlignment.START);
         condition = ifilter;
+        this.logicsSupplier = logicsSupplier;
         uiHandler = iuiHandler;
         this.columnsProvider = columnsProvider;
         this.controlsVisible = controlsVisible;
@@ -104,7 +106,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 
                 propertyChanged();
 
-                startEditing(FilterController.createAddUserFilterEvent(valueView));
+                SwingUtilities.invokeLater(() -> startEditing(FilterController.createAddUserFilterEvent(valueView)));
             }
         };
 
@@ -130,20 +132,26 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                conditionChanged();
+                focusValueView();
             }
 
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                conditionChanged();
+                
+                FilterConditionView.this.logicsSupplier.getFormController().revalidate();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                conditionChanged();
+            }
+
+            @Override
+            public void menuCanceled() {
+                // catch menu cancel event instead of negationChanged and allowNullChanged for proper value view focus behavior
+                focusValueView();
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -155,7 +163,9 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
                 if (!innerValueChange) { // to avoid multiple apply calls
-                    conditionChanged(valueTable.editorEnterPressed());
+                    if (valueTable.editorEnterPressed()) {
+                        conditionChanged(true);
+                    }
                     confirmed = true;
                 }
             }
@@ -193,7 +203,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 addActionListener(e -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    conditionChanged();
+                    focusValueView();
                 });
             }
         };
@@ -207,8 +217,9 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         propertyView.setSelectedValue(currentColumn, currentCaption);
     }
 
-    private void conditionChanged() {
-        conditionChanged(false);
+    private void focusValueView() {
+        // focus value view in order to be able to apply filter by pressing Enter (even if focus was somewhere else before)
+        valueView.requestFocusInWindow();
     }
 
     private void conditionChanged(boolean focusFirstComponent) {
