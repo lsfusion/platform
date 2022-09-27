@@ -17,7 +17,9 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<T> {
     
@@ -81,7 +83,7 @@ public class AsyncMapOpenForm<T extends PropertyInterface> extends AsyncMapExec<
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
         
         CustomClass objectClass = propertyClass;
         if(propertyInterface != null) {
