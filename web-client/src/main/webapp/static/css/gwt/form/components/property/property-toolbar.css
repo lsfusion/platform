@@ -54,8 +54,12 @@
 
 .property-toolbar-item {
     /*overflow: hidden;*/
-    padding: 0.125rem;
-    border: 1px solid transparent;
+
+    /*we can't use border transparent, because it doesn't respect box-shadow, which is used for the background color in the table rows / cells*/
+    /*border: 1px solid transparent;*/
+    /*so we'll add the border to the padding (not the margin, since we want to be it not transparent, ie use the background color)*/
+    --border-toolbar-item-padding : 1px;
+    padding: calc(0.125rem + var(--border-toolbar-item-padding));
     border-radius: var(--button-border-radius);
 
     /*stretch self and center image inside*/
@@ -65,6 +69,7 @@
 }
 
 .property-toolbar-item:hover {
+    --border-toolbar-item-padding : 0px;
     border: 1px solid var(--component-hover-border-color);
 }
 
