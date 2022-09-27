@@ -228,12 +228,18 @@ public abstract class GAbstractTableController extends GPropertyController imple
     public void replaceFilter(Event event) {
         if (filter != null && filter.hasFiltersContainer()) {
             filter.addCondition(event, true);
+
+            filter.setControlsVisible(true);
         }
     }
 
     public void addFilter(Event event) {
         if (filter != null && filter.hasFiltersContainer()) {
             filter.addCondition(event, false);
+            
+            if (filter.getConditionsCount() == 1) {
+                filter.setControlsVisible(true);
+            }
         }
     }
 

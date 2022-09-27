@@ -99,18 +99,14 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
             comp.getActionMap().put("newFilter", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
-                    if (!logicsSupplier.getFormController().isEditing()) {
-                        SwingUtilities.invokeLater(() -> addCondition(ae, true));
-                    }
+                    performNewFilterAction(ae);
                 }
             });
 
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(0), "addFilter");
             comp.getActionMap().put("addFilter", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
-                    if (!logicsSupplier.getFormController().isEditing()) {
-                        addCondition(ae);
-                    }
+                    performNewFilterAction(ae);
                 }
             });
         }
@@ -125,8 +121,8 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
             comp.getActionMap().put("newFilter", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
-                    if (comp instanceof DataPanelView && !logicsSupplier.getFormController().isEditing()) {
-                        SwingUtilities.invokeLater(() -> addCondition(ae, true, true));
+                    if (comp instanceof DataPanelView) {
+                        performNewFilterAction(ae);
                     }
                 }
             });
@@ -135,15 +131,33 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0, true), "addFilter");
             comp.getActionMap().put("addFilter", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
-                    if (!logicsSupplier.getFormController().isEditing()) {
-                        addCondition(ae, false, true);
-                    }
+                    performAddFilterAction(ae);
                 }
             });
         }
 
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
         comp.getActionMap().put("removeAll", createResetAllAction());
+    }
+    
+    private void performNewFilterAction(ActionEvent ae) {
+        if (!logicsSupplier.getFormController().isEditing()) {
+            SwingUtilities.invokeLater(() -> {
+                boolean added = addCondition(ae, true, true);
+                if (added) {
+                    setControlsVisible(true);
+                }
+            });
+        }
+    }
+    
+    private void performAddFilterAction(ActionEvent ae) {
+        if (!logicsSupplier.getFormController().isEditing()) {
+            boolean added = addCondition(ae, false, true);
+            if (added && conditionViews.size() == 1) {
+                setControlsVisible(true);
+            }
+        }
     }
 
     public static ActionEvent createAddUserFilterEvent(Component component) {
@@ -167,6 +181,10 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
 
     public void toggleControlsVisible() {
         setControlsVisible(!controlsVisible);
+        
+        if (conditionViews.isEmpty() && controlsVisible) {
+            addCondition();
+        }
     }
     
     public void setControlsVisible(boolean visible) {
@@ -176,8 +194,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             for (FilterConditionView view : conditionViews.values()) {
                 view.setControlsVisible(controlsVisible);
             }
-        } else if (controlsVisible) {
-            addCondition();
         }
 
         controlsView.setVisible(controlsVisible);
@@ -221,33 +237,34 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         return Pair.create(actualProperty, actualColumnKey);
     }
 
-    public void addCondition() {
+    public boolean addCondition() {
         if (hasFiltersContainer()) {
-            addCondition(createAddUserFilterEvent(filtersContainerComponent));
+            return addCondition(createAddUserFilterEvent(filtersContainerComponent));
         }
+        return false;
     }
 
-    public void addCondition(EventObject keyEvent) {
-        addCondition(keyEvent, false);
+    public boolean addCondition(EventObject keyEvent) {
+        return addCondition(keyEvent, false);
     }
 
-    public void addCondition(EventObject keyEvent, boolean replace) {
-        addCondition(keyEvent, replace, true);
+    public boolean addCondition(EventObject keyEvent, boolean replace) {
+        return addCondition(keyEvent, replace, true);
     }
 
-    public void addCondition(EventObject keyEvent, boolean replace, boolean readSelectedValue) {
-        addCondition((ClientFilter) null, null, keyEvent, replace, readSelectedValue);
+    public boolean addCondition(EventObject keyEvent, boolean replace, boolean readSelectedValue) {
+        return addCondition((ClientFilter) null, null, keyEvent, replace, readSelectedValue);
     }
 
-    public void addCondition(ClientFilter filter, ClientGroupObjectValue columnKey, boolean readSelectedValue) {
-        addCondition(filter, columnKey, null, false, readSelectedValue);
+    public boolean addCondition(ClientFilter filter, ClientGroupObjectValue columnKey, boolean readSelectedValue) {
+        return addCondition(filter, columnKey, null, false, readSelectedValue);
     }
 
-    public void addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, EventObject keyEvent, boolean replace, boolean readSelectedValue) {
-        addCondition(new ClientFilter(propertyDraw), columnKey, keyEvent, replace, readSelectedValue);
+    public boolean addCondition(ClientPropertyDraw propertyDraw, ClientGroupObjectValue columnKey, EventObject keyEvent, boolean replace, boolean readSelectedValue) {
+        return addCondition(new ClientFilter(propertyDraw), columnKey, keyEvent, replace, readSelectedValue);
     }
 
-    public void addCondition(ClientFilter filter, ClientGroupObjectValue columnKey, EventObject keyEvent, boolean replace, boolean readSelectedValue) {
+    public boolean addCondition(ClientFilter filter, ClientGroupObjectValue columnKey, EventObject keyEvent, boolean replace, boolean readSelectedValue) {
         if (replace) {
             // считаем, что в таком случае просто нажали сначала все удалить, а затем - добавить
             resetAllConditions(false);
@@ -256,7 +273,9 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         ClientPropertyFilter condition = getNewCondition(filter, columnKey);
         if (condition != null) {
             addCondition(condition, logicsSupplier, keyEvent, readSelectedValue);
+            return true;
         }
+        return false;
     }
 
     public void addCondition(ClientPropertyFilter condition, TableController logicsSupplier, EventObject keyEvent, boolean readSelectedValue) {
@@ -289,18 +308,18 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         ClientFormLayout layout = logicsSupplier.getFormController().getLayout();
         layout.removeBaseComponent(condition.filter, conditionViews.get(condition));
         getFiltersContainer().removeFromChildren(condition.filter);
+        conditionViews.remove(condition);
+        
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
     }
 
     @Override
     public void removeCondition(ClientPropertyFilter condition) {
         removeConditionView(condition);
-        conditionViews.remove(condition);
 
         updateConditionsLastState();
-        
-        if (conditionViews.isEmpty()) {
-            setControlsVisible(false);
-        }
         
         conditionsChanged(true);
     }
