@@ -125,11 +125,15 @@ public class ServerLoggers {
     }
 
     public static void remoteLifeLog(String message) {
-        remoteLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+        remoteLogger.info(message);
+        if (remoteLogger.isTraceEnabled())
+            remoteLogger.trace(ExceptionUtils.getStackTrace());
     }
 
     public static void sqlConnectionLog(String message) {
-        sqlConnectionLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
+        sqlConnectionLogger.info(message);
+        if (sqlConnectionLogger.isTraceEnabled())
+            sqlConnectionLogger.trace(ExceptionUtils.getStackTrace());
     }
 
     private static Map<Long, Boolean> userExLogs = MapFact.getGlobalConcurrentHashMap();
