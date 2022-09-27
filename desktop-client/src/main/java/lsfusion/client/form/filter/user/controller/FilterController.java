@@ -371,6 +371,11 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     public abstract void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent);
 
     public void update() {
+        columns.clear();
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+            columns.put(column.first, column.second);
+        }
+        
         if (initialFilters != null) {
             for (ClientFilter filter : initialFilters) {
                 if (filter.container != null) { // removed in design
@@ -380,11 +385,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             }
 
             initialFilters = null;
-        }
-
-        columns.clear();
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
-            columns.put(column.first, column.second);
         }
     }
 
