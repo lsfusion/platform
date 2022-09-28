@@ -50,6 +50,7 @@ import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +137,23 @@ public class MainFrame implements EntryPoint {
         String message = exception.getMessage();
         //ace.js has unusual behaviour, and for unknown reasons periodically gives an Uncaught NetworkError about not being able to load a worker which is already loaded
         if(message != null && message.contains("ace") && message.contains("Uncaught NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope'"))
+            return true;
+
+        /*
+            When a dialogue window is opened, the window is resizable.
+            If you start resizing window on touch screens and move your finger very quickly and randomly for a long time, an error is thrown from
+            com.allen_sauer.gwt.dnd.client.onTouchEndorCancel(TouchEvent<?> event) {
+                if (event.getTouches().length() != 0) {
+                    /.../
+                }
+                /.../
+            }
+            because at some time the "event.getTouches()" becomes null, and we get "Cannot read properties of null (reading 'length')".
+
+            Because we want to remove current resize logic in the future, now we try suppressing this error
+         */
+        String stackTrace = Arrays.toString(exception.getStackTrace());
+        if (stackTrace.contains("com.allen_sauer.gwt.dnd.client.MouseDragHandler") && stackTrace.contains("onTouchEndorCancel") && stackTrace.contains("com.allen_sauer.gwt.dnd.client.MouseDragHandler.onTouchEnd"))
             return true;
 
         return false;
