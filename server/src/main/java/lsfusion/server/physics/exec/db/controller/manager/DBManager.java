@@ -817,7 +817,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         
         public Long getCurrentConnection() {
-            return null;
+            return null
         }
     };
 
