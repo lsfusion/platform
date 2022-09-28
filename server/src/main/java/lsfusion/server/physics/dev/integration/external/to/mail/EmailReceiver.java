@@ -20,6 +20,7 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -93,9 +94,9 @@ public class EmailReceiver {
 
         boolean unpack = LM.findProperty("unpack[Account]").read(context, accountObject) != null;
         boolean ignoreExceptions = LM.findProperty("ignoreExceptions[Account]").read(context, accountObject) != null;
-        Timestamp minDateTime = lastDaysAccount != null ? localDateTimeToSqlTimestamp(LocalDateTime.now().minusDays(lastDaysAccount)) : null;
+        LocalDateTime minDateTime = lastDaysAccount != null ? LocalDateTime.now().minusDays(lastDaysAccount) : null;
 
-        List<List<List<Object>>> data = downloadEmailList(context, getSkipEmails(context, minDateTime), minDateTime, unpack, ignoreExceptions);
+        List<List<List<Object>>> data = downloadEmailList(context, getSkipEmails(context, minDateTime), getOldSkipEmails(context, minDateTime), minDateTime, unpack, ignoreExceptions);
 
         importEmails(context, data.get(0));
         importAttachments(context, data.get(1));
@@ -128,14 +129,34 @@ public class EmailReceiver {
         return Session.getInstance(mailProps).getStore(accountType.getProtocol());
     }
 
-    private Set<String> getSkipEmails(ExecutionContext context, Timestamp minDateTime) {
+    private Map<String, EmailData> getSkipEmails(ExecutionContext context, LocalDateTime minDateTime) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+        Map<String, EmailData> skipEmails = new HashMap<>();
+
+        ObjectValue minDateObject = minDateTime != null ?  new DataObject(minDateTime, DateTimeClass.instance) : NullValue.instance;
+
+        KeyExpr emailExpr = new KeyExpr("email");
+        ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
+
+        QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
+        emailQuery.addProperty("id", LM.findProperty("id[Email]").getExpr(emailExpr));
+        emailQuery.addProperty("dateTimeSent", LM.findProperty("dateTimeSent[Email]").getExpr(emailExpr));
+        emailQuery.addProperty("skip", LM.findProperty("skipFilter[Email,Account,DATETIME]").getExpr(emailExpr, accountObject.getExpr(), minDateObject.getExpr()));
+        emailQuery.and(LM.findProperty("account[Email]").getExpr(emailExpr).compare(accountObject.getExpr(), Compare.EQUALS));
+
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> emailResult = emailQuery.execute(context);
+        for (ImMap<Object, Object> entry : emailResult.values()) {
+            skipEmails.put((String) entry.get("id"), new EmailData((LocalDateTime) entry.get("dateTimeSent"), entry.get("skip") != null));
+        }
+        return skipEmails;
+    }
+
+    private Set<String> getOldSkipEmails(ExecutionContext context, LocalDateTime minDateTime) {
         Set<String> skipEmails = new HashSet<>();
         try {
             KeyExpr emailExpr = new KeyExpr("email");
             ImRevMap<Object, KeyExpr> emailKeys = MapFact.singletonRev("email", emailExpr);
 
-            LocalDateTime minDate = sqlTimestampToLocalDateTime(minDateTime);
-            ObjectValue minDateObject = minDate != null ?  new DataObject(minDate, DateTimeClass.instance) : NullValue.instance;
+            ObjectValue minDateObject = minDateTime != null ?  new DataObject(minDateTime, DateTimeClass.instance) : NullValue.instance;
 
             QueryBuilder<Object, Object> emailQuery = new QueryBuilder<>(emailKeys);
             emailQuery.addProperty("fromAddressEmail", LM.findProperty("fromAddress[Email]").getExpr(emailExpr));
@@ -166,7 +187,7 @@ public class EmailReceiver {
 
         ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[STRING[200]]").getMapping(idEmailField));
+                LM.findProperty("emailId[STRING]").getMapping(idEmailField));
         keys.add(emailKey);
         props.add(new ImportProperty(idEmailField, LM.findProperty("id[Email]").getMapping(emailKey)));
         props.add(new ImportProperty(accountObject, LM.findProperty("account[Email]").getMapping(emailKey)));
@@ -217,7 +238,7 @@ public class EmailReceiver {
 
         ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[STRING[100]]").getMapping(idEmailField));
+                LM.findProperty("emailId[STRING]").getMapping(idEmailField));
         emailKey.skipKey = true;
         keys.add(emailKey);
         fields.add(idEmailField);
@@ -248,7 +269,7 @@ public class EmailReceiver {
         }
     }
 
-    public List<List<List<Object>>> downloadEmailList(ExecutionContext context, Set<String> skipEmails, Timestamp minDateTime, boolean unpack, boolean ignoreExceptions) throws MessagingException, IOException, GeneralSecurityException {
+    public List<List<List<Object>>> downloadEmailList(ExecutionContext context, Map<String, EmailData> skipEmails, Set<String> oldSkipEmails, LocalDateTime minDateTime, boolean unpack, boolean ignoreExceptions) throws MessagingException, IOException, GeneralSecurityException {
 
         List<List<Object>> dataEmails = new ArrayList<>();
         List<List<Object>> dataAttachments = new ArrayList<>();
@@ -268,26 +289,32 @@ public class EmailReceiver {
 
             LocalDateTime dateTimeReceivedEmail = LocalDateTime.now();
 
-            int count = 0;
-            int received = 0;
-            int messageCount = emailFolder.getMessageCount();
+            int count = 1;
+            Message[] messages = emailFolder.getMessages();
+            int messageCount = messages.length;
             ServerLoggers.mailLogger.info(String.format("Account %s, folder %s: found %s emails", nameAccount, emailFolder.getFullName(), messageCount));
             Set<String> usedEmails = new HashSet<>();
             int folderClosedCount = 0;
-            while(count < messageCount && (maxMessagesAccount == null ||  received < maxMessagesAccount)) {
+            while (count <= messageCount && (maxMessagesAccount == null || dataEmails.size() < maxMessagesAccount)) {
                 try {
-                    ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count + 1, messageCount, maxMessagesAccount));
-                    Message message = emailFolder.getMessage(messageCount - count);
-                    Timestamp dateTimeSentEmail = getSentDate(message);
-                    ServerLoggers.mailLogger.info("sentDate: " + dateTimeSentEmail);
-                    if (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0) {
+                    ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessagesAccount));
+                    Message message = messages[messageCount - count];
+
+                    String uid = getMessageUID(emailFolder, message);
+                    EmailData emailData = skipEmails.get(uid);
+                    LocalDateTime dateTimeSentEmail = emailData != null ? emailData.dateTimeSent : getSentDate(message);
+                    boolean skip = emailData != null && emailData.skip;
+
+                    if (!skip && (minDateTime == null || dateTimeSentEmail == null || minDateTime.compareTo(dateTimeSentEmail) <= 0)) {
                         String fromAddressEmail = ((InternetAddress) message.getFrom()[0]).getAddress();
                         String subjectEmail = message.getSubject();
-                        String idEmail = getEmailId(dateTimeSentEmail, fromAddressEmail, subjectEmail, usedEmails);
+
+                        String idEmail = getEmailId(localDateTimeToSqlTimestamp(dateTimeSentEmail), fromAddressEmail, subjectEmail, usedEmails);
                         ServerLoggers.mailLogger.info("idEmail: " + idEmail);
                         usedEmails.add(idEmail);
-                        if (!skipEmails.contains(idEmail)) {
-                            received++;
+
+                        //todo: remove backward compatibility with old ids
+                        if(!oldSkipEmails.contains(idEmail)) {
                             message.setFlag(deleteMessagesAccount ? Flags.Flag.DELETED : Flags.Flag.SEEN, true);
                             Object messageContent = getEmailContent(message);
                             MultipartBody messageEmail = getEmailMessage(subjectEmail, message, messageContent, unpack);
@@ -296,20 +323,25 @@ public class EmailReceiver {
                                 ServerLoggers.mailLogger.error("Warning: missing attachment '" + messageContent + "' from email '" + subjectEmail + "'");
                             }
                             FileData emlFileEmail = new FileData(getEMLByteArray(message), "eml");
-                            dataEmails.add(Arrays.asList(idEmail, sqlTimestampToLocalDateTime(dateTimeSentEmail), dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
+                            dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, dateTimeReceivedEmail, fromAddressEmail, nameAccount, subjectEmail, messageEmail.message, emlFileEmail));
                             int counter = 1;
                             if (messageEmail.attachments != null) {
                                 for (Map.Entry<String, FileData> entry : messageEmail.attachments.entrySet()) {
-                                    dataAttachments.add(Arrays.asList(idEmail, String.valueOf(counter), BaseUtils.getFileName(entry.getKey()), entry.getValue()));
+                                    dataAttachments.add(Arrays.asList(uid, String.valueOf(counter), BaseUtils.getFileName(entry.getKey()), entry.getValue()));
                                     counter++;
                                 }
                             }
                         }
+                    } else {
+                        if (emailData == null) {
+                            dataEmails.add(Arrays.asList(uid, dateTimeSentEmail, null, null, nameAccount, null, null, null));
+                        }
                     }
+
                     count++;
                     folderClosedCount = 0;
                 } catch (FolderClosedException | FolderClosedIOException e) {
-                    if(folderClosedCount < 2) {
+                    if (folderClosedCount < 2) {
                         folderClosedCount++;
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
                         emailFolder.open(Folder.READ_WRITE);
@@ -317,7 +349,7 @@ public class EmailReceiver {
                         throw e;
                     }
                 } catch (Exception e) {
-                    if(ignoreExceptions) {
+                    if (ignoreExceptions) {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
                         context.delayUserInterfaction(new MessageClientAction(e.toString(), localize("{mail.receiving}")));
                         count++;
@@ -331,6 +363,14 @@ public class EmailReceiver {
         emailStore.close();
 
         return Arrays.asList(dataEmails, dataAttachments);
+    }
+
+    private String getMessageUID(Folder folder, Message message) throws MessagingException {
+        if(folder instanceof UIDFolder) {
+            return String.valueOf(((UIDFolder) folder).getUID(message));
+        } else {
+            return ((POP3Folder) folder).getUID(message);
+        }
     }
 
     private List<Folder> getSubFolders(Folder folder) throws MessagingException {
@@ -378,10 +418,10 @@ public class EmailReceiver {
         return content;
     }
 
-    private Timestamp getSentDate(Message message) {
-        return (Timestamp) BaseUtils.executeWithTimeout(() -> {
+    private LocalDateTime getSentDate(Message message) {
+        return (LocalDateTime) BaseUtils.executeWithTimeout(() -> {
             Date sentDate = message.getSentDate();
-            return sentDate == null ? null : new Timestamp(sentDate.getTime());
+            return sentDate == null ? null : sqlTimestampToLocalDateTime(new Timestamp(sentDate.getTime()));
         }, 60000);
     }
 
@@ -680,6 +720,16 @@ public class EmailReceiver {
             fileName = name + "_" + count + (extension.isEmpty() ? "" : ("." + extension));
         }
         return fileName;
+    }
+
+    private class EmailData {
+        private LocalDateTime dateTimeSent;
+        private boolean skip;
+
+        public EmailData(LocalDateTime dateTimeSent, boolean skip) {
+            this.dateTimeSent = dateTimeSent;
+            this.skip = skip;
+        }
     }
 }
 
