@@ -83,10 +83,12 @@ public class CaptionPanel extends FlexPanel {
         if (this.emptyCaption != emptyCaption) {
             if (emptyCaption) {
                 header.addStyleName("empty-caption");
-                header.addStyleName("d-none");
+//                header.addStyleName("d-none");
+                header.setVisible(false); // we need setVisible since isVisible is used, for example in getLines for the resize mechanism
             } else {
                 header.removeStyleName("empty-caption");
-                header.removeStyleName("d-none");
+//                header.removeStyleName("d-none");
+                header.setVisible(true);
             }
             this.emptyCaption = emptyCaption;
         }
