@@ -14,7 +14,9 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.util.Map;
 
@@ -26,44 +28,46 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
     public Map<String, BindingMode> bindingModesMap;
     public Integer priority;
     public ImList<QuickAccess> quickAccessList;
+    public int index;
 
-    public AsyncMapInputListAction(String action, AsyncMapEventExec<T> asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList) {
+    public AsyncMapInputListAction(String action, AsyncMapEventExec<T> asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, int index) {
         this.action = action;
         this.asyncExec = asyncExec;
         this.keyStroke = keyStroke;
         this.bindingModesMap = bindingModesMap;
         this.priority = priority;
         this.quickAccessList = quickAccessList;
+        this.index = index;
     }
 
     // for input, actually it seems that async events are not used in that case
     public InputListAction map() {
-        return new InputListAction(action, Action.getAsyncExec(asyncExec), keyStroke, bindingModesMap, priority, quickAccessList);
+        return new InputListAction(action, Action.getAsyncExec(asyncExec), keyStroke, bindingModesMap, priority, quickAccessList, index);
     }
 
-    public InputListAction map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+    public InputListAction map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
         // here we can switch from sync to async
-        AsyncEventExec mappedAsyncExec = this.asyncExec != null ? this.asyncExec.map(mapObjects, form, toDraw) : null;
+        AsyncEventExec mappedAsyncExec = this.asyncExec != null ? this.asyncExec.map(mapObjects, form, policy, securityProperty, toDraw) : null;
         if(mappedAsyncExec == null && !PropertyDrawView.defaultSync)
             mappedAsyncExec = AsyncNoWaitExec.instance;
-        return new InputListAction(action, mappedAsyncExec, keyStroke, bindingModesMap, priority, quickAccessList);
+        return new InputListAction(action, mappedAsyncExec, keyStroke, bindingModesMap, priority, quickAccessList, index);
     }
 
     public <P extends PropertyInterface> AsyncMapInputListAction<P> map(ImRevMap<T, P> mapping) {
-        return new AsyncMapInputListAction<>(action, asyncExec != null ? asyncExec.map(mapping) : null, keyStroke, bindingModesMap, priority, quickAccessList);
+        return new AsyncMapInputListAction<>(action, asyncExec != null ? asyncExec.map(mapping) : null, keyStroke, bindingModesMap, priority, quickAccessList, index);
     }
 
     public <P extends PropertyInterface> AsyncMapInputListAction<P> mapInner(ImRevMap<T, P> mapping) {
-        return new AsyncMapInputListAction<>(action, asyncExec != null ? asyncExec.mapInner(mapping) : null, keyStroke, bindingModesMap, priority, quickAccessList);
+        return new AsyncMapInputListAction<>(action, asyncExec != null ? asyncExec.mapInner(mapping) : null, keyStroke, bindingModesMap, priority, quickAccessList, index);
     }
 
     public <P extends PropertyInterface> AsyncMapInputListAction<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        return new AsyncMapInputListAction<>(action, asyncExec != null ? asyncExec.mapJoin(mapping) : null, keyStroke, bindingModesMap, priority, quickAccessList);
+        return new AsyncMapInputListAction<>(action, asyncExec != null ? asyncExec.mapJoin(mapping) : null, keyStroke, bindingModesMap, priority, quickAccessList, index);
     }
 
     public AsyncMapInputListAction<T> replace(String replaceAction, AsyncMapEventExec<T> asyncExec) {
         if(action.equals(replaceAction))
-            return new AsyncMapInputListAction<>(action, asyncExec, keyStroke, bindingModesMap, priority, quickAccessList);
+            return new AsyncMapInputListAction<>(action, asyncExec, keyStroke, bindingModesMap, priority, quickAccessList, index);
         return this;
     }
 }

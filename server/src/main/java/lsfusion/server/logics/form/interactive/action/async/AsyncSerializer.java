@@ -42,6 +42,7 @@ public class AsyncSerializer {
                 dataStream.writeByte(serializeQuickAccessMode(quickAccess.mode));
                 dataStream.writeBoolean(quickAccess.hover);
             }
+            dataStream.writeInt(action.index);
         }
         dataStream.writeBoolean(inputList.strict);
     }

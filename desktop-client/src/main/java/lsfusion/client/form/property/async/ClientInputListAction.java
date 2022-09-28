@@ -11,12 +11,14 @@ public class ClientInputListAction {
     public KeyStroke keyStroke;
     public BindingMode editingBindingMode;
     public List<ClientQuickAccess> quickAccessList;
+    public int index;
 
-    public ClientInputListAction(String action, ClientAsyncEventExec asyncExec, KeyStroke keyStroke, BindingMode editingBindingMode, List<ClientQuickAccess> quickAccessList) {
+    public ClientInputListAction(String action, ClientAsyncEventExec asyncExec, KeyStroke keyStroke, BindingMode editingBindingMode, List<ClientQuickAccess> quickAccessList, int index) {
         this.action = action;
         this.asyncExec = asyncExec;
         this.keyStroke = keyStroke;
         this.editingBindingMode = editingBindingMode;
         this.quickAccessList = quickAccessList;
+        this.index = index;
     }
 }

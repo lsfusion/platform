@@ -63,6 +63,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -432,6 +433,11 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql), executorService, form, stack);
     }
 
+    public ActionOrProperty getSecurityProperty() {
+        PropertyDrawInstance changingDrawInstance = form.getChangingDrawInstance();
+        return changingDrawInstance != null ? changingDrawInstance.getValueProperty().property : null;
+    }
+
     public GroupObjectInstance getChangingPropertyToDraw() {
         PropertyDrawInstance drawInstance = form.getChangingDrawInstance();
         if(drawInstance==null)
@@ -651,7 +657,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         InputContext<T> inputContext = null;
         if(list != null)
             inputContext = new InputContext<>(list.map(getKeys()), list.newSession, getSession(), getModifier(), inputList.strict);
-        return ThreadLocalContext.inputUserData(dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
+        return ThreadLocalContext.inputUserData(getSecurityProperty(), dataClass, oldValue, hasOldValue, inputContext, customChangeFunction, inputList);
     }
 
     @Deprecated

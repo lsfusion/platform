@@ -12,13 +12,15 @@ public class InputListAction {
     public Map<String, BindingMode> bindingModesMap;
     public Integer priority;
     public ImList<QuickAccess> quickAccessList;
+    public int index;
 
-    public InputListAction(String action, AsyncEventExec asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList) {
+    public InputListAction(String action, AsyncEventExec asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, int index) {
         this.action = action;
         this.asyncExec = asyncExec;
         this.keyStroke = keyStroke;
         this.bindingModesMap = bindingModesMap;
         this.priority = priority;
         this.quickAccessList = quickAccessList;
+        this.index = index;
     }
 }

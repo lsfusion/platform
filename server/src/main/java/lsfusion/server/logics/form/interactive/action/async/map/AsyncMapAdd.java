@@ -11,7 +11,9 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapFormExec<T> {
     public final CustomClass customClass;
@@ -41,7 +43,7 @@ public class AsyncMapAdd<T extends PropertyInterface> extends AsyncMapFormExec<T
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
         AsyncAddRemove object = map(toDraw);
         if (object != null)
             return object;
