@@ -11,9 +11,7 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec<T> {
 
@@ -60,8 +58,8 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
-        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, policy, securityProperty, toDraw) : null, customEditorFunction);
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, GroupObjectEntity toDraw) {
+        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, toDraw) : null, customEditorFunction);
     }
 
     @Override

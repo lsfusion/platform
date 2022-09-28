@@ -9,7 +9,6 @@ import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -25,7 +24,6 @@ import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterInstance;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -45,7 +43,7 @@ public interface Context {
 
     InputContext lockInputContext();
     void unlockInputContext();
-    InputResult inputUserData(ActionOrProperty securityProperty, DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList);
+    InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputContext inputContext, String customChangeFunction, InputList inputList);
     ObjectValue requestUserClass(CustomClass baseClass, CustomClass defaultValue, boolean concrete);
 
     void pushLogMessage();

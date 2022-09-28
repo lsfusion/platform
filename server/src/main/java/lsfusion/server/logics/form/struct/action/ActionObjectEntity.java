@@ -16,9 +16,7 @@ import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
 
@@ -45,10 +43,10 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return this.property.getGroupChange(entity, mapping);
     }
 
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw, boolean optimistic) {
+    public AsyncEventExec getAsyncEventExec(FormEntity form, GroupObjectEntity toDraw, boolean optimistic) {
         AsyncMapEventExec<P> asyncExec = property.getAsyncEventExec(optimistic);
         if(asyncExec != null)
-            return asyncExec.map(mapping, form, policy, securityProperty, toDraw);
+            return asyncExec.map(mapping, form, toDraw);
         return null;
     }
 
