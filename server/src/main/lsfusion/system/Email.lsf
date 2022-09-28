@@ -45,6 +45,7 @@ receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
 
 CLASS ReceiveAccountType '{email.receive.account.type}' {
     POP3 '{email.receive.account.type.pop3}',
+    POP3S '{email.receive.account.type.pop3s}',
     IMAP '{email.receive.account.type.imap}',
     IMAPS '{email.receive.account.type.imaps}'
 }

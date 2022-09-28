@@ -83,11 +83,11 @@ public class EmailReceiver {
 
     public static Store getEmailStore(String receiveHost, AccountType accountType, boolean startTLS) throws GeneralSecurityException, NoSuchProviderException {
         Properties mailProps = new Properties();
-        mailProps.setProperty(accountType == POP3 ? "mail.pop3.host" : "mail.imap.host", receiveHost);
+        mailProps.setProperty(accountType.getHost(), receiveHost);
 
         boolean imap = accountType == IMAP;
         boolean imaps = accountType == IMAPS;
-        if (imap || imaps) { //imaps
+        if (imap || imaps) {
             MailSSLSocketFactory socketFactory = new MailSSLSocketFactory();
             socketFactory.setTrustAllHosts(true);
             mailProps.put(imap ? "mail.imap.ssl.socketFactory" : "mail.imaps.ssl.socketFactory", socketFactory);
