@@ -106,7 +106,7 @@ CREATE OR REPLACE FUNCTION cast_dynamic_file_to_named_file(file bytea, name VARC
 $$
 BEGIN
 name = COALESCE(name, 'file');
-RETURN chr(length(name))::bytea || name::bytea || file;
+RETURN chr(length(name::bytea))::bytea || name::bytea || file;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
 
@@ -125,6 +125,6 @@ $$
 BEGIN
 name = COALESCE(name, 'file');
 ext = COALESCE(ext, 'dat');
-RETURN chr(length(name))::bytea || name::bytea || chr(length(ext))::bytea || ext::bytea || file;
+RETURN chr(length(name::bytea))::bytea || name::bytea || chr(length(ext::bytea))::bytea || ext::bytea || file;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
