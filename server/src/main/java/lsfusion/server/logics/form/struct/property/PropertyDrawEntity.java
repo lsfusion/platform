@@ -238,7 +238,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean externalChange) {
         ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, policy, getSecurityProperty(), getToDraw(form), optimisticAsync || externalChange);
+            return changeAction.getAsyncEventExec(form, getToDraw(form), optimisticAsync || externalChange);
         }
         return null;
     }
