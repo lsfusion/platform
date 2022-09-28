@@ -67,8 +67,8 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     @Override
-    public String getBackground(String baseColor) {
-        return getThemedColor(background != null ? background.toString() : baseColor);
+    public String getBackground() {
+        return background != null ? background.toString() : null;
     }
 
     @Override

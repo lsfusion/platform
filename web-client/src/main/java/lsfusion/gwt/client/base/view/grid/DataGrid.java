@@ -1245,10 +1245,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             updateSelectedCells(newLocalSelectedRow, dataColumnsChanged, updateRowImpl, true);
     }
 
-    public static String getSelectedCellBackground(String background) {
-        return getThemedColor(background);
-    }
-
     private void updateFocusedCellDOM() {
         NodeList<TableRowElement> rows = tableWidget.getDataRows();
         TableRowElement headerRow = noHeaders ? null : headerBuilder.getHeaderRow(); // we need headerRows for upper border

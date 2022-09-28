@@ -16,6 +16,7 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -220,12 +221,23 @@ public abstract class AbstractDataGridBuilder<T> {
         column.updateDom(cell, cellParent);
     }
 
+    // we want to set the colors for the td (not the sized element), since we usually want the background color to include td paddings
+    // it's not pretty, but other solutions also are not (for example pulling td all over the stack, or including it in the update contexts, however later this might change)
+    private static Element getColorElement(Element element) {
+        Element parentElement = element.getParentElement();
+        if(GwtClientUtils.isTDorTH(parentElement))
+            return parentElement;
+        return element;
+    }
+
     public static void updateColors(Element element, String backgroundColor, String foregroundColor) {
+        element = getColorElement(element);
         GFormController.setBackgroundColor(element, backgroundColor);
         GFormController.setForegroundColor(element, foregroundColor);
     }
 
     public static void clearColors(Element element) {
+        element = getColorElement(element);
         GFormController.setBackgroundColor(element, null);
         GFormController.setForegroundColor(element, null);
     }

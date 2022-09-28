@@ -13,6 +13,7 @@ import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
@@ -35,7 +36,6 @@ import lsfusion.gwt.client.form.object.table.view.GGridPropertyTableHeader;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 
 import java.util.ArrayList;
@@ -392,8 +392,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             }
 
             GTreeGridRecord rowValue = (GTreeGridRecord) cell.getRow();
-            String background = DataGrid.getSelectedCellBackground(rowValue.getRowBackground());
-            String foreground = rowValue.getRowForeground();
+            String background = ColorUtils.getThemedColor(rowValue.getRowBackground());
+            String foreground = ColorUtils.getThemedColor(rowValue.getRowForeground());
             if(isNew || !equalsColorState(renderedState, background, foreground)) {
                 renderedState.background = background;
                 renderedState.foreground = foreground;

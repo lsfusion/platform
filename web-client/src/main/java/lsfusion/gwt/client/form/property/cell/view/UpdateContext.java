@@ -1,7 +1,5 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
-import lsfusion.gwt.client.base.view.ColorUtils;
-
 public interface UpdateContext {
     
     default void changeProperty(Object result) {}
@@ -22,7 +20,7 @@ public interface UpdateContext {
 
     default CellRenderer.ToolbarAction[] getToolbarActions() { return CellRenderer.noToolbarActions; } ;
 
-    default String getBackground(String baseColor) { return ColorUtils.getThemedColor(baseColor); }
+    default String getBackground() { return null; }
 
     default String getForeground() { return null; }
 }

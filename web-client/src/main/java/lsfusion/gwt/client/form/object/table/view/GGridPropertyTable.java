@@ -560,8 +560,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         setLoadingAt(cell);
         setValueAt(cell, value);
 
-        TableCellElement element = getElement(cell);
-        form.update(property, element, getUpdateContext(cell, getRenderElement(cell, element), property, column));
+        column.updateDom(cell, getElement(cell));
 
         return new Pair<>(GGroupObjectValue.getFullKey(propertyRowKey, propertyColumnKey), oldValue);
     }
@@ -785,10 +784,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             }
 
             @Override
-            public String getBackground(String baseColor) {
+            public String getBackground() {
                 T row = (T) cell.getRow();
                 String background = column.getBackground(property, row);
-                return DataGrid.getSelectedCellBackground(background != null ? background : (baseColor != null ? baseColor : row.getRowBackground()));
+                return background != null ? background : row.getRowBackground();
             }
 
             @Override

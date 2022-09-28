@@ -5,6 +5,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
@@ -269,10 +270,6 @@ public abstract class CellRenderer<T> {
         return false;
     }
 
-    protected String getBaseBackground(Object value) {
-        return null;
-    }
-
     protected boolean needToRenderToolbarContent() {
         return property.toolbar;
     }
@@ -305,8 +302,7 @@ public abstract class CellRenderer<T> {
     private static final String RENDERED = "rendered";
 
     protected String getBackground(UpdateContext updateContext) {
-        String baseBackground = getBaseBackground(updateContext.getValue()); // not converted (with getThemedColor)
-        return updateContext.getBackground(baseBackground); // converted (with getThemedColor)
+        return ColorUtils.getThemedColor(updateContext.getBackground());
     }
 
     protected static void rerenderState(Element element, boolean set) {
@@ -348,7 +344,7 @@ public abstract class CellRenderer<T> {
 
         // already themed colors expected
         String background = getBackground(updateContext);
-        String foreground = updateContext.getForeground();
+        String foreground = ColorUtils.getThemedColor(updateContext.getForeground());
         if(isNew || !equalsColorState(renderedState, background, foreground)) {
             renderedState.background = background;
             renderedState.foreground = foreground;
