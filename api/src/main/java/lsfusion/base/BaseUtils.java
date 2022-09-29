@@ -1782,6 +1782,9 @@ public class BaseUtils {
         return (Map<K, E>) map;
     }
 
+    public static <I> I mutableCast(Object object) {
+        return (I) object;
+    }
     public static <I> I immutableCast(Object object) {
         return (I) object;
     }

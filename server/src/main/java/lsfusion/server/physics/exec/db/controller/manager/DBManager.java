@@ -29,6 +29,7 @@ import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.OperationOwner;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -79,6 +80,7 @@ import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
+import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.AlgType;
 import lsfusion.server.logics.property.data.DataProperty;
@@ -821,7 +823,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public Long getCurrentConnection() {
             return ThreadLocalContext.getCurrentConnection();
         }
+
+        public Long getThreadCurrentUser() {
+            return getSystemUser();
+        }
+
+        public Long getThreadCurrentComputer() {
+            return getServerComputer();
+        }
     };
+
+    public final ContextQueryEnvironment env = new ContextQueryEnvironment(contextProvider, null,
+            () -> restartManager.isPendingRestart(),
+            () -> 0,
+            new FormController() {
+                @Override
+                public void changeCurrentForm(String form) {
+                    throw new RuntimeException("not supported");
+                }
+
+                @Override
+                public String getCurrentForm() {
+                    return null;
+                }
+            },
+            Locale::getDefault);
 
     public SQLSession createSQL() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         return createSQL(contextProvider);
@@ -895,30 +921,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         return null;
                     }
                 },
-                new FormController() {
-                    @Override
-                    public void changeCurrentForm(String form) {
-                        throw new RuntimeException("not supported");
-                    }
-
-                    @Override
-                    public String getCurrentForm() {
-                        return null;
-                    }
-                },
-                () -> 0,
+                env.form,
+                env.timeout,
                 new ChangesController() {
                     public DBManager getDbManager() {
                         return DBManager.this;
                     }
-                }, Locale::getDefault, upOwner
+                }, env.locale, env.isServerRestarting, upOwner
         );
     }
 
     public DataSession createSession(SQLSession sql, UserController userController, FormController formController,
-                                     TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, OperationOwner owner) throws SQLException {
-        //todo: неплохо бы избавиться от зависимости на restartManager, а то она неестественна
-        return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, () -> restartManager.isPendingRestart(),
+                                     TimeoutController timeoutController, ChangesController changesController, LocaleController localeController, IsServerRestartingController isServerRestartingController, OperationOwner owner) throws SQLException {
+        return new DataSession(sql, userController, formController, timeoutController, changesController, localeController, isServerRestartingController,
                                LM.baseClass, businessLogics.systemEventsLM.session, businessLogics.systemEventsLM.currentSession, getIDSql(), businessLogics.getSessionEvents(), owner);
     }
 
@@ -973,12 +988,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
     // dropping caches when there are changes depending on inputListProperties
     public static class Param<P extends PropertyInterface> {
         public final ImMap<P, ObjectValue> mapValues;
+        public final ImMap<CurrentEnvironmentProperty, Object> envValues; // can have null values
         public final ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders; // it's not pretty clean solution, but it's the easiest way to implement this
         public final String value;
         public final Object mode;
 
-        public Param(ImMap<P, ObjectValue> mapValues, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, String value, Object mode) {
+        public Param(ImMap<P, ObjectValue> mapValues, ImMap<CurrentEnvironmentProperty, Object> envValues, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, String value, Object mode) {
             this.mapValues = mapValues;
+            this.envValues = envValues;
             this.orders = orders;
             this.value = value;
             this.mode = mode;
@@ -1004,11 +1021,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public boolean equals(Object o) {
-            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && value.equals(((Param) o).value) && mode == ((Param) o).mode && equalsMap(orders, ((Param<P>) o).orders);
+            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && envValues.equals(((Param) o).envValues) && value.equals(((Param) o).value) && mode == ((Param) o).mode && equalsMap(orders, ((Param<P>) o).orders);
         }
 
         public int hashCode() {
-            return 31 * (31 * (mapValues.hashCode() * 31 + value.hashCode()) + mode.hashCode()) + hashMap(orders);
+            return 31 * (31 * ( 31 * (31 * mapValues.hashCode() + envValues.hashCode())  + value.hashCode()) + mode.hashCode()) + hashMap(orders);
         }
     }
     private static class ParamRef {
@@ -1057,7 +1074,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         Property<?> key = list.getCacheKey();
-        Param param = list.getCacheParam(value, mode);
+        Param param = list.getCacheParam(value, mode, env);
 
         ValueRef<P> valueRef = asyncValuesValueCache.get(key, param);
         if(valueRef != null && valueRef.ref.param != null)

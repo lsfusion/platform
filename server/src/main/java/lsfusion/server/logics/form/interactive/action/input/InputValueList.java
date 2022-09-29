@@ -8,14 +8,18 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
+import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
+import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -53,7 +57,7 @@ public class InputValueList<P extends PropertyInterface> {
     }
 
     public boolean hasValues() {
-        return !mapValues.isEmpty();
+        return !(mapValues.isEmpty() && property.getEnvDepends().isEmpty());
     }
 
     public Stat getSelectStat() {
@@ -74,7 +78,14 @@ public class InputValueList<P extends PropertyInterface> {
     public Property<?> getCacheKey() {
         return property;
     }
-    public DBManager.Param<?> getCacheParam(String value, AsyncMode mode) {
-        return new DBManager.Param<P>(mapValues, orders, value, mode.getCacheMode());
+    public DBManager.Param<?> getCacheParam(String value, AsyncMode mode, QueryEnvironment env) {
+        ImMap<CurrentEnvironmentProperty, Object> envValues = MapFact.EMPTY();
+        ImSet<CurrentEnvironmentProperty> envDepends = property.getEnvDepends();
+        if(!envDepends.isEmpty()) { // optimization
+            ImMap<String, ValueParseInterface> queryPropParams = CompiledQuery.getQueryPropParams(env);
+            envValues = envDepends.mapValues((CurrentEnvironmentProperty prop) -> queryPropParams.get(prop.paramString).getValue());
+        }
+
+        return new DBManager.Param<P>(mapValues, envValues, orders, value, mode.getCacheMode());
     }
 }

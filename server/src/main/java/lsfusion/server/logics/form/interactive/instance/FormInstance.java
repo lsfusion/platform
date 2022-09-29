@@ -1636,7 +1636,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         String formCanonicalName = entity.getCanonicalName();
         if (session.prevFormCanonicalName == null || !session.prevFormCanonicalName.equals(formCanonicalName)) {
-            session.form.changeCurrentForm(formCanonicalName);
+            session.env.form.changeCurrentForm(formCanonicalName);
             session.prevFormCanonicalName = formCanonicalName;
         }
     }

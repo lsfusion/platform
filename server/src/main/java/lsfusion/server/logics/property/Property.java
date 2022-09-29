@@ -992,6 +992,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return result;
     }
 
+    @IdentityLazy
+    public ImSet<CurrentEnvironmentProperty> getEnvDepends() {
+        return BaseUtils.immutableCast(getRecDepends().filterFn(element -> element instanceof CurrentEnvironmentProperty));
+    }
+
     @IdentityStartLazy
     public ImSet<SessionProperty> getSessionCalcDepends(boolean events) {
         MSet<SessionProperty> mResult = SetFact.mSet();
