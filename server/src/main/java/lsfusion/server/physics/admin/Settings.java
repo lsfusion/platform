@@ -2301,16 +2301,6 @@ public class Settings implements Cloneable {
     public void setClassOptimizationActionCasesCount(int classOptimizationActionCasesCount) {
         this.classOptimizationActionCasesCount = classOptimizationActionCasesCount;
     }
-    
-    private boolean extendedSQLConnectionLog = false;
-
-    public boolean isExtendedSQLConnectionLog() {
-        return extendedSQLConnectionLog;
-    }
-
-    public void setExtendedSQLConnectionLog(boolean extendedSQLConnectionLog) {
-        this.extendedSQLConnectionLog = extendedSQLConnectionLog;
-    }
 
     private int closeConfirmedDelay = 5000; // 5 seconds
     private int closeNotConfirmedDelay = 300000; // 5 minutes, if after 5 minutes there is no response from client close the form anyway
@@ -2783,7 +2773,7 @@ public class Settings implements Cloneable {
     private int asyncValuesNeededCount = 15;
     private int asyncValuesMaxReadCount = 1000;
     private int asyncValuesMaxReadOrderCount = 1000;
-    private int asyncValuesMaxReadDataCompletionCount = 10000;
+    private int asyncValuesMaxReadDataCompletionCount = 100000;
 
     public int getAsyncValuesLongCacheThreshold() {
         return asyncValuesLongCacheThreshold;

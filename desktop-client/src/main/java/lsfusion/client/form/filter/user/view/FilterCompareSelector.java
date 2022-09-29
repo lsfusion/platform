@@ -5,6 +5,8 @@ import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.interop.form.property.Compare;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -49,6 +51,19 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
         });
 
         addOptions();
+        
+        menu.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(() -> menuCanceled());
+            }
+        });
     }
 
     public void set(List<Compare> values) {
@@ -94,4 +109,5 @@ public abstract class FilterCompareSelector extends FilterOptionSelector<Compare
 
     public abstract void negationChanged(boolean value);
     public abstract void allowNullChanged(boolean value);
+    public abstract void menuCanceled();
 }

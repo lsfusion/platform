@@ -26,11 +26,15 @@ import java.io.PrintWriter;
 import static lsfusion.base.BaseUtils.nvl;
 
 public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchicalAction<XMLNode, O> {
-    
+
+    private final boolean noHeader;
+
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, LP exportFile, Integer selectTop, String charset, ValueClass root, ValueClass tag) {
+                           FormIntegrationType staticType, LP exportFile, Integer selectTop, boolean noHeader, String charset, ValueClass root, ValueClass tag) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, charset, root, tag);
+
+        this.noHeader = noHeader;
     }
 
     protected XMLNode createRootNode(String root, String tag) {
@@ -44,7 +48,7 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
     protected void writeRootNode(PrintWriter printWriter, XMLNode rootNode) throws IOException {
         Element element = rootNode.element;
         XMLOutputter xmlOutput = new XMLOutputter();
-        xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(charset));
+        xmlOutput.setFormat(Format.getPrettyFormat().setEncoding(charset).setOmitDeclaration(noHeader));
         xmlOutput.output(new Document(element), printWriter);
     }
 }

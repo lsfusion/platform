@@ -46,7 +46,8 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
             quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));
         }
         return new GInputListAction(createImage(clientInputListAction.action, false), clientInputListAction.id, convertOrCast(clientInputListAction.asyncExec),
-                convertOrCast(clientInputListAction.keyStroke), convertOrCast(clientInputListAction.editingBindingMode), quickAccessList);
+                convertOrCast(clientInputListAction.keyStroke), convertOrCast(clientInputListAction.editingBindingMode),
+                quickAccessList, clientInputListAction.index);
     }
 
     @Converter(from = KeyStroke.class)

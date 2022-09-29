@@ -50,7 +50,8 @@ public class ClientAsyncSerializer {
             for (int j = 0; j < quickAccessLength; j++) {
                 quickAccessList.add(new ClientQuickAccess(deserializeQuickAccessMode(inStream), inStream.readBoolean()));
             }
-            actions[i] = new ClientInputListAction(action, id, asyncExec, keyStroke, editingBindingMode, quickAccessList);
+            int index = inStream.readInt();
+            actions[i] = new ClientInputListAction(action, id, asyncExec, keyStroke, editingBindingMode, quickAccessList, index);
         }
 
         return new ClientInputList(actions, inStream.readBoolean() ? CompletionType.STRICT : CompletionType.NON_STRICT, null);

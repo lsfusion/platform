@@ -331,10 +331,9 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                             refreshButton = new SuggestPopupButton(ClientImages.get("refresh.png"), e -> requestSuggestions());
                             buttonsPanel.add(refreshButton);
 
-                            for (int i = 0; i < actions.length; i++) {
-                                int index = i;
-                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.getImage(actions[index].action), e -> suggestButtonPressed(index));
-                                button.setToolTipText(property.getQuickActionTooltipText(actions[index].keyStroke));
+                            for (ClientInputListAction action : actions) {
+                                SuggestPopupButton button = new SuggestPopupButton(ClientImages.getImage(action.action), e -> suggestButtonPressed(action.index));
+                                button.setToolTipText(property.getQuickActionTooltipText(action.keyStroke));
                                 buttonsPanel.add(button);
                             }
 

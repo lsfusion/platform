@@ -12,7 +12,7 @@ The `EXPORT` operator: creates an [action](Actions.md) that exports [specified p
 `exportFormat` can be specified by one of the following options:
 
     JSON [CHARSET charsetStr]
-    XML [ATTR] [CHARSET charsetStr]
+    XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
     CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
     XLS [SHEET sheetProperty] [HEADER | NOHEADER]
     XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
@@ -90,6 +90,8 @@ When exporting a form in an `OBJECTS` block, it is possible to add extra filters
     Keywords specifying the presence (`HEADER`) or absence (`NOHEADER`) of a header string in a **CSV**, **XLS**, or **XLSX** file. The default is `NOHEADER`.
 
     When using the `NOHEADER` option if the column name is one of the predefined names (`A`, `B`, ..., `Z`, `AA`, ..., `AE`), it is exported to the column with the corresponding number, and the following columns are exported to the columns next in order after this column.
+
+    Has other meaning for **XML**: with `HEADER` result file contains first string like <?xml version="1.0" encoding="UTF-8"?>. Export with `NOHEADER` exports without this string. The default is `HEADER`.
 
 - `ESCAPE | NOESCAPE`
 

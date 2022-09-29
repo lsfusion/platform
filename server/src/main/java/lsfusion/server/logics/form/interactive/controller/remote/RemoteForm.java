@@ -17,8 +17,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormEventClose;
-import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -115,8 +113,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public Object getGroupReportData(long requestIndex, long lastReceivedRequestIndex, final Integer groupId, final FormPrintType printType, final FormUserPreferences userPreferences) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("getReportData Action. GroupID: %s", groupId));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("getReportData Action. GroupID: %s", groupId));
             }
 
             InteractiveFormReportManager formReportManager = new InteractiveFormReportManager(form, groupId, userPreferences);
@@ -177,8 +175,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
         FormUserPreferences result = form.loadUserPreferences();
         
-        if (logger.isTraceEnabled()) {
-            logger.trace("getUserPreferences Action");
+        if (logger.isDebugEnabled()) {
+            logger.debug("getUserPreferences Action");
         }
         
         return result;
@@ -186,10 +184,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public ServerResponse changePageSize(long requestIndex, long lastReceivedRequestIndex, final int groupID, final Integer pageSize) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            if (logger.isTraceEnabled()) {
+            if (logger.isDebugEnabled()) {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-                logger.trace(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
-                logger.trace(String.format("new page size %s:", pageSize));
+                logger.debug(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
+                logger.debug(String.format("new page size %s:", pageSize));
             }
             
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
@@ -200,8 +198,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse gainedFocus(long requestIndex, long lastReceivedRequestIndex) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("gainedFocus Action");                    
+            if (logger.isDebugEnabled()) {
+                logger.debug("gainedFocus Action");
             }
             
             form.gainedFocus(stack);
@@ -269,11 +267,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             groupObject.change(form.session, valueToSet, form, stack);
 
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
-                logger.trace("   keys: ");
-                for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                    logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
+                if (logger.isTraceEnabled()) {
+                    logger.trace("   keys: ");
+                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                    }
                 }
             }
         });
@@ -283,8 +283,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
 
-            if (logger.isTraceEnabled())
-                logger.trace(String.format("expandGroupObjectRecursive: [ID: %1$d]", group.getID()));
+            if (logger.isDebugEnabled())
+                logger.debug(String.format("expandGroupObjectRecursive: [ID: %1$d]", group.getID()));
 
             group.expandCollapseAll(form, current, true);
         });
@@ -297,12 +297,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(valueToSet == null)
                 return;
 
-            if (logger.isTraceEnabled()) {
+            if (logger.isDebugEnabled()) {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                logger.trace(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
-                logger.trace("   keys: ");
-                for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                    logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                logger.debug(String.format("expandGroupObject: [ID: %1$d]", groupObject.getID()));
+                if (logger.isTraceEnabled()) {
+                    logger.trace("   keys: ");
+                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                    }
                 }
             }
             group.expandCollapseDown(form, valueToSet, true);
@@ -313,9 +315,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
 
-            if (logger.isTraceEnabled()) {
+            if (logger.isDebugEnabled()) {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                logger.trace(String.format("collapseGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
+                logger.debug(String.format("collapseGroupObjectRecursive: [ID: %1$d]", groupObject.getID()));
             }
             group.expandCollapseAll(form, current, false);
         });
@@ -328,12 +330,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(valueToSet == null)
                 return;
 
-            if (logger.isTraceEnabled()) {
+            if (logger.isDebugEnabled()) {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupId);
-                logger.trace(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));
-                logger.trace("   keys: ");
-                for (int i = 0, size = valueToSet.size(); i < size; i++) {
-                    logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                logger.debug(String.format("collapseGroupObject: [ID: %1$d]", groupObject.getID()));
+                if (logger.isTraceEnabled()) {
+                    logger.trace("   keys: ");
+                    for (int i = 0, size = valueToSet.size(); i < size; i++) {
+                        logger.trace(String.format("     %1$s == %2$s", valueToSet.getKey(i), valueToSet.getValue(i)));
+                    }
                 }
             }
             group.collapse(form.session, valueToSet);
@@ -353,9 +357,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
 
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
-                logger.trace(String.format("new type: %s", changeType));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("changePageSize: [ID: %1$d]", groupObject.getID()));
+                logger.debug(String.format("new type: %s", changeType));
             }
             
             form.changeGroupObject(groupObject, Scroll.deserialize(changeType));
@@ -367,8 +371,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
 
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("changeMode: [ID: %1$d]", groupObject.getID()));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("changeMode: [ID: %1$d]", groupObject.getID()));
             }
 
             if(setGroup) { // should correspond FormInstance constructor
@@ -413,12 +417,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 keys.add(deserializeDataKeysValues(columnKeys.get(i)));
             }
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("pasteExternalTable Action");
+            if (logger.isDebugEnabled()) {
+                logger.debug("pasteExternalTable Action");
 
-                for (int i =0; i < propertyIDs.size(); i++) {
-                    logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getSID(), String.valueOf(columnKeys.get(i))));
-                }                  
+                if (logger.isTraceEnabled()) {
+                    for (int i = 0; i < propertyIDs.size(); i++) {
+                        logger.trace(String.format("%s-%s", form.getPropertyDraw(propertyIDs.get(i)).getSID(), String.valueOf(columnKeys.get(i))));
+                    }
+                }
             }
             
             form.pasteExternalTable(properties, keys, values, stack);
@@ -430,8 +436,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> keysValues
                     = new HashMap<>();
 
-            if (logger.isTraceEnabled())
-                logger.trace("pasteMultiCellValue Action");
+            if (logger.isDebugEnabled())
+                logger.debug("pasteMultiCellValue Action");
             
             for (Map.Entry<Integer, List<byte[]>> e : bkeys.entrySet()) {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(e.getKey());
@@ -440,8 +446,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 MOrderMap<ImMap<ObjectInstance, DataObject>, Object> propKeys = MapFact.mOrderMap();
                 for (byte[] bkey : e.getValue()) {
                     
-                    if(logger.isTraceEnabled())
-                        logger.trace(String.format("propertyDraw: %s", propertyDraw.getSID()));
+                    if(logger.isDebugEnabled())
+                        logger.debug(String.format("propertyDraw: %s", propertyDraw.getSID()));
 
                     propKeys.add(deserializeDataKeysValues(bkey), propValue);
                 }
@@ -461,9 +467,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
                 Order order = Order.deserialize(modiType);
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("changePropertyOrder: [ID: %1$d]", propertyID));
-                    logger.trace(String.format("new order: %s", order.toString()));
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("changePropertyOrder: [ID: %1$d]", propertyID));
+                    logger.debug(String.format("new order: %s", order.toString()));
                 }
 
                 propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys), Order.deserialize(modiType));
@@ -477,8 +483,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
 
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("setPropertyOrders: [ID: %1$d]", groupObject.getID()));
             }
 
             groupObject.clearOrders();
@@ -505,9 +511,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             int result = form.countRecords(groupObjectID);
 
-            if (logger.isTraceEnabled()) {
+            if (logger.isDebugEnabled()) {
                 GroupObjectInstance groupObject = form.getGroupObjectInstance(groupObjectID);
-                logger.trace(String.format("countRecords Action. GroupObjectID: %s. Result: %s", groupObject.getID(), result));
+                logger.debug(String.format("countRecords Action. GroupObjectID: %s. Result: %s", groupObject.getID(), result));
             }
 
             return result;
@@ -521,8 +527,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             Object result = form.calculateSum(propertyDraw, keys);
             
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("calculateSum Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("calculateSum Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
             }
             
             return result;
@@ -550,8 +556,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 outMaps.add(mOutMap.immutableOrderCopy());
             }
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("groupData Action");
+            if (logger.isDebugEnabled()) {
+                logger.debug("groupData Action");
             }
 
             Map<List<Object>, List<Object>> grouped = form.groupData(BaseUtils.immutableCast(outMaps.get(0)),
@@ -579,8 +585,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     @Override
     public List<FormGrouping> readGroupings(long requestIndex, long lastReceivedRequestIndex, final String groupObjectSID) throws RemoteException {
         return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("readGroupings Action. GroupObjectSID: %s", groupObjectSID));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("readGroupings Action. GroupObjectSID: %s", groupObjectSID));
             }
             return form.readGroupings(groupObjectSID);
         });
@@ -590,8 +596,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public void saveGrouping(long requestIndex, long lastReceivedRequestIndex, final FormGrouping grouping) throws RemoteException {
         processRMIRequest(requestIndex, lastReceivedRequestIndex, (EExecutionStackCallable<Void>) stack -> {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("readGroupings Action: [ID: %s]", grouping.groupObjectSID));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("readGroupings Action: [ID: %s]", grouping.groupObjectSID));
             }
             
             form.saveGrouping(grouping, stack);
@@ -609,9 +615,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 GroupObjectInstance applyObject = filter.getApplyObject();
                 if(applyObject != null) {
                     applyObject.addUserFilter(filter);
-                    if (logger.isTraceEnabled()) {
-                        logger.trace(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
-                        logger.trace(String.format("apply object: %s", filter.getApplyObject().getID()));
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("set user filter: [CLASS: %1$s]", filter.getClass()));
+                        logger.debug(String.format("apply object: %s", filter.getApplyObject().getID()));
                     }
                 }
             }
@@ -621,9 +627,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse setRegularFilter(long requestIndex, long lastReceivedRequestIndex, final int groupID, final int filterID) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
-            if (logger.isTraceEnabled()) {
-                logger.trace(String.format("set regular filter: [GROUP: %1$s]", groupID));
-                logger.trace(String.format("filter ID: %s", filterID));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("set regular filter: [GROUP: %1$s]", groupID));
+                logger.debug(String.format("filter ID: %s", filterID));
             }
         });
     }
@@ -652,8 +658,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("executeEventAction");
+            if (logger.isDebugEnabled()) {
+                logger.debug("executeEventAction");
             }
 
             form.fireFormEvent(stack, formEvent);
@@ -663,8 +669,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse setTabActive(long requestIndex, long lastReceivedRequestIndex, final int tabPaneID, final int childId) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("setTabVisible Action");
+            if (logger.isDebugEnabled()) {
+                logger.debug("setTabVisible Action");
             }
             
             form.setTabVisible((ContainerView) richDesign.findById(tabPaneID), richDesign.findById(childId));
@@ -675,8 +681,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("setContainerCollapsed Action");
+            if (logger.isDebugEnabled()) {
+                logger.debug("setContainerCollapsed Action");
             }
 
             form.setContainerCollapsed((ContainerView) richDesign.findById(containerID), collapsed);
@@ -687,8 +693,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, final GroupObjectUserPreferences preferences, final boolean forAllUsers, final boolean completeOverride, final String[] hiddenProps) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
-            if (logger.isTraceEnabled()) {
-                logger.trace("saveUserPreferences Action");
+            if (logger.isDebugEnabled()) {
+                logger.debug("saveUserPreferences Action");
             }
             
             form.saveUserPreferences(stack, preferences, forAllUsers, completeOverride);
@@ -716,19 +722,17 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 
                 form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack);
 
+                logger.info(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                 if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                     if (keys.size() > 0) {
                         logger.trace("   columnKeys: ");
                         for (int i = 0, size = keys.size(); i < size; i++) {
                             logger.trace(String.format("     %1$s == %2$s", keys.getKey(i), keys.getValue(i)));
                         }
                     }
-                    if (logger.isTraceEnabled()) {
-                        logger.trace("   current object's values: ");
-                        for (ObjectInstance obj : form.getObjects()) {
-                            logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
-                        }
+                    logger.trace("   current object's values: ");
+                    for (ObjectInstance obj : form.getObjects()) {
+                        logger.trace(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
                     }
                 }
             }
@@ -809,8 +813,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
         Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic, optimisticRun);
 
-        if (logger.isTraceEnabled()) {
-            logger.trace(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
         }
 
         return result;
@@ -890,8 +894,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             else
                 formChanges = form.getChanges(stack, forceLocalEvents, resultActions);
 
-            if (logger.isTraceEnabled()) {
-                formChanges.logChanges(form, logger);
+            if (logger.isDebugEnabled()) {
+                logger.debug("getFormChanges");
+                if (logger.isTraceEnabled()) {
+                    formChanges.logChanges(form, logger);
+                }
             }
 
             return formChanges.serialize();

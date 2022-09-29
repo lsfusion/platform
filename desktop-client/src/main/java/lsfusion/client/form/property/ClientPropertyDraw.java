@@ -446,8 +446,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (inputList != null) {
             KeyStroke eventKeyStroke = KeyStroke.getKeyStrokeForEvent(editEvent);
             for (int i = 0; i < inputList.actions.length; i++) {
-                if (eventKeyStroke.equals(inputList.actions[i].keyStroke)) {
-                    return i;
+                ClientInputListAction action = inputList.actions[i];
+                if (eventKeyStroke.equals(action.keyStroke)) {
+                    return action.index;
                 }
             }
         }
@@ -468,7 +469,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
                 ClientInputListAction action = actions[i];
                 //addDialogInputAProp from server
                 if (action.id != null && action.id.equals("dialog")) {
-                    return i;
+                    return action.index;
                 }
             }
         }

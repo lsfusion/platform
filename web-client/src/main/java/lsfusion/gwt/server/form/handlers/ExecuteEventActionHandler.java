@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.property.async.GPushAsyncResult;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.GwtToClientConverter;
 import lsfusion.gwt.server.form.FormServerResponseActionHandler;
+import lsfusion.http.provider.SessionInvalidatedException;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
 import java.rmi.RemoteException;
@@ -17,6 +18,11 @@ public class ExecuteEventActionHandler extends FormServerResponseActionHandler<E
 
     public ExecuteEventActionHandler(MainDispatchServlet servlet) {
         super(servlet);
+    }
+
+    @Override
+    protected String getActionDetails(ExecuteEventAction action) throws SessionInvalidatedException {
+        return super.getActionDetails(action) + ", action : " + action.actionSID;
     }
 
     @Override

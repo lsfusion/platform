@@ -14,8 +14,9 @@ public class InputListAction {
     public Map<String, BindingMode> bindingModesMap;
     public Integer priority;
     public ImList<QuickAccess> quickAccessList;
+    public int index;
 
-    public InputListAction(AppImage action, String id, AsyncEventExec asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList) {
+    public InputListAction(AppImage action, String id, AsyncEventExec asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, int index) {
         this.action = action;
         this.id = id;
         this.asyncExec = asyncExec;
@@ -23,5 +24,6 @@ public class InputListAction {
         this.bindingModesMap = bindingModesMap;
         this.priority = priority;
         this.quickAccessList = quickAccessList;
+        this.index = index;
     }
 }

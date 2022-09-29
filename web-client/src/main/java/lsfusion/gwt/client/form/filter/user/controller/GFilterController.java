@@ -57,7 +57,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
             public ClickHandler getClickHandler() {
                 return event -> {
                     toggleControlsVisible();
-                    updateToolbarButton();
                 };
             }
         };
@@ -88,19 +87,28 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void toggleControlsVisible() {
-        controlsVisible = !controlsVisible;
+        setControlsVisible(!controlsVisible);
+
+        if (conditionViews.isEmpty() && controlsVisible && hasFiltersContainer()) {
+            addCondition();
+        }
+    }
+    
+    public void setControlsVisible(boolean visible) {
+        controlsVisible = visible;
 
         if (!conditionViews.isEmpty()) {
             for (GFilterConditionView view : conditionViews.values()) {
                 view.setControlsVisible(controlsVisible);
             }
-        } else if (controlsVisible && hasFiltersContainer()) {
-            addCondition();
         }
 
         controlsView.setVisible(controlsVisible);
         logicsSupplier.getForm().formLayout.update(-1);
+
+        updateToolbarButton();
     }
+    
     private void updateToolbarButton() {
         toolbarButton.setTitle(controlsVisible ? messages.formFilterHideControls() : messages.formFilterShowControls());
         toolbarButton.showBackground(controlsVisible);
@@ -231,12 +239,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     @Override
     public void resetConditions() {
-        resetAllConditions();
-        toggleControlsVisible();
-        updateToolbarButton();
-    }
-
-    public void resetAllConditions() {
         resetAllConditions(true);
     }
 
@@ -250,6 +252,10 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         removeConditionView(filter);
         GFilterConditionView filterView = conditionViews.remove(filter);
         filterView.isRemoved = true;
+
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
     }
 
     private void updateConditionsLastState() {
@@ -265,9 +271,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView) {
-        if (!controlsVisible) {
-            applyFilters(focusFirstComponent, changedView);
-        }
+        applyFilters(focusFirstComponent, changedView);
     }
 
     public void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView) {
@@ -288,6 +292,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void update() {
+        columns.clear();
+        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+            columns.put(column.first, column.second);
+        }
+        
         if (initialFilters != null) {
             for (GFilter filter : initialFilters) {
                 if (filter.container != null) { // removed in design
@@ -296,11 +305,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 }
             }
             initialFilters = null;
-        }
-
-        columns.clear();
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
-            columns.put(column.first, column.second);
         }
     }
 
@@ -336,7 +340,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     public boolean hasConditions() {
         return !conditionViews.isEmpty();
     }
-
+    
     public abstract void applyFilters(ArrayList<GPropertyFilter> conditions, ArrayList<GFilterConditionView> changed, boolean focusFirstComponent);
     public abstract void addBinding(GInputEvent event, GBindingEnv env, GFormController.BindingExec pressed, Widget component);
 }

@@ -45,6 +45,7 @@ receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
 
 CLASS ReceiveAccountType '{email.receive.account.type}' {
     POP3 '{email.receive.account.type.pop3}',
+    POP3S '{email.receive.account.type.pop3s}',
     IMAP '{email.receive.account.type.imap}',
     IMAPS '{email.receive.account.type.imaps}'
 }
@@ -136,9 +137,9 @@ FORM accounts '{email.form.accounts}'
 CLASS Email '{email.email}';
 TABLE email(Email);
 
-id = DATA STRING[200] (Email);  
-emailId = GROUP AGGR Email email WHERE email IS Email BY id (email);
- 
+id = DATA STRING (Email);  
+emailId = GROUP AGGR Email email BY id (email);
+
 account = DATA Account (Email) NONULL DELETE;
 
 uid = DATA LONG (Email);  
@@ -207,7 +208,7 @@ FORM mail '{email.form.mail}'
                            dateTimeReceived, importErrors, openEMLFile CHANGEABLE GRID, '' = message PANEL
     PROPERTIES(e) NEWSESSION DELETE
     PROPERTIES(a) receiveEmailAction TOOLBAR DRAW e 
-    FILTERS account(e) = a
+    FILTERS account(e) = a, dateTimeReceived(e)
                     
     OBJECTS ae = AttachmentEmail
     PROPERTIES(ae) READONLY imported, importError, filename, lastError PANEL

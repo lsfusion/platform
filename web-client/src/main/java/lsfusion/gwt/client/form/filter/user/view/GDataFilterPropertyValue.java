@@ -151,7 +151,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new GInputListAction[]{new GInputListAction(StaticImage.RESET, "reset", null, null, null, null)},
+        inputList = new GInputList(new GInputListAction[]{new GInputListAction(StaticImage.RESET, "reset", null, null, null, null, 0)},
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT :
                 GCompletionType.NON_STRICT,
                 compare);

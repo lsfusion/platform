@@ -139,13 +139,13 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                conditionChanged();
+                focusValueView();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                conditionChanged();
+                focusValueView();
             }
 
             @Override
@@ -154,7 +154,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                conditionChanged();
+                focusValueView();
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -165,7 +165,9 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                conditionChanged(cell.enterPressed);
+                if (cell.enterPressed) {
+                    conditionChanged(true);
+                }
                 confirmed = true;
             }
 
@@ -202,7 +204,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
-                    conditionChanged();
+                    focusValueView();
                 };
             }
         };
@@ -213,8 +215,9 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         rightPanel.addCentered(junctionView);
     }
 
-    private void conditionChanged() {
-        conditionChanged(false);
+    private void focusValueView() {
+        // focus value view in order to be able to apply filter by pressing Enter (even if focus was somewhere else before)
+        valueView.focusOnValue();
     }
     
     private void conditionChanged(boolean focusFirstComponent) {
