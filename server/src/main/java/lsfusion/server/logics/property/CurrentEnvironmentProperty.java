@@ -16,7 +16,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public abstract class CurrentEnvironmentProperty extends NoIncrementProperty<PropertyInterface> {
     
-    private final String paramString; 
+    public final String paramString;
     private final ValueClass paramClass;
 
     public CurrentEnvironmentProperty(LocalizedString caption, String paramString, ValueClass paramClass) {

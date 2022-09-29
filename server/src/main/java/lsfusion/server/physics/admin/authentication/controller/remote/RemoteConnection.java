@@ -55,7 +55,7 @@ public abstract class RemoteConnection extends RemoteRequestObject {
     protected abstract ChangesController createChangesController();    
 
     protected DataSession createSession() throws SQLException {
-        return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), null);
+        return dbManager.createSession(sql, new WeakUserController(this), createFormController(), new WeakTimeoutController(this), createChangesController(), new WeakLocaleController(this), dbManager.env.isServerRestarting, null);
     }
 
     protected void initContext(LogicsInstance logicsInstance, AuthenticationToken token, ConnectionInfo connectionInfo, ExecutionStack stack) throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException, SQLHandledException {

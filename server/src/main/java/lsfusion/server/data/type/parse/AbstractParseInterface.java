@@ -10,11 +10,15 @@ import java.sql.SQLException;
 
 public abstract class AbstractParseInterface implements ParseInterface {
 
-    private static class Null extends AbstractParseInterface {
+    private static class Null extends AbstractParseInterface implements ValueParseInterface {
         private final Type type;
 
         public Null(Type type) {
             this.type = type;
+        }
+
+        public Object getValue() {
+            return null;
         }
 
         public boolean isSafeString() {
@@ -42,7 +46,7 @@ public abstract class AbstractParseInterface implements ParseInterface {
         }
     }
 
-    public static ParseInterface NULL(Type type) {
+    public static ValueParseInterface NULL(Type type) {
         return new Null(type);
     }
 
