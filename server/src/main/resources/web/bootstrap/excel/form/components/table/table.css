@@ -16,13 +16,14 @@
     --focused-cell-background-color: var(--selection-color-rgba);
 }
 
-.table-active > td {
+.table-active > td,
+.table-active > td .background-inherit {
     box-shadow: inset 0 0 0 9999px var(--selected-row-background-color);
 }
 
-.focused-cell {
+.focused-cell,
+.focused-cell .background-inherit {
     box-shadow: inset 0 0 0 9999px var(--focused-cell-background-color) !important;
-    position: relative;
 }
 
 .dropdown-menu {
