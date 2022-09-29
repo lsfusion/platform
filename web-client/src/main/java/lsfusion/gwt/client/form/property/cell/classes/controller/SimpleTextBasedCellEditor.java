@@ -539,16 +539,16 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             });
 
             for(int i = 0; i < actions.length; i++) {
-                int index = i;
-                SuggestPopupButton actionButton = new SuggestPopupButton(actions[index].action) {
+                GInputListAction action = actions[i];
+                SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
                     @Override
                     public ClickHandler getClickHandler() {
-                        return event -> validateAndCommit(parent, index, true, CommitReason.SUGGEST);
+                        return event -> validateAndCommit(parent, action.index, true, CommitReason.SUGGEST);
                     }
                 };
                 buttonsPanel.add(actionButton);
 
-                String tooltip = property.getQuickActionTooltipText(actions[index].keyStroke);
+                String tooltip = property.getQuickActionTooltipText(action.keyStroke);
                 if(tooltip != null) {
                     TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
                         public String getTooltip() {

@@ -217,7 +217,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
     private void focusValueView() {
         // focus value view in order to be able to apply filter by pressing Enter (even if focus was somewhere else before)
-        valueView.focusOnValue();
+        //todo: removed in bootstrap
+        //valueView.focusOnValue();
     }
     
     private void conditionChanged(boolean focusFirstComponent) {
