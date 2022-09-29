@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.view;
 
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.view.StyleDefaults;
 
@@ -159,13 +158,21 @@ public class ColorUtils {
     }
     
 
-    public static String correctSB(String color, float saturation_factor, float brightness_factor) {
+    public static String darkenColor(String color) {
         int rgb = toRGB(color);
-        float[] hsb = RGBtoHSB(getRed(rgb), getGreen(rgb), getBlue(rgb));
-        return toColorString(HSBtoRGB(
-                hsb[0], 
-                max(min(hsb[1] * saturation_factor, 1.0f), 0), 
-                max(min(hsb[2] * brightness_factor, 1.0f), 0))
-        );
+        int r = getRed(rgb);
+        int g = getGreen(rgb);
+        int b = getBlue(rgb);
+        double opacity = Math.max((255f - Math.min(Math.min(r, g), b)) / 255, 0.5);
+        return rgbToRgba(getThemedColor(darkenComp(r, opacity), darkenComp(g, opacity), darkenComp(b, opacity)), opacity);
+    }
+
+    private static int darkenComp(int comp, double opacity) {
+        return (int) ((comp - 255 * opacity) / (1 - opacity));
+    }
+
+    private static String rgbToRgba(String rgb, double a) {
+        int color = toRGB(rgb);
+        return "rgba(" + getRed(color) + ", " + getGreen(color) + ", " + getBlue(color) + ", " + a + ")";
     }
 }

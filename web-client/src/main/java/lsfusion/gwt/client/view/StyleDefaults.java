@@ -46,7 +46,7 @@ public class StyleDefaults {
         if (MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getSelectedRowBackground();
             if (preferredColor != null) {
-                return getThemedColor(preferredColor.toString());
+                return darkenColor(preferredColor.toString());
             }
         }
         return null;
@@ -56,7 +56,7 @@ public class StyleDefaults {
         if (MainFrame.colorPreferences != null) { // might be called before colorPreferences initialization (color theme change)
             ColorDTO preferredColor = MainFrame.colorPreferences.getFocusedCellBackground();
             if (preferredColor != null) {
-                return getThemedColor(preferredColor.toString());
+                return darkenColor(preferredColor.toString());
             }
         }
         return null;

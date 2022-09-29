@@ -12,33 +12,17 @@
 /* ------------ background ----------------- */
 :root {
     /*override in StyleDefaults init*/
-    --selected-row-background-color: var(--selection-color);
-    --focused-cell-background-color: var(--selection-color);
+    --selected-row-background-color: var(--selection-color-rgba);
+    --focused-cell-background-color: var(--selection-color-rgba);
 }
 
-/*we could use box-shadow, but it cannot mix colors as we need*/
 .table-active > td {
-    position: relative;
-}
-
-.table-active > td::before {
-    content: '';
-    mix-blend-mode: multiply;
-    background: var(--selected-row-background-color);
-    position: absolute;
-    inset:0;
+    box-shadow: inset 0 0 0 9999px var(--selected-row-background-color);
 }
 
 .focused-cell {
+    box-shadow: inset 0 0 0 9999px var(--focused-cell-background-color) !important;
     position: relative;
-}
-
-.focused-cell::before {
-    content: '';
-    mix-blend-mode: multiply;
-    background: var(--focused-cell-background-color);
-    position: absolute;
-    inset:0;
 }
 
 .dropdown-menu {

@@ -1,6 +1,7 @@
 :root {
     --focus-color: #0790c3; /* after changing, synchronize the appropriate value in StyleDefaults.getFocusColor() */
-    --selection-color: #2C4751; /* also hardcoded in StyleDefaults.java */
+    --selection-color: #2C4751;
+    --selection-color-rgba: rgba(113, 113, 187, 0.5);
     --scrollbar-color: #585C5E;
     --text-color: #bbbbbb; /* also hardcoded in StyleDefaults.java */
     --disabled-text-color: #6b6b6b;
