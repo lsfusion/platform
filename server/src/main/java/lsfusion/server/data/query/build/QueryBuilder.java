@@ -160,6 +160,9 @@ public class QueryBuilder<K, V> {
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(FormInstance formInstance, BaseClass baseClass) throws SQLException, SQLHandledException {
         return getQuery().executeClasses(formInstance, baseClass);
     }
+    public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop, DataSession dataSession) throws SQLException, SQLHandledException {
+        return getQuery().executeClasses(session, orders, selectTop, dataSession.baseClass, dataSession.env);
+    }
     public ImOrderMap<ImMap<K, DataObject>, ImMap<V, ObjectValue>> executeClasses(SQLSession session, ImOrderMap<? extends V, Boolean> orders, int selectTop, BaseClass baseClass, QueryEnvironment env) throws SQLException, SQLHandledException {
         return getQuery().executeClasses(session, orders, selectTop, baseClass, env);
     }
