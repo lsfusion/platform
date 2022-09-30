@@ -12,6 +12,7 @@ import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.parse.AbstractParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
+import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.change.SessionChanges;
@@ -104,7 +105,7 @@ public class NullValue extends ObjectValue<NullValue> {
         return AbstractParseInterface.NULL(type);
     }
 
-    public ParseInterface getParse(Type type) {
+    public ValueParseInterface getParse(Type type) {
         return AbstractParseInterface.NULL(type);
     }
 

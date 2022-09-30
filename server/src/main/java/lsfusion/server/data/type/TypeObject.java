@@ -5,12 +5,13 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.table.Field;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.parse.AbstractParseInterface;
+import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.value.DataObject;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class TypeObject extends AbstractParseInterface {
+public class TypeObject extends AbstractParseInterface implements ValueParseInterface {
 
     private final Object object;
     private final Type type;
@@ -68,5 +69,9 @@ public class TypeObject extends AbstractParseInterface {
         if(type instanceof ConcatenateType)
             return (ConcatenateType) type;
         return null;
+    }
+
+    public Object getValue() {
+        return object;
     }
 }

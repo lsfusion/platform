@@ -165,12 +165,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             String debugInfo = sqlDebugInfo == null ? null : sqlDebugInfo.getDebugInfoForProcessMonitor();
 
             ExConnection connection = sqlSession.getDebugConnection();
-            if (connection != null)
+            if (connection != null) {
                 sessionMap.put(((PGConnection) connection.sql).getBackendPID(), new SQLThreadInfo(javaThread,
                         sqlSession.threadDebugInfo, sqlSession.isInTransaction(), sqlSession.startTransaction, sqlSession.getAttemptCountMap(),
-                        sqlSession.contextProvider.getCurrentUser(), sqlSession.contextProvider.getCurrentComputer(),
+                        sqlSession.contextProvider.getThreadCurrentUser(), sqlSession.contextProvider.getThreadCurrentComputer(),
                         sqlSession.getExecutingStatement(), sqlSession.isDisabledNestLoop, sqlSession.getQueryTimeout(),
                         debugInfo, sqlSession.statusMessage));
+            }
         }
         return sessionMap;
     }

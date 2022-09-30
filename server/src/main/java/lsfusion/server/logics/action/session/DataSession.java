@@ -64,6 +64,7 @@ import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.type.parse.LogicalParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.parse.StringParseInterface;
+import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -434,12 +435,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     // для отладки
     public static boolean reCalculateAggr = false;
 
-    private final IsServerRestartingController isServerRestarting;
-    public final TimeoutController timeout;
-    public final FormController form;
     public final UserController user;
     public final ChangesController changes;
-    public final LocaleController locale;
 
     public String prevFormCanonicalName = null;
 
@@ -472,17 +469,13 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession, ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner) {
         this.sql = sql;
-        this.isServerRestarting = isServerRestarting;
 
         this.baseClass = baseClass;
         this.sessionClass = sessionClass;
         this.currentSession = currentSession;
 
         this.user = user;
-        this.form = form;
-        this.timeout = timeout;
         this.changes = changes;
-        this.locale = locale;
 
         this.sessionEvents = sessionEvents;
 
@@ -523,6 +516,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         createdInTransaction = sql.isInTransaction(); // при synchronizeDB есть такой странный кейс
         if(sql.isExplainTemporaryTablesEnabled())
             SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + sql + '\n' + ExceptionUtils.getStackTrace());
+
+        env = new ContextQueryEnvironment(sql.contextProvider, this.owner, isServerRestarting, timeout, form, locale);
     }
     
     private final static RegisterClassRemove NOREGISTER = new RegisterClassRemove() {
@@ -541,7 +536,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return createSession(sql);
     }
     public DataSession createSession(SQLSession sql) throws SQLException {
-        return new DataSession(sql, user, form, timeout, changes, locale, isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
+        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
     }
 
     public static FunctionSet<SessionDataProperty> keepNested(boolean manageSession) {
@@ -2275,7 +2270,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return owner;
     }
 
-    private static final ParseInterface empty = new StringParseInterface() {
+    private static class EmptyParseInterface extends StringParseInterface implements ValueParseInterface {
         public boolean isSafeString() {
             return false;
         }
@@ -2285,32 +2280,39 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         @Override
+        public Object getValue() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public void writeParam(PreparedStatement statement, SQLSession.ParamNum paramNum, SQLSyntax syntax) {
             throw new RuntimeException("no client context is supported here (for example - currentUser, currentComputer, etc.)");
         }
-    };
+
+    }
+    private static final ValueParseInterface empty = new EmptyParseInterface();
 
     public static QueryEnvironment emptyEnv(final OperationOwner owner) {
         return new QueryEnvironment() {
-            public ParseInterface getSQLUser() {
+            public ValueParseInterface getSQLUser() {
                 return empty;
             }
 
             @Override
-            public ParseInterface getSQLAuthToken() {
+            public ValueParseInterface getSQLAuthToken() {
                 return empty;
             }
 
-            public ParseInterface getSQLComputer() {
+            public ValueParseInterface getSQLComputer() {
                 return empty;
             }
 
-            public ParseInterface getSQLForm() {
+            public ValueParseInterface getSQLForm() {
                 return empty;
             }
 
             @Override
-            public ParseInterface getSQLConnection() {
+            public ValueParseInterface getSQLConnection() {
                 return empty;
             }
 
@@ -2319,7 +2321,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                 return Locale.getDefault();
             }
 
-            public ParseInterface getIsServerRestarting() {
+            public ValueParseInterface getIsServerRestarting() {
                 return empty;
             }
 
@@ -2335,74 +2337,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private final OperationOwner owner;
 
-    public final QueryEnvironment env = new QueryEnvironment() {
-        public ParseInterface getSQLUser() {
-            Long currentUser = sql.contextProvider.getCurrentUser();
-            if (currentUser != null) {
-                return new TypeObject(currentUser, ObjectType.instance);
-            } else {
-                return NullValue.instance.getParse(ObjectType.instance);
-            }
-        }
-
-        @Override
-        public ParseInterface getSQLAuthToken() {
-            String currentAuthToken = sql.contextProvider.getCurrentAuthToken();
-            if (currentAuthToken != null) {
-                return new TypeObject(currentAuthToken, StringClass.text);
-            } else {
-                return NullValue.instance.getParse(StringClass.text);
-            }
-        }
-
-        public OperationOwner getOpOwner() {
-            return DataSession.this.getOwner();
-        }
-
-        public ParseInterface getSQLComputer() {
-            Long currentComputer = sql.contextProvider.getCurrentComputer();
-            if (currentComputer != null) {
-                return new TypeObject(currentComputer, ObjectType.instance);
-            } else {
-                return NullValue.instance.getParse(ObjectType.instance);
-            }
-        }
-
-        public ParseInterface getSQLForm() {
-            String currentForm = form.getCurrentForm();
-            if(currentForm != null) {
-                return new TypeObject(currentForm, StringClass.text);
-            } else {
-                return NullValue.instance.getParse(StringClass.text);
-            }
-        }
-
-        public ParseInterface getSQLConnection() {
-            Long currentConnection = sql.contextProvider.getCurrentConnection();
-            if(currentConnection != null) {
-                return new TypeObject(currentConnection, ObjectType.instance);
-            } else {
-                return NullValue.instance.getParse(ObjectType.instance);
-            }
-        }
-
-        @Override
-        public Locale getLocale() {
-            return locale.getLocale();
-        }
-
-        public int getTransactTimeout() {
-            return timeout.getTransactionTimeout();
-        }
-
-        public ParseInterface getIsServerRestarting() {
-            return new LogicalParseInterface() {
-                public boolean isTrue() {
-                    return isServerRestarting.isServerRestarting();
-                }
-            };
-        }
-    };
+    public final ContextQueryEnvironment env;
 
     private ImMap<Property, UpdateResult> aspectChangeClass(MaterializableClassChange matChange, ChangedClasses changedClasses) throws SQLException, SQLHandledException {
         checkTransaction(); // важно что, вначале

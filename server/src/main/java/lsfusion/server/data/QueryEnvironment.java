@@ -1,6 +1,6 @@
 package lsfusion.server.data;
 
-import lsfusion.server.data.type.parse.ParseInterface;
+import lsfusion.server.data.type.parse.ValueParseInterface;
 
 import java.util.Locale;
 
@@ -10,13 +10,12 @@ public interface QueryEnvironment {
     
     int getTransactTimeout();
 
-    ParseInterface getSQLUser();
-    ParseInterface getSQLComputer();
-    ParseInterface getSQLForm();
-    ParseInterface getSQLConnection();
-    ParseInterface getIsServerRestarting();
-
-    ParseInterface getSQLAuthToken();
+    ValueParseInterface getSQLUser();
+    ValueParseInterface getSQLComputer();
+    ValueParseInterface getSQLForm();
+    ValueParseInterface getSQLConnection();
+    ValueParseInterface getIsServerRestarting();
+    ValueParseInterface getSQLAuthToken();
 
     Locale getLocale();
 }

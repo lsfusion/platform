@@ -64,13 +64,15 @@ import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslate;
 import lsfusion.server.data.type.FunctionType;
 import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.TypeObject;
 import lsfusion.server.data.type.exec.EnsureTypeEnvironment;
 import lsfusion.server.data.type.exec.TypeEnvironment;
-import lsfusion.server.data.type.parse.LogicalParseInterface;
 import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.parse.StringParseInterface;
+import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.type.reader.NullReader;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.AbstractWhere;
 import lsfusion.server.data.where.CheckWhere;
@@ -78,6 +80,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.classes.data.ArrayClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
@@ -1883,18 +1886,27 @@ public class CompiledQuery<K,V> extends ImmutableObject {
                     return String.valueOf(limit);
                 }
             });
+
+        fillQueryPropParams(BaseUtils.mutableCast(mMapValues), env);
+
+        mMapValues.exclAddAll(params.reverse().mapValues(GETPARSE(env, this.env.getEnsureTypes())));
+
+        return mMapValues.immutable();
+    }
+    public static ImMap<String, ValueParseInterface> getQueryPropParams(QueryEnvironment env) {
+        MExclMap<String, ValueParseInterface> mMapValues = MapFact.mExclMap();
+        fillQueryPropParams(BaseUtils.mutableCast(mMapValues), env);
+        return mMapValues.immutable();
+    }
+
+    public static void fillQueryPropParams(MExclMap<String, ValueParseInterface> mMapValues, QueryEnvironment env) {
         mMapValues.exclAdd(SQLSession.userParam, env.getSQLUser());
         mMapValues.exclAdd(SQLSession.authTokenParam, env.getSQLAuthToken());
         mMapValues.exclAdd(SQLSession.computerParam, env.getSQLComputer());
         mMapValues.exclAdd(SQLSession.formParam, env.getSQLForm());
         mMapValues.exclAdd(SQLSession.connectionParam, env.getSQLConnection());
         mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
-        mMapValues.exclAdd(SQLSession.isDevParam, new LogicalParseInterface() {
-            public boolean isTrue() {
-                return SystemProperties.inDevMode;
-            }
-        });
-        return mMapValues.immutable().addExcl(params.reverse().mapValues(GETPARSE(env, this.env.getEnsureTypes())));
+        mMapValues.exclAdd(SQLSession.isDevParam, SystemProperties.inDevMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
     }
 
     private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
