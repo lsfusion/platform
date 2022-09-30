@@ -25,19 +25,25 @@
     /*z-index: 1;*/
 }
 
-.dataGridStickyCell {
+.dataGridStickyCell,
+.dataGridStickyCell.property-not-null,
+.dataGridStickyCell.property-has-change {
     position: sticky;
 
     z-index: 1;
 }
 
-.dataGridStickyHeader {
+.dataGridStickyHeader,
+.dataGridStickyHeader.property-not-null,
+.dataGridStickyHeader.property-has-change {
     position: sticky;
 
     z-index: 1001;
 }
 
-.dataGridStickyFooter {
+.dataGridStickyFooter,
+.dataGridStickyFooter.property-not-null,
+.dataGridStickyFooter.property-has-change {
     position: sticky;
 
     z-index: 1001;
