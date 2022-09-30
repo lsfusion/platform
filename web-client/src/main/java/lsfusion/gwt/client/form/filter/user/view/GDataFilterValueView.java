@@ -3,7 +3,9 @@ package lsfusion.gwt.client.form.filter.user.view;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.base.view.SizedFlexPanel;
+import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
@@ -69,6 +71,10 @@ public class GDataFilterValueView extends SizedFlexPanel {
 
     public void onAdd() {
         cell.focus(FocusUtils.Reason.NEWFILTER);
+    }
+    
+    public void focusOnValue() {
+        cell.focus(FocusUtils.Reason.OTHER);
     }
 
     public void startEditing(Event keyEvent) {
