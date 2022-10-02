@@ -440,7 +440,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
                 }
             }
         }
-        double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, doublePrefs, intBasePrefs, flexes);
+        double restDelta = GwtClientUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, doublePrefs, intBasePrefs, flexes, isResizeOverflow());
         for (int i = 0; i < doublePrefs.length; i++) {
             int pref = (int) Math.round(doublePrefs[i]);
             setUserWidth(i, pref);
@@ -586,6 +586,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
+    protected abstract Boolean isResizeOverflow();
+
     public abstract GSize getHeaderHeight();
 
     protected String getUserCaption(GPropertyDraw propertyDraw) {
@@ -603,7 +605,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected Integer getUserWidth(int i) {
         return getUserWidth(getColumnPropertyDraw(i));
     }
-    
+
     protected GSize getColumnBaseWidth(int i) {
         return getColumnPropertyDraw(i).getValueWidthWithPadding(font);
     }

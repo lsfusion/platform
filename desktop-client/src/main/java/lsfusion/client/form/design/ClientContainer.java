@@ -31,6 +31,8 @@ public class ClientContainer extends ClientComponent {
     public boolean wrap;
     public Boolean alignCaptions;
 
+    public Boolean resizeOverflow;
+
     public int lines = 1;
     public Integer lineSize = null;
     public Integer captionLineSize = null;
@@ -90,6 +92,8 @@ public class ClientContainer extends ClientComponent {
         wrap = inStream.readBoolean();
         alignCaptions = pool.readObject(inStream);
 
+        resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
+
         lines = inStream.readInt();
         lineSize = pool.readInt(inStream);
         captionLineSize = pool.readInt(inStream);
@@ -133,6 +137,10 @@ public class ClientContainer extends ClientComponent {
     }
 
     public boolean main;
+
+    public Boolean isResizeOverflow() {
+        return resizeOverflow;
+    }
 
     public boolean isAlignCaptions() {
         if (alignCaptions != null) {

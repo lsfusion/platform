@@ -136,6 +136,10 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
 
         outStream.writeInt(headerHeight);
 
+        outStream.writeBoolean(resizeOverflow != null);
+        if(resizeOverflow != null)
+            outStream.writeBoolean(resizeOverflow);
+
         outStream.writeInt(getLineWidth());
         outStream.writeInt(getLineHeight());
     }

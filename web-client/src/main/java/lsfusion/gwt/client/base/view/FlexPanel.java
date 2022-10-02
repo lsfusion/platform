@@ -30,6 +30,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     private GFlexAlignment flexAlignment;
 
     public final boolean wrap;
+    public final Boolean resizeOverflow;
 
     private boolean visible = true;
 
@@ -55,15 +56,16 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     private final GridLines gridLines;
     
     public FlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
-        this(vertical, flexAlignment, null, false);
+        this(vertical, flexAlignment, null, false, null);
     }
 
-    public FlexPanel(boolean vertical, GFlexAlignment flexAlignment, GridLines gridLines, boolean wrap) {
+    public FlexPanel(boolean vertical, GFlexAlignment flexAlignment, GridLines gridLines, boolean wrap, Boolean resizeOverflow) {
         this.vertical = vertical;
 
         this.gridLines = gridLines;
 
         this.wrap = wrap;
+        this.resizeOverflow = resizeOverflow;
 
         this.flexAlignment = flexAlignment;
 
@@ -796,7 +798,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
 
         // we'll do it in different cycles to minimize the quantity of layouting
-        int margins = 0;
+        int margins = impl.getColumnGap(element) * (children.size() - 1);
         i = 0;
         for(FlexLine line : children) {
             int realSize = line.getActualSize(); // have no idea why not offset size is used
@@ -813,7 +815,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         ParentSameFlexPanel parentSameFlexPanel = parents.size() > 0 ? parents.get(0) : null;
 
         int viewWidth = impl.getActualSize(element, vertical) - margins;
-        double restDelta = GwtClientUtils.calculateNewFlexes(lineNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  flexPrefs, parentSameFlexPanel == null);
+        double restDelta = GwtClientUtils.calculateNewFlexes(lineNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  flexPrefs, parentSameFlexPanel == null, resizeOverflow, margins, wrap);
 
         if(parentSameFlexPanel != null && !GwtClientUtils.equals(restDelta, 0.0))
             restDelta = parentSameFlexPanel.panel.resizeWidget(restDelta, parentSameFlexPanel.lines, parentSameFlexPanel.index, parents.subList(1, parents.size()));

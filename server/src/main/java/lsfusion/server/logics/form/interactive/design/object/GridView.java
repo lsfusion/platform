@@ -61,6 +61,10 @@ public class GridView extends GridPropertyView {
         outStream.writeBoolean(quickSearch);
         outStream.writeInt(headerHeight);
 
+        outStream.writeBoolean(resizeOverflow != null);
+        if(resizeOverflow != null)
+            outStream.writeBoolean(resizeOverflow);
+
         outStream.writeInt(getLineWidth());
         outStream.writeInt(getLineHeight());
 

@@ -18,6 +18,8 @@ public class ClientGrid extends ClientComponent {
     public boolean quickSearch;
     public int headerHeight;
 
+    public Boolean resizeOverflow;
+
     public int lineWidth;
     public int lineHeight;
 
@@ -72,6 +74,8 @@ public class ClientGrid extends ClientComponent {
         tabVertical = inStream.readBoolean();
         quickSearch = inStream.readBoolean();
         headerHeight = inStream.readInt();
+
+        resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
 
         lineWidth = inStream.readInt();
         lineHeight = inStream.readInt();

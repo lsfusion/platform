@@ -7,8 +7,8 @@ import lsfusion.gwt.client.base.size.GSize;
 // extended flex panel with alignShrink, and preferred size support
 public class SizedFlexPanel extends FlexPanel {
 
-    public SizedFlexPanel(boolean vertical, GFlexAlignment flexAlignment, GridLines gridLines, boolean wrap) {
-        super(vertical, flexAlignment, gridLines, wrap);
+    public SizedFlexPanel(boolean vertical, GFlexAlignment flexAlignment, GridLines gridLines, boolean wrap, Boolean resizeOverflow) {
+        super(vertical, flexAlignment, gridLines, wrap, resizeOverflow);
     }
 
     public SizedFlexPanel(boolean vertical, GFlexAlignment flexAlignment) {

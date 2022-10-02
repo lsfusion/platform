@@ -22,6 +22,8 @@ public class FlexPanel extends PanelWidget {
 
     private final boolean vertical;
 
+    private final Boolean resizeOverflow;
+
     public void checkMouseEvent(MouseEvent e) {
         checkResizeEvent(e, this);
     }
@@ -38,9 +40,13 @@ public class FlexPanel extends PanelWidget {
     }
 
     public FlexPanel(boolean vertical, FlexAlignment alignment) {
+        this(vertical, alignment, null);
+    }
+    public FlexPanel(boolean vertical, FlexAlignment alignment, Boolean resizeOverflow) {
         super(null);
         setLayout(new FlexLayout(this, vertical, alignment));
         this.vertical = vertical;
+        this.resizeOverflow = resizeOverflow;
     }
 
     public boolean isVertical() {
@@ -349,7 +355,7 @@ public class FlexPanel extends PanelWidget {
 //        int body = ;
         // important to calculate viewWidth before setting new flexes
         int viewWidth = impl.getSize(this, vertical) - margins;
-        double restDelta = SwingUtils.calculateNewFlexes(widgetNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  flexPrefs, parentSameFlexPanel == null);
+        double restDelta = SwingUtils.calculateNewFlexes(widgetNumber, delta, viewWidth, prefs, flexes, basePrefs, baseFlexes,  flexPrefs, parentSameFlexPanel == null, resizeOverflow, margins);
 
         if(parentSameFlexPanel != null && !SwingUtils.equals(restDelta, 0.0))
             restDelta = parentSameFlexPanel.first.resizeWidget(parentSameFlexPanel.second, restDelta);

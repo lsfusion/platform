@@ -11,6 +11,8 @@ public abstract class GridPropertyView extends BaseComponentView {
 
     public int headerHeight = DEFAULT_HEADER_HEIGHT;
 
+    public Boolean resizeOverflow; // actually it is the max height
+
     public GridPropertyView() {
     }
 
