@@ -37,8 +37,8 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     public interface UIHandler {
         void addEnterBinding(Widget widget);
         void removeCondition(GPropertyFilter condition);
-        void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView);
         void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
+        void enableApplyButton();
     }
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
@@ -142,12 +142,14 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
+                enableApplyButton();
                 focusValueView();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
+                enableApplyButton();
                 focusValueView();
             }
 
@@ -157,6 +159,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
+                enableApplyButton();
                 focusValueView();
             }
         };
@@ -168,8 +171,9 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                if (cell.enterPressed) {
-                    conditionChanged(true);
+                enableApplyButton();
+                if (cell.enterPressed || !GFilterConditionView.this.controlsVisible) {
+                    uiHandler.applyFilters(cell.enterPressed, GFilterConditionView.this);
                 }
                 confirmed = true;
             }
@@ -207,6 +211,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
+                    enableApplyButton();
                     focusValueView();
                 };
             }
@@ -223,9 +228,6 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         valueView.focusOnValue();
     }
     
-    private void conditionChanged(boolean focusFirstComponent) {
-        uiHandler.conditionsChanged(focusFirstComponent, this);
-    }
 
     public void initView() {
         if (captionContainer == null) {
@@ -244,6 +246,10 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
     private void updateCompareLabelText() {
         compareLabel.setText((condition.negation ? "!" : "") + condition.compare);
         compareLabel.setTitle((condition.negation ? messages.formFilterCompareNot() + " " : "") + condition.compare.getTooltipText());
+    }
+    
+    private void enableApplyButton() {
+        uiHandler.enableApplyButton();
     }
 
     @Override
@@ -295,6 +301,8 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
 
             updateCompareLabelText();
         }
+        
+        enableApplyButton();
     }
 
     public void focusOnValue() {

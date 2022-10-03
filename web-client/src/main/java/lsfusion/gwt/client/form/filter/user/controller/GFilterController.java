@@ -228,7 +228,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
         updateConditionsLastState();
 
-        conditionsChanged(true, null);
+        applyFilters(true, null);
     }
 
     public ArrayList<GFilterConditionView> removeAllConditionsWithoutApply() {
@@ -278,9 +278,6 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         applyFilters(true, null);
     }
 
-    public void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView) {
-        applyFilters(focusFirstComponent, changedView);
-    }
 
     public void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView) {
         ArrayList<GPropertyFilter> result = new ArrayList<>();
@@ -297,6 +294,13 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         if(changedView != null)
             changed.add(changedView);
         applyFilters(result, changed, focusFirstComponent);
+
+        controlsView.setApplyEnabled(false);
+    }
+
+    @Override
+    public void enableApplyButton() {
+        controlsView.setApplyEnabled(true);
     }
 
     public void update() {

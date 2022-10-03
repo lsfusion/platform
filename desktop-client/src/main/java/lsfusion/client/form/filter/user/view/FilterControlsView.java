@@ -13,6 +13,8 @@ public class FilterControlsView extends FlexPanel {
     public static final String ADD_ICON_PATH = "filtadd.png";
     public static final String APPLY_ICON_PATH = "ok.png";
     public static final String RESET_ICON_PATH = "filtreset.png";
+    
+    private ToolbarGridButton applyButton;
 
     public FilterControlsView(FiltersHandler handler) {
         setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
@@ -23,12 +25,16 @@ public class FilterControlsView extends FlexPanel {
             add((Widget) addConditionButton, FlexAlignment.CENTER);
         }
 
-        ToolbarGridButton applyButton = new ToolbarGridButton(APPLY_ICON_PATH, getString("form.queries.filter.apply"));
+        applyButton = new ToolbarGridButton(APPLY_ICON_PATH, getString("form.queries.filter.apply"));
         applyButton.addActionListener(ae -> handler.applyFilters(true));
         add((Widget) applyButton, FlexAlignment.CENTER);
 
         ToolbarGridButton resetConditionsButton = new ToolbarGridButton(RESET_ICON_PATH, getString("form.queries.filter.reset.conditions"));
         resetConditionsButton.addActionListener(e -> handler.resetConditions());
         add((Widget) resetConditionsButton, FlexAlignment.CENTER);
+    }
+    
+    public void setApplyEnabled(boolean enabled) {
+        applyButton.setEnabled(enabled);
     }
 }

@@ -31,7 +31,8 @@ import static lsfusion.client.form.object.ClientGroupObjectValue.EMPTY;
 public class FilterConditionView extends FlexPanel implements CaptionContainerHolder {
     public interface UIHandler {
         void removeCondition(ClientPropertyFilter condition);
-        void conditionsChanged(boolean focusFirstComponent);
+        void applyFilters(boolean focusFirstComponent);
+        void enableApplyButton();
     }
 
     private TableController logicsSupplier;
@@ -132,6 +133,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
+                enableApplyButton();
                 focusValueView();
             }
 
@@ -139,12 +141,14 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
+                enableApplyButton();
                 
                 FilterConditionView.this.logicsSupplier.getFormController().revalidate();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
+                enableApplyButton();
                 allowNull = value;
             }
 
@@ -163,8 +167,9 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
                 if (!innerValueChange) { // to avoid multiple apply calls
-                    if (valueTable.editorEnterPressed()) {
-                        conditionChanged(true);
+                    enableApplyButton();
+                    if (valueTable.editorEnterPressed() || !FilterConditionView.this.controlsVisible) {
+                        applyFilters(valueTable.editorEnterPressed());
                     }
                     confirmed = true;
                 }
@@ -203,6 +208,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 addActionListener(e -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
+                    enableApplyButton();
                     focusValueView();
                 });
             }
@@ -222,8 +228,12 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         valueView.requestFocusInWindow();
     }
 
-    private void conditionChanged(boolean focusFirstComponent) {
-        uiHandler.conditionsChanged(focusFirstComponent);
+    private void applyFilters(boolean focusFirstComponent) {
+        uiHandler.applyFilters(focusFirstComponent);
+    }
+
+    private void enableApplyButton() {
+        uiHandler.enableApplyButton();
     }
 
     public void initView() {
@@ -297,6 +307,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
 
             updateCompareLabelText();
         }
+        
+        enableApplyButton();
 
         logicsSupplier.getFormController().revalidate();
     }

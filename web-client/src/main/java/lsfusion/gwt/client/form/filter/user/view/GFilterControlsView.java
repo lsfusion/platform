@@ -14,6 +14,8 @@ public class GFilterControlsView extends FlexPanel {
     private static final String ADD_ICON_PATH = "filtadd.png";
     private static final String APPLY_ICON_PATH = "ok.png";
     private static final String RESET_ICON_PATH = "filtreset.png";
+    
+    private GToolbarButton applyButton;
 
     public GFilterControlsView(GFiltersHandler handler) {
         GSize buttonFlexBasis = GSize.CONST(COMPONENT_HEIGHT);
@@ -29,7 +31,7 @@ public class GFilterControlsView extends FlexPanel {
             add(addConditionButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
         }
 
-        GToolbarButton applyButton = new GToolbarButton(APPLY_ICON_PATH, messages.formFilterApply()) {
+        applyButton = new GToolbarButton(APPLY_ICON_PATH, messages.formFilterApply()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> handler.applyFilters();
@@ -48,5 +50,9 @@ public class GFilterControlsView extends FlexPanel {
         };
         resetConditionsButton.addStyleName("userFilterButton");
         add(resetConditionsButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
+    }
+
+    public void setApplyEnabled(boolean enabled) {
+        applyButton.setEnabled(enabled);
     }
 }
