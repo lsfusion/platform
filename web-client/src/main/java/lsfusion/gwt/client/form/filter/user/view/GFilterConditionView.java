@@ -172,8 +172,8 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             public void valueChanged(Object value) {
                 super.valueChanged(value);
                 enableApplyButton();
-                if (cell.enterPressed) {
-                    uiHandler.applyFilters(true, GFilterConditionView.this);
+                if (cell.enterPressed || !GFilterConditionView.this.controlsVisible) {
+                    uiHandler.applyFilters(cell.enterPressed, GFilterConditionView.this);
                 }
                 confirmed = true;
             }

@@ -168,8 +168,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 super.valueChanged(newValue);
                 if (!innerValueChange) { // to avoid multiple apply calls
                     enableApplyButton();
-                    if (valueTable.editorEnterPressed()) {
-                        applyFilters(true);
+                    if (valueTable.editorEnterPressed() || !FilterConditionView.this.controlsVisible) {
+                        applyFilters(valueTable.editorEnterPressed());
                     }
                     confirmed = true;
                 }
