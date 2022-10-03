@@ -843,7 +843,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'EVENTID' id=stringLiteral { $options.setEventId($id.val); }
 		|	'ATTR' { $options.setAttr(true); }
 		|   'IN' groupName=compoundID { $options.setGroupName($groupName.sid); }
-		|   'EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); }
+		|   ('EXTID' id=stringLiteral { $options.setIntegrationSID($id.val); } | 'NOEXTID' { $options.setIntegrationSID("NOEXTID"); })
 		|   'EXTNULL' { $options.setExtNull(true); }
 		|   po=propertyDrawOrder { $options.setOrder($po.order); }
 		|   'FILTER' { $options.setFilter(true); }

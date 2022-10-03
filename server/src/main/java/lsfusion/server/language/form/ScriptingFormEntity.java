@@ -595,7 +595,7 @@ public class ScriptingFormEntity {
 
         String integrationSID = options.getIntegrationSID();
         if (integrationSID != null)
-            property.setIntegrationSID(integrationSID);
+            property.setIntegrationSID(integrationSID.equals("NOEXTID") ? null : integrationSID);
         
         String groupName = options.getGroupName();
         Group group = (groupName == null ? null : LM.findGroup(groupName));
