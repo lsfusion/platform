@@ -62,6 +62,10 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
         target.setWrap(wrap);
     }
 
+    public void setResizeOverflow(boolean resizeOverflow) {
+        target.resizeOverflow = resizeOverflow;
+    }
+
     public void setCustom(Object caption) {
         if(caption instanceof LocalizedString)
             target.setCustomDesign(caption.toString());

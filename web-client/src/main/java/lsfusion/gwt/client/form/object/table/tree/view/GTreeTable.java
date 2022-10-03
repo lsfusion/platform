@@ -644,6 +644,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
+    protected Boolean isResizeOverflow() {
+        return treeGroup.resizeOverflow;
+    }
+
+    @Override
     public GSize getHeaderHeight() {
         return treeGroup.getHeaderHeight();
     }

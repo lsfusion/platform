@@ -34,6 +34,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
     
     public boolean expandOnClick;
 
+    public Boolean resizeOverflow;
+
     public int headerHeight;
 
     public int lineHeight;
@@ -100,6 +102,8 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
         expandOnClick = inStream.readBoolean();
 
         headerHeight = inStream.readInt();
+
+        resizeOverflow = inStream.readBoolean() ? inStream.readBoolean() : null;
 
         lineWidth = inStream.readInt();
         lineHeight = inStream.readInt();

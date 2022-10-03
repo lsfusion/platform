@@ -27,6 +27,8 @@ public class GContainer extends GComponent {
     public boolean wrap;
     public Boolean alignCaptions;
 
+    public Boolean resizeOverflow;
+
     public int lines;
     public Integer lineSize;
     public Integer captionLineSize;
@@ -146,6 +148,9 @@ public class GContainer extends GComponent {
         return horizontal == (grid && isWrap());
     }
 
+    public Boolean isResizeOverflow() {
+        return resizeOverflow;
+    }
     public boolean isWrap() {
         // we cannot wrap grid with aligned captions (since there is no way to stick caption and value together)
         if(grid && isAlignCaptions())

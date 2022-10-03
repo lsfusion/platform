@@ -23,6 +23,10 @@ public class TreeGroupViewProxy extends ComponentViewProxy<TreeGroupView> {
         target.headerHeight = headerHeight;
     }
 
+    public void setResizeOverflow(boolean resizeOverflow) {
+        target.resizeOverflow = resizeOverflow;
+    }
+
     public void setLineHeight(int lines) {
         target.lineHeight = lines;
     }

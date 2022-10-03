@@ -41,22 +41,24 @@ public class LinearClientContainerView extends AbstractClientContainerView {
         // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
         alignCaptions = container.isAlignCaptions();
 
+        Boolean resizeOverflow = container.isResizeOverflow();
+
         if(isSimple())
-            panel = new FlexPanel(vertical, justifyContent);
+            panel = new FlexPanel(vertical, justifyContent, resizeOverflow);
         else {
-            panel = new FlexPanel(!vertical, FlexAlignment.START);
+            panel = new FlexPanel(!vertical, FlexAlignment.START, vertical ? resizeOverflow : null);
 
             lines = new FlexPanel[linesCount];
             captionLines = new FlexPanel[linesCount];
             childrenCaptions = new ArrayList<>();
             for (int i = 0; i < linesCount; i++) {
                 if(alignCaptions) {
-                    FlexPanel captionLine = new FlexPanel(vertical, justifyContent);
+                    FlexPanel captionLine = new FlexPanel(vertical, justifyContent, !vertical ? resizeOverflow : null);
                     panel.add((Widget) captionLine, FlexAlignment.STRETCH, 0, container.getCaptionLineSize()); // however it seems that FlexAlignment.STRETCH is also possible
                     captionLines[i] = captionLine;
                 }
 
-                FlexPanel line = new FlexPanel(vertical, justifyContent);
+                FlexPanel line = new FlexPanel(vertical, justifyContent, !vertical ? resizeOverflow : null);
                 panel.addFillFlex(line, container.getLineSize()); // we're using null flex basis to make lines behaviour similar to manually defined containers
                 lines[i] = line;
             }
