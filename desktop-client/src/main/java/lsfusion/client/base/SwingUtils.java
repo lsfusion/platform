@@ -802,7 +802,7 @@ public class SwingUtils {
     }
 
     // изменяется prefs
-    public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes, boolean resizeOverflow) {
+    public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes, Boolean resizeOverflow) {
         double[] flexValues = new double[prefs.length];
         double[] baseFlexValues = new double[prefs.length];
         boolean[] flexPrefs = new boolean[prefs.length];
