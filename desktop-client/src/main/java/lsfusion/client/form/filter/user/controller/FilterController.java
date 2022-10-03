@@ -321,7 +321,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
 
         updateConditionsLastState();
         
-        conditionsChanged(true);
+        applyFilters(true);
     }
 
     @Override
@@ -349,10 +349,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         }
     }
 
-    public void conditionsChanged(boolean focusFirstComponent) {
-        applyFilters(focusFirstComponent);
-    }
-
     public void applyFilters(boolean focusFirstComponent) {
         ArrayList<ClientPropertyFilter> result = new ArrayList<>();
         for (Map.Entry<ClientPropertyFilter, FilterConditionView> entry : conditionViews.entrySet()) {
@@ -366,9 +362,16 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         }
 
         applyFilters(result, focusFirstComponent);
+        
+        controlsView.setApplyEnabled(false);
     }
 
     public abstract void applyFilters(List<ClientPropertyFilter> conditions, boolean focusFirstComponent);
+
+    @Override
+    public void enableApplyButton() {
+        controlsView.setApplyEnabled(true);
+    }
 
     public void update() {
         columns.clear();
