@@ -6,6 +6,14 @@ body .background-inherit {
     background-color: var(--bs-body-bg);
 }
 
+.btn .background-inherit {
+    background-color: var(--bs-btn-bg);
+}
+
+.btn:first-child:hover .background-inherit {
+    background-color: var(--bs-btn-hover-bg);
+}
+
 .table > :not(caption) > * > *.background-inherit,
 .table > :not(caption) > * > * .background-inherit
 {
