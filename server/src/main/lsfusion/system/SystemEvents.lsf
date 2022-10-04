@@ -32,6 +32,8 @@ onWebClientLoad() + {
         INTERNAL CLIENT 'table-sticky.css';
         INTERNAL CLIENT 'table-container-border.css';
         INTERNAL CLIENT 'caption-panel-border.css';
+        INTERNAL CLIENT 'tab-panel.css';
+        INTERNAL CLIENT 'navigator.css';
         INTERNAL CLIENT 'split-window-border.css';
         INTERNAL CLIENT 'layout.css';
         INTERNAL CLIENT 'panel-renderer-border.css';

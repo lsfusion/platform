@@ -1,21 +1,29 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.ButtonBase;
 
-public class FormButton extends Button {
-    public FormButton() {
-        super();
-        setStyleName("btn");
+public class FormButton extends ButtonBase {
+    public FormButton(Element element) {
+        super(element == null ? Document.get().createPushButtonElement() : element);
+        if (element == null)
+            setStyleName("btn");
     }
 
-    public FormButton(String html) {
-        this();
+    public FormButton() {
+        this(null);
+    }
+
+    public FormButton(Element element, String html) {
+        this(element);
         setHTML(html);
     }
     
     public FormButton(String html, ButtonStyle style) {
-        this(html);
+        this(null, html);
         setStyle(style);
     }
 

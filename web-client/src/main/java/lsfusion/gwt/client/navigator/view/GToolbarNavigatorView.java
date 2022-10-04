@@ -11,6 +11,8 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import java.util.Set;
 
 public class GToolbarNavigatorView extends GNavigatorView {
+    private final Panel main;
+
     private final Panel panel;
     private final boolean verticalTextAlign;
 
@@ -20,12 +22,12 @@ public class GToolbarNavigatorView extends GNavigatorView {
         verticalTextAlign = window.hasVerticalTextPosition();
 
         boolean vertical = window.isVertical();
-        panel = new ResizableComplexPanel();
-        panel.addStyleName("nav");
-        panel.addStyleName("nav-pills");
+        main = new ResizableComplexPanel();
+        main.addStyleName("navbar");
 
-        panel.addStyleName("nav-toolbar");
-        panel.addStyleName("nav-toolbar-" + (vertical ? "vert" : "horz"));
+        panel = new ResizableComplexPanel();
+        panel.addStyleName("navbar-nav");
+        panel.addStyleName("navbar-nav-" + (vertical ? "vert" : "horz"));
 
         if (vertical) {
             panel.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
@@ -36,8 +38,9 @@ public class GToolbarNavigatorView extends GNavigatorView {
                               (window.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
                                                                                                "align-items-start"));
         }
+        main.add(panel);
 
-        setComponent(panel);
+        setComponent(main);
     }
 
     @Override
@@ -52,10 +55,10 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        Button button = new NavigatorImageButton(element, verticalTextAlign);
+        FormButton button = new NavigatorImageButton(element, verticalTextAlign);
         button.addStyleName("nav-item");
         button.addStyleName("nav-link");
-        button.addStyleName("link-dark");
+        button.addStyleName("navbar-text");
 
         button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
         button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);

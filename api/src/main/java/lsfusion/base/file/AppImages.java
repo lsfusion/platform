@@ -29,8 +29,24 @@ public class AppImages {
 
         AppImages.predefinedFontClasses.exclAdd("print.png", "bi bi-printer");
         AppImages.predefinedFontClasses.exclAdd("form.png", "fa-regular fa-clone");
+        AppImages.predefinedFontClasses.exclAdd("formTop.png", "fa-regular fa-clone");
         AppImages.predefinedFontClasses.exclAdd("action.png", "fa-regular fa-square-caret-right");
+        AppImages.predefinedFontClasses.exclAdd("actionTop.png", "fa-regular fa-square-caret-right");
         AppImages.predefinedFontClasses.exclAdd("open.png", "fa-regular fa-folder");
+
+        AppImages.predefinedFontClasses.exclAdd("tools.png", "fa-solid fa-screwdriver-wrench");
+        AppImages.predefinedFontClasses.exclAdd("lock.png", "fa-solid fa-lock");
+        AppImages.predefinedFontClasses.exclAdd("search.png", "fa-solid fa-magnifying-glass");
+
+        AppImages.predefinedFontClasses.exclAdd("relogin.png", "fa-solid fa-elevator");
+        AppImages.predefinedFontClasses.exclAdd("editProfile.png", "fa-solid fa-user-pen");
+        AppImages.predefinedFontClasses.exclAdd("changePassword.png", "fa-solid fa-key");
+        AppImages.predefinedFontClasses.exclAdd("logout.png", "fa-solid fa-right-from-bracket");
+
+        AppImages.predefinedFontClasses.exclAdd("chat.png", "fa-solid fa-comment");
+        AppImages.predefinedFontClasses.exclAdd("play.png", "fa-solid fa-play");
+
+        AppImages.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
     }
 
     public static final AppImage FORMTOP = new AppImage("formTop.png");

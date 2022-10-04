@@ -47,8 +47,8 @@ public class GPanelNavigatorView extends GNavigatorView {
         container.add(titledPanel);
     }
 
-    private Button createButton(final GNavigatorElement element) {
-        Button button = new NavigatorImageButton(element, false);
+    private FormButton createButton(final GNavigatorElement element) {
+        FormButton button = new NavigatorImageButton(element, false);
         button.addStyleName("panelNavigatorView");
 
         button.addMouseDownHandler(new MouseDownHandler() {

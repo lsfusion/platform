@@ -3,7 +3,6 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.navigator.view.GToolbarNavigatorView;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -16,7 +15,9 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
     protected BaseStaticImage baseImage;
     protected BaseStaticImage overrideImage;
 
-    public ImageButton(String caption, BaseStaticImage baseImage, boolean vertical) {
+    public ImageButton(String caption, BaseStaticImage baseImage, boolean vertical, Element element) {
+        super(element);
+
         addStyleName("btn-image");
 
         this.baseImage = baseImage; // need to do it before setText for the updateStyle call

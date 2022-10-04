@@ -1,25 +1,28 @@
-.nav-toolbar {
+.navbar-nav {
     display: flex;
 }
 
-.nav-toolbar-horz {
+.navbar-nav.navbar-nav-horz {
     flex-direction: row;
-}
-
-.nav.nav-toolbar-horz {
     flex-wrap: nowrap;
     overflow-x: auto;
 }
 
-.nav-toolbar-vert {
+.navbar-nav.navbar-nav-vert {
     flex-direction: column;
     align-items: flex-start;
+    padding-left: 0.5rem;
 }
 
 .nav-link.nav-link-vert {
     display: inline-grid;
     justify-items: center;
     align-self: center;
+    text-align: center;
+}
+
+.nav-link-vert > i {
+    font-size: 1.5rem;
 }
 
 .nav-link.nav-link-horz-1 {
@@ -27,31 +30,6 @@
 }
 .nav-link.nav-link-horz-2 {
     margin-left: 2rem;
-}
-
-.nav-pills .nav-link {
-    background: none;
-    border: 0;
-}
-
-.nav-toolbar .nav-link.btn {
-    border-radius: var(--button-border-radius);
-}
-
-.nav-toolbar .nav-link.btn.active {
-    background-color: var(--selection-color);
-}
-
-.nav-toolbar .nav-link.btn:hover {
-    background-color: var(--component-hover-background-color);
-}
-
-/*.nav-toolbar .nav-link.btn.active:hover {*/
-/*    background-color: var(--selection-color);*/
-/*}*/
-
-.nav-toolbar .nav-link.btn:active { /* should come after ':hover' */
-    background-color: var(--component-active-background-color);
 }
 
 .panelNavigatorView {
