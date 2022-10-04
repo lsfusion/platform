@@ -520,10 +520,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
                 "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipSignature() + ":</b> %s (%s)<br>" +
                 "<b>" + getMessages().propertyTooltipScript() + ":</b> %s<br>" +
-                "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a><br>" +
                 createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
-                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
+                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s<a class='lsf-form-property-declaration'></a> &ensp; <a class='lsf-tooltip-form-decl-help'></a>&ensp;" +
                 "</html>";
     }  
     
@@ -531,10 +531,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return  createTooltipHorizontalSeparator() +
                 "<b>sID:</b> %s<br>" +
                 "<b>" + getMessages().propertyTooltipObjects() + ":</b> %s<br>" +
-                "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<br>" +
+                "<b>" + getMessages().propertyTooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a><br>" +
                 createTooltipHorizontalSeparator() +
                 "<b>" + getMessages().propertyTooltipFormPropertyName() + ":</b> %s<br>" +
-                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s" +
+                "<b>" + getMessages().propertyTooltipFormPropertyDeclaration() + ":</b> %s<a class='lsf-form-property-declaration'></a> &ensp; <a class='lsf-tooltip-form-decl-help'></a>&ensp;" +
                 "</html>";
     }
     

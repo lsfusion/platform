@@ -97,6 +97,7 @@ public class DefaultFormView extends FormView {
         setCaption(entity.getCaption());
         canonicalName = entity.getSID();
         creationPath = entity.getCreationPath();
+        path = entity.getPath();
         formSchedulers = entity.formSchedulers;
 
         FormContainerSet formSet = FormContainerSet.fillContainers(mainContainer, containerFactory, version);

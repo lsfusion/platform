@@ -45,6 +45,7 @@ public abstract class GNavigatorElement implements Serializable {
                 GwtSharedUtils.stringFormat("<html><b>%s</b>" +
                         createTooltipHorizontalSeparator() +
                         "<b>sID:</b> %s<br><b>" + ClientMessages.Instance.get().tooltipPath() +
-                        ":</b> %s</html>", caption, canonicalName, creationPath) : caption;
+                        ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a></html>",
+                        caption, canonicalName, creationPath) : caption;
     }
 }

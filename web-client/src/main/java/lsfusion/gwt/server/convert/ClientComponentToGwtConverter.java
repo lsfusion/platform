@@ -638,6 +638,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         this.form = form;
 
         form.creationPath = clientForm.creationPath;
+        form.path = clientForm.path;
         for(FormScheduler formScheduler : clientForm.formSchedulers) {
             form.formSchedulers.add(convertOrCast(formScheduler));
         }
