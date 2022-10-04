@@ -25,6 +25,7 @@ public class GForm implements Serializable, GWidthStringProcessor {
     public String canonicalName;
 
     public String creationPath;
+    public String path;
 
     public ArrayList<GFormScheduler> formSchedulers = new ArrayList<>();
     public Map<GFormEvent, GAsyncEventExec> asyncExecMap = new HashMap<>();
@@ -171,13 +172,21 @@ public class GForm implements Serializable, GWidthStringProcessor {
         return mainContainer.caption;
     }
 
+    public String getCreationPath() {
+        return creationPath;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
     public String getTooltip(String caption) {
         return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><body>" +
-                        "<b>%s</b><br/>" + 
+                        "<b>%s</b><br/>" +
                         createTooltipHorizontalSeparator() +
                         "<b>sID:</b> %s<br/>" +
-                        "<b>" + ClientMessages.Instance.get().tooltipPath() + ":</b> %s<br/>" +
+                        "<b>" + ClientMessages.Instance.get().tooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
                         "</body></html>", caption, canonicalName, creationPath) :
                 GwtSharedUtils.stringFormat("<html><body><b>%s</b></body></html>", caption);
     }

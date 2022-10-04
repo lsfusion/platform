@@ -63,6 +63,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public LocalizedString caption = LocalizedString.NONAME;
     public String canonicalName = "";
     public String creationPath = "";
+    public String path = "";
 
     public Integer overridePageWidth;
 
@@ -715,6 +716,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
+        pool.writeString(outStream, path);
         pool.writeInt(outStream, overridePageWidth);
         serializeFormSchedulers(outStream, formSchedulers.getOrderSet());
         serializeAsyncExecMap(outStream, getAsyncExecMap());
@@ -737,6 +739,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
         canonicalName = pool.readString(inStream);
         creationPath = pool.readString(inStream);
+        path = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
 
         entity = pool.context.entity;

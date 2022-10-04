@@ -32,6 +32,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
 
     public String canonicalName = "";
     public String creationPath = "";
+    public String path = "";
 
     public List<FormScheduler> formSchedulers = new ArrayList<>();
     public Map<FormEvent, ClientAsyncEventExec> asyncExecMap;
@@ -186,6 +187,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
 
         pool.writeString(outStream, canonicalName);
         pool.writeString(outStream, creationPath);
+        pool.writeString(outStream, path);
         pool.writeInt(outStream, overridePageWidth);
     }
 
@@ -211,6 +213,7 @@ public class ClientForm extends ContextIdentityObject implements ClientCustomSer
 
         canonicalName = pool.readString(inStream);
         creationPath = pool.readString(inStream);
+        path = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
         formSchedulers = deserializeFormSchedulers(inStream);
         asyncExecMap = deserializeAsyncExecMap(inStream);
