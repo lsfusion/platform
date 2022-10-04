@@ -186,7 +186,12 @@ public abstract class FormContainer {
 
         StaticImageWidget image = new StaticImageWidget(StaticImage.LOADING_ASYNC);
 
-        image.setSize("32px", "32px");
+        //to make the icon rotate in a circle in the bootstrap theme instead of an ellipse
+        if (MainFrame.useBootstrap)
+            image.getElement().getStyle().setProperty("margin", "5px");
+        else
+            image.setSize("32px", "32px");
+
         topPanel.add(image);
         topPanel.add(new HTML(messages.loading()));
 
