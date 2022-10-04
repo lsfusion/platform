@@ -1304,11 +1304,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public String getCreationPath() {
-        if (debugPoint == null) {
-            return null;
-        } else {
-            return debugPoint.toString();
-        }
+        return debugPoint != null ? debugPoint.toString() : null;
+    }
+
+    public String getPath() {
+        return debugPoint != null ? debugPoint.path : null;
     }
 
     public int getID() {
