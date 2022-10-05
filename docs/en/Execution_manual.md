@@ -14,7 +14,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 
 ### Installing the application server as a service
 
--   Download the file `lsfusion-server-<version>.jar` of the required version (for example `lsfusion-server-4.1.jar`) from [the central server](https://download.lsfusion.org/java) to some folder (we will call this folder `$FUSION_DIR$`).
+-   Download the file `lsfusion-server-<version>.jar` of the required version (for example `lsfusion-server-5.0.jar`) from [the central server](https://download.lsfusion.org/java) to some folder (we will call this folder `$FUSION_DIR$`).
 
 -   If the database server is located on another computer, and if authorization is enabled on the database server (for example, for Postgres, using the md5 method and if the password postgres is not empty), set the [parameters for connecting to the database server](Launch_parameters.md#connectdb) (e.g. by creating a startup [settings file](Launch_parameters.md#filesettings) in the `$FUSION_DIR$` folder)
 
@@ -25,7 +25,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 -   Create a service in the operating system (for example, using [Apache Commons Daemon](http://commons.apache.org/daemon/)). In this case you must use the `$FUSION_DIR$` folder as the working directory and the following line as the start command: 
     - Linux
         ```shell script title="bash"   
-        java -cp ".:lsfusion-server-4.1.jar" lsfusion.server.logics.BusinessLogicsBootstrap
+        java -cp ".:lsfusion-server-5.0.jar" lsfusion.server.logics.BusinessLogicsBootstrap
         ```
       <details><summary>Sample script to start a service on CentOS</summary>
       <br/>
@@ -40,7 +40,7 @@ For the application server to work, it must have access to the PostgreSQL databa
             Environment="JAVA_HOME=/usr/java/latest"
             Environment="LSFUSION_HOME=/usr/lsfusion"
             Environment="LSFUSION_OPTS=-Xms1g -Xmx4g"
-            Environment="CLASSPATH=.:lsfusion-server-4.1.jar"
+            Environment="CLASSPATH=.:lsfusion-server-5.0.jar"
             
             ExecStart=/usr/bin/jsvc \
                     -home $JAVA_HOME \
@@ -66,7 +66,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 
     - Windows
         ```shell script title="cmd"
-        java -cp ".;lsfusion-server-4.1.jar" lsfusion.server.logics.BusinessLogicsBootstrap
+        java -cp ".;lsfusion-server-5.0.jar" lsfusion.server.logics.BusinessLogicsBootstrap
         ```
       
 ### Installing the web server (web and desktop client) as a service {#appservice}
@@ -76,19 +76,19 @@ For the application server to work, it must have access to the PostgreSQL databa
 To install the web server, Apache Tomcat version 8 or higher must be installed on the computer.
 :::
 
--   Download the file `lsfusion-client-<version>.war` of the required version from [the central server](https://download.lsfusion.org/java). For example, `lsfusion-client-4.1.war`. 
+-   Download the file `lsfusion-client-<version>.war` of the required version from [the central server](https://download.lsfusion.org/java). For example, `lsfusion-client-5.0.war`. 
 -   If the application server is located on another computer, as well as if [access parameters to the application server](Launch_parameters.md#accessapp) are different from the standard, set [connection parameters to the application server](Launch_parameters.md#connectapp) (for example by creating / editing the Tomcat [settings file](Launch_parameters.md#filewebsettings)) 
 -   Deploy the application on Tomcat. The easiest way is to copy Tomcat to the webapps folder. In this case, the file can be renamed first (for example, to `lsfusion.war`), since the file name will correspond to the context path where the application will be available. If Tomcat uses port `8080`, then the web client will be available at: `http://localhost:8080/<filename of the war file>`. For example, `http://localhost:8080/lsfusion`. An empty context name in Tomcat corresponds to the name `ROOT`, that is, if the file name is `ROOT.war`, the web client will be available at `http://localhost:8080/`. You can download the desktop client from the authorization page at `Run Desktop Client` (via Java Web Start).
 
 ### Installing only the desktop client (on the client's computer)
 
--   Download the file `lsfusion-client-<version>.jar` of the required version from [the central server](https://download.lsfusion.org/). For example, `lsfusion-client-4.1.jar`
+-   Download the file `lsfusion-client-<version>.jar` of the required version from [the central server](https://download.lsfusion.org/). For example, `lsfusion-client-5.0.jar`
 
 -   Create a shortcut on the desktop. In this case, you need to use as the working directory the directory which contains the downloaded client jar-file. Use the following line as the launch command:
 
     - bash
         ```shell script
-        java -jar lsfusion-client-4.1.jar
+        java -jar lsfusion-client-5.0.jar
         ```
 
 :::info
