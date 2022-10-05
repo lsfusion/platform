@@ -51,14 +51,6 @@ public abstract class FileClass<T> extends DataClass<T> {
         return syntax.getByteArraySQL();
     }
 
-    public boolean isSafeString(Object value) {
-        return false;
-    }
-
-    public String getString(Object value, SQLSyntax syntax) {
-        throw new RuntimeException("not supported");
-    }
-
     @Override
     public ExtInt getCharLength() {
         return ExtInt.UNLIMITED;

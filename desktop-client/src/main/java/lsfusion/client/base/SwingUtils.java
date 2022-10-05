@@ -658,7 +658,7 @@ public class SwingUtils {
     }
 
     // viewfixed if view is fixed we can convert flex to pref, otherwise we can't
-    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean[] flexPrefs, boolean viewFixed) {
+    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean[] flexPrefs, boolean noParentFlex, Boolean resizeOverflow, int margins) {
 
         // ищем первую динамическую компоненту слева (она должна получить +delta, соответственно правая часть -delta)
         // тут есть варианты -delta идет одной правой колонке, или всем правых колонок, но так как
@@ -669,16 +669,25 @@ public class SwingUtils {
         while (flexColumn >= 0 && baseFlexes[flexColumn] == 0)
             flexColumn--;
 
-        if (flexColumn < 0) {
-            return -reducePrefs(-delta, column, prefs, basePrefs, flexPrefs);
-        }
-        column = flexColumn;
-
         // считаем общий текущий preferred
         double totalPref = 0;
         for (double pref : prefs) {
             totalPref += pref;
         }
+
+        if (flexColumn < 0) {
+            double restDelta = 0.0;
+            if(resizeOverflow != null && !resizeOverflow) { // we shouldn't exceed viewWidth, but only if it is set explicitly (otherwise behaviour is pretty normal)
+                double restWidth = viewWidth - totalPref - margins;
+                if(delta > restWidth) {
+                    restDelta = delta - restWidth;
+                    delta = restWidth;
+                }
+            }
+
+            return restDelta + (-reducePrefs(-delta, column, prefs, basePrefs, flexPrefs));
+        }
+        column = flexColumn;
 
         // сначала списываем delta справа налево pref (но не меньше basePref), ПОКА сумма pref > viewWidth !!! ( то есть flex не работает, работает ширина контейнера или minTableWidth в таблице)
         // тут можно было бы если идет расширение - delta > 0.0, viewWidth приравнять totalPref (соответственно запретить adjust, то есть pref'ы остались такими же) и reduce'ить остальные, но это пойдет в разрез с уменьшением (когда нужно уменьшать pref'ы иначе в исходное состояние не вернешься), поэтому логичнее исходить из концепции когда если есть scroll тогда просто расширяем колонки, если нет scroll'а пытаемся уместить все без скролла
@@ -748,7 +757,7 @@ public class SwingUtils {
         flexes[column] += toAddFlex - restFlex;
 
         // если и так осталась, то придется давать preferred (соответственно flex не имеет смысла) и "здравствуй" scroll
-        if (!equals(restFlex, 0.0) && viewFixed) {
+        if (!equals(restFlex, 0.0) && noParentFlex && (resizeOverflow != null ? resizeOverflow : true)) {
             // we can't increase / decrease right part using flexes (we're out of it they are zero already, since restflex is not zero), so we have to use prefs instead
             // assert that right flexes are zero (so moving flex width to prefs in left part won't change anything)
             for (int i = 0; i < column; i++)
@@ -793,7 +802,7 @@ public class SwingUtils {
     }
 
     // изменяется prefs
-    public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes) {
+    public static void calculateNewFlexesForFixedTableLayout(int column, int delta, int viewWidth, double[] prefs, int[] basePrefs, boolean[] flexes, Boolean resizeOverflow) {
         double[] flexValues = new double[prefs.length];
         double[] baseFlexValues = new double[prefs.length];
         boolean[] flexPrefs = new boolean[prefs.length];
@@ -808,7 +817,7 @@ public class SwingUtils {
             flexPrefs[i] = false;
         }
 
-        calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, flexPrefs, true);
+        calculateNewFlexes(column, delta, viewWidth, prefs, flexValues, basePrefs, baseFlexValues, flexPrefs, true, resizeOverflow, 0);
 
         adjustFlexesToFixedTableLayout(viewWidth, prefs, flexes, flexValues);
     }

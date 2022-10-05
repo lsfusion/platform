@@ -166,6 +166,16 @@ public final class FormDockable extends FormContainer {
                 }
 
                 @Override
+                public String getPath() {
+                    return form.getForm().getPath();
+                }
+
+                @Override
+                public String getCreationPath() {
+                    return form.getForm().getCreationPath();
+                }
+
+                @Override
                 public boolean stillShowTooltip() {
                     return TabWidget.this.isAttached() && TabWidget.this.isVisible();
                 }

@@ -14,6 +14,8 @@ public class GFilterControlsView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
     private static final String RESET_ICON_PATH = "filtreset.png";
 
+    private GToolbarButton applyButton;
+
     public GFilterControlsView(GFiltersHandler handler) {
         GSize buttonFlexBasis = GSize.CONST(COMPONENT_HEIGHT);
         
@@ -28,7 +30,7 @@ public class GFilterControlsView extends FlexPanel {
             add(addConditionButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
         }
 
-        GToolbarButton applyButton = new GToolbarButton(StaticImage.OK, messages.formFilterApply()) {
+        applyButton = new GToolbarButton(StaticImage.OK, messages.formFilterApply()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> handler.applyFilters();
@@ -47,5 +49,9 @@ public class GFilterControlsView extends FlexPanel {
         };
         resetConditionsButton.addStyleName("userFilterButton");
         add(resetConditionsButton, GFlexAlignment.CENTER, 0, false, buttonFlexBasis);
+    }
+
+    public void setApplyEnabled(boolean enabled) {
+        applyButton.setEnabled(enabled);
     }
 }

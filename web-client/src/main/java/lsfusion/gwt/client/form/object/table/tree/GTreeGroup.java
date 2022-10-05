@@ -26,6 +26,8 @@ public class GTreeGroup extends GComponent {
     
     public boolean expandOnClick;
 
+    public Boolean resizeOverflow;
+
     public int headerHeight;
 
     public GSize getHeaderHeight() {

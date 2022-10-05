@@ -160,8 +160,8 @@
                 "static/js/ace/src/theme-ambiance.js",
 
                 //MMenuLight
-                "static/js/external/mmenu-light.js", //https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.js
-                "static/css/external/mmenu-light.css", //https://cdn.jsdelivr.net/npm/mmenu-light@3.1.1/dist/mmenu-light.css
+                "static/js/external/mmenu-light.js", //https://cdn.jsdelivr.net/npm/mmenu-light@3.2.0/dist/mmenu-light.js
+                "static/css/external/mmenu-light.css", //https://cdn.jsdelivr.net/npm/mmenu-light@3.2.0/dist/mmenu-light.css
                 "static/css/mmenu.css",
 
                 "static/css/bootstrap-icons/bootstrap-icons.css",

@@ -1992,6 +1992,11 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         public JTable getTable() {
             return GridTable.this;
         }
+
+        @Override
+        protected Boolean isResizeOverflow() {
+            return groupObject.grid.resizeOverflow;
+        }
     };
 
     public OrderedMap<ClientPropertyDraw, Boolean> getUserOrders(List<ClientPropertyDraw> propertyDrawList) {

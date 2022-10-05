@@ -47,6 +47,8 @@ public class ContainerView extends ComponentView {
     private Boolean wrap;
     private Boolean alignCaptions;
 
+    public Boolean resizeOverflow;
+
     public int lines = 1;
     public Integer lineSize = null;
     public Integer captionLineSize = null;
@@ -418,6 +420,10 @@ public class ContainerView extends ComponentView {
         outStream.writeBoolean(isGrid());
         outStream.writeBoolean(isWrap());
         pool.writeObject(outStream, alignCaptions);
+
+        outStream.writeBoolean(resizeOverflow != null);
+        if(resizeOverflow != null)
+            outStream.writeBoolean(resizeOverflow);
 
         outStream.writeInt(lines);
         pool.writeInt(outStream, lineSize);

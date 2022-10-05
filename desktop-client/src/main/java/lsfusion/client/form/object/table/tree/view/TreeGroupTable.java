@@ -1345,5 +1345,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
                 return hierarchicalWidth;
             return super.getColumnBaseWidth(i - 1);
         }
+
+        @Override
+        protected Boolean isResizeOverflow() {
+            return treeGroup.resizeOverflow;
+        }
     };
 }

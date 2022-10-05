@@ -54,6 +54,11 @@ public abstract class PanelRenderer {
             public String getCreationPath() {
                 return property.creationPath;
             }
+
+            @Override
+            public String getFormPath() {
+                return property.formPath;
+            }
         });
         if (this.property.captionFont != null) {
             this.property.captionFont.apply(label.getElement().getStyle());

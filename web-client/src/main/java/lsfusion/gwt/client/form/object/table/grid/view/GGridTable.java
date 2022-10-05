@@ -382,7 +382,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 //            }
 //        });
     }
-    
+
+    @Override
+    protected Boolean isResizeOverflow() {
+        return groupObject.grid.resizeOverflow;
+    }
+
     public GSize getHeaderHeight() {
         Integer headerHeight = currentGridPreferences.headerHeight;
         if (headerHeight != null && headerHeight >= 0)

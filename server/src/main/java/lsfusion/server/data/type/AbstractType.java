@@ -260,4 +260,12 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return read(set.getObject(name));
     }
 
+    public boolean isSafeString(Object value) {
+        return false;
+    }
+
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        throw new UnsupportedOperationException();
+    }
 }

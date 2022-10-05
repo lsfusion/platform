@@ -684,7 +684,7 @@ public class GwtClientUtils {
     // this algorithm assumes that all prefs are known and can be changed
     // prefs на double'ах чтобы не "дрожало", из-за преобразований в разные стороны (строго говоря наверное без adjustTableFixed и overflow дрожать не будет)
     // viewfixed if view is fixed we can convert flex to pref, otherwise we can't
-    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean[] flexPrefs, boolean viewFixed) {
+    public static double calculateNewFlexes(int column, double delta, int viewWidth, double[] prefs, double[] flexes, int[] basePrefs, double[] baseFlexes, boolean[] flexPrefs, boolean noParentFlex, Boolean resizeOverflow, int margins, boolean wrap) {
         // ищем первую динамическую компоненту слева (она должна получить +delta, соответственно правая часть -delta)
         // тут есть варианты -delta идет одной правой колонке, или всем правых колонок, но так как
         // a) так как выравнивание по умолчанию левое, интуитивно при перемещении изменяют именно размер левой колонки, б) так как есть де-факто ограничение Preferred, вероятность получить нужный размер уменьшая все колонки куда выше
@@ -695,16 +695,25 @@ public class GwtClientUtils {
         while (flexColumn >= 0 && baseFlexes[flexColumn] == 0)
             flexColumn--;
 
-        if (flexColumn < 0) {
-            return -reducePrefs(-delta, column, prefs, basePrefs, flexPrefs);
-        }
-        column = flexColumn;
-
         // считаем общий текущий preferred
         double totalPref = 0;
         for (double pref : prefs) {
             totalPref += pref;
         }
+
+        if (flexColumn < 0) {
+            double restDelta = 0.0;
+            if(resizeOverflow != null && !resizeOverflow) { // we shouldn't exceed viewWidth, but only if it is set explicitly (otherwise behaviour is pretty normal)
+                double restWidth = viewWidth - totalPref - margins;
+                if(delta > restWidth) {
+                    restDelta = delta - restWidth;
+                    delta = restWidth;
+                }
+            }
+
+            return restDelta + (-reducePrefs(-delta, column, prefs, basePrefs, flexPrefs));
+        }
+        column = flexColumn;
 
         // сначала списываем delta справа налево pref (но не меньше basePref), ПОКА сумма pref > viewWidth !!! ( то есть flex не работает, работает ширина контейнера или minTableWidth в таблице)
         // тут можно было бы если идет расширение - delta > 0.0, viewWidth приравнять totalPref (соответственно запретить adjust, то есть pref'ы остались такими же) и reduce'ить остальные, но это пойдет в разрез с уменьшением (когда нужно уменьшать pref'ы иначе в исходное состояние не вернешься), поэтому логичнее исходить из концепции когда если есть scroll тогда просто расширяем колонки, если нет scroll'а пытаемся уместить все без скролла
@@ -778,7 +787,7 @@ public class GwtClientUtils {
         flexes[column] += toAddFlex - restFlex;
 
         // если и так осталась, то придется давать preferred (соответственно flex не имеет смысла) и "здравствуй" scroll
-        if (!equals(restFlex, 0.0) && viewFixed) {
+        if (!equals(restFlex, 0.0) && noParentFlex && (resizeOverflow != null ? resizeOverflow : !wrap)) {
             // we can't increase / decrease right part using flexes (we're out of it they are zero already, since restflex is not zero), so we have to use prefs instead
             // assert that right flexes are zero (so moving flex width to prefs in left part won't change anything)
             for (int i = 0; i <= column; i++)
@@ -870,6 +879,10 @@ public class GwtClientUtils {
     public static boolean hasVerticalScroll(Element element) {
         return element.getScrollHeight() > element.getClientHeight();
     }
+
+    public static native int getColumnGap(Element element) /*-{
+        return parseInt($wnd.getComputedStyle(element, null).columnGap) || 0; // can be 'normal' and others
+    }-*/;
 
     // without padding, getClient - with paddings, getOffset with paddings and borders, getFull wit paddings, borders and margins
     public static native int getHeight(Element element) /*-{

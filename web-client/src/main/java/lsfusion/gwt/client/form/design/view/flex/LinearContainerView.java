@@ -51,15 +51,16 @@ public class LinearContainerView extends LayoutContainerView {
         // plus also in simple containers we can wrap consecutive property views into some flexpanel, but it requires a lot more complex logics
         grid = container.isGrid();
         boolean wrap = container.isWrap();
+        Boolean resizeOverflow = container.isResizeOverflow();
 
         GSize lineSize = container.getLineSize();
         GSize captionLineSize = container.getCaptionLineSize();
         boolean lineShrink = container.isLineShrink();
 
         if(isSingleLine()) {
-            panel = new SizedFlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, captionLineSize, linesCount, wrap, lineShrink) : null, wrap);
+            panel = new SizedFlexPanel(vertical, flexAlignment, grid || alignCaptions ? getLineGridLayouts(alignCaptions, lineSize, captionLineSize, linesCount, wrap, lineShrink) : null, wrap, resizeOverflow);
         } else {
-            panel = new SizedFlexPanel(!vertical, GFlexAlignment.START, null, vertical && wrap);
+            panel = new SizedFlexPanel(!vertical, GFlexAlignment.START, null, vertical && wrap, vertical ? resizeOverflow : null);
 
             // we don't want this panel to be resized, because we don't set overflow, and during resize container can get fixed size (and then if inner container resized it's content overflows outer border)
             // however resizing inner component also causes troubles, because when you increase components base size, parent components base size also is changed which leads to immediate relayouting, and if the explicit base size is larger than auto base size, there is a leap
@@ -69,7 +70,7 @@ public class LinearContainerView extends LayoutContainerView {
 
             lines = new SizedFlexPanel[linesCount];
             for (int i = 0; i < linesCount; i++) {
-                SizedFlexPanel line = new SizedFlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, lineSize, captionLineSize, 1, false, lineShrink) : null, !vertical && wrap); // in theory true can be used instead of lineShrink
+                SizedFlexPanel line = new SizedFlexPanel(vertical, flexAlignment, alignCaptions ? getLineGridLayouts(true, lineSize, captionLineSize, 1, false, lineShrink) : null, !vertical && wrap, !vertical ? resizeOverflow : null); // in theory true can be used instead of lineShrink
 
                 panel.add(line, GFlexAlignment.STRETCH, 1, lineShrink, null);
                 lines[i] = line;

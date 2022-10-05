@@ -122,10 +122,12 @@ public abstract class GridPropertyTable {
         minimumTableWidth = width;
     }
 
+    protected abstract Boolean isResizeOverflow();
+
     public void resizeColumn(int column, int delta) {
 //        int body = ;
         int viewWidth = getViewportWidth(); // непонятно откуда этот один пиксель берется (судя по всему padding)
-        SwingUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes);
+        SwingUtils.calculateNewFlexesForFixedTableLayout(column, delta, viewWidth, prefs, basePrefs, flexes, isResizeOverflow());
         for (int i = 0; i < prefs.length; i++)
             setUserWidth(i, (int) Math.round(prefs[i]));
         updateLayoutWidthColumns();

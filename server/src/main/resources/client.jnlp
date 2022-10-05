@@ -2,7 +2,7 @@
 <jnlp spec="1.5+" codebase="${jnlp.codebase}" href="${jnlp.url}" version="1">
     <information>
         <title>${jnlp.appName}</title>
-        <vendor>Luxsoft Ltd.</vendor>
+        <vendor>lsFusion Foundation</vendor>
         <description>lsFusion</description>
         <icon href="static/noauth/images/default.png" kind="default"/>
         <icon href="static/noauth/images/splash.jpg" kind="splash"/>

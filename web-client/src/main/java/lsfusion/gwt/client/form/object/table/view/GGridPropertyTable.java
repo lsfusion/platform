@@ -424,7 +424,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         int viewWidth = getViewportWidth() - margins;
-        double restDelta = GwtClientUtils.calculateNewFlexes(column, delta, viewWidth, doublePrefs, flexes, intBasePrefs, baseFlexes, flexPrefs, true);
+        double restDelta = GwtClientUtils.calculateNewFlexes(column, delta, viewWidth, doublePrefs, flexes, intBasePrefs, baseFlexes, flexPrefs, true, isResizeOverflow(), margins, false);
 
         for (int i = 0; i < columnCount; i++) {
             setUserWidth(i, (int) Math.round(doublePrefs[i]));
@@ -585,6 +585,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
+    protected abstract Boolean isResizeOverflow();
+
     public abstract GSize getHeaderHeight();
 
     protected String getUserCaption(GPropertyDraw propertyDraw) {
@@ -605,10 +607,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected Integer getUserWidth(int i) {
         return getUserWidth(getColumnPropertyDraw(i));
     }
-    protected Double getUserFlex(int i) {
+protected Double getUserFlex(int i) {
         return getUserFlex(getColumnPropertyDraw(i));
     }
-
     protected GSize getColumnBaseWidth(int i) {
         // we need not null, because table with table-layout:fixed, uses auto which just split the rest percents equally
         // and table-layout:auto won't do for a lot of reasons

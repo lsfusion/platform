@@ -336,7 +336,11 @@ public class FlexPanelImpl {
 //                        child.getPropertyInt(vertical ? "paddingBottom" : "paddingRight"));
     }
 
-    public int getMargins(Element child, boolean vertical) {
+    public int getColumnGap(Element child) {
+        return GwtClientUtils.getColumnGap(child);
+    }
+
+     public int getMargins(Element child, boolean vertical) {
         return child.getPropertyInt(vertical ? "marginTop" : "marginLeft") +
                     child.getPropertyInt(vertical ? "marginBottom" : "marginRight");
     }

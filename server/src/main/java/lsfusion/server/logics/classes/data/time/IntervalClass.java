@@ -69,11 +69,6 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
         return syntax.getIntervalSQL();
     }
 
-    @Override
-    public boolean isSafeString(Object value) {
-        return false;
-    }
-
     protected abstract Long parse(String date) throws ParseException;
     protected abstract String format(Long epoch);
 
@@ -97,11 +92,6 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
     public BigDecimal getDefaultValue() {
         long time = new Date().getTime();
         return new BigDecimal(time + "." + time);
-    }
-
-    @Override
-    public String getString(Object value, SQLSyntax syntax) {
-        throw new RuntimeException("not supported");
     }
 
     @Override

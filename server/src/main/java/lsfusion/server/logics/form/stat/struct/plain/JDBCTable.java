@@ -79,9 +79,6 @@ public class JDBCTable {
         protected Class getReportJavaClass() {
             throw new UnsupportedOperationException();
         }
-        public String getString(Object value, SQLSyntax syntax) {
-            throw new UnsupportedOperationException();
-        }
         protected int getBaseDotNetSize() {
             throw new UnsupportedOperationException();
         }
@@ -109,9 +106,6 @@ public class JDBCTable {
         }
         public int getSQL(SQLSyntax syntax) {
             return sqlType;
-        }
-        public boolean isSafeString(Object value) {
-            return false;
         }
         protected void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
             statement.setObject(num, value, sqlType);

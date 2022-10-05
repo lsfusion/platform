@@ -144,6 +144,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         container.childrenAlignment = convertFlexAlignment(clientContainer.childrenAlignment);
         container.grid = clientContainer.grid;
         container.wrap = clientContainer.wrap;
+        container.resizeOverflow = clientContainer.resizeOverflow;
         container.alignCaptions = clientContainer.alignCaptions;
         container.lines = clientContainer.lines;
         container.lineSize = clientContainer.lineSize;
@@ -224,6 +225,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         GGrid grid = initGwtComponent(clientGrid, new GGrid());
         grid.groupObject = convertOrCast(clientGrid.groupObject);
         grid.quickSearch = clientGrid.quickSearch;
+
+        grid.resizeOverflow = clientGrid.resizeOverflow;
+
         grid.headerHeight = clientGrid.headerHeight;
 
         grid.autoSize = clientGrid.autoSize;
@@ -532,6 +536,8 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         
         treeGroup.expandOnClick = clientTreeGroup.expandOnClick;
 
+        treeGroup.resizeOverflow = clientTreeGroup.resizeOverflow;
+
         treeGroup.headerHeight = clientTreeGroup.headerHeight;
 
         treeGroup.lineWidth = clientTreeGroup.lineWidth;
@@ -624,6 +630,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         this.form = form;
 
         form.creationPath = clientForm.creationPath;
+        form.path = clientForm.path;
         for(FormScheduler formScheduler : clientForm.formSchedulers) {
             form.formSchedulers.add(convertOrCast(formScheduler));
         }

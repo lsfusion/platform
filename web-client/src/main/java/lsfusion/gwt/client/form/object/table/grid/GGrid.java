@@ -12,6 +12,8 @@ public class GGrid extends GComponent {
     public boolean quickSearch;
     public int headerHeight;
 
+    public Boolean resizeOverflow;
+
     public GSize getHeaderHeight() {
         if(headerHeight >= 0)
             return GSize.getValueSize(headerHeight);

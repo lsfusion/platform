@@ -19,7 +19,7 @@ public class InputList implements Serializable {
     public InputList filter(SecurityPolicy policy, ActionOrProperty securityProperty) {
         if (policy != null) {
             for (int i = 0; i < actions.length; i++) {
-                if (actions[i].action.equals("new")) {
+                if (actions[i].id.equals("new")) {
                     if (!policy.checkPropertyEditObjectsPermission(securityProperty)) {
                         return new InputList(ArrayUtils.remove(actions, i), strict);
                     }

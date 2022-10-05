@@ -38,8 +38,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     public interface UIHandler {
         void addEnterBinding(Widget widget);
         void removeCondition(GPropertyFilter condition);
-        void conditionsChanged(boolean focusFirstComponent, GFilterConditionView changedView);
         void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
+        void enableApplyButton();
     }
 
     private GPropertyFilter condition;
@@ -139,12 +139,14 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
+                enableApplyButton();
                 focusValueView();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
+                enableApplyButton();
                 focusValueView();
             }
 
@@ -154,6 +156,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
+                enableApplyButton();
                 focusValueView();
             }
         };
@@ -165,8 +168,9 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                if (cell.enterPressed) {
-                    conditionChanged(true);
+                enableApplyButton();
+                if (cell.enterPressed || !GFilterConditionView.this.controlsVisible) {
+                    uiHandler.applyFilters(cell.enterPressed, GFilterConditionView.this);
                 }
                 confirmed = true;
             }
@@ -204,6 +208,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 return event -> {
                     condition.junction = !condition.junction;
                     showBackground(!condition.junction);
+                    enableApplyButton();
                     focusValueView();
                 };
             }
@@ -220,9 +225,6 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         valueView.focusOnValue();
     }
     
-    private void conditionChanged(boolean focusFirstComponent) {
-        uiHandler.conditionsChanged(focusFirstComponent, this);
-    }
 
     public ComponentWidget initView() {
         boolean alignCaptions = condition.filter.container.isAlignCaptions();
@@ -244,6 +246,10 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     private void updateCompareLabelText() {
         compareLabel.setText((condition.negation ? "!" : "") + condition.compare);
         compareLabel.setTitle((condition.negation ? messages.formFilterCompareNot() + " " : "") + condition.compare.getTooltipText());
+    }
+    
+    private void enableApplyButton() {
+        uiHandler.enableApplyButton();
     }
 
     @Override
@@ -295,6 +301,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
             updateCompareLabelText();
         }
+        
+        enableApplyButton();
     }
 
     public void onAdd() {
