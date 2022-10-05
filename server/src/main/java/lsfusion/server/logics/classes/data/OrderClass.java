@@ -76,7 +76,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = types.get(i);
             String exprSource = source.getSource(i);
-            mResultSources.add("COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(true), source.getSyntax()) + ")");
+            mResultSources.add("COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(!desc.get(i)), source.getSyntax()) + ")");
             mExprs.add(exprSource);
         }
         ConcatenateType resultType = ConcatenateType.get(types.toArray(new Type[types.size()]));
@@ -151,14 +151,6 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
     }
 
     public int getSQL(SQLSyntax syntax) {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean isSafeString(Object value) {
-        throw new UnsupportedOperationException();
-    }
-
-    public String getString(Object value, SQLSyntax syntax) {
         throw new UnsupportedOperationException();
     }
 

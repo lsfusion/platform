@@ -62,14 +62,6 @@ public class ByteArrayClass extends DataClass<RawFileData> {
         return syntax.getByteArraySQL();
     }
 
-    public boolean isSafeString(Object value) {
-        return false;
-    }
-
-    public String getString(Object value, SQLSyntax syntax) {
-        throw new RuntimeException("not supported");
-    }
-
     public RawFileData read(Object value) {
         if(value instanceof byte[])
             return new RawFileData((byte[]) value);

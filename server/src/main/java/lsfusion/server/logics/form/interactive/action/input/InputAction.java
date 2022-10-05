@@ -143,7 +143,7 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public ImSet<Action> getDependActions() {
-        return BaseUtils.immutableCast(contextActions.mapListValues((InputContextAction<?, ClassPropertyInterface> value) -> value.action).getCol().toSet());
+        return BaseUtils.immutableCast(getDependContextActions().mapListValues((InputContextAction<?, ClassPropertyInterface> value) -> value.action).getCol().toSet());
     }
 
     // in theory should be replaced, but it's used only
@@ -152,13 +152,18 @@ public class InputAction extends SystemExplicitAction {
 //        return super.replace(replacer);
 //    }
 
+    // we're removing the "new" action (just like in FormInteractiveAction all property dependendencies are not include), because it has global changes, which "break" for example FORMCHANGE flow checks (and forms with SELECTOR get MANAGESESSION for auto management sessions)
+    protected ImList<InputContextAction<?, ClassPropertyInterface>> getDependContextActions() {
+        return contextActions.filterList(element -> !element.image.equals("new"));
+    }
+
     @IdentityInstanceLazy
     @Override
     public PropertyMapImplement<?, ClassPropertyInterface> calcWhereProperty() {
         PropertyMapImplement<?, ClassPropertyInterface> result = super.calcWhereProperty();
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList(); // should be called after everything is initialized
         if(fullContextList != null) { // filters don't stop form from showing, however they can be used for param classes, so we're using the same hack as in SystemAction
-            ImList<PropertyMapImplement<?, ClassPropertyInterface>> contextList = contextActions.mapListValues((InputContextAction<?, ClassPropertyInterface> value) -> IsClassProperty.getMapProperty(value.getInterfaceClasses()));
+            ImList<PropertyMapImplement<?, ClassPropertyInterface>> contextList = getDependContextActions().mapListValues((InputContextAction<?, ClassPropertyInterface> value) -> IsClassProperty.getMapProperty(value.getInterfaceClasses()));
             result = PropertyFact.createAnd(result, PropertyFact.createUnion(interfaces, ListFact.add(contextList, ListFact.toList(IsClassProperty.getMapProperty(fullContextList.getInterfaceClasses()), PropertyFact.createTrue())))); // mix of FormAction and ExtendContextAction (since we need sort of "grouping" in list clause)
         }
         return result;
