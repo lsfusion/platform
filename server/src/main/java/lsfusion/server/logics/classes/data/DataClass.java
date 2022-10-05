@@ -338,8 +338,6 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
         return false;
     }
 
-    public abstract String getString(Object value, SQLSyntax syntax);
-    
     @Override
     public String toString() {
         return getCanonicalName() + " '" + ThreadLocalContext.localize(caption) + "'";

@@ -132,10 +132,6 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
         return false;
     }
 
-    public String getString(Object value, SQLSyntax syntax) {
-        throw new RuntimeException("not supported");
-    }
-
     @Override
     public LocalDateTime parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws java.text.ParseException {
         return readDBF(dbfRecord.getDate(fieldName));
