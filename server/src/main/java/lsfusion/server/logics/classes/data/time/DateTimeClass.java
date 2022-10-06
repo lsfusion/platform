@@ -166,11 +166,6 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
     }
 
     @Override
-    public LocalDateTime getInfiniteValue(boolean min) {
-        return min ? LocalDateTime.MIN : LocalDateTime.MAX;
-    }
-
-    @Override
     public Stat getTypeStat() {
         return new Stat(Long.MAX_VALUE);
     }
@@ -186,6 +181,23 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
             cell.setCellValue(object);
         }
         cell.setCellStyle(styles.dateTime);
+    }
+
+    public static final LocalDateTime minDate = LocalDateTime.of(1, 1, 1, 0, 0);
+    public static final LocalDateTime maxDate = LocalDateTime.of(294275, 1, 1, 0 , 0);
+
+    @Override
+    public LocalDateTime getInfiniteValue(boolean min) {
+        return min ? minDate : maxDate;
+    }
+
+    // actually is used only for OrderClass.getSource
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        assert value != null;
+        LocalDateTime dateTime = (LocalDateTime) value;
+        return "make_timestamp(" + dateTime.getYear() + "," + dateTime.getMonthValue() + "," + dateTime.getDayOfMonth() +
+                dateTime.getHour() + "," + dateTime.getMinute() + "," + dateTime.getSecond() + ", 0.0)";
     }
 
     @Override
