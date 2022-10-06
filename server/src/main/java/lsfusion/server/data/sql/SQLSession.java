@@ -930,11 +930,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void dropLikeIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        dropIndex(table, indexName + likeIndexPostfix, ifExists);
+        if(DataAdapter.hasTrgmExtension())
+            dropIndex(table, indexName + likeIndexPostfix, ifExists);
     }
 
     public void dropMatchIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        dropIndex(table, indexName + matchIndexPostfix, ifExists);
+        if(DataAdapter.hasTrgmExtension())
+            dropIndex(table, indexName + matchIndexPostfix, ifExists);
     }
 
     public void dropDefaultIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
