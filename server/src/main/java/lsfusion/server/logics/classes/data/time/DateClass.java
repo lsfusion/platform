@@ -125,7 +125,8 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     }
     
     public String getString(Object value, SQLSyntax syntax) {
-        return "{d '" + value + "'}";
+        LocalDate date = (LocalDate) value;
+        return "make_date(" + date.getYear() + "," + date.getMonthValue() + "," + date.getDayOfMonth() + ")";
     }
 
     @Override
@@ -166,11 +167,12 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     }
 
     //Using LocalDate.MIN or any date with negative year causes pgsql error 'time zone displacement out of range'
-    static LocalDate minDate = LocalDate.of(1, 1, 1);
+    private static final LocalDate minDate = LocalDate.of(1, 1, 1);
+    private static final LocalDate maxDate = LocalDate.of(5874896, 1, 1);
 
     @Override
     public LocalDate getInfiniteValue(boolean min) {
-        return min ? minDate : LocalDate.MAX;
+        return min ? minDate : maxDate;
     }
 
     @Override
