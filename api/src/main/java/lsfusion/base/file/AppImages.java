@@ -47,6 +47,14 @@ public class AppImages {
         AppImages.predefinedFontClasses.exclAdd("play.png", "fa-solid fa-play");
 
         AppImages.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
+
+        AppImages.predefinedFontClasses.exclAdd("inventory.png", "fa-solid fa-warehouse");
+        AppImages.predefinedFontClasses.exclAdd("invoicing.png", "fa-solid fa-money-bill");
+        AppImages.predefinedFontClasses.exclAdd("purchase.png", "fa-solid fa-cart-flatbed");
+        AppImages.predefinedFontClasses.exclAdd("sales.png", "fa-solid fa-hand-holding-dollar");
+        AppImages.predefinedFontClasses.exclAdd("manufacturing.png", "fa-solid fa-industry");
+        AppImages.predefinedFontClasses.exclAdd("retail.png", "fa-solid fa-bag-shopping");
+        AppImages.predefinedFontClasses.exclAdd("projectManagement.png", "fa-solid fa-diagram-project");
     }
 
     public static final AppImage FORMTOP = new AppImage("formTop.png");
