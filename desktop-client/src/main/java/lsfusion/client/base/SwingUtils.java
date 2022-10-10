@@ -844,6 +844,13 @@ public class SwingUtils {
     }
 
     public static Object escapeSeparator(Object value, Compare compare) {
-        return value instanceof String && compare != null && compare.escapeComma() ? ((String) value).replace(MainController.matchSearchSeparator, "\\" + MainController.matchSearchSeparator) : value;
+        if(value instanceof String && compare != null) {
+            if(compare.escapeComma())
+                value = ((String) value).replace(MainController.matchSearchSeparator, "\\" + MainController.matchSearchSeparator);
+            if(compare == Compare.CONTAINS)
+                value = ((String) value).replace("%", "\\%").replace("_", "\\_");
+            return value;
+        }
+        return value;
     }
 }
