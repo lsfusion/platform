@@ -27,6 +27,7 @@ public class IntervalPropertyEditor extends JDateChooser implements PropertyEdit
         this.intervalClass = intervalClass;
 
         configureButtons(addButtons);
+        jcalendar.setWeekOfYearVisible(false);
     }
 
     private void configureButtons(boolean addButtons) {

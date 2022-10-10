@@ -161,6 +161,7 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         Date date = dateEditor.getDate();
         calendar.setTime(date != null ? date : new Date());
         jcalendar.setCalendar(calendar);
+        jcalendar.setWeekOfYearVisible(false);
         popup.show(calendarButton, x, y);
         dateSelected = false;
     }
