@@ -3004,7 +3004,7 @@ public class BaseUtils {
 
     public static final String impossibleString = "FDWREVSFFGFSDRSDR";
 
-    public static final String inlineFileSeparator = impossibleString;
+    public static final String inlineFileSeparator = "PQWERJUQMASPRETQT";
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {
