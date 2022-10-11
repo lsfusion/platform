@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.controller.context;
 
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
@@ -87,5 +88,10 @@ public class RemoteFormContext<F extends FormInstance> extends RemoteUIContext {
     @Override
     public Locale getLocale() {
         return form.form.getLocale();
+    }
+
+    @Override
+    public LocalePreferences getLocalePreferences() {
+        return form.form.session.sql.contextProvider.getLocalePreferences();
     }
 }

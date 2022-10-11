@@ -1,5 +1,6 @@
 package lsfusion.server.logics.navigator.controller.env;
 
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.server.physics.admin.log.LogInfo;
 
 public interface SQLSessionContextProvider {
@@ -16,4 +17,6 @@ public interface SQLSessionContextProvider {
     default Long getThreadCurrentComputer() {
         return getCurrentComputer();
     }
+
+    LocalePreferences getLocalePreferences();
 }

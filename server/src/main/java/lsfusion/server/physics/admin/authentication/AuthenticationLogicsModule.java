@@ -86,6 +86,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
     public LP clientLanguage;
     public LP clientCountry;
+    public LP clientTimeZone;
     public LP clientDateFormat;
     public LP clientTimeFormat;
 
@@ -197,6 +198,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
 
         clientCountry = findProperty("clientCountry[CustomUser]");
         clientLanguage = findProperty("clientLanguage[CustomUser]");
+        clientTimeZone = findProperty("clientTimeZone[CustomUser]");
         clientDateFormat = findProperty("clientDateFormat[CustomUser]");
         clientTimeFormat = findProperty("clientTimeFormat[CustomUser]");
 

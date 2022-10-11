@@ -54,7 +54,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.base.DateConverter.*;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {

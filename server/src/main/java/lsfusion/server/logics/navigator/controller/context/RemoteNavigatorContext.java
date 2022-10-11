@@ -4,13 +4,13 @@ import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.ShowFormType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.LogicsInstance;
-import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.DataClass;
@@ -116,6 +116,11 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             @Override
             public Locale getLocale() {
                 return RemoteNavigatorContext.this.getLocale();
+            }
+
+            @Override
+            public LocalePreferences getLocalePreferences() {
+                return RemoteNavigatorContext.this.getLocalePreferences();
             }
 
             @Override

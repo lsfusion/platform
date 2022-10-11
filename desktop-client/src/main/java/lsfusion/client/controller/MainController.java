@@ -389,7 +389,7 @@ public class MainController {
     public static String computerName;
     public static SessionInfo getSessionInfo() {
         return new SessionInfo(computerName, SystemUtils.getLocalHostIP(), Locale.getDefault().getLanguage(), Locale.getDefault().getCountry(),
-                BaseUtils.getDatePattern(), BaseUtils.getTimePattern());
+                 TimeZone.getDefault(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern());
     }
 
     public static LogicsConnection serverInfo;

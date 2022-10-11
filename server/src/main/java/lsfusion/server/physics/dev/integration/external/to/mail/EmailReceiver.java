@@ -57,7 +57,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.physics.dev.integration.external.to.mail.AccountType.*;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 

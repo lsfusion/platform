@@ -342,7 +342,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
                 tFormats = new TFormats(twoDigitYearStart,
                         dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
-                        timeFormat != null ? timeFormat : BaseUtils.getTimePattern());
+                        timeFormat != null ? timeFormat : BaseUtils.getTimePattern(), timeZone);
 
                 new TaskRunner(this).runTask(initTask, startLogger);
             } catch (RuntimeException re) {

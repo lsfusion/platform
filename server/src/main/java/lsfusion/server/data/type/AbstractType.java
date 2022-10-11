@@ -269,7 +269,7 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
-    public String formatString(T value) {
+    public String formatString(T value, boolean ui) {
         return value == null ? null : value.toString();
     }
 

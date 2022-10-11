@@ -100,7 +100,7 @@ public class ByteArrayClass extends DataClass<RawFileData> {
     }
 
     @Override
-    public String formatString(RawFileData value) {
+    public String formatString(RawFileData value, boolean ui) {
         return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
     }
 

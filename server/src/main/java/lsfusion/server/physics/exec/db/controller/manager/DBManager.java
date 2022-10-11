@@ -20,6 +20,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.DProcessor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -798,7 +799,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return serverComputer;
     }
 
-    private SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
+    public SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
         @Override
         public Long getCurrentUser() {
             return ThreadLocalContext.getCurrentUser();
@@ -829,6 +830,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public Long getThreadCurrentComputer() {
             return getServerComputer();
+        }
+
+        @Override
+        public LocalePreferences getLocalePreferences() {
+            return null;
         }
     };
 

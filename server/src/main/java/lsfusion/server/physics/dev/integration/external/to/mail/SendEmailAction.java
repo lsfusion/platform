@@ -211,7 +211,7 @@ public class SendEmailAction extends SystemExplicitAction {
                     }
                     inlineText = new String(rawFile.getBytes());
                 } else {
-                    inlineText = type.formatString(inlineValue);
+                    inlineText = type.formatString(inlineValue, true);
                 }
                 customInlines.add(EscapeUtils.isContainHtmlTag(inlineText) ? inlineText : escapeLineBreakHTML(inlineText));
             }
