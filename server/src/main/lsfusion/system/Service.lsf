@@ -417,37 +417,27 @@ inDevMode = NATIVE BOOLEAN ();
 getServerSettings() ABSTRACT CASE @@noauth;
 
 getServerSettings() + WHEN TRUE THEN {
-    LOCAL jsonLsfParams = JSONFILE ();
+    LOCAL jsonLsfParams = JSON ();
     EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;
-    
-    readResourcePaths('/web/.*');
     
     LOCAL loginLoadedResources = RAWFILE(STRING);
     LOCAL loginLoadedResourcesOrder = INTEGER(STRING);
-    FOR onLoginLoaded(STRING s) ORDER onLoginLoaded(s) DO {
+    FOR onLoginLoad(STRING s) ORDER onLoginLoad(s) DO {
         readResource(s);
-        FOR STRING p = resourcePaths(p) DO {
-            IF isSubstring(resourcePaths(p), s) THEN {
-                loginLoadedResources(resourcePaths(p)) <- RAWFILE (resource());
-                loginLoadedResourcesOrder(resourcePaths(p)) <- onLoginLoaded(s); 
-            }
-        } 
+        loginLoadedResources(resourcePath()) <- RAWFILE (resource());
+        loginLoadedResourcesOrder(resourcePath()) <- onLoginLoad(s); 
     }
-    LOCAL loginResources = JSONFILE ();
+    LOCAL loginResources = JSON ();
     EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
      
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
         readResource(s);
-        FOR STRING p = resourcePaths(p) DO {
-            IF isSubstring(resourcePaths(p), s) THEN {
-                webClientLoadedResources(resourcePaths(p)) <- RAWFILE (resource());
-                webClientLoadedResourcesOrder(resourcePaths(p)) <- onWebClientLoad(s);
-            }
-        }         
+        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
+        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
     }
-    LOCAL mainResources = JSONFILE ();
+    LOCAL mainResources = JSON ();
     EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
     
     generateJnlpUrls();
@@ -455,9 +445,9 @@ getServerSettings() + WHEN TRUE THEN {
                 sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
                 jnlpUrls=exportText(), 
                 disableRegistration=disableRole('selfRegister'),
-                lsfParams=STRING(jsonLsfParams()),
-                loginResources = STRING(loginResources()),
-                mainResources = STRING(mainResources());
+                lsfParams=jsonLsfParams(),
+                loginResources = loginResources(),
+                mainResources = mainResources();
 };
 
 // logging for user

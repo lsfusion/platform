@@ -221,10 +221,9 @@ public class MainController {
 
     private Map<String, String> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources) {
         Map<String, String> versionedResources = new LinkedHashMap<>();
-        for (Pair<String, RawFileData> loginLoadedResourceFile : resources) {
-            String fileName = loginLoadedResourceFile.first;
-
-            versionedResources.put(FileUtils.saveWebFile(fileName, loginLoadedResourceFile.second, serverSettings), fileName.substring(fileName.lastIndexOf(".") + 1));
+        for (Pair<String, RawFileData> resource : resources) {
+            String fileName = resource.first;
+            versionedResources.put(FileUtils.saveWebFile(fileName, resource.second, serverSettings), fileName.substring(fileName.lastIndexOf(".") + 1));
         }
         return versionedResources;
     }
