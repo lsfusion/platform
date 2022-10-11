@@ -46,7 +46,6 @@ public class LSFLocaleFilter extends OncePerRequestFilter {
             prevLocale = LocaleContextHolder.getLocale();
             LocaleContextHolder.setLocale(newLocale);
         }
-
         try {
             filterChain.doFilter(request, response);
         } finally {

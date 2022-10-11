@@ -59,7 +59,8 @@ import java.util.*;
 import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.trimToNull;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.base.DateConverter.*;
+import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
 public class CustomRestoreAction extends InternalAction {
     private final ClassPropertyInterface backupInterface;

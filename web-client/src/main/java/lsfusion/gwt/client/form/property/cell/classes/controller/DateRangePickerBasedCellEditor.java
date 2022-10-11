@@ -114,7 +114,7 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
                     messages.@lsfusion.gwt.client.ClientMessages::monthDecember()()
                 ],
                 "firstDay": 1,
-                format: pattern.replaceAll("d", "D").replaceAll("y", "Y").replaceAll("a", "A") // dateRangePicker format - date uses capital letters, time uses small letters, AM/PM uses capital letter. need to be able to enter date from keyboard
+                format: $wnd.moment().toMomentFormatString(pattern)
             },
             startDate: startDate,
             endDate: endDate,

@@ -10,7 +10,7 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 import java.io.File;
 import java.time.LocalDateTime;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateTimeToSqlTimestamp;
+import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
 
 public class ClearFusionTempFilesAction extends InternalAction {
 

@@ -5,6 +5,7 @@ import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.MessageClientAction;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.SystemAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -34,8 +35,8 @@ public class MessageAction extends SystemAction {
     }
 
     public FlowResult aspectExecute(ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
-        Object value = context.getSingleKeyValue().getValue();
-        showMessage(context, value == null ? null : String.valueOf(value));
+        ObjectValue singleKeyValue = context.getSingleKeyValue();
+        showMessage(context, singleKeyValue instanceof NullValue ? null : singleKeyValue.getType().formatString(singleKeyValue.getValue(), true));
         return FlowResult.FINISH;
     }
 

@@ -105,7 +105,7 @@ public abstract class FileClass<T> extends DataClass<T> {
 
     protected abstract FileData formatHTTPNotNull(T b);
 
-    public String formatString(T value) {
+    public String formatString(T value, boolean ui) {
         return value != null ? Base64.encodeBase64StringUnChunked(getBytes(value)) : null;
     }
     protected abstract byte[] getBytes(T value);

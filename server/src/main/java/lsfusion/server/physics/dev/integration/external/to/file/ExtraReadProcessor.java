@@ -23,7 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static lsfusion.base.DateConverter.safeDateToSql;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlDateToLocalDate;
+import static lsfusion.base.DateConverter.sqlDateToLocalDate;
 
 @Deprecated
 public class ExtraReadProcessor implements ExtraReadInterface {

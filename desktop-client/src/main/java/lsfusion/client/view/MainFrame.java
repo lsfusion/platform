@@ -178,7 +178,7 @@ public abstract class MainFrame extends JFrame {
             TimeZone.setDefault(timeZone);
         }
 
-        tFormats = new TFormats(localePreferences.twoDigitYearStart, localePreferences.dateFormat, localePreferences.timeFormat);
+        tFormats = new TFormats(localePreferences.twoDigitYearStart, localePreferences.dateFormat, localePreferences.timeFormat, timeZone);
     }
 
     private static void setupFormattableDates() {

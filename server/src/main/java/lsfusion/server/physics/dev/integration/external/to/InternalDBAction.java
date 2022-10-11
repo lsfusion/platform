@@ -35,7 +35,7 @@ public class InternalDBAction extends CallDBAction {
         DataAdapter adapter = dbManager.getAdapter();
         SQLSyntax syntax = adapter.syntax;
         MutableObject connOwner = new MutableObject();
-        ExConnection exConn = adapter.getPrivate(connOwner);
+        ExConnection exConn = adapter.getPrivate(connOwner, dbManager.contextProvider);
         Connection conn = exConn.sql;
         boolean prevReadOnly = conn.isReadOnly();
         List<String> tempTables = new ArrayList<>();

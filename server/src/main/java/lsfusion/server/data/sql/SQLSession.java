@@ -288,7 +288,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
         try {
             if (useCommon)
-                resultConnection = connectionPool.getCommon(this);
+                resultConnection = connectionPool.getCommon(this, contextProvider);
             resultConnection.checkClosed();
             resultConnection.updateLogLevel(syntax);
         } catch (Throwable t) {
@@ -365,7 +365,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         assertLock();
         if(privateConnection ==null) {
             assert transactionTables.isEmpty();
-            privateConnection = connectionPool.getPrivate(this);
+            privateConnection = connectionPool.getPrivate(this, contextProvider);
 //            sqlHandLogger.info("Obtaining backend PID: " + ((PGConnection) privateConnection.sql).getBackendPID());
 //            System.out.println(this + " : NULL -> " + privateConnection + " " + " " + sessionTablesMap.keySet() + ExceptionUtils.getStackTrace());
         }
@@ -2523,7 +2523,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return ((Number)value).intValue();
     }
 
-    private static Statement createSingleStatement(Connection connection) throws SQLException {
+    public static Statement createSingleStatement(Connection connection) throws SQLException {
         Statement statement = connection.createStatement();
         statement.setEscapeProcessing(false); // для preparedStatement'ов эту операцию не имеет смысл делать
         return statement;
@@ -3253,6 +3253,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
                 // если все ок, подменяем connection
                 privateConnection.sql = newConnection;
+                privateConnection.restartConnection(newConnection, contextProvider);
                 privateConnection.timeScore = 0;
                 privateConnection.lengthScore = 0;
                 long currentTime = System.currentTimeMillis();

@@ -120,7 +120,7 @@ public class ExternalHttpServer extends MonitorServer {
                 String hostNameCookie = cookiesMap.get(HOSTNAME_COOKIE_NAME);
                 String hostName = hostNameCookie != null ? hostNameCookie : getHostName(remoteAddress);
 
-                SessionInfo sessionInfo = new SessionInfo(hostName, address != null ? address.getHostAddress() : null, null, null, null, null);// client locale does not matter since we use anonymous authentication
+                SessionInfo sessionInfo = new SessionInfo(hostName, address != null ? address.getHostAddress() : null, null, null, null, null, null);// client locale does not matter since we use anonymous authentication
 
                 String[] host = request.getRequestHeaders().getFirst("Host").split(":");
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);

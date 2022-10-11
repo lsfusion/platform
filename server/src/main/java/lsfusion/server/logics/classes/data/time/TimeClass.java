@@ -4,6 +4,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.TimeConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -23,19 +24,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalTime;
-import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.FormatStyle;
-import java.util.Locale;
 
 import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 import static lsfusion.base.TimeConverter.sqlTimeToLocalTime;
 
 public class TimeClass extends TimeSeriesClass<LocalTime> {
     public final static TimeClass instance = new TimeClass();
-
-//    private final static String timePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(null, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
@@ -75,8 +70,10 @@ public class TimeClass extends TimeSeriesClass<LocalTime> {
     }
 
     @Override
-    public String formatString(LocalTime value) {
-        return value == null ? null : value.format(ThreadLocalContext.getTFormats().timeFormatter);
+    public String formatString(LocalTime value, boolean ui) {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return value != null ? (value.format(ui && localePreferences != null ? DateTimeFormatter.ofPattern(localePreferences.timeFormat)
+                : ThreadLocalContext.getTFormats().timeFormatter)) : null;
     }
 
     public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {

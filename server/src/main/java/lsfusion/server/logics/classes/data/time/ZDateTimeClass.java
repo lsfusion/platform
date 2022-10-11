@@ -4,6 +4,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -27,21 +28,15 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.FormatStyle;
-import java.util.Locale;
+import java.util.TimeZone;
 
-import static lsfusion.base.DateConverter.instantToSqlTimestamp;
-import static lsfusion.base.DateConverter.sqlTimestampToInstant;
+import static lsfusion.base.DateConverter.*;
 
 public class ZDateTimeClass extends TimeSeriesClass<Instant> {
 
     public final static ZDateTimeClass instance = new ZDateTimeClass();
-
-//    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
@@ -161,8 +156,11 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
     }
 
     @Override
-    public String formatString(Instant value) {
-        return value == null ? null : ThreadLocalContext.getTFormats().zDateTimeFormatter.format(value);
+    public String formatString(Instant value, boolean ui) {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return value != null ? (ui && localePreferences != null ?
+                value.atZone(TimeZone.getTimeZone(localePreferences.timeZone).toZoneId()).format(DateTimeFormatter.ofPattern(localePreferences.dateTimeFormat)) :
+                ThreadLocalContext.getTFormats().zDateTimeFormatter.format(value)) : null;
     }
 
     public String getSID() {

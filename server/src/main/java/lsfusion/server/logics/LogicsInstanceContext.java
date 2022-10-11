@@ -3,6 +3,7 @@ package lsfusion.server.logics;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -68,6 +69,11 @@ public class LogicsInstanceContext extends AbstractContext {
     @Override
     public Locale getLocale() {
         return Locale.getDefault();
+    }
+
+    @Override
+    public LocalePreferences getLocalePreferences() {
+        return null;
     }
 
     @Override

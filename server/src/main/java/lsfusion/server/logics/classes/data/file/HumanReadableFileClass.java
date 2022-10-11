@@ -15,8 +15,8 @@ public abstract class HumanReadableFileClass extends StaticFormatFileClass {
     }
 
     @Override
-    public String formatString(RawFileData value) {
+    public String formatString(RawFileData value, boolean ui) {
 //        return value != null ? new String(value.getBytes()) : null;
-        return super.formatString(value);
+        return super.formatString(value, ui);
     }
 }

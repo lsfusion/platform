@@ -4,6 +4,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -24,20 +25,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.chrono.Chronology;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
-import java.time.format.FormatStyle;
-import java.util.Locale;
 
 import static lsfusion.base.DateConverter.*;
 
 public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
 
     public final static DateTimeClass instance = new DateTimeClass();
-
-//    private final static String dateTimePattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(FormatStyle.SHORT, FormatStyle.MEDIUM, Chronology.ofLocale(Locale.getDefault()), Locale.getDefault());
 
     static {
         DataClass.storeClass(instance);
@@ -160,8 +155,10 @@ public class DateTimeClass extends TimeSeriesClass<LocalDateTime> {
     }
 
     @Override
-    public String formatString(LocalDateTime value) {
-        return value == null ? null : value.format(ThreadLocalContext.getTFormats().dateTimeFormatter);
+    public String formatString(LocalDateTime value, boolean ui) {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return value != null ? (value.format(ui && localePreferences != null ? DateTimeFormatter.ofPattern(localePreferences.dateTimeFormat)
+                : ThreadLocalContext.getTFormats().dateTimeFormatter)) : null;
     }
 
     public String getSID() {

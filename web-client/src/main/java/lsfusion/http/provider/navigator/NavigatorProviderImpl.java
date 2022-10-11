@@ -29,9 +29,11 @@ import ua_parser.Parser;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,7 +45,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     public static SessionInfo getSessionInfo(Authentication auth, HttpServletRequest request) {
         Locale clientLocale = LocaleContextHolder.getLocale();
         return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry(),
-                BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), MainController.getExternalRequest(new Object[0], request));
+                LocaleContextHolder.getTimeZone(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), MainController.getExternalRequest(new Object[0], request));
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
@@ -51,8 +53,11 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         if(hostName == null)
             hostName = request.getRemoteHost();
 
-        return new SessionInfo(hostName, request.getRemoteAddr(), null, null, null, null, // we don't need client language and country because they were already provided when authenticating (see method above)
-                MainController.getExternalRequest(new Object[0], request));
+        Cookie timeZone = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_ZONE");
+        Cookie timeFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_FORMAT");
+        Cookie dateFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_DATE_FORMAT");
+        return new SessionInfo(hostName, request.getRemoteAddr(), null, null, timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null,
+                dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, MainController.getExternalRequest(new Object[0], request));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {

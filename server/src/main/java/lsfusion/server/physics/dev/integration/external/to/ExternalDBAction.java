@@ -43,7 +43,7 @@ public class ExternalDBAction extends CallDBAction {
             DataAdapter adapter = dbManager.getAdapter();
             syntax = adapter.syntax;
             connOwner = new MutableObject();
-            exConn = adapter.getPrivate(connOwner);
+            exConn = adapter.getPrivate(connOwner, dbManager.contextProvider);
             conn = exConn.sql;
             prevReadOnly = conn.isReadOnly();
         } else {

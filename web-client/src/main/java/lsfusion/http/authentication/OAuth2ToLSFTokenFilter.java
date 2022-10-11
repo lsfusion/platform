@@ -74,6 +74,7 @@ public class OAuth2ToLSFTokenFilter extends OncePerRequestFilter {
                     throw new org.springframework.security.authentication.LockedException(le.getMessage());
                 }
             });
+
             lsfAuthentication = new LSFAuthenticationToken(username, null, authLocale.first, authLocale.second);
         } catch (org.springframework.security.authentication.LockedException | RemoteMessageException e) {
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);

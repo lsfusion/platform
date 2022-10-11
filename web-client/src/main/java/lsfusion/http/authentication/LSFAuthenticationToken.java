@@ -13,7 +13,7 @@ public class LSFAuthenticationToken extends UsernamePasswordAuthenticationToken 
     
     public final AuthenticationToken appServerToken;
     private final Locale locale; // optimization
-    
+
     public static AuthenticationToken getAppServerToken() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if(auth instanceof LSFAuthenticationToken)
@@ -44,7 +44,7 @@ public class LSFAuthenticationToken extends UsernamePasswordAuthenticationToken 
 
     public LSFAuthenticationToken(Object principal, String credentials, AuthenticationToken appServerToken, Locale locale) {
         super(principal, credentials, new ArrayList<GrantedAuthority>());
-        
+
         this.appServerToken = appServerToken;
         this.locale = locale;
     }

@@ -77,7 +77,7 @@ public abstract class IntervalClass<T> extends DataClass<BigDecimal> {
     }
 
     @Override
-    public String formatString(BigDecimal obj) {
+    public String formatString(BigDecimal obj, boolean ui) {
         return formatInterval(obj, this::format);
     }
 

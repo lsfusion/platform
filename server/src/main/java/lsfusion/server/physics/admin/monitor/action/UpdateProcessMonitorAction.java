@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.trimToEmpty;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlTimestampToLocalDateTime;
+import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 
 public class UpdateProcessMonitorAction extends ProcessDumpAction {
 

@@ -4,6 +4,7 @@ import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.WindowFormType;
 import lsfusion.server.base.controller.remote.ui.RemoteUIContext;
@@ -116,6 +117,11 @@ public class RemoteNavigatorContext extends RemoteConnectionContext {
             @Override
             public Locale getLocale() {
                 return RemoteNavigatorContext.this.getLocale();
+            }
+
+            @Override
+            public LocalePreferences getLocalePreferences() {
+                return RemoteNavigatorContext.this.getLocalePreferences();
             }
 
             @Override
