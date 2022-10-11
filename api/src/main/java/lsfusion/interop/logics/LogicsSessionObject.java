@@ -73,7 +73,7 @@ public class LogicsSessionObject {
 
     private List<Pair<String, RawFileData>> getFileData(Map<String, String> files) {
         List<Pair<String, RawFileData>> resultFiles = new LinkedList<>();
-        files.forEach((fileName, file) -> resultFiles.add(Pair.create(fileName.startsWith("/") ? fileName.replaceFirst("/", "") : fileName, new RawFileData(new String(Base64.decodeBase64(file)).getBytes()))));
+        files.forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, new RawFileData(new String(Base64.decodeBase64(file)).getBytes()))));
         return resultFiles;
     }
 
