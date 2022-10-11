@@ -33,7 +33,7 @@ public class ReadResourceAction extends InternalAction {
 
             RawFileData rawFileData = ResourceUtils.findResourceAsFileData(resourcePath, true, true, null, null);
 
-            findProperty("resourceFile[]").change(rawFileData != null ? new FileData(rawFileData, BaseUtils.getFileExtension(resourcePath)) : null, context);
+            findProperty("resource[]").change(rawFileData != null ? new FileData(rawFileData, BaseUtils.getFileExtension(resourcePath)) : null, context);
 
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw Throwables.propagate(e);

@@ -77,6 +77,7 @@ public class MainController {
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
+        model.addAttribute("loginResources", saveResources(serverSettings, serverSettings.loginResources));
 
         try {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
@@ -213,8 +214,19 @@ public class MainController {
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
+        model.addAttribute("mainResources", saveResources(serverSettings, serverSettings.mainResources));
 
         return "main";
+    }
+
+    private Map<String, String> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources) {
+        Map<String, String> versionedResources = new LinkedHashMap<>();
+        for (Pair<String, RawFileData> loginLoadedResourceFile : resources) {
+            String fileName = loginLoadedResourceFile.first;
+
+            versionedResources.put(FileUtils.saveWebFile(fileName, loginLoadedResourceFile.second, serverSettings), fileName.substring(fileName.lastIndexOf(".") + 1));
+        }
+        return versionedResources;
     }
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {

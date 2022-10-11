@@ -5,7 +5,6 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
-import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.commons.net.util.Base64;
@@ -15,8 +14,8 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,36 +48,33 @@ public class LogicsSessionObject {
             int sessionConfigTimeout = json.optInt("sessionConfigTimeout");
             boolean anonymousUI = json.optBoolean("anonymousUI");
             String jnlpUrls = trimToNull(json.optString("jnlpUrls"));
-            if (jnlpUrls != null && contextPath != null) {
+            if (jnlpUrls != null && contextPath != null)
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
-            }
-//            List<Pair<String, RawFileData>> files = getRawFileDataFromJson(json.optJSONArray("resourceFiles"));
+
             boolean disableRegistration = json.optBoolean("disableRegistration");
+            Map<String, String> lsfParams = getMapFromJSONArray(json.optJSONArray("lsfParams"));
 
-            Map<String, String> lsfParams = getLsfParamsFromJson(json.optJSONArray("lsfParams"));
+            List<Pair<String, RawFileData>> loginResources = getFileData(getMapFromJSONArray(json.optJSONArray("loginResources")));
+            List<Pair<String, RawFileData>> mainResources = getFileData(getMapFromJSONArray(json.optJSONArray("mainResources")));
 
-            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion,
-                    inDevMode, sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams); // , files
+            serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResources, mainResources);
         }
         return serverSettings;
     }
 
-    private Map<String, String> getLsfParamsFromJson(JSONArray jsonArray) {
-        Map<String, String> lsfParams = new HashMap<>();
+    private Map<String, String> getMapFromJSONArray(JSONArray jsonArray) {
+        Map<String, String> map = new LinkedHashMap<>();
         for (int i = 0; i < jsonArray.length(); i++) {
-            lsfParams.put(jsonArray.optJSONObject(i).optString("key"), jsonArray.optJSONObject(i).optString("value"));
+            map.put(jsonArray.optJSONObject(i).optString("key"), jsonArray.optJSONObject(i).optString("value"));
         }
-        return lsfParams;
+        return map;
     }
 
-    private List<Pair<String, RawFileData>> getRawFileDataFromJson(JSONArray jsonArray) {
-        List<Pair<String, RawFileData>> files = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            String file = new String(Base64.decodeBase64(jsonArray.optJSONObject(i).optString("file")));
-            String fileName = jsonArray.optJSONObject(i).optString("name");
-            files.add(Pair.create(fileName, new RawFileData(file.getBytes())));
-        }
-        return files;
+    private List<Pair<String, RawFileData>> getFileData(Map<String, String> files) {
+        List<Pair<String, RawFileData>> resultFiles = new LinkedList<>();
+        files.forEach((fileName, file) -> resultFiles.add(Pair.create(fileName.startsWith("/") ? fileName.replaceFirst("/", "") : fileName, new RawFileData(new String(Base64.decodeBase64(file)).getBytes()))));
+        return resultFiles;
     }
 
     private RawFileData getRawFileData(String base64) {

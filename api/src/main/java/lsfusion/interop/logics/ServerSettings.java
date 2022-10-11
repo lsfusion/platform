@@ -1,14 +1,8 @@
 package lsfusion.interop.logics;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.file.RawFileData;
-import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -23,13 +17,14 @@ public class ServerSettings {
     public int sessionConfigTimeout;
     public boolean anonymousUI;
     public String jnlpUrls;
-//    public List<Pair<String, RawFileData>> resourceFiles;
     public boolean disableRegistration;
     public Map<String, String> lsfParams;
+    public List<Pair<String, RawFileData>> loginResources;
+    public List<Pair<String, RawFileData>> mainResources;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
-                          boolean inDevMode, int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, // List<Pair<String, RawFileData>> jsFiles,
-                          boolean disableRegistration, Map<String, String> lsfParams) {
+                          boolean inDevMode, int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, boolean disableRegistration, Map<String, String> lsfParams,
+                          List<Pair<String, RawFileData>> loginResources, List<Pair<String, RawFileData>> mainResources) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
@@ -40,10 +35,9 @@ public class ServerSettings {
         this.sessionConfigTimeout = sessionConfigTimeout;
         this.anonymousUI = anonymousUI;
         this.jnlpUrls = jnlpUrls;
-//        this.resourceFiles = jsFiles;
         this.disableRegistration = disableRegistration;
         this.lsfParams = lsfParams;
+        this.loginResources = loginResources;
+        this.mainResources = mainResources;
     }
-
-    public boolean filesSaved = false;
 }

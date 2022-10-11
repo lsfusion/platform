@@ -1,0 +1,16 @@
+<taglib>
+    <tlib-version>1.0</tlib-version>
+    <jsp-version>2.0</jsp-version>
+    <short-name>Write resources</short-name>
+    <tag>
+        <name>writeResources</name>
+        <tag-class>lsfusion.http.controller.WriteResourcesJSPTag</tag-class>
+        <attribute>
+            <name>resources</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.util.Map</type>
+        </attribute>
+        <body-content>empty</body-content>
+    </tag>
+</taglib>
