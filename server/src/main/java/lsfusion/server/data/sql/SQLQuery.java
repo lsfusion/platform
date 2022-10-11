@@ -18,6 +18,7 @@ import lsfusion.base.lambda.Provider;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.query.exec.DynamicExecuteEnvironment;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
@@ -369,6 +370,7 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
     }
 
     @StackMessage("{message.subquery.materialize}")
+    @ThisMessage
     public MaterializedQuery materialize(final SQLSession session, final DynamicExecuteEnvironment subQueryExecEnv, final OperationOwner owner, final ImMap<SQLQuery, MaterializedQuery> materializedQueries, final ImMap<String, ParseInterface> queryParams, final int transactTimeout) throws SQLException, SQLHandledException {
         if(pessQuery != null && !Settings.get().isDisablePessQueries())
             return materializePessQuery(session, subQueryExecEnv, owner, materializedQueries, queryParams, transactTimeout);

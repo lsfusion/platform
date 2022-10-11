@@ -2914,7 +2914,7 @@ public class Settings implements Cloneable {
     }
 
     //http://jasperreports.freeideas.cz/subdom/jasperreports/how-prevent-infinite-loop-in-jasper-server-run-how-to-limit-timeout-for-report-run/
-    private int jasperReportsGovernorMaxPages = 0;
+    private int jasperReportsGovernorMaxPages = 500;
     private long jasperReportsGovernorTimeout = 0;
 
     public int getJasperReportsGovernorMaxPages() {

@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -167,7 +168,15 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
 
     @Override
     public Instant getInfiniteValue(boolean min) {
-        return min ? Instant.MIN : Instant.MAX;
+        return min ? DateTimeClass.minDate.toInstant(ZoneOffset.UTC) : DateTimeClass.maxDate.toInstant(ZoneOffset.UTC);
+    }
+
+    // actually is used only for OrderClass.getSource
+    @Override
+    public String getString(Object value, SQLSyntax syntax) {
+        assert value != null;
+        Instant instant = (Instant) value;
+        return "to_timestamp(" + instant.getEpochSecond() + ", 0.0)";
     }
 
     @Override

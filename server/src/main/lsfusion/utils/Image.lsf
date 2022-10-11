@@ -16,3 +16,6 @@ widthImageInfo = DATA LOCAL INTEGER;
 heightImageInfo = DATA LOCAL INTEGER;
 //get image width and height in pixels
 getImageInfo(image) INTERNAL  'lsfusion.server.logics.classes.data.utils.image.GetImageInfoAction' (IMAGEFILE);
+
+mergedImage = DATA LOCAL IMAGEFILE ();
+mergeImages (background, front) INTERNAL  'lsfusion.server.logics.classes.data.utils.image.MergeImagesAction' (IMAGEFILE, IMAGEFILE);

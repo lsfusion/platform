@@ -1210,7 +1210,14 @@ public class GwtClientUtils {
     }
 
     public static Object escapeSeparator(Object value, GCompare compare) {
-        return value instanceof String && compare != null && compare.escapeSeparator() ? ((String) value).replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator) : value;
+        if(value instanceof String && compare != null) {
+            if(compare.escapeSeparator())
+                value = ((String) value).replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
+            if(compare == GCompare.CONTAINS)
+                value = ((String) value).replace("%", "\\%").replace("_", "\\_");
+            return value;
+        }
+        return value;
     }
 
     public static void setInnerContent(Element element, String value) {
