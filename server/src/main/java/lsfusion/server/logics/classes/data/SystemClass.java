@@ -92,11 +92,6 @@ public class SystemClass extends DataClass<Long> {
         throw new RuntimeException("not supported");
     }
 
-    @Override
-    public String formatString(Long value) {
-        return value == null ? null : String.valueOf(value);
-    }
-
     public String getSID() {
         return "SystemClass";
     }

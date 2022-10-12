@@ -9,6 +9,7 @@ import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
+import org.apache.commons.net.util.Base64;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -103,4 +104,15 @@ public abstract class FileClass<T> extends DataClass<T> {
     protected abstract T parseHTTPNotNull(FileData b);
 
     protected abstract FileData formatHTTPNotNull(T b);
+
+    public String formatString(T value) {
+        return value != null ? Base64.encodeBase64StringUnChunked(getBytes(value)) : null;
+    }
+    protected abstract byte[] getBytes(T value);
+
+    // todo:
+    @Override
+    public String formatStringSource(String valueSource, SQLSyntax syntax) {
+        return super.formatStringSource(valueSource, syntax);
+    }
 }

@@ -160,17 +160,17 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     @Override
+    public String formatJSONSource(String valueSource, SQLSyntax syntax) {
+        return idClass.formatJSONSource(valueSource, syntax);
+    }
+
+    @Override
     public String getJSONType() {
         return idClass.getJSONType();
     }
 
     public Long parseString(String s) throws ParseException {
         return idClass.parseString(s);
-    }
-
-    @Override
-    public String formatString(Long value) {
-        return value == null ? null : String.valueOf(value);
     }
 
     public AndClassSet getBaseClassSet(BaseClass baseClass) {

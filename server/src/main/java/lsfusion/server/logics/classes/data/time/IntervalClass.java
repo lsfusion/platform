@@ -81,6 +81,12 @@ public abstract class IntervalClass<T> extends DataClass<BigDecimal> {
         return formatInterval(obj, this::format);
     }
 
+    // todo:
+    @Override
+    public String formatStringSource(String valueSource, SQLSyntax syntax) {
+        return super.formatStringSource(valueSource, syntax);
+    }
+
     @Override
     public BigDecimal read(Object value) {
         int length = value instanceof String ? ((String) value).split("[.]").length : 0;

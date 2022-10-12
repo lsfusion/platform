@@ -88,6 +88,12 @@ public class ColorClass extends DataClass<Color> {
         return String.valueOf(value.getRGB());
     }
 
+    // todo: convert to rgb
+    @Override
+    public String formatStringSource(String valueSource, SQLSyntax syntax) {
+        return super.formatStringSource(valueSource, syntax);
+    }
+
     @Override
     public String getSID() {
         return "COLOR";

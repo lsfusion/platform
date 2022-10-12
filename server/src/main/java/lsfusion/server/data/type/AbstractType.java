@@ -226,6 +226,10 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return formatNullableString(object, false); // json supports nulls
     }
     @Override
+    public String formatJSONSource(String valueSource, SQLSyntax syntax) {
+        return formatStringSource(valueSource, syntax);
+    }
+    @Override
     public String getJSONType() {
         return "string";
     }
@@ -262,6 +266,16 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
 
     public boolean isSafeString(Object value) {
         return false;
+    }
+
+    @Override
+    public String formatString(T value) {
+        return value == null ? null : value.toString();
+    }
+
+    @Override
+    public String formatStringSource(String valueSource, SQLSyntax syntax) {
+        return valueSource;
     }
 
     @Override

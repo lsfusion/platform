@@ -87,11 +87,6 @@ public class JSONClass extends DataClass<String> {
     }
 
     @Override
-    public String formatString(String value) {
-        return value;
-    }
-
-    @Override
     public Object formatHTTP(String value, Charset charset) {
         if(charset != null || value == null)
             return super.formatHTTP(value, charset);

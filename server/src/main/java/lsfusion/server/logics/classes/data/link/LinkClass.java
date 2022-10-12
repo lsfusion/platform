@@ -149,9 +149,4 @@ public abstract class LinkClass extends DataClass<String> {
     public boolean fixedSize() {
         return false;
     }
-
-    @Override
-    public String formatString(String value) {
-        return value;
-    }
 }

@@ -158,11 +158,6 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public String formatString(Object value) {
-        return value == null ? null : String.valueOf(value);
-    }
-
     public String getSID() {
         String result = "";
         for(int i=0,size=types.size();i<size;i++)
