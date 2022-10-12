@@ -196,4 +196,11 @@
         <filter-name>UrlRewriteFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+
+    <jsp-config>
+        <taglib>
+            <taglib-uri>writeResources</taglib-uri>
+            <taglib-location>/WEB-INF/tags/writeResources.tld</taglib-location>
+        </taglib>
+    </jsp-config>
 </web-app>

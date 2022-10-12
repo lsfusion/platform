@@ -92,6 +92,7 @@ unzipped '{utils.unzipped.string}' = DATA LOCAL FILE (STRING[100]);
 makeUnzipFile '{utils.make.unzip.file}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MakeUnzipFileAction' ();
 
 resource '{utils.resource.file}' = DATA LOCAL FILE ();
+resourcePath '{utils.resource.file.path}' = DATA LOCAL STRING ();
 readResource '{utils.read.resource}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.ReadResourceAction' (STRING[100]);
 
 resourcePaths = DATA LOCAL STRING (STRING);
