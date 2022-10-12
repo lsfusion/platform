@@ -437,9 +437,13 @@ public abstract class FormsController {
         }
     }
 
-    public void asyncCloseForm(Supplier<GAsyncFormController> asyncFormController, FormContainer formContainer) {
+    public void asyncCloseForm(GwtActionDispatcher dispatcher, Supplier<Long> asyncExec, FormContainer formContainer) {
+        asyncCloseForm(dispatcher.getAsyncFormController(asyncExec.get()), formContainer);
+    }
+
+    public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {
         if(formContainer instanceof FormDockable) {
-            asyncFormController.get().putAsyncClosedForm(new Pair<>(formContainer, forms.indexOf(formContainer)));
+            asyncFormController.putAsyncClosedForm(new Pair<>(formContainer, forms.indexOf(formContainer)));
             formContainer.queryHide(null);
         }
     }

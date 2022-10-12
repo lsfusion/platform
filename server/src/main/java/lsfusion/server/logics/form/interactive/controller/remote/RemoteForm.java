@@ -664,7 +664,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 logger.debug("executeEventAction");
             }
 
-            AsyncEventExec asyncEventExec = richDesign.getAsyncEventExec(formEvent);
+            AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formEvent);
             form.fireFormEvent(stack, formEvent, asyncEventExec != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
         });
     }

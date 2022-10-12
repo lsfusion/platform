@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.form.property.async;
 
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import java.util.function.Consumer;
@@ -46,7 +46,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, Supplier<GAsyncFormController> asyncFormController) {
-        formsController.asyncOpenForm(asyncFormController.get(), this, editEvent, null, null, formController);
+    public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, GwtActionDispatcher dispatcher, Supplier<Long> asyncExec) {
+        formsController.asyncOpenForm(dispatcher.getAsyncFormController(asyncExec.get()), this, editEvent, null, null, formController);
     }
 }
