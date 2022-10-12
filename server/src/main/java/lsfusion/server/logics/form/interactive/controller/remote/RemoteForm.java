@@ -657,14 +657,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent, byte[] pushAsyncResult) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("executeEventAction");
             }
 
-            form.fireFormEvent(stack, formEvent);
+            AsyncEventExec asyncEventExec = richDesign.getAsyncEventExec(formEvent);
+            form.fireFormEvent(stack, formEvent, asyncEventExec != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
         });
     }
 

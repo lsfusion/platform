@@ -9,6 +9,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.change.StructChanges;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -29,7 +30,11 @@ public class ActionValueImplement<T extends PropertyInterface> extends ActionImp
     }
 
     public void execute(ExecutionEnvironment session, ExecutionStack stack) throws SQLException, SQLHandledException {
-        action.execute(mapping, session, stack, mapObjects == null ? null : new FormEnvironment<>(mapObjects, null, formInstance));
+        execute(session, stack, null);
+    }
+
+    public void execute(ExecutionEnvironment session, ExecutionStack stack, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+        action.execute(mapping, session, stack, mapObjects == null ? null : new FormEnvironment<>(mapObjects, null, formInstance), pushedAsyncResult);
     }
     
     public ActionValueImplement<T> updateCurrentClasses(UpdateCurrentClassesSession session) throws SQLException, SQLHandledException {

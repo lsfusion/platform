@@ -45,6 +45,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
 import static lsfusion.gwt.client.navigator.window.GWindowFormType.*;
@@ -436,9 +437,9 @@ public abstract class FormsController {
         }
     }
 
-    public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {
+    public void asyncCloseForm(Supplier<GAsyncFormController> asyncFormController, FormContainer formContainer) {
         if(formContainer instanceof FormDockable) {
-            asyncFormController.putAsyncClosedForm(new Pair<>(formContainer, forms.indexOf(formContainer)));
+            asyncFormController.get().putAsyncClosedForm(new Pair<>(formContainer, forms.indexOf(formContainer)));
             formContainer.queryHide(null);
         }
     }

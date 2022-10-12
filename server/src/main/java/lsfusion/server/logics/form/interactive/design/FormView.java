@@ -787,6 +787,14 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return asyncExecMap;
     }
 
+    public AsyncEventExec getAsyncEventExec(FormEvent formEvent) {
+        AsyncEventExec asyncEventExec = entity.getEventAction(formEvent).getAsyncEventExec(entity, null, null, null, true);
+        if (asyncEventExec == null && formEvent instanceof FormScheduler) {
+            asyncEventExec = AsyncNoWaitExec.instance;
+        }
+        return asyncEventExec;
+    }
+
     public void finalizeAroundInit() {
         treeGroups.finalizeChanges();
         groupObjects.finalizeChanges();

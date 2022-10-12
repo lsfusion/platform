@@ -10,6 +10,7 @@ import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;
@@ -45,7 +46,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(GAsyncFormController asyncFormController, FormsController formsController, FormContainer formContainer, Event editEvent) {
-        formsController.asyncOpenForm(asyncFormController, this, editEvent, null, null, null);
+    public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, Supplier<GAsyncFormController> asyncFormController) {
+        formsController.asyncOpenForm(asyncFormController.get(), this, editEvent, null, null, formController);
     }
 }

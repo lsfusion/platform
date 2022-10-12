@@ -2636,13 +2636,17 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         fireEvent(FormEventType.DROP, stack);
     }
 
-    public void fireFormEvent(ExecutionStack stack, FormEvent formEvent) throws SQLException, SQLHandledException {
-        fireEvent(entity.getEventObject(formEvent), stack);
+    public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
+        fireEvent(entity.getEventObject(formEvent), stack, pushedAsyncResult);
     }
 
     private void fireEvent(Object eventObject, ExecutionStack stack) throws SQLException, SQLHandledException {
+        fireEvent(eventObject, stack, null);
+    }
+
+    private void fireEvent(Object eventObject, ExecutionStack stack, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {
         for(ActionValueImplement event : getEvents(eventObject))
-            event.execute(this, stack);
+            event.execute(this, stack, pushedAsyncResult);
     }
 
     private ImOrderSet<ActionValueImplement> getEvents(Object eventObject) {

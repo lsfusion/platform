@@ -543,8 +543,10 @@ public class GFormController implements EditManager {
 
         GAsyncExec asyncExec = getAsyncExec(form.asyncExecMap.get(formEvent));
         if (asyncExec != null) {
-            long requestIndex = asyncDispatch(executeFormEventAction, serverResponseCallback);
-            asyncExec.exec(actionDispatcher.getAsyncFormController(requestIndex), formsController, formContainer, editEvent);
+            asyncExec.exec(formsController, this, formContainer, editEvent, () -> {
+                executeFormEventAction.pushAsyncResult = new GPushAsyncClose();
+                return actionDispatcher.getAsyncFormController(asyncDispatch(executeFormEventAction, serverResponseCallback));
+            });
         } else {
             syncDispatch(executeFormEventAction, serverResponseCallback);
         }
@@ -1100,6 +1102,18 @@ public class GFormController implements EditManager {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
+    public void asyncCloseForm(Supplier<GAsyncFormController> asyncFormController) {
+        if(needConfirm) {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+                if(chosenOption == DialogBoxHelper.OptionType.YES) {
+                    formsController.asyncCloseForm(asyncFormController, formContainer);
+                }
+            });
+        } else {
+            formsController.asyncCloseForm(asyncFormController, formContainer);
+        }
+    }
+
     public void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         if(needConfirm) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
@@ -1114,7 +1128,7 @@ public class GFormController implements EditManager {
 
     private void asyncCloseForm(EditContext editContext, ExecContext execContext, Event editEvent, String actionSID, boolean externalChange, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, editEvent, new GPushAsyncClose(), externalChange, requestIndex ->
-                formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
+                formsController.asyncCloseForm(() -> getAsyncFormController(requestIndex), formContainer), onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {
