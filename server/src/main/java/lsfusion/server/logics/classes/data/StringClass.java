@@ -77,11 +77,6 @@ public class StringClass extends DataClass<String> {
     }
 
     @Override
-    public String formatString(String value) {
-        return value;
-    }
-
-    @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
         outStream.writeBoolean(blankPadded);

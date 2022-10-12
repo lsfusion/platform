@@ -93,7 +93,7 @@ public class LogicalClass extends DataClass<Boolean> {
             if (value instanceof Boolean)
                 return (Boolean) value;
             else if (value != null)
-                return value == (Integer) 1;
+                return value.equals(1);
         } else {
             if (value instanceof Boolean)
                 return (Boolean) value ? true : null;
@@ -174,6 +174,14 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     @Override
+    public String formatJSONSource(String valueSource, SQLSyntax syntax) {
+        if(threeState)
+            return "CASE WHEN " + valueSource + " IS NOT NULL THEN " +
+                    "CASE WHEN " + valueSource + "=1 THEN TRUE ELSE FALSE END" + " ELSE NULL END";
+        return "CASE WHEN " + valueSource + " IS NOT NULL THEN TRUE ELSE NULL END";
+    }
+
+    @Override
     public String getJSONType() {
         return "boolean";
     }
@@ -189,8 +197,7 @@ public class LogicalClass extends DataClass<Boolean> {
     private Boolean formatBoolean(Boolean object) {
         if (threeState)
             return object;
-        else
-            return object != null && object ? true : null;
+        return object != null && object ? true : null;
     }
 
     public Boolean parseString(String s) throws ParseException {
@@ -201,11 +208,6 @@ public class LogicalClass extends DataClass<Boolean> {
                 return false;
         }
         return null;
-    }
-
-    @Override
-    public String formatString(Boolean value) {
-        return value == null ? null : String.valueOf(value);
     }
 
     public String getSID() {
