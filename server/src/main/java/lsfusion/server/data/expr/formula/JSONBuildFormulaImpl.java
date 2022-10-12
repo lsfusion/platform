@@ -32,7 +32,13 @@ public class JSONBuildFormulaImpl extends AbstractFormulaImpl implements Formula
 
     @Override
     public String getSource(ExprSource source) {
-        return "notEmpty(jsonb_strip_nulls(jsonb_build_object(" + fieldNames.toString((i, value) -> "'" + value + "'," + source.getSource(i), ",") + ")))";
+        return "notEmpty(jsonb_strip_nulls(jsonb_build_object(" + fieldNames.toString((i, value) -> {
+            String valueSource = source.getSource(i);
+            Type type = source.getType(i);
+            if(type != null)
+                valueSource = type.formatJSONSource(valueSource, source.getSyntax());
+            return "'" + value + "'," + valueSource;
+        }, ",") + ")))";
     }
 
     @Override

@@ -94,9 +94,6 @@ public class JDBCTable {
         public Object parseString(String s) {
             throw new UnsupportedOperationException();
         }
-        public String formatString(Object value) {
-            throw new UnsupportedOperationException();
-        }
         public String getSID() {
             throw new UnsupportedOperationException();
         }
