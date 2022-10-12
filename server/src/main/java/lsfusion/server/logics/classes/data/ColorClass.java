@@ -88,10 +88,15 @@ public class ColorClass extends DataClass<Color> {
         return String.valueOf(value.getRGB());
     }
 
-    // todo: convert to rgb
     @Override
-    public String formatStringSource(String valueSource, SQLSyntax syntax) {
-        return super.formatStringSource(valueSource, syntax);
+    public Object formatJSON(Color object) {
+        return object.getRGB();
+    }
+
+    // it seems that SQL does the same conversion as above
+    @Override
+    public String formatJSONSource(String valueSource, SQLSyntax syntax) {
+        return super.formatJSONSource(valueSource, syntax);
     }
 
     @Override

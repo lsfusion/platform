@@ -110,9 +110,8 @@ public abstract class FileClass<T> extends DataClass<T> {
     }
     protected abstract byte[] getBytes(T value);
 
-    // todo:
     @Override
     public String formatStringSource(String valueSource, SQLSyntax syntax) {
-        return super.formatStringSource(valueSource, syntax);
+        return "encode(" + valueSource + ", 'base64')";
     }
 }

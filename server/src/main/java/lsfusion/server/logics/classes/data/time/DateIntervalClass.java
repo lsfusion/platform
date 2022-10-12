@@ -41,4 +41,14 @@ public class DateIntervalClass extends IntervalClass<LocalDate> {
     protected String format(Long epoch) {
         return DateClass.instance.formatString(epochToLocalDateTime(epoch).toLocalDate());
     }
+
+    @Override
+    protected String getSQLFrom(String source) {
+        return "(to_timestamp((trunc (" + source + "::NUMERIC)) / 1000) AT TIME ZONE 'UTC')::date";
+    }
+
+    @Override
+    protected String getSQLTo(String source) {
+        return "(to_timestamp((SPLIT_PART(" + source + "::TEXT, '.', 2)::NUMERIC) / 1000) AT TIME ZONE 'UTC')::date";
+    }
 }

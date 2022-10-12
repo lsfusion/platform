@@ -81,10 +81,12 @@ public abstract class IntervalClass<T> extends DataClass<BigDecimal> {
         return formatInterval(obj, this::format);
     }
 
-    // todo:
+    protected abstract String getSQLFrom(String source);
+    protected abstract String getSQLTo(String source);
+
     @Override
     public String formatStringSource(String valueSource, SQLSyntax syntax) {
-        return super.formatStringSource(valueSource, syntax);
+        return getSQLFrom(valueSource) + " || ' - ' || " + getSQLTo(valueSource);
     }
 
     @Override
