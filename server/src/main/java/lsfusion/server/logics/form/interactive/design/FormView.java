@@ -719,7 +719,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeString(outStream, path);
         pool.writeInt(outStream, overridePageWidth);
         serializeFormSchedulers(outStream, formSchedulers.getOrderSet());
-        serializeAsyncExecMap(outStream, getAsyncExecMap());
+        serializeAsyncExecMap(outStream, entity.getAsyncExecMap());
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -768,23 +768,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             entry.getKey().serialize(outStream);
             AsyncSerializer.serializeEventExec(entry.getValue(), outStream);
         }
-    }
-
-    private Map<FormEvent, AsyncEventExec> getAsyncExecMap() {
-        Map<FormEvent, AsyncEventExec> asyncExecMap = new HashMap<>();
-
-        Iterable<FormEvent> allFormEventActions = entity.getAllFormEventActions();
-        for(FormEvent formEvent : allFormEventActions) {
-            ActionObjectEntity<?> eventAction = entity.getEventAction(formEvent);
-            AsyncEventExec asyncEventExec = eventAction.getAsyncEventExec(entity, null, null, null, true);
-            if (asyncEventExec == null && formEvent instanceof FormScheduler) {
-                asyncEventExec = AsyncNoWaitExec.instance;
-            }
-            if(asyncEventExec != null) {
-                asyncExecMap.put(formEvent, asyncEventExec);
-            }
-        }
-        return asyncExecMap;
     }
 
     public void finalizeAroundInit() {

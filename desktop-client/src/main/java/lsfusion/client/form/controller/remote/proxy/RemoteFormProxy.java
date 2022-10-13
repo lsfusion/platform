@@ -257,9 +257,9 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
     }
 
     @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent, byte[] pushAsyncResult) throws RemoteException {
         logRemoteMethodStartCall("executeEventAction");
-        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, formEvent);
+        ServerResponse result = target.executeEventAction(requestIndex, lastReceivedRequestIndex, formEvent, pushAsyncResult);
         logRemoteMethodEndCall("executeEventAction", result);
         return result;
     }

@@ -6,7 +6,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.form.view.FormContainer;
 
 import java.util.function.Consumer;
 
@@ -20,6 +20,7 @@ public class GAsyncNoWaitExec extends GAsyncExec {
     }
 
     @Override
-    public void exec(GAsyncFormController asyncFormController, FormsController formsController, FormContainer formContainer, Event editEvent) {
+    public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, GAsyncExecutor asyncExecutor) {
+        asyncExecutor.execute();
     }
 }

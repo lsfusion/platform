@@ -9,8 +9,6 @@ grammar LsfLogics;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
     import lsfusion.interop.form.WindowFormType;
-    import lsfusion.interop.form.ContainerWindowFormType;
-    import lsfusion.interop.form.ModalityWindowFormType;
     import lsfusion.interop.form.design.ContainerType;
     import lsfusion.interop.base.view.FlexAlignment;
     import lsfusion.interop.form.event.FormScheduler;
