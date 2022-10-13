@@ -807,7 +807,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         } else {
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
-            String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath) : "";
+            String scriptFormPath = formPath != null ? escapeLineBreakHTML(formPath.substring(formPath.lastIndexOf("/") + 1).replace(".lsf", "")) : "";
             
             if (isAction()) {
                 return String.format(TOOL_TIP_FORMAT + DETAILED_ACTION_TOOL_TIP_FORMAT,

@@ -522,7 +522,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         GGridPropertyTableHeader header = getGridHeader(index);
         if(header != null) {
             header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
-            header.setPaths(property.path, property.creationPath);
+            header.setPaths(property.path, property.creationPath, property.formPath);
             header.setToolTip(property.getTooltipText(columnCaption));
             header.setHeaderHeight(property.getHeaderCaptionHeight(this));
         } else

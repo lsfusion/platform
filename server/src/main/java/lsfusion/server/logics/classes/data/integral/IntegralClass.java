@@ -121,11 +121,6 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     }
 
     @Override
-    public String formatString(T value) {
-        return value == null ? null : String.valueOf(value);
-    }
-
-    @Override
     public T parseDBF(CustomDbfRecord dbfRecord, String fieldName, String charset) throws ParseException {
         return readDBF(dbfRecord.getNumber(fieldName));
     }

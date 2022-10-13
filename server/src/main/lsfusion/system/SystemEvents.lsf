@@ -59,6 +59,9 @@ onWebClientStarted () +{
     INTERNAL CLIENT WAIT 'option.css';
 }
 
+onLoginLoad = ABSTRACT CASE INTEGER(STRING);
+onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
+
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
 currentDBName = DATA LOCAL STRING ();
 unusedDBNames = DATA LOCAL STRING (STRING);

@@ -134,8 +134,9 @@ public abstract class StaticFormatFileClass extends FileClass<RawFileData> {
         return new RawFileData(Base64.decodeBase64(s));
     }
 
-    public String formatString(RawFileData value) {
-        return value != null ? Base64.encodeBase64StringUnChunked(value.getBytes()) : null;
+    @Override
+    protected byte[] getBytes(RawFileData value) {
+        return value.getBytes();
     }
 
     public abstract FormIntegrationType getIntegrationType();

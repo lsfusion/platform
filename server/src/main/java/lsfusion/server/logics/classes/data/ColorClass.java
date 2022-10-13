@@ -89,6 +89,17 @@ public class ColorClass extends DataClass<Color> {
     }
 
     @Override
+    public Object formatJSON(Color object) {
+        return object.getRGB();
+    }
+
+    // it seems that SQL does the same conversion as above
+    @Override
+    public String formatJSONSource(String valueSource, SQLSyntax syntax) {
+        return super.formatJSONSource(valueSource, syntax);
+    }
+
+    @Override
     public String getSID() {
         return "COLOR";
     }

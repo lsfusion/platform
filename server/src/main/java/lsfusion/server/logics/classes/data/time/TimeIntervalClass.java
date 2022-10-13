@@ -45,4 +45,14 @@ public class TimeIntervalClass extends IntervalClass<LocalTime> {
     protected String format(Long epoch) {
         return TimeClass.instance.formatString(epochToLocalDateTime(epoch).toLocalTime());
     }
+
+    @Override
+    protected String getSQLFrom(String source) {
+        return "(to_timestamp((trunc (" + source + "::NUMERIC) / 1000)) AT TIME ZONE 'UTC')::time";
+    }
+
+    @Override
+    protected String getSQLTo(String source) {
+        return "(to_timestamp((SPLIT_PART(" + source + "::TEXT, '.', 2)::NUMERIC) / 1000) AT TIME ZONE 'UTC')::time";
+    }
 }

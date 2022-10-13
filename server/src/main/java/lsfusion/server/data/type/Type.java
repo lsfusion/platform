@@ -90,6 +90,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     OverJDBField formatDBF(String fieldName) throws JDBFException;
     Object formatJSON(T object);
+    String formatJSONSource(String valueSource, SQLSyntax syntax); // should correspond formatJSON
     String getJSONType();
     String formatCSV(T object);
     String formatXML(T object);
@@ -100,6 +101,7 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     T parseString(String s) throws ParseException; // s - not null (файлы decode'ся base64)
 
     String formatString(T value); // возвращает null если передали null (файлы encode'ся base64)
+    String formatStringSource(String valueSource, SQLSyntax syntax); // should correspond formatString
 
     T parseHTTP(Object o, Charset charset) throws ParseException; // o - String or FileData, o - not null, null'ы decode'ся в зависимости от типа
 

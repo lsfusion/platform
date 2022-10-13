@@ -193,18 +193,19 @@ public class TooltipManager {
                 Element childElement = Element.as(child);
                 String elementClass = childElement.getAttribute("class");
                 if (elementClass.equals("lsf-tooltip-path"))
-                    setLink(childElement, tooltipHelper, projectLSFDir, tooltipHelper.getCreationPath());
+                    setLink(childElement, projectLSFDir, tooltipHelper.getCreationPath(), tooltipHelper.getPath());
                 else if (elementClass.equals("lsf-form-property-declaration"))
-                    setLink(childElement, tooltipHelper, projectLSFDir, tooltipHelper.getFormPath());
-                else if (elementClass.equals("lsf-tooltip-help") || (elementClass.equals("lsf-tooltip-form-decl-help") && tooltipHelper.getFormPath() != null))
+                    setLink(childElement, projectLSFDir, tooltipHelper.getFormDeclaration(), tooltipHelper.getFormRelativePath());
+                else if ((elementClass.equals("lsf-tooltip-help") && tooltipHelper.getCreationPath() != null ) ||
+                        (elementClass.equals("lsf-tooltip-form-decl-help") && tooltipHelper.getFormPath() != null))
                     childElement.setInnerHTML("(<a href=\"https://github.com/lsfusion/platform/issues/649\" target=\"_blank\"> ? </a>)&ensp;");
             }
         }
     }
 
-    private void setLink(Element element, TooltipHelper tooltipHelper, String projectLSFDir, String path) {
+    private void setLink(Element element, String projectLSFDir, String declaration, String relativePath) {
         element.getPreviousSibling().setNodeValue(" ");
-        element.setInnerHTML(getPathHTML(tooltipHelper, projectLSFDir, path));
+        element.setInnerHTML(getPathHTML(projectLSFDir, declaration, relativePath));
     }
 
     private void hide() {
@@ -252,18 +253,28 @@ public class TooltipManager {
         public String getFormPath() {
             return null;
         }
+
+        public String getFormDeclaration() {
+            String formPath = getFormPath();
+            return formPath != null ? formPath.substring(formPath.lastIndexOf("/") + 1).replace(".lsf", "") : null;
+        }
+
+        public String getFormRelativePath() {
+            String formPath = getFormPath();
+            return formPath != null ? formPath.substring(0, formPath.indexOf(".lsf") + 4) : null;
+        }
     }
 
-    private static String getPathHTML(TooltipHelper tooltipHelper, String projectLSFDir, String path) {
+    private static String getPathHTML(String projectLSFDir, String declaration, String relativePath) {
         String result = "";
 
-        if (path != null) {
+        if (declaration != null) {
             //use "**" instead "="
-            String command = "--line**" + Integer.parseInt(path.substring(path.lastIndexOf("(") + 1, path.lastIndexOf(":"))) +
-                    "&path**" + projectLSFDir + tooltipHelper.getPath();
+            String command = "--line**" + Integer.parseInt(declaration.substring(declaration.lastIndexOf("(") + 1, declaration.lastIndexOf(":"))) +
+                    "&path**" + projectLSFDir + relativePath;
             //replace spaces and slashes because this command going through url
             result = "<a href=\"lsfusion-protocol://" + command.replaceAll(" ", "++").replaceAll("\\\\", "/") +
-                    "\" target=\"_blank\">" + path + "</a>";
+                    "\" target=\"_blank\">" + declaration + "</a>";
         }
         return result;
     }

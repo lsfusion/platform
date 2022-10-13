@@ -92,10 +92,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -550,8 +547,10 @@ public class GFormController implements EditManager {
 
         GAsyncExec asyncExec = getAsyncExec(form.asyncExecMap.get(formEvent));
         if (asyncExec != null) {
-            long requestIndex = asyncDispatch(executeFormEventAction, serverResponseCallback);
-            asyncExec.exec(actionDispatcher.getAsyncFormController(requestIndex), formsController, formContainer, editEvent);
+            asyncExec.exec(formsController, this, formContainer, editEvent, new GAsyncExecutor(actionDispatcher, pushAsyncResult -> {
+                executeFormEventAction.pushAsyncResult = pushAsyncResult;
+                return asyncDispatch(executeFormEventAction, serverResponseCallback);
+            }));
         } else {
             syncDispatch(executeFormEventAction, serverResponseCallback);
         }
@@ -1108,6 +1107,18 @@ public class GFormController implements EditManager {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
+    public void asyncCloseForm(GAsyncExecutor asyncExecutor) {
+        if(needConfirm) {
+            DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
+                if(chosenOption == DialogBoxHelper.OptionType.YES) {
+                    formsController.asyncCloseForm(asyncExecutor, formContainer);
+                }
+            });
+        } else {
+            formsController.asyncCloseForm(asyncExecutor, formContainer);
+        }
+    }
+
     public void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         if(needConfirm) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
@@ -1121,9 +1132,8 @@ public class GFormController implements EditManager {
     }
 
     private void asyncCloseForm(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, boolean externalChange, Consumer<Long> onExec) {
-        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, new GPushAsyncClose(), externalChange, requestIndex -> {
-            formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer);
-        }, onExec);
+        asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, new GPushAsyncClose(), externalChange, requestIndex ->
+                formsController.asyncCloseForm(getAsyncFormController(requestIndex), formContainer), onExec);
     }
 
     public void continueServerInvocation(long requestIndex, Object[] actionResults, int continueIndex, RequestAsyncCallback<ServerResponseResult> callback) {

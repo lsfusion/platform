@@ -17,6 +17,8 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.FormEvent;
+import lsfusion.interop.form.event.FormEventClose;
+import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -655,14 +657,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     @Override
-    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent) throws RemoteException {
+    public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent, byte[] pushAsyncResult) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("executeEventAction");
             }
 
-            form.fireFormEvent(stack, formEvent);
+            AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formEvent);
+            form.fireFormEvent(stack, formEvent, asyncEventExec != null && pushAsyncResult != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
         });
     }
 

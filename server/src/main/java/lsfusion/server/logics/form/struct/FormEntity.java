@@ -38,6 +38,7 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
@@ -304,6 +305,27 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public Object getEventObject(FormEvent formEvent) {
         return formEvent instanceof FormEventClose ? (((FormEventClose) formEvent).ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE) : formEvent;
+    }
+
+    public Map<FormEvent, AsyncEventExec> getAsyncExecMap() {
+        Map<FormEvent, AsyncEventExec> asyncExecMap = new HashMap<>();
+
+        Iterable<FormEvent> allFormEventActions = getAllFormEventActions();
+        for(FormEvent formEvent : allFormEventActions) {
+            AsyncEventExec asyncEventExec = getAsyncEventExec(formEvent);
+            if(asyncEventExec != null) {
+                asyncExecMap.put(formEvent, asyncEventExec);
+            }
+        }
+        return asyncExecMap;
+    }
+
+    public AsyncEventExec getAsyncEventExec(FormEvent formEvent) {
+        AsyncEventExec asyncEventExec = getEventAction(formEvent).getAsyncEventExec(this, null, null, null, true);
+        if (asyncEventExec == null && formEvent instanceof FormScheduler) {
+            asyncEventExec = AsyncNoWaitExec.instance;
+        }
+        return asyncEventExec;
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {

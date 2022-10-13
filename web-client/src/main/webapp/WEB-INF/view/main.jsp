@@ -2,6 +2,7 @@
 <%@ page isELIgnored="false" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="lsfusion.base.ServerUtils" %>
+<%@ taglib prefix="lsf" uri="writeResources" %>
 
 <!DOCTYPE html>
 
@@ -53,6 +54,8 @@
                 font: normal 13px arial, tahoma, sans-serif;
             }
         </style>
+
+        <lsf:writeResources resources="${mainResources}"/>
 
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
                 //need jquery for pivot table
@@ -200,14 +203,7 @@
                 "static/css/gwt/navigator/tab-window.css"
         ));%>
 
-        <c:forEach items="${versionedResources}" var="versionedResource">
-            <c:if test="${versionedResource.value == 'js'}">
-                <script type='text/javascript' src=${versionedResource.key}></script>
-            </c:if>
-            <c:if test="${versionedResource.value == 'css'}">
-                <link rel='stylesheet' type='text/css' href='${versionedResource.key}' />
-            </c:if>
-        </c:forEach>
+        <lsf:writeResources resources="${versionedResources}"/>
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>

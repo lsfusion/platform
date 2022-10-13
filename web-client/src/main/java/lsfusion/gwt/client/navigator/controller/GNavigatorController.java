@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator.controller;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
@@ -10,6 +11,7 @@ import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
 import java.util.*;
+import java.util.function.Function;
 
 public abstract class GNavigatorController implements GINavigatorController {
     private final FormsController formsController;
@@ -89,9 +91,12 @@ public abstract class GNavigatorController implements GINavigatorController {
     public void openElement(GNavigatorElement element, NativeEvent nativeEvent) {
         if (element instanceof GNavigatorAction) {
             boolean sync = element.asyncExec == null;
-            long requestIndex = formsController.executeNavigatorAction(element.canonicalName, nativeEvent, sync);
-            if(!sync)
-                element.asyncExec.exec(formsController.getDispatcher().getAsyncFormController(requestIndex), formsController, null, nativeEvent instanceof Event ? (Event) nativeEvent : null);
+            Function asyncExec = pushAsyncResult -> formsController.executeNavigatorAction(element.canonicalName, nativeEvent, sync);
+            if(sync) {
+                asyncExec.apply(null);
+            } else {
+                element.asyncExec.exec(formsController, null, null, nativeEvent instanceof Event ? (Event) nativeEvent : null, new GAsyncExecutor(formsController.getDispatcher(), asyncExec));
+            }
         }
     }
 }

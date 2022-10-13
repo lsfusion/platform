@@ -3,8 +3,6 @@ package lsfusion.server.physics.dev.debug;
 import lsfusion.base.Pair;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.net.URL;
-
 public class DebugInfo {
 
     public static class DebugPoint {
@@ -31,12 +29,20 @@ public class DebugInfo {
         public boolean needToCreateDelegate() {
             return !isInsideNonEnabledMeta;
         }
+
+        public String getFullPath() {
+            return path + getLineWithOffset();
+        }
         
         @Override
         public String toString() {
+            return moduleName + getLineWithOffset();
+        }
+
+        private String getLineWithOffset() {
             final String openedMetaCharacter = "\u2195";
             String openedMetaSuffix = isInsideNonEnabledMeta ? openedMetaCharacter : "";
-            return moduleName + "(" + (line + 1) + ":" + (offset + 1) + openedMetaSuffix + ")";
+            return "(" + (line + 1) + ":" + (offset + 1) + openedMetaSuffix + ")";
         }
     }
 

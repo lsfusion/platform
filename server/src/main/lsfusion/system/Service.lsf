@@ -417,15 +417,37 @@ inDevMode = NATIVE BOOLEAN ();
 getServerSettings() ABSTRACT CASE @@noauth;
 
 getServerSettings() + WHEN TRUE THEN {
-    LOCAL jsonLsfParams = JSONFILE ();
+    LOCAL jsonLsfParams = JSON ();
     EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;
+    
+    LOCAL loginLoadedResources = RAWFILE(STRING);
+    LOCAL loginLoadedResourcesOrder = INTEGER(STRING);
+    FOR onLoginLoad(STRING s) ORDER onLoginLoad(s) DO {
+        readResource(s);
+        loginLoadedResources(resourcePath()) <- RAWFILE (resource());
+        loginLoadedResourcesOrder(resourcePath()) <- onLoginLoad(s); 
+    }
+    LOCAL loginResources = JSON ();
+    EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
+     
+    LOCAL webClientLoadedResources = RAWFILE(STRING);
+    LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
+    FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
+        readResource(s);
+        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
+        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
+    }
+    LOCAL mainResources = JSON ();
+    EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
     
     generateJnlpUrls();
     EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
                 sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
-                jnlpUrls=exportText(), // resourceFiles=STRING(jsonResourceFiles()), 
+                jnlpUrls=exportText(), 
                 disableRegistration=disableRole('selfRegister'),
-                lsfParams=STRING(jsonLsfParams());
+                lsfParams=jsonLsfParams(),
+                loginResources = loginResources(),
+                mainResources = mainResources();
 };
 
 // logging for user
