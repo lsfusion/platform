@@ -97,10 +97,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -543,10 +540,10 @@ public class GFormController implements EditManager {
 
         GAsyncExec asyncExec = getAsyncExec(form.asyncExecMap.get(formEvent));
         if (asyncExec != null) {
-            asyncExec.exec(formsController, this, formContainer, editEvent, actionDispatcher, () -> {
-                executeFormEventAction.pushAsyncResult = asyncExec.getPushAsyncResult();
+            asyncExec.exec(formsController, this, formContainer, editEvent, new GAsyncExecutor(actionDispatcher, pushAsyncResult -> {
+                executeFormEventAction.pushAsyncResult = pushAsyncResult;
                 return asyncDispatch(executeFormEventAction, serverResponseCallback);
-            });
+            }));
         } else {
             syncDispatch(executeFormEventAction, serverResponseCallback);
         }
@@ -1102,15 +1099,15 @@ public class GFormController implements EditManager {
         return actionDispatcher.getAsyncFormController(requestIndex);
     }
 
-    public void asyncCloseForm(GwtActionDispatcher dispatcher, Supplier<Long> asyncExec) {
+    public void asyncCloseForm(GAsyncExecutor asyncExecutor) {
         if(needConfirm) {
             DialogBoxHelper.showConfirmBox("lsFusion", messages.doYouReallyWantToCloseForm(), false, 0, 0, chosenOption -> {
                 if(chosenOption == DialogBoxHelper.OptionType.YES) {
-                    formsController.asyncCloseForm(dispatcher, asyncExec, formContainer);
+                    formsController.asyncCloseForm(asyncExecutor, formContainer);
                 }
             });
         } else {
-            formsController.asyncCloseForm(dispatcher, asyncExec, formContainer);
+            formsController.asyncCloseForm(asyncExecutor, formContainer);
         }
     }
 

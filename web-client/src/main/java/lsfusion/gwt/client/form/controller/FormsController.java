@@ -25,7 +25,9 @@ import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
+import lsfusion.gwt.client.form.property.async.GAsyncExecutor;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
+import lsfusion.gwt.client.form.property.async.GPushAsyncClose;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
@@ -437,8 +439,8 @@ public abstract class FormsController {
         }
     }
 
-    public void asyncCloseForm(GwtActionDispatcher dispatcher, Supplier<Long> asyncExec, FormContainer formContainer) {
-        asyncCloseForm(dispatcher.getAsyncFormController(asyncExec.get()), formContainer);
+    public void asyncCloseForm(GAsyncExecutor asyncExecutor, FormContainer formContainer) {
+        asyncCloseForm(asyncExecutor.execute(new GPushAsyncClose()), formContainer);
     }
 
     public void asyncCloseForm(GAsyncFormController asyncFormController, FormContainer formContainer) {

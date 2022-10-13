@@ -313,11 +313,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
         Iterable<FormEvent> allFormEventActions = getAllFormEventActions();
         for(FormEvent formEvent : allFormEventActions) {
-            ActionObjectEntity<?> eventAction = getEventAction(formEvent);
-            AsyncEventExec asyncEventExec = eventAction.getAsyncEventExec(this, null, null, null, true);
-            if (asyncEventExec == null && formEvent instanceof FormScheduler) {
-                asyncEventExec = AsyncNoWaitExec.instance;
-            }
+            AsyncEventExec asyncEventExec = getAsyncEventExec(formEvent);
             if(asyncEventExec != null) {
                 asyncExecMap.put(formEvent, asyncEventExec);
             }

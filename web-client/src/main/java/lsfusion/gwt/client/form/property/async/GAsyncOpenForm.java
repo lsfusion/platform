@@ -46,7 +46,7 @@ public class GAsyncOpenForm extends GAsyncExec {
     }
 
     @Override
-    public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, GwtActionDispatcher dispatcher, Supplier<Long> asyncExec) {
-        formsController.asyncOpenForm(dispatcher.getAsyncFormController(asyncExec.get()), this, editEvent, null, null, formController);
+    public void exec(FormsController formsController, GFormController formController, FormContainer formContainer, Event editEvent, GAsyncExecutor asyncExecutor) {
+        formsController.asyncOpenForm(asyncExecutor.execute(), this, editEvent, null, null, formController);
     }
 }
