@@ -405,7 +405,7 @@ public class ScriptingFormEntity {
             }
 
             DebugInfo.DebugPoint debugPoint = points.get(i);
-            String formPath = debugPoint.toString();
+            String formPath = debugPoint.getFullPath();
             PropertyDrawEntity propertyDraw;
             ActionOrPropertyObjectEntity propertyObject = property.createObjectEntity(objects);
             if(inherited.result != null)
