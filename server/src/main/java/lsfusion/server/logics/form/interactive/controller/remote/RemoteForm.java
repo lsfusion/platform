@@ -665,7 +665,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formEvent);
-            form.fireFormEvent(stack, formEvent, asyncEventExec != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
+            form.fireFormEvent(stack, formEvent, asyncEventExec != null && pushAsyncResult != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
         });
     }
 
