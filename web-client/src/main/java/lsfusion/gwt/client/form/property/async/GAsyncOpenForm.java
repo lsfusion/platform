@@ -2,18 +2,15 @@ package lsfusion.gwt.client.form.property.async;
 
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.ExecContext;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;

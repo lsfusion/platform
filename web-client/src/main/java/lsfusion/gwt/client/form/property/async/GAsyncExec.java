@@ -4,7 +4,6 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.controller.GFormController;
-import lsfusion.gwt.client.form.view.FormContainer;
 
 public abstract class GAsyncExec extends GAsyncEventExec {
 
