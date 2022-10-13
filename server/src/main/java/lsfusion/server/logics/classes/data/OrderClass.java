@@ -76,7 +76,7 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         for (int i = 0, size = source.getExprCount(); i < size; i++) {
             Type exprType = types.get(i);
             String exprSource = source.getSource(i);
-            mResultSources.add("COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(!desc.get(i)), source.getSyntax()) + ")");
+            mResultSources.add("COALESCE(" + exprSource + "," + exprType.getString(exprType.getInfiniteValue(true), source.getSyntax()) + ")");
             mExprs.add(exprSource);
         }
         ConcatenateType resultType = ConcatenateType.get(types.toArray(new Type[types.size()]));
