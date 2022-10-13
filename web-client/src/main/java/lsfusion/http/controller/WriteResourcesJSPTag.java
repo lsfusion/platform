@@ -18,18 +18,20 @@ public class WriteResourcesJSPTag extends TagSupport {
 
     @Override
     public int doStartTag() throws JspException {
-        try {
-            JspWriter out = pageContext.getOut();
-            for (String s : resources.keySet()) {
-                String extension = resources.get(s);
-                if (extension.equals("js")) {
-                    out.print("<script type='text/javascript' src='" + s + "'></script>");
-                } else if (extension.equals("css")) {
-                    out.print("<link rel='stylesheet' type='text/css' href='" + s + "' />");
+        if (resources != null) {
+            try {
+                JspWriter out = pageContext.getOut();
+                for (String s : resources.keySet()) {
+                    String extension = resources.get(s);
+                    if (extension.equals("js")) {
+                        out.print("<script type='text/javascript' src='" + s + "'></script>");
+                    } else if (extension.equals("css")) {
+                        out.print("<link rel='stylesheet' type='text/css' href='" + s + "' />");
+                    }
                 }
+            } catch (IOException e) {
+                throw Throwables.propagate(e);
             }
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
         }
 
         return super.doStartTag();

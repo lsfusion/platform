@@ -28,6 +28,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     private String toolTip;
     private String path;
     private String creationPath;
+    private String formPath;
     private final TooltipManager.TooltipHelper toolTipHelper;
 
     private boolean notNull;
@@ -63,12 +64,18 @@ public class GGridPropertyTableHeader extends Header<String> {
             public String getCreationPath() {
                 return creationPath;
             }
+
+            @Override
+            public String getFormPath() {
+                return formPath;
+            }
         };
     }
 
-    public void setPaths(String path, String creationPath) {
+    public void setPaths(String path, String creationPath, String formPath) {
         this.path = path;
         this.creationPath = creationPath;
+        this.formPath = formPath;
     }
 
     public void setCaption(String caption, boolean notNull, boolean hasChangeAction) {

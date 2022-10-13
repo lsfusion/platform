@@ -77,7 +77,8 @@ public class MainController {
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
-        model.addAttribute("loginResources", saveResources(serverSettings, serverSettings.loginResources));
+        model.addAttribute("loginResources",
+                serverSettings != null && serverSettings.loginResources != null ? saveResources(serverSettings, serverSettings.loginResources) : null);
 
         try {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
@@ -214,7 +215,8 @@ public class MainController {
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("logicsName", getLogicsName(serverSettings));
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
-        model.addAttribute("mainResources", saveResources(serverSettings, serverSettings.mainResources));
+        model.addAttribute("mainResources",
+                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources) : null);
 
         return "main";
     }
