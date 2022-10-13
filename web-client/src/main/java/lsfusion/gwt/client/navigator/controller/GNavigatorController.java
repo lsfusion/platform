@@ -95,7 +95,7 @@ public abstract class GNavigatorController implements GINavigatorController {
             if(sync) {
                 asyncExec.apply(null);
             } else {
-                element.asyncExec.exec(formsController, null, null, null, nativeEvent instanceof Event ? (Event) nativeEvent : null, new GAsyncExecutor(formsController.getDispatcher(), asyncExec));
+                element.asyncExec.exec(formsController, null, null, nativeEvent instanceof Event ? (Event) nativeEvent : null, new GAsyncExecutor(formsController.getDispatcher(), asyncExec));
             }
         }
     }

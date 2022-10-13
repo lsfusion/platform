@@ -11,7 +11,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.interop.form.ModalityType;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
