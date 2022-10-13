@@ -4,7 +4,7 @@ import lsfusion.base.Pair;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.event.FormScheduler;
+import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -37,9 +37,7 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
     
     ServerResponse setContainerCollapsed(long requestIndex, long lastReceivedRequestIndex, int containerID, boolean collapsed) throws RemoteException;
 
-    ServerResponse closedPressed(long requestIndex, long lastReceivedRequestIndex, boolean ok) throws RemoteException;
-
-    ServerResponse formSchedulerExecuted(long requestIndex, long lastReceivedRequestIndex, FormScheduler formScheduler) throws RemoteException;
+    ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent, byte[] pushAsyncResult) throws RemoteException;
 
     // events : group objects
 

@@ -12,7 +12,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
 import lsfusion.interop.form.ModalityType;
-import lsfusion.interop.form.event.FormEventType;
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
@@ -35,8 +36,10 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncAddRemove;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
@@ -76,10 +79,7 @@ import lsfusion.server.physics.dev.property.IsDevProperty;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -294,6 +294,39 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied.action, MapFact.EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
+    }
+
+    public Iterable<FormEvent> getAllFormEventActions() {
+        return BaseUtils.mergeIterables(formSchedulers.getIt(), (Iterable) Arrays.asList(FormEventClose.OK, FormEventClose.CLOSE));
+    }
+
+    public ActionObjectEntity<?> getEventAction(FormEvent formEvent) {
+        return eventActions.getListIt(getEventObject(formEvent)).iterator().next();
+    }
+
+    public Object getEventObject(FormEvent formEvent) {
+        return formEvent instanceof FormEventClose ? (((FormEventClose) formEvent).ok ? FormEventType.QUERYOK : FormEventType.QUERYCLOSE) : formEvent;
+    }
+
+    public Map<FormEvent, AsyncEventExec> getAsyncExecMap() {
+        Map<FormEvent, AsyncEventExec> asyncExecMap = new HashMap<>();
+
+        Iterable<FormEvent> allFormEventActions = getAllFormEventActions();
+        for(FormEvent formEvent : allFormEventActions) {
+            AsyncEventExec asyncEventExec = getAsyncEventExec(formEvent);
+            if(asyncEventExec != null) {
+                asyncExecMap.put(formEvent, asyncEventExec);
+            }
+        }
+        return asyncExecMap;
+    }
+
+    public AsyncEventExec getAsyncEventExec(FormEvent formEvent) {
+        AsyncEventExec asyncEventExec = getEventAction(formEvent).getAsyncEventExec(this, null, null, null, true);
+        if (asyncEventExec == null && formEvent instanceof FormScheduler) {
+            asyncEventExec = AsyncNoWaitExec.instance;
+        }
+        return asyncEventExec;
     }
 
     private void initDefaultGroupElements(GroupObjectEntity group, Version version) {
@@ -1612,7 +1645,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
-            for(String changeEvent : propertyDraw.getAllEventActions()) {
+            for(String changeEvent : propertyDraw.getAllPropertyEventActions()) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);
                 if (editAction != null)
                     consumer.accept(editAction, propertyDraw);
