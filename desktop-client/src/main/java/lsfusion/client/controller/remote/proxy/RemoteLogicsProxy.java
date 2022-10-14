@@ -2,7 +2,6 @@ package lsfusion.client.controller.remote.proxy;
 
 import lsfusion.client.navigator.controller.remote.proxy.RemoteNavigatorProxy;
 import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -76,9 +75,9 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     }
 
     @Override
-    public List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
+    public List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
         logRemoteMethodStartVoidCall("saveCustomReportPathList");
-        List<ReportPath> result = target.saveAndGetCustomReportPathList(formSID, recreate);
+        List<String> result = target.saveAndGetCustomReportPathList(formSID, recreate);
         logRemoteMethodEndVoidCall("saveCustomReportPathList");
         return result;
     }

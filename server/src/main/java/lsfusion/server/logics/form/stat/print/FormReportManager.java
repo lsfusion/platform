@@ -13,7 +13,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -52,12 +51,12 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     // only for development / debug
-    public List<ReportPath> getCustomReportPathList(final FormPrintType printType) throws SQLException, SQLHandledException {
+    public List<String> getCustomReportPathList(final FormPrintType printType) throws SQLException, SQLHandledException {
         Result<String> reportPrefix = new Result<>();
         return getCustomReportPathList(getReportHierarchy(reportPrefix), printType, reportPrefix.result);
     }
-    public List<ReportPath> getCustomReportPathList(StaticDataGenerator.ReportHierarchy hierarchy, final FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
-        List<ReportPath> ret = new ArrayList<>();
+    public List<String> getCustomReportPathList(StaticDataGenerator.ReportHierarchy hierarchy, final FormPrintType printType, String reportPrefix) throws SQLException, SQLHandledException {
+        List<String> ret = new ArrayList<>();
 
         ImMap<GroupObjectHierarchy.ReportNode, String> reportsFileNames = getCustomReportFileNames(hierarchy, printType, reportPrefix);
         for (String customReportDesignName : reportsFileNames.valueIt()) {
@@ -69,7 +68,7 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     // only for development / debug
-    public ReportPath getCustomReportPath(String fileName) {
+    public String getCustomReportPath(String fileName) {
         String targetDir = ResourceUtils.getFileParentDirectoryPath(fileName);
         Path projDirPath = ResourceUtils.getTargetClassesParentPath(targetDir);
         if(projDirPath == null) {
@@ -79,17 +78,15 @@ public abstract class FormReportManager extends FormDataManager {
         //if nor target/classes nor out/production found, then project dir = target dir
         Path srcPath = projDirPath == null ? null : Paths.get(projDirPath.toString(), "src/main/lsfusion/");
         Path customPath = srcPath == null || !Files.exists(srcPath) ? Paths.get(targetDir, fileName) : Paths.get(srcPath.toString(), fileName);
-        Path targetPath = Paths.get(targetDir, fileName);
-        return new ReportPath(customPath.toString(), targetPath.toString());
+        return customPath.toString();
     }
 
     // only for development / debug, если нет отчета и его нужно создать
-    public ReportPath getDefaultCustomReportPath(String fileName) {
-        return new ReportPath(ResourceUtils.getCustomPath(SystemProperties.userDir, fileName).toString(),
-                ResourceUtils.getTargetPath(SystemProperties.userDir, fileName).toString());
+    public String getDefaultCustomReportPath(String fileName) {
+        return ResourceUtils.getCustomPath(SystemProperties.userDir, fileName).toString();
     }
 
-    public List<ReportPath> saveAndGetCustomReportPathList(final FormPrintType printType, boolean recreate) throws SQLException, SQLHandledException {
+    public List<String> saveAndGetCustomReportPathList(final FormPrintType printType, boolean recreate) throws SQLException, SQLHandledException {
         Result<String> reportPrefix = new Result<>();
         StaticDataGenerator.ReportHierarchy reportHierarchy = getReportHierarchy(reportPrefix);
 
@@ -234,7 +231,7 @@ public abstract class FormReportManager extends FormDataManager {
 
         for (Map.Entry<GroupObjectHierarchy.ReportNode, JasperDesign> entry : designs.entrySet()) {
             GroupObjectHierarchy.ReportNode node = entry.getKey();
-            ReportPath defaultCustomReportPath;
+            String defaultCustomReportPath;
             if(recreateCustom) {
                 String nodeFileName = customReportFileNames.get(node);
                 if(nodeFileName == null) // file (not file name) is provided (do nothing)
@@ -242,13 +239,9 @@ public abstract class FormReportManager extends FormDataManager {
                 defaultCustomReportPath = getCustomReportPath(nodeFileName);
             } else
                 defaultCustomReportPath = getDefaultCustomReportPath("/" + getReportFileName(node, printType.getFormatPrefix() + reportPrefix));
-            String reportName = defaultCustomReportPath.customPath;
             
-            new File(reportName).getParentFile().mkdirs();
-            JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
-
-            if(!recreateCustom && !Files.exists(Paths.get(defaultCustomReportPath.targetPath))) // нужно скопировать в target чтобы его подцепил последующий getCustomReportPath
-                Files.copy(Paths.get(reportName), Paths.get(defaultCustomReportPath.targetPath));
+            new File(defaultCustomReportPath).getParentFile().mkdirs();
+            JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), defaultCustomReportPath, "UTF-8");
         }
     }
 
