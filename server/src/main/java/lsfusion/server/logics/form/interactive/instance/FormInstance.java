@@ -135,6 +135,7 @@ import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.lang.String;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.*;
@@ -2828,12 +2829,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         explicitClose();
     }
 
-    public List<ReportPath> getCustomReportPathList() throws SQLException, SQLHandledException {
+    public List<String> getCustomReportPathList() throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(entity, MapFact.EMPTY(), null, SetFact.EMPTY()); // можно теоретически interactiveFormManager использовать, но он в RemoteForm, а переносить его сюда, не хочется создавать такую зависимость 
         return newFormManager.getCustomReportPathList(FormPrintType.PRINT);
     }
 
-    public static List<ReportPath> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
+    public static List<String> saveAndGetCustomReportPathList(FormEntity formEntity, boolean recreate) throws SQLException, SQLHandledException {
         FormReportManager newFormManager = new StaticFormReportManager(formEntity, MapFact.EMPTY(), null, SetFact.EMPTY());
         return newFormManager.saveAndGetCustomReportPathList(FormPrintType.PRINT, recreate);
     }

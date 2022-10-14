@@ -1,6 +1,5 @@
 package lsfusion.interop.logics.remote;
 
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -39,5 +38,5 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap) throws RemoteException;
     byte[] findClass(String name) throws RemoteException;
 
-    List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
+    List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
 }

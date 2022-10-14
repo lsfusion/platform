@@ -1,13 +1,12 @@
 package lsfusion.interop.action;
 
-import java.io.IOException;
 import java.util.List;
 
 public class RunEditReportClientAction extends ExecuteClientAction {
     
-    public final List<ReportPath> customReportPathList;
+    public final List<String> customReportPathList;
     
-    public RunEditReportClientAction(List<ReportPath> customReportPathList) {
+    public RunEditReportClientAction(List<String> customReportPathList) {
         this.customReportPathList = customReportPathList;
     }
 

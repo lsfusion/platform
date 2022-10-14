@@ -4,7 +4,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ReportClientAction;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.action.ServerPrintAction;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -121,7 +120,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                 writeResult(exportFile, staticType, context, ReportGenerator.exportToFileByteArray(reportData, staticType, sheetName, password, null));
             else {
                 String formCaption = staticType == FormPrintType.PRINT ? formReportManager.readFormCaption() : null;
-                List<ReportPath> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
+                List<String> customReportPathList = SystemProperties.inDevMode && form.isNamed() && context.getBL().findForm(form.getCanonicalName()) != null ? formReportManager.getCustomReportPathList(staticType) : new ArrayList<>(); // checking that form is not in script, etc.
                 Integer pageCount = (Integer) context.requestUserInteraction(new ReportClientAction(customReportPathList, formCaption, form.getSID(), autoPrint, syncType, reportData, staticType, printer, SystemProperties.inDevMode, password, sheetName));
                 formPageCount.change(pageCount, context);
             }
