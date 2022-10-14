@@ -449,7 +449,7 @@ public class GwtClientUtils {
     private static void setupFillParentElement(Element parentElement) {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition == null || parentPosition.isEmpty() || parentPosition.equals(Style.Position.STATIC.getCssName()))
-            parentElement.getStyle().setPosition(Style.Position.RELATIVE);
+            parentElement.addClassName("fill-parent-position");
     }
 
     public static void clearFillParent(Element child) {
@@ -466,7 +466,7 @@ public class GwtClientUtils {
     public static void clearFillParentElement(Element parentElement) {
         String parentPosition = parentElement.getStyle().getPosition();
         if (parentPosition != null && parentPosition.equals(Style.Position.RELATIVE.getCssName()))
-            parentElement.getStyle().clearPosition();
+            parentElement.removeClassName("fill-parent-position");
     }
 
     public static void setupSizedParent(Element element, boolean autoSize) {

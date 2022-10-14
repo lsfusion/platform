@@ -27,7 +27,8 @@
 
 .dataGridStickyCell,
 .dataGridStickyCell.property-not-null,
-.dataGridStickyCell.property-has-change {
+.dataGridStickyCell.property-has-change,
+.dataGridStickyCell.fill-parent-position {
     position: sticky;
 
     z-index: 1;
@@ -35,7 +36,8 @@
 
 .dataGridStickyHeader,
 .dataGridStickyHeader.property-not-null,
-.dataGridStickyHeader.property-has-change {
+.dataGridStickyHeader.property-has-change,
+.dataGridStickyHeader.fill-parent-position {
     position: sticky;
 
     z-index: 1001;
@@ -43,7 +45,8 @@
 
 .dataGridStickyFooter,
 .dataGridStickyFooter.property-not-null,
-.dataGridStickyFooter.property-has-change {
+.dataGridStickyFooter.property-has-change,
+.dataGridStickyFooter.fill-parent-position {
     position: sticky;
 
     z-index: 1001;
