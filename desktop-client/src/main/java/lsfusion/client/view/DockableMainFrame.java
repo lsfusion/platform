@@ -64,6 +64,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+import java.lang.String;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -487,7 +488,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     }
 
     @Override
-    public Integer runReport(final List<ReportPath> customReportPathList, final String formCaption, final String formSID, boolean isModal, ReportGenerationData generationData, String printerName) throws IOException, ClassNotFoundException {
+    public Integer runReport(final List<String> customReportPathList, final String formCaption, final java.lang.String formSID, boolean isModal, ReportGenerationData generationData, java.lang.String printerName) throws IOException, ClassNotFoundException {
         return runReport(isModal, formCaption, generationData, printerName, new EditReportInvoker() {
             @Override
             public boolean hasCustomReports() throws RemoteException {
