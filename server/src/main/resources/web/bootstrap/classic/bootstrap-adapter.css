@@ -92,6 +92,10 @@
     background-color: var(--component-hover-background-color);
 }
 
+.btn-toolbar .btn-image.active {
+    background-color: var(--component-hover-background-color);
+}
+
 .fa, .fa-brands, .fa-classic, .fa-regular, .fa-sharp, .fa-solid, .fab, .far, .fas {
     line-height: inherit;
 }
