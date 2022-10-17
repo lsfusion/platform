@@ -79,3 +79,8 @@
     user-select: none;
     opacity: 0.25;
 }
+
+.property-toolbar-item:hover {
+    --border-toolbar-item-padding : 0px;
+    border: 1px solid var(--component-hover-border-color);
+}

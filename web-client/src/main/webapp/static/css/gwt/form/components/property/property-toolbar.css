@@ -68,11 +68,6 @@
     align-items: center;
 }
 
-.property-toolbar-item:hover {
-    --border-toolbar-item-padding : 0px;
-    border: 1px solid var(--component-hover-border-color);
-}
-
 /* an input with a toolbar (input "pulls the size" from the upper container) */
 
 .prop-w-toolbar {
