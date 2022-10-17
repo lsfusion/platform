@@ -109,6 +109,7 @@ public class TooltipManager {
                             //set the style of the popup to the internal element(panel) and make the popup transparent
                             // so that when you hover over it, the focus does not go to other components
                             tooltip.getElement().getStyle().setBackgroundColor("rgba(0, 0, 0, 0)");
+                            panel.getElement().getStyle().setBackgroundColor("var(--background-color)");
                             panel.getElement().getStyle().setMargin(10, Style.Unit.PX);
 
                             GwtClientUtils.showPopupInWindow(tooltip, panel, mouseX, mouseY);
