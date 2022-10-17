@@ -44,6 +44,13 @@ public class StaticImage extends BaseStaticImage {
     public final static StaticImage EXPANDTREE = new StaticImage("bi bi-chevron-double-down", "expandTree.png");
     public final static StaticImage COLLAPSETREE = new StaticImage("bi bi-chevron-double-up", "collapseTree.png");
 
+    public static final StaticImage TREE_CLOSED = new StaticImage("bi bi-chevron-right", "tree_closed.png");
+    public static final StaticImage TREE_OPEN = new StaticImage("bi bi-chevron-down", "tree_open.png");
+    public static final StaticImage TREE_LEAF = new StaticImage("bi bi-chevron-bar-right", "tree_leaf.png");
+    public static final StaticImage TREE_EMPTY = new StaticImage("bi", "tree_empty.png");
+    public static final StaticImage TREE_PASSBY = new StaticImage("bi", "tree_dots_passby.png");
+    public static final StaticImage TREE_BRANCH = new StaticImage("bi", "tree_dots_branch.png");
+
     public static final StaticImage LOADING_IMAGE_PATH = new StaticImage("fa-solid fa-spinner fa-spin",  "loading.gif");
     public static final StaticImage REFRESH_IMAGE_PATH = new StaticImage("bi bi-arrow-repeat", "refresh.png");
 
