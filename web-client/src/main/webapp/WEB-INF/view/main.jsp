@@ -169,8 +169,6 @@
 
                 "static/css/bootstrap-icons/bootstrap-icons.css",
 
-                "static/js/ddslick.js",
-
                 "static/css/gwt/main.css",
 
                 "static/css/gwt/form/components/property/suggest-box.css",

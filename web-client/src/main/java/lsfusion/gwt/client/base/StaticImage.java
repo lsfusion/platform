@@ -36,6 +36,10 @@ public class StaticImage extends BaseStaticImage {
 
     public final static StaticImage RESET = new StaticImage("fa-solid fa-xmark", "reset.png");
 
+    public final static StaticImage DEFAULTMODE = new StaticImage("defaultMode.png");
+    public final static StaticImage LINKMODE = new StaticImage("linkMode.png");
+    public final static StaticImage DIALOGMODE = new StaticImage("dialogMode.png");
+
     public final static StaticImage MINIMIZE = new StaticImage("fa-solid fa-compress", "minimize.png");
     public final static StaticImage MAXIMIZE = new StaticImage("fa-solid fa-expand", "maximize.png");
 
