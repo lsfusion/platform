@@ -385,6 +385,7 @@ public class EmailReceiver {
         try {
             content = email.getContent();
         } catch (MessagingException | IOException | NullPointerException e) {
+            ServerLoggers.mailLogger.error("getEmailContent exception : ", e);
             // did this due to a bug
             try {
                 content = new MimeMessage((MimeMessage) email).getContent();
