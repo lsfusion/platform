@@ -166,3 +166,9 @@
 .dialog-user-preferences-container {
     min-height: 40em;
 }
+
+.popup-dialog {
+    background-color: var(--background-color);
+    border: 1px solid var(--dialog-outer-border-color);
+    padding: var(--border-padding);
+}
