@@ -2917,7 +2917,7 @@ public class Settings implements Cloneable {
     }
     
     // makes FILTERS container vertical 3-column by default 
-    private boolean verticalColumnsFiltersContainer = false;
+    private boolean verticalColumnsFiltersContainer = true;
     
     public boolean isVerticalColumnsFiltersContainer() {
         return verticalColumnsFiltersContainer;
