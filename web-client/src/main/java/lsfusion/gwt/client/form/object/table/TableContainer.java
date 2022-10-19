@@ -80,7 +80,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
          * Sink the event on the scrollable element, which may not be the root
          * element.
          */
-        Event.sinkEvents(getScrollableElement(), Event.ONSCROLL);
+        sinkEvents(Event.ONSCROLL);
         return addHandler(handler, ScrollEvent.getType());
     }
 
