@@ -9,3 +9,7 @@
 .ql-tooltip {
     white-space: normal; /*for the tooltip is not hidden behind the parent component*/
 }
+
+.ql-clipboard {
+    white-space: normal;
+}
