@@ -1,9 +1,9 @@
 package lsfusion.server.physics.dev.integration.external.to.equ.printer;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.form.print.ReportGenerator;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
 
@@ -101,7 +101,7 @@ public class PrintUtils {
 
                 } finally {
                     if (fileData != null) {
-                        FileUtils.safeDelete(file);
+                        BaseUtils.safeDelete(file);
                     }
                 }
             }

@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.struct.imports.plain.xls;
 
 import com.monitorjbl.xlsx.StreamingReader;
 import com.monitorjbl.xlsx.exceptions.NotSupportedException;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.Type;
@@ -146,9 +147,7 @@ public class ImportXLSIterator extends ImportMatrixIterator {
         if(wb != null)
             wb.close();
         if(useStreamingReader) {
-            if (wbFile != null && !wbFile.delete()) {
-                wbFile.deleteOnExit();
-            }
+            BaseUtils.safeDelete(wbFile);
         }
     }
 

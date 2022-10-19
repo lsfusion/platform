@@ -60,7 +60,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 221;
+        return 222;
     }
 
     public static String getPlatformVersion() {
@@ -2495,6 +2495,12 @@ public class BaseUtils {
             return result;
         else
             return null;
+    }
+
+    public static void safeDelete(File file) {
+        if (file != null && !file.delete()) {
+            file.deleteOnExit();
+        }
     }
 
     public static int[] consecutiveInts(int length) {

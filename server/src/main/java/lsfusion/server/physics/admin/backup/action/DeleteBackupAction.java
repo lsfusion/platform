@@ -1,8 +1,8 @@
 package lsfusion.server.physics.admin.backup.action;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
@@ -14,7 +14,6 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Iterator;
 
 public class DeleteBackupAction extends InternalAction {
@@ -36,9 +35,7 @@ public class DeleteBackupAction extends InternalAction {
             boolean isMultithread = findProperty("isMultithread[Backup]").read(newContext, backupObject) != null;
             File f = new File(backupFilePath);
             File fLog = new File(backupLogFilePath);
-            if (fLog.exists() && !fLog.delete()) {
-                fLog.deleteOnExit();
-            }
+            BaseUtils.safeDelete(fLog);
 
             boolean deleted = false;
             if(isMultithread) {

@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.backup.action;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.interop.action.MessageClientAction;
@@ -65,9 +66,7 @@ public class SaveBackupAction extends InternalAction {
                             }
                             context.delayUserInterfaction(new WriteClientAction(new RawFileData(zipFile), fileBackupName + ".zip", null, false, true));
                         } finally {
-                            if (zipFile != null && !zipFile.delete()) {
-                                zipFile.deleteOnExit();
-                            }
+                            BaseUtils.safeDelete(zipFile);
                         }
                     } else {
                         context.delayUserInterfaction(new WriteClientAction(new RawFileData(file), fileBackupName, null, false, true));

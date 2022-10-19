@@ -321,9 +321,7 @@ public class SwingUtils {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                if(file != null && !file.delete()) {
-                    file.deleteOnExit();
-                }
+                BaseUtils.safeDelete(file);
             }
             return icon;
         }

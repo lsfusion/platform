@@ -1,6 +1,7 @@
 package lsfusion.server.physics.admin.monitor.action;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.UserLogsClientAction;
@@ -46,8 +47,7 @@ public class UserLogsAction extends InternalAction {
             } catch (IOException e) {
                 throw Throwables.propagate(e);
             } finally {
-                if (zipFile != null && !zipFile.delete())
-                    zipFile.deleteOnExit();
+                BaseUtils.safeDelete(zipFile);
             }
         }
     }

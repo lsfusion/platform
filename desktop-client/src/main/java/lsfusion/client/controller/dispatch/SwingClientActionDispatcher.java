@@ -384,7 +384,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             fileStream.close();
 
             if (action.erase) {
-                file.delete();
+                BaseUtils.safeDelete(file);
             }
 
             return new ImportFileClientActionResult(true, action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName));
@@ -428,7 +428,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
             fileStream.close();
 
             if (action.erase) {
-                file.delete();
+                BaseUtils.safeDelete(file);
             }
 
             String fileText = action.charsetName == null ? new String(fileContent) : new String(fileContent, action.charsetName);
@@ -628,8 +628,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } catch (IOException e) {
             return null;
         } finally {
-            if(file != null && !file.delete())
-                file.deleteOnExit();
+            BaseUtils.safeDelete(file);
         }
     }
 
@@ -670,8 +669,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            if (file != null && !file.delete())
-                file.deleteOnExit();
+            BaseUtils.safeDelete(file);
         }
     }
 

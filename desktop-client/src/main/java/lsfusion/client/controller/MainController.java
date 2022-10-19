@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.safeDelete;
 import static lsfusion.client.StartupProperties.*;
 
 public class MainController {
@@ -351,8 +352,7 @@ public class MainController {
     public static void deleteReportPathList(List<String> reportPathList) {
         for (String reportPath : reportPathList) {
             File customFile = new File(reportPath);
-            if(!customFile.delete())
-                customFile.deleteOnExit();
+            safeDelete(customFile);
         }
         reportPathList.clear();
     }
