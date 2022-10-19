@@ -24,8 +24,10 @@ public class CheckAggregationsAction extends InternalAction {
         final Result<String> message = new Result<>();
         ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkAggregations(session)));
 
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}",
-                localize("{logics.checking.aggregations}"))) + (isEmpty(message.result) ? "" : ("\n\n" + message.result)),
+        boolean noErrors = isEmpty(message.result);
+
+        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
+                localize("{logics.checking.aggregations}"))) + (noErrors ? "" : ("\n\n" + message.result)),
                 localize("{logics.checking.aggregations}"), true));
     }
 }

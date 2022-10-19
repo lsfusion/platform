@@ -5,7 +5,6 @@ import com.google.common.io.Resources;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.CallableWithParam;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -189,7 +188,7 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     }
 
     @Override
-    public List<ReportPath> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
+    public List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException {
         try {
             return FormInstance.saveAndGetCustomReportPathList(businessLogics.findForm(formSID), recreate);
         } catch (Exception e) {

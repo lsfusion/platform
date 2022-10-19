@@ -1,5 +1,6 @@
 package lsfusion.server.physics.dev.integration.external.to.equ.fax.client;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ClientActionDispatcher;
 import org.fax4j.FaxClient;
@@ -58,9 +59,7 @@ public class WriteToFaxClientAction implements ClientAction {
                 }
                 System.out.println("status: " + faxClient.getFaxJobStatus(faxJob));
             } finally {
-                if (file != null && !file.delete()) {
-                    file.deleteOnExit();
-                }
+                BaseUtils.safeDelete(file);
             }
         }
         return null;

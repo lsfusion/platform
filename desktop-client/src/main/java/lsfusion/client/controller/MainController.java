@@ -25,7 +25,6 @@ import lsfusion.client.controller.remote.ConnectionLostManager;
 import lsfusion.client.form.property.cell.classes.controller.rich.RichEditorPane;
 import lsfusion.client.logics.LogicsProvider;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.action.ReportPath;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -50,6 +49,7 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
+import static lsfusion.base.BaseUtils.safeDelete;
 import static lsfusion.client.StartupProperties.*;
 
 public class MainController {
@@ -335,28 +335,24 @@ public class MainController {
 
     // edit reports
     
-    public static void addReportPathList(List<ReportPath> reportPathList, String formSID) throws IOException {
+    public static void addReportPathList(List<String> reportPathList, String formSID) throws IOException {
         reportPathList.addAll(MainController.remoteLogics.saveAndGetCustomReportPathList(formSID, false));
         editReportPathList(reportPathList);
     }
-    public static void recreateReportPathList(List<ReportPath> reportPathList, String formSID) throws IOException {
+    public static void recreateReportPathList(List<String> reportPathList, String formSID) throws IOException {
         MainController.remoteLogics.saveAndGetCustomReportPathList(formSID, true);
         editReportPathList(reportPathList);
     }
-    public static void editReportPathList(List<ReportPath> reportPathList) throws IOException {
-        for (ReportPath reportPath : reportPathList) {
-            Desktop.getDesktop().open(new File(reportPath.customPath));
+    public static void editReportPathList(List<String> reportPathList) throws IOException {
+        for (String reportPath : reportPathList) {
+            Desktop.getDesktop().open(new File(reportPath));
         }
     }
 
-    public static void deleteReportPathList(List<ReportPath> reportPathList) {
-        for (ReportPath reportPath : reportPathList) {
-            File customFile = new File(reportPath.customPath);
-            if(!customFile.delete())
-                customFile.deleteOnExit();
-            File targetFile = new File(reportPath.targetPath);
-            if(!targetFile.delete())
-                targetFile.deleteOnExit();
+    public static void deleteReportPathList(List<String> reportPathList) {
+        for (String reportPath : reportPathList) {
+            File customFile = new File(reportPath);
+            safeDelete(customFile);
         }
         reportPathList.clear();
     }

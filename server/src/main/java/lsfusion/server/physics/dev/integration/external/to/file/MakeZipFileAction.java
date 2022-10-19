@@ -75,8 +75,7 @@ public class MakeZipFileAction extends InternalAction {
                     }
                     findProperty("zipped[]").change(new FileData(new RawFileData(zipFile), "zip"), context);
                 } finally {
-                    if(zipFile != null && !zipFile.delete())
-                        zipFile.deleteOnExit();
+                    BaseUtils.safeDelete(zipFile);
                 }
             }
 

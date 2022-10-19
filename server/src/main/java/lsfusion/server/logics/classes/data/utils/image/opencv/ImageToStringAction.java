@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data.utils.image.opencv;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.language.ScriptingLogicsModule;
@@ -63,9 +64,7 @@ public class ImageToStringAction extends InternalAction {
             } catch (Throwable t) {
                 throw Throwables.propagate(t);
             } finally {
-                if (tmpFile != null && !tmpFile.delete()) {
-                    tmpFile.deleteOnExit();
-                }
+                BaseUtils.safeDelete(tmpFile);
             }
         } else {
             throw new RuntimeException("No image");

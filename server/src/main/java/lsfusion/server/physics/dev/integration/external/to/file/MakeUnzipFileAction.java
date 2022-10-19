@@ -84,25 +84,22 @@ public class MakeUnzipFileAction extends InternalAction {
                             a.extractFile(fh, os);
                         }
                         result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
-                        if(!outputFile.delete())
-                            outputFile.deleteOnExit();
+                        BaseUtils.safeDelete(outputFile);
                     }
                     fh = a.nextFileHeader();
                 }
                 a.close();
             }
 
-            for(File dir : dirList)
-                if(dir != null && dir.exists() && !dir.delete())
-                    dir.deleteOnExit();
+            for(File dir : dirList) {
+                BaseUtils.safeDelete(dir);
+            }
 
         } catch (RarException | IOException e) {
             throw Throwables.propagate(e);
         } finally {
-            if(inputFile != null && !inputFile.delete())
-                inputFile.deleteOnExit();
-            if(outputFile != null && !outputFile.delete())
-                outputFile.deleteOnExit();
+            BaseUtils.safeDelete(inputFile);
+            BaseUtils.safeDelete(outputFile);
         }
         return result;
     }
@@ -140,8 +137,7 @@ public class MakeUnzipFileAction extends InternalAction {
                         }
                         outputStream.close();
                         result.put(getFileName(result, fileName), new FileData(new RawFileData(outputFile), BaseUtils.getFileExtension(outputFile)));
-                        if(!outputFile.delete())
-                            outputFile.deleteOnExit();
+                        BaseUtils.safeDelete(outputFile);
                     }
                     ze = inputStream.getNextEntry();
                 }
@@ -149,17 +145,15 @@ public class MakeUnzipFileAction extends InternalAction {
                 inputStream.close();
             }
 
-            for(File dir : dirList)
-                if(dir != null && dir.exists() && !dir.delete())
-                    dir.deleteOnExit();
+            for(File dir : dirList) {
+                BaseUtils.safeDelete(dir);
+            }
 
         } catch (IOException e) {
             throw Throwables.propagate(e);
         } finally {
-            if(inputFile != null && !inputFile.delete())
-                inputFile.deleteOnExit();
-            if(outputFile != null && !outputFile.delete())
-                outputFile.deleteOnExit();
+            BaseUtils.safeDelete(inputFile);
+            BaseUtils.safeDelete(outputFile);
         }
         return result;
     }

@@ -91,8 +91,7 @@ public abstract class ReadUtils {
             }
             return new ReadResult(fileBytes, filePath.type);
         } finally {
-            if (localFile != null && !localFile.delete())
-                localFile.deleteOnExit();
+            BaseUtils.safeDelete(localFile);
         }
     }
 

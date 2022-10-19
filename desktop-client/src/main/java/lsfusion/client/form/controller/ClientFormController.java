@@ -1659,7 +1659,7 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    public void runEditReport(List<ReportPath> customReportPathList) {
+    public void runEditReport(List<String> customReportPathList) {
         try {
             MainController.editReportPathList(customReportPathList);
         } catch (Exception e) {

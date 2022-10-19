@@ -24,8 +24,10 @@ public class CheckClassesAction extends InternalAction {
         final Result<String> message = new Result<>();
         ServiceDBAction.run(context, (session, isolatedTransaction) -> message.set(context.getDbManager().checkClasses(session)));
 
-        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}",
-                localize("{logics.checking.data.classes}"))) + (isEmpty(message.result) ? "" : ("\n\n" + message.result)),
+        boolean noErrors = isEmpty(message.result);
+
+        context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
+                localize("{logics.checking.data.classes}"))) + (noErrors ? "" : ("\n\n" + message.result)),
                 localize("{logics.checking.data.classes}"), true));
     }
 }

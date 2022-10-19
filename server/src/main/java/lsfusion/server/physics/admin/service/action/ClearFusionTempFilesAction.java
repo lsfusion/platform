@@ -1,10 +1,10 @@
 package lsfusion.server.physics.admin.service.action;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
-import lsfusion.server.physics.dev.integration.external.to.file.FileUtils;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.io.File;
@@ -41,10 +41,10 @@ public class ClearFusionTempFilesAction extends InternalAction {
                         if (file.isDirectory()) {
                             if (force || needDeleteDir(file)) {
                                 deleteFiles(file, minDate, true);
-                                FileUtils.safeDelete(file);
+                                BaseUtils.safeDelete(file);
                             }
                         } else if (force || needDeleteFile(file))
-                            FileUtils.safeDelete(file);
+                            BaseUtils.safeDelete(file);
                     }
                 }
             }

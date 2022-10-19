@@ -359,8 +359,7 @@ public class SystemUtils {
         File newFile = getFile(file, resource, path, cls, overwrite);
         if (overwrite || !file.exists() || file.length() != newFile.length())
             FileUtils.copyFile(newFile, file);
-        if(!newFile.delete())
-            newFile.deleteOnExit();
+        BaseUtils.safeDelete(newFile);
         return file.getAbsolutePath();
     }
 

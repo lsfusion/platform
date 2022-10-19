@@ -406,12 +406,6 @@ public class FileUtils {
         });
     }
 
-    public static void safeDelete(File file) {
-        if (file != null && !file.delete()) {
-            file.deleteOnExit();
-        }
-    }
-
     public static String runCmd(String command, String directory) throws IOException {
         Runtime runtime = Runtime.getRuntime();
         Process p = directory != null ? runtime.exec(command, null, new File(directory)) : runtime.exec(command);
