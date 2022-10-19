@@ -39,8 +39,10 @@ public class CheckTableColumnAction extends InternalAction {
             ServiceDBAction.run(context, (session, isolatedTransaction) ->
                     message.set(context.getDbManager().checkAggregationTableColumn(session, propertyCanonicalName.trim())));
 
-            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}",
-                    localize("{logics.checking.aggregations}"))) + (isEmpty(message.result) ? "" : ("\n\n" + message.result)),
+            boolean noErrors = isEmpty(message.result);
+
+            context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted(noErrors ? "{logics.check.completed}" : "{logics.check.failed}",
+                    localize("{logics.checking.aggregations}"))) + (noErrors ? "" : ("\n\n" + message.result)),
                     localize("{logics.checking.aggregations}"), true));
         }
     }
