@@ -21,6 +21,8 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     public final boolean autoSize;
     private final GFormController form;
     private TableComponent tableComponent;
+    
+    private Event pendingFocusEvent;
 
     public TableContainer(boolean autoSize, GFormController form) {
         this.autoSize = autoSize;
@@ -100,6 +102,21 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
             addStyleName("tableContainerBoxed");
         else
             removeStyleName("tableContainerBoxed");
+        
+        if (pendingFocusEvent != null) {
+            propagateFocusToGrid(DataGrid.getTargetAndCheck(getElement(), pendingFocusEvent), pendingFocusEvent);
+            pendingFocusEvent = null;
+        }
+    }
+
+    private boolean propagateFocusToGrid(Element target, Event focusEvent) {
+        if (tableComponent instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
+            DataGrid<?> grid = (DataGrid<?>) tableComponent;
+            grid.onFocus();
+            grid.onGridBrowserEvent(target, focusEvent);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -128,10 +145,10 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
     private boolean isFocused;
     protected void onFocus(Element target, Event event) {
-        if(tableComponent instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
-            DataGrid<?> grid = (DataGrid<?>) tableComponent;
-            grid.onFocus();
-            grid.onGridBrowserEvent(target, event);
+        if (!propagateFocusToGrid(target, event)) {
+            // if focus event comes via focusLastBlurredElement() - by switching between table views in toolbar,
+            // it happens before changing of table component (here - from any other to grid). so we postpone propagation until change is finished   
+            pendingFocusEvent = event;
         }
 
         if(isFocused)
@@ -141,6 +158,8 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     }
 
     protected void onBlur(Element target, Event event) {
+        pendingFocusEvent = null;
+        
         // should be before isFakeBlur check to propagate the event to the cell editor
         if(tableComponent instanceof DataGrid) {
             DataGrid<?> grid = (DataGrid<?>) tableComponent;
