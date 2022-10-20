@@ -41,11 +41,11 @@ Bash скрипты с использованием yum/apt (в качестве
 
 lsFusion **5** Server & Client (+ OpenJDK **11**, PostgreSQL **14**, Tomcat **9.0.67**):
 
-| ОС                            | Команда / Скрипт                                                        |
-|-------------------------------|-------------------------------------------------------------------------|
-| RHEL 8+ / CentOS 8+           | `source <(curl -s https://download.lsfusion.org/dnf/install-lsfusion5)` |
-| RHEL 7 / CentOS 7 / Fedora 29 | `source <(curl -s https://download.lsfusion.org/yum/install-lsfusion5)` |
-| Ubuntu 18+ / Debian 9+        | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion5)` |
+| ОС                               | Команда / Скрипт                                                        |
+|----------------------------------|-------------------------------------------------------------------------|
+| RHEL 8+ / CentOS 8+ / Fedora 35+ | `source <(curl -s https://download.lsfusion.org/dnf/install-lsfusion5)` |
+| RHEL 7 / CentOS 7                | `source <(curl -s https://download.lsfusion.org/yum/install-lsfusion5)` |
+| Ubuntu 18+ / Debian 9+           | `source <(curl -s https://download.lsfusion.org/apt/install-lsfusion5)` |
 
 </TabItem>
 </Tabs>
@@ -130,19 +130,19 @@ Classpath сервера по умолчанию устанавливается 
 
 #### Сервер приложений (Server)
 
-| ОС                            | Команда                       |
-|-------------------------------|-------------------------------|
-| RHEL 8+ / CentOS 8+           | `dnf update lsfusion5-server` |
-| RHEL 7 / CentOS 7 / Fedora 29 | `yum update lsfusion5-server` |
-| Ubuntu 18+ / Debian 9+        | `apt update lsfusion5-server` |
+| ОС                               | Команда                       |
+|----------------------------------|-------------------------------|
+| RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion5-server` |
+| RHEL 7 / CentOS 7                | `yum update lsfusion5-server` |
+| Ubuntu 18+ / Debian 9+           | `apt update lsfusion5-server` |
 
 #### Веб-сервер (Client)
 
-| ОС                            | Команда                       |
-|-------------------------------|-------------------------------|
-| RHEL 8+ / CentOS 8+           | `dnf update lsfusion5-client` |
-| RHEL 7 / CentOS 7 / Fedora 29 | `yum update lsfusion5-client` |
-| Ubuntu 18+ / Debian 9+        | `apt update lsfusion5-client` |
+| ОС                               | Команда                       |
+|----------------------------------|-------------------------------|
+| RHEL 8+ / CentOS 8+ / Fedora 35+ | `dnf update lsfusion5-client` |
+| RHEL 7 / CentOS 7                | `yum update lsfusion5-client` |
+| Ubuntu 18+ / Debian 9+           | `apt update lsfusion5-client` |
 <!--- comment to prevent multiple error messages in IDEA --->
 </TabItem>
 </Tabs>
