@@ -103,11 +103,15 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         if(inputElement == null) {
             inputElement = getRenderInputElement(parent);
 
+            //getInputValue() must be before onInputReady as it affects daterangepicker behaviour. onInputReady trigger the creation dateTimePicker, if the date was null
+            //then getInputElementValue saves today's date instead of null, and when you press clear, it calls stop, which takes the oldStringValue
+            // and returns it back and we get today's date instead of null
+            oldStringValue = getInputValue();
+
             onInputReady(parent, oldValue);
 
             parent.addClassName("property-hide-toolbar");
 
-            oldStringValue = getInputValue();
             handler.consume(true, false);
         } else {
             onInputReady(parent, oldValue);
