@@ -84,6 +84,9 @@ public class OverJDBField extends JDBField {
 
                 }
                 return s + stringBuilder1;
+            } else if (obj instanceof LocalTime) {
+                Date date = localTimeToSqlTime((LocalTime) obj);
+                return new SimpleDateFormat("HH:mm:ss").format(date);
             } else {
                 throw new JDBFException("Expected a String, got " + obj.getClass() + ".");
             }
