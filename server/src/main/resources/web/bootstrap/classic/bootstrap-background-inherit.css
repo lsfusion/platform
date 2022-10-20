@@ -6,8 +6,12 @@ body .background-inherit {
     background-color: var(--bs-body-bg);
 }
 
+.fa-spinner.fa-spin {
+    background-color: transparent; /*to remove the background of the loading spinner animation*/
+}
+
 .btn .background-inherit {
-    background-color: var(--bs-btn-bg);
+    background-color: var(--bs-btn-hover-bg);
 }
 
 .btn:first-child:hover .background-inherit {
