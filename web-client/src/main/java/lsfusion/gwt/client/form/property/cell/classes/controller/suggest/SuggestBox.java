@@ -4,18 +4,24 @@ import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.user.client.Timer;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.FocusUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class SuggestBox {
+import static com.google.gwt.dom.client.BrowserEvents.BLUR;
+
+public abstract class SuggestBox {
 
     private static final ClientMessages messages = ClientMessages.Instance.get();
 
@@ -30,6 +36,9 @@ public class SuggestBox {
     private final InputElement inputElement;
     private FlexPanel bottomPanel;
     private final boolean strict;
+
+    protected SuggestPopupButton refreshButton;
+    protected boolean refreshButtonPressed;
 
     public interface Callback {
         void onSuggestionsReady(SuggestBox.Request request, SuggestBox.Response response);
@@ -47,7 +56,7 @@ public class SuggestBox {
 
     private final SuggestionCallback suggestionCallback;
 
-    public SuggestBox(SuggestOracle oracle, InputElement inputElement, boolean strict, SuggestionCallback callback) {
+    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, boolean strict, SuggestionCallback callback) {
         this.oracle = oracle;
         this.inputElement = inputElement;
         this.strict = strict;
@@ -59,6 +68,18 @@ public class SuggestBox {
 
             callback.onSuggestionSelected(suggestion);
         };
+
+        this.bottomPanel = createBottomPanel(parent);
+    }
+
+    protected abstract FlexPanel createBottomPanel(Element parent);
+
+    protected boolean isLoading;
+    public void updateDecoration(boolean isLoading) {
+        if (this.isLoading != isLoading) {
+            refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : null);
+            this.isLoading = isLoading;
+        }
     }
 
     protected Suggestion getCurrentSelection() {
@@ -175,6 +196,15 @@ public class SuggestBox {
         if (handler.consumed) return;
 
         if (GKeyStroke.isCharModifyKeyEvent(handler.event, null)) updateSuggestionList();
+
+        if (!handler.consumed && BLUR.equals(handler.event.getType())) {
+            //restore focus and ignore blur if refresh button pressed
+            if (refreshButtonPressed) {
+                refreshButtonPressed = false;
+                handler.consume();
+                focus();
+            }
+        }
     }
 
     public void onKeyDown(EventHandler handler) {
@@ -256,6 +286,27 @@ public class SuggestBox {
         public Response(ArrayList<Suggestion> suggestions, boolean initial) {
             this.suggestions = suggestions;
             this.initial = initial;
+        }
+    }
+
+    protected abstract static class SuggestPopupButton extends GToolbarButton {
+        public SuggestPopupButton(BaseStaticImage image) {
+            super(image);
+            getElement().addClassName("suggestPopupButton");
+        }
+
+        @Override
+        public void setFocus(boolean focused) {
+            // in Firefox FocusImpl calls focus() immediately
+            // (in suggest box blur event is called before button action performed, which leads to commit editing problems)
+            // while in FocusImplSafari (Chrome) this is done with 0 delay timeout.
+            // doing the same here for equal behavior (see also MenuBar.setFocus())
+            Timer t = new Timer() {
+                public void run() {
+                    SuggestPopupButton.super.setFocus(focused);
+                }
+            };
+            t.schedule(0);
         }
     }
 }

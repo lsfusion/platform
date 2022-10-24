@@ -20,7 +20,6 @@ import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
@@ -53,7 +52,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     private final GCompletionType completionType;
     private final GInputListAction[] actions;
     private final GCompare compare;
-    private CustomSuggestBox suggestBox = null;
+    private SuggestBox suggestBox = null;
 
     public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
@@ -313,8 +312,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         return suggestBox != null;
     }
 
-    private CustomSuggestBox createSuggestBox(InputElement element, Element parent) {
-        return new CustomSuggestBox(new SuggestBox.SuggestOracle() {
+    private SuggestBox createSuggestBox(InputElement element, Element parent) {
+        return new SuggestBox(new SuggestBox.SuggestOracle() {
             private Timer delayTimer;
             private SuggestBox.Request currentRequest; // current pending request
             private SuggestBox.Callback currentCallback;
@@ -348,7 +347,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
                 if (emptyQuery) { // to show empty popup immediately
                     // add timer to avoid blinking when empty popup is followed by non-empty one
-                    Timer t = new Timer() {
+                    new Timer() {
                         @Override
                         public void run() {
                             if (isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
@@ -356,8 +355,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                                 setMinWidth(element, suggestBox, false);
                             }
                         }
-                    };
-                    t.schedule(100);
+                    }.schedule(100);
                 }
 
                 assert delayTimer == null;
@@ -392,7 +390,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                                     suggestionList.add(new SuggestBox.Suggestion() {
                                         @Override
                                         public String getDisplayString() {
-                                            return suggestion.displayString; // .replace("<b>", "<strong>").replace("</b>", "</strong>");
+                                            return suggestion.displayString;
                                         }
 
                                         @Override
@@ -439,7 +437,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     updateAsyncValues();
             }
 
-            private void setMinWidth(InputElement inputElement, CustomSuggestBox suggestBox, boolean offsets) {
+            private void setMinWidth(InputElement inputElement, SuggestBox suggestBox, boolean offsets) {
                 setMinWidth(suggestBox.getPopupElement(), inputElement.getOffsetWidth() - (offsets ? 8 : 0)); //8 = offsets
             }
 
@@ -448,7 +446,61 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
-        }, element, parent, suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
+        }, element, parent, completionType.isAnyStrict(), suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
+
+            @Override
+            protected FlexPanel createBottomPanel(Element parent) {
+                FlexPanel bottomPanel = new FlexPanel(true);
+                bottomPanel.setWidth("100%");
+                bottomPanel.getElement().addClassName("dropdown-menu-bottom-panel");
+                // block mouse down events to prevent focus issues
+                bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
+
+                FlexPanel buttonsPanel = new FlexPanel();
+
+                buttonsPanel.add(refreshButton = new SuggestPopupButton(StaticImage.REFRESH_IMAGE_PATH) {
+                    @Override
+                    public ClickHandler getClickHandler() {
+                        return event -> {
+                            refreshButtonPressed = true;
+                            suggestBox.refreshSuggestionList();
+                        };
+                    }
+                });
+
+                for (GInputListAction action : actions) {
+                    SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
+                        @Override
+                        public ClickHandler getClickHandler() {
+                            return event -> validateAndCommit(parent, action.index, true, CommitReason.SUGGEST);
+                        }
+                    };
+                    buttonsPanel.add(actionButton);
+
+                    String tooltip = property.getQuickActionTooltipText(action.keyStroke);
+                    if (tooltip != null) {
+                        TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
+                            public String getTooltip() {
+                                return tooltip;
+                            }
+
+                            public boolean stillShowTooltip() {
+                                return actionButton.isAttached() && actionButton.isVisible();
+                            }
+                        });
+                    }
+                }
+
+                bottomPanel.add(buttonsPanel);
+
+                if (compare != null && compare.escapeSeparator()) {
+                    HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
+                    tip.getElement().addClassName("dropdown-menu-tip");
+                    bottomPanel.add(tip);
+                }
+                return bottomPanel;
+            }
+
             @Override
             public void hideSuggestions() { // in theory should be in SuggestOracle, but now it's readonly
                 // canceling query
@@ -491,119 +543,4 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
         return value.toString();
     }
-
-    private class CustomSuggestBox extends SuggestBox {
-        public CustomSuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, SuggestionCallback callback) {
-            super(oracle, inputElement, completionType.isAnyStrict(), callback);
-            setBottomPanel(createBottomPanel(parent));
-        }
-
-        public boolean isLoading;
-        public void updateDecoration(boolean isLoading) {
-            if (this.isLoading != isLoading) {
-                refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : null);
-                this.isLoading = isLoading;
-            }
-        }
-
-        @Override
-        public void onBrowserEvent(EventHandler handler) {
-            super.onBrowserEvent(handler);
-
-            if (!handler.consumed && BLUR.equals(handler.event.getType())) {
-                //restore focus and ignore blur if refresh button pressed
-                if (refreshButtonPressed) {
-                    refreshButtonPressed = false;
-                    handler.consume();
-                    focus();
-                }
-            }
-        }
-
-        private SuggestPopupButton refreshButton;
-        private boolean refreshButtonPressed;
-
-        private FlexPanel createBottomPanel(Element parent) {
-            FlexPanel bottomPanel = new FlexPanel(true);
-            bottomPanel.setWidth("100%");
-            bottomPanel.getElement().addClassName("dropdown-menu-bottom-panel");
-            // block mouse down events to prevent focus issues
-            bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
-
-            FlexPanel buttonsPanel = new FlexPanel();
-
-            buttonsPanel.add(refreshButton = new SuggestPopupButton(StaticImage.REFRESH_IMAGE_PATH) {
-                @Override
-                public ClickHandler getClickHandler() {
-                    return event -> {
-                        refreshButtonPressed = true;
-                        suggestBox.refreshSuggestionList();
-                    };
-                }
-            });
-
-            for(int i = 0; i < actions.length; i++) {
-                GInputListAction action = actions[i];
-                SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
-                    @Override
-                    public ClickHandler getClickHandler() {
-                        return event -> validateAndCommit(parent, action.index, true, CommitReason.SUGGEST);
-                    }
-                };
-                buttonsPanel.add(actionButton);
-
-                String tooltip = property.getQuickActionTooltipText(action.keyStroke);
-                if(tooltip != null) {
-                    TooltipManager.registerWidget(actionButton, new TooltipManager.TooltipHelper() {
-                        public String getTooltip() {
-                            return tooltip;
-                        }
-
-                        public boolean stillShowTooltip() {
-                            return actionButton.isAttached() && actionButton.isVisible();
-                        }
-
-                        public String getPath() {
-                            return null;
-                        }
-
-                        public String getCreationPath() {
-                            return null;
-                        }
-                    });
-                }
-            }
-
-            bottomPanel.add(buttonsPanel);
-
-            if(compare != null && compare.escapeSeparator()) {
-                HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
-                tip.getElement().addClassName("dropdown-menu-tip");
-                bottomPanel.add(tip);
-            }
-            return bottomPanel;
-        }
-    }
-
-    private abstract static class SuggestPopupButton extends GToolbarButton {
-        public SuggestPopupButton(BaseStaticImage image) {
-            super(image);
-            getElement().addClassName("suggestPopupButton");
-        }
-
-        @Override
-        public void setFocus(boolean focused) {
-            // in Firefox FocusImpl calls focus() immediately
-            // (in suggest box blur event is called before button action performed, which leads to commit editing problems)
-            // while in FocusImplSafari (Chrome) this is done with 0 delay timeout.
-            // doing the same here for equal behavior (see also MenuBar.setFocus())
-            Timer t = new Timer() {
-                public void run() {
-                    SuggestPopupButton.super.setFocus(focused);
-                }
-            };
-            t.schedule(0);
-        }
-    }
-
 }
