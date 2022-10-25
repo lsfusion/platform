@@ -9,8 +9,10 @@ import java.lang.ref.WeakReference;
 
 public class ContainerFocusListener implements PropertyChangeListener {
 
-    public static void addListener(Container container, FocusListener listener) {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", new ContainerFocusListener(container, listener));
+    public static ContainerFocusListener addListener(Container container, FocusListener listener) {
+        ContainerFocusListener containerFocusListener = new ContainerFocusListener(container, listener);
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener("focusOwner", containerFocusListener);
+        return containerFocusListener;
    }
 
     private WeakReference<Container> containerRef;
@@ -42,5 +44,10 @@ public class ContainerFocusListener implements PropertyChangeListener {
                 }
             }
         }
+    }
+
+    public void focusGained(Container container, FocusListener listener) {
+        hasFocus = true;
+        listener.focusGained(new FocusEvent(container, FocusEvent.FOCUS_GAINED));
     }
 }

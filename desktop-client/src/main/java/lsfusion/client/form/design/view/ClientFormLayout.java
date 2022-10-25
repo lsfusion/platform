@@ -55,8 +55,8 @@ public class ClientFormLayout extends PanelWidget {
     
     private boolean blocked;
 
-    @SuppressWarnings({"FieldCanBeLocal"})
     private FocusListener focusListener;
+    private ContainerFocusListener containerFocusListener;
 
     public Widget getComponentView(ClientContainer container) {
         return getContainerView(container).getView();
@@ -86,7 +86,7 @@ public class ClientFormLayout extends PanelWidget {
             }
         };
 
-        ContainerFocusListener.addListener(this, focusListener);
+        containerFocusListener = ContainerFocusListener.addListener(this, focusListener);
 
         // вот таким вот маразматичным способом делается, чтобы при нажатии мышкой в ClientFormController фокус оставался на ней, а не уходил куда-то еще
         // теоретически можно найти способ как это сделать не так извращенно, но копаться в исходниках Swing'а очень долго
@@ -97,6 +97,10 @@ public class ClientFormLayout extends PanelWidget {
         });
 
         enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+    }
+
+    public void focusGained() {
+        containerFocusListener.focusGained(this, focusListener);
     }
 
     public Widget getMainView() {

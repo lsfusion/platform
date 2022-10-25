@@ -157,4 +157,10 @@ public class ClientFormDockable extends ClientDockable {
             form.getLayout().directProcessKeyEvent(e);
         }
     }
+
+    public void focusGained() {
+        if(form != null) {
+            form.getLayout().focusGained();
+        }
+    }
 }
