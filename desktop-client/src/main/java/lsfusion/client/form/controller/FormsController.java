@@ -112,6 +112,8 @@ public class FormsController implements ColorThemeChangeListener {
                     page.onShowingChanged(event.getOldShowing(), event.getNewShowing());
                     if(event.getOldShowing()) {
                         prevFocusPage = page;
+                    } else if (page instanceof ClientFormDockable) {
+                        ((ClientFormDockable) page).focusGained();
                     }
                 }
             }
