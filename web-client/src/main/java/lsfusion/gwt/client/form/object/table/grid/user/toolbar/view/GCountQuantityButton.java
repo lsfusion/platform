@@ -24,6 +24,11 @@ public abstract class GCountQuantityButton extends GToolbarButton {
             public boolean stillShowTooltip() {
                 return isAttached() && isVisible();
             }
+
+            @Override
+            public boolean stillShowSettingsButton() {
+                return false;
+            }
         };
 
         TooltipManager tooltipManager = TooltipManager.get();

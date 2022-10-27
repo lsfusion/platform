@@ -36,6 +36,11 @@ public abstract class GCalculateSumButton extends GToolbarButton {
             public boolean stillShowTooltip() {
                 return isAttached() && isVisible();
             }
+
+            @Override
+            public boolean stillShowSettingsButton() {
+                return false;
+            }
         };
 
         TooltipManager tooltipManager = TooltipManager.get();
