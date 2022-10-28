@@ -205,12 +205,14 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         img.getStyle().setPosition(Style.Position.ABSOLUTE);
         img.getStyle().setTop(-8, Style.Unit.PX);
 
+        vert.setPropertyObject("img", img);
+
         return div.appendChild(vert);
     }
 
     private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
         StaticImage indentIcon;
-        ImageElement img = element.getElementsByTagName(MainFrame.useBootstrap ? "i" : "img").getItem(0).cast();
+        Element img = (Element) element.getPropertyObject("img");
         int nodeLevel = treeValue.level;
         if (indentLevel < nodeLevel - 1) {
             indentIcon = treeValue.lastInLevelMap[indentLevel] ? StaticImage.TREE_EMPTY : StaticImage.TREE_PASSBY;
@@ -252,7 +254,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             img.addClassName("branch-image");
         }
 
-        (StaticImage.TREE_PASSBY.equals(indentIcon) ? StaticImage.TREE_EMPTY : indentIcon).setImageSrc(img);
+        StaticImage.TREE_EMPTY.setImageSrc(img, (StaticImage.TREE_PASSBY.equals(indentIcon) ? null : indentIcon));
     }
 
     private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
