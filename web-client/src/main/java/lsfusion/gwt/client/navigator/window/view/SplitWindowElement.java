@@ -9,15 +9,13 @@ import java.util.*;
 import static com.google.gwt.user.client.ui.DockLayoutPanel.Direction.*;
 
 public class SplitWindowElement extends WindowElement {
-    private final static String SIMPLE_WINDOW_CHILD_STYLE = "split-simple-window";
-    
     // with visibility
     private HashMap<WindowElement, Boolean> children = new HashMap<>();
 
     // храним вместе с порядком и направлением, чтобы знать, куда вставлять элемент при его видимости
     protected LinkedHashMap<WindowElement, DockLayoutPanel.Direction> windowDirections = new LinkedHashMap<>();
 
-    private CustomSplitLayoutPanel splitPanel = new CustomSplitLayoutPanel(6); // with borders
+    private CustomSplitLayoutPanel splitPanel = new CustomSplitLayoutPanel();
 
     public SplitWindowElement(WindowsController main, int x, int y, int width, int height) {
         super(main, x, y, width, height);
@@ -63,7 +61,6 @@ public class SplitWindowElement extends WindowElement {
             if (windowsLeft.size() == 1) {
                 Widget view = windowsLeft.get(0).initializeView();
                 splitPanel.add(view);
-                addStyleClasses(window);
                 windowDirections.put(windowsLeft.get(0), CENTER);
                 return;
             }  
@@ -205,12 +202,10 @@ public class SplitWindowElement extends WindowElement {
     private boolean attachHorizontally(WindowElement window, int rectX, int rectWidth) {
         if (window.x == rectX) {
             splitPanel.addWest(window.initializeView(), window.getPixelWidth());
-            addStyleClasses(window);
             windowDirections.put(window, WEST);
             return true;
         } else if (window.x + window.width == rectX + rectWidth) {
             splitPanel.addEast(window.initializeView(), window.getPixelWidth());
-            addStyleClasses(window);
             windowDirections.put(window, EAST);
             return true;
         }
@@ -220,22 +215,14 @@ public class SplitWindowElement extends WindowElement {
     private boolean attachVertically(WindowElement window, int rectY, int rectHeight) {
         if (window.y == rectY) {
             splitPanel.addNorth(window.initializeView(), window.getPixelHeight());
-            addStyleClasses(window);
             windowDirections.put(window, NORTH);
             return true;
         } else if (window.y + window.height == rectY + rectHeight) {
             splitPanel.addSouth(window.initializeView(), window.getPixelHeight());
-            addStyleClasses(window);
             windowDirections.put(window, SOUTH);
             return true;
         }
         return false;
-    }
-
-    private void addStyleClasses(WindowElement window) {
-        if (window instanceof SimpleWindowElement) {
-            window.getView().addStyleName(SIMPLE_WINDOW_CHILD_STYLE);
-        }
     }
 
     public Widget getView() {

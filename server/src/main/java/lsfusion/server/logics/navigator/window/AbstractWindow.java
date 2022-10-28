@@ -26,7 +26,7 @@ public class AbstractWindow {
 
     public boolean visible = true;
     
-    public String elementClass = "bg-white rounded shadow-sm";
+    public String elementClass;
 
     public AbstractWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
         this(canonicalName, caption);

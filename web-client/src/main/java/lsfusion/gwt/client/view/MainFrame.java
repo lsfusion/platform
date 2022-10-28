@@ -50,11 +50,7 @@ import net.customware.gwt.dispatch.shared.Result;
 import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint {
@@ -123,7 +119,7 @@ public class MainFrame implements EntryPoint {
     public void onModuleLoad() {
         hackForGwtDnd();
 
-        RootPanel.getBodyElement().addClassName("bg-light");
+        RootPanel.getBodyElement().addClassName("bg-white");
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
 
         GWT.setUncaughtExceptionHandler(t -> {

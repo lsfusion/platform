@@ -85,6 +85,10 @@ svg {
     padding: 0 0;
 }
 
+.d-flex {
+    display: flex !important;
+}
+
 /* ------------ Align ----------------- */
 .align-items-start {
     align-items: flex-start !important;
@@ -96,4 +100,8 @@ svg {
 
 .align-items-center {
     align-items: center !important;
+}
+
+.align-items-stretch {
+    align-items: stretch !important;
 }

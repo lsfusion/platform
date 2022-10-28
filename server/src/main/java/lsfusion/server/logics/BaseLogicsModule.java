@@ -669,9 +669,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // Окна
         baseWindows = new Windows();
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
-        baseWindows.root.elementClass = "navbar-expand-lg bg-dark navbar-dark";
+        baseWindows.root.elementClass = "navbar-expand-lg bg-dark navbar-dark d-flex align-items-stretch";
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
+        baseWindows.toolbar.elementClass = "navbar-text";
 
         baseWindows.tree = (NavigatorWindow) findWindow("tree");
 

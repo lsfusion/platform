@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.navigator.window.view;
 
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
@@ -8,12 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TabbedWindowElement extends WindowElement {
-    private final static String SIMPLE_WINDOW_CHILD_STYLE = "tab-simple-window";
-    
     private List<WindowElement> children = new ArrayList<>();
     private List<WindowElement> visibleChildren = new ArrayList<>();
 
-    private FlexTabbedPanel tabPanel = new FlexTabbedPanel();
+    private FlexTabbedPanel tabPanel = new FlexTabbedPanel() {
+        @Override
+        public void checkResizeEvent(NativeEvent event, Element cursorElement) {
+            // do nothing as it clashes with resize in CustomSplitLayoutPanel
+        }
+    };
 
     public TabbedWindowElement(WindowsController main, int x, int y, int width, int height) {
         super(main, x, y, width, height);
@@ -43,10 +48,6 @@ public class TabbedWindowElement extends WindowElement {
             tabPanel.addTab(windowView, child.getCaption());
             visibleChildren.add(child);
             tabPanel.selectTab(visibleChildren.indexOf(child));
-            
-            if (child instanceof SimpleWindowElement) {
-                windowView.addStyleName(SIMPLE_WINDOW_CHILD_STYLE);
-            }
         }
         return super.initializeView();
     }
