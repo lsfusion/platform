@@ -184,6 +184,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
     }
 
+    private static String IMAGE = "img";
+
     private static DivElement createIndentElement(Element cellElement) {
         DivElement div = cellElement.appendChild(Document.get().createDivElement());
         div.getStyle().setFloat(Style.Float.LEFT);
@@ -201,18 +203,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         bottom.getStyle().setHeight(50, Style.Unit.PCT);
         bottom.getStyle().setPosition(Style.Position.RELATIVE);
 
-        Element img = bottom.appendChild(GwtClientUtils.createStaticImage(StaticImage.TREE_EMPTY)); //need some initial value
+        Element img = bottom.appendChild(StaticImage.TREE_EMPTY.createImage()); //need some initial value
         img.getStyle().setPosition(Style.Position.ABSOLUTE);
         img.getStyle().setTop(-8, Style.Unit.PX);
 
-        vert.setPropertyObject("img", img);
+        vert.setPropertyObject(IMAGE, img);
 
         return div.appendChild(vert);
     }
 
     private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
         StaticImage indentIcon;
-        Element img = (Element) element.getPropertyObject("img");
+        Element img = (Element) element.getPropertyObject(IMAGE);
         int nodeLevel = treeValue.level;
         if (indentLevel < nodeLevel - 1) {
             indentIcon = treeValue.lastInLevelMap[indentLevel] ? StaticImage.TREE_EMPTY : StaticImage.TREE_PASSBY;
@@ -263,7 +265,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         if (dotTop && dotBottom) {
             ensureDotsAndSetBackground(element);
-            element.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
             clearBackground(top);
             clearBackground(bottom);
             return;
@@ -272,14 +273,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
         if (dotTop) {
             ensureDotsAndSetBackground(top);
-            top.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
         } else {
             clearBackground(top);
         }
 
         if (dotBottom) {
             ensureDotsAndSetBackground(bottom);
-            bottom.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
         } else {
             clearBackground(bottom);
         }
