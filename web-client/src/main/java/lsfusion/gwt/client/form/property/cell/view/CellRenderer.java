@@ -551,9 +551,12 @@ public abstract class CellRenderer<T> {
 
     private static void setToolbarBackground(Element element, String background) {
         element.addClassName("background-inherit");
-        // we cannot inherit parent background, since it's set for element (so we can't use background-inherit technique)
-        GFormController.setBackgroundColor(element, background);
+        setPropertyToolbarItemBackground(element, background);
     }
+
+    private static native void setPropertyToolbarItemBackground(Element element, String background) /*-{
+        element.style.setProperty("--property-toolbar-item-background", background != null ? background : "var(--component-background-color)");
+    }-*/;
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {
         if(start)

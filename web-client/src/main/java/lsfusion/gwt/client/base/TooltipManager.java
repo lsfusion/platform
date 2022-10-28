@@ -111,7 +111,6 @@ public class TooltipManager {
                             tooltip.getElement().getStyle().setBackgroundColor("rgba(0, 0, 0, 0)");
                             tooltip.removeStyleName("popup-dialog");
                             panel.setStyleName("popup-dialog");
-                            panel.getElement().getStyle().setMargin(10, Style.Unit.PX);
 
                             GwtClientUtils.showPopupInWindow(tooltip, panel, mouseX, mouseY);
                         }

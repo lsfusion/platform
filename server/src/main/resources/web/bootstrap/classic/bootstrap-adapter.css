@@ -100,10 +100,15 @@
     line-height: inherit;
 }
 
-.property-toolbar-item {
-    margin: 4px;
+
+.table .property-toolbar .background-inherit{
+    background-color: var(--property-toolbar-item-background);
 }
 
-.property-toolbar-item:hover {
-    background-color: var(--component-hover-background-color) !important;
+.property-toolbar-item {
+    margin: 0.25rem;
+}
+
+.table .property-toolbar-item.background-inherit:hover {
+    background-color: var(--component-hover-background-color);
 }
