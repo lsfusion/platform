@@ -590,7 +590,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             try (DataSession session = createSession()) {
                 DataObject taskLogObject = session.addObject(BL.schedulerLM.scheduledTaskLog);
 
-                BL.schedulerLM.scheduledTaskScheduledTaskLog.change(scheduledTaskObject, (ExecutionEnvironment) session, taskLogObject);
+                BL.schedulerLM.scheduledTaskScheduledTaskLog.change(new DataObject(scheduledTaskObject.getValue(), BL.schedulerLM.userScheduledTask), (ExecutionEnvironment) session, taskLogObject);
                 BL.schedulerLM.propertyScheduledTaskLog.change(message, session, taskLogObject);
                 BL.schedulerLM.dateScheduledTaskLog.change(LocalDateTime.now(), session, taskLogObject);
                 if(e != null || error)
