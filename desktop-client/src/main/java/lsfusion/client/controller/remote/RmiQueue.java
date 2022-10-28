@@ -129,15 +129,18 @@ public class RmiQueue implements DispatcherListener {
                                 Throwable cause = e.getCause();
                                 throw cause instanceof Exception ? (Exception) cause : Throwables.propagate(cause);
                             } catch (TimeoutException e) {
-                                if (futureInterface.isFirst()) {
+                                boolean isFirstFuture = futureInterface.isFirst();
+                                remoteLogger.info("TimeoutException: timeout - " + timeout + "s, next timeout - " + getTimeout(timeoutParams, exponent) + "s" + (isFirstFuture ? ", first" : ""));
+                                if (isFirstFuture) {
                                     future.cancel(true);
                                     exponent++;
-                                    remoteLogger.info("TimeoutException: timeout - " + timeout + "s, next timeout - " + getTimeout(timeoutParams, exponent) + "s");
                                     throw e;
                                 }
                             }
                         }
                     } else {
+                        if(futureInterface != null)
+                            remoteLogger.info("Remote call without a timeout");
                         return request.call();
                     }
                 } catch (Exception t) {
@@ -191,14 +194,14 @@ public class RmiQueue implements DispatcherListener {
 
     // возможно получится и было бы лучше сделать так же, как в вебе - без механизма direct запросов, а с добавленеим этих запросов в начало очереди
     public <T> T directRequest(long requestIndex, final RmiRequest<T> request) throws RemoteException {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Direct request: " + request);
-        }
-
         request.setRequestIndex(requestIndex);
         request.setLastReceivedRequestIndex(lastReceivedRequestIndex);
 
         request.setTimeoutParams(new Pair<>(3, 20));
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Direct request: " + request);
+        }
 
         return blockingRequest(request, true);
     }
@@ -619,7 +622,7 @@ public class RmiQueue implements DispatcherListener {
 
     private static class RequestCallable<T> implements Callable<T> {
         private final RmiRequest<T> request;
-        private RmiFutureInterface futureInterface;
+        private RmiFutureInterface futureInterface; // actually not null final
         private final AtomicBoolean abandoned;
 
         public RequestCallable(RmiRequest<T> request, AtomicBoolean abandoned) {
@@ -633,11 +636,7 @@ public class RmiQueue implements DispatcherListener {
 
         @Override
         public T call() throws Exception {
-            return runRetryableRequest(new Callable<T>() {
-                public T call() throws Exception {
-                    return request.doRequest();
-                }
-            }, abandoned, request.getTimeoutParams(), futureInterface);
+            return runRetryableRequest(() -> request.doRequest(), abandoned, request.getTimeoutParams(), futureInterface);
         }
     }
 
