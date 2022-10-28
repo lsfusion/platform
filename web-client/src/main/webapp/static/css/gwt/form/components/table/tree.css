@@ -16,3 +16,7 @@
 * html .gwt-TreeItem .gwt-CheckBox input {
     margin-left: -0.25rem;
 }
+
+.passby-image {
+    background-repeat: no-repeat repeat;
+}

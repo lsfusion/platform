@@ -5,10 +5,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -37,6 +34,7 @@ import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -176,14 +174,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         GPropertyDraw getColumnProperty();
     }
 
-    private final static String ICON_LEAF = "tree_leaf.png";
-    private final static String ICON_OPEN = "tree_open.png";
-    private final static String ICON_CLOSED = "tree_closed.png";
-    private final static String ICON_PASSBY = "tree_dots_passby.png";
-    private final static String ICON_EMPTY = "tree_empty.png";
-    private final static String ICON_BRANCH = "tree_dots_branch.png";
-    private final static String ICON_LOADING = "loading.png";
-
     private final static String TREE_NODE_ATTRIBUTE = "__tree_node";
 
     public static void renderExpandDom(Element cellElement, GTreeColumnValue treeValue) {
@@ -193,6 +183,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             updateIndentElement(img, treeValue, i);
         }
     }
+
+    private static String IMAGE = "img";
 
     private static DivElement createIndentElement(Element cellElement) {
         DivElement div = cellElement.appendChild(Document.get().createDivElement());
@@ -211,22 +203,24 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         bottom.getStyle().setHeight(50, Style.Unit.PCT);
         bottom.getStyle().setPosition(Style.Position.RELATIVE);
 
-        ImageElement img = bottom.appendChild(Document.get().createImageElement());
+        Element img = bottom.appendChild(StaticImage.TREE_EMPTY.createImage()); //need some initial value
         img.getStyle().setPosition(Style.Position.ABSOLUTE);
         img.getStyle().setTop(-8, Style.Unit.PX);
+
+        vert.setPropertyObject(IMAGE, img);
 
         return div.appendChild(vert);
     }
 
     private static void updateIndentElement(DivElement element, GTreeColumnValue treeValue, int indentLevel) {
-        String indentIcon;
-        ImageElement img = element.getElementsByTagName("img").getItem(0).cast();
+        StaticImage indentIcon;
+        Element img = (Element) element.getPropertyObject(IMAGE);
         int nodeLevel = treeValue.level;
         if (indentLevel < nodeLevel - 1) {
-            indentIcon = treeValue.lastInLevelMap[indentLevel] ? ICON_EMPTY : ICON_PASSBY;
+            indentIcon = treeValue.lastInLevelMap[indentLevel] ? StaticImage.TREE_EMPTY : StaticImage.TREE_PASSBY;
             img.removeAttribute(TREE_NODE_ATTRIBUTE);
         } else if (indentLevel == nodeLevel - 1) {
-            indentIcon = ICON_BRANCH;
+            indentIcon = StaticImage.TREE_BRANCH;
             img.removeAttribute(TREE_NODE_ATTRIBUTE);
         } else {
             assert indentLevel == nodeLevel;
@@ -234,35 +228,35 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             indentIcon = getNodeIcon(treeValue);
         }
 
-        if (ICON_PASSBY.equals(indentIcon)) {
+        if (StaticImage.TREE_PASSBY.equals(indentIcon)) {
             changeDots(element, true, true);
-        } else if (ICON_BRANCH.equals(indentIcon)) {
+        } else if (StaticImage.TREE_BRANCH.equals(indentIcon)) {
             if (treeValue.lastInLevelMap[indentLevel]) {
                 changeDots(element, true, false); //end
             } else {
                 changeDots(element, true, true); //branch
             }
-        } else if (ICON_EMPTY.equals(indentIcon) || ICON_LEAF.equals(indentIcon)) {
+        } else if (StaticImage.TREE_EMPTY.equals(indentIcon) || StaticImage.TREE_LEAF.equals(indentIcon)) {
             changeDots(element, false, false);
-        } else if (ICON_CLOSED.equals(indentIcon)) {
+        } else if (StaticImage.TREE_CLOSED.equals(indentIcon)) {
             changeDots(element, false, treeValue.closedDotBottom);
-        }else if (ICON_OPEN.equals(indentIcon)) {
+        }else if (StaticImage.TREE_OPEN.equals(indentIcon)) {
             changeDots(element, false, treeValue.openDotBottom);
         }
 
-        if(ICON_CLOSED.equals(indentIcon)) {
+        if(StaticImage.TREE_CLOSED.equals(indentIcon)) {
             img.removeClassName("expanded-image");
             img.addClassName("collapsed-image");
-        } else if(ICON_OPEN.equals(indentIcon)) {
+        } else if(StaticImage.TREE_OPEN.equals(indentIcon)) {
             img.removeClassName("collapsed-image");
             img.addClassName("expanded-image");
-        } else if(ICON_LEAF.equals(indentIcon)) {
+        } else if(StaticImage.TREE_LEAF.equals(indentIcon)) {
             img.addClassName("leaf-image");
-        } else if(ICON_BRANCH.equals(indentIcon)) {
+        } else if(StaticImage.TREE_BRANCH.equals(indentIcon)) {
             img.addClassName("branch-image");
         }
 
-        GwtClientUtils.setThemeImage(ICON_PASSBY.equals(indentIcon) ? ICON_EMPTY : indentIcon, img::setSrc);
+        StaticImage.TREE_EMPTY.setImageSrc(img, (StaticImage.TREE_PASSBY.equals(indentIcon) ? null : indentIcon));
     }
 
     private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
@@ -271,7 +265,6 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
         if (dotTop && dotBottom) {
             ensureDotsAndSetBackground(element);
-            element.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
             clearBackground(top);
             clearBackground(bottom);
             return;
@@ -280,14 +273,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         }
         if (dotTop) {
             ensureDotsAndSetBackground(top);
-            top.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
         } else {
             clearBackground(top);
         }
 
         if (dotBottom) {
             ensureDotsAndSetBackground(bottom);
-            bottom.getStyle().setProperty("backgroundRepeat", "no-repeat repeat");
         } else {
             clearBackground(bottom);
         }
@@ -295,7 +286,10 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     private static void ensureDotsAndSetBackground(Element element) {
         element.addClassName("passby-image");
-        GwtClientUtils.setThemeImage(ICON_PASSBY, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+
+        if(!MainFrame.useBootstrap) {
+            GwtClientUtils.setThemeImage(StaticImage.TREE_PASSBY.path, str -> element.getStyle().setBackgroundImage("url('" + str + "')"));
+        }
     }
 
     private static void clearBackground(Element element) {
@@ -303,16 +297,16 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         element.getStyle().clearBackgroundImage();
     }
 
-    private static String getNodeIcon(GTreeColumnValue treeValue) {
+    private static StaticImage getNodeIcon(GTreeColumnValue treeValue) {
         switch (treeValue.type) {
             case LEAF:
-                return ICON_LEAF;
+                return StaticImage.TREE_LEAF;
             case OPEN:
-                return ICON_OPEN;
+                return StaticImage.TREE_OPEN;
             case CLOSED:
-                return ICON_CLOSED;
+                return StaticImage.TREE_CLOSED;
             case LOADING:
-                return ICON_LOADING;
+                return StaticImage.LOADING_ASYNC;
         }
         throw new UnsupportedOperationException();
     }

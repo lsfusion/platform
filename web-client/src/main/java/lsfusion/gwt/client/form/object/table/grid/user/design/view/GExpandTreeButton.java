@@ -33,7 +33,7 @@ public class GExpandTreeButton extends GToolbarButton {
     }
 
     public void update(GTreeGroupController treeGroupController) {
-        this.expand = !treeGroupController.isCurrentPathExpanded();
+        this.expand = true;//!treeGroupController.isCurrentPathExpanded();
         changeImage(current ? (expand ? StaticImage.EXPANDTREECURRENT : StaticImage.COLLAPSETREECURRENT) : (expand ? StaticImage.EXPANDTREE : StaticImage.COLLAPSETREE));
         updateToolTipText();
     }
