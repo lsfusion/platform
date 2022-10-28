@@ -131,7 +131,7 @@ public class TooltipManager {
 
             if (projectLSFDir != null) {
                 setLinks(tooltipHelper, projectLSFDir, tooltipHtml);
-            } else {
+            } else if (tooltipHelper.stillShowSettingsButton()){
                 VerticalPanel verticalPanel = new VerticalPanel();
                 verticalPanel.setVisible(false);
 
@@ -262,6 +262,10 @@ public class TooltipManager {
         public String getFormRelativePath() {
             String formPath = getFormPath();
             return formPath != null ? formPath.substring(0, formPath.indexOf(".lsf") + 4) : null;
+        }
+
+        public boolean stillShowSettingsButton() {
+            return true;
         }
     }
 
