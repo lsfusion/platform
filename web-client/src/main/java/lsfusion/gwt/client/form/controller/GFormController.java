@@ -2287,10 +2287,7 @@ public class GFormController implements EditManager {
 
     public static void setBackgroundColor(Element element, String color) {
         if (color != null) {
-            element.addClassName("cell-background");
             setCellBackgroundColor(element, color);
-        } else {
-            element.removeClassName("cell-background");
         }
     }
 
