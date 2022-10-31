@@ -388,8 +388,9 @@ public class DefaultFormView extends FormView {
     public RegularFilterView addRegularFilter(RegularFilterGroupEntity filterGroup, RegularFilterEntity filter, Version version) {
         RegularFilterGroupView filterGroupView = get(filterGroup);
         boolean moveGroupToNewContainer = false;
-        if (filterGroupView.getNFContainer(version) == getFilterGroupsContainer(filterGroupView, version)) {
-            //если группа осталась в дефолтном контейнере, то перемещаем её в новое дефолтное место
+        ContainerView oldContainer = filterGroupView.getNFContainer(version);
+        if (oldContainer == null || oldContainer == getFilterGroupsContainer(filterGroupView, version)) {
+            //if old container was null or group remains in the default container, move it to the new default container
             moveGroupToNewContainer = true;
         }
         
