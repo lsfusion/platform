@@ -2285,17 +2285,8 @@ public class GFormController implements EditManager {
         return editContext != null && editContext.getEditElement() == element;
     }
 
-    public static void setBackgroundColor(Element element, String color) {
-        if (color != null) {
-            element.getStyle().setBackgroundColor(color);
-        } else {
-            element.getStyle().clearBackgroundColor();
-        }
-        setPropertyToolbarItemBackground(element, color);
-    }
-
-    private static native void setPropertyToolbarItemBackground(Element element, String background) /*-{
-        element.style.setProperty("--property-toolbar-item-background", background != null ? background : "var(--component-background-color)");
+    public static native void setBackgroundColor(Element element, String background) /*-{
+        element.style.setProperty("--cell-background-color", background != null ? background : "var(--component-background-color)");
     }-*/;
 
     public static void setForegroundColor(Element element, String color) {

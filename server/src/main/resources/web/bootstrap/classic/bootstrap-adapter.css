@@ -100,9 +100,9 @@
     line-height: inherit;
 }
 
-
-.table .property-toolbar .background-inherit{
-    background-color: var(--property-toolbar-item-background);
+.table .dataGridCell,
+.table .dataGridCell .background-inherit {
+    background-color: var(--cell-background-color);
 }
 
 .property-toolbar-item {

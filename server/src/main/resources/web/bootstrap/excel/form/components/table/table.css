@@ -26,8 +26,9 @@
     box-shadow: inset 0 0 0 9999px var(--focused-cell-background-color) !important;
 }
 
-.table .property-toolbar .background-inherit{
-    background-color: var(--property-toolbar-item-background);
+.table .dataGridCell,
+.table .dataGridCell .background-inherit {
+    background-color: var(--cell-background-color);
 }
 
 .dropdown-menu {
