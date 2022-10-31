@@ -3,9 +3,7 @@ package lsfusion.gwt.client.form.controller;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.ContextMenuEvent;
-import com.google.gwt.event.dom.client.ContextMenuHandler;
+import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
@@ -17,14 +15,15 @@ import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ExecuteNavigatorAction;
-import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.ContainerForm;
+import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.PopupForm;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
@@ -44,7 +43,6 @@ import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
-import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -69,7 +67,7 @@ public abstract class FormsController {
     private final WindowsController windowsController;
 
     private int prevModeButton;
-    private EditModeButton editModeButton;
+    private GToolbarButton editModeButton;
 
     private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;
@@ -81,10 +79,35 @@ public abstract class FormsController {
 
         GToolbarView toolbarView = new GToolbarView();
 
-        editModeButton = new EditModeButton();
-        toolbarView.addComponent(editModeButton);
+        int editMode = windowsController.restoreEditMode();
+        editModeButton = new GToolbarButton(EditMode.getImage(editMode)) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
+                    PopupDialogPanel popup = new PopupDialogPanel();
+                    FlexPanel panel = new FlexPanel(true);
+                    panel.getElement().addClassName("btn-toolbar");
+                    StaticImage[] buttons = new StaticImage[] { StaticImage.DEFAULTMODE, StaticImage.LINKMODE, StaticImage.DIALOGMODE};
+                    for(int i = 0; i < buttons.length; i++) {
+                        int index = i;
+                        panel.add(new GToolbarButton(buttons[i]) {
+                            @Override
+                            public ClickHandler getClickHandler() {
+                                return event -> {
+                                    selectEditMode(index);
+                                    popup.hide();
+                                };
+                            }
+                        });
+                    }
 
-        setupEditModeButton();
+                    GwtClientUtils.showPopupInWindow(popup, panel, getAbsoluteLeft(), getAbsoluteTop() + getOffsetHeight());
+                };
+            }
+        };
+        updateEditMode(EditMode.getMode(editMode), null);
+
+        toolbarView.addComponent(editModeButton);
 
         if (!MainFrame.mobile) {
             fullScreenButton = new GToolbarButton(StaticImage.MAXIMIZE) {
@@ -204,41 +227,11 @@ public abstract class FormsController {
         return forceEditMode != null ? prevEditMode.getIndex() : editMode.getIndex();
     }
 
-    private void setupEditModeButton() {
-        final String[] images = new String[3];
-        GwtClientUtils.setThemeImage("defaultMode.png", image -> images[0] = image);
-        GwtClientUtils.setThemeImage("linkMode.png", image -> images[1] = image);
-        GwtClientUtils.setThemeImage("dialogMode.png", image -> images[2] = image);
-
-        setupEditModeButton(editModeButton.getElement(), images, windowsController.restoreEditMode());
-    }
-
-    private native void setupEditModeButton(Element element, String[] images, int defaultIndex) /*-{
-        var instance = this;
-        var ddData = [{imageSrc: images[0], title: 'Default Mode'}, {imageSrc: images[1], title: 'Link Mode (CTRL)'}, {imageSrc: images[2], title: 'Dialog Mode (SHIFT)'}];
-
-        $wnd.$(element).ddslick({
-            data:ddData,
-            defaultSelectedIndex:defaultIndex,
-            width:16,
-            onSelected: function(selectedData){
-                instance.@FormsController::selectEditMode(*)(selectedData.selectedIndex);
-            }
-        });
-    }-*/;
-
-    private native int selectEditModeButton(int i) /*-{
-        var modeButton = $wnd.$('#modeButton');
-        var prevModeButton = modeButton.data('ddslick').selectedIndex;
-        modeButton.ddslick('select', {index: i });
+    private int selectEditModeButton(int i) {
+        int prevModeButton = editMode.getIndex();
+        selectEditMode(i);
         return prevModeButton;
-
-    }-*/;
-
-    private native void destroyEditModeButton() /*-{
-        var modeButton = $wnd.$('#modeButton');
-        modeButton.ddslick('destroy');
-    }-*/;
+    }
 
     private void setForceEditMode(EditMode mode) {
         prevEditMode = editMode;
@@ -252,6 +245,7 @@ public abstract class FormsController {
     }
 
     private void selectEditMode(int mode) {
+        editModeButton.changeImage(EditMode.getImage(mode));
         updateEditMode(EditMode.getMode(mode), null);
     }
 
@@ -627,31 +621,4 @@ public abstract class FormsController {
     public void removeFormContainer(FormContainer formContainer) {
         formContainers.remove(formContainer);
     }
-
-    private class EditModeButton extends SimplePanel implements ColorThemeChangeListener {
-
-        public EditModeButton() {
-            getElement().setId("modeButton");
-            MainFrame.addColorThemeChangeListener(this);
-        }
-
-        Timer timer = null;
-
-        @Override
-        public void colorThemeChanged() {
-
-            timer = new Timer() {
-                @Override
-                public void run() {
-                    if(editModeButton.isVisible()) {
-                        destroyEditModeButton();
-                        setupEditModeButton();
-                        timer.cancel();
-                    }
-                }
-            };
-            timer.scheduleRepeating(100);
-        }
-    }
-
 }
