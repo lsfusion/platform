@@ -10,7 +10,7 @@ title: 'Для разработки'
 
 **lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **14.5**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.2.3**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-dev-5.0-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-dev-5.0-beta0-x64.exe)
 
 <details><summary><strong>Предыдущие версии</strong></summary>
 <br/>
