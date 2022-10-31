@@ -30,6 +30,7 @@
     --button-active-background-color: #E6E6E6;
     --component-hover-border-color: #84C0D6;
     --component-hover-background-color: #E6E6E6;
+    --component-hover-background-color-rgba: rgba(200, 200, 200, 0.3);
     --component-active-background-color: #DEDEDE;
     --leaflet-control-transparent-background: rgba(255, 255, 255, 0.7);
     

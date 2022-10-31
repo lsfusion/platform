@@ -105,5 +105,5 @@
 }
 
 .table .property-toolbar-item.background-inherit:hover {
-    background-color: var(--component-hover-background-color);
+    background-color: var(--component-hover-background-color-rgba);
 }

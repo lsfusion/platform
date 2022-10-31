@@ -46,8 +46,3 @@
     /* ??? */
     /*overflow: hidden;*/
 }
-
-.table .cell-background,
-.table .cell-background .background-inherit {
-    background-color: var(--cell-background-color);
-}

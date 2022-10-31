@@ -364,7 +364,7 @@ public abstract class CellRenderer<T> {
         }
 
         if(needToRenderToolbarContent())
-            renderToolbarContent(element, updateContext, renderedState, background, cleared);
+            renderToolbarContent(element, updateContext, renderedState, cleared);
     }
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
@@ -372,15 +372,11 @@ public abstract class CellRenderer<T> {
         public final boolean loading;
         public final ToolbarAction[] toolbarActions;
 
-        public final String background;
-
         public Element element;
 
-        public ToolbarState(boolean loading, ToolbarAction[] toolbarActions, String background) {
+        public ToolbarState(boolean loading, ToolbarAction[] toolbarActions) {
             this.loading = loading;
             this.toolbarActions = toolbarActions;
-
-            this.background = background;
         }
     }
 
@@ -390,7 +386,7 @@ public abstract class CellRenderer<T> {
         if(stateB == null)
             return false;
 
-        if(!(stateA.loading == stateB.loading && GwtClientUtils.nullEquals(stateA.background, stateB.background)))
+        if(!(stateA.loading == stateB.loading))
             return false;
 
         if(stateA.toolbarActions != stateB.toolbarActions) {
@@ -435,14 +431,13 @@ public abstract class CellRenderer<T> {
 
     public final static GPropertyDraw.QuickAccessAction[] noToolbarActions = new GPropertyDraw.QuickAccessAction[0];
     // cleared - cleared with setInnerText / setInnerHTML
-    // backgroud - converted (with getDisplayColor)
-    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, String background, boolean cleared) {
+    protected void renderToolbarContent(Element element, UpdateContext updateContext, RenderedState renderedState, boolean cleared) {
         boolean loading = updateContext.isLoading() && !renderedLoadingContent(updateContext);
         ToolbarAction[] toolbarActions = updateContext.getToolbarActions();
 
         boolean needToolbar = loading || toolbarActions.length > 0;
 
-        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, toolbarActions, background) : null;
+        ToolbarState toolbarState = needToolbar ? new ToolbarState(loading, toolbarActions) : null;
         ToolbarState prevState = renderedState.toolbar;
         if (equalsState(toolbarState, prevState)) { // already rendered
             if(!(cleared && needToolbar)) // if cleared we still need to rerender the toolbar
@@ -474,7 +469,7 @@ public abstract class CellRenderer<T> {
             if(loading) {
                 Element loadingImage = StaticImage.LOADING_IMAGE_PATH.createImage();
                 loadingImage.addClassName("property-toolbar-loading");
-                setBackgroundInherit(loadingImage);
+                loadingImage.addClassName("background-inherit");
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
@@ -482,7 +477,7 @@ public abstract class CellRenderer<T> {
             if (toolbarActions.length > 0) {
                 Element propertyToolbarItemGroup = null;
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                setBackgroundInherit(verticalSeparator);
+                verticalSeparator.addClassName("background-inherit");
                 if(allHover(toolbarActions)) {
                     propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(null, toolbarElement, verticalSeparator, start);
                 } else {
@@ -498,7 +493,7 @@ public abstract class CellRenderer<T> {
 
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
-                    setBackgroundInherit(actionDivElement);
+                    actionDivElement.addClassName("background-inherit");
 
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
@@ -546,10 +541,6 @@ public abstract class CellRenderer<T> {
         addToToolbar(propertyToolbarItemGroup, start, element);
 
         return propertyToolbarItemGroup;
-    }
-
-    private static void setBackgroundInherit(Element element) {
-        element.addClassName("background-inherit");
     }
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {

@@ -2295,7 +2295,7 @@ public class GFormController implements EditManager {
     }
 
     private static native void setCellBackgroundColor(Element element, String background) /*-{
-        element.style.setProperty("--cell-background-color", background);
+        element.style.setProperty("--bs-table-bg", background);
     }-*/;
 
     public static void setForegroundColor(Element element, String color) {
