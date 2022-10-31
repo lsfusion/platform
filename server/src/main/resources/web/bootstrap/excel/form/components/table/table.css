@@ -26,11 +26,6 @@
     box-shadow: inset 0 0 0 9999px var(--focused-cell-background-color) !important;
 }
 
-.table .dataGridCell,
-.table .dataGridCell .background-inherit {
-    background-color: var(--cell-background-color);
-}
-
 .dropdown-menu {
     list-style-type: none; /* Remove bullets */
     padding: 0; /* Remove padding */

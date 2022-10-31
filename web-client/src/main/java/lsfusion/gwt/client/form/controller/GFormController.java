@@ -2285,8 +2285,17 @@ public class GFormController implements EditManager {
         return editContext != null && editContext.getEditElement() == element;
     }
 
-    public static native void setBackgroundColor(Element element, String background) /*-{
-        element.style.setProperty("--cell-background-color", background != null ? background : "var(--component-background-color)");
+    public static void setBackgroundColor(Element element, String color) {
+        if (color != null) {
+            element.addClassName("cell-background");
+            setCellBackgroundColor(element, color);
+        } else {
+            element.removeClassName("cell-background");
+        }
+    }
+
+    private static native void setCellBackgroundColor(Element element, String background) /*-{
+        element.style.setProperty("--cell-background-color", background);
     }-*/;
 
     public static void setForegroundColor(Element element, String color) {

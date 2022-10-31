@@ -100,11 +100,6 @@
     line-height: inherit;
 }
 
-.table .dataGridCell,
-.table .dataGridCell .background-inherit {
-    background-color: var(--cell-background-color);
-}
-
 .property-toolbar-item {
     margin: 0.25rem;
 }
