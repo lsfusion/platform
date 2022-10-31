@@ -2287,11 +2287,13 @@ public class GFormController implements EditManager {
 
     public static void setBackgroundColor(Element element, String color) {
         if (color != null) {
-            element.getStyle().setBackgroundColor(color);
-        } else {
-            element.getStyle().clearBackgroundColor();
+            setCellBackgroundColor(element, color);
         }
     }
+
+    private static native void setCellBackgroundColor(Element element, String background) /*-{
+        element.style.setProperty("--bs-table-bg", background);
+    }-*/;
 
     public static void setForegroundColor(Element element, String color) {
         if (color != null) {
