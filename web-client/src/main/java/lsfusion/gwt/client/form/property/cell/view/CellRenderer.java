@@ -9,7 +9,6 @@ import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
-import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
@@ -475,7 +474,7 @@ public abstract class CellRenderer<T> {
             if(loading) {
                 Element loadingImage = StaticImage.LOADING_IMAGE_PATH.createImage();
                 loadingImage.addClassName("property-toolbar-loading");
-                setToolbarBackground(loadingImage, background);
+                setBackgroundInherit(loadingImage);
 
                 addToToolbar(toolbarElement, start, loadingImage);
             }
@@ -483,7 +482,7 @@ public abstract class CellRenderer<T> {
             if (toolbarActions.length > 0) {
                 Element propertyToolbarItemGroup = null;
                 Element verticalSeparator = GwtClientUtils.createVerticalStretchSeparator().getElement();
-                setToolbarBackground(verticalSeparator, background);
+                setBackgroundInherit(verticalSeparator);
                 if(allHover(toolbarActions)) {
                     propertyToolbarItemGroup = wrapPropertyToolbarItemGroup(null, toolbarElement, verticalSeparator, start);
                 } else {
@@ -499,7 +498,7 @@ public abstract class CellRenderer<T> {
 
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
-                    setToolbarBackground(actionDivElement, background);
+                    setBackgroundInherit(actionDivElement);
 
                     toolbarAction.setOnPressed(actionImgElement, updateContext);
 
@@ -549,14 +548,9 @@ public abstract class CellRenderer<T> {
         return propertyToolbarItemGroup;
     }
 
-    private static void setToolbarBackground(Element element, String background) {
+    private static void setBackgroundInherit(Element element) {
         element.addClassName("background-inherit");
-        setPropertyToolbarItemBackground(element, background);
     }
-
-    private static native void setPropertyToolbarItemBackground(Element element, String background) /*-{
-        element.style.setProperty("--property-toolbar-item-background", background != null ? background : "var(--component-background-color)");
-    }-*/;
 
     private void addToToolbar(Element toolbarElement, boolean start, Element element) {
         if(start)
