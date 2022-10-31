@@ -26,6 +26,10 @@
     box-shadow: inset 0 0 0 9999px var(--focused-cell-background-color) !important;
 }
 
+.table .property-toolbar .background-inherit{
+    background-color: var(--property-toolbar-item-background);
+}
+
 .dropdown-menu {
     list-style-type: none; /* Remove bullets */
     padding: 0; /* Remove padding */
