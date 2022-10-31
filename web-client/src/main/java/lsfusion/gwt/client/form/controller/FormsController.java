@@ -67,7 +67,7 @@ public abstract class FormsController {
     private final WindowsController windowsController;
 
     private int prevModeButton;
-    private EditModeButton editModeButton;
+    private GToolbarButton editModeButton;
 
     private GToolbarButton fullScreenButton;
     private boolean fullScreenMode = false;
@@ -79,7 +79,34 @@ public abstract class FormsController {
 
         GToolbarView toolbarView = new GToolbarView();
 
-        editModeButton = new EditModeButton(windowsController.restoreEditMode());
+        int editMode = windowsController.restoreEditMode();
+        editModeButton = new GToolbarButton(EditMode.getImage(editMode)) {
+            @Override
+            public ClickHandler getClickHandler() {
+                return event -> {
+                    PopupDialogPanel popup = new PopupDialogPanel();
+                    FlexPanel panel = new FlexPanel(true);
+                    panel.getElement().addClassName("btn-toolbar");
+                    StaticImage[] buttons = new StaticImage[] { StaticImage.DEFAULTMODE, StaticImage.LINKMODE, StaticImage.DIALOGMODE};
+                    for(int i = 0; i < buttons.length; i++) {
+                        int index = i;
+                        panel.add(new GToolbarButton(buttons[i]) {
+                            @Override
+                            public ClickHandler getClickHandler() {
+                                return event -> {
+                                    selectEditMode(index);
+                                    popup.hide();
+                                };
+                            }
+                        });
+                    }
+
+                    GwtClientUtils.showPopupInWindow(popup, panel, getAbsoluteLeft(), getAbsoluteTop() + getOffsetHeight());
+                };
+            }
+        };
+        updateEditMode(EditMode.getMode(editMode), null);
+
         toolbarView.addComponent(editModeButton);
 
         if (!MainFrame.mobile) {
@@ -594,48 +621,4 @@ public abstract class FormsController {
     public void removeFormContainer(FormContainer formContainer) {
         formContainers.remove(formContainer);
     }
-
-    private class EditModeButton extends GToolbarButton {
-        public EditModeButton(int editMode) {
-            super(EditMode.getImage(editMode));
-            updateEditMode(EditMode.getMode(editMode), null);
-            MainFrame.addColorThemeChangeListener(this);
-        }
-
-        @Override
-        public void colorThemeChanged() {
-            editModeButton.changeImage(EditMode.getImage(editMode.getIndex()));
-        }
-
-        @Override
-        public ClickHandler getClickHandler() {
-            return event -> {
-                GwtClientUtils.stopPropagation(event);
-                showPopup(editModeButton.getAbsoluteLeft(), editModeButton.getAbsoluteTop() + editModeButton.getOffsetHeight());
-            };
-        }
-
-        public void showPopup(int clientX, int clientY) {
-            PopupDialogPanel popup = new PopupDialogPanel();
-
-            FlexPanel panel = new FlexPanel(true);
-            panel.getElement().addClassName("btn-toolbar");
-            StaticImage[] buttons = new StaticImage[] { StaticImage.DEFAULTMODE, StaticImage.LINKMODE, StaticImage.DIALOGMODE};
-            for(int i = 0; i < buttons.length; i++) {
-                int index = i;
-                panel.add(new GToolbarButton(buttons[i]) {
-                    @Override
-                    public ClickHandler getClickHandler() {
-                        return event -> {
-                            selectEditMode(index);
-                            popup.hide();
-                        };
-                    }
-                });
-            }
-
-            GwtClientUtils.showPopupInWindow(popup, panel, clientX, clientY);
-        }
-    }
-
 }
