@@ -76,7 +76,7 @@ in '{scheduler.in.dow.scheduled.task}' = ABSTRACT BOOLEAN (DOW, ScheduledTask);
 in '{scheduler.in.dow.scheduled.task}' = DATA BOOLEAN (DOW, UserScheduledTask); 
 in[DOW, ScheduledTask](DOW d, UserScheduledTask t) += in(d, t);
 
-daysOfWeek (ScheduledTask t)= GROUP CONCAT STRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
+daysOfWeek (ScheduledTask t)= GROUP CONCAT STRING[3](numberM(DOW d)) IF in (d,t), ', ' ORDER d;   
 
 CLASS ABSTRACT ScheduledTaskDetail '{scheduler.scheduled.task.detail}';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
