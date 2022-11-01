@@ -44,12 +44,15 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
         FlexPanel childPanel = (FlexPanel) getChildView(container);
 
         // if we have caption it has to be either CaptionPanel, or it is wrapped into one more flexPanel (see addImpl)
-        if(childPanel instanceof CaptionPanel)
+        if(childPanel instanceof CaptionPanel) {
             captionPanel = (CaptionPanel) childPanel;
-
-        Widget childWidget = childPanel.getWidget(0);
-        if(childWidget instanceof CaptionPanel)
-            captionPanel = (CaptionPanel) childWidget;
+        } else {
+            if(childPanel.getWidgetCount() > 0) {
+                Widget childWidget = childPanel.getWidget(0);
+                if(childWidget instanceof CaptionPanel)
+                    captionPanel = (CaptionPanel) childWidget;
+            }
+        }
 
         String caption = container.caption;
         if(captionPanel != null)
