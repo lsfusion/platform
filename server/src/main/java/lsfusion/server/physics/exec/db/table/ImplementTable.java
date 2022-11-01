@@ -537,10 +537,12 @@ public class ImplementTable extends DBTable { // последний интерф
             boolean skipRecalculateAllFields = props != null && props.size() == skipRecalculateFields.size();
             Integer total = skipRecalculateAllFields ? 0 : (Integer) readCount(session, inWhere);
 
-            for (KeyField key : keys) {
-                ImMap<Object, Expr> map = MapFact.singleton(0, mapKeys.get(key));
-                mResult.exclAdd(key, skipRecalculateAllFields ? 0 : readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
-                            GroupExpr.create(map, inWhere, map, false), mapKeys.get(key), total, top && keys.size() > 1), total, top && keys.size() > 1));
+            if (!skipRecalculateAllFields) {
+                for (KeyField key : keys) {
+                    ImMap<Object, Expr> map = MapFact.singleton(0, mapKeys.get(key));
+                    mResult.exclAdd(key, readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
+                                GroupExpr.create(map, inWhere, map, false), mapKeys.get(key), total, top && keys.size() > 1), total, top && keys.size() > 1));
+                }
             }
 
             ImSet<PropertyField> propertyFieldSet = props == null ? properties : props.keys();
@@ -570,17 +572,20 @@ public class ImplementTable extends DBTable { // последний интерф
             }
             int quantity = BaseUtils.nvl((Integer)result.get(0), 0);
             rows = quantity;
-            reflectionLM.rowsTable.change(quantity, session, (DataObject) tableObject);
 
-            for (KeyField key : keys) {
-                DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
-                if (keyObject == null) {
-                    keyObject = session.addObject(reflectionLM.tableKey);
-                    reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
+            if (!skipRecalculateAllFields) {
+                reflectionLM.rowsTable.change(quantity, session, tableObject);
+
+                for (KeyField key : keys) {
+                    DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
+                    if (keyObject == null) {
+                        keyObject = session.addObject(reflectionLM.tableKey);
+                        reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
+                    }
+                    quantity = BaseUtils.nvl((Integer) result.get(key), 0);
+                    (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
+                    keyStat = keyStat.addExcl(getName() + "." + key.getName(), quantity);
                 }
-                quantity = BaseUtils.nvl((Integer)result.get(key), 0);
-                (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
-                keyStat = keyStat.addExcl(getName() + "." + key.getName(), quantity);
             }
 
             ImMap<Object, Object> notNulls = mNotNulls.immutable();
