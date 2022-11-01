@@ -51,7 +51,6 @@ import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
-import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.user.BaseClass;
@@ -562,7 +561,6 @@ public class ImplementTable extends DBTable { // последний интерф
                 }
             }
 
-            mResult.exclAdd(0, total);
             ImMap<Object, Object> result = mResult.immutable();
 
             DataObject tableObject = safeReadClasses(session, reflectionLM.tableSID, new DataObject(getName()));
@@ -570,11 +568,10 @@ public class ImplementTable extends DBTable { // последний интерф
                 tableObject = session.addObject(reflectionLM.table);
                 reflectionLM.sidTable.change(getName(), session, tableObject);
             }
-            int quantity = BaseUtils.nvl((Integer)result.get(0), 0);
-            rows = quantity;
+            rows = total;
 
             if (!skipRecalculateAllFields) {
-                reflectionLM.rowsTable.change(quantity, session, tableObject);
+                reflectionLM.rowsTable.change(total, session, tableObject);
 
                 for (KeyField key : keys) {
                     DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
@@ -582,7 +579,7 @@ public class ImplementTable extends DBTable { // последний интерф
                         keyObject = session.addObject(reflectionLM.tableKey);
                         reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
                     }
-                    quantity = BaseUtils.nvl((Integer) result.get(key), 0);
+                    int quantity = BaseUtils.nvl((Integer) result.get(key), 0);
                     (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
                     keyStat = keyStat.addExcl(getName() + "." + key.getName(), quantity);
                 }
@@ -608,7 +605,7 @@ public class ImplementTable extends DBTable { // последний интерф
                         (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change((Integer) result.get(property), session, propertyObject); // если не расчитывается статистика запишется null (что в общем то и требуется)
 
                         int notNull = BaseUtils.nvl((Integer) notNulls.get(property), 0);
-                        quantity = BaseUtils.nvl((Integer) result.get(property), 0);
+                        int quantity = BaseUtils.nvl((Integer) result.get(property), 0);
                         reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
                         propStats = propStats.addExcl(getName() + "." + property.getName(), Pair.create(quantity, notNull));
                     }
@@ -707,60 +704,66 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     // последний параметр нужен только, чтобы не закэшировалась совсем неправильная статистика для Reflection таблиц (где все классы, а значит и колонки имеют статистику 0) - она конечно и так закэшируется неправильная, но хотя бы пессимистичная
-    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, ImSet<PropertyField> props, boolean noClassStatsYet) {
+    public void updateStat(ImMap<String, Pair<Integer, Integer>> propStats, ImSet<PropertyField> props, boolean noClassStatsYet) {
+        Stat rowStat = statKeys.getRows();
+        ImMap<PropertyField, PropStat> updateStatProps = getUpdateStatProps(props, rowStat, propStats, noClassStatsYet);
+        assert statProps.keys().containsAll(updateStatProps.keys());
+        statProps = MapFact.replaceValues(statProps, updateStatProps);
+    }
 
-        Integer rowCount;
-        if (!tableStats.containsKey(getName()))
-            rowCount = Stat.DEFAULT.getCount();
-        else
-            rowCount = BaseUtils.nvl(tableStats.get(getName()), 0);
+    public void updateStat(ImMap<String, Integer> tableStats, ImMap<String, Integer> keyStats, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
 
-        if(props == null) {
-            ImMap<KeyField, AndClassSet> keyClassStats = getClasses().getCommonClasses(keys.getSet());
+        Integer rowCount = tableStats.containsKey(getName()) ? BaseUtils.nvl(tableStats.get(getName()), 0) : Stat.DEFAULT.getCount();
 
-            ImSet<KeyField> tableKeys = getTableKeys();
-            ImValueMap<KeyField, Integer> mvDistinctKeys = tableKeys.mapItValues(); // exception есть
-            for (int i = 0, size = tableKeys.size(); i < size; i++) {
-                KeyField tableKey = tableKeys.get(i);
-                String keySID = getName() + "." + tableKey.getName();
-                Integer keyCount = keyStats.get(keySID);
-                if(keyCount == null)
-                    keyCount = Stat.DEFAULT.getCount();
-                
-                if(!noClassStatsYet) {
-                    AndClassSet keyClasses = keyClassStats.get(tableKey);
-                    if (keyClasses instanceof ObjectClassSet) {
-                        int classCount = ((ObjectValueClassSet) keyClasses).getCount();
-                        keyCount = BaseUtils.min(keyCount, classCount); // неправильная статистика уменьшаем до числа классов (иначе могут быть непредсказуемые последствия, например infinite push down в getLastSQLQuery 
-                    }
+        ImMap<KeyField, AndClassSet> keyClassStats = getClasses().getCommonClasses(keys.getSet());
+
+        ImSet<KeyField> tableKeys = getTableKeys();
+        ImValueMap<KeyField, Integer> mvDistinctKeys = tableKeys.mapItValues(); // exception есть
+        for (int i = 0, size = tableKeys.size(); i < size; i++) {
+            KeyField tableKey = tableKeys.get(i);
+            String keySID = getName() + "." + tableKey.getName();
+            Integer keyCount = keyStats.get(keySID);
+            if(keyCount == null)
+                keyCount = Stat.DEFAULT.getCount();
+
+            if(!noClassStatsYet) {
+                AndClassSet keyClasses = keyClassStats.get(tableKey);
+                if (keyClasses instanceof ObjectClassSet) {
+                    int classCount = ((ObjectValueClassSet) keyClasses).getCount();
+                    keyCount = BaseUtils.min(keyCount, classCount); // неправильная статистика уменьшаем до числа классов (иначе могут быть непредсказуемые последствия, например infinite push down в getLastSQLQuery
                 }
-
-                keyCount = BaseUtils.min(keyCount, rowCount);
-
-                mvDistinctKeys.mapValue(i, keyCount);
             }
-            statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
-        }
 
-        ImSet<PropertyField> propertyFieldSet = props == null ? properties : props;
+            keyCount = BaseUtils.min(keyCount, rowCount);
+
+            mvDistinctKeys.mapValue(i, keyCount);
+        }
+        statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
+
+        ImSet<PropertyField> propertyFieldSet = properties;
 
         Stat rowStat = statKeys.getRows();
+        statProps = getUpdateStatProps(propertyFieldSet, rowStat, propStats, noClassStatsYet);
+    }
+
+    private ImMap<PropertyField, PropStat> getUpdateStatProps(ImSet<PropertyField> propertyFieldSet, Stat rowStat, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
+
         ImValueMap<PropertyField, PropStat> mvUpdateStatProps = propertyFieldSet.mapItValues();
-        for(int i=0,size=propertyFieldSet.size();i<size;i++) {
+
+        for (int i = 0, size = propertyFieldSet.size(); i < size; i++) {
+
             PropertyField prop = propertyFieldSet.get(i);
             Stat distinctStat = null;
             Stat notNullStat = null;
             Pair<Integer, Integer> propExStat = propStats.get(getName() + "." + prop.getName());
             if (propExStat != null) {
-                if (propExStat.second != null)
-                    notNullStat = new Stat(propExStat.second);
-                if (propExStat.first != null && propExStat.first > 0) // тут пока неясный контракт с distinct (из-за DataClass.calculateStat), но 0 даже теоретически быть не может (поэтому будем считать не расчитанным), вообще   
+                if (propExStat.second != null) notNullStat = new Stat(propExStat.second);
+                if (propExStat.first != null && propExStat.first > 0) // тут пока неясный контракт с distinct (из-за DataClass.calculateStat), но 0 даже теоретически быть не может (поэтому будем считать не расчитанным), вообще
                     distinctStat = new Stat(propExStat.first);
             }
-            if (distinctStat == null)
-                distinctStat = Stat.DEFAULT;
+            if (distinctStat == null) distinctStat = Stat.DEFAULT;
 
-            if(!noClassStatsYet) {
+            if (!noClassStatsYet) {
                 AndClassSet propClasses = propertyClasses.get(prop).getCommonClass(prop);
                 Stat propClassStat = Stat.ALOT;
                 if (propClasses instanceof ObjectClassSet) { // неправильная статистика уменьшаем до числа классов (иначе могут быть непредсказуемые последствия, например infinite push down в getLastSQLQuery)
@@ -773,22 +776,15 @@ public class ImplementTable extends DBTable { // последний интерф
 
             // неправильная статистика
             distinctStat = distinctStat.min(rowStat);
-            if(notNullStat != null) {
+            if (notNullStat != null) {
                 notNullStat = notNullStat.min(rowStat);
-                if((distinctStat == null || notNullStat.less(distinctStat))) 
-                    distinctStat = notNullStat;
+                if ((distinctStat == null || notNullStat.less(distinctStat))) distinctStat = notNullStat;
             }
+
             mvUpdateStatProps.mapValue(i, new PropStat(distinctStat, notNullStat));
         }
-        ImMap<PropertyField, PropStat> updateStatProps = mvUpdateStatProps.immutableValue();
-        if(props == null)
-            statProps = updateStatProps;
-        else {
-            assert statProps.keys().containsAll(updateStatProps.keys());
-            statProps = MapFact.replaceValues(statProps, updateStatProps);
-        }
 
-//        assert statDefault || correctStatProps();
+        return mvUpdateStatProps.immutableValue();
     }
 
     private boolean correctStatProps() {
