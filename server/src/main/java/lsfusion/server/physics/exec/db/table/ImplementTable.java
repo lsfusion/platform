@@ -534,11 +534,12 @@ public class ImplementTable extends DBTable { // последний интерф
             Where inWhere = join.getWhere();
             KeyExpr countKeyExpr = new KeyExpr("count");
 
-            Integer total = (Integer) readCount(session, inWhere);
+            boolean skipRecalculateAllFields = props != null && props.size() == skipRecalculateFields.size();
+            Integer total = skipRecalculateAllFields ? 0 : (Integer) readCount(session, inWhere);
 
             for (KeyField key : keys) {
                 ImMap<Object, Expr> map = MapFact.singleton(0, mapKeys.get(key));
-                mResult.exclAdd(key, readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
+                mResult.exclAdd(key, skipRecalculateAllFields ? 0 : readCount(session, getCountWhere(session.sql, GroupExpr.create(map, inWhere, map, true),
                             GroupExpr.create(map, inWhere, map, false), mapKeys.get(key), total, top && keys.size() > 1), total, top && keys.size() > 1));
             }
 
