@@ -502,27 +502,13 @@ public class ImplementTable extends DBTable { // последний интерф
         recalculateStat(reflectionLM, session, null, disableStatsTableColumnSet, SetFact.EMPTY(), true);
     }
 
-    public static class CalcStat {
-        public final int rows;
-        public final ImMap<String, Integer> keys;
-        public final ImMap<String, Pair<Integer, Integer>> props;
-
-        public CalcStat(int rows, ImMap<String, Integer> keys, ImMap<String, Pair<Integer, Integer>> props) {
-            this.rows = rows;
-            this.keys = keys;
-            this.props = props;
-        }
-    }
-
-    public CalcStat recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
+    public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
         return recalculateStat(reflectionLM, session, props, new HashSet<>(), skipRecalculateFields, top);
     }
 
-    public CalcStat recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props,
+    public ImMap<String, Pair<Integer, Integer>> recalculateStat(ReflectionLogicsModule reflectionLM, DataSession session, ImMap<PropertyField, String> props,
                                     Set<String> disableStatsTableColumnSet, ImSet<PropertyField> skipRecalculateFields, boolean top) throws SQLException, SQLHandledException {
-        ImMap<String, Integer> keyStat = MapFact.EMPTY();
         ImMap<String, Pair<Integer, Integer>> propStats = MapFact.EMPTY();
-        int rows = 0;
         if (!SystemProperties.doNotCalculateStats) {
             ImRevMap<KeyField, KeyExpr> mapKeys = getMapKeys();
             lsfusion.server.data.query.build.Join<PropertyField> join = join(mapKeys);
@@ -568,7 +554,6 @@ public class ImplementTable extends DBTable { // последний интерф
                 tableObject = session.addObject(reflectionLM.table);
                 reflectionLM.sidTable.change(getName(), session, tableObject);
             }
-            rows = total;
 
             if (!skipRecalculateAllFields) {
                 reflectionLM.rowsTable.change(total, session, tableObject);
@@ -581,7 +566,6 @@ public class ImplementTable extends DBTable { // последний интерф
                     }
                     int quantity = BaseUtils.nvl((Integer) result.get(key), 0);
                     (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
-                    keyStat = keyStat.addExcl(getName() + "." + key.getName(), quantity);
                 }
             }
 
@@ -612,7 +596,7 @@ public class ImplementTable extends DBTable { // последний интерф
                 }
             }
         }
-        return new CalcStat(rows, keyStat, propStats);
+        return propStats;
     }
 
     private Where getCountWhere(SQLSession session, Expr quantityTopExpr, Expr quantityNotTopExpr, KeyExpr keyExpr, Integer total, boolean top) {
@@ -705,8 +689,7 @@ public class ImplementTable extends DBTable { // последний интерф
 
     // последний параметр нужен только, чтобы не закэшировалась совсем неправильная статистика для Reflection таблиц (где все классы, а значит и колонки имеют статистику 0) - она конечно и так закэшируется неправильная, но хотя бы пессимистичная
     public void updateStat(ImMap<String, Pair<Integer, Integer>> propStats, ImSet<PropertyField> props, boolean noClassStatsYet) {
-        Stat rowStat = statKeys.getRows();
-        ImMap<PropertyField, PropStat> updateStatProps = getUpdateStatProps(props, rowStat, propStats, noClassStatsYet);
+        ImMap<PropertyField, PropStat> updateStatProps = getUpdateStatProps(props, propStats, noClassStatsYet);
         assert statProps.keys().containsAll(updateStatProps.keys());
         statProps = MapFact.replaceValues(statProps, updateStatProps);
     }
@@ -740,13 +723,10 @@ public class ImplementTable extends DBTable { // последний интерф
         }
         statKeys = TableStatKeys.createForTable(rowCount, mvDistinctKeys.immutableValue());
 
-        ImSet<PropertyField> propertyFieldSet = properties;
-
-        Stat rowStat = statKeys.getRows();
-        statProps = getUpdateStatProps(propertyFieldSet, rowStat, propStats, noClassStatsYet);
+        statProps = getUpdateStatProps(properties, propStats, noClassStatsYet);
     }
 
-    private ImMap<PropertyField, PropStat> getUpdateStatProps(ImSet<PropertyField> propertyFieldSet, Stat rowStat, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
+    private ImMap<PropertyField, PropStat> getUpdateStatProps(ImSet<PropertyField> propertyFieldSet, ImMap<String, Pair<Integer, Integer>> propStats, boolean noClassStatsYet) {
 
         ImValueMap<PropertyField, PropStat> mvUpdateStatProps = propertyFieldSet.mapItValues();
 
@@ -775,6 +755,7 @@ public class ImplementTable extends DBTable { // последний интерф
             }
 
             // неправильная статистика
+            Stat rowStat = statKeys.getRows();
             distinctStat = distinctStat.min(rowStat);
             if (notNullStat != null) {
                 notNullStat = notNullStat.min(rowStat);

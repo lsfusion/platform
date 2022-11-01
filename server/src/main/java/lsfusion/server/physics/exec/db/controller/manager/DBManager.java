@@ -1760,13 +1760,13 @@ public class DBManager extends LogicsManager implements InitializingBean {
         startLogger.info(String.format("Update Aggregation Stats started: %s", table));
         
         table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, false);
-        ImplementTable.CalcStat calculateStatResult = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
+        ImMap<String, Pair<Integer, Integer>> propsStat = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
         apply(session);
         
         long time = System.currentTimeMillis() - start;
         startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
             
-        table.updateStat(calculateStatResult.props, fields.keys(), false);
+        table.updateStat(propsStat, fields.keys(), false);
     }
 
     private void migrateReflectionProperties(DataSession session, OldDBStructure oldDBStructure) {
