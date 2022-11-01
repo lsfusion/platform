@@ -182,8 +182,7 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t
                                          OR CHANGED (active(t))) OR
                                                 (((CHANGED (active(ScheduledTaskDetail td)) OR CHANGED (order(td)) OR CHANGED(script(td)) 
                                          OR CHANGED (scheduledTask(td)) OR CHANGED (action(td)) 
-                                         OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
-                                         AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
+                                         OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))) AND scheduledTask(td)==t) OR 
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                                 
 executeScheduledTask '{scheduler.execute.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.ExecuteScheduledTaskAction' (ScheduledTask) CONFIRM;                                                                                                                                 
