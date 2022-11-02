@@ -2368,14 +2368,20 @@ public class BaseUtils {
 
     public static Locale defaultFormatLocale;
     private static String getSystemDateFormat(int style, boolean date)  {
+        Locale locale = nvl(defaultFormatLocale, Locale.getDefault(Locale.Category.FORMAT));
         try {
             DateFormatProvider provider = ReflectionUtils.getMethodValue(ReflectionUtils.classForName("sun.util.locale.provider.HostLocaleProviderAdapterImpl"),
                     null, "getDateFormatProvider", new Class[]{}, new Object[]{});
-            Locale locale = nvl(defaultFormatLocale, Locale.getDefault(Locale.Category.FORMAT));
-            return ((SimpleDateFormat) (date ? provider.getDateInstance(style, locale) : provider.getTimeInstance(style, locale))).toPattern();
+            String formatPattern = ((SimpleDateFormat) (date ? provider.getDateInstance(style, locale) : provider.getTimeInstance(style, locale))).toPattern();
+
+            //windows time format sometimes contains "aa" as AM / PM marker but DateTimeFormatter in TFormats support only one "a" letter in time / dateTime formats.
+            if (formatPattern.matches(".* ?(aa)"))
+                formatPattern = formatPattern.replace("aa", "a");
+
+            return formatPattern;
         } catch(Exception e) {
             //openJDK has no getDateFormatProvider method
-            return ((SimpleDateFormat) (date ? DateFormat.getDateInstance(DateFormat.SHORT) : DateFormat.getTimeInstance(DateFormat.SHORT))).toPattern();
+            return ((SimpleDateFormat) (date ? DateFormat.getDateInstance(DateFormat.SHORT, locale) : DateFormat.getTimeInstance(DateFormat.SHORT, locale))).toPattern();
         }
     }
 
