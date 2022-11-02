@@ -57,7 +57,7 @@ public class SessionDataProperty extends DataProperty {
 
     @Override
     public String getChangeExtSID() {
-        return "sys" + hashCode(); // тут можно было бы сигнатуру вставить
+        return "SESSIONDATA"; // + hashCode(); // тут можно было бы сигнатуру вставить
     }
 }
 

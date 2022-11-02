@@ -72,7 +72,11 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         synchronized (cacheClasses) {
             PropertyImplement<P, ValueClass> implement = (PropertyImplement<P, ValueClass>) cacheClasses.get(multiClasses);
             if(implement==null) {
-                PropertyRevImplement<?, T> classImplement = PropertyFact.createCProp(LogicalClass.instance, true, classes);
+                PropertyRevImplement<?, T> classImplement;
+                if(classes.size() == 0)
+                    classImplement = PropertyFact.createTrue().mapRevImplement(MapFact.EMPTYREV());
+                else
+                    classImplement = PropertyFact.createCProp(LocalizedString.NONAME, classes);
                 cacheClasses.exclAdd(multiClasses, classImplement.mapImplement(classes));
                 return classImplement;
             } else
