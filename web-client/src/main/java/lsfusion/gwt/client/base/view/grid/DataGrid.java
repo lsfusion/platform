@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static java.lang.Math.min;
-import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 
 public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeListener, HasMaxPreferredSize {
 
@@ -152,7 +151,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return event -> {
             calcLeftNeighbourRightBorder(true);
             checkSelectedRowVisible();
+            
+            updateScrolledState();
         };
+    }
+    
+    private void updateScrolledState() {
+        int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
+        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 0);
+        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight());
     }
 
     private static Set<String> browserKeyEvents;
@@ -1163,6 +1170,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private void afterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
         if (pendingState.top != null) {
             tableContainer.setVerticalScrollPosition(pendingState.top);
+            
+            updateScrolledState();
         }
     }
 

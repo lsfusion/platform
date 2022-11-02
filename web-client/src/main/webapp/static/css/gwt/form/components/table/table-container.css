@@ -2,3 +2,15 @@
 .tableContainer {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
+
+ /*Hide scrollbar for Chrome, Safari and Opera */
+/*.tableContainer::-webkit-scrollbar {*/
+/*    display: none;*/
+/*}*/
+
+/* Hide scrollbar for IE, Edge and Firefox */
+/*.tableContainer {*/
+/*    -ms-overflow-style: none;  !* IE and Edge *!*/
+/*    scrollbar-width: none;  !* Firefox *!*/
+/*}*/
+

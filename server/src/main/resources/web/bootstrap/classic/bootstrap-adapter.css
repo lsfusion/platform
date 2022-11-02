@@ -107,3 +107,9 @@
 .table .property-toolbar-item.background-inherit:hover {
     background-color: var(--component-hover-background-color-rgba);
 }
+
+.scrolled-down .dataGridHeaderRow,
+.scrolled-up .dataGridFooterRow {
+    box-shadow: 0 0 6px 1px rgb(32 33 36 / 28%); /* Google color */
+    /*box-shadow: 0 0 6px 1px var(--grid-separator-border-color);*/
+}
