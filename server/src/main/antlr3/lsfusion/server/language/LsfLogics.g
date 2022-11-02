@@ -1859,10 +1859,12 @@ aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean in
 @init {
     List<TypedParameter> groupContext = new ArrayList<>(context);
     DebugInfo.DebugPoint classDebugPoint, exprDebugPoint;
+
+    DebugInfo.DebugPoint aggrDebugPoint = getEventDebugPoint();
 }
 @after {
 	if (inMainParseState()) {
-		LPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, classDebugPoint, exprDebugPoint, innerPD);
+		LPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, classDebugPoint, exprDebugPoint, aggrDebugPoint, innerPD);
 		$property = ci.property;
 		$usedContext = ci.usedContext;		
 		$signature = ci.signature;

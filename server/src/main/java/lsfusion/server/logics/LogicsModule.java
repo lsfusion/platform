@@ -1244,7 +1244,7 @@ public abstract class LogicsModule {
 
         assert initial.property.getType() instanceof IntegralClass == (step.property.getType() instanceof IntegralClass);
         if(!(initial.property.getType() instanceof IntegralClass) && (cycle == Cycle.NO || (cycle==Cycle.IMPOSSIBLE && persistent))) {
-            PropertyMapImplement<?, PropertyInterface> one = createStatic(1L, LongClass.instance);
+            PropertyMapImplement<?, PropertyInterface> one = PropertyFact.createOne();
             initial = createAnd(innerInterfaces.getSet(), one, initial);
             step = createAnd(innerInterfaces.getSet(), one, step);
         }
@@ -2176,12 +2176,9 @@ public abstract class LogicsModule {
             action.addAfterAspect(aspect);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, Integer... mapping) {
-        follows(first, null, ListFact.toList(new PropertyFollowsDebug(true, null), new PropertyFollowsDebug(false, null)), Event.APPLY, second, mapping);
-    }
-
-    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(final LP<T> first, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event, LP<L> second, final Integer... mapping) {
-        addFollows(first.property, new PropertyMapImplement<>(second.property, second.getRevMap(first.listInterfaces, mapping)), debugPoint, options, event);
+    protected <L extends PropertyInterface, T extends PropertyInterface> void addFollows(final LP<T> first, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event, LP<L> second, LocalizedString caption, final Integer... mapping) {
+        addFollows(first.property, new PropertyMapImplement<L, T>(second.property, second.getRevMap(first.listInterfaces, mapping)),
+                caption, debugPoint, options, event);
     }
 
     public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(Property<T> property, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event) {
@@ -2197,7 +2194,7 @@ public abstract class LogicsModule {
     }
 
     public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event) {
-        addFollows(property, implement, LocalizedString.create("{logics.property.violated.consequence.from}" + "(" + this + ") => (" + implement.property + ")"), debugPoint, options, event);
+        addFollows(property, implement, LocalizedString.create("{logics.property.violated.consequence.from}" + "(" + property + ") => (" + implement.property + ")"), debugPoint, options, event);
     }
 
     public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, LocalizedString caption, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event) {

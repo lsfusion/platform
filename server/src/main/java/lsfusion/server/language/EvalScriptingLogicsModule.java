@@ -93,7 +93,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
 
     @Override
     public LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr, 
-                                                  DebugInfo.DebugPoint classDebugPoint, DebugInfo.DebugPoint exprDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+                                                  DebugInfo.DebugPoint classDebugPoint, DebugInfo.DebugPoint exprDebugPoint, DebugInfo.DebugPoint aggrDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("AGGR operator");
         return null;
     }

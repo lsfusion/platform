@@ -11,16 +11,20 @@ public class DebugInfo {
         public final int line;
         public final int offset;
         public boolean isInsideNonEnabledMeta;
+
+        public final int globalLine; // as if all meta codes are expanded
         
         public String topName;
         public LocalizedString topCaption;
         
-        public DebugPoint(String moduleName, String path, int line, int offset, boolean isInsideNonEnabledMeta, String topName, LocalizedString topCaption) {
+        public DebugPoint(String moduleName, String path, int line, int offset, boolean isInsideNonEnabledMeta, int globalLine, String topName, LocalizedString topCaption) {
             this.moduleName = moduleName;
             this.path = path;
             this.line = line;
             this.offset = offset;
             this.isInsideNonEnabledMeta = isInsideNonEnabledMeta;
+
+            this.globalLine = globalLine;
             
             this.topName = topName;
             this.topCaption = topCaption;

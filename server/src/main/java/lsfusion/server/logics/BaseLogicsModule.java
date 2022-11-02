@@ -725,8 +725,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @Override
     @IdentityStrongLazy
     public <P extends PropertyInterface> LP addCProp(StaticClass valueClass, Object value) {
-        PropertyRevImplement<P, Integer> implement = (PropertyRevImplement<P, Integer>) PropertyFact.createCProp(LocalizedString.NONAME, valueClass, value, MapFact.<Integer, ValueClass>EMPTY());
-        return addProperty(null, new LP<>(implement.property, ListFact.fromIndexedMap(implement.mapping.reverse())));
+        return addProperty(null, new LP<>(PropertyFact.createStatic(value, valueClass).property));
     }
 
     @Override
