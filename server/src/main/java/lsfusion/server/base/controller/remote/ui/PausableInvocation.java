@@ -1,16 +1,11 @@
 package lsfusion.server.base.controller.remote.ui;
 
-import com.google.common.base.Throwables;
+import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteObject;
 import lsfusion.server.base.controller.stack.ExecutionStackAspect;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.physics.admin.log.ServerLoggers;
-import lsfusion.server.physics.admin.profiler.ExecutionTimeCounter;
-import lsfusion.server.physics.admin.profiler.Profiler;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.*;
 
 public abstract class PausableInvocation<T, E extends Exception> implements Callable<T> {
 
@@ -21,9 +16,8 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
     private Future<?> invocationFuture;
     
     //т.к. это просто вспомогательный объект, то достаточно одного статического
-    private final static Object syncObject = new Object();
-    private final SynchronousQueue syncMain = new SynchronousQueue();
-    private final SynchronousQueue syncInvocation = new SynchronousQueue();
+    private final Object syncMain = new Object();
+    private final Object syncInvocation = new Object();
 
     /**
      * @param invocationsExecutor
@@ -37,33 +31,22 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
         return sid;
     }
 
-    /**
-     * Должно вызываться в основном потоке
-     */
+    // should be called from the remote call (main) thread
     public final T execute() throws E {
         invocationFuture = invocationsExecutor.submit(() -> {
-            try {
-                blockInvocation();
-            } catch (InterruptedException e) {
-                throw Throwables.propagate(e);
-            }
-            
             ServerLoggers.pausableLog("Run invocation: " + sid);
 
+            InvocationResult result;
             try {
                 runInvocation();
-                invocationResult = InvocationResult.FINISHED;
+                result = InvocationResult.FINISHED;
                 ServerLoggers.pausableLog("Invocation " + sid + " finished");
             } catch (Throwable t) {
-                invocationResult = new InvocationResult(t);
+                result = new InvocationResult(t);
                 ServerLoggers.pausableLog("Invocation " + sid + " thrown an exception: ", t);
             }
 
-            try {
-                releaseMain();
-            } catch (InterruptedException e) {
-                throw Throwables.propagate(e);
-            }
+            releaseMain(result);
         });
 
         return resume();
@@ -98,22 +81,22 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
      */
     protected abstract T handlePaused() throws E;
 
-    /**
-     * Должно вызываться в основном потоке <br/>
-     */
-    public final T resume() throws E {
-        try {
-            releaseInvocation();
-            blockMain();
-        } catch (InterruptedException e) {
-            throw Throwables.propagate(e);
-        }
+    // should be called from the remote call (main) thread
+    public final T resumeAfterPause() throws E {
+        releaseInvocation();
 
-        switch (invocationResult.getStatus()) {
+        return resume();
+    }
+
+    // should be called from the remote call (main) thread
+    public final T resume() throws E {
+        InvocationResult result = blockMain();
+
+        switch (result.getStatus()) {
             case PAUSED:
                 return handlePaused();
             case EXCEPTION_THROWN:
-                return handleThrows(invocationResult.getThrowable());
+                return handleThrows(result.getThrowable());
             case FINISHED:
                 return handleFinished();
             default:
@@ -121,53 +104,64 @@ public abstract class PausableInvocation<T, E extends Exception> implements Call
         }
     }
 
-    /**
-     * Должно вызываться в рабочем потоке. <br/>
-     */
-    public final void pause() throws InterruptedException {
-        invocationResult = InvocationResult.PAUSED;
+    // should be called from the worker (invocation) thread
+    public final void pause() {
+        releaseMain(InvocationResult.PAUSED);
 
-        releaseMain();
         blockInvocation();
     }
 
-    public final boolean isPaused() {
-        return invocationResult == InvocationResult.PAUSED;
+    // should be called from the remote call (main) thread
+    private InvocationResult blockMain() {
+        ExecutionStackAspect.take(getRemoteObject(), () -> {
+            synchronized (syncMain) {
+                while(invocationResult == null) // releaseMain hasn't already been called
+                    syncMain.wait();
+            }
+        });
+
+        // should not be synchronized because it can be set to null, only in remote call (main) thread, i.e. this thread
+        ServerLoggers.assertLog(invocationResult != null, "SHOULD HAVE INVOCATION RESULT");
+        return invocationResult;
     }
 
-    private void blockMain() throws InterruptedException {
-        blockSync(syncMain);
+    // should be called from the worker (invocation) thread
+    private void releaseMain(InvocationResult result) {
+        ServerLoggers.assertLog(result != null && invocationResult == null, "SHOULD HAVE NO INVOCATION RESULT");
+        invocationResult = result;
+
+        ExecutionStackAspect.take(getRemoteObject(), () -> {
+            synchronized (syncMain) {
+                syncMain.notifyAll();
+            }
+        });
     }
 
-    private void releaseMain() throws InterruptedException {
-        releaseSync(syncMain);
+    // should be called from the worker (invocation) thread
+    private void blockInvocation() {
+        ExecutionStackAspect.take(getRemoteObject(), () -> {
+            synchronized (syncInvocation) {
+                while(invocationResult != null) { //releaseInvocation has not been called
+                    ServerLoggers.assertLog(invocationResult == InvocationResult.PAUSED, "SHOULD BE PAUSED");
+
+                    syncInvocation.wait();
+                }
+            }
+        });
     }
 
-    private void blockInvocation() throws InterruptedException {
-        blockSync(syncInvocation);
+    // should be called from the remote call (main) thread
+    private void releaseInvocation() {
+        ServerLoggers.assertLog(invocationResult == InvocationResult.PAUSED, "SHOULD BE PAUSED");
+        invocationResult = null;
+
+        ExecutionStackAspect.take(getRemoteObject(), () -> {
+            synchronized (syncInvocation) {
+                syncInvocation.notifyAll();
+            }
+        });
     }
 
-    private void releaseInvocation() throws InterruptedException {
-        releaseSync(syncInvocation);
-    }
-    
-    protected abstract boolean isDeactivating();
+    protected abstract ContextAwarePendingRemoteObject getRemoteObject();
 
-    private void blockSync(SynchronousQueue sync) throws InterruptedException {
-        try {
-            ExecutionStackAspect.take(sync);
-        } catch (InterruptedException e) {
-            ServerLoggers.assertLog(isDeactivating(), "SHOULD NOT BE INTERRUPTED"); // не должен прерываться так как нарушит синхронизацию main - invocation
-            throw e;
-        }
-    }
-
-    private void releaseSync(SynchronousQueue sync) throws InterruptedException {
-        try {
-            sync.put(syncObject); // тут по идее release должен сразу выйти и ничего не ждать (может быть проблема если interrupt'ся take, но непонятно что с этим в принципе делать)
-        } catch (InterruptedException e) {
-            ServerLoggers.assertLog(invocationsExecutor != null && invocationsExecutor.isShutdown(), "SHOULD NOT BE INTERRUPTED"); // shouldn't be interrupted because it will break main - invocation synchronization
-            throw e;
-        }
-    }
 }

@@ -20,13 +20,6 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
 
     private final long requestIndex;
 
-    /**
-     * @param invocationsExecutor
-     */
-    public RemotePausableInvocation(ExecutorService invocationsExecutor, ContextAwarePendingRemoteObject remoteObject) {
-        this(-1, null, invocationsExecutor, remoteObject);
-    }
-
     public RemotePausableInvocation(long requestIndex, String sid, ExecutorService invocationsExecutor, ContextAwarePendingRemoteObject remoteObject) {
         super(sid, invocationsExecutor);
         this.requestIndex = requestIndex;
@@ -73,14 +66,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
         int neededActionResultsCnt = actions.length;
         Collections.addAll(delayedActions, actions);
 
-        try {
-            pause();
-        } catch (InterruptedException e) {
-            if (ServerLoggers.isPausableLogEnabled()) {
-                ServerLoggers.pausableLog("Interaction " + sid + " was interrupted");
-            }
-            throw Throwables.propagate(e);
-        }
+        pause();
 
         if (clientThrowable != null) {
             Throwable t = clientThrowable;
@@ -95,23 +81,19 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * основной поток
      */
     public final ServerResponse resumeAfterUserInteraction(Object[] actionResults) throws RemoteException {
-        Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
-
-        if (ServerLoggers.isPausableLogEnabled()) {
+        if (ServerLoggers.isPausableLogEnabled())
             ServerLoggers.pausableLog("Interaction " + sid + " resumed after userInteraction: " + Arrays.toString(actionResults));
-        }
 
         this.actionResults = actionResults;
-        return resume();
+        return resumeAfterPause();
     }
 
     public final ServerResponse resumeWithThrowable(Throwable clientThrowable) throws RemoteException {
-        Preconditions.checkState(isPaused(), "can't resume after user interaction - wasn't paused for user interaction");
-
-        ServerLoggers.pausableLog("Interaction " + sid + " thrown client exception: ", clientThrowable);
+        if (ServerLoggers.isPausableLogEnabled())
+            ServerLoggers.pausableLog("Interaction " + sid + " thrown client exception: ", clientThrowable);
 
         this.clientThrowable = clientThrowable;
-        return resume();
+        return resumeAfterPause();
     }
 
     /**
@@ -181,7 +163,7 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
     }
 
     @Override
-    protected boolean isDeactivating() {
-        return remoteObject.isDeactivating();
+    protected ContextAwarePendingRemoteObject getRemoteObject() {
+        return remoteObject;
     }
 }
