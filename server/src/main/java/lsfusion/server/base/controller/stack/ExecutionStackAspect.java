@@ -1,5 +1,6 @@
 package lsfusion.server.base.controller.stack;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.ReflectionUtils;
@@ -29,7 +30,6 @@ import org.aspectj.lang.annotation.Aspect;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -65,7 +65,7 @@ public class ExecutionStackAspect {
         return result;
     }
 
-    public static void take(ExceptionRunnable<InterruptedException> runnable) throws InterruptedException {
+    public static void take(ContextAwarePendingRemoteObject remoteObject, ExceptionRunnable<InterruptedException> runnable) {
         long startTime = 0;
         ExecutionTimeCounter counter = ExecutionStackAspect.executionTime.get();
         if (counter != null)
@@ -73,13 +73,13 @@ public class ExecutionStackAspect {
 
         try {
             runnable.run();
+        } catch (InterruptedException e) {
+            ServerLoggers.assertLog(remoteObject.isDeactivating(), "SHOULD NOT BE INTERRUPTED"); // shouldn't be interrupted because it will break main - invocation synchronization
+            throw Throwables.propagate(e);
         } finally {
             if (counter != null)
                 counter.addUI(System.nanoTime() - startTime);
         }
-    }
-    public static void take(BlockingQueue sync) throws InterruptedException {
-        take(sync::take);
     }
 
     public static String getActionMessage(Set<Thread> threads) {
