@@ -2906,6 +2906,16 @@ public class Settings implements Cloneable {
         this.logExternalHttpServerBody = logExternalHttpServerBody;
     }
 
+    private boolean disableAsyncValuesInterrupt = false;
+
+    public boolean isDisableAsyncValuesInterrupt() {
+        return disableAsyncValuesInterrupt;
+    }
+
+    public void setDisableAsyncValuesInterrupt(boolean disableAsyncValuesInterrupt) {
+        this.disableAsyncValuesInterrupt = disableAsyncValuesInterrupt;
+    }
+
     private int mailImapTimeout = 5000; //ms
 
     public int getMailImapTimeout() {

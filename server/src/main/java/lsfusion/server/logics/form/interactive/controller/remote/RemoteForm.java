@@ -762,7 +762,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             Result<String> actualValue = new Result<>(value);
             synchronized (asyncLock) { // we check asyncLastIndex even for pessimistic requests since we don't want useless requests
                 if (asyncIndex >= asyncLastIndex) {
-                    if (asyncLastThread != null)
+                    if (asyncLastThread != null && !Settings.get().isDisableAsyncValuesInterrupt())
                         ThreadUtils.interruptThread(getContext(), asyncLastThread);
                     asyncLastIndex = asyncIndex;
                 } else
