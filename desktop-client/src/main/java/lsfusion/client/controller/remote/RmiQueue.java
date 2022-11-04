@@ -503,7 +503,9 @@ public class RmiQueue implements DispatcherListener {
     }
 
     private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request) {
-        return createRmiFuture(request, false);
+        RmiFuture<T> rmiFuture = createRmiFuture(request, false);
+        rmiFuture.setFirst(true);
+        return rmiFuture;
     }
 
     private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request, boolean preProceed) {
