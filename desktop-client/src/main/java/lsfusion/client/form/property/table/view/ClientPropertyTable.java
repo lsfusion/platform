@@ -347,11 +347,22 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         resizeAndRepaint();
     }
 
+    //If the click in the table has triggered a dialog, the processing of the click will continue after the dialog
+    //is closed. If the cursor position changes during this time, the MOUSE_DRAGGED event will occur.
+    //Need to supress changeSelection on MOUSE_DRAGGED
+    protected boolean supressDragging = false;
+
     @Override
     protected void processMouseEvent(MouseEvent e) {
         checkMouseEvent(e, true);
 
         super.processMouseEvent(e);
+
+        if (e.getID() == MouseEvent.MOUSE_PRESSED && !e.getLocationOnScreen().equals(MouseInfo.getPointerInfo().getLocation())) {
+            supressDragging = true;
+        } else if (e.getID() == MouseEvent.MOUSE_RELEASED) {
+            supressDragging = false;
+        }
 
         checkMouseEvent(e, false);
     }

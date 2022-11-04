@@ -976,7 +976,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        if (isInternalNavigating || isCellFocusable(rowIndex, columnIndex)) {
+        if (!supressDragging && (isInternalNavigating || isCellFocusable(rowIndex, columnIndex))) {
             if (!properties.isEmpty() && model.getColumnCount() > 0) {
                 if (rowIndex >= getRowCount()) {
                     changeSelection(getRowCount() - 1, columnIndex, toggle, extend);
