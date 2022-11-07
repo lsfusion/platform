@@ -3038,7 +3038,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return new Pair<>(new LPWithParams(ci.property, ci.usedContext), null);
     }
 
-    public LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr, DebugInfo.DebugPoint classDebugPoint, DebugInfo.DebugPoint exprDebugPoint, DebugInfo.DebugPoint aggrDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+    public LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr, boolean showRec, DebugInfo.DebugPoint classDebugPoint, DebugInfo.DebugPoint exprDebugPoint, DebugInfo.DebugPoint aggrDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNoInline(innerPD);
 
         LP<?> whereLP = whereExpr.getLP();
@@ -3073,16 +3073,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         LocalizedString details = LocalizedString.concatList(aggClass.toString() + " WHERE ", whereLP.property.localizedToString());
 
 //        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // добавление
-        addScriptedAGFollows(whereLP, new LPWithParams(lcp, whereExpr), true, classDebugPoint, aggrDebugPoint, details);
+        addScriptedAGFollows(whereLP, new LPWithParams(lcp, whereExpr), true, showRec, classDebugPoint, aggrDebugPoint, details);
 
 //        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // удаление
-        addScriptedAGFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), false, exprDebugPoint, aggrDebugPoint, details);
+        addScriptedAGFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), false, showRec, exprDebugPoint, aggrDebugPoint, details);
 
         return new LPContextIndependent(lcp, resultSignature, Collections.emptyList());
     }
 
-    private void addScriptedAGFollows(LP mainProp, LPWithParams rightProp, boolean isTrue, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint aggrDebugPoint, LocalizedString details) {
-        addScriptedFollows(mainProp, rightProp, singletonList(new PropertyFollowsDebug(isTrue, debugPoint)), Event.APPLY, aggrDebugPoint,
+    private void addScriptedAGFollows(LP mainProp, LPWithParams rightProp, boolean isTrue, boolean showRec, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint aggrDebugPoint, LocalizedString details) {
+        addScriptedFollows(mainProp, rightProp, singletonList(new PropertyFollowsDebug(isTrue, debugPoint)), Event.APPLY, showRec, aggrDebugPoint,
                 isTrue ? LocalizedString.create("{logics.property.violated.aggr.new}") : LocalizedString.create("{logics.property.violated.aggr.delete}"), details);
     }
 
@@ -4578,16 +4578,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
-        addScriptedFollows(mainProp, rightProp, resolveOptions, event, debugPoint,
+        addScriptedFollows(mainProp, rightProp, resolveOptions, event, false, debugPoint,
                 LocalizedString.create("{logics.property.violated.consequence.from}"), LocalizedString.concatList(mainProp.property.localizedToString(), " => ",  rightProp.getLP().property.localizedToString()));
     }
 
-    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, Event event, DebugInfo.DebugPoint debugPoint, LocalizedString caption, LocalizedString details) {
+    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, Event event, boolean showRec, DebugInfo.DebugPoint debugPoint, LocalizedString caption, LocalizedString details) {
         Integer[] params = new Integer[rightProp.usedParams.size()];
         for (int j = 0; j < params.length; j++) {
             params[j] = rightProp.usedParams.get(j) + 1;
         }
-        addFollows(mainProp, debugPoint, ListFact.fromJavaList(resolveOptions), event, rightProp.getLP(),
+        addFollows(mainProp, debugPoint, ListFact.fromJavaList(resolveOptions), event, showRec, rightProp.getLP(),
                 LocalizedString.concatList(caption, ": " + debugPoint.toString() + "\n", LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details), params);
     }
 
@@ -4615,14 +4615,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return props;
     }
 
-    public void addScriptedEvent(LPWithParams whenProp, LAWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedEvent(LPWithParams whenProp, LAWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, boolean showRec) throws ScriptingErrorLog.SemanticErrorException {
         if(noInline==null) {
             noInline = new ArrayList<>();
             for(Integer usedParam : whenProp.usedParams)
                 noInline.add(new LPWithParams(usedParam));
         }
         List<Object> params = getParamsPlainList(asList(event, whenProp), orders, noInline);
-        addEventAction(baseEvent, descending, false, noInline.size(), forceInline, debugPoint, params.toArray());
+        addEventAction(baseEvent, descending, false, noInline.size(), forceInline, showRec, debugPoint, params.toArray());
     }
 
     public void addScriptedGlobalEvent(LAWithParams event, Event baseEvent, boolean single, ActionOrPropertyUsage showDep) throws ScriptingErrorLog.SemanticErrorException {

@@ -409,6 +409,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     public boolean singleApply = false;
     public boolean resolve = false;
+    public Property<?> showRec = null;
     public boolean hasResolve() {
         return getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && resolve;
     }

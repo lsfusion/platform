@@ -1861,10 +1861,12 @@ aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean in
     DebugInfo.DebugPoint classDebugPoint, exprDebugPoint;
 
     DebugInfo.DebugPoint aggrDebugPoint = getEventDebugPoint();
+
+    boolean showRec = false;
 }
 @after {
 	if (inMainParseState()) {
-		LPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, classDebugPoint, exprDebugPoint, aggrDebugPoint, innerPD);
+		LPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, showRec, classDebugPoint, exprDebugPoint, aggrDebugPoint, innerPD);
 		$property = ci.property;
 		$usedContext = ci.usedContext;		
 		$signature = ci.signature;
@@ -1876,6 +1878,7 @@ aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean in
 	    'WHERE'
 	    { exprDebugPoint = getEventDebugPoint(); }
 	    whereExpr=propertyExpression[context, dynamic]
+		('SHOWREC' { showRec = true; } )?
 	;
 	
 groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
@@ -4517,6 +4520,8 @@ eventStatement
 	List<LPWithParams> orderProps = new ArrayList<>();
 	boolean descending = false;
 	DebugInfo.DebugPoint debug = null;
+
+	boolean showRec = false;
 	
 	if (inMainParseState()) {
 		debug = getEventDebugPoint(); 
@@ -4524,7 +4529,7 @@ eventStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedEvent($whenExpr.property, $action.action, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug);
+		self.addScriptedEvent($whenExpr.property, $action.action, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug, showRec);
 	} 
 }
 	:	'WHEN'
@@ -4539,6 +4544,7 @@ eventStatement
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
 		in=inlineStatement[context]
+		('SHOWREC' { showRec = true; } )?
 		'DO'
 		action=endDeclTopContextDependentActionDefinitionBody[context, false, false]
 		{
