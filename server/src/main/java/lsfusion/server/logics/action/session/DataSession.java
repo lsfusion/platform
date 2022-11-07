@@ -312,6 +312,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private void endTransaction() throws SQLException {
         applyTransaction = null;
         isInTransaction = false;
+
+        showRecs.clear();
         
         rollbackInfo.clear();
         keepUpProps = null;
@@ -712,7 +714,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         if(updateProperties(resultChanges, updateChanges))
-            aspectAfterChange();
+            aspectAfterChange(resultChanges);
     }
 
     public static void delegateToDebugger(ImSet<CustomClass> addClasses, ImSet<CustomClass> removeClasses) throws SQLException, SQLHandledException {
@@ -826,13 +828,15 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         if(updateProperties(property, changed, updateChanges))
-            aspectAfterChange();
+            aspectAfterChange(MapFact.singleton(property, changed));
     }
 
-    private void aspectAfterChange() throws SQLException, SQLHandledException {
+    private <R extends PropertyInterface> void aspectAfterChange(ImMap<Property, UpdateResult> changes) throws SQLException, SQLHandledException {
         if (!isStoredDataChanged && hasStoredChanges()) {
             setIsDataChangedProperty();
         }
+
+        checkShowRec(changes);
     }
 
     private void setIsDataChangedProperty() throws SQLException, SQLHandledException {
@@ -1027,11 +1031,74 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         action.execute(env, stack);
     }
 
+    private static class ShowRec<T extends PropertyInterface> {
+        public final Property<T> property;
+        public final Action eventAction;
+        public ImSet<ImMap<T, DataObject>> rows;
+
+        public ShowRec(Property<T> property, Action eventAction, ImSet<ImMap<T, DataObject>> rows) {
+            this.property = property;
+            this.eventAction = eventAction;
+            this.rows = rows;
+        }
+    }
+    private final List<ShowRec> showRecs = new ArrayList<>();
+
+    private void startShowRec(Action action) throws SQLException, SQLHandledException {
+        Property<PropertyInterface> showRec = action.showRec;
+        if(showRec != null) // assert that hasChanges - see getNextApplyEvent
+            showRecs.add(new ShowRec(showRec, action, readShowRec(showRec)));
+    }
+
+    private <T extends PropertyInterface> ImSet<ImMap<T, DataObject>> readShowRec(Property<T> showRec) throws SQLException, SQLHandledException {
+        return showRec.readAllClasses(this).keys();
+    }
+
+//    private static <R extends PropertyInterface> String resultToString(Property<R> property, ImSet<ImMap<R, DataObject>> rows) {
+//        ImOrderSet<R> interfaces = property.getFriendlyOrderInterfaces();
+//        return SQLQuery.resultToString(rows.mapValues(MapFact::EMPTY).toOrderMap(), interfaces.toRevMap(), MapFact.EMPTYREV(), property.interfaceTypeGetter::getType, inter -> null);
+//    }
+    private <R extends PropertyInterface> void checkShowRec(ImMap<Property, UpdateResult> property) throws SQLException, SQLHandledException {
+        for (Iterator<ShowRec> iterator = showRecs.iterator(); iterator.hasNext(); ) {
+            ShowRec<R> showRec = iterator.next();
+
+            if(Property.depends(showRec.property, (SFunctionSet<Property>) element -> { // optimization check
+                UpdateResult modifyResult = property.get(element);
+                return modifyResult != null && modifyResult.dataChanged();
+            })) {
+                ImSet<ImMap<R, DataObject>> newRows = readShowRec(showRec.property);
+                ImSet<ImMap<R, DataObject>> oldRows = showRec.rows;
+
+                Result<ImSet<ImMap<R, DataObject>>> restNewRows = new Result<>();
+                Result<ImSet<ImMap<R, DataObject>>> restOldRows = new Result<>();
+                newRows.split(oldRows, restNewRows, restOldRows);
+                if(!restNewRows.result.isEmpty() || !restOldRows.result.isEmpty()) {
+                    String info = "RECURSIVE EVENT:\n" + showRec.eventAction;
+
+                    info += "\n\tObjects:" +
+                            "\n\t\tNew:\n" + restNewRows.result.toString("\n") +
+                            "\n\t\tDelete:\n" + restOldRows.result.toString("\n");
+
+                    info += "\n\tStack:\n" +
+                            ExecutionStackAspect.getStackString();
+                    if (Settings.get().isExplainJavaStack())
+                        info += "\n" + ExceptionUtils.getStackTrace();
+
+                    ServerLoggers.systemLogger.info(info);
+                }
+
+                showRec.rows = newRows;
+            }
+        }
+    }
+
     @StackMessage("{message.global.event.exec}")
     @ThisMessage (profile = false)
     private boolean executeGlobalActionEvent(ExecutionStack stack, BusinessLogics BL, @ParamMessage ApplyGlobalActionEvent event) throws SQLException, SQLHandledException {
         if(!noEventsInTransaction) {
             startPendingSingles(event.action);
+
+            startShowRec(event.action);
 
             event.action.execute(this, stack);
 
