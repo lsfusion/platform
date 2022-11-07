@@ -904,7 +904,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 return result;
 
             // we'll use global line number to make it independent of the fact if the metacodes are enabled
-            result = Integer.compare(point1.line, point2.line);
+            result = Integer.compare(point1.globalLine, point2.globalLine);
             if(result != 0)
                 return result;
 
