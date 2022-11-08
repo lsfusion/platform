@@ -277,7 +277,7 @@ public class EmailReceiver {
             int folderClosedCount = 0;
             while (count <= messageCount && (maxMessages == null || dataEmails.size() < maxMessages)) {
                 try {
-                    ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
+                    ServerLoggers.mailLogger.debug(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
                     Message message = messages[messageCount - count];
 
                     String uid = getMessageUID(emailFolder, message);
