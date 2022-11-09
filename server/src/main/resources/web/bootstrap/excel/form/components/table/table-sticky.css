@@ -3,6 +3,6 @@
 .tableContainerBoxed .dataGridHeaderRow, .tableContainerBoxed .dataGridHeaderRow .background-inherit, .tableContainerBoxed .dataGridHeaderRow.background-inherit  {
     background: var(--background-color);
 }
-.tableContainerBoxed .dataGridFooterRow, .tableContainerBoxed .dataGridFooterRow .background-inherit, .dataGridFooterRow.background-inherit  {
+.tableContainerBoxed .dataGridFooterRow, .tableContainerBoxed .dataGridFooterRow .background-inherit, .tableContainerBoxed .dataGridFooterRow.background-inherit  {
     background: var(--background-color);
 }
