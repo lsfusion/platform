@@ -749,7 +749,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             // however in some cases we might wanna cancel pessimistic requests too (when statement supports that), but it may cause some troubles because there is no transaction, so the consequences are unpredictable (plus it's pretty rare case)
             Supplier<Boolean> setCancelableThread = () -> {
                 synchronized (asyncLock) {
-                    assert asyncIndex <= asyncLastIndex;
+                    ServerLoggers.assertLog(asyncIndex <= asyncLastIndex, "ASYNC INDEX SHOULD BE LESS THAN ASYNC LAST INDEX");
                     if (asyncIndex == asyncLastIndex) {
                         asyncLastThread = Thread.currentThread();
                         return true;
@@ -774,7 +774,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 result = processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
                     // we need to recheck since asyncLastIndex can be updated and we don't need this query anymore (actualValue will be set to null)
                     synchronized (asyncLock) {
-                        assert asyncIndex <= asyncLastIndex;
+                        ServerLoggers.assertLog(asyncIndex <= asyncLastIndex, "ASYNC INDEX SHOULD BE LESS THAN ASYNC LAST INDEX");
                         if (asyncIndex != asyncLastIndex)
                             actualValue.set(null);
                     }
@@ -785,7 +785,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 result = getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, true, setCancelableThread);
 
             synchronized (asyncLock) {
-                assert asyncIndex <= asyncLastIndex;
+                ServerLoggers.assertLog(asyncIndex <= asyncLastIndex, "ASYNC INDEX SHOULD BE LESS THAN ASYNC LAST INDEX");
                 if(asyncLastIndex == asyncIndex)
                     asyncLastThread = null;
             }
