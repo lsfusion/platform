@@ -123,71 +123,69 @@ public class FileUtils {
         if (imageHolder != null) {
             ImageHolder imageDescription = new ImageHolder();
 
-            if(imageHolder.isSvg(ColorTheme.DEFAULT)) {
+            for (GColorTheme gColorTheme : GColorTheme.values()) {
+                ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
 
-                String imageUrl = saveImageFile(imageHolder.getImagePath(ColorTheme.DEFAULT),
-                        fos -> IOUtils.copy(imageHolder.getImage(ColorTheme.DEFAULT).getInputStream(), fos),
-                        ColorTheme.DEFAULT.getID(imageHolder.getImage(ColorTheme.DEFAULT).getID()), settings, false);
+                String imagePath;
+                ImageIcon defaultImageIcon;
+                Supplier<ImageIcon> unanimatedImageIcon = null;
+                String ID;
 
-                for (GColorTheme gColorTheme : GColorTheme.values()) {
-                    imageDescription.addImage(gColorTheme, imageUrl, imageUrl, 16, 16);
-                }
+                RawFileData imageFile = imageHolder.getImage(colorTheme);
 
-            } else {
-                for (GColorTheme gColorTheme : GColorTheme.values()) {
-                    ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
+                String enabledImageUrl = null;
+                String disabledImageUrl = null;
 
-                    String imagePath;
-                    ImageIcon defaultImageIcon;
-                    Supplier<ImageIcon> unanimatedImageIcon = null;
-                    String ID;
+                Integer width = null;
+                Integer height = null;
 
-                    RawFileData imageFile = imageHolder.getImage(colorTheme);
+                if (imageFile == null) {
+                    RawFileData defaultImageFile = imageHolder.getImage(ColorTheme.DEFAULT);
+                    String defaultImagePath = imageHolder.getImagePath(ColorTheme.DEFAULT);
 
-                    String enabledImageUrl = null;
-                    String disabledImageUrl = null;
+                    defaultImageIcon = defaultImageFile.getImageIcon();
+                    ID = colorTheme.getID(defaultImageFile.getID());
+                    imagePath = colorTheme.getImagePath(defaultImagePath);
 
-                    if (imageFile == null) {
-                        RawFileData defaultImageFile = imageHolder.getImage(ColorTheme.DEFAULT);
-                        String defaultImagePath = imageHolder.getImagePath(ColorTheme.DEFAULT);
-
-                        defaultImageIcon = defaultImageFile.getImageIcon();
-                        ID = colorTheme.getID(defaultImageFile.getID());
-                        imagePath = colorTheme.getImagePath(defaultImagePath);
-
-                        if (imageHolder.isGif(ColorTheme.DEFAULT)) {
-                            enabledImageUrl = saveImageFile(imagePath,
-                                    getGifIconSaver(defaultImageFile.getBytes(), true, servletContext, colorTheme),
-                                    ID, settings, false);
-                        } else {
-                            unanimatedImageIcon = () -> ClientColorUtils.createFilteredImageIcon(defaultImageIcon,
-                                    ServerColorUtils.getDefaultThemePanelBackground(servletContext),
-                                    ServerColorUtils.getPanelBackground(servletContext, colorTheme),
-                                    ServerColorUtils.getComponentForeground(servletContext, colorTheme));
-                        }
+                    if (imageHolder.isGif(ColorTheme.DEFAULT)) {
+                        enabledImageUrl = saveImageFile(imagePath, getGifIconSaver(defaultImageFile.getBytes(), true, servletContext, colorTheme), ID, settings, false);
+                    } if(imageHolder.isSvg(ColorTheme.DEFAULT)) {
+                        enabledImageUrl = saveImageFile(defaultImagePath, fos -> IOUtils.copy(defaultImageFile.getInputStream(), fos), ID, settings, false);
+                        disabledImageUrl = enabledImageUrl;
+                        width = 16;
+                        height = 16;
                     } else {
-                        defaultImageIcon = imageFile.getImageIcon();
-                        ID = imageFile.getID();
-                        imagePath = imageHolder.getImagePath(colorTheme);
-                        if (imageHolder.isGif(colorTheme)) {
-                            enabledImageUrl = saveImageFile(imagePath,
-                                    getGifIconSaver(imageFile.getBytes(), false, servletContext, colorTheme),
-                                    ID, settings, false);
-                        } else {
-                            unanimatedImageIcon = () -> defaultImageIcon;
-                        }
+                        unanimatedImageIcon = () -> ClientColorUtils.createFilteredImageIcon(defaultImageIcon, ServerColorUtils.getDefaultThemePanelBackground(servletContext), ServerColorUtils.getPanelBackground(servletContext, colorTheme), ServerColorUtils.getComponentForeground(servletContext, colorTheme));
                     }
-
-                    if (unanimatedImageIcon != null) { // not gif
-                        enabledImageUrl = saveImageFile(imagePath, unanimatedImageIcon, ID, settings, false);
-                        if (canBeDisabled) {
-                            disabledImageUrl = saveImageFile(imagePath, unanimatedImageIcon, ID, settings, true);
-                        }
+                } else {
+                    defaultImageIcon = imageFile.getImageIcon();
+                    ID = imageFile.getID();
+                    imagePath = imageHolder.getImagePath(colorTheme);
+                    if (imageHolder.isGif(colorTheme)) {
+                        enabledImageUrl = saveImageFile(imagePath, getGifIconSaver(imageFile.getBytes(), false, servletContext, colorTheme), ID, settings, false);
+                    } else if (imageHolder.isSvg(colorTheme)) {
+                        enabledImageUrl = saveImageFile(imagePath, fos -> IOUtils.copy(imageFile.getInputStream(), fos), ID, settings, false);
+                        disabledImageUrl = enabledImageUrl;
+                        width = 16;
+                        height = 16;
+                    }else {
+                        unanimatedImageIcon = () -> defaultImageIcon;
                     }
-
-                    imageDescription.addImage(gColorTheme, enabledImageUrl, disabledImageUrl,
-                            defaultImageIcon.getIconWidth(), defaultImageIcon.getIconHeight());
                 }
+
+                if (unanimatedImageIcon != null) { // not gif nor svg
+                    enabledImageUrl = saveImageFile(imagePath, unanimatedImageIcon, ID, settings, false);
+                    if (canBeDisabled) {
+                        disabledImageUrl = saveImageFile(imagePath, unanimatedImageIcon, ID, settings, true);
+                    }
+                }
+
+                if (width == null) { //not svg
+                    width = defaultImageIcon.getIconWidth();
+                    height = defaultImageIcon.getIconHeight();
+                }
+
+                imageDescription.addImage(gColorTheme, enabledImageUrl, disabledImageUrl, width, height);
             }
             return imageDescription;
         }
