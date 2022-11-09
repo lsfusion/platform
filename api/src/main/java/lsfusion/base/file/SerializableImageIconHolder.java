@@ -42,6 +42,10 @@ public class SerializableImageIconHolder implements Serializable {
         return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
     }
 
+    public boolean isSvg(ColorTheme colorTheme) {
+        return "svg".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
+    }
+
 //    private void readObject(ObjectInputStream s) throws ClassNotFoundException, IOException {
 //        images = new HashMap<>();
 //        imagePath = (String) s.readObject();
