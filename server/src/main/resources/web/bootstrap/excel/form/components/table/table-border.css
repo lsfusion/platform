@@ -17,12 +17,12 @@
     --focused-cell-border-color: var(--focus-color);
 }
 
-.dataGridHeaderCell {
+.dataGridHeader:not(.empty-header) .dataGridHeaderCell {
     /* the same as dataGridCell, dataGridHeaderCell, table.pvtTable thead tr th/td */
     border-bottom: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.dataGridFooterCell {
+.dataGridFooter:not(.empty-footer) .dataGridFooterCell {
     border-top: var(--border-width) solid var(--grid-separator-border-color);
 }
 
