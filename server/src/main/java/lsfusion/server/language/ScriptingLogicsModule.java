@@ -4588,7 +4588,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             params[j] = rightProp.usedParams.get(j) + 1;
         }
         addFollows(mainProp, debugPoint, ListFact.fromJavaList(resolveOptions), event, showRec, rightProp.getLP(),
-                LocalizedString.concatList(caption, ": " + debugPoint.toString() + "\n", LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details), params);
+                LocalizedString.concatList(caption, ": " + debugPoint.toString()), LocalizedString.concatList(LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details), params);
     }
 
     public void addScriptedWriteWhen(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {

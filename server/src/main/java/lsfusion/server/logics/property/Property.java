@@ -824,8 +824,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     private MCol<Pair<ActionOrProperty<?>, LinkType>> actionChangeProps; // только у Data и IsClassProperty, чисто для лексикографики
-    public <T extends PropertyInterface> void addActionChangeProp(Pair<ActionOrProperty<T>, LinkType> pair) {
-        ((Action<?>) pair.first).checkRecursiveStrongUsed(this);
+    public <T extends PropertyInterface> void addActionChangeProp(Pair<Action<T>, LinkType> pair) {
+        pair.first.checkRecursiveStrongUsed(this);
 
         if(actionChangeProps==null)
             actionChangeProps = ListFact.mCol();
@@ -1525,7 +1525,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, Event actionEvent, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
         if(actionEvent != null) {
             ActionMapImplement<?, T> setAction = PropertyFact.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, actionEvent, SetFact.EMPTY(), false, false, false, null);
+            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, actionEvent, SetFact.EMPTY(), false, false, false, null, null);
             return;
         }
 

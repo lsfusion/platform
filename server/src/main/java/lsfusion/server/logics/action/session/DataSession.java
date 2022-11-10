@@ -380,7 +380,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         assert o == null;
 
         if(sql.isExplainTemporaryTablesEnabled())
-            SQLSession.fifo.add("DC " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + this + '\n' + ExceptionUtils.getStackTrace());
+            sql.addFifo("DC " + getOwner());
         try {
             dropTables(SetFact.EMPTY());
             sessionEventChangedOld.clear(sql, getOwner());
@@ -517,7 +517,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         registerThreadStack(); // создающий поток также является владельцем сессии
         createdInTransaction = sql.isInTransaction(); // при synchronizeDB есть такой странный кейс
         if(sql.isExplainTemporaryTablesEnabled())
-            SQLSession.fifo.add("DCR " + getOwner() + SQLSession.getCurrentTimeStamp() + " " + sql + '\n' + ExceptionUtils.getStackTrace());
+            sql.addFifo("DCR");
 
         env = new ContextQueryEnvironment(sql.contextProvider, this.owner, isServerRestarting, timeout, form, locale);
     }
