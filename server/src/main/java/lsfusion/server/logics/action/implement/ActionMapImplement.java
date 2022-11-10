@@ -28,6 +28,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.debug.DebugInfo;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
 
@@ -50,8 +51,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return new ActionMapImplement<>(action, mapping.join(remap));
     }
 
-    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, PropertyMapImplement<L, T> where, Event event, boolean resolve, boolean showRec, DebugInfo.DebugPoint debugInfo) {
-        lm.addEventAction(action, where.map(mapping.reverse()), MapFact.EMPTYORDER(), false, event, resolve, showRec, debugInfo);
+    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, PropertyMapImplement<L, T> where, Event event, boolean resolve, boolean showRec, DebugInfo.DebugPoint debugInfo, LocalizedString debugCaption) {
+        lm.addEventAction(action, where.map(mapping.reverse()), MapFact.EMPTYORDER(), false, event, resolve, showRec, debugInfo, debugCaption);
     }
 
     public ActionObjectEntity<P> mapObjects(ImRevMap<T, ObjectEntity> mapObjects) {

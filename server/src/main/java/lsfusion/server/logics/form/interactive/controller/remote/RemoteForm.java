@@ -744,6 +744,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @Override
     public byte[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
+        logger.info("getAsyncValues started: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + "), value : " + value);
+
         try {
             // we're setting cacelable thread we're sure that global branch is used and it can be canceled without consequences
             // however in some cases we might wanna cancel pessimistic requests too (when statement supports that), but it may cause some troubles because there is no transaction, so the consequences are unpredictable (plus it's pretty rare case)
@@ -800,6 +802,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             ServerLoggers.sqlSuppLog(t);
             return serializeAsyncs(new Async[] {Async.CANCELED});
 //            throw Throwables.propagate(e);
+        } finally {
+            logger.info("getAsyncValues ended: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
         }
     }
 

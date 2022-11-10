@@ -22,12 +22,8 @@ public class ExceptionUtils {
         return result;
     }
 
-    public static String getPlainStackTrace() {
-        return getStackTrace().replace('\n', '\t');
-    }
-
     public static String getStackTrace() {
-        return getStackTrace(new Exception());
+        return "THREAD :" + Thread.currentThread() + "\n" + getStackTrace(new Exception());
     }
 
     public static String toString(Throwable e) {
