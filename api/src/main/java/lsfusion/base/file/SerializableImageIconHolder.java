@@ -1,6 +1,5 @@
 package lsfusion.base.file;
 
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
@@ -42,8 +41,9 @@ public class SerializableImageIconHolder implements Serializable {
         return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
     }
 
-    public boolean isSvg(ColorTheme colorTheme) {
-        return "svg".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
+    public boolean isNonThemed(ColorTheme colorTheme) {
+        String extension = BaseUtils.getFileExtension(getImagePath(colorTheme));
+        return "svg".equalsIgnoreCase(extension) || "bmp".equalsIgnoreCase(extension) || "webp".equalsIgnoreCase(extension);
     }
 
 //    private void readObject(ObjectInputStream s) throws ClassNotFoundException, IOException {

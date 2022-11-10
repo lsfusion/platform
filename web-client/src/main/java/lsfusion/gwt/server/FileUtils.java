@@ -151,7 +151,7 @@ public class FileUtils {
                     String imagePath = colorTheme.getImagePath(imageHolder.getImagePath(ColorTheme.DEFAULT));
                     String ID = colorTheme.getID(defaultImageFile.getID());
 
-                    if (imageHolder.isSvg(ColorTheme.DEFAULT)) {
+                    if (imageHolder.isNonThemed(ColorTheme.DEFAULT)) {
                         width = 16;
                         height = 16;
                         enabledImageUrl = saveImageFile(imagePath, fos -> IOUtils.copy(rawFile.getInputStream(), fos), ID, settings, false);
