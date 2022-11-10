@@ -149,6 +149,7 @@ public class FileUtils {
 
                     if (imageHolder.isGif(ColorTheme.DEFAULT)) {
                         enabledImageUrl = saveImageFile(imagePath, getGifIconSaver(defaultImageFile.getBytes(), true, servletContext, colorTheme), ID, settings, false);
+                        disabledImageUrl = enabledImageUrl;
                     } if(imageHolder.isSvg(ColorTheme.DEFAULT)) {
                         enabledImageUrl = saveImageFile(defaultImagePath, fos -> IOUtils.copy(defaultImageFile.getInputStream(), fos), ID, settings, false);
                         disabledImageUrl = enabledImageUrl;
@@ -163,6 +164,7 @@ public class FileUtils {
                     imagePath = imageHolder.getImagePath(colorTheme);
                     if (imageHolder.isGif(colorTheme)) {
                         enabledImageUrl = saveImageFile(imagePath, getGifIconSaver(imageFile.getBytes(), false, servletContext, colorTheme), ID, settings, false);
+                        disabledImageUrl = enabledImageUrl;
                     } else if (imageHolder.isSvg(colorTheme)) {
                         enabledImageUrl = saveImageFile(imagePath, fos -> IOUtils.copy(imageFile.getInputStream(), fos), ID, settings, false);
                         disabledImageUrl = enabledImageUrl;
