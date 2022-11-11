@@ -35,6 +35,7 @@ public class ThreadUtils {
         if(thread != null) {
             ServerLoggers.exinfoLog("THREAD INTERRUPT " + thread);
             thread.interrupt(); // it's better to do it before to prevent sql query execution
+            ServerLoggers.exinfoLog("THREAD INTERRUPT ENDED " + thread);
             SQLSession.cancelExecutingStatement(dbManager, thread, true);
         }
     }
