@@ -3082,7 +3082,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private void addScriptedAGFollows(LP mainProp, LPWithParams rightProp, boolean isTrue, boolean showRec, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint aggrDebugPoint, LocalizedString details) {
         addScriptedFollows(mainProp, rightProp, singletonList(new PropertyFollowsDebug(isTrue, debugPoint)), Event.APPLY, showRec, aggrDebugPoint,
-                isTrue ? LocalizedString.create("{logics.property.violated.aggr.new}") : LocalizedString.create("{logics.property.violated.aggr.delete}"), details);
+                false, isTrue ? LocalizedString.create("{logics.property.violated.aggr.new}") : LocalizedString.create("{logics.property.violated.aggr.delete}"), details);
     }
 
     public LPWithParams addScriptedMaxProp(List<LPWithParams> paramProps, boolean isMin) throws ScriptingErrorLog.SemanticErrorException {
@@ -4586,15 +4586,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
         addScriptedFollows(mainProp, rightProp, resolveOptions, event, false, debugPoint,
-                LocalizedString.create("{logics.property.violated.consequence.from}"), LocalizedString.concatList(mainProp.property.localizedToString(), " => ",  rightProp.getLP().property.localizedToString()));
+                true, LocalizedString.create("{logics.property.violated.consequence.from}"), LocalizedString.concatList(mainProp.property.localizedToString(), " => ",  rightProp.getLP().property.localizedToString()));
     }
 
-    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, Event event, boolean showRec, DebugInfo.DebugPoint debugPoint, LocalizedString caption, LocalizedString details) {
+    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, Event event, boolean showRec, DebugInfo.DebugPoint debugPoint, boolean useDebugPoint, LocalizedString caption, LocalizedString details) {
         Integer[] params = new Integer[rightProp.usedParams.size()];
         for (int j = 0; j < params.length; j++) {
             params[j] = rightProp.usedParams.get(j) + 1;
         }
-        addFollows(mainProp, debugPoint, ListFact.fromJavaList(resolveOptions), event, showRec, rightProp.getLP(),
+        addFollows(mainProp, useDebugPoint ? debugPoint : null, ListFact.fromJavaList(resolveOptions), event, showRec, rightProp.getLP(),
                 LocalizedString.concatList(caption, ": " + debugPoint.toString()), LocalizedString.concatList(LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details), params);
     }
 

@@ -194,13 +194,16 @@ public class ActionDebugger implements DebuggerService {
     private void compileDelegateClasses(String outputFolder, List<InMemoryJavaFileObject> filesToCompile) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-        DiagnosticListener diagnostics = new IgnoreDiagnosticListener();
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector();
 
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, Locale.ENGLISH, null);
 
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, asList("-g", "-d", outputFolder), null, filesToCompile);
         if (!task.call()) {
-            throw new IllegalStateException("Compilation of debugger delegate files failed. ");
+            String details = "";
+            for (Diagnostic<?> diagLine : diagnostics.getDiagnostics())
+                details += "\n" + diagLine;
+            throw new IllegalStateException("Compilation of debugger delegate files failed. " + details);
         }
     }
 
