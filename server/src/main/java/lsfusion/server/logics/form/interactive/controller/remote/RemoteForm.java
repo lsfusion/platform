@@ -746,6 +746,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public byte[] getAsyncValues(long requestIndex, long lastReceivedRequestIndex, int propertyID, byte[] fullKey, String actionSID, String value, int asyncIndex) throws RemoteException {
         logger.info("getAsyncValues started: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + "), value : " + value);
 
+        boolean wasInterrupted = false;
         try {
             // we're setting cacelable thread we're sure that global branch is used and it can be canceled without consequences
             // however in some cases we might wanna cancel pessimistic requests too (when statement supports that), but it may cause some troubles because there is no transaction, so the consequences are unpredictable (plus it's pretty rare case)
@@ -764,8 +765,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             Result<String> actualValue = new Result<>(value);
             synchronized (asyncLock) { // we check asyncLastIndex even for pessimistic requests since we don't want useless requests
                 if (asyncIndex >= asyncLastIndex) {
-                    if (asyncLastThread != null && !Settings.get().isDisableAsyncValuesInterrupt())
-                        ThreadUtils.interruptThread(getContext(), asyncLastThread);
+                    Thread interruptThread = asyncLastThread;
+                    if (interruptThread != null && !Settings.get().isDisableAsyncValuesInterrupt()) {
+                        asyncInterruptingThreads.add(interruptThread);
+                        ThreadUtils.interruptThread(getContext(), interruptThread);
+                    }
                     asyncLastIndex = asyncIndex;
                 } else
                     actualValue.set(null); // canceling async values query, but we still need to register that request (in processRMIRequest)
@@ -786,28 +790,38 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             else
                 result = getAsyncValues(propertyID, fullKey, actionSID, actualValue.result, true, setCancelableThread);
 
-            synchronized (asyncLock) {
-                ServerLoggers.assertLog(asyncIndex <= asyncLastIndex, "ASYNC INDEX SHOULD BE LESS THAN ASYNC LAST INDEX");
-                if(asyncLastIndex == asyncIndex)
-                    asyncLastThread = null;
-            }
-
             if(result == null)
                 return null;
             return serializeAsyncs(result);
         } catch (Throwable t) { // interrupted for example
 //            if(ExceptionUtils.getRootCause(t) instanceof InterruptedException)
-            Thread.interrupted(); // we want to reset interrupted state, otherwise RemoteExceptionsAspect will rethrow InterruptedException to the client, where it is not always ignored (for example getPessimisticValues)
+            wasInterrupted = Thread.interrupted(); // we want to reset interrupted state, otherwise RemoteExceptionsAspect will rethrow InterruptedException to the client, where it is not always ignored (for example getPessimisticValues)
 
             ServerLoggers.sqlSuppLog(t);
-            return serializeAsyncs(new Async[] {Async.CANCELED});
 //            throw Throwables.propagate(e);
         } finally {
             logger.info("getAsyncValues ended: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
+
+            synchronized (asyncLock) {
+                ServerLoggers.assertLog(asyncIndex <= asyncLastIndex, "ASYNC INDEX SHOULD BE LESS THAN ASYNC LAST INDEX");
+                if(asyncLastIndex == asyncIndex)
+                    asyncLastThread = null;
+
+                // the problem is that thread.interrupt and Thread.interrupted are not synchronized
+                // so if we see that thread was forced to be interrupted, but has not been interrupted yet, we do the sleep to "catch" it
+                if(asyncInterruptingThreads.remove(Thread.currentThread()) && !wasInterrupted) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
         }
+        return serializeAsyncs(new Async[] {Async.CANCELED});
     }
 
     private Thread asyncLastThread;
+    private final Set<Thread> asyncInterruptingThreads = SetFact.mAddRemoveSet();
     private int asyncLastIndex = 0;
     private final Object asyncLock = new Object();
 
