@@ -27,6 +27,8 @@ public class RemoteExceptionsAspect {
     @Around(RemoteContextAspect.allRemoteCalls)
     public Object executeRemoteMethod(ProceedingJoinPoint thisJoinPoint, Object target) throws Throwable {
         try {
+            // the problem is that thread.interrupt and Thread.interrupted are not synchronized
+            // so some thread.interrupt() may interrupt the thread in the rmi thread pool (unless this is not explicitly synchronized as in getAsyncValues)
             boolean interrupted = Thread.interrupted();
             ServerLoggers.assertLog(!interrupted, "RMI THREAD SHOULD NOT BE NOT INTERRUPTED AT THIS POINT");
 
