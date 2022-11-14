@@ -1407,7 +1407,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
                 public void adjustmentValueChanged(AdjustmentEvent e) {
-                    if (skipScrollingAdjusments) {
+                    //ignore AdjustmentEvent if grid is not showing to prevent selection wrong row
+                    if (!isShowing() || skipScrollingAdjusments) {
                         return;
                     }
                     int currRow = getCurrentRow();
