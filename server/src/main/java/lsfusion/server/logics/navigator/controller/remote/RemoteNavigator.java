@@ -300,7 +300,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
-                colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]));
+                colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator());
     }
 
     private void fillRanges(String json, List<String> ranges) {

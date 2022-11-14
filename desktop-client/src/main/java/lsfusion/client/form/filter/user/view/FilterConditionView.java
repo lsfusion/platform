@@ -1,6 +1,7 @@
 package lsfusion.client.form.filter.user.view;
 
 import lsfusion.base.Pair;
+import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.design.view.Filler;
 import lsfusion.client.form.design.view.FlexPanel;
@@ -187,7 +188,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         rightPanel.addCentered(valueView);
 
         deleteButtonWrapper = new FlexPanel(false, FlexAlignment.START);
-        ToolbarGridButton deleteButton = new ToolbarGridButton(DELETE_ICON_PATH, getString("form.queries.filter.remove.condition"), new Dimension(getComponentHeight(), getComponentHeight()));
+        ToolbarGridButton deleteButton = new ToolbarGridButton(DELETE_ICON_PATH, getString("form.queries.filter.remove.condition"));
         deleteButton.addActionListener(e -> RmiQueue.runAction(FilterConditionView.this::remove));
         deleteButtonWrapper.add((Widget)deleteButton);
         deleteButtonWrapper.add(Filler.createHorizontalStrut(2));
@@ -202,12 +203,23 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         rightPanel.add(junctionSeparator, FlexAlignment.STRETCH, 0.0);
 
         junctionViewWrapper = new FlexPanel(false, FlexAlignment.START);
-        ToolbarGridButton junctionView = new ToolbarGridButton(SEPARATOR_ICON_PATH, getString("form.queries.or")) {
+        ToolbarGridButton junctionView = new ToolbarGridButton(
+                MainController.useTextAsFilterSeparator ? getString("form.queries.and") : null,
+                MainController.useTextAsFilterSeparator ? null : SEPARATOR_ICON_PATH,
+                getString("form.queries.and"), null) {
             @Override
             public void addListener() {
                 addActionListener(e -> {
                     condition.junction = !condition.junction;
-                    showBackground(!condition.junction);
+                    String caption = condition.junction ? getString("form.queries.and") : getString("form.queries.or");
+                    if(MainController.useTextAsFilterSeparator) {
+                        setText(caption);
+                        logicsSupplier.getFormController().revalidate();
+                    } else {
+                        showBackground(!condition.junction);
+                    }
+                    setToolTipText(caption);
+
                     enableApplyButton();
                     focusValueView();
                 });
