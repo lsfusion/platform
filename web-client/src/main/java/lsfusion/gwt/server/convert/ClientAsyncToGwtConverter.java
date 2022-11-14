@@ -24,6 +24,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
     }
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
+    private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
 
     public static ClientAsyncToGwtConverter getInstance() {
         return InstanceHolder.instance;
@@ -115,7 +116,7 @@ public class ClientAsyncToGwtConverter extends ObjectConverter {
     @Cached
     @Converter(from = ClientAsyncChange.class)
     public GAsyncChange convertAsyncChange(ClientAsyncChange clientAsyncChange) {
-        return new GAsyncChange(clientAsyncChange.propertyIDs, clientAsyncChange.value);
+        return new GAsyncChange(clientAsyncChange.propertyIDs, valuesConverter.convertOrCast(clientAsyncChange.value));
     }
 
     @Converter(from = ModalityWindowFormType.class)
