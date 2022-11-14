@@ -8,14 +8,17 @@ import static lsfusion.client.base.view.SwingDefaults.getComponentHeight;
 
 public class ToolbarGridButton extends ThemedFlatRolloverButton {
     public ToolbarGridButton(String iconPath, String toolTipText) {
-        this(iconPath, toolTipText, new Dimension(getComponentHeight(), getComponentHeight()));
+        this(null, iconPath, toolTipText, new Dimension(getComponentHeight(), getComponentHeight()));
     }
-    public ToolbarGridButton(String iconPath, String toolTipText, Dimension buttonSize) {
-        super(iconPath);
+
+    public ToolbarGridButton(String caption, String iconPath, String toolTipText, Dimension buttonSize) {
+        super(iconPath, caption);
         setAlignmentY(Component.TOP_ALIGNMENT);
-        setMinimumSize(buttonSize);
-        setPreferredSize(buttonSize);
-        setMaximumSize(buttonSize);
+        if (buttonSize != null) {
+            setMinimumSize(buttonSize);
+            setPreferredSize(buttonSize);
+            setMaximumSize(buttonSize);
+        }
         setFocusable(false);
         if (toolTipText != null) {
             setToolTipText(toolTipText);

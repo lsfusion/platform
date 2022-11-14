@@ -74,6 +74,7 @@ public class MainController {
     public static ColorPreferences colorPreferences;
     public static ColorTheme colorTheme = ColorTheme.DEFAULT;
     public static String userDebugPath;
+    public static boolean useTextAsFilterSeparator;
 
     // lifecycle
 

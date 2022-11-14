@@ -109,6 +109,7 @@ public abstract class MainFrame extends JFrame {
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
             MainController.matchSearchSeparator = clientSettings.matchSearchSeparator;
             MainController.colorPreferences = clientSettings.colorPreferences;
+            MainController.useTextAsFilterSeparator = clientSettings.useTextAsFilterSeparator;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 
