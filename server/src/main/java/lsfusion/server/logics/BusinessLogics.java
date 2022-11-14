@@ -195,84 +195,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         super(LOGICS_ORDER);
     }
 
-    public static int compareChangeExtProps(ActionOrProperty p1, ActionOrProperty p2) {
-        // если p1 не DataProperty
-        String c1 = p1.getChangeExtSID();
-        String c2 = p2.getChangeExtSID();
-
-        if(c1 == null && c2 == null)
-            return compareDeepProps(p1, p2);
-
-        if(c1 == null)
-            return 1;
-
-        if(c2 == null)
-            return -1;
-
-        int result = c1.compareTo(c2);
-        if(result != 0)
-            return result;
-
-        return compareDeepProps(p1, p2);
-    }
-
-    public static int compareDeepProps(ActionOrProperty p1, ActionOrProperty p2) {
-//           return Integer.compare(p1.hashCode(), p2.hashCode());
-
-        String className1 = p1.getClass().getName(); 
-        String className2 = p2.getClass().getName(); 
-
-        int result = className1.compareTo(className2);
-        if(result != 0)
-            return result;
-
-        DebugInfo debugInfo1 = p1.getDebugInfo();
-        DebugInfo debugInfo2 = p2.getDebugInfo();
-        
-        if((debugInfo1 == null) != (debugInfo2 == null))
-            return Boolean.compare(debugInfo1 == null, debugInfo2 == null);
-        
-        if(debugInfo1 != null) {
-            DebugInfo.DebugPoint point1 = debugInfo1.getPoint();
-            DebugInfo.DebugPoint point2 = debugInfo2.getPoint();
-            
-            result = point1.moduleName.compareTo(point2.moduleName);
-            if(result != 0)
-                return result;
-            
-            result = Integer.compare(point1.line, point2.line);
-            if(result != 0)
-                return result;
-
-            result = Integer.compare(point1.offset, point2.offset);
-            if(result != 0)
-                return result;
-        }
-
-        String caption1 = p1.caption != null ? p1.caption.getSourceString() : "";
-        String caption2 = p2.caption != null ? p2.caption.getSourceString() : "";
-        result = caption1.compareTo(caption2);
-        if(result != 0)
-            return result;
-
-        ImList<Property> depends1 = p1 instanceof Action ? ((Action<?>) p1).getSortedUsedProps() : ((Property<?>)p1).getSortedDepends(); 
-        ImList<Property> depends2 = p2 instanceof Action ? ((Action<?>) p2).getSortedUsedProps() : ((Property<?>)p2).getSortedDepends();
-        result = Integer.compare(depends1.size(), depends2.size());
-        if(result != 0)
-            return result;
-
-        for(int i=0,size=depends1.size();i<size;i++) {
-            Property dp1 = depends1.get(i);
-            Property dp2 = depends2.get(i);
-
-            result = propComparator().compare(dp1, dp2); 
-            if(result != 0)
-                return result;
-        }
-
-        return Integer.compare(p1.hashCode(), p2.hashCode());
-    }
-
     // жестковато, но учитывая что пока есть несколько других кэшей со strong ref'ами на этот action, завязаных на IdentityLazy то цикл жизни у всех этих кэшей будет приблизительно одинаковый
     @IdentityLazy
     public LA<?> evaluateRun(String script, boolean action) {
@@ -342,7 +264,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
                 tFormats = new TFormats(twoDigitYearStart,
                         dateFormat != null ? dateFormat : BaseUtils.getDatePattern(),
-                        timeFormat != null ? timeFormat : BaseUtils.getTimePattern());
+                        timeFormat != null ? timeFormat : BaseUtils.getTimePattern(), timeZone);
 
                 new TaskRunner(this).runTask(initTask, startLogger);
             } catch (RuntimeException re) {
@@ -933,32 +855,101 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
         String c1 = o1.getCanonicalName();
         String c2 = o2.getCanonicalName();
-        if(c1 == null && c2 == null) {
-            return compareChangeExtProps(o1, o2);
+        if(c1 != null || c2 != null) {
+            if(c1 == null)
+                return 1;
+
+            if(c2 == null)
+                return -1;
+
+            assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2) && !(o1 instanceof SessionDataProperty) && !(o2 instanceof SessionDataProperty));
+            return c1.compareTo(c2);
         }
 
-        if(c1 == null)
-            return 1;
+        // если p1 не DataProperty
+        c1 = o1.getChangeExtSID();
+        c2 = o2.getChangeExtSID();
 
-        if(c2 == null)
-            return -1;
+        if(c1 != null || c2 != null) {
+            if (c1 == null)
+                return 1;
 
-        assert !(c1.equals(c2) && !BaseUtils.hashEquals(o1,o2) && !(o1 instanceof SessionDataProperty) && !(o2 instanceof SessionDataProperty));
-        return c1.compareTo(c2);
+            if (c2 == null)
+                return -1;
+
+            int result = c1.compareTo(c2);
+            if (result != 0)
+                return result;
+        }
+
+        c1 = o1.getClass().getName();
+        c2 = o2.getClass().getName();
+
+        int result = c1.compareTo(c2);
+        if(result != 0)
+            return result;
+
+        DebugInfo debugInfo1 = o1.getDebugInfo();
+        DebugInfo debugInfo2 = o2.getDebugInfo();
+
+        if((debugInfo1 == null) != (debugInfo2 == null))
+            return Boolean.compare(debugInfo1 == null, debugInfo2 == null);
+
+        if(debugInfo1 != null) {
+            DebugInfo.DebugPoint point1 = debugInfo1.getPoint();
+            DebugInfo.DebugPoint point2 = debugInfo2.getPoint();
+
+            result = point1.moduleName.compareTo(point2.moduleName);
+            if(result != 0)
+                return result;
+
+            // we'll use global line number to make it independent of the fact if the metacodes are enabled
+            result = Integer.compare(point1.globalLine, point2.globalLine);
+            if(result != 0)
+                return result;
+
+            result = Integer.compare(point1.offset, point2.offset);
+            if(result != 0)
+                return result;
+        }
+
+        c1 = o1.caption != null ? o1.caption.getSourceString() : "";
+        c2 = o2.caption != null ? o2.caption.getSourceString() : "";
+        result = c1.compareTo(c2);
+        if(result != 0)
+            return result;
+
+        ImList<Property> depends1 = o1 instanceof Action ? ((Action<?>) o1).getSortedUsedProps() : ((Property<?>) o1).getSortedDepends();
+        ImList<Property> depends2 = o2 instanceof Action ? ((Action<?>) o2).getSortedUsedProps() : ((Property<?>) o2).getSortedDepends();
+        result = Integer.compare(depends1.size(), depends2.size());
+        if(result != 0)
+            return result;
+
+        for(int i=0,size=depends1.size();i<size;i++) {
+            Property dp1 = depends1.get(i);
+            Property dp2 = depends2.get(i);
+
+            result = propComparator().compare(dp1, dp2);
+            if(result != 0)
+                return result;
+        }
+
+        return Integer.compare(o1.hashCode(), o2.hashCode());
     };
     public static Comparator<Property> propComparator() {
         return BaseUtils.immutableCast(actionOrPropComparator);
     }
-    public final static Comparator<Link> linkComparator = (o1, o2) -> {
-        int result = actionOrPropComparator.compare(o1.from, o2.from);
-        if(result != 0)
-            return result;
-
-        result = Integer.compare(o1.type.getNum(), o2.type.getNum());
-        if(result != 0)
-            return result;
-
-        return actionOrPropComparator.compare(o1.to, o2.to);
+    public final static Comparator<Link> linkToComparator = (o1, o2) -> {
+//        int result = actionOrPropComparator.compare(o1.from, o2.from);
+//        if(result != 0)
+//            return result;
+//
+        return compare(o1.type, o1.to, o2.type, o2.to);
+//        result = Integer.compare(o1.type.getNum(), o2.type.getNum());
+//        if(result != 0)
+//            return result;
+//
+//        return actionOrPropComparator.compare(o1.to, o2.to);
     };
 
 
@@ -1113,21 +1104,23 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
 
         proceeded = new HSet<>();
-        for (int i = 0; i < order.size(); i++) { // тут нужн
+        for (int i = 0; i < order.size(); i++) {
             ActionOrProperty orderProperty = order.get(order.size() - 1 - i);
             if (!proceeded.contains(orderProperty)) {
                 HMap<ActionOrProperty, LinkType> innerComponentOutTypes = new HMap<>(LinkType.minLinkAdd());                
                 findComponent(orderProperty, LinkType.MAX, linksMap, proceeded, innerComponentOutTypes);
 
-                ActionOrProperty minProperty = findMinProperty(innerComponentOutTypes);
                 HSet<ActionOrProperty> innerComponent = innerComponentOutTypes.keys();
                         
                 assert innerComponent.size() > 0;
                 if (innerComponent.size() == 1) { // если цикла нет все ОК
+                    ActionOrProperty innerProperty = innerComponent.single();
                     if(debugInfoWriter != null)
-                        debugInfoWriter.addLines(minProperty.toString());
-                    mResult.exclAdd(innerComponent.single());
+                        debugInfoWriter.addLines(innerProperty.toString());
+                    mResult.exclAdd(innerProperty);
                 } else { // нашли цикл
+                    ActionOrProperty minProperty = findMinProperty(innerComponentOutTypes);
+
                     // assert что minProperty один из ActionProperty.getChangeExtProps
                     List<Link> minCycle = findMinCycle(minProperty, linksMap, innerComponent);
                     assert BaseUtils.hashEquals(minCycle.get(0).from, minProperty) && BaseUtils.hashEquals(minCycle.get(minCycle.size()-1).to, minProperty);

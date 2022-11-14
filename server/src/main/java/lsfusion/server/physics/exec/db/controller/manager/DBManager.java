@@ -20,6 +20,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.DProcessor;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.ProgressBar;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -29,7 +30,6 @@ import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.OperationOwner;
-import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -541,7 +541,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         for (ImplementTable dataTable : LM.tableFactory.getImplementTables()) {
-            dataTable.updateStat(tableStats, keyStats, propStats, null, statDefault);
+            dataTable.updateStat(tableStats, keyStats, propStats, statDefault);
         }
         return tableStats;
     }
@@ -799,7 +799,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return serverComputer;
     }
 
-    private SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
+    public SQLSessionContextProvider contextProvider = new SQLSessionContextProvider() {
         @Override
         public Long getCurrentUser() {
             return ThreadLocalContext.getCurrentUser();
@@ -830,6 +830,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public Long getThreadCurrentComputer() {
             return getServerComputer();
+        }
+
+        @Override
+        public LocalePreferences getLocalePreferences() {
+            return null;
         }
     };
 
@@ -1754,24 +1759,20 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private void recalculateAndUpdateStat(DataSession session, ImplementTable table, List<Property> properties) throws SQLException, SQLHandledException {
-        ImMap<PropertyField, String> fields = null;
-        ImSet<PropertyField> skipRecalculateFields = null;
-        if(properties != null) {
-            ImSet<Property> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
-            fields = propertySet.mapKeyValues(value -> value.field, ActionOrProperty::getCanonicalName);
-            skipRecalculateFields = propertySet.filterFn(property -> property instanceof StoredDataProperty).mapSetValues(property -> property.field);
-        }
+        ImSet<Property> propertySet = SetFact.fromJavaOrderSet(properties).getSet();
+        ImMap<PropertyField, String> fields = propertySet.mapKeyValues(value -> value.field, ActionOrProperty::getCanonicalName);
+        ImSet<PropertyField> skipRecalculateFields = propertySet.filterFn(property -> property instanceof StoredDataProperty).mapSetValues(property -> property.field);
         long start = System.currentTimeMillis();
         startLogger.info(String.format("Update Aggregation Stats started: %s", table));
         
         table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, false);
-        ImplementTable.CalcStat calculateStatResult = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
+        ImMap<String, Pair<Integer, Integer>> propsStat = table.recalculateStat(reflectionLM, session, fields, skipRecalculateFields, true);
         apply(session);
         
         long time = System.currentTimeMillis() - start;
         startLogger.info(String.format("Update Aggregation Stats: %s, %sms", table, time));
             
-        table.updateStat(MapFact.singleton(table.getName(), calculateStatResult.rows), calculateStatResult.keys, calculateStatResult.props, fields != null ? fields.keys() : null, false);
+        table.updateStat(propsStat, fields.keys(), false);
     }
 
     private void migrateReflectionProperties(DataSession session, OldDBStructure oldDBStructure) {

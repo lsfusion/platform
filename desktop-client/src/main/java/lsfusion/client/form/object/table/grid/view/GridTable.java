@@ -976,7 +976,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     @Override
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-        if (isInternalNavigating || isCellFocusable(rowIndex, columnIndex)) {
+        if (!supressDragging && (isInternalNavigating || isCellFocusable(rowIndex, columnIndex))) {
             if (!properties.isEmpty() && model.getColumnCount() > 0) {
                 if (rowIndex >= getRowCount()) {
                     changeSelection(getRowCount() - 1, columnIndex, toggle, extend);
@@ -1407,7 +1407,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
                 public void adjustmentValueChanged(AdjustmentEvent e) {
-                    if (skipScrollingAdjusments) {
+                    //ignore AdjustmentEvent if grid is not showing to prevent selection wrong row
+                    if (!isShowing() || skipScrollingAdjusments) {
                         return;
                     }
                     int currRow = getCurrentRow();

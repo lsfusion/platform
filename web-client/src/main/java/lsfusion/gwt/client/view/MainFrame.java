@@ -87,6 +87,8 @@ public class MainFrame implements EntryPoint {
     public static String dateTimeFormat;
     public static String[] preDefinedDateRangesNames;
 
+    public static boolean useTextAsFilterSeparator;
+
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
         return navigatorDispatchAsync.asyncExecute(action, callback);
@@ -288,6 +290,7 @@ public class MainFrame implements EntryPoint {
                 timeFormat = result.timeFormat;
                 dateTimeFormat = result.dateFormat + " " + result.timeFormat;
                 preDefinedDateRangesNames = result.preDefinedDateRangesNames;
+                useTextAsFilterSeparator = result.useTextAsFilterSeparator;
             }
         });
 

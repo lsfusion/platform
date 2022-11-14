@@ -76,7 +76,7 @@ import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlTimestampToLocalDateTime;
+import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 
 // it would be better if there was NavigatorInstance (just like FormInstance and LogicsInstance), but for now will leave it this way
 public class RemoteNavigator extends RemoteConnection implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
@@ -120,14 +120,24 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, String clientDateFormat, String clientTimeFormat, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
-        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientDateFormat, clientTimeFormat, stack, session);
-        
-        localePreferences = readLocalePreferences(session, user, businessLogics, clientLanguage, clientCountry, stack);
+    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, stack, session);
+
+        localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
     }
 
-    private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, String clientLanguage, String clientCountry, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private static void saveClientTimeZone(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
+        if (clientTimeZone != null) {
+            businessLogics.authenticationLM.clientTimeZone.change(clientTimeZone.getID(), session, user);
+            businessLogics.authenticationLM.clientDateFormat.change(clientDateFormat, session, user);
+            businessLogics.authenticationLM.clientTimeFormat.change(clientTimeFormat, session, user);
+            session.applyException(businessLogics, stack);
+        }
+    }
+
+    private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
+        saveClientTimeZone(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         return new LocalePreferences(locale,
                 (String) businessLogics.authenticationLM.timeZone.read(session, user),
                 (Integer) businessLogics.authenticationLM.twoDigitYearStart.read(session, user),
@@ -293,7 +303,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
-                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]));
+                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator());
     }
 
     private void fillRanges(String json, List<String> ranges) {

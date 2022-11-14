@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.sqlTimestampToLocalDateTime;
+import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 
 public class ImportEMLAction extends EmailAction {
     private final ClassPropertyInterface accountInterface;

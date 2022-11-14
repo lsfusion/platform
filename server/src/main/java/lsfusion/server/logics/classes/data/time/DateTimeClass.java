@@ -4,6 +4,7 @@ import com.hexiong.jdbf.JDBFException;
 import lsfusion.base.DateConverter;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
+import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -24,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -157,8 +159,10 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
     }
 
     @Override
-    public String formatString(LocalDateTime value) {
-        return value == null ? null : value.format(ThreadLocalContext.getTFormats().dateTimeFormatter);
+    public String formatString(LocalDateTime value, boolean ui) {
+        LocalePreferences localePreferences = ThreadLocalContext.get().getLocalePreferences();
+        return value != null ? (value.format(ui && localePreferences != null ? DateTimeFormatter.ofPattern(localePreferences.dateTimeFormat)
+                : ThreadLocalContext.getTFormats().dateTimeFormatter)) : null;
     }
 
     public String getSID() {

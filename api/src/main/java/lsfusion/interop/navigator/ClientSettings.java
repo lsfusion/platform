@@ -24,12 +24,14 @@ public class ClientSettings implements Serializable {
     public boolean useBootstrap;
     public ColorPreferences colorPreferences;
     public String[] preDefinedDateRangesNames;
+    public boolean useTextAsFilterSeparator;
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
                           boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
                           boolean pivotOnlySelectedColumn, String matchSearchSeparator,
-                          ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames) {
+                          ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames,
+                          boolean useTextAsFilterSeparator) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -47,5 +49,6 @@ public class ClientSettings implements Serializable {
         this.useBootstrap = useBootstrap;
         this.colorPreferences = colorPreferences;
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
+        this.useTextAsFilterSeparator = useTextAsFilterSeparator;
     }
 }

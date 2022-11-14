@@ -31,6 +31,17 @@ public class RemoteLoggerAspect {
         //final long id = Thread.currentThread().getId();
         //putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         //try {
+            Context context = ThreadLocalContext.get();
+            Long user = context.getCurrentUser();
+
+            boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
+            if(debugEnabled)
+                logger.info(String.format(
+                        "Executing remote method: %1$s(%2$s)",
+                        thisJoinPoint.getSignature().getName(),
+                        BaseUtils.toString(", ", thisJoinPoint.getArgs())
+                ));
+
             long startTime = System.currentTimeMillis();
             Object result = thisJoinPoint.proceed();
             long runTime = System.currentTimeMillis() - startTime;
@@ -38,31 +49,22 @@ public class RemoteLoggerAspect {
             if(result instanceof ServerResponse)
                 ((ServerResponse)result).timeSpent = runTime;
 
-            Context context = ThreadLocalContext.get();
-            Long user = context.getCurrentUser();
             Long connection = context.getCurrentConnection();
             if (connection != null)
                 connectionActivityMap.put(connection, LocalDateTime.now());
 
-            boolean debugEnabled = user != null && isRemoteLoggerDebugEnabled(user);
-
-            if (debugEnabled || runTime > Settings.get().getRemoteLogTime()) {
-                logger.info(logCall(thisJoinPoint, runTime));
-            }
+            if (debugEnabled || runTime > Settings.get().getRemoteLogTime())
+                logger.info(String.format(
+                        "Executed remote method (time: %1$d ms.): %2$s(%3$s)",
+                        runTime,
+                        thisJoinPoint.getSignature().getName(),
+                        BaseUtils.toString(", ", thisJoinPoint.getArgs())
+                ));
 
             return result;
         //} finally {
         //    removeDateTimeCall(id);
         //}
-    }
-
-    private String logCall(ProceedingJoinPoint thisJoinPoint, long runTime) {
-        return String.format(
-                "Executing remote method (time: %1$d ms.): %2$s(%3$s)",
-                runTime,
-                thisJoinPoint.getSignature().getName(),
-                BaseUtils.toString(", ", thisJoinPoint.getArgs())
-        );
     }
 
     public static void setRemoteLoggerDebugEnabled(Long user, Boolean enabled) {

@@ -34,7 +34,12 @@ public class RichTextCellRenderer extends TextBasedCellRenderer{
             ['clean']                                         // remove formatting button
         ];
 
-        var quill = new $wnd.Quill(element, {
+        var Quill = $wnd.Quill;
+
+        changeQuillBlotTagName('formats/bold', 'B'); // Quill uses <strong> by default
+        changeQuillBlotTagName('formats/italic', 'I'); // Quill uses <em> by default
+
+        var quill = new Quill(element, {
             modules: {
                 toolbar: toolbarOptions
             },
@@ -47,6 +52,13 @@ public class RichTextCellRenderer extends TextBasedCellRenderer{
             quill.root.innerHTML = innerText.includes('<div>') ? innerText.replaceAll('<div>', '<p>').replaceAll('</div>', '</p>') : innerText;
 
         element.quill = quill;
+
+        //https://quilljs.com/guides/how-to-customize-quill/
+        function changeQuillBlotTagName(blotName, tagName){
+            var blot = Quill.imports[blotName];
+            blot.tagName = tagName;
+            Quill.register(blot, true);
+        }
     }-*/;
 
     @Override

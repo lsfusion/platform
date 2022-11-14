@@ -57,7 +57,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.base.DateConverter.*;
 import static lsfusion.server.physics.dev.integration.external.to.mail.AccountType.*;
 import static org.apache.commons.io.FileUtils.copyInputStreamToFile;
 
@@ -277,7 +277,7 @@ public class EmailReceiver {
             int folderClosedCount = 0;
             while (count <= messageCount && (maxMessages == null || dataEmails.size() < maxMessages)) {
                 try {
-                    ServerLoggers.mailLogger.info(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
+                    ServerLoggers.mailLogger.debug(String.format("Reading email %s of %s (max %s)", count, messageCount, maxMessages));
                     Message message = messages[messageCount - count];
 
                     String uid = getMessageUID(emailFolder, message);

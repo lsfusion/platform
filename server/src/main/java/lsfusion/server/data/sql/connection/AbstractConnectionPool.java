@@ -7,6 +7,7 @@ import lsfusion.base.mutability.MutableObject;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.sql.table.SQLTemporaryPool;
+import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.postgresql.PGConnection;
@@ -89,9 +90,9 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         protected abstract void after(T run) throws SQLException;
     }
 
-    public ExConnection getCommon(MutableObject object) throws SQLException {
+    public ExConnection getCommon(MutableObject object, SQLSessionContextProvider contextProvider) throws SQLException {
         if(Settings.get().isCommonUnique())
-            return getPrivate(object);
+            return getPrivate(object, contextProvider);
         else
             return new SyncNewExConnectionReRun() {
                 public ExConnection execute(ExConnection rerun) {
@@ -219,16 +220,17 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
         closeConnection(connection);
     }
 
-    public ExConnection getPrivate(final MutableObject object) throws SQLException {
-        if(Settings.get().isDisablePoolConnections())
-            return newExConnection();
+    public ExConnection getPrivate(final MutableObject object, SQLSessionContextProvider contextProvider) throws SQLException {
+        ExConnection connection;
+        if(Settings.get().isDisablePoolConnections()) {
+            connection = newExConnection();
+        } else {
+            checkUsed();
 
-        checkUsed();
-
-        return new SyncNewExConnectionReRun() {
-            public ExConnection execute(ExConnection rerun) {
-                ExConnection freeConnection;
-                    if(rerun != null && freeConnections.size() < Settings.get().getFreeConnections()) {
+            connection = new SyncNewExConnectionReRun() {
+                public ExConnection execute(ExConnection rerun) {
+                    ExConnection freeConnection;
+                    if (rerun != null && freeConnections.size() < Settings.get().getFreeConnections()) {
                         freeConnection = rerun;
                     } else {
                         if (freeConnections.isEmpty())
@@ -237,10 +239,13 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                         logConnection("NEW CONNECTION FROM CACHE (size : " + freeConnections.size() + ")", -1, connectionsCount.get(), ((PGConnection) freeConnection.sql).getBackendPID());
                     }
 
-                usedConnections.put(freeConnection, new WeakReference<>(object));
-                return freeConnection;
-            }
-        }.execute();
+                    usedConnections.put(freeConnection, new WeakReference<>(object));
+                    return freeConnection;
+                }
+            }.execute();
+        }
+        connection.updateContext(contextProvider);
+        return connection;
     }
 
     public void returnPrivate(final MutableObject object, final ExConnection connection) throws SQLException {
@@ -271,11 +276,6 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
                     closeExConnection(run);
             }
         }.execute();
-    }
-
-    public void restorePrivate(ExConnection connection) throws SQLException {
-        connection.sql = newConnection();
-        connection.temporary = new SQLTemporaryPool();
     }
 
     private AtomicInteger neededSavePoints = new AtomicInteger();

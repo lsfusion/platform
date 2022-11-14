@@ -85,7 +85,7 @@ public class MetaCodeFragment {
     // We don't know if the literal is localized or not at the moment. Thus, we transform the literal into the 
     // intermediate format if it can be found in the reverse dictionary.
     // This format is {{ {id}  }literal}, where { {id}  } part is the dictionary id with possible leading and trailing spaces
-    // Without spaces the fromat is {{{id}}literal}
+    // Without spaces the format is {{{id}}literal}
     private String transformLiteralForReverseI18N(String part, boolean capitalize, Function<String, String> getIdFromReversedI18NDictionary, Consumer<String> appendEntry) {
         try {
             String propertyFileValue = ScriptedStringUtils.transformAnyStringLiteralToPropertyFileValue(part);

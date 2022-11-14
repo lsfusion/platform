@@ -322,7 +322,7 @@ public class ThreadLocalContext {
             RemoteLoggerAspect.putDateTimeCall(pid, new Timestamp(System.currentTimeMillis()));
 
             if(threadInfo instanceof EventThreadInfo) { // можно было попытаться старое имя сохранить, но оно по идее может меняться тогда очень странная логика получится
-                currentThread.setName(((EventThreadInfo) threadInfo).getEventName() + " - " + currentThread.getId());
+                currentThread.setName(((EventThreadInfo) threadInfo).getEventName() + ", TID - (" + currentThread.getId() + ")");
             }
         }
 

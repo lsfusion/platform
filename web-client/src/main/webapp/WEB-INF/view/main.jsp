@@ -141,7 +141,8 @@
                 "static/js/external/tippy-bundle.umd.min.js", //https://unpkg.com/tippy.js@6.2.7/dist/tippy-bundle.umd.min.js
 
                 //dateRangePicker
-                "static/js/external/moment.min.js", //https://cdn.jsdelivr.net/momentjs/latest/moment.min.js
+                "static/js/external/moment-with-locales.min.js", //https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment-with-locales.min.js // also used to define user date / time formats
+                "static/js/external/moment-jdateformatparser.js", //https://github.com/MadMG/moment-jdateformatparser/blob/master/moment-jdateformatparser.js // also used to define user date / time formats
                 "static/js/external/daterangepicker.min.js", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.min.js
                 "static/css/external/daterangepicker.css", //https://cdn.jsdelivr.net/npm/daterangepicker@3.1.0/daterangepicker.css
                 "static/css/datePicker.css",
@@ -209,8 +210,19 @@
             </script>
         </c:forEach>
 
+        <script>
+            function setClientLocaleParams() {
+                let intlOptions = Intl.DateTimeFormat().resolvedOptions();
+                setCookie('LSFUSION_CLIENT_TIME_ZONE', intlOptions.timeZone);
+
+                let momentLocale = moment();
+                momentLocale.locale(intlOptions.locale);
+                setCookie('LSFUSION_CLIENT_TIME_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('LT')));
+                setCookie('LSFUSION_CLIENT_DATE_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('L')));
+            }
+        </script>
     </head>
-    <body>
+    <body onload="setClientLocaleParams();">
         <script language="JavaScript">
             var pageSetup = {
                 webAppRoot: "<%= request.getContextPath() + "/" %>",

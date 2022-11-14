@@ -9,7 +9,6 @@ import lsfusion.server.base.controller.remote.context.ContextAwarePendingRemoteO
 import lsfusion.server.base.controller.remote.ui.RemotePausableInvocation;
 import lsfusion.server.base.controller.stack.ThrowableWithStack;
 import lsfusion.server.base.controller.thread.SyncType;
-import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.EExecutionStackRunnable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
@@ -19,7 +18,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
 import java.rmi.RemoteException;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -62,13 +60,13 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
 
         String invocationSID = generateInvocationSid(requestIndex);
 
-        requestLock.acquireRequestLock(invocationSID, requestIndex);
+        requestLock.blockRequestLock(invocationSID, requestIndex, this);
         try {
             return callAndCacheResult(requestIndex, lastReceivedRequestIndex, () -> request.call(getStack()));
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
-            requestLock.releaseRequestLock(invocationSID, requestIndex);
+            requestLock.releaseRequestLock(invocationSID, requestIndex, this);
         }
     }
 
@@ -83,7 +81,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
             return null; // this check is important, because otherwise acquireRequestLock will never stop and numberOfFormChangesRequests will be always > 0
 
         numberOfFormChangesRequests.incrementAndGet();
-        requestLock.acquireRequestLock(invocation.getSID(), requestIndex);
+        requestLock.blockRequestLock(invocation.getSID(), requestIndex, this);
 
         currentInvocation = invocation;
 
@@ -170,7 +168,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
                 currentInvocation = null;
                 int left = numberOfFormChangesRequests.decrementAndGet();
                 assert left >= 0;
-                requestLock.releaseRequestLock(getSID(), requestIndex);
+                requestLock.releaseRequestLock(getSID(), requestIndex, RemoteRequestObject.this);
             }
         });
     }

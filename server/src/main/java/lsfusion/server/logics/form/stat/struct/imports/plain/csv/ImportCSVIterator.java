@@ -1,9 +1,5 @@
 package lsfusion.server.logics.form.stat.struct.imports.plain.csv;
 
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.ICSVParser;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
@@ -11,29 +7,30 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.stat.struct.imports.plain.ImportMatrixIterator;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.apache.commons.io.input.BOMInputStream;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ImportCSVIterator extends ImportMatrixIterator {
-    private CSVReader csvReader;
-    
+    private CSVParser csvReader;
+
     public ImportCSVIterator(final ImOrderMap<String, Type> fieldTypes, RawFileData file, String charset, String wheres, boolean noHeader, boolean noEscape, String separator) throws IOException {
         super(fieldTypes, wheres, noHeader);
 
         InputStreamReader isReader = charset != null ? new InputStreamReader(new BOMInputStream(file.getInputStream()), charset) : new InputStreamReader(new BOMInputStream(file.getInputStream()));
-        char escapeChar = noEscape ? '\0' : ICSVParser.DEFAULT_ESCAPE_CHARACTER;
-        char quoteChar = noEscape ? '\0' : ICSVParser.DEFAULT_QUOTE_CHARACTER;
-        this.csvReader = new CSVReaderBuilder(isReader).withCSVParser(new CSVParserBuilder().withSeparator(separator.charAt(0)).withQuoteChar(quoteChar).withEscapeChar(escapeChar).build()).build();
-        
+        CSVFormat.Builder builder = CSVFormat.Builder.create().setDelimiter(separator);
+        this.csvReader = (noEscape ? builder.setQuote(null).setEscape(null) : builder).build().parse(isReader);
+
         finalizeInit();
     }
 
     private ImList<String> line;
 
     @Override
-    protected boolean nextRow(boolean checkWhere) throws IOException {
+    protected boolean nextRow(boolean checkWhere) {
         do {
             line = readLine();
         } while (line != null && (checkWhere && ignoreRow()));
@@ -42,12 +39,15 @@ public class ImportCSVIterator extends ImportMatrixIterator {
 
     @Override
     protected Integer getRowIndex() {
-        return (int) csvReader.getRecordsRead() - 1;
+        return (int) csvReader.getRecordNumber() - 1;
     }
 
-    private ImList<String> readLine() throws IOException {
-        String[] line = csvReader.readNext();
-        return line != null ? ListFact.toList(line) : null;
+    private ImList<String> readLine() {
+        if(csvReader.iterator().hasNext()) {
+            return ListFact.toList(csvReader.iterator().next().toList());
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ImportCSVIterator extends ImportMatrixIterator {
         try {
             return type.parseCSV(line.get(fieldIndex));
         } catch (ParseException e) {
-            throw ParseException.propagateWithMessage(String.format(" (row %s, column %s)", csvReader.getLinesRead(), fieldIndex + 1), e);
+            throw ParseException.propagateWithMessage(String.format(" (row %s, column %s)", csvReader.getRecordNumber(), fieldIndex + 1), e);
         }
     }
 

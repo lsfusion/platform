@@ -19,7 +19,7 @@ title: 'Для разработки'
 Для установки плагина на компьютере должна быть установлена Intellij IDEA не ниже 2020.1 версии.
 :::
 
--   В настройках IDEA (`File > Settings`) выбрать `Plugins > Browse repositories`, найти [lsFusion плагин](https://plugins.jetbrains.com/plugin/7601-lsfusion), нажать `Install`, перезапустить IDEA.
+<iframe width="245px" height="48px" src="https://plugins.jetbrains.com/embeddable/install/7601"></iframe>
 
 ### Установка сервера приложений через IDE
 
@@ -33,6 +33,13 @@ title: 'Для разработки'
 ### Установка десктоп-клиента
 
 -   После старта сервера, в логе старта одной из последних строк будет строка с ссылкой на jnlp-файл (например <https://download.lsfusion.org/java/lsfusion-client-5.0.jnlp>), запустив который клиент автоматически установится при помощи технологии Java Web Start.
+
+### Установка веб-клиента
+
+-   Установить [Apache Tomcat](https://tomcat.apache.org/download-90.cgi) 9й версии.
+-   Скачать [веб-клиента](https://download.lsfusion.org/java/lsfusion-client-5.0-beta0.war) платформы lsFusion.
+-   Поместить war-файл в папку webapps Apache Tomcat, например, с именем lsfusion.war.
+-   Веб-клиент будет доступен по адресу http://localhost:8080/lsfusion.
 
 ## Установка в существующих Java-проектах
 

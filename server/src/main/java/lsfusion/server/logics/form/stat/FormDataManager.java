@@ -97,7 +97,7 @@ public abstract class FormDataManager {
         for(ImMap<ObjectEntity, Object> row : tableData.data) {
             List<String> dataRow = new ArrayList<>();
             for(PropertyDrawEntity<?> property : tableProperties)
-                dataRow.add(sources.properties.types.get(property).formatString(StaticPropertyData.getProperty(sources.properties, property, row)));
+                dataRow.add(sources.properties.types.get(property).formatString(StaticPropertyData.getProperty(sources.properties, property, row), true));
             rows.add(dataRow);
         }
 

@@ -19,7 +19,7 @@ For the application server to work, it must have access to the PostgreSQL databa
 To install the plug-in, Intellij IDEA version 2020.1 or higher must be installed on the computer.
 :::
 
--   In the IDEA settings (`File > Settings`), select `Plugins > Browse repositories`, find the [lsFusion plugin](https://plugins.jetbrains.com/plugin/7601-lsfusion), click `Install`, and restart IDEA.
+<iframe width="245px" height="48px" src="https://plugins.jetbrains.com/embeddable/install/7601"></iframe>
 
 ### Installing an application server via IDE
 
@@ -30,9 +30,16 @@ To install the plug-in, Intellij IDEA version 2020.1 or higher must be installed
 Note that IDEA remembers the downloaded/specified application server file in its settings and automatically sets it when creating other lsFusion projects. 
 :::
 
-### Installing a desktop client
+### Install desktop client
 
 -   After the server starts, in the start log one of the last lines will be a line with a link to the JNLP file (for example, <https://download.lsfusion.org/java/lsfusion-client-5.0.jnlp>), which when run will automatically install the client using Java Web Start technology.
+
+### Install Web Client
+
+- Install [Apache Tomcat](https://tomcat.apache.org/download-90.cgi) version 9.
+- Download [web-client](https://download.lsfusion.org/java/lsfusion-client-5.0-beta0.war) of lsFusion platform.
+- Place the war file in Apache Tomcat webapps folder, for example, with the name lsfusion.war.
+- The web client will be available at http://localhost:8080/lsfusion.
 
 ## Installation in existing Java projects
 

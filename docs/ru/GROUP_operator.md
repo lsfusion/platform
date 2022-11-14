@@ -68,7 +68,7 @@ hostGoalsScored(team) = GROUP SUM hostGoals(Game game) BY hostTeam(game);
 
 name = DATA STRING[100] (Country);
 // получается свойство (STRING[100]) -> Country
-countryName = GROUP AGGR Country country WHERE country IS Country BY name(country); 
+countryName = GROUP AGGR Country country BY name(country); 
 
 CLASS Book;
 CLASS Tag;

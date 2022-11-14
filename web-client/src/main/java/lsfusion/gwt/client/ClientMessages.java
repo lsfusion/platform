@@ -95,6 +95,7 @@ public interface ClientMessages extends Messages {
     String formFilterCompareNot();
     String formFilterCompareNotEquals();
     String formFilterCompareSearch();
+    String formFilterConditionViewAnd();
     String formFilterConditionViewOr();
     String formFilterConditionAllowNull();
     String formFilterAddCondition();

@@ -106,6 +106,7 @@ public abstract class MainFrame extends JFrame {
             MainController.showNotDefinedStrings = clientSettings.showNotDefinedStrings;
             MainController.matchSearchSeparator = clientSettings.matchSearchSeparator;
             MainController.colorPreferences = clientSettings.colorPreferences;
+            MainController.useTextAsFilterSeparator = clientSettings.useTextAsFilterSeparator;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 
@@ -177,7 +178,7 @@ public abstract class MainFrame extends JFrame {
             TimeZone.setDefault(timeZone);
         }
 
-        tFormats = new TFormats(localePreferences.twoDigitYearStart, localePreferences.dateFormat, localePreferences.timeFormat);
+        tFormats = new TFormats(localePreferences.twoDigitYearStart, localePreferences.dateFormat, localePreferences.timeFormat, timeZone);
     }
 
     private static void setupFormattableDates() {

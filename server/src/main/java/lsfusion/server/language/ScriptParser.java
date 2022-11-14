@@ -247,26 +247,21 @@ public class ScriptParser {
     }
 
     public DebugInfo.DebugPoint getGlobalDebugPoint(String moduleName, String path, boolean previous, String topName, LocalizedString topCaption) {
-        return new DebugInfo.DebugPoint(moduleName, path, getGlobalCurrentLineNumber(previous), getGlobalPositionInLine(previous), isInsideNonEnabledMeta(), topName, topCaption);
-    }
-
-    //0-based
-    public int getGlobalCurrentLineNumber(boolean previous) {
-        return (isInsideNonEnabledMeta() ? globalExpandedLines : currentExpandedLines) + currentExpansionLine + getCurrentParserLineNumber(previous) - 1;
-    }
-
-    public int getGlobalPositionInLine(boolean previous) {
         Token token = getToken(getCurrentParserInfo().getParser(), previous);
-        return token.getCharPositionInLine();
+
+        boolean insideNonEnabledMeta = isInsideNonEnabledMeta();
+
+        int globalCurrentLineNumber = (insideNonEnabledMeta ? globalExpandedLines : currentExpandedLines) + currentExpansionLine + token.getLine() - 1;
+        int globalPositionInLine = token.getCharPositionInLine();
+
+        int globalExpandedCurrentLineNumber = globalExpandedLines + currentExpansionLine + token.getLine() - 1;
+
+        return new DebugInfo.DebugPoint(moduleName, path, globalCurrentLineNumber, globalPositionInLine, insideNonEnabledMeta, globalExpandedCurrentLineNumber, topName, topCaption);
     }
 
     public int getCurrentParserLineNumber() {
-        return getCurrentParserLineNumber(false);
-    }
-    
-    private int getCurrentParserLineNumber(boolean previous) {
-        ParserInfo currentParserInfo = getCurrentParserInfo();
-        Token token = getToken(currentParserInfo.getParser(), previous);
+        Token token = getToken(getCurrentParserInfo().getParser(), false);
+
         return token.getLine();
     }
 

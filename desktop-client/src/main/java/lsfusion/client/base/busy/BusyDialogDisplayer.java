@@ -92,12 +92,13 @@ public class BusyDialogDisplayer extends TimerTask {
     @Override
     public void run() {
         if (drawingWindow != null) {
+            List<Object> input = serverMessageProvider.get();
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         if (busyDialog != null) {
-                            busyDialog.updateBusyDialog(serverMessageProvider.get());
+                            busyDialog.updateBusyDialog(input);
                             Boolean needInterrupt = busyDialog.needInterrupt();
                             if (needInterrupt != null)
                                 serverMessageProvider.interrupt(!needInterrupt);

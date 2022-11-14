@@ -564,27 +564,11 @@ public class PropertyFact {
         return new PropertyMapImplement<>(orderProperty, orderProperty.getMapInterfaces());
     }
 
-    public static <T> PropertyRevImplement<?,T> createCProp(StaticClass valueClass, Object value, ImMap<T, ValueClass> params) {
-        return createCProp(LocalizedString.NONAME, valueClass, value, params);
-    }
-
-    public static <T> PropertyRevImplement<?,T> createCProp(LocalizedString caption, StaticClass valueClass, Object value, ImMap<T, ValueClass> params) {
-        return createCProp(caption, valueClass instanceof LogicalClass && params.size() > 0 ? null : new ValueProperty(LocalizedString.NONAME, value, valueClass), params);
-    }
-
-    public static <T,V extends PropertyInterface> PropertyRevImplement<?,T> createCProp(LocalizedString caption, Property<V> valueProperty, ImMap<T, ValueClass> params) {
-        if(params.size()==0)
-            return new PropertyRevImplement<>(valueProperty, MapFact.EMPTYREV());
-
+    public static <T,V extends PropertyInterface> PropertyRevImplement<?,T> createCProp(LocalizedString caption, ImMap<T, ValueClass> params) {
         ImRevMap<PropertyInterface, T> mapInterfaces = params.keys().mapRevKeys((T value) -> new PropertyInterface());
         ImList<PropertyInterfaceImplement<PropertyInterface>> listImplements = mapInterfaces.join(params).mapColValues((BiFunction<PropertyInterface, ValueClass, PropertyInterfaceImplement<PropertyInterface>>) (key, value) -> IsClassProperty.getProperty(value, "value").mapPropertyImplement(MapFact.singletonRev("value", key))).toList();
 
-        PropertyMapImplement<?, PropertyInterface> and;
-        if(valueProperty==null)
-            and = createAnd(caption, mapInterfaces.keys(), listImplements.get(0), listImplements.subList(1, listImplements.size()).getCol());
-        else
-            and = createAnd(caption, mapInterfaces.keys(), new PropertyMapImplement<>(valueProperty), listImplements.getCol());
-        return and.mapRevImplement(mapInterfaces);
+        return createAnd(caption, mapInterfaces.keys(), listImplements.get(0), listImplements.subList(1, listImplements.size()).getCol()).mapRevImplement(mapInterfaces);
     }
 
     

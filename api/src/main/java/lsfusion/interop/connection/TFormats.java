@@ -2,9 +2,7 @@ package lsfusion.interop.connection;
 
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 public class TFormats {
     // deprecated usage in desktop-client (everywhere except parsing)
@@ -29,7 +27,9 @@ public class TFormats {
     public final DateTimeFormatter dateTimeFormatter;
     public final DateTimeFormatter zDateTimeFormatter;
 
-    public TFormats(Integer twoDigitYearStart, String datePattern, String timePattern) {
+    public final TimeZone timeZone;
+
+    public TFormats(Integer twoDigitYearStart, String datePattern, String timePattern, TimeZone timeZone) {
         this.twoDigitYearStart = twoDigitYearStart;
         this.datePattern = datePattern;
         this.timePattern = timePattern;
@@ -67,6 +67,8 @@ public class TFormats {
         dateFormatter = dateParser;
         timeFormatter = timeParser;
         dateTimeFormatter = dateTimeParser;
-        zDateTimeFormatter = DateTimeFormatter.ISO_INSTANT;
+        zDateTimeFormatter = zDateTimeParser;
+
+        this.timeZone = timeZone;
     }
 }

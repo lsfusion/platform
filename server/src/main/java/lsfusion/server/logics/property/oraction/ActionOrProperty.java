@@ -28,6 +28,7 @@ import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.action.session.changed.SessionProperty;
@@ -64,7 +65,6 @@ import java.util.concurrent.Callable;
 import java.util.function.IntFunction;
 
 import static lsfusion.interop.action.ServerResponse.*;
-import static lsfusion.server.logics.BusinessLogics.linkComparator;
 
 public abstract class ActionOrProperty<T extends PropertyInterface> extends AbstractNode {
     public static final IntFunction<PropertyInterface> genInterface = PropertyInterface::new;
@@ -471,9 +471,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public ImOrderSet<Link> links; // public for preread multithread optimization
     @ManualLazy
     public ImOrderSet<Link> getSortedLinks(boolean events) { // чисто для лексикографики
-        if(links==null) {
-            links = calculateLinks(events).mapMergeSetValues(value -> new Link(ActionOrProperty.this, value.first, value.second)).sortSet(linkComparator); // sorting for determenism, no need to cache because it's called once for each property
-        }
+        if(links==null)
+            links = calculateLinks(events).mapMergeSetValues(value -> new Link(ActionOrProperty.this, value.first, value.second)).sortSet(BusinessLogics.linkToComparator); // sorting for determenism, no need to cache because it's called once for each property
         return links;
     }
     public void dropLinks() {

@@ -13,7 +13,7 @@ $$
 SELECT CASE
            -- use plainto_tsquery if query contains special characters or is empty
            -- use plainto_tsquery for old pgsql (websearch_to_tsquery appeared in pgsql 11)
-           WHEN queryText ~ '^.*(\(|\)|\&|\:|\*|\!|<|>).*$' OR querytext = '' IS NOT FALSE THEN plainto_tsquery(config, querytext)
+           WHEN queryText ~ '^.*(\(|\)|\&|\:|\*|\!|''|<|>).*$' OR querytext = '' IS NOT FALSE THEN plainto_tsquery(config, querytext)
         ELSE to_tsquery(config,
             CONCAT (
                 REPLACE(

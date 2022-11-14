@@ -1,12 +1,10 @@
 package lsfusion.server.physics.admin.scheduler.controller.manager;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.DateConverter;
 import lsfusion.base.ExceptionUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.interop.action.MessageClientAction;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.context.AbstractContext;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
@@ -47,20 +45,19 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.base.DateConverter.*;
 import static org.apache.commons.lang3.StringUtils.trim;
 
 public class Scheduler extends MonitorServer implements InitializingBean {
-    private static final Logger logger = ServerLoggers.systemLogger;
     public static final Logger schedulerLogger = ServerLoggers.schedulerLogger;
 
     public ScheduledExecutorService daemonTasksExecutor;
@@ -224,16 +221,11 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             LocalDateTime startDate = (LocalDateTime) value.get("startDateScheduledTask");
             LocalTime timeFrom = (LocalTime) value.get("timeFromScheduledTask");
             LocalTime timeTo = (LocalTime) value.get("timeToScheduledTask");
+            String daysOfWeekScheduledTask = (String) value.get("daysOfWeekScheduledTask");
+            String daysOfMonthScheduledTask = (String) value.get("daysOfMonthScheduledTask");
             Integer period = (Integer) value.get("periodScheduledTask");
             Object schedulerStartType = value.get("schedulerStartTypeScheduledTask");
             boolean fixedDelay = afterFinish.equals(schedulerStartType);
-
-            String daysOfWeekScheduledTask = (String) value.get("daysOfWeekScheduledTask");
-            Set<String> daysOfWeek = daysOfWeekScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfWeekScheduledTask.split(",| ")));
-            daysOfWeek.remove("");
-            String daysOfMonthScheduledTask = (String) value.get("daysOfMonthScheduledTask");
-            Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
-            daysOfMonth.remove("");
 
             if(startDate != null || runAtStart)
                 tasks.add(new SchedulerTask(nameScheduledTask, readUserSchedulerTask(session, modifier, currentScheduledTaskObject, nameScheduledTask, timeFrom, timeTo,
@@ -281,11 +273,12 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                     propertySIDMap.put(orderProperty, new ScheduledTaskDetail(LA, script, ignoreExceptions, timeout, params));
             }
         }
-        Set<String> daysOfWeek = daysOfWeekScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfWeekScheduledTask.split(",| ")));
-        daysOfWeek.remove("");
-        Set<String> daysOfMonth = daysOfMonthScheduledTask == null ? new HashSet<>() : new HashSet(Arrays.asList(daysOfMonthScheduledTask.split(",| ")));
-        daysOfMonth.remove("");
-        return new UserSchedulerTask(nameScheduledTask, scheduledTaskObject, propertySIDMap, timeFrom, timeTo, daysOfWeek, daysOfMonth);
+        return new UserSchedulerTask(nameScheduledTask, scheduledTaskObject, propertySIDMap, timeFrom, timeTo,
+                splitAndTrim(daysOfWeekScheduledTask), splitAndTrim(daysOfMonthScheduledTask));
+    }
+
+    private Set<String> splitAndTrim(String value) {
+        return value == null ? new HashSet<>() : Arrays.stream(value.split(",")).map(String::trim).collect(Collectors.toSet());
     }
 
     public class SystemSchedulerTask extends SchedulerTask {
@@ -405,7 +398,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 if (daemonTasksExecutor instanceof WrappingScheduledExecutorService) {
                     schedulerLogger.info(((WrappingScheduledExecutorService) daemonTasksExecutor).getThreadPoolInfo());
                 }
-                boolean isTimeToRun = isTimeToRun(localTimeToSqlTime(timeFrom), localTimeToSqlTime(timeTo), daysOfWeek, daysOfMonth);
+                boolean isTimeToRun = isTimeToRun();
                 boolean alreadyExecuting = executingTasks.contains(scheduledTaskObject.getValue());
                 schedulerLogger.info(String.format("Task %s. TimeFrom %s, TimeTo %s, daysOfWeek %s, daysOfMonth %s. %s",
                         nameScheduledTask, timeFrom == null ? "-" : timeFrom, timeTo == null ? "-" : timeTo,
@@ -475,30 +468,26 @@ public class Scheduler extends MonitorServer implements InitializingBean {
             }
         }
 
-        private boolean isTimeToRun(Time timeFrom, Time timeTo, Set<String> daysOfWeek, Set<String> daysOfMonth) {
-            Calendar currentCal = Calendar.getInstance();
+        private boolean isTimeToRun() {
+            LocalDate currentDate = LocalDate.now();
+            LocalDateTime currentDateTime = LocalDateTime.now();
 
-            if((!daysOfWeek.isEmpty() && !daysOfWeek.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_WEEK) - 1)))
-                    || (!daysOfMonth.isEmpty() && !daysOfMonth.contains(String.valueOf(currentCal.get(Calendar.DAY_OF_MONTH)))))
+            if ((!daysOfWeek.isEmpty() && !daysOfWeek.contains(String.valueOf(currentDateTime.getDayOfWeek().getValue() - 1)))
+                    || (!daysOfMonth.isEmpty() && !daysOfMonth.contains(String.valueOf(currentDateTime.getDayOfMonth())))) {
                 return false;
+            }
 
-            if(timeFrom.equals(localTimeToSqlTime(defaultTime)) && timeTo.equals(localTimeToSqlTime(defaultTime))) return true;
+            if (timeFrom.equals(defaultTime) && timeTo.equals(defaultTime)) {
+                return true;
+            }
 
-            Calendar calendarFrom = Calendar.getInstance();
-            calendarFrom.setTime(timeFrom);
-            calendarFrom.set(Calendar.DAY_OF_MONTH, currentCal.get(Calendar.DAY_OF_MONTH));
-            calendarFrom.set(Calendar.MONTH, currentCal.get(Calendar.MONTH));
-            calendarFrom.set(Calendar.YEAR, currentCal.get(Calendar.YEAR));
+            LocalDateTime dateTimeFrom = timeFrom.atDate(currentDate);
+            LocalDateTime dateTimeTo = timeTo.atDate(currentDate);
+            if (timeFrom.isAfter(timeTo)) {
+                dateTimeTo = dateTimeTo.plusDays(1);
+            }
 
-            Calendar calendarTo = Calendar.getInstance();
-            calendarTo.setTime(timeTo);
-            calendarTo.set(Calendar.DAY_OF_MONTH, currentCal.get(Calendar.DAY_OF_MONTH));
-            if(timeFrom.compareTo(timeTo) > 0)
-                calendarTo.add(Calendar.DAY_OF_MONTH, 1);
-            calendarTo.set(Calendar.MONTH, currentCal.get(Calendar.MONTH));
-            calendarTo.set(Calendar.YEAR, currentCal.get(Calendar.YEAR));
-
-            return currentCal.getTimeInMillis() >= calendarFrom.getTimeInMillis() && currentCal.getTimeInMillis() <= calendarTo.getTimeInMillis();
+            return currentDateTime.compareTo(dateTimeFrom) >= 0 && currentDateTime.compareTo(dateTimeTo) <= 0;
         }
 
         @StackNewThread

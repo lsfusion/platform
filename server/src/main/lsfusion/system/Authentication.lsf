@@ -354,6 +354,7 @@ userTimeFormat '{authentication.user.time.format.user}' = DATA STRING (CustomUse
 
 clientLanguage '{authentication.client.language.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
 clientCountry '{authentication.client.country.user}' = DATA STRING[3] (CustomUser) CHARWIDTH 5;
+clientTimeZone '{authentication.client.time.zone.user}' = DATA STRING[30] (CustomUser);
 useClientLocale '{authentication.use.client.locale.user}' = DATA BOOLEAN (CustomUser) CHARWIDTH 12;
 
 clientDateFormat '{authentication.client.date.format.user}' = DATA STRING (CustomUser);
@@ -385,14 +386,15 @@ timeFormat '{authentication.time.format.user}' (CustomUser user) = OVERRIDE (cli
 lsfParams(STRING s) += country(currentUser()) IF s = 'googleMapAutocompleteCountry';
 lsfParams(STRING s) += language(currentUser()) IF s = 'googleGeocodingLanguage';
 
+timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE (clientTimeZone(user) IF useClientLocale(user)), userTimeZone(user), defaultUserTimezone(), serverTimezone();
+twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart(), serverTwoDigitYearStart();
+
 // "duplicate" of loadLocalePreferences, but web-client needs this data just right after authentication
 getCurrentUserLocale() {
     FOR CustomUser user AS CustomUser = currentUser() DO
         EXPORT JSON FROM language(user), country(user); 
 } @@api;
 
-timeZone '{authentication.time.zone.user}' (CustomUser user) = OVERRIDE userTimeZone(user), defaultUserTimezone(), serverTimezone();
-twoDigitYearStart '{authentication.two.digit.year.start.user}' (CustomUser user) = OVERRIDE userTwoDigitYearStart(user), defaultUserTwoDigitYearStart(), serverTwoDigitYearStart();
 
 // GUI settings -- should be moved to Service (but needs migration)
 

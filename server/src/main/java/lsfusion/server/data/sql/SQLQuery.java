@@ -270,26 +270,30 @@ public class SQLQuery extends SQLCommand<ResultHandler<String, String>> {
         } else
             result = ((ReadAllResultHandler<String, String>)handler).terminate();
 
+        return resultToString(result, keys, props, keyReaders.fnGetValue(), propertyReaders.fnGetValue());
+    }
+
+    public static <K, V, KR, VR> String resultToString(ImOrderMap<ImMap<KR, Object>, ImMap<VR, Object>> result, ImMap<K, KR> keys, ImMap<V, VR> props, Function<KR, ? extends Reader> keyReaders, Function<VR, ? extends Reader> propertyReaders) {
         String resultString = "";
         if(result.isEmpty())
             return resultString;
 
         String name = "";
-        for(int i=0,size=keys.size();i<size;i++)
-            name += StringUtils.rightPad(keys.getKey(i).toString(), keyReaders.get(keys.getValue(i)).getCharLength().getAprValue()) + " ";
-        for(int i=0,size=props.size();i<size;i++)
-            name += StringUtils.rightPad(props.getKey(i).toString(), propertyReaders.get(props.getValue(i)).getCharLength().getAprValue()) + " ";
+        for(int i = 0, size = keys.size(); i<size; i++)
+            name += StringUtils.rightPad(keys.getKey(i).toString(), keyReaders.apply(keys.getValue(i)).getCharLength().getAprValue()) + " ";
+        for(int i = 0, size = props.size(); i<size; i++)
+            name += StringUtils.rightPad(props.getKey(i).toString(), propertyReaders.apply(props.getValue(i)).getCharLength().getAprValue()) + " ";
         resultString += name + '\n';
 
-        for(int i=0,size=result.size();i<size;i++) {
+        for(int i = 0, size = result.size(); i<size; i++) {
             String rowName = "";
 
-            ImMap<String, Object> keyMap = result.getKey(i);
-            for(int j=0,sizeJ=keys.size();j<sizeJ;j++)
-                rowName += StringUtils.rightPad(BaseUtils.nullToString(keyMap.get(keys.getValue(j))), keyReaders.get(keys.getValue(j)).getCharLength().getAprValue()) + " ";
-            ImMap<String, Object> rowMap = result.getValue(i);
-            for(int j=0,sizeJ=props.size();j<sizeJ;j++)
-                rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.get(props.getValue(j))), propertyReaders.get(props.getValue(j)).getCharLength().getAprValue()) + " ";
+            ImMap<KR, Object> keyMap = result.getKey(i);
+            for(int j = 0, sizeJ = keys.size(); j<sizeJ; j++)
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(keyMap.get(keys.getValue(j))), keyReaders.apply(keys.getValue(j)).getCharLength().getAprValue()) + " ";
+            ImMap<VR, Object> rowMap = result.getValue(i);
+            for(int j = 0, sizeJ = props.size(); j<sizeJ; j++)
+                rowName += StringUtils.rightPad(BaseUtils.nullToString(rowMap.get(props.getValue(j))), propertyReaders.apply(props.getValue(j)).getCharLength().getAprValue()) + " ";
 
             resultString += rowName + '\n';
 

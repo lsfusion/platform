@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.*;
+import static lsfusion.base.DateConverter.*;
+import static lsfusion.base.TimeConverter.localTimeToSqlTime;
 
 public class OverJDBField extends JDBField {
 

@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Iterator;
 
-import static lsfusion.server.logics.classes.data.time.DateTimeConverter.localDateTimeToSqlTimestamp;
+import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
 
 public class ToMillisecondsAction extends InternalAction {
     private final ClassPropertyInterface timestampInterface;

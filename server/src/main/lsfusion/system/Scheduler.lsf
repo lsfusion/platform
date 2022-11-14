@@ -76,7 +76,7 @@ in '{scheduler.in.dow.scheduled.task}' = ABSTRACT BOOLEAN (DOW, ScheduledTask);
 in '{scheduler.in.dow.scheduled.task}' = DATA BOOLEAN (DOW, UserScheduledTask); 
 in[DOW, ScheduledTask](DOW d, UserScheduledTask t) += in(d, t);
 
-daysOfWeek (ScheduledTask t)= GROUP CONCAT STRING[3](number(DOW d)) IF in (d,t), ', ' ORDER d;   
+daysOfWeek (ScheduledTask t)= GROUP CONCAT STRING[3](numberM(DOW d)) IF in (d,t), ', ' ORDER d;   
 
 CLASS ABSTRACT ScheduledTaskDetail '{scheduler.scheduled.task.detail}';
 TABLE scheduledTaskDetail (ScheduledTaskDetail);
@@ -183,8 +183,7 @@ changedSchedulerTask (ScheduledTask t) = GROUP SUM 1 IF (((CHANGED (runAtStart(t
                                          OR CHANGED (active(t))) OR
                                                 (((CHANGED (active(ScheduledTaskDetail td)) OR CHANGED (order(td)) OR CHANGED(script(td)) 
                                          OR CHANGED (scheduledTask(td)) OR CHANGED (action(td)) 
-                                         OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))
-                                         AND active(scheduledTask(td))) AND scheduledTask(td)==t) OR 
+                                         OR CHANGED (ignoreExceptions(td)) OR CHANGED (timeout(td)) OR CHANGED (parameter(td)))) AND scheduledTask(td)==t) OR 
                                                 CHANGED(in(DOW dow, t))) AND isStartedScheduler() AND t IS ScheduledTask AND td IS ScheduledTaskDetail AND dow IS DOW;
                                                 
 executeScheduledTask '{scheduler.execute.scheduled.task}'  INTERNAL  'lsfusion.server.physics.admin.scheduler.action.ExecuteScheduledTaskAction' (ScheduledTask) CONFIRM;                                                                                                                                 
