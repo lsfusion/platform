@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.ArrayList;
@@ -205,12 +206,22 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         junctionSeparator.addStyleName("userFilterJunctionSeparator");
         rightPanel.addCentered(junctionSeparator);
 
-        junctionView = new GToolbarButton(SEPARATOR_ICON_PATH, messages.formFilterConditionViewOr()) {
+        junctionView = new GToolbarButton(
+                MainFrame.useTextAsFilterSeparator ? messages.formFilterConditionViewAnd() : null,
+                MainFrame.useTextAsFilterSeparator ? null : SEPARATOR_ICON_PATH,
+                messages.formFilterConditionViewAnd(), true) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
                     condition.junction = !condition.junction;
-                    showBackground(!condition.junction);
+                    String caption = condition.junction ? messages.formFilterConditionViewAnd() : messages.formFilterConditionViewOr();
+                    if(MainFrame.useTextAsFilterSeparator) {
+                        setText(caption);
+                    } else {
+                        showBackground(!condition.junction);
+                    }
+                    setTitle(caption);
+
                     enableApplyButton();
                     focusValueView();
                 };
