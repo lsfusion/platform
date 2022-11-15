@@ -108,12 +108,13 @@
     background-color: var(--component-hover-background-color-rgba);
 }
 
+
+/* --- workaround for disappearing sticky cell borders when scrolling --- */
 .scrolled-down:not(.table-borderless) .dataGridHeaderRow,
 .scrolled-up:not(.table-borderless) .dataGridFooterRow,
 .table:not(.table-borderless) .dataGridFooter:not(.empty-footer) .dataGridFooterRow {
     outline: 1px solid var(--bs-table-border-color);
 }
-
 .scrolled-down:not(.table-borderless) .dataGridHeaderCell,
 .scrolled-down.table-bordered .dataGridHeaderRow,
 .table.table-bordered .empty-header .dataGridHeaderRow,
@@ -124,22 +125,26 @@
 .dataGridFooterRow:not(.empty-footer) .dataGridFooterCell{
     border-bottom: none;
 }
-
 .scrolled-down.table-bordered .dataGridHeaderRow,
 .table.table-bordered .dataGridColumnRow,
 .table-bordered .dataGridBody .dataGridRow {
     border-top: none;
 }
-
 .scrolled-down.table-bordered :not(.empty-header) .dataGridHeaderRow {
     top: 1px;
 }
-
 .table :not(.empty-footer) .dataGridFooterRow {
     bottom: 1px;
 }
-
 .empty-header .dataGridHeaderCell,
 .empty-footer .dataGridFooterCell {
     padding: 0;
 }
+/* only partly fixes vertical borders */
+.table.table-bordered .dataGridStickyHeader, 
+.table.table-bordered .dataGridStickyCell,
+.table.table-bordered .dataGridStickyFooter {
+    outline: 1px solid var(--bs-table-border-color);
+    border-right: none;
+}
+/* --- --- */
