@@ -182,7 +182,8 @@
         </c:forEach>
 
         <script>
-            function setClientLocaleParams() {
+            function init() {
+                //setClientLocaleParams
                 let intlOptions = Intl.DateTimeFormat().resolvedOptions();
                 setCookie('LSFUSION_CLIENT_TIME_ZONE', intlOptions.timeZone);
 
@@ -190,10 +191,13 @@
                 momentLocale.locale(intlOptions.locale);
                 setCookie('LSFUSION_CLIENT_TIME_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('LT')));
                 setCookie('LSFUSION_CLIENT_DATE_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('L')));
+
+                //setSessionID
+                setCookie('LSFUSION_SESSION_ID', '${sessionID}');
             }
         </script>
     </head>
-    <body onload="setClientLocaleParams();">
+    <body onload="init();">
         <script language="JavaScript">
             var pageSetup = {
                 webAppRoot: "<%= request.getContextPath() + "/" %>",

@@ -133,6 +133,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         return createSession(rmiManager.getPort(), token, sessionInfo);
     }
 
+    @Override
+    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
+        navigatorsManager.updateNavigatorClientSettings(getStack(), screenSize, mobile);
+    }
+
     public RemoteSession createSession(int port, AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
         try {
             return new RemoteSession(port, getContext().getLogicsInstance(), token, sessionInfo, getStack());

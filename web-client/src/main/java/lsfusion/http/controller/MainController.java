@@ -14,16 +14,20 @@ import lsfusion.http.authentication.LSFClientRegistrationRepository;
 import lsfusion.http.authentication.LSFLoginUrlAuthenticationEntryPoint;
 import lsfusion.http.authentication.LSFRemoteAuthenticationProvider;
 import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.http.provider.navigator.NavigatorProvider;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
+import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
+import net.customware.gwt.dispatch.shared.general.StringResult;
 import org.apache.http.entity.ContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,6 +46,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static lsfusion.interop.session.ExternalUtils.getCharsetFromContentType;
+import static org.springframework.security.web.WebAttributes.AUTHENTICATION_EXCEPTION;
 
 @Controller
 public class MainController {
@@ -207,8 +212,26 @@ public class MainController {
         return serverSettings;
     }
 
+    @Autowired
+    private NavigatorProvider navigatorProvider;
+
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
+        StringResult result;
+        try {
+            result = logicsProvider.runRequest(request, (sessionObject, retry) -> {
+                try {
+                    return new StringResult(navigatorProvider.createNavigator(sessionObject, request));
+                } catch (RemoteMessageException e) {
+                    request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
+                    throw e;
+                }
+            });
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+        model.addAttribute("sessionID", result.get());
+
         ServerSettings serverSettings = getServerSettings(request, false);
 
         model.addAttribute("title", getTitle(serverSettings));

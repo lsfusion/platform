@@ -60,9 +60,6 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
     public String staticImagesURL;
 
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
-        // global
-        registry.addHandler(new CreateNavigatorHandler(this));
-
         // logics
         registry.addHandler(new GenerateIDHandler(this));
 
@@ -71,8 +68,8 @@ public class MainDispatchServlet extends net.customware.gwt.dispatch.server.stan
         registry.addHandler(new ClientPushMessagesHandler(this));
         registry.addHandler(new ContinueNavigatorActionHandler(this));
         registry.addHandler(new ExecuteNavigatorActionHandler(this));
-        registry.addHandler(new GetNavigatorInfoHandler(this));
-        registry.addHandler(new GetClientSettingsHandler(this));
+        registry.addHandler(new GetSettingsHandler(this));
+        registry.addHandler(new UpdateNavigatorClientSettingsHandler(this));
         registry.addHandler(new LogClientExceptionActionHandler(this));
         registry.addHandler(new GainedFocusHandler(this));
         registry.addHandler(new ThrowInNavigatorActionHandler(this));

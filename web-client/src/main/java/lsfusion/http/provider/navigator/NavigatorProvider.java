@@ -1,7 +1,5 @@
 package lsfusion.http.provider.navigator;
 
-
-import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
@@ -12,7 +10,8 @@ import java.rmi.RemoteException;
 
 public interface NavigatorProvider {
 
-    String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException;
+    String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
+    void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException;
     NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException;
     NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
     void removeNavigatorSessionObject(String sessionID) throws RemoteException;
