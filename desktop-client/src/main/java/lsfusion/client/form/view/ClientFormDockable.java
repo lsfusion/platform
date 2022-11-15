@@ -62,7 +62,8 @@ public class ClientFormDockable extends ClientDockable {
 
             @Override
             public void unblockView() {
-                ClientFormDockable.this.form.getLayout().setBlocked(false);
+                if (ClientFormDockable.this.form != null)
+                    ClientFormDockable.this.form.getLayout().setBlocked(false);
                 ClientFormDockable.this.unblockView();
             }
 

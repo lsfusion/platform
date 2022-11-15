@@ -81,22 +81,24 @@ public class LSFTooltipManager {
                     GraphicsEnvironment localGraphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
                     int balloonWidth = balloonTip.getPreferredSize().width;
-                    Point mouseLocation = MouseInfo.getPointerInfo().getLocation();
-                    int calculatedX = mouseLocation.x - (balloonWidth / 2);
-                    Rectangle bounds = localGraphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration().getBounds();
+                    PointerInfo pointerInfo = MouseInfo.getPointerInfo();
+                    if (pointerInfo != null) {
+                        Point mouseLocation = pointerInfo.getLocation();
+                        int calculatedX = mouseLocation.x - (balloonWidth / 2);
+                        Rectangle bounds = localGraphicsEnvironment.getDefaultScreenDevice().getDefaultConfiguration().getBounds();
 
-                    if (x + balloonWidth > balloonTip.getTopLevelContainer().getWidth())
-                        x = balloonTip.getTopLevelContainer().getWidth() - balloonWidth;
-                    else if (mouseLocation.x < bounds.width && calculatedX > 0)
-                        x = calculatedX;
-                    else if (mouseLocation.x - (balloonWidth / 2) > bounds.width)
-                        x = calculatedX - bounds.width;
-                    else
-                        x = 0;
+                        if (x + balloonWidth > balloonTip.getTopLevelContainer().getWidth())
+                            x = balloonTip.getTopLevelContainer().getWidth() - balloonWidth;
+                        else if (mouseLocation.x < bounds.width && calculatedX > 0)
+                            x = calculatedX;
+                        else if (mouseLocation.x - (balloonWidth / 2) > bounds.width)
+                            x = calculatedX - bounds.width;
+                        else
+                            x = 0;
 
-                    int calculatedY = attached.y - balloonTip.getPreferredSize().height;
-                    y = calculatedY < 0 ? attached.y + attached.height : calculatedY;
-
+                        int calculatedY = attached.y - balloonTip.getPreferredSize().height;
+                        y = calculatedY < 0 ? attached.y + attached.height : calculatedY;
+                    }
                 }
             };
 

@@ -1884,7 +1884,7 @@ public class BasicComboBoxUI extends ComboBoxUI {
         private boolean ignoreFocusEvent(FocusEvent e) {
             Component lostFocus = e.getComponent();
             Component gainedFocus = e.getOppositeComponent();
-            return lostFocus != null && gainedFocus != null && (lostFocus.equals(gainedFocus.getParent()) || lostFocus.getParent().equals(gainedFocus));
+            return lostFocus != null && gainedFocus != null && (lostFocus.equals(gainedFocus.getParent()) || (lostFocus.getParent() != null && lostFocus.getParent().equals(gainedFocus)));
         }
 
         //
