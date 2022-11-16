@@ -101,7 +101,7 @@ public class TooltipManager {
                             };
 
                             VerticalPanel panel = new VerticalPanel();
-                            tooltipHtml = fillTooltipText(tooltipHelper, tooltipText, closeOnClick);
+                            tooltipHtml = fillTooltipText(tooltipHelper, tooltipText);
                             panel.add(new FocusPanel(tooltipHtml));
 
                             //to prevent the cursor hovering over the top left of the tooltip
@@ -124,10 +124,10 @@ public class TooltipManager {
         }
     }
 
-    private HTML fillTooltipText(TooltipHelper tooltipHelper, String tooltipText, boolean closeOnClick) {
+    private HTML fillTooltipText(TooltipHelper tooltipHelper, String tooltipText) {
         HTML tooltipHtml = new HTML(tooltipText, false);
 
-        if (!closeOnClick || MainFrame.showDetailedInfo) {
+        if (MainFrame.showDetailedInfo) {
             String projectLSFDir = MainFrame.projectLSFDir;
 
             if (projectLSFDir != null) {
