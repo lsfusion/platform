@@ -1,6 +1,8 @@
 package lsfusion.http.authentication;
 
 import lsfusion.http.controller.MainController;
+import lsfusion.http.provider.logics.LogicsProvider;
+import lsfusion.interop.logics.ServerSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,9 +20,20 @@ public class LSFUrlAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private LSFRemoteAuthenticationProvider authenticationProvider;
 
+    @Autowired
+    private LSFClientRegistrationRepository clientRegistrations;
+
+    @Autowired
+    private LogicsProvider logicsProvider;
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
+
+        ServerSettings serverSettings = logicsProvider.getServerSettings(request, false);
+        if (serverSettings != null)
+            clientRegistrations.setForbidAccessRegistrationPage(serverSettings.disableRegistration);
+
         String userName = request.getParameter("user");
         String password = request.getParameter("password");
 
