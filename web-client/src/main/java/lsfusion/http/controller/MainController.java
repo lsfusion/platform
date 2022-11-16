@@ -101,12 +101,16 @@ public class MainController {
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
     public String registration(ModelMap model, HttpServletRequest request) {
         addStandardModelAttributes(model, request);
-        return "registration";
+        return getDisableRegistration(getAndCheckServerSettings(request, checkVersionError, false)) ? "login" : "registration";
     }
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
     public String processRegistration(HttpServletRequest request, @RequestParam String username, @RequestParam String password,
                           @RequestParam String firstName, @RequestParam String lastName, @RequestParam String email) {
+
+        if (getDisableRegistration(getAndCheckServerSettings(request, checkVersionError, false)))
+            return "login";
+
         JSONArray user = new JSONArray();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("login", username);
