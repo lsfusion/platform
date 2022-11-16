@@ -228,7 +228,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             }
         };
         junctionView.addStyleName("userFilterButton");
-        junctionView.addStyleName("userFilterJunctionSeparatorButton");
+        junctionView.addStyleName(MainFrame.useTextAsFilterSeparator ? "userFilterJunctionSeparatorButtonText" : "userFilterJunctionSeparatorButton");
         junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
         junctionView.showBackground(!condition.junction);
         rightPanel.addCentered(junctionView);
