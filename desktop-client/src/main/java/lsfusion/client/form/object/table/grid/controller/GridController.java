@@ -147,14 +147,16 @@ public class GridController extends AbstractTableController {
 
             addToolbarSeparator();
 
-            ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseReleased(MouseEvent e) {
-                    for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
-                        ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
+            if (((GridTable) table).hasHeader) {
+                ((GridTable) table).getTableHeader().addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        for (int i = 0; i < ((GridTable) table).getTableModel().getColumnCount(); ++i) {
+                            ((GridTable) table).setUserWidth(((GridTable) table).getTableModel().getColumnProperty(i), ((GridTable) table).getColumnModel().getColumn(i).getWidth());
+                        }
                     }
-                }
-            });
+                });
+            }
             userPreferencesButton = new ToolbarGridButton(USER_PREFERENCES_ICON_PATH, getUserPreferencesButtonTooltip());
             userPreferencesButton.showBackground(table.hasUserPreferences());
 
