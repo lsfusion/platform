@@ -58,6 +58,8 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
     protected boolean editPerformed;
     protected boolean commitingValue;
     
+    public boolean hasHeader;
+    
     protected ClientPropertyTable(TableModel model, ClientFormController form, ClientGroupObject groupObject) {
         this(model, form, groupObject, new ClientAbstractCellRenderer());
     }
@@ -67,6 +69,8 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         
         this.form = form;
         this.groupObject = groupObject;
+        
+        hasHeader = groupObject != null && groupObject.hasHeaders;
 
         editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 

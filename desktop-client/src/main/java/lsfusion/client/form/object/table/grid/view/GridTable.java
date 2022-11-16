@@ -142,9 +142,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel(), iform, igridView.getGridController().getGroupObject());
 
-        GridTableHeader tableHeader = new GridTableHeader(columnModel);
-        setTableHeader(tableHeader);
-        LSFTooltipManager.initTooltip(tableHeader, columnModel, this);
+        if (hasHeader) {
+            GridTableHeader tableHeader = new GridTableHeader(columnModel);
+            setTableHeader(tableHeader);
+            LSFTooltipManager.initTooltip(tableHeader, columnModel, this);
+        } else {
+            setTableHeader(null);
+        }
 
         gridController = igridView.getGridController();
 
@@ -202,18 +206,20 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         };
 
-        TableHeaderUI ui = getTableHeader().getUI();
-        if (ui instanceof BasicTableHeaderUI) {
-            // change default CellRendererPane to draw corner triangles
-            JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
-            CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
-            header.remove(oldRendererPane);
-            GridCellRendererPane newRendererPane = new GridCellRendererPane();
-            ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
-            header.add(newRendererPane);
-        }
+        if (hasHeader) {
+            TableHeaderUI ui = getTableHeader().getUI();
+            if (ui instanceof BasicTableHeaderUI) {
+                // change default CellRendererPane to draw corner triangles
+                JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
+                CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
+                header.remove(oldRendererPane);
+                GridCellRendererPane newRendererPane = new GridCellRendererPane();
+                ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
+                header.add(newRendererPane);
+            }
 
-        tableHeader.addMouseListener(sortableHeaderManager);
+            tableHeader.addMouseListener(sortableHeaderManager);
+        }
 
         addFocusListener(new FocusAdapter() {
             @Override
@@ -346,8 +352,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
         form.changePropertyOrder(columnKey.first, modiType, columnKey.second);
-        tableHeader.resizeAndRepaint();
-        tableHeader.repaint();
+        if (hasHeader) {
+            tableHeader.resizeAndRepaint();
+            tableHeader.repaint();
+        }
     }
 
     private void ordersSet(ClientGroupObject groupObject, LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
@@ -361,8 +369,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         }
 
         form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
-        tableHeader.resizeAndRepaint();
-        tableHeader.repaint();
+        if (hasHeader) {
+            tableHeader.resizeAndRepaint();
+            tableHeader.repaint();
+        }
     }
 
     private Action tabAction = new GoToNextCellAction(true);
@@ -604,7 +614,9 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
 
             repaint();
-            tableHeader.resizeAndRepaint();
+            if (hasHeader) {
+                tableHeader.resizeAndRepaint();
+            }
             gridController.setForceHidden(false);
         } else {
             gridController.setForceHidden(true);
