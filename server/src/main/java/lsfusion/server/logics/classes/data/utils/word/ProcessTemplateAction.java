@@ -31,6 +31,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static lsfusion.base.BaseUtils.nvl;
 
 public class ProcessTemplateAction extends InternalAction {
     public final ClassPropertyInterface templateInterface;
@@ -77,12 +81,24 @@ public class ProcessTemplateAction extends InternalAction {
 
                         String key = (String) templateEntry.get("key");
                         String value = (String) templateEntry.get("value");
+
+                        String hyperLink = null;
+                        if(value != null) {
+                            //url|text
+                            Pattern pattern = Pattern.compile("((?:http|https):.*)\\|(.*)");
+                            Matcher m = pattern.matcher(value);
+                            if(m.matches()) {
+                                hyperLink = m.group(1);
+                                value = m.group(2);
+                            }
+                        }
+
                         String type = (String) templateEntry.get("type");
                         String columnSeparator = (String) templateEntry.get("columnSeparator");
                         String rowSeparator = (String) templateEntry.get("rowSeparator");
 
                         if (key != null && value != null) {
-                            TemplateEntry entry = new TemplateEntry(key, value.replace('\n', '\r'), type, columnSeparator, rowSeparator);
+                            TemplateEntry entry = new TemplateEntry(key, value.replace('\n', '\r'), hyperLink, type, columnSeparator, rowSeparator);
                             if(entry.isList()) {
                                 listTemplateEntriesList.add(entry);
                             } else {
@@ -111,7 +127,7 @@ public class ProcessTemplateAction extends InternalAction {
                             for (XWPFTable tbl : document.getTables()) {
                                 replaceTableDataDocx(tbl, entry);
                             }
-                            replaceInParagraphs(document, entry.key, entry.value);
+                            replaceInParagraphs(document, entry.key, entry.value, entry.link);
                         }
                         document.write(outputStream);
                     } else {
@@ -203,43 +219,78 @@ public class ProcessTemplateAction extends InternalAction {
         }
     }
     
-    private void replaceInParagraphs(XWPFDocument document, String find, String repl) {
+    private void replaceInParagraphs(XWPFDocument document, String find, String repl, String link) {
 
         Set<XWPFParagraph> toDelete = new HashSet<>();
 
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             List<XWPFRun> runs = paragraph.getRuns();
 
-            TextSegment found = paragraph.searchText(find, new PositionInParagraph());
-            if (found != null) {
-                if (found.getBeginRun() == found.getEndRun()) {
-                    // whole search string is in one Run
-                    XWPFRun run = runs.get(found.getBeginRun());
+            if(link != null) {
+                //poi-ooxml 4.1.2 can't replace hyperlink, only to remove and create new one.
+                //key must be in separate run and be not hyperlink (can't remove hyperLink run)
+                //new run will be inserted to the end of paragraph
+                for(int i = 0; i < runs.size(); i++){
+                    XWPFRun run = runs.get(i);
                     String runText = run.getText(run.getTextPosition());
-                    String replaced = runText.replace(find, repl);
-                    setText(run, replaced);
-                } else {
-                    // The search string spans over more than one Run
-                    // Put the Strings together
-                    StringBuilder b = new StringBuilder();
-                    for (int runPos = found.getBeginRun(); runPos <= found.getEndRun(); runPos++) {
-                        XWPFRun run = runs.get(runPos);
-                        b.append(run.getText(run.getTextPosition()));
-                    }
-                    String connectedRuns = b.toString();
-                    String replaced = connectedRuns.replace(find, repl);
 
-                    // The first Run receives the replaced String of all connected Runs
-                    XWPFRun partOne = runs.get(found.getBeginRun());
-                    setText(partOne, replaced);
-                    // Removing the text in the other Runs.
-                    for (int runPos = found.getBeginRun() + 1; runPos <= found.getEndRun(); runPos++) {
-                        XWPFRun partNext = runs.get(runPos);
-                        partNext.setText("", 0);
+                    if(runText.contains(find)) {
+                        String replaced = runText.replace(find, repl);
+
+                        String fontFamily = run.getFontFamily();
+                        int fontSize = run.getFontSize();
+                        String color = nvl(run.getColor(), "0000FF"); //default blue
+                        boolean bold = run.isBold();
+                        boolean italic = run.isItalic();
+
+                        paragraph.removeRun(i);
+                        XWPFHyperlinkRun newRun = paragraph.createHyperlinkRun(link);
+
+                        newRun.setFontFamily(fontFamily);
+                        newRun.setFontSize(fontSize);
+                        newRun.setBold(bold);
+                        newRun.setItalic(italic);
+
+                        newRun.setColor(color);
+                        newRun.setUnderline(UnderlinePatterns.SINGLE);
+                        newRun.setUnderlineColor(color);
+
+                        setText(newRun, replaced);
                     }
                 }
-                if (paragraph.getText().isEmpty())
-                    toDelete.add(paragraph);
+            } else {
+                TextSegment found = paragraph.searchText(find, new PositionInParagraph());
+                if (found != null) {
+                    if (found.getBeginRun() == found.getEndRun()) {
+                        // whole search string is in one Run
+                        XWPFRun run = runs.get(found.getBeginRun());
+                        String runText = run.getText(run.getTextPosition());
+                        String replaced = runText.replace(find, repl);
+                        setText(run, replaced);
+                    } else {
+                        // The search string spans over more than one Run
+                        // Put the Strings together
+                        StringBuilder b = new StringBuilder();
+                        for (int runPos = found.getBeginRun(); runPos <= found.getEndRun(); runPos++) {
+                            XWPFRun run = runs.get(runPos);
+                            b.append(run.getText(run.getTextPosition()));
+                        }
+                        String connectedRuns = b.toString();
+                        String replaced = connectedRuns.replace(find, repl);
+
+                        // The first Run receives the replaced String of all connected Runs
+                        XWPFRun partOne = runs.get(found.getBeginRun());
+                        setText(partOne, replaced);
+                        // Removing the text in the other Runs.
+                        for (int runPos = found.getBeginRun() + 1; runPos <= found.getEndRun(); runPos++) {
+                            XWPFRun partNext = runs.get(runPos);
+                            partNext.setText("", 0);
+                        }
+                    }
+                    if (paragraph.getText().isEmpty()) {
+                        toDelete.add(paragraph);
+                    }
+                }
             }
         }
         for (XWPFParagraph paragraph : toDelete) {
@@ -289,13 +340,15 @@ public class ProcessTemplateAction extends InternalAction {
     private class TemplateEntry {
         public String key;
         public String value;
+        public String link;
         public String type;
         public String columnSeparator;
         public String rowSeparator;
 
-        public TemplateEntry(String key, String value, String type, String columnSeparator, String rowSeparator) {
+        public TemplateEntry(String key, String value, String link, String type, String columnSeparator, String rowSeparator) {
             this.key = key;
             this.value = value;
+            this.link = link;
             this.type = type;
             this.columnSeparator = columnSeparator;
             this.rowSeparator = rowSeparator;
