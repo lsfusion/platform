@@ -272,7 +272,7 @@ public abstract class AList<K> extends AColObject implements ImList<K> {
             if(group!=null) {
                 MList<K> groupList = mResult.get(group);
                 if (groupList == null) {
-                    groupList = ListFact.mListMax(size);
+                    groupList = ListFact.mList();
                     mResult.exclAdd(group, groupList);
                 }
                 groupList.add(key);

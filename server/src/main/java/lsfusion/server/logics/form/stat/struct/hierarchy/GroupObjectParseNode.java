@@ -63,9 +63,9 @@ public class GroupObjectParseNode extends GroupParseNode {
         boolean isIndex = isIndex();
         boolean upDown = node.isUpDown();
 
-        MList<Pair<Object, T>> mMap = ListFact.mList();
         int i=0;
         ImList<ImMap<ObjectEntity, Object>> objects = exportData.getObjects(group, upValues);
+        MList<Pair<Object, T>> mMap = ListFact.mList(objects.size());
         for (ImMap<ObjectEntity, Object> data : objects) {
             T newNode = node.createNode();
             if(!upDown)
