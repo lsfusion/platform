@@ -35,4 +35,9 @@ public class ClientHTMLTextClass extends ClientTextClass{
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new TextPropertyEditor(value, property.design);
     }
+
+    @Override
+    public boolean trimTooltip() {
+        return false;
+    }
 }
