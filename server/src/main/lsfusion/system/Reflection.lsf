@@ -473,7 +473,8 @@ dumb (PropertyGroup pg) = ' ' IF pg IS PropertyGroup;
 FORM properties '{reflection.form.properties}'
     OBJECTS p=Property
     PROPERTIES(p) READONLY caption, canonicalName, dbName, annotation, tableSID, return, class, complexity, parent, number,
-     quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, stored CHANGEABLE, isSetNotNull CHANGEABLE, lastRecalculate
+        quantity, notNullQuantity, userLoggable CHANGEABLE, loggable, stored CHANGEABLE, isSetNotNull CHANGEABLE, 
+        disableInputList CHANGEABLE, lastRecalculate
 
     TREE treePropertiesObject tps=PropertyGroup PARENT parent(tps), ps=Property
     PROPERTIES(tps) READONLY caption, SID, d1=dumb, d2=dumb, d3=dumb, d4=dumb, d5=dumb, parent, number, d6=dumb, d7=dumb, d8=dumb, d9=dumb
