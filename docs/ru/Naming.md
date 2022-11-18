@@ -57,7 +57,6 @@ title: 'Именование'
 | `BPSTRING[ ]`         | `STRING`          |
 | `BPISTRING[ ]`        | `STRING`          |
 | `TEXT`                | `STRING`          |
-| `ITEXT`               | `STRING`          |
 | `RICHTEXT`            | `STRING`          |
 | `COLOR`               | `COLOR`           |
 | `FILE,RAWFILE...`     | `FILE,RAWFILE...` |
