@@ -234,7 +234,7 @@ public class ProcessTemplateAction extends InternalAction {
                     XWPFRun run = runs.get(i);
                     String runText = run.getText(run.getTextPosition());
 
-                    if(runText.contains(find)) {
+                    if(runText != null && runText.contains(find)) {
                         String replaced = runText.replace(find, repl);
 
                         String fontFamily = run.getFontFamily();
