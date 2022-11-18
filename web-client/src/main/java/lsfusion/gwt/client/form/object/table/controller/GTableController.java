@@ -22,7 +22,7 @@ public interface GTableController {
     GPropertyDraw getSelectedFilterProperty();
     GGroupObjectValue getSelectedColumnKey();
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
-    List<Pair<Column, String>> getSelectedColumns();
+    List<Pair<Column, String>> getFilterColumns();
     GContainer getFiltersContainer();
     GFilterControls getFilterControls();
 

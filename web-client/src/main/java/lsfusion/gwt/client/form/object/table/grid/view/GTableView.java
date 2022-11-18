@@ -10,7 +10,9 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPr
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public interface GTableView {
     
@@ -75,7 +77,7 @@ public interface GTableView {
 
     // toolbar features
     void runGroupReport();
-    List<Pair<Column, String>> getSelectedColumns(); // for filter to get all columns with keys and captions
+    List<Pair<Column, String>> getFilterColumns(); // for filter to get all columns with keys and captions
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey); // for filter to set default value
 
     boolean hasUserPreferences();

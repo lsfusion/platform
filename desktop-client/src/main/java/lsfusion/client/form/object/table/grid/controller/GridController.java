@@ -504,7 +504,7 @@ public class GridController extends AbstractTableController {
     }
 
     @Override
-    public List<Pair<Column, String>> getSelectedColumns() {
+    public List<Pair<Column, String>> getFilterColumns() {
         return table.getFilterColumns();
     }
 

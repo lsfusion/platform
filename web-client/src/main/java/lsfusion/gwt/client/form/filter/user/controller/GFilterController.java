@@ -305,7 +305,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
 
     public void update() {
         columns.clear();
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+        for (Pair<Column, String> column : logicsSupplier.getFilterColumns()) {
             columns.put(column.first, column.second);
         }
         
