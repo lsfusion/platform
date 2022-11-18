@@ -846,6 +846,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void checkLikeIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, fields, likeIndexSuffix, false, false);
         if (!checkIndex(newIndexName)) {
+            //deprecated old index name with _like in the end  (can be removed after checkIndices)
             String oldIndexName = getIndexName(table, syntax, fields, likeIndexSuffix, true, false);
             if (checkIndex(oldIndexName)) {
                 renameIndex(oldIndexName, newIndexName);
@@ -858,6 +859,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void checkMatchIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, fields, matchIndexSuffix, false, false);
         if (!checkIndex(newIndexName)) {
+            //deprecated old index name with _match in the end  (can be removed after checkIndices)
             String oldIndexName = getIndexName(table, syntax, fields, matchIndexSuffix, true, false);
             if (checkIndex(oldIndexName)) {
                 renameIndex(oldIndexName, newIndexName);
@@ -870,6 +872,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     private void checkDefaultIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
         String newIndexName = getIndexName(table, syntax, fields, null, false, false);
         if (!checkIndex(newIndexName)) {
+            //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
             String veryOldIndexName = getIndexName(table, syntax, fields, null, false, true);
             if (checkIndex(veryOldIndexName)) {
                 renameIndex(veryOldIndexName, newIndexName);
@@ -984,6 +987,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
             //ifExists true for both, because we don't know which of indexes exists
             dropIndex(table, getIndexName(table, orderFields, likeIndexSuffix, false, false, syntax), true);
+            //deprecated old index name with _like in the end (can be removed after checkIndices)
             dropIndex(table, getIndexName(table, orderFields, likeIndexSuffix, true, false, syntax), true);
         }
     }
@@ -993,6 +997,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
             //ifExists true for both, because we don't know which of indexes exists
             dropIndex(table, getIndexName(table, orderFields, matchIndexSuffix, false, false, syntax), true);
+            //deprecated old index name with _match in the end  (can be removed after checkIndices)
             dropIndex(table, getIndexName(table, orderFields, matchIndexSuffix, true, false, syntax), true);
         }
     }
@@ -1001,6 +1006,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //ifExists true for both, because we don't know which of indexes exists
         ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
         dropIndex(table, getIndexName(table, orderFields, null, false, true, syntax), true);
+        //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
         dropIndex(table, getIndexName(table, orderFields, null, false, false, syntax), true);
     }
 
@@ -1017,6 +1023,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     public void renameIndex(String oldIndexName, String newIndexName) throws SQLException {
+        logger.info("Renaming index from " + oldIndexName + " to " + newIndexName);
         executeDDL("ALTER INDEX " + oldIndexName + " RENAME TO " + newIndexName);
     }
 
