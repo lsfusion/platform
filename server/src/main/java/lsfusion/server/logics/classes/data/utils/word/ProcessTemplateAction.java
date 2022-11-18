@@ -239,6 +239,9 @@ public class ProcessTemplateAction extends InternalAction {
 
                         String fontFamily = run.getFontFamily();
                         int fontSize = run.getFontSize();
+                        if(fontSize < 0) { //getFontSize can be -1
+                            fontSize = 14;
+                        }
                         String color = nvl(run.getColor(), "0000FF"); //default blue
                         boolean bold = run.isBold();
                         boolean italic = run.isItalic();
