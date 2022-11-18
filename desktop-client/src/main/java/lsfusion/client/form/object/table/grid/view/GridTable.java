@@ -1948,6 +1948,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         @Override
         public TableCellRenderer getHeaderRenderer() {
+            if (tableHeader == null) {
+                return null;
+            }
+            
             TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
             if (defaultHeaderRendererRef == null || defaultHeaderRendererRef.get() != defaultHeaderRenderer) {
                 defaultHeaderRendererRef = new WeakReference<>(defaultHeaderRenderer);
