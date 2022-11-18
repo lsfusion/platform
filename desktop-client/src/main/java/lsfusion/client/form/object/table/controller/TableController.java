@@ -34,7 +34,7 @@ public interface TableController {
     ClientPropertyDraw getSelectedFilterProperty();
     ClientGroupObjectValue getSelectedColumn();
     Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey);
-    List<Pair<Column, String>> getSelectedColumns();
+    List<Pair<Column, String>> getFilterColumns();
     
     ClientContainer getFiltersContainer();
 

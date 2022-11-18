@@ -238,8 +238,8 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public List<Pair<Column, String>> getSelectedColumns() {
-        return tree.getSelectedColumns(getSelectedGroupObject());
+    public List<Pair<Column, String>> getFilterColumns() {
+        return tree.getFilterColumns(getSelectedGroupObject());
     }
 
     @Override

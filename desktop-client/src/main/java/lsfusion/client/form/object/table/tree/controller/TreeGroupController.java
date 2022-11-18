@@ -317,7 +317,7 @@ public class TreeGroupController extends AbstractTableController {
     }
 
     @Override
-    public List<Pair<Column, String>> getSelectedColumns() {
+    public List<Pair<Column, String>> getFilterColumns() {
         return tree.getFilterColumns(getSelectedGroupObject());
     }
 

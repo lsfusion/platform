@@ -6,12 +6,13 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.Column;
@@ -566,11 +567,18 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return new Pair<>(GGroupObjectValue.getFullKey(propertyRowKey, propertyColumnKey), oldValue);
     }
 
-    public Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
-        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(property, columnKey));
+    public Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyFilterCaption(property, getPropertyCaption(property, columnKey)));
     }
-    public static Pair<lsfusion.gwt.client.form.view.Column, String> getSelectedColumn(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
-        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyCaption(propCaptions, property, columnKey));
+    public static Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyFilterCaption(property, getPropertyCaption(propCaptions, property, columnKey)));
+    }
+
+    private static String getPropertyFilterCaption(GPropertyDraw property, String propertyCaption) {
+        if (GwtSharedUtils.isRedundantString(propertyCaption)) {
+            propertyCaption = property.propertyFormName; // to see something in user filters
+        }
+        return propertyCaption;
     }
 
     protected String getPropertyCaption(GPropertyDraw property, GGroupObjectValue columnKey) {

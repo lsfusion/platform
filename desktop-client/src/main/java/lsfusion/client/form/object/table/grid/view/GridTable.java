@@ -1227,20 +1227,24 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         List<Pair<Column, String>> result = new ArrayList<>();
         for(ClientPropertyDraw property : properties)
             for(ClientGroupObjectValue columnKey : columnKeys.get(property))
-                result.add(getSelectedColumn(property, columnKey));
+                result.add(getFilterColumn(property, columnKey));
         return result;
     }
 
-    public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
-        return new Pair<>(new Column(property, columnKey), getPropertyCaption(property, columnKey));
+    public Pair<Column, String> getFilterColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return new Pair<>(new Column(property, columnKey), getPropertyFilterCaption(property, columnKey));
     }
 
-    protected String getPropertyCaption(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    protected String getPropertyFilterCaption(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         String userCaption = getUserCaption(property);
         if (userCaption != null)
             return userCaption;
 
-        return getPropertyCaption(captions.get(property), property, columnKey);
+        String propertyCaption = getPropertyCaption(captions.get(property), property, columnKey);
+        if (!BaseUtils.isRedundantString(propertyCaption)) {
+            return propertyCaption;
+        }
+        return property.getPropertyFormName(); // to see something in user filters
     }
 
     public static String getPropertyCaption(Map<ClientGroupObjectValue, Object> propCaptions, ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
@@ -1948,6 +1952,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         @Override
         public TableCellRenderer getHeaderRenderer() {
+            if (tableHeader == null) {
+                return null;
+            }
+            
             TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
             if (defaultHeaderRendererRef == null || defaultHeaderRendererRef.get() != defaultHeaderRenderer) {
                 defaultHeaderRendererRef = new WeakReference<>(defaultHeaderRenderer);

@@ -121,7 +121,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 startEditing(GKeyStroke.createAddUserFilterKeyEvent());
             }
         };
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+        for (Pair<Column, String> column : logicsSupplier.getFilterColumns()) {
             propertyView.add(column.first, column.second);
         }
         propertyView.setSelectedValue(currentColumn, currentCaption);

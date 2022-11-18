@@ -375,7 +375,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
 
     public void update() {
         columns.clear();
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+        for (Pair<Column, String> column : logicsSupplier.getFilterColumns()) {
             columns.put(column.first, column.second);
         }
         

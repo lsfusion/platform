@@ -112,7 +112,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             }
         };
 
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+        for (Pair<Column, String> column : logicsSupplier.getFilterColumns()) {
             propertyView.add(column.first, column.second);
         }
         leftPanel.addCentered(propertyView);
