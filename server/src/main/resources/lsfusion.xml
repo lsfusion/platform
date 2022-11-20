@@ -485,7 +485,7 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="prereadLinksTask" class="lsfusion.server.logics.event.init.PrereadLinksTask">
+    <bean id="prereadApplyLinksTask" class="lsfusion.server.logics.event.init.PrereadApplyLinksTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как в этом задании добавляются события -->
@@ -497,10 +497,28 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="getPropertyListTask" class="lsfusion.server.logics.event.init.GetPropertyListTask">
+    <bean id="getApplyPropertyListTask" class="lsfusion.server.logics.event.init.GetApplyPropertyListTask">
         <property name="dependencies">
             <set>
-                <ref bean="prereadLinksTask"/> <!-- not in parallel because in the end of getPropertyList links caches are dropped-->
+                <ref bean="prereadApplyLinksTask"/> <!-- not in parallel because in the end of getPropertyList links caches are dropped-->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="prereadSessionLinksTask" class="lsfusion.server.logics.event.init.PrereadSessionLinksTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="getApplyPropertyListTask"/> <!-- because actionChangeProps is not thread safe -->
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="getSessionPropertyListTask" class="lsfusion.server.logics.event.init.GetSessionPropertyListTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="prereadSessionLinksTask"/> <!-- not in parallel because in the end of getPropertyList links caches are dropped-->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -560,7 +578,7 @@
     <bean id="initClassDialogFormsTask" class="lsfusion.server.logics.classes.controller.init.InitClassDialogFormsTask">
         <property name="dependencies">
             <set>
-                <ref bean="getPropertyListTask"/> <!-- because init dialog forms (and finalize forms) generates event actions, which uses getCheckProperties, thus, getPropertyList (and we don't want to run it with prereadLinks since fill/dropActinChangeProps is not thread-safe) -->
+                <ref bean="getApplyPropertyListTask"/> <!-- because init dialog forms (and finalize forms) generates event actions, which uses getCheckProperties, thus, getPropertyList (and we don't want to run it with prereadLinks since fill/dropActinChangeProps is not thread-safe) !!! now getCheckChangeProperties doesn't use getPropertyList so can this link in theory be removed -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -593,7 +611,7 @@
             <set>
                 <ref bean="checkAbstractTask"/>
                 <ref bean="initClassAggrPropsTask"/>
-                <ref bean="getPropertyListTask"/>
+                <ref bean="getSessionPropertyListTask"/>
                 <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
                 <ref bean="initClassDataIndicesTask"/>

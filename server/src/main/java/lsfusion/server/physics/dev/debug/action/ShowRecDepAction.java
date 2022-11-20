@@ -10,6 +10,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
+import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.event.LinkType;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
@@ -20,10 +21,12 @@ public class ShowRecDepAction extends SystemExplicitAction {
 
     private final boolean showRec;
     private final ImSet<ActionOrProperty> props;
+    private final boolean global;
 
-    public ShowRecDepAction(boolean showRec, ImSet<ActionOrProperty> props) {
+    public ShowRecDepAction(boolean showRec, ImSet<ActionOrProperty> props, boolean global) {
         this.showRec = showRec;
         this.props = props;
+        this.global = global;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class ShowRecDepAction extends SystemExplicitAction {
                     ((Action)actionOrProp).showRec = props.contains(actionOrProp);
         } else {
             try {
-                bl.LM.findProperty("showResult[]").change(bl.buildShowDeps(props, LinkType.RECUSED), context);
+                bl.LM.findProperty("showResult[]").change(bl.buildShowDeps(props, LinkType.RECUSED, global ? ApplyFilter.NO : ApplyFilter.SESSION), context);
             } catch (ScriptingErrorLog.SemanticErrorException e) {
                 throw Throwables.propagate(e);
             }

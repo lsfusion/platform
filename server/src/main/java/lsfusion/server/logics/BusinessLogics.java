@@ -16,7 +16,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWSASVSMap;
 import lsfusion.base.log.DebugInfoWriter;
-import lsfusion.base.log.StringDebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.property.Compare;
@@ -122,7 +121,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -598,10 +596,6 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return BaseUtils.immutableCast(getOrderActionOrProperties().filterOrder(element -> element instanceof Action));
     }
 
-    public ImSet<Action> getActions() {
-        return getOrderActions().getSet();
-    }
-
     public Iterable<LP<?>> getNamedProperties() {
         List<Iterable<LP<?>>> namedProperties = new ArrayList<>();
         for (LogicsModule module : modules.all()) {
@@ -793,8 +787,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     //for debug
-    public void outPropertyList() {
-        for(ActionOrProperty actionOrProperty : getPropertyList()) {
+    public void outPropertyList(ApplyFilter filter) {
+        for(ActionOrProperty actionOrProperty : getPropertyList(filter)) {
             if(actionOrProperty instanceof Action) {
                 if(actionOrProperty.getDebugInfo() != null) {
                     serviceLogger.info(actionOrProperty.getSID() + ": " + actionOrProperty.getDebugInfo() + ", hasCancel: " + ((Action) actionOrProperty).hasFlow(ChangeFlowType.CANCEL));
@@ -803,24 +797,24 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         }
     }
 
-    public ImOrderSet<ActionOrProperty> getPropertyList() {
-        return getPropertyListWithGraph(ApplyFilter.NO).first;
+    public ImOrderSet<ActionOrProperty> getPropertyList(ApplyFilter filter) {
+        return getPropertyListWithGraph(filter).first;
     }
 
-    public void fillActionChangeProps() { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
-        for (Action property : getOrderActions()) {
-            if (!property.getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
-                ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
+    public void fillActionChangeProps(ApplyFilter filter) { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
+        for (Action action : getOrderActions()) {
+            if (filter.contains(action)) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+                ImMap<Property, Boolean> change = ((Action<?>) action).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
-                    change.getKey(i).addActionChangeProp(new Pair<Action<?>, LinkType>((Action<?>) property, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
+                    change.getKey(i).addActionChangeProp(new Pair<Action<?>, LinkType>((Action<?>) action, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
             }
         }
     }
 
-    public void dropActionChangeProps() { // для экономии памяти - симметричное удаление ссылок
-        for (Action property : getOrderActions()) {
-            if (!property.getEvents().isEmpty()) {
-                ImMap<Property, Boolean> change = ((Action<?>) property).getChangeExtProps();
+    public void dropActionChangeProps(ApplyFilter filter) { // для экономии памяти - симметричное удаление ссылок
+        for (Action action : getOrderActions()) {
+            if (filter.contains(action)) {
+                ImMap<Property, Boolean> change = ((Action<?>) action).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++)
                     change.getKey(i).dropActionChangeProps();
             }
@@ -1237,10 +1231,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         result.append(forward ? link.to : link.from);
     }
 
-    public String buildShowDeps(ImSet<ActionOrProperty> showDeps, LinkType maxLinkType) {
+    public String buildShowDeps(ImSet<ActionOrProperty> showDeps, LinkType maxLinkType, ApplyFilter filter) {
 
         Result<String> rResult = new Result<>();
-        calcPropertyListWithGraph(ApplyFilter.NO, null, (propertyList, removedLinkCycles) -> {
+        calcPropertyListWithGraph(filter, null, (propertyList, removedLinkCycles) -> {
             // we're doing it here, because we need the links to be valid`
             ImMap<ActionOrProperty, ImMap<ActionOrProperty, ImList<Link>>> recShowDeps = showDeps.mapValues((Function<ActionOrProperty, ImMap<ActionOrProperty, ImList<Link>>>) actionOrProperty -> buildShowDeps(actionOrProperty, showDeps, maxLinkType));
 
@@ -1343,6 +1337,11 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
+    public ImSet<Action> getRecalculateFollows() {
+        return BaseUtils.immutableCast(getPropertyList(ApplyFilter.NO).getSet().filterFn(property -> property instanceof Action && ((Action) property).hasResolve()));
+    }
+
+    @IdentityLazy
     public Graph<AggregateProperty> getAggregateStoredGraph() {
         return BaseUtils.immutableCast(getPropertyGraph().filterGraph(element -> element instanceof AggregateProperty && ((AggregateProperty) element).isStored()));
     }
@@ -1367,18 +1366,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public Pair<ImOrderSet<ActionOrProperty>, Graph<ActionOrProperty>> getPropertyListWithGraph(ApplyFilter filter) {
         return calcPropertyListWithGraph(filter, null, null);
     }
-    public void printPropertyList(String path) throws IOException {
-        StringDebugInfoWriter debugInfo = new StringDebugInfoWriter();
-        calcPropertyListWithGraph(ApplyFilter.NO, debugInfo, null);
-        try (PrintWriter out = new PrintWriter(path)) {
-            out.println(debugInfo.getString());
-        }
-    }
+
     public boolean propertyListInitialized;
+    // should be synchronized because of actionChangeProps / links, but it is already synchronized with the IdentityStrongLazy
     public Pair<ImOrderSet<ActionOrProperty>, Graph<ActionOrProperty>> calcPropertyListWithGraph(ApplyFilter filter, DebugInfoWriter debugInfoWriter, BiConsumer<ImOrderSet<ActionOrProperty>, HMap<Link, List<Link>>> debugConsumer) {
         assert propertyListInitialized;
 
-        fillActionChangeProps();
+        fillActionChangeProps(filter);
 
         // сначала бежим по Action'ам с cancel'ами
         HSet<ActionOrProperty> cancelActions = new HSet<>();
@@ -1422,7 +1416,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         for(ActionOrProperty property : result)
             property.dropLinks();
 
-        dropActionChangeProps();
+        dropActionChangeProps(filter);
 
         return new Pair<>(result, graph);
     }
@@ -1480,7 +1474,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImOrderSet<Property> getStoredProperties() {
-        return BaseUtils.immutableCast(getPropertyList().filterOrder(property -> property instanceof Property && ((Property) property).isStored()));
+        return BaseUtils.immutableCast(getPropertyList(ApplyFilter.NO).filterOrder(property -> property instanceof Property && ((Property) property).isStored()));
     }
 
     public ImSet<CustomClass> getCustomClasses() {
@@ -1493,7 +1487,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImOrderMap<Action, SessionEnvEvent> getSessionEvents() {
-        ImOrderSet<ActionOrProperty> list = getPropertyList();
+        ImOrderSet<ActionOrProperty> list = getPropertyList(ApplyFilter.SESSION);
         MOrderExclMap<Action, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         SessionEnvEvent sessionEnv;
         for (ActionOrProperty property : list)
@@ -1504,12 +1498,17 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImSet<Property> getDataChangeEvents() {
-        ImOrderSet<ActionOrProperty> propertyList = getPropertyList();
-        MSet<Property> mResult = SetFact.mSetMax(propertyList.size());
-        for (int i=0,size=propertyList.size();i<size;i++) {
+        ImSet<DataProperty> result = getDataChangeEvents(getOrderActionOrProperties()); // in theory all data properties with event should be in this method
+        assert result.remove(getDataChangeEvents(getPropertyList(ApplyFilter.NO))).filterFn(element -> !(element instanceof SessionDataProperty)).isEmpty();
+        return result.mapSetValues(property -> property.event.getWhere());
+    }
+
+    private static ImSet<DataProperty> getDataChangeEvents(ImOrderSet<ActionOrProperty> propertyList) {
+        MSet<DataProperty> mResult = SetFact.mSetMax(propertyList.size());
+        for (int i = 0, size = propertyList.size(); i<size; i++) {
             ActionOrProperty property = propertyList.get(i);
             if (property instanceof DataProperty && ((DataProperty) property).event != null)
-                mResult.add((((DataProperty) property).event).getWhere());
+                mResult.add((DataProperty) property);
         }
         return mResult.immutable();
     }
@@ -1517,7 +1516,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @IdentityLazy
     public ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> getApplyEvents(ApplyFilter filter) {
         // здесь нужно вернуть список stored или тех кто
-        ImOrderSet<ActionOrProperty> list = getPropertyListWithGraph(filter).first;
+        ImOrderSet<ActionOrProperty> list = getPropertyList(filter);
         MOrderExclMap<ApplyGlobalEvent, SessionEnvEvent> mResult = MapFact.mOrderExclMapMax(list.size());
         for (ActionOrProperty property : list) {
             ApplyGlobalEvent applyEvent = property.getApplyEvent();
@@ -1645,7 +1644,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImSet<Property> getCheckConstrainedProperties() {
-        return BaseUtils.immutableCast(getPropertyList().getSet().filterFn(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
+        ImSet<Property> result = getCheckConstrainedProperties(getOrderActionOrProperties()); // in theory all data properties with event should be in this method (because is used only for propertyExpression properties)
+        assert result.equals(getCheckConstrainedProperties(getPropertyList(ApplyFilter.NO)));
+        return result;
+    }
+
+    private static ImSet<Property> getCheckConstrainedProperties(ImOrderSet<ActionOrProperty> propertyList) {
+        return BaseUtils.immutableCast(propertyList.getSet().filterFn(property -> property instanceof Property && ((Property) property).checkChange != Property.CheckType.CHECK_NO));
     }
 
     public ImSet<Property> getCheckConstrainedProperties(Property<?> changingProp) {
@@ -1681,23 +1686,19 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction, final ExecutionStack stack) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        for (ActionOrProperty property : getPropertyList())
-            if (property instanceof Action) {
-                final Action<?> action = (Action) property;
-                if (action.hasResolve()) {
-                    long start = System.currentTimeMillis();
-                    try {
-                        DBManager.runData(creator, isolatedTransaction, session -> ((DataSession) session).resolve(action, stack));
-                    } catch (ApplyCanceledException e) { // suppress'им так как понятная ошибка
-                        serviceLogger.info(e.getMessage());
-                    }
-                    long time = System.currentTimeMillis() - start;
-                    String message = String.format("Recalculate Follows: %s, %sms", property.getSID(), time);
-                    serviceLogger.info(message);
-                    if (time > maxRecalculateTime)
-                        messageList.add(message);
-                }
+        for (final Action<?> action : getRecalculateFollows()) {
+            long start = System.currentTimeMillis();
+            try {
+                DBManager.runData(creator, isolatedTransaction, session -> ((DataSession) session).resolve(action, stack));
+            } catch (ApplyCanceledException e) { // suppress'им так как понятная ошибка
+                serviceLogger.info(e.getMessage());
             }
+            long time = System.currentTimeMillis() - start;
+            String message = String.format("Recalculate Follows: %s, %sms", action.getSID(), time);
+            serviceLogger.info(message);
+            if (time > maxRecalculateTime)
+                messageList.add(message);
+        }
         return formatMessageList(messageList);
     }
 

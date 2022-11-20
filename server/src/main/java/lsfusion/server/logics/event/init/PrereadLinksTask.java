@@ -1,20 +1,24 @@
 package lsfusion.server.logics.event.init;
 
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.session.ApplyFilter;
 import lsfusion.server.logics.property.controller.init.GroupPropertiesTask;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import org.apache.log4j.Logger;
 
-// need this task for multithreaded links read
-public class PrereadLinksTask extends GroupPropertiesTask {
+public abstract class PrereadLinksTask extends GroupPropertiesTask {
 
-    public String getCaption() {
-        return "Reading property links";
+    protected abstract ApplyFilter getApplyFilter();
+
+    @Override
+    protected ImSet<ActionOrProperty> getObjects() {
+        return super.getObjects().filterFn(getApplyFilter()::contains);
     }
 
     @Override
     protected boolean prerun() {
-        getBL().fillActionChangeProps();
+        getBL().fillActionChangeProps(getApplyFilter());
         return true;
     }
 
@@ -24,6 +28,6 @@ public class PrereadLinksTask extends GroupPropertiesTask {
 
     @Override
     public void run(Logger logger) {
-        getBL().dropActionChangeProps();
+        getBL().dropActionChangeProps(getApplyFilter());
     }
 }

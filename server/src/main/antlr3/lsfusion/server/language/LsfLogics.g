@@ -4640,15 +4640,17 @@ baseEventPE returns [Event event]
 showRecDepActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @init {
     boolean showRec = false;
+    boolean global = true;
 }
 @after {
 	if (inMainParseState()) {
-        $action = self.addScriptedShowRecDepAction($nePropList.propUsages, showRec);
+        $action = self.addScriptedShowRecDepAction($nePropList.propUsages, showRec, global);
 	}
 }
 	:	(   'SHOWREC' { showRec = true; }
 	        |
 	        'SHOWDEP'
+            ('GLOBAL' | 'LOCAL' { global = false; })?
         )
         (nePropList=nonEmptyActionOrPropertyUsageList)?
 	;
