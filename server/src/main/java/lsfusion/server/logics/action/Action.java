@@ -347,8 +347,10 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     @Override
     protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {
-        if(getEvents().isEmpty()) // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+        if(getEvents().isEmpty()) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+            assert false; // should not be, since we're filtering actions in calculatePropertyListWithGrapg
             return SetFact.EMPTY();
+        }
 
         MCol<Pair<ActionOrProperty<?>, LinkType>> mResult = ListFact.mCol();
         ImMap<Property, Boolean> used = getUsedExtProps();
