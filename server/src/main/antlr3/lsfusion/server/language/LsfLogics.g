@@ -289,7 +289,6 @@ statement
 		|	followsStatement
 		|	writeWhenStatement
 		|	eventStatement
-		|	showDepStatement
 		|	globalEventStatement
 		|	aspectStatement
 		|	tableStatement
@@ -1124,6 +1123,14 @@ formPredefinedOrActionUsage[List<String> mapping] returns [BaseFormActionOrPrope
 
 ;
 
+nonEmptyActionOrPropertyUsageList returns [List<ActionOrPropertyUsage> propUsages]
+@init {
+	$propUsages = new ArrayList<>();
+}
+	:	first=actionOrPropertyUsage { $propUsages.add($first.propUsage); }
+		(',' next=actionOrPropertyUsage { $propUsages.add($next.propUsage); })*
+	;
+
 actionOrPropertyUsage returns [ActionOrPropertyUsage propUsage]
 @init {
    boolean action = false;
@@ -1857,27 +1864,24 @@ joinPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 aggrPropertyDefinition[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext]
 @init {
     List<TypedParameter> groupContext = new ArrayList<>(context);
-    DebugInfo.DebugPoint classDebugPoint, exprDebugPoint;
-
+    DebugInfo.DebugPoint newDebugPoint = null, deleteDebugPoint = null;
     DebugInfo.DebugPoint aggrDebugPoint = getEventDebugPoint();
-
-    boolean showRec = false;
 }
 @after {
 	if (inMainParseState()) {
-		LPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, showRec, classDebugPoint, exprDebugPoint, aggrDebugPoint, innerPD);
+		LPContextIndependent ci = self.addScriptedAGProp(context, $aggrClass.sid, $whereExpr.property, $et.event, aggrDebugPoint, $newEv.event, newDebugPoint, $deleteEv.event, deleteDebugPoint, innerPD);
 		$property = ci.property;
 		$usedContext = ci.usedContext;		
 		$signature = ci.signature;
 	}
 }
 	:	'AGGR'
-	    { classDebugPoint = getEventDebugPoint(); }
+	    et=baseEventPE
 	    aggrClass=classId
 	    'WHERE'
-	    { exprDebugPoint = getEventDebugPoint(); }
 	    whereExpr=propertyExpression[context, dynamic]
-		('SHOWREC' { showRec = true; } )?
+	    ( { newDebugPoint = getEventDebugPoint(); } 'NEW' newEv=baseEventNotPE)?
+	    ( { deleteDebugPoint = getEventDebugPoint(); } 'DELETE' deleteEv=baseEventNotPE)?
 	;
 	
 groupCDPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPContextIndependent ci]
@@ -2802,16 +2806,17 @@ setNotNullSetting [PropertySettings ps]
 							ps.notNull = new BooleanDebug($s.debugPoint);
 							ps.notNullResolve = $s.toResolve;
 							ps.notNullEvent = $s.event;
+							ps.notNullResolveEvent = $s.resolveEvent;
 						 }
     ;
 
-notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve = null, Event event]
+notNullSetting returns [DebugInfo.DebugPoint debugPoint, BooleanDebug toResolve = null, Event event, Event resolveEvent]
 @init {
     $debugPoint = getEventDebugPoint();
 }
 	:	'NONULL'
-	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); })?
-	    et=baseEvent { $event = $et.event; }
+	    et=baseEventNotPE { $event = $et.event; }
+	    (dt = notNullDeleteSetting { $toResolve = new BooleanDebug($dt.debugPoint); $resolveEvent = $dt.event; })?
 	;
 
 
@@ -2986,11 +2991,12 @@ indexSetting [LP property]
 	:	'INDEXED' (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
 	;
 
-notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint]
+notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
 @init {
     $debugPoint = getEventDebugPoint();
 }
     :   'DELETE'
+        et=baseEventNotPE { $event = $et.event; }
 	;
 
 onEditEventSetting [LAP property, List<TypedParameter> context]
@@ -3215,6 +3221,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	expandCollapseADB=expandCollapseActionDefinitionBody[context, dynamic] { $action = $expandCollapseADB.action; }
     |   internalADB=internalContextActionDefinitionBody[context, dynamic] { $action = $internalADB.action;}
     |   externalADB=externalActionDefinitionBody[context, dynamic] { $action = $externalADB.action;}
+    |   showRecDepADB=showRecDepActionDefinitionBody[context, dynamic] { $action = $showRecDepADB.action;}
 	|	emptyADB=emptyActionDefinitionBody[context, dynamic] { $action = $emptyADB.action; }
 	;
 
@@ -4424,7 +4431,7 @@ constraintStatement
 	}
 }
 	:	'CONSTRAINT'
-		et=baseEvent	
+		et=baseEventPE
 		{
 			if (inMainParseState()) {
 				self.setPrevScope($et.event);
@@ -4471,7 +4478,7 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
     $debug = getEventDebugPoint();
 }
     :	
-        et=baseEvent { $event = $et.event; }
+        et=baseEventPE { $event = $et.event; }
         {
             if (inMainParseState()) {
                 self.setPrevScope($et.event);
@@ -4479,8 +4486,8 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
         }
         expr = propertyExpression[context, false]
 		('RESOLVE' 
-			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, getEventDebugPoint()));})?
-			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, getEventDebugPoint()));})?
+			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, false, getEventDebugPoint()));})?
+			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, false, getEventDebugPoint()));})?
 		)? { $prop = $expr.property; }
         {
             if (inMainParseState()) {
@@ -4544,7 +4551,7 @@ eventStatement
 	} 
 }
 	:	'WHEN'
-		et=baseEvent
+		et=baseEventPE
 		{
 			if (inMainParseState()) {
 				self.setPrevScope($et.event);
@@ -4555,7 +4562,6 @@ eventStatement
 			orderList=nonEmptyPropertyExpressionList[context, false] { orderProps.addAll($orderList.props); }
 		)?
 		in=inlineStatement[context]
-		('SHOWREC' { showRec = true; } )?
 		'DO'
 		action=endDeclTopContextDependentActionDefinitionBody[context, false, false]
 		{
@@ -4575,18 +4581,17 @@ globalEventStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedGlobalEvent($action.action, $et.event, single, $property.propUsage);
+		self.addScriptedGlobalEvent($action.action, $et.event, single);
 	}
 }
 	:	'ON' 
-		et=baseEvent
+		et=baseEventNotPE
 		{
 			if (inMainParseState()) {
 				self.setPrevScope($et.event);
 			}
 		}
 		('SINGLE' { single = true; })?
-		('SHOWDEP' property=actionOrPropertyUsage)?
 		action=endDeclTopContextDependentActionDefinitionBody[new ArrayList<TypedParameter>(), false, false]
 		{
 			if (inMainParseState()) {
@@ -4595,43 +4600,63 @@ globalEventStatement
 		}
 	;
 
-baseEvent returns [Event event]
+baseEventNotPE returns [Event event]
 @init {
 	SystemEvent baseEvent = SystemEvent.APPLY;
 	List<String> ids = null;
-	List<NamedPropertyUsage> puAfters = null;
+	List<ActionOrPropertyUsage> puAfters = null;
 }
 @after {
 	if (inMainParseState()) {
-		$event = self.createScriptedEvent(baseEvent, ids, puAfters);
+		$event = self.createScriptedEvent($name.text, baseEvent, ids, puAfters);
+	}
+}
+	:
+	    (name=ID)?
+	    ('GLOBAL' { baseEvent = SystemEvent.APPLY; } | 'LOCAL' { baseEvent = SystemEvent.SESSION; })?
+		('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
+		(('GOAFTER' | 'AFTER') (nePropList=nonEmptyActionOrPropertyUsageList { puAfters = $nePropList.propUsages; }) )?
+	;
+
+baseEventPE returns [Event event]
+@init {
+	SystemEvent baseEvent = SystemEvent.APPLY;
+	List<String> ids = null;
+	List<ActionOrPropertyUsage> puAfters = null;
+}
+@after {
+	if (inMainParseState()) {
+		$event = self.createScriptedEvent($name.text, baseEvent, ids, puAfters);
 	}
 }
 	:	('GLOBAL' { baseEvent = SystemEvent.APPLY; } | 'LOCAL' { baseEvent = SystemEvent.SESSION; })?
 		('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
-		('GOAFTER' (nePropList=nonEmptyPropertyUsageList { puAfters = $nePropList.propUsages; }) )?
+		(('GOAFTER' | 'AFTER') (nePropList=nonEmptyActionOrPropertyUsageList { puAfters = $nePropList.propUsages; }) )?
+        ( { input.LA(1)==ID && input.LA(2)==EQ }?
+          name=ID EQ
+        )?
+	;
+
+showRecDepActionDefinitionBody [List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
+@init {
+    boolean showRec = false;
+}
+@after {
+	if (inMainParseState()) {
+        $action = self.addScriptedShowRecDepAction($nePropList.propUsages, showRec);
+	}
+}
+	:	(   'SHOWREC' { showRec = true; }
+	        |
+	        'SHOWDEP'
+        )
+        (nePropList=nonEmptyActionOrPropertyUsageList)?
 	;
 
 inlineStatement[List<TypedParameter> context] returns [List<LPWithParams> noInline = new ArrayList<>(), boolean forceInline = false]
 	:   ('NOINLINE' { $noInline = null; } ( '(' params=singleParameterList[context, false] { $noInline = $params.props; } ')' )? )?
 	    ('INLINE' { $forceInline = true; })?
 	;
-
-////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////// SHOWDEP STATEMENT //////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-showDepStatement
-@after {
-    if (inMainParseState()) {
-        self.addScriptedShowDep($property.propUsage, $propFrom.propUsage);
-    }
-}
-    :	'SHOWDEP'
-        property=actionOrPropertyUsage
-        'FROM'
-        propFrom=actionOrPropertyUsage
-        ';'
-    ;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// ASPECT STATEMENT //////////////////////////////

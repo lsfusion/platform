@@ -1045,9 +1045,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private final List<ShowRec> showRecs = new ArrayList<>();
 
     private void startShowRec(Action action) throws SQLException, SQLHandledException {
-        Property<PropertyInterface> showRec = action.showRec;
-        if(showRec != null) // assert that hasChanges - see getNextApplyEvent
-            showRecs.add(new ShowRec(showRec, action, readShowRec(showRec)));
+        if(action.showRec) // assert that hasChanges - see getNextApplyEvent
+            showRecs.add(new ShowRec(action.where, action, readShowRec(action.where)));
     }
 
     private <T extends PropertyInterface> ImSet<ImMap<T, DataObject>> readShowRec(Property<T> showRec) throws SQLException, SQLHandledException {
