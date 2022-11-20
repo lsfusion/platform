@@ -485,23 +485,13 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
-    <bean id="showDependenciesTask" class="lsfusion.server.logics.property.controller.init.ShowDependenciesTask">
-        <property name="dependencies">
-            <set>
-                <ref bean="setupDrillDownTask"/>
-                <ref bean="setupResetFileTask"/>
-                <ref bean="initIndicesTask"/> <!-- uses getLinks -> getSessionCalcDepends -> hideOlds -> hasAlotKeys -> getStatRows -> cost calculation uses indexes - to early index read-->
-            </set>
-        </property>
-        <property name="BL" ref="businessLogics"/>
-    </bean>
-
     <bean id="prereadLinksTask" class="lsfusion.server.logics.event.init.PrereadLinksTask">
         <property name="dependencies">
             <set>
                 <ref bean="initReflectionEventsTask"/> <!-- так как в этом задании добавляются события -->
                 <ref bean="initIndicesTask"/> <!-- hideOlds -> STAT calculation -> getIndices cache  -->
-                <ref bean="showDependenciesTask"/> <!-- так как используется fillActionChangeProps, а его реализация не синхронизирована -->
+                <ref bean="setupDrillDownTask"/>
+                <ref bean="setupResetFileTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>

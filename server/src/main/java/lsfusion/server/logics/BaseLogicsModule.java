@@ -196,6 +196,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP importFile;
     public LP readFile;
 
+    public LP showResult;
+
     public LP getExtension;
     public LP inputFileName;
 
@@ -528,6 +530,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         exportFile = findProperty("exportFile[]");
         importFile = findProperty("importFile[]");
         readFile = findProperty("readFile[]");
+
+        showResult = findProperty("showResult[]");
 
         imported = findProperty("imported[INTEGER]");
         importedString = findProperty("importedString[STRING[10]]");

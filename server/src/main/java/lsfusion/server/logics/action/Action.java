@@ -367,27 +367,27 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 //        раньше зачем-то было, но зачем непонятно
 //        mResult.add(new Pair<Property<?>, LinkType>(getWhereProperty().property, hasFlow(ChangeFlowType.NEWSESSION) ? LinkType.RECUSED : LinkType.USEDACTION));
 
-        ImSet<Property> depend = getStrongUsed();
+        ImOrderSet<ActionOrProperty> depend = getStrongUsed();
         for(int i=0,size=depend.size();i<size;i++) {
-            Property property = depend.get(i);
+            ActionOrProperty property = depend.get(i);
             mResult.add(new Pair<ActionOrProperty<?>, LinkType>(property, isRecursiveStrongUsed(property) ? LinkType.GOAFTERREC : LinkType.DEPEND));
         }
         return mResult.immutableCol();
     }
 
-    private ImSet<Property> strongUsed = SetFact.EMPTY();
-    public void addStrongUsed(ImSet<Property> properties) { // чисто для лексикографики
-        strongUsed = strongUsed.merge(properties);
+    private ImOrderSet<ActionOrProperty> strongUsed = SetFact.EMPTYORDER();
+    public void addStrongUsed(ImOrderSet<ActionOrProperty> properties) { // чисто для лексикографики
+        strongUsed = strongUsed.mergeOrder(properties);
     }
-    public ImSet<Property> getStrongUsed() {
+    public ImOrderSet<ActionOrProperty> getStrongUsed() {
         return strongUsed;
     }
-    private ImSet<Property> recursiveStrongUsed = SetFact.EMPTY();
+    private ImSet<ActionOrProperty> recursiveStrongUsed = SetFact.EMPTY();
     public void checkRecursiveStrongUsed(Property property) {
         if(strongUsed.contains(property))
             recursiveStrongUsed = recursiveStrongUsed.merge(property);  
     }
-    public boolean isRecursiveStrongUsed(Property property) { // при рекурсии ослабим связь, но не удалим, чтобы была в той же компоненте связности, но при этом не было цикла
+    public boolean isRecursiveStrongUsed(ActionOrProperty property) { // при рекурсии ослабим связь, но не удалим, чтобы была в той же компоненте связности, но при этом не было цикла
         return recursiveStrongUsed.contains(property);
     }
 
@@ -409,7 +409,8 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
     public boolean singleApply = false;
     public boolean resolve = false;
-    public Property<?> showRec = null;
+    public boolean showRec;
+    public Property<?> where = null; // needed for SHOWREC
     public boolean hasResolve() {
         return getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && resolve;
     }

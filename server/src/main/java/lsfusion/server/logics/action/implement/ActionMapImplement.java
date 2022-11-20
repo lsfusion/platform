@@ -51,8 +51,8 @@ public class ActionMapImplement<P extends PropertyInterface, T extends PropertyI
         return new ActionMapImplement<>(action, mapping.join(remap));
     }
 
-    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, PropertyMapImplement<L, T> where, Event event, boolean resolve, boolean showRec, DebugInfo.DebugPoint debugInfo, LocalizedString debugCaption) {
-        lm.addEventAction(action, where.map(mapping.reverse()), MapFact.EMPTYORDER(), false, event, resolve, showRec, debugInfo, debugCaption);
+    public <L extends PropertyInterface> void mapEventAction(LogicsModule lm, PropertyMapImplement<L, T> where, Event event, boolean resolve, DebugInfo.DebugPoint debugInfo, LocalizedString debugCaption) {
+        lm.addEventAction(action, where.map(mapping.reverse()), MapFact.EMPTYORDER(), false, event, resolve, debugInfo, debugCaption);
     }
 
     public ActionObjectEntity<P> mapObjects(ImRevMap<T, ObjectEntity> mapObjects) {

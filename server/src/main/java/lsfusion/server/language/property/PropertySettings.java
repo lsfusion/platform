@@ -14,4 +14,5 @@ public class PropertySettings extends ActionOrPropertySettings {
     public BooleanDebug notNull = null;
     public BooleanDebug notNullResolve = null;
     public Event notNullEvent = null;
+    public Event notNullResolveEvent = null;
 }
