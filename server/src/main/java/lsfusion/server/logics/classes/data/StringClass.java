@@ -346,7 +346,7 @@ public class StringClass extends DataClass<String> {
 
     @Override
     public Compare getDefaultCompare() {
-        if(caseInsensitive || this instanceof TextClass || Settings.get().isDefaultCompareForStringContains())
+        if(caseInsensitive || Settings.get().isDefaultCompareForStringContains())
             return Settings.get().isDefaultCompareSearchInsteadOfContains() ? Compare.MATCH : Compare.CONTAINS;
 
         return super.getDefaultCompare();
