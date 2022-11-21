@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION prefixSearchPrepareQuery(querytext text, separator text) RETURNS text AS
 $$
-SELECT TRIM(BOTH ' \|' FROM -- 3. trim leading and trailing '|' and spaces
+SELECT TRIM(BOTH e' \r\n\t\|' FROM -- 3. trim leading and trailing spaces, new lines, tabs and '|'
          REPLACE(
                  REGEXP_REPLACE(querytext, CONCAT('(?<!\\)', separator), '|', 'g'), -- 1. replace unquoted separator to '|'
          CONCAT('\', separator), separator) -- 2. replace quoted separator to unquoted
