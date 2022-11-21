@@ -67,7 +67,7 @@
         <org.jfree.version>1.0.23</org.jfree.version>
 
         <spring.version>5.2.7.RELEASE</spring.version>
-        <spring.security.version>5.3.0.RELEASE</spring.security.version>
+        <spring.security.version>5.6.9</spring.security.version>
         <aspectj.version>1.9.2</aspectj.version>
 
         <validation.api.version>1.0.0.GA</validation.api.version>
