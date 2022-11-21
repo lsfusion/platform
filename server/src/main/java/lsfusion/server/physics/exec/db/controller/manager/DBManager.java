@@ -352,8 +352,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 NamedTable table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
-                    if (!getThreadLocalSql().checkIndex(table, table.keys, fields, index.getValue()))
-                        session.addIndex(table, table.keys, fields, index.getValue(), BusinessLogics.sqlLogger, true);
+                    session.checkIndex(table, table.keys, fields, index.getValue());
                 }
                 session.addConstraint(table);
                 session.checkExtraIndices(getThreadLocalSql(), table, table.keys, BusinessLogics.sqlLogger);
@@ -1196,7 +1195,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
 
                 if (drop) {
-                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldIndex.getValue(), Settings.get().isStartServerAnyWay());
+                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldIndex.getValue());
                 } else {
                     if(replaced) // assert что keys совпадают
                         sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, SetFact.fromJavaOrderSet(oldIndexKeys), oldIndex.getValue(), Settings.get().isStartServerAnyWay());
