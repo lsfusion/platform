@@ -1,5 +1,7 @@
 package lsfusion.server.physics.admin.interpreter.action;
 
+import com.google.common.base.Throwables;
+import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
@@ -31,11 +33,23 @@ public class RunJDBCStatementAction extends InternalAction {
         String jdbcStatement = (String) context.getKeyValue(jdbcStatementInterface).getValue();
 
         if (connectionString != null && jdbcStatement != null) {
-            try (Connection conn = DriverManager.getConnection(connectionString)) {
+
+            Connection conn = null;
+            try {
+
+                //todo: делать class.forName в зависимости от типа строки
+                Class.forName("com.mysql.jdbc.Driver");
+
+                conn = DriverManager.getConnection(connectionString);
                 conn.setAutoCommit(false);
                 Statement statement = conn.createStatement();
                 statement.execute(jdbcStatement);
                 conn.commit();
+            } catch (ClassNotFoundException e) {
+                throw Throwables.propagate(e);
+            } finally {
+                if (conn != null)
+                    conn.close();
             }
         }
     }
