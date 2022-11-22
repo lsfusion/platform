@@ -71,8 +71,8 @@ public class ActionOrPropertyUtils {
         return classes;
     }
 
-    public static Object[] getParams(LAP prop) {
-        Object[] params  = new Object[prop.listInterfaces.size()];
+    public static Integer[] getParams(LAP prop) {
+        Integer[] params  = new Integer[prop.listInterfaces.size()];
         for(int i=0;i<prop.listInterfaces.size();i++)
             params[i] = (i+1);
         return params;

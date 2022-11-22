@@ -4486,8 +4486,8 @@ followsClause[List<TypedParameter> context] returns [LPWithParams prop, Event ev
         }
         expr = propertyExpression[context, false]
 		('RESOLVE' 
-			('LEFT' {$pfollows.add(new PropertyFollowsDebug(true, false, getEventDebugPoint()));})?
-			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(false, false, getEventDebugPoint()));})?
+			('LEFT' {$pfollows.add(new PropertyFollowsDebug(null, true, false, getEventDebugPoint(), null));})?
+			('RIGHT' {$pfollows.add(new PropertyFollowsDebug(null, false, false, getEventDebugPoint(), null));})?
 		)? { $prop = $expr.property; }
         {
             if (inMainParseState()) {
@@ -4539,15 +4539,13 @@ eventStatement
 	boolean descending = false;
 	DebugInfo.DebugPoint debug = null;
 
-	boolean showRec = false;
-	
 	if (inMainParseState()) {
 		debug = getEventDebugPoint(); 
 	}
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedEvent($whenExpr.property, $action.action, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug, showRec);
+		self.addScriptedWhen($whenExpr.property, $action.action, orderProps, descending, $et.event, $in.noInline, $in.forceInline, debug, null);
 	} 
 }
 	:	'WHEN'

@@ -12,9 +12,6 @@ public class PropertyFollowsDebug {
 
     public final LocalizedString caption;
 
-    public PropertyFollowsDebug(boolean isTrue, boolean isFull, DebugInfo.DebugPoint debugPoint) {
-        this(null, isTrue, isFull, debugPoint, null);
-    }
     public PropertyFollowsDebug(Event event, boolean isTrue, boolean isFull, DebugInfo.DebugPoint debugPoint, LocalizedString caption) {
         this.event = event;
 

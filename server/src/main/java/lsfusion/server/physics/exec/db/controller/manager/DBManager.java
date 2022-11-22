@@ -74,6 +74,7 @@ import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
 import lsfusion.server.logics.controller.manager.RestartManager;
+import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
@@ -326,7 +327,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             LP<?> prop = businessLogics.findProperty(values.get("CNProperty").toString().trim());
             if(prop != null) {
                 prop.property.userNotNull = true;
-                LM.setNotNull(prop, ListFact.EMPTY());
+                LM.setNotNull(prop.property, null, ListFact.EMPTY(), null, Event.APPLY);
             }
         }
     }
