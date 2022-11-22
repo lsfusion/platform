@@ -410,11 +410,11 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
     }
 
     public boolean singleApply = false;
-    public boolean resolve = false;
+    public Action<?> resolve = null;
     public boolean showRec;
     public Property<?> where = null; // needed for SHOWREC
     public boolean hasResolve() {
-        return getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && resolve;
+        return getSessionEnv(SystemEvent.APPLY)==SessionEnvEvent.ALWAYS && resolve != null;
     }
 
     private Object beforeAspects = ListFact.mCol();

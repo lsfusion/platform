@@ -52,8 +52,8 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void addScriptedEvent(LPWithParams whenProp, LAWithParams event, List<LPWithParams> orders, boolean descending, 
-                                 Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, boolean showRec) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedWhen(LPWithParams whenProp, LAWithParams event, List<LPWithParams> orders, boolean descending,
+                                     Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("WHEN statement");
     }
 
@@ -92,7 +92,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr,
+    public <T extends PropertyInterface> LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr,
                                                   Event aggrEvent, DebugInfo.DebugPoint aggrDebugPoint, Event newEvent, DebugInfo.DebugPoint newDebugPoint, Event deleteEvent, DebugInfo.DebugPoint deleteDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("AGGR operator");
         return null;
@@ -111,7 +111,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }    
     
     @Override
-    public void addSettingsToProperty(LP<?> property, String name, LocalizedString caption, List<TypedParameter> params, 
+    public <K extends PropertyInterface> void addSettingsToProperty(LP<K> property, String name, LocalizedString caption, List<TypedParameter> params,
                                       List<ResolveClassSet> signature, PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
         if (ps.isLoggable) {
             emitEvalError("LOGGABLE property option");
@@ -126,7 +126,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }    
     
     @Override
-    public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean resolve, boolean single) {
+    public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean single) {
         throw new RuntimeException(constructErrorMessage("event creation is forbidden in EVAL module"));
     }
 

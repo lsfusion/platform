@@ -42,7 +42,7 @@ public enum ClassType {
     public static final ClassType formPolicy = signaturePolicy;
     public static final ClassType syncPolicy = signaturePolicy;
     
-    public static final ClassType wherePolicy = signaturePolicy; // ??? не уверен насчет FULL_SAME
+    public static final ClassType wherePolicy = signaturePolicy; // PREV_SAME important for the DELETE aggregation for example
     public static final ClassType forPolicy = strictPolicy; // вообще ASSERTFULL, но только по внутренним интерфейсам + PREV'ы как BASE должны идти
     
     public static final ClassType iteratePolicy = ASSERTFULL_NOPREV; 

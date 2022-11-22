@@ -1231,12 +1231,12 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         result.append(forward ? link.to : link.from);
     }
 
-    public String buildShowDeps(ImSet<ActionOrProperty> showDeps, LinkType maxLinkType, ApplyFilter filter) {
+    public String buildShowDeps(ImSet<ActionOrProperty> showDeps, ApplyFilter filter) {
 
         Result<String> rResult = new Result<>();
         calcPropertyListWithGraph(filter, null, (propertyList, removedLinkCycles) -> {
             // we're doing it here, because we need the links to be valid`
-            ImMap<ActionOrProperty, ImMap<ActionOrProperty, ImList<Link>>> recShowDeps = showDeps.mapValues((Function<ActionOrProperty, ImMap<ActionOrProperty, ImList<Link>>>) actionOrProperty -> buildShowDeps(actionOrProperty, showDeps, maxLinkType));
+            ImMap<ActionOrProperty, ImMap<ActionOrProperty, ImList<Link>>> recShowDeps = showDeps.mapValues((Function<ActionOrProperty, ImMap<ActionOrProperty, ImList<Link>>>) actionOrProperty -> buildShowDeps(actionOrProperty, showDeps));
 
             StringBuilder result = new StringBuilder("LIST: ");
             ImOrderSet<ActionOrProperty> orderedShowDeps = propertyList.filterOrder(showDeps);
@@ -1296,6 +1296,17 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         return rResult.result;
     }
 
+    public ImMap<ActionOrProperty, ImList<Link>> buildShowDeps(ActionOrProperty<?> property, ImSet<ActionOrProperty> showDeps) {
+        ImMap<ActionOrProperty, ImList<Link>> result = MapFact.EMPTY();
+        for(int i=LinkType.order.length-1;i>=0;i--) {
+            LinkType maxLinkType = LinkType.order[i];
+            ImMap<ActionOrProperty, ImList<Link>> maxResult = buildShowDeps(property, showDeps, maxLinkType);
+            if(maxResult.isEmpty())
+                break;
+            result = result.override(maxResult);
+        }
+        return result;
+    }
     public ImMap<ActionOrProperty, ImList<Link>> buildShowDeps(ActionOrProperty<?> property, ImSet<ActionOrProperty> showDeps, LinkType maxLinkType) {
 
         List<ActionOrProperty> queue = new ArrayList<>();
