@@ -53,3 +53,13 @@
 .userFilterJunctionSeparator {
     margin: 0 0.4375rem 0 0.75rem;
 }
+
+.userFilterJunctionSeparatorButton {
+    margin: 0 12px 0 12px;
+    padding: 5px;
+}
+
+.userFilterJunctionSeparatorButtonText {
+    margin: 0 4px 0 4px;
+    padding: 5px;
+}

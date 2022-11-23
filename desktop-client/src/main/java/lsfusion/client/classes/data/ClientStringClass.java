@@ -148,4 +148,8 @@ public class ClientStringClass extends ClientDataClass {
             return result + (blankPadded ? " (bp)" : "") ;
         }
     }
+
+    public boolean trimTooltip() {
+        return true;
+    }
 }

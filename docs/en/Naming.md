@@ -57,7 +57,6 @@ Since the signature of properties/actions do not have to contain only custom cla
 | `BPSTRING[ ]`           | `STRING`          |
 | `BPISTRING[ ]`          | `STRING`          |
 | `TEXT`                  | `STRING`          |
-| `ITEXT`                 | `STRING`          |
 | `RICHTEXT`              | `STRING`          |
 | `COLOR`                 | `COLOR`           |
 | `FILE,RAWFILE...`       | `FILE,RAWFILE...` |

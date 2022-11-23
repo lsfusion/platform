@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class ClientAsyncToGwtConverter extends CachedObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
+    private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
 
     public ClientAsyncToGwtConverter(ServletContext servletContext, ServerSettings settings) {
         super(servletContext, settings);
@@ -111,7 +112,7 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
     @Cached
     @Converter(from = ClientAsyncChange.class)
     public GAsyncChange convertAsyncChange(ClientAsyncChange clientAsyncChange) {
-        return new GAsyncChange(clientAsyncChange.propertyIDs, clientAsyncChange.value);
+        return new GAsyncChange(clientAsyncChange.propertyIDs, valuesConverter.convertOrCast(clientAsyncChange.value));
     }
 
     @Converter(from = ModalityWindowFormType.class)

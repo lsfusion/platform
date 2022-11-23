@@ -82,7 +82,7 @@ public interface GTableView extends TableComponent {
 
     // toolbar features
     void runGroupReport();
-    List<Pair<Column, String>> getSelectedColumns(); // for filter to get all columns with keys and captions
+    List<Pair<Column, String>> getFilterColumns(); // for filter to get all columns with keys and captions
     Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey); // for filter to set default value
 
     boolean hasUserPreferences();

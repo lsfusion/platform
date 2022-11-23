@@ -31,6 +31,11 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
         return new RemoteSessionProxy<>(target.createSession(token, sessionInfo), realHostName);
     }
 
+    @Override
+    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
+        target.updateNavigatorClientSettings(screenSize, mobile);
+    }
+
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {
         target.sendPingInfo(computerName, pingInfoMap);
     }

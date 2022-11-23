@@ -528,8 +528,8 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public List<Pair<Column, String>> getSelectedColumns() {
-        return table.getSelectedColumns();
+    public List<Pair<Column, String>> getFilterColumns() {
+        return table.getFilterColumns();
     }
 
 

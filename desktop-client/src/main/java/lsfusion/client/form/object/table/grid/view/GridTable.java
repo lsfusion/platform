@@ -142,9 +142,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     public GridTable(final GridView igridView, ClientFormController iform, GridUserPreferences[] iuserPreferences) {
         super(new GridTableModel(), iform, igridView.getGridController().getGroupObject());
 
-        GridTableHeader tableHeader = new GridTableHeader(columnModel);
-        setTableHeader(tableHeader);
-        LSFTooltipManager.initTooltip(tableHeader, columnModel, this);
+        if (hasHeader) {
+            GridTableHeader tableHeader = new GridTableHeader(columnModel);
+            setTableHeader(tableHeader);
+            LSFTooltipManager.initTooltip(tableHeader, columnModel, this);
+        } else {
+            setTableHeader(null);
+        }
 
         gridController = igridView.getGridController();
 
@@ -202,18 +206,20 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         };
 
-        TableHeaderUI ui = getTableHeader().getUI();
-        if (ui instanceof BasicTableHeaderUI) {
-            // change default CellRendererPane to draw corner triangles
-            JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
-            CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
-            header.remove(oldRendererPane);
-            GridCellRendererPane newRendererPane = new GridCellRendererPane();
-            ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
-            header.add(newRendererPane);
-        }
+        if (hasHeader) {
+            TableHeaderUI ui = getTableHeader().getUI();
+            if (ui instanceof BasicTableHeaderUI) {
+                // change default CellRendererPane to draw corner triangles
+                JTableHeader header = (JTableHeader) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "header");
+                CellRendererPane oldRendererPane = (CellRendererPane) ReflectionUtils.getPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane");
+                header.remove(oldRendererPane);
+                GridCellRendererPane newRendererPane = new GridCellRendererPane();
+                ReflectionUtils.setPrivateFieldValue(BasicTableHeaderUI.class, ui, "rendererPane", newRendererPane);
+                header.add(newRendererPane);
+            }
 
-        tableHeader.addMouseListener(sortableHeaderManager);
+            tableHeader.addMouseListener(sortableHeaderManager);
+        }
 
         addFocusListener(new FocusAdapter() {
             @Override
@@ -346,8 +352,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
         form.changePropertyOrder(columnKey.first, modiType, columnKey.second);
-        tableHeader.resizeAndRepaint();
-        tableHeader.repaint();
+        if (hasHeader) {
+            tableHeader.resizeAndRepaint();
+            tableHeader.repaint();
+        }
     }
 
     private void ordersSet(ClientGroupObject groupObject, LinkedHashMap<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Boolean> orders) {
@@ -361,8 +369,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         }
 
         form.setPropertyOrders(groupObject, propertyList, columnKeyList, orderList);
-        tableHeader.resizeAndRepaint();
-        tableHeader.repaint();
+        if (hasHeader) {
+            tableHeader.resizeAndRepaint();
+            tableHeader.repaint();
+        }
     }
 
     private Action tabAction = new GoToNextCellAction(true);
@@ -604,7 +614,9 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
             }
 
             repaint();
-            tableHeader.resizeAndRepaint();
+            if (hasHeader) {
+                tableHeader.resizeAndRepaint();
+            }
             gridController.setForceHidden(false);
         } else {
             gridController.setForceHidden(true);
@@ -1215,20 +1227,24 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         List<Pair<Column, String>> result = new ArrayList<>();
         for(ClientPropertyDraw property : properties)
             for(ClientGroupObjectValue columnKey : columnKeys.get(property))
-                result.add(getSelectedColumn(property, columnKey));
+                result.add(getFilterColumn(property, columnKey));
         return result;
     }
 
-    public Pair<Column, String> getSelectedColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
-        return new Pair<>(new Column(property, columnKey), getPropertyCaption(property, columnKey));
+    public Pair<Column, String> getFilterColumn(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return new Pair<>(new Column(property, columnKey), getPropertyFilterCaption(property, columnKey));
     }
 
-    protected String getPropertyCaption(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+    protected String getPropertyFilterCaption(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         String userCaption = getUserCaption(property);
         if (userCaption != null)
             return userCaption;
 
-        return getPropertyCaption(captions.get(property), property, columnKey);
+        String propertyCaption = getPropertyCaption(captions.get(property), property, columnKey);
+        if (!BaseUtils.isRedundantString(propertyCaption)) {
+            return propertyCaption;
+        }
+        return property.getPropertyFormName(); // to see something in user filters
     }
 
     public static String getPropertyCaption(Map<ClientGroupObjectValue, Object> propCaptions, ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
@@ -1936,6 +1952,10 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         @Override
         public TableCellRenderer getHeaderRenderer() {
+            if (tableHeader == null) {
+                return null;
+            }
+            
             TableCellRenderer defaultHeaderRenderer = tableHeader.getDefaultRenderer();
             if (defaultHeaderRendererRef == null || defaultHeaderRendererRef.get() != defaultHeaderRenderer) {
                 defaultHeaderRendererRef = new WeakReference<>(defaultHeaderRenderer);

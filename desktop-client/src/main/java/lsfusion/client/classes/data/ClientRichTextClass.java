@@ -35,4 +35,9 @@ public class ClientRichTextClass extends ClientTextClass {
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return new RichTextPropertyEditor(value, property.design);
     }
+
+    @Override
+    public boolean trimTooltip() {
+        return false;
+    }
 }

@@ -118,7 +118,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 startEditing(GKeyStroke.createAddUserFilterKeyEvent());
             }
         };
-        for (Pair<Column, String> column : logicsSupplier.getSelectedColumns()) {
+        for (Pair<Column, String> column : logicsSupplier.getFilterColumns()) {
             propertyView.add(column.first, column.second);
         }
         propertyView.setSelectedValue(currentColumn, currentCaption);
@@ -225,7 +225,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
             }
         };
         junctionView.addStyleName("userFilterButton");
-        junctionView.addStyleName("userFilterJunctionSeparatorButton");
+        junctionView.addStyleName(MainFrame.useTextAsFilterSeparator ? "userFilterJunctionSeparatorButtonText" : "userFilterJunctionSeparatorButton");
         junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
         junctionView.showBackground(!condition.junction);
         rightPanel.addCentered(junctionView);

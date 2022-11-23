@@ -47,7 +47,7 @@
                 </form>
             </div>
             <div class="footer">
-                <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "main.page") %></a>
+                <a class="main-page-link link" href="${loginPage}"><%= ServerMessages.getString(request, "login.page") %></a>
             </div>
         </div>
     </body>

@@ -28,13 +28,6 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
             // we want useBootstrap to be initialized (to know what kind of image should be used)
             if(MainFrame.staticImagesURL != null)
                 initImage(baseImage, vertical);
-            else
-                MainFrame.staticImagesURLListeners.add(() -> {
-                    initImage(baseImage, vertical);
-
-                    if(overrideImage != null) // overrideImage could be set
-                        updateImageSrc();
-                });
         }
 
 //        setFocusable(false);

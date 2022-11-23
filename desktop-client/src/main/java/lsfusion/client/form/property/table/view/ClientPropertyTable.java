@@ -6,6 +6,7 @@ import lsfusion.base.Result;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.ClientType;
+import lsfusion.client.classes.data.ClientStringClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.design.view.widget.TableWidget;
 import lsfusion.client.form.object.ClientGroupObject;
@@ -58,6 +59,8 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
     protected boolean editPerformed;
     protected boolean commitingValue;
     
+    public boolean hasHeader;
+    
     protected ClientPropertyTable(TableModel model, ClientFormController form, ClientGroupObject groupObject) {
         this(model, form, groupObject, new ClientAbstractCellRenderer());
     }
@@ -67,6 +70,8 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
         
         this.form = form;
         this.groupObject = groupObject;
+        
+        hasHeader = groupObject != null && groupObject.hasHeaders;
 
         editDispatcher = new EditPropertyDispatcher(this, form.getDispatcherListener());
 
@@ -465,7 +470,10 @@ public abstract class ClientPropertyTable extends TableWidget implements TableTr
                     }
 
                     if (!BaseUtils.isRedundantString(formattedValue)) {
-                        return SwingUtils.toMultilineHtml(formattedValue, createToolTip().getFont());
+                        return SwingUtils.toMultilineHtml(
+                                cellProperty.baseType instanceof ClientStringClass && ((ClientStringClass) cellProperty.baseType).trimTooltip()
+                                        && formattedValue.length() > 1000 ? (BaseUtils.substring(formattedValue, 1000) + "...") : formattedValue,
+                                createToolTip().getFont());
                     }
                 } else if (cellProperty.isEditableNotNull()) {
                     return PropertyRenderer.REQUIRED_STRING;

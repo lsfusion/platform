@@ -4,14 +4,12 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.ServerUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.http.controller.ExternalLogicsAndSessionRequestHandler;
 import lsfusion.http.controller.MainController;
 import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.interop.connection.AuthenticationToken;
-import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
@@ -60,7 +58,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
                 dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, MainController.getExternalRequest(new Object[0], request));
     }
 
-    private static NavigatorInfo getNavigatorInfo(HttpServletRequest request, ConnectionInfo connectionInfo) {
+    private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {
         String osVersion;
         String architecture = null;
         String processor = null;
@@ -87,8 +85,6 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         Integer maximumMemory = (int) (Runtime.getRuntime().maxMemory() / 1048576);
         Integer freeMemory = (int) (Runtime.getRuntime().freeMemory() / 1048576);
         String javaVersion = SystemUtils.getJavaVersion() + " " + System.getProperty("sun.arch.data.model") + " bit";
-        ClientType clientType = connectionInfo != null && connectionInfo.mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP;
-        String screenSize = connectionInfo != null ? connectionInfo.screenSize : null;
 
 //        we don't need client locale here, because it was already updated when authenticating
 //        Locale clientLocale = LSFAuthenticationToken.getLocale(auth);
@@ -98,7 +94,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
 //        String country = clientLocale.getCountry();
 
         return new NavigatorInfo(getSessionInfo(request), osVersion, processor, architecture, cores, physicalMemory, totalMemory,
-                maximumMemory, freeMemory, javaVersion, screenSize, clientType, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
+                maximumMemory, freeMemory, javaVersion, null, null, BaseUtils.getPlatformVersion(), BaseUtils.getApiVersion());
     }
 
     // required for correct Jasper report generation
@@ -110,23 +106,28 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
-    public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
+    public String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         this.remoteLogics = sessionObject.remoteLogics;
         String sessionID = nextSessionID();
-        addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request, connectionInfo));
+        addLogicsAndNavigatorSessionObject(sessionID, createNavigatorSessionObject(sessionObject, request));
         return sessionID;
     }
 
-    private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request, ConnectionInfo connectionInfo) throws RemoteException {
+    private NavigatorSessionObject createNavigatorSessionObject(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         AuthenticationToken lsfToken = LSFAuthenticationToken.getAppServerToken();
 
-        NavigatorInfo navigatorInfo = getNavigatorInfo(request, connectionInfo);
+        NavigatorInfo navigatorInfo = getNavigatorInfo(request);
         RemoteNavigatorInterface remoteNavigator = sessionObject.remoteLogics.createNavigator(lsfToken, navigatorInfo);
 
         ServerSettings serverSettings = sessionObject.getServerSettings(navigatorInfo.session, null, false);
         if (serverSettings.sessionConfigTimeout > 0)
             request.getSession().setMaxInactiveInterval(serverSettings.sessionConfigTimeout);
         return new NavigatorSessionObject(remoteNavigator, serverSettings);
+    }
+
+    @Override
+    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
+        remoteLogics.updateNavigatorClientSettings(screenSize, mobile);
     }
 
     @Override
@@ -157,7 +158,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     public NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException {
         NavigatorSessionObject navigatorSessionObject = currentLogicsAndNavigators.get(sessionID);
         if(navigatorSessionObject == null) {
-            navigatorSessionObject = createNavigatorSessionObject(sessionObject, request, null);
+            navigatorSessionObject = createNavigatorSessionObject(sessionObject, request);
             addLogicsAndNavigatorSessionObject(sessionID, navigatorSessionObject);
         }
         return navigatorSessionObject;

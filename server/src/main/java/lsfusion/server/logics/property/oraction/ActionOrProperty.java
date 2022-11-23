@@ -501,8 +501,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return false;
     }
 
-    public ActionOrProperty showDep; // assert что не null когда events не isEmpty
-
     protected static <T extends PropertyInterface> ImMap<T, ResolveClassSet> getPackedSignature(ImOrderSet<T> interfaces, List<ResolveClassSet> signature) {
         return interfaces.mapList(ListFact.fromJavaList(signature)).removeNulls();
     }

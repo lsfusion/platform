@@ -6,11 +6,15 @@ import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.JSNIHelper;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.ColorUtils;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
@@ -909,11 +913,11 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         return record == null ? null : record.getValue(property);
     }
 
-    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns(GGroupObject selectedGroupObject) {
+    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getFilterColumns(GGroupObject selectedGroupObject) {
         ArrayList<GPropertyDraw> properties = tree.getProperties(selectedGroupObject);
         if (properties != null) {
             return properties.stream().map(property ->
-                    getSelectedColumn(property, GGroupObjectValue.EMPTY)
+                    getFilterColumn(property, GGroupObjectValue.EMPTY)
             ).collect(Collectors.toList());
         }
         return new ArrayList<>();
