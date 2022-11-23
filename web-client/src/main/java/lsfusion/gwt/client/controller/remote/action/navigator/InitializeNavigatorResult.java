@@ -3,15 +3,14 @@ package lsfusion.gwt.client.controller.remote.action.navigator;
 import net.customware.gwt.dispatch.shared.Result;
 
 public class InitializeNavigatorResult implements Result {
-    public ClientSettingsResult clientSettingsResult;
-    public NavigatorInfoResult navigatorInfoResult;
-
+    public WebClientSettings webClientSettings;
+    public NavigatorInfo navigatorInfo;
 
     public InitializeNavigatorResult() {
     }
 
-    public InitializeNavigatorResult(ClientSettingsResult clientSettingsResult, NavigatorInfoResult navigatorInfoResult) {
-        this.clientSettingsResult = clientSettingsResult;
-        this.navigatorInfoResult = navigatorInfoResult;
+    public InitializeNavigatorResult(WebClientSettings webClientSettings, NavigatorInfo navigatorInfo) {
+        this.webClientSettings = webClientSettings;
+        this.navigatorInfo = navigatorInfo;
     }
 }

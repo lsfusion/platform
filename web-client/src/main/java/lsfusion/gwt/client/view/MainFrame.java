@@ -71,7 +71,6 @@ public class MainFrame implements EntryPoint {
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
     public static String staticImagesURL;
-    public static List<Runnable> staticImagesURLListeners = new ArrayList<>();
     
     public static GColorTheme colorTheme = GColorTheme.DEFAULT;
     public static Map<String, String> versionedColorThemesCss;
@@ -257,7 +256,7 @@ public class MainFrame implements EntryPoint {
         return GwtClientUtils.getParentWithAttribute(element, IGNORE_DBLCLICK_CHECK) == null;
     }
 
-    public void initializeFrame(NavigatorInfoResult result) {
+    public void initializeFrame(NavigatorInfo result) {
         currentForm = null;
 
         final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
@@ -453,7 +452,7 @@ public class MainFrame implements EntryPoint {
         return modalPopup;
     }
 
-    private void initializeWindows(NavigatorInfoResult result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
+    private void initializeWindows(NavigatorInfo result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
         GwtClientUtils.removeLoaderFromHostedPage();
 
         GAbstractWindow formsWindow = result.forms;
@@ -517,32 +516,27 @@ public class MainFrame implements EntryPoint {
         navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>() {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
-                ClientSettingsResult clientSettingsResult = result.clientSettingsResult;
+                WebClientSettings webClientSettings = result.webClientSettings;
 
-                versionedColorThemesCss = clientSettingsResult.versionedColorThemesCss;
-                busyDialogTimeout = Math.max(clientSettingsResult.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
-
-                staticImagesURL = clientSettingsResult.staticImagesURL;
-                for(Runnable listener : staticImagesURLListeners)
-                    listener.run();
-                staticImagesURLListeners = null;
-
-                devMode = clientSettingsResult.devMode;
-                projectLSFDir = clientSettingsResult.projectLSFDir;
-                showDetailedInfo = clientSettingsResult.showDetailedInfo;
-                forbidDuplicateForms = clientSettingsResult.forbidDuplicateForms;
-                showNotDefinedStrings = clientSettingsResult.showNotDefinedStrings;
-                pivotOnlySelectedColumn = clientSettingsResult.pivotOnlySelectedColumn;
-                matchSearchSeparator = clientSettingsResult.matchSearchSeparator;
-                changeColorTheme(clientSettingsResult.colorTheme);
-                colorPreferences = clientSettingsResult.colorPreferences;
+                versionedColorThemesCss = webClientSettings.versionedColorThemesCss;
+                busyDialogTimeout = Math.max(webClientSettings.busyDialogTimeout - 500, 500); // minimum timeout 500ms + there is still a delay of about 500ms
+                staticImagesURL = webClientSettings.staticImagesURL;
+                devMode = webClientSettings.devMode;
+                projectLSFDir = webClientSettings.projectLSFDir;
+                showDetailedInfo = webClientSettings.showDetailedInfo;
+                forbidDuplicateForms = webClientSettings.forbidDuplicateForms;
+                showNotDefinedStrings = webClientSettings.showNotDefinedStrings;
+                pivotOnlySelectedColumn = webClientSettings.pivotOnlySelectedColumn;
+                matchSearchSeparator = webClientSettings.matchSearchSeparator;
+                changeColorTheme(webClientSettings.colorTheme);
+                colorPreferences = webClientSettings.colorPreferences;
                 StyleDefaults.init();
-                dateFormat = clientSettingsResult.dateFormat;
-                timeFormat = clientSettingsResult.timeFormat;
-                dateTimeFormat = clientSettingsResult.dateFormat + " " + clientSettingsResult.timeFormat;
-                preDefinedDateRangesNames = clientSettingsResult.preDefinedDateRangesNames;
+                dateFormat = webClientSettings.dateFormat;
+                timeFormat = webClientSettings.timeFormat;
+                dateTimeFormat = webClientSettings.dateFormat + " " + webClientSettings.timeFormat;
+                preDefinedDateRangesNames = webClientSettings.preDefinedDateRangesNames;
 
-                initializeFrame(result.navigatorInfoResult);
+                initializeFrame(result.navigatorInfo);
             }
         });
     }

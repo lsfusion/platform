@@ -225,21 +225,24 @@ public class MainController {
         model.addAttribute("mainResources",
                 serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources) : null);
 
+        String sessionId;
         try {
-            model.addAttribute("sessionID", logicsProvider.runRequest(request, (sessionObject, retry) -> {
+            sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
                 try {
                     return new StringResult(navigatorProvider.createNavigator(sessionObject, request));
                 } catch (RemoteMessageException e) {
                     request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
                     throw e;
                 }
-            }).get());
+            }).get();
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "app-not-available";
         }
+
+        model.addAttribute("sessionID", sessionId);
 
         return "main";
     }

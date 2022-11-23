@@ -3,12 +3,12 @@ package lsfusion.gwt.client.controller.remote.action.navigator;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
-import net.customware.gwt.dispatch.shared.Result;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NavigatorInfoResult implements Result {
+public class NavigatorInfo implements Serializable {
     public GNavigatorElement root;
 
     public ArrayList<GNavigatorWindow> navigatorWindows;
@@ -17,10 +17,11 @@ public class NavigatorInfoResult implements Result {
     public GAbstractWindow status;
     public GAbstractWindow forms;
 
-    public NavigatorInfoResult() {
+    @SuppressWarnings("unused")
+    public NavigatorInfo() {
     }
 
-    public NavigatorInfoResult(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, List<GAbstractWindow> commonWindows) {
+    public NavigatorInfo(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, List<GAbstractWindow> commonWindows) {
         this.root = root;
         this.navigatorWindows = navigatorWindows;
 

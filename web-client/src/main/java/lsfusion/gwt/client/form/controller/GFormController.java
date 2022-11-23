@@ -904,7 +904,7 @@ public class GFormController implements EditManager {
         Scheduler.get().scheduleFixedPeriod(new Scheduler.RepeatingCommand() {
             @Override
             public boolean execute() {
-                if (dispatcher.loadingManager.isVisible()) {
+                if (dispatcher.getLoadingManager().isVisible()) {
                     return true;
                 } else {
                     changePageSizeLater(groupObject, pageSize);
@@ -1528,7 +1528,7 @@ public class GFormController implements EditManager {
     private boolean previewLoadingManagerSinkEvents(Event event) {
         //focus() can trigger blur event, blur finishes editing. Editing calls syncDispatch.
         //If isEditing() and loadingManager isVisible() then flushCompletedRequests is not executed and syncDispatch is blocked.
-        return !(dispatcher.loadingManager.isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)));
+        return !(dispatcher.getLoadingManager().isVisible() && (DataGrid.checkSinkEvents(event) || DataGrid.checkSinkFocusEvents(event)));
     }
 
     protected void onFormHidden(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {

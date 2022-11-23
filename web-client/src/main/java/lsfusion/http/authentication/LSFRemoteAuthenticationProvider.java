@@ -1,6 +1,5 @@
 package lsfusion.http.authentication;
 
-import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.base.file.FileData;
 import lsfusion.http.controller.LogicsRequestHandler;
@@ -26,7 +25,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.Locale;
@@ -57,8 +55,6 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             });
 
             return new LSFAuthenticationToken(username, password, authLocale.first, authLocale.second);
-        } catch (IOException e) { //todo ??
-            throw Throwables.propagate(e);
         } catch (Throwable e) {
             throw new InternalAuthenticationServiceException(e.getMessage()); //need to throw AuthenticationException for SpringSecurity to redirect to /login
         }
