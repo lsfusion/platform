@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static java.lang.Math.min;
-import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 
 public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeListener, HasMaxPreferredSize {
 
@@ -133,14 +132,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         tableWidget = new TableWidget();
 
         // INITIALIZING HEADERS
-        if(!noHeaders) {
-            headerBuilder = new DefaultHeaderBuilder<>(this, false);
-        }
+        headerBuilder = new DefaultHeaderBuilder<>(this, false);
 
         // INITIALIZING FOOTERS
-        if (!noFooters) { // the same as for headers
-            footerBuilder = new DefaultHeaderBuilder<>(this, true);
-        }
+        footerBuilder = new DefaultHeaderBuilder<>(this, true);
 
         getTableDataFocusElement().setTabIndex(0);
         initSinkEvents(tableContainer);
@@ -152,7 +147,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         return event -> {
             calcLeftNeighbourRightBorder(true);
             checkSelectedRowVisible();
+            
+            updateScrolledState();
         };
+    }
+    
+    private void updateScrolledState() {
+        int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
+        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 0);
+        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight());
     }
 
     private static Set<String> browserKeyEvents;
@@ -991,14 +994,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             int rowTop = rowElement.getOffsetTop();
             int rowBottom = rowTop + rowElement.getClientHeight();
 
-            int headerHeight = 0;
-            if (getTableHeadElement() != null) {
-                headerHeight = getTableHeadElement().getClientHeight();
-            }
-            int footerHeight = 0;
-            if (getTableFootElement() != null) {
-                footerHeight = getTableFootElement().getClientHeight();
-            }
+            int headerHeight = getTableHeadElement().getClientHeight();
+            int footerHeight = getTableFootElement().getClientHeight();
             int visibleTop = scrollTop + headerHeight;
             int visibleBottom = scrollTop + scrollHeight - footerHeight;
 
@@ -1104,15 +1101,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int currentScrollTop = tableContainer.getVerticalScrollPosition();
 
         int scrollTop = currentScrollTop;
-        
-        int headerHeight = 0;
-        if (getTableHeadElement() != null) {
-            headerHeight = getTableHeadElement().getClientHeight();
-        }
-        int footerHeight = 0;
-        if (getTableFootElement() != null) {
-            footerHeight = getTableFootElement().getClientHeight();
-        }
+
+        int headerHeight = getTableHeadElement().getClientHeight();
+        int footerHeight = getTableFootElement().getClientHeight();
 
         // we're trying to keep viewport the same after rerendering
         int rerenderedSelectedRow;
@@ -1163,6 +1154,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private void afterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
         if (pendingState.top != null) {
             tableContainer.setVerticalScrollPosition(pendingState.top);
+            
+            updateScrolledState();
         }
     }
 
@@ -1440,10 +1433,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public void updateHeadersDOM(boolean columnsChanged) {
-        if (!noHeaders)
-            headerBuilder.update(columnsChanged);
-        if (!noFooters)
-            footerBuilder.update(columnsChanged);
+        headerBuilder.update(columnsChanged);
+        footerBuilder.update(columnsChanged);
     }
 
     public Element getHeaderElement(int element) {
@@ -1601,28 +1592,30 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         protected final TableElement tableElement;
 //        protected final TableColElement colGroupElement;
         protected TableRowElement colRowElement;
-        protected TableSectionElement headerElement = null;
+        protected TableSectionElement headerElement;
         protected final TableSectionElement bodyElement;
-        protected TableSectionElement footerElement = null;
+        protected TableSectionElement footerElement;
         
         public TableWidget() {
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName("table");
 
-//            if (!noHeaders) {
             headerElement = tableElement.createTHead();
             headerElement.setClassName("dataGridHeader");
-//            }
+            if (noHeaders) {
+                headerElement.addClassName("empty-header");
+            }
 
             colRowElement = headerElement.insertRow(-1);
 
             bodyElement = GwtClientUtils.createTBody(tableElement);
             bodyElement.setClassName("dataGridBody");
 
-            if (!noFooters) {
-                footerElement = tableElement.createTFoot();
-                footerElement.setClassName("dataGridFooter");
+            footerElement = tableElement.createTFoot();
+            footerElement.setClassName("dataGridFooter");
+            if (noFooters) {
+                footerElement.addClassName("empty-footer");
             }
 
             setElement(tableElement);

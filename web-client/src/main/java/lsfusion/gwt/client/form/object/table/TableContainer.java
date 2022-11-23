@@ -76,6 +76,10 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     public int getVerticalScrollPosition() {
         return getScrollableElement().getScrollTop();
     }
+    
+    public int getScrollHeight() {
+        return getScrollableElement().getScrollHeight();
+    }
 
     public HandlerRegistration addScrollHandler(ScrollHandler handler) {
         /*
