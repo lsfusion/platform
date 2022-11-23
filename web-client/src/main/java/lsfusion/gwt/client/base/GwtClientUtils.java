@@ -125,7 +125,7 @@ public class GwtClientUtils {
     }
 
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
-        modifier.accept(getStaticImageURL((imagePath != null && !colorTheme.isDefault() ? colorTheme.getImagePath(imagePath) : getStaticImageURL(imagePath))));
+        modifier.accept(getStaticImageURL(colorTheme.getImagePath(imagePath)));
     }
 
     public static Map<String, String> getPageParameters() {
