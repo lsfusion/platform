@@ -262,18 +262,20 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
                 if(BaseUtils.hashEquals(fullWhere, fullPackWhere))
                     mResult.add(innerJoin);
                 else {
-                    if(exclusive) {
-                        if(fullPackWhere.getComplexity(false) < currentComplexity) // also can be infinite recursion because of union exprs
+                    boolean isProceeded = false;
+                    if(!exclusive) {
+                        int last = mRecPacks.size() - 1;
+                        Where merged = mRecPacks.get(last).or(fullPackWhere);
+                        if(merged.getComplexity(false) < currentComplexity) { // prevent infinite recursion, getCommonWhere can get into UnionExpr then reassemble them and the hashEquals check will not work
+                            mRecPacks.set(last, merged);
+                            isProceeded = true;
+                        }
+                    }
+                    if(!isProceeded) {
+                        if (fullPackWhere.getComplexity(false) < currentComplexity) // also can be infinite recursion because of union exprs
                             mRecPacks.add(fullPackWhere);
                         else
                             mResult.add(innerJoin);
-                    } else {
-                        int last = mRecPacks.size() - 1;
-                        Where merged = mRecPacks.get(last).or(fullPackWhere);
-                        if(merged.getComplexity(false) < currentComplexity) // предотвращение бесконечной рекурсии, через getCommonWhere может залазить внутрь UnionExpr потом их опять собирать и проверка на hashEquals не сработает
-                            mRecPacks.set(last, merged);
-                        else
-                            mRecPacks.add(fullPackWhere);
                     }
                 }
             }
