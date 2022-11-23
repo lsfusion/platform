@@ -138,7 +138,7 @@ public class ClientModalForm extends JDialog {
                     SwingUtilities.invokeLater(() -> {
                         if (defaultComponent != null) {
                             defaultComponent.requestFocusInWindow();
-                        } else if (!form.activateFirstComponents()) {
+                        } else if (form != null && !form.activateFirstComponents()) {
                             form.focusFirstComponent();
                         }
                     });

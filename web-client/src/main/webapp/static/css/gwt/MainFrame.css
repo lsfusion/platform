@@ -891,6 +891,11 @@ button {
     padding: 5px;
 }
 
+.userFilterJunctionSeparatorButtonText {
+    margin: 0 4px 0 4px;
+    padding: 5px;
+}
+
 .verticalStretchSeparator {
     border-left: 1px solid var(--panel-border-color);
     margin: 3px 0;

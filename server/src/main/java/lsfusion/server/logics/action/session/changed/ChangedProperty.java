@@ -112,23 +112,23 @@ public class ChangedProperty<T extends PropertyInterface> extends SessionPropert
         return ValueExpr.get(changedIncrementWhere.toWhere());
     }
 
-    // для resolve'а следствий в частности
-    public PropertyChange<T> getFullChange(Modifier modifier) throws SQLException, SQLHandledException {
-        ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
-        Expr expr = property.getExpr(mapKeys, modifier);
-        Where where;
-        switch(type) {
-            case SET:
-                where = expr.getWhere();
-                break;
-            case DROP:
-                where = expr.getWhere().not().and(property.getClassProperty().mapExpr(mapKeys, modifier).getWhere());
-                break;
-            default:
-                return null;
-        }
-        return new PropertyChange<>(mapKeys, ValueExpr.get(where), Where.TRUE());
-    }
+//    // для resolve'а следствий в частности
+//    public PropertyChange<T> getFullChange(Modifier modifier) throws SQLException, SQLHandledException {
+//        ImRevMap<T, KeyExpr> mapKeys = getMapKeys();
+//        Expr expr = property.getExpr(mapKeys, modifier);
+//        Where where;
+//        switch(type) {
+//            case SET:
+//                where = expr.getWhere();
+//                break;
+//            case DROP:
+//                where = expr.getWhere().not().and(property.getClassProperty().mapExpr(mapKeys, modifier).getWhere());
+//                break;
+//            default:
+//                return null;
+//        }
+//        return new PropertyChange<>(mapKeys, ValueExpr.get(where), Where.TRUE());
+//    }
 
     @Override
     protected ImCol<Pair<ActionOrProperty<?>, LinkType>> calculateLinks(boolean events) {

@@ -13,7 +13,7 @@ public class TextClass extends StringClass {
     public final static StringClass instance = new TextClass(null);
 
     public TextClass(String type) {
-        super(LocalizedString.create("{classes.text}" + (type != null ? (" " + type) : "")), false, ExtInt.UNLIMITED, false);
+        super(LocalizedString.create("{classes.text}" + (type != null ? (" " + type) : "")), false, ExtInt.UNLIMITED, true);
     }
 
     public static StringClass getInstance(String type) {

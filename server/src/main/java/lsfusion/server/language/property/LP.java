@@ -1,6 +1,5 @@
 package lsfusion.server.language.property;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -25,6 +24,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.action.session.changed.IncrementType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
@@ -241,9 +241,9 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         }
     }
 
-    public <D extends PropertyInterface> void setEventChange(LogicsModule lm, Event actionEvent, Object... params) {
+    public <D extends PropertyInterface> void setWhenChange(LogicsModule lm, Event actionEvent, Object... params) {
         ImList<PropertyInterfaceImplement<T>> listImplements = readCalcImplements(listInterfaces, params);
-        property.setEventChange(lm, actionEvent, listImplements.get(0), (PropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
+        property.setWhenChange(lm, actionEvent, listImplements.get(0), (PropertyMapImplement<PropertyInterface, T>) listImplements.get(1));
     }
 
     public void addOperand(boolean hasWhen, List<ResolveClassSet> signature, Version version, Object... params) {
@@ -298,10 +298,14 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         return property.getInterfaceClasses(listInterfaces, classType);
     }
 
-    public LP<T> getOld() {
-        return new LP<>(property.getOld(PrevScope.DB), listInterfaces);
+    public LP<T> getOld(PrevScope scope) {
+        return new LP<>(property.getOld(scope), listInterfaces);
     }
-    
+
+    public LP<T> getChanged(IncrementType type, PrevScope prevScope) {
+        return new LP<>(property.getChanged(type, prevScope), listInterfaces);
+    }
+
     public ResolveClassSet getResolveClassSet(List<ResolveClassSet> classes) {
         return property.getResolveClassSet(listInterfaces.mapList(ListFact.fromJavaList(classes)));    
     }

@@ -1045,9 +1045,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private final List<ShowRec> showRecs = new ArrayList<>();
 
     private void startShowRec(Action action) throws SQLException, SQLHandledException {
-        Property<PropertyInterface> showRec = action.showRec;
-        if(showRec != null) // assert that hasChanges - see getNextApplyEvent
-            showRecs.add(new ShowRec(showRec, action, readShowRec(showRec)));
+        if(action.showRec) // assert that hasChanges - see getNextApplyEvent
+            showRecs.add(new ShowRec(action.where, action, readShowRec(action.where)));
     }
 
     private <T extends PropertyInterface> ImSet<ImMap<T, DataObject>> readShowRec(Property<T> showRec) throws SQLException, SQLHandledException {
@@ -1140,32 +1139,36 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private OverrideSessionModifier resolveModifier = null;
 
     public <T extends PropertyInterface> void resolve(Action<?> action, ExecutionStack stack) throws SQLException, SQLHandledException {
-        IncrementChangeProps changes = new IncrementChangeProps();
-        for(SessionProperty sessionCalcProperty : action.getSessionCalcDepends(false))
-            if(sessionCalcProperty instanceof ChangedProperty) {
-                PropertyChange fullChange = ((ChangedProperty) sessionCalcProperty).getFullChange(getModifier());
-                if(fullChange!=null)
-                    changes.add(sessionCalcProperty, fullChange);
-            }
-        
-        resolveModifier = new OverridePropSourceSessionModifier<Property>("resolve", changes, true, dataModifier) {
-            // надо бы реализовать, но не понятно для чего
-            @Override
-            protected ImSet<Property> getSourceProperties(Property property) {
-                return SetFact.EMPTY();
-            }
+        assert action.hasResolve();
 
-            @Override
-            protected void updateSource(Property property, boolean dataChanged, boolean forceUpdate) {
-                assert false;
-            }
-        };
-        try {
-            action.execute(this, stack);
-        } finally {
-            resolveModifier.clean(sql, getOwner());
-            resolveModifier = null;
-        }
+//        action.resolve
+//        IncrementChangeProps changes = new IncrementChangeProps();
+//        for(SessionProperty sessionCalcProperty : action.getSessionCalcDepends(false))
+//            if(sessionCalcProperty instanceof ChangedProperty) {
+//                PropertyChange fullChange = ((ChangedProperty) sessionCalcProperty).getFullChange(getModifier());
+//                if(fullChange!=null)
+//                    changes.add(sessionCalcProperty, fullChange);
+//            }
+//
+//        resolveModifier = new OverridePropSourceSessionModifier<Property>("resolve", changes, true, dataModifier) {
+//            // надо бы реализовать, но не понятно для чего
+//            @Override
+//            protected ImSet<Property> getSourceProperties(Property property) {
+//                return SetFact.EMPTY();
+//            }
+//
+//            @Override
+//            protected void updateSource(Property property, boolean dataChanged, boolean forceUpdate) {
+//                assert false;
+//            }
+//        };
+
+//        try {
+            action.resolve.execute(this, stack);
+//        } finally {
+//            resolveModifier.clean(sql, getOwner());
+//            resolveModifier = null;
+//        }
     }
 
     public static String checkClasses(final SQLSession sql, BaseClass baseClass) throws SQLException, SQLHandledException {

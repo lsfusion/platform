@@ -104,6 +104,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.server.data.table.IndexOptions.defaultIndexOptions;
 import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
 import static lsfusion.server.physics.admin.log.ServerLoggers.sqlSuppLog;
@@ -129,8 +130,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesAMap = MapFact.getGlobalConcurrentHashMap();
     public static ConcurrentHashMap<Long, Long> threadAllocatedBytesBMap = MapFact.getGlobalConcurrentHashMap();
 
-    private static String likeIndexPostfix = "_like";
-    private static String matchIndexPostfix = "_match";
+    private static String likeIndexSuffix = "_like";
+    private static String matchIndexSuffix = "_match";
 
     private Long startTransaction;
     private Map<String, Integer> attemptCountMap = new HashMap<>();
@@ -756,8 +757,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     public void checkExtraIndices(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
-            if (!threadLocalSQL.checkIndex(table, fields, defaultIndexOptions, false) && !threadLocalSQL.checkIndex(table, fields, defaultIndexOptions, true))
-                addIndex(table, fields, logger);
+            threadLocalSQL.checkDefaultIndex(table, fields, defaultIndexOptions);
         }
     }
 
@@ -797,15 +797,25 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     static String getIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
-        return syntax.getIndexName(fields.keyOrderSet().toString("_") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName()));
+        return getIndexName(table, fields, null, false, false, syntax);
     }
 
-    static String getOldIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
-        return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keyOrderSet().toString("_") + "_idx");
+    static String getIndexName(NamedTable table, SQLSyntax syntax, ImOrderMap<Field, Boolean> fields, String suffix) {
+        return getIndexName(table, syntax, fields, suffix, false, false);
     }
 
-    static String getIndexName(NamedTable table, SQLSyntax syntax, ImOrderMap<Field, Boolean> fields) {
-        return getIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax);
+    static String getIndexName(NamedTable table, SQLSyntax syntax, ImOrderMap<Field, Boolean> fields, String suffix, boolean suffixInTheEnd, boolean old) {
+        return getIndexName(table, fields.mapOrderKeys(Field.nameGetter()), suffix, suffixInTheEnd, old, syntax);
+    }
+
+    static String getIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, String suffix, boolean suffixInTheEnd, boolean old, SQLSyntax syntax) {
+        if (suffixInTheEnd) { //new style
+            return syntax.getIndexName(fields.keyOrderSet().toString("_") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName())) + suffix;
+        } else if (old) { //old style before 2015
+            return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keyOrderSet().toString("_") + "_idx");
+        } else { //old style after 2015
+            return syntax.getIndexName(fields.keyOrderSet().toString("_") + nvl(suffix, "") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName()));
+        }
     }
 
     private ImOrderMap<String, Boolean> getOrderFields(ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) {
@@ -821,30 +831,61 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             result = result.addOrderExcl(keyFields.toOrderMap(true));
         return result;
     }
-    
-    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
-        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, logger, ifNotExists);
-    }
 
-    public boolean checkIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
-        return checkIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, false);
-     }
-
-
-    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, boolean old) throws SQLException, SQLHandledException {
-        boolean exists = checkIndex(table, fields, old, "");
-        if(indexOptions.type.isLike()) {
-            exists = exists && checkIndex(table, fields, old, likeIndexPostfix);
-        } else if(indexOptions.type.isMatch()) {
-            exists = exists && checkIndex(table, fields, old, likeIndexPostfix) && checkIndex(table, fields, old, matchIndexPostfix);
+    public void checkIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+        ImOrderMap<Field, Boolean> fieldsMap = getOrderFields(keyFields, indexOptions, fields);
+        if (indexOptions.type.isLike()) {
+            checkLikeIndex(table, fieldsMap, indexOptions);
+        } else if (indexOptions.type.isMatch()) {
+            checkLikeIndex(table, fieldsMap, indexOptions);
+            checkMatchIndex(table, fieldsMap, indexOptions);
         }
-        return exists;
+        checkDefaultIndex(table, fieldsMap, indexOptions);
     }
 
-    public boolean checkIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, boolean old, String postfix) throws SQLException, SQLHandledException {
+    private void checkLikeIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+        String newIndexName = getIndexName(table, syntax, fields, likeIndexSuffix, false, false);
+        if (!checkIndex(newIndexName)) {
+            //deprecated old index name with _like in the end  (can be removed after checkIndices)
+            String oldIndexName = getIndexName(table, syntax, fields, likeIndexSuffix, true, false);
+            if (checkIndex(oldIndexName)) {
+                renameIndex(oldIndexName, newIndexName);
+            } else {
+                createLikeIndex(table, fields, getColumns(fields, indexOptions), logger, true);
+            }
+        }
+    }
+
+    private void checkMatchIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+        String newIndexName = getIndexName(table, syntax, fields, matchIndexSuffix, false, false);
+        if (!checkIndex(newIndexName)) {
+            //deprecated old index name with _match in the end  (can be removed after checkIndices)
+            String oldIndexName = getIndexName(table, syntax, fields, matchIndexSuffix, true, false);
+            if (checkIndex(oldIndexName)) {
+                renameIndex(oldIndexName, newIndexName);
+            } else {
+                createLikeIndex(table, fields, getColumns(fields, indexOptions), logger, true);
+            }
+        }
+    }
+
+    private void checkDefaultIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) throws SQLException, SQLHandledException {
+        String newIndexName = getIndexName(table, syntax, fields, null, false, false);
+        if (!checkIndex(newIndexName)) {
+            //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
+            String veryOldIndexName = getIndexName(table, syntax, fields, null, false, true);
+            if (checkIndex(veryOldIndexName)) {
+                renameIndex(veryOldIndexName, newIndexName);
+            } else {
+                createDefaultIndex(table, fields, getColumns(fields, indexOptions), logger, true);
+            }
+        }
+    }
+
+    private boolean checkIndex(String indexName) throws SQLException, SQLHandledException {
         //начиная с Postgres 9.5 можно заменить на 'create index if not exists', но непонятно, что тогда делать с логами, поэтому пока проверяем наличие индекса
         //https://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-        String command = "SELECT to_regclass('public." + (old ? getOldIndexName(table, fields.mapOrderKeys(Field.nameGetter()), syntax) : (getIndexName(table, syntax, fields) + postfix)) + "')";
+        String command = "SELECT to_regclass('public." + indexName + "')";
 
         MExclSet<String> propertyNames = SetFact.mExclSet();
         propertyNames.exclAdd("to_regclass");
@@ -875,92 +916,115 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
+    public void addIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<Field> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+        addIndex(table, getOrderFields(keyFields, indexOptions, fields), indexOptions, logger, ifNotExists);
+    }
+
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, Logger logger) throws SQLException {
         addIndex(table, fields, defaultIndexOptions, logger, false);
     }
 
     public void addIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
-        String columns = fields.toString((key, value) -> {
+        String columns = getColumns(fields, indexOptions);
+
+        if (indexOptions.type.isLike()) {
+            createLikeIndex(table, fields, columns, logger, ifNotExists);
+        } else if (indexOptions.type.isMatch()) {
+            createLikeIndex(table, fields, columns, logger, ifNotExists);
+            createMatchIndex(table, fields, columns, indexOptions, logger, ifNotExists);
+        }
+        createDefaultIndex(table, fields, columns, logger, ifNotExists);
+    }
+
+    private String getColumns(ImOrderMap<Field, Boolean> fields, IndexOptions indexOptions) {
+        return fields.toString((key, value) -> {
             assert value || !(key instanceof KeyField);
             return key.getName(syntax) + (indexOptions.type.isDefault() ? (" " + syntax.getOrderDirection(false, value)) : "");
         }, ",");
+    }
 
+    private void createLikeIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, String columns, Logger logger, boolean ifNotExists) throws SQLException {
+        if (DataAdapter.hasTrgmExtension()) {
+            createIndex(table, getIndexName(table, syntax, fields, likeIndexSuffix),
+                    " USING GIN (" + columns + " gin_trgm_ops)", logger, ifNotExists);
+        }
+    }
+
+    private void createMatchIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+        if(DataAdapter.hasTrgmExtension()) {
+            createIndex(table, getIndexName(table, syntax, fields, matchIndexSuffix),
+                    " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", logger, ifNotExists);
+        }
+    }
+
+    private void createDefaultIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, String columns, Logger logger, boolean ifNotExists) throws SQLException {
+        createIndex(table, getIndexName(table, syntax, fields, null), " (" + columns + ")", logger, ifNotExists);
+    }
+
+    private void createIndex(NamedTable table, String nameIndex, String columnsPostfix, Logger logger, boolean ifNotExists) throws SQLException {
         long start = System.currentTimeMillis();
-        String nameIndex = getIndexName(table, syntax, fields);
-        if(logger != null)
+        if (logger != null) {
             logger.info(String.format("Adding index started: %s", nameIndex));
-        if (indexOptions.type.isLike()) {
-            createLikeIndex(table, nameIndex, columns, ifNotExists);
-        } else if (indexOptions.type.isMatch()) {
-            createLikeIndex(table, nameIndex, columns, ifNotExists);
-            createMatchIndex(table, nameIndex, columns, indexOptions, ifNotExists);
         }
-        createDefaultIndex(table, nameIndex, columns, ifNotExists);
-        if(logger != null)
-            logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
-    }
-
-    private void createLikeIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
-        if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + likeIndexPostfix, " USING GIN (" + columns + " gin_trgm_ops)", ifNotExists);
-    }
-
-    private void createMatchIndex(NamedTable table, String nameIndex, String columns, IndexOptions indexOptions, boolean ifNotExists) throws SQLException {
-        if(DataAdapter.hasTrgmExtension())
-            createIndex(table, nameIndex + matchIndexPostfix, " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", ifNotExists);
-    }
-
-    private void createDefaultIndex(NamedTable table, String nameIndex, String columns, boolean ifNotExists) throws SQLException {
-        createIndex(table, nameIndex, " (" + columns + ")", ifNotExists);
-    }
-
-    private void createIndex(NamedTable table, String nameIndex, String columnsPostfix, boolean ifNotExists) throws SQLException {
         executeDDL("CREATE INDEX " + (ifNotExists ? "IF NOT EXISTS " : "") + nameIndex + " ON " + table.getName(syntax) + columnsPostfix);
-    }
-
-    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
-        String indexName = getIndexName(table, getOrderFields(keyFields, fields, indexOptions), syntax);
-        if(indexOptions.type.isLike()) {
-            dropLikeIndex(table, indexName, ifExists);
-        } else if(indexOptions.type.isMatch()) {
-            dropLikeIndex(table, indexName, ifExists);
-            dropMatchIndex(table, indexName, ifExists);
+        if (logger != null) {
+            logger.info(String.format("Adding index: %s, %sms", nameIndex, System.currentTimeMillis() - start));
         }
-        dropDefaultIndex(table, indexName, ifExists);
     }
 
-    public void dropLikeIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        if(DataAdapter.hasTrgmExtension())
-            dropIndex(table, indexName + likeIndexPostfix, ifExists);
+    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+        if (indexOptions.type.isLike()) {
+            dropLikeIndex(table, keyFields, fields, indexOptions);
+        } else if (indexOptions.type.isMatch()) {
+            dropLikeIndex(table, keyFields, fields, indexOptions);
+            dropMatchIndex(table, keyFields, fields, indexOptions);
+        }
+        dropDefaultIndex(table, keyFields, fields, indexOptions);
     }
 
-    public void dropMatchIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        if(DataAdapter.hasTrgmExtension())
-            dropIndex(table, indexName + matchIndexPostfix, ifExists);
+    public void dropLikeIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+        if (DataAdapter.hasTrgmExtension()) {
+            ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
+            //ifExists true for both, because we don't know which of indexes exists
+            dropIndex(table, getIndexName(table, orderFields, likeIndexSuffix, false, false, syntax), true);
+            //deprecated old index name with _like in the end (can be removed after checkIndices)
+            dropIndex(table, getIndexName(table, orderFields, likeIndexSuffix, true, false, syntax), true);
+        }
     }
 
-    public void dropDefaultIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
-        dropIndex(table, indexName, ifExists);
+    public void dropMatchIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+        if (DataAdapter.hasTrgmExtension()) {
+            ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
+            //ifExists true for both, because we don't know which of indexes exists
+            dropIndex(table, getIndexName(table, orderFields, matchIndexSuffix, false, false, syntax), true);
+            //deprecated old index name with _match in the end  (can be removed after checkIndices)
+            dropIndex(table, getIndexName(table, orderFields, matchIndexSuffix, true, false, syntax), true);
+        }
+    }
+
+    public void dropDefaultIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+        //ifExists true for both, because we don't know which of indexes exists
+        ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
+        dropIndex(table, getIndexName(table, orderFields, null, false, true, syntax), true);
+        //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
+        dropIndex(table, getIndexName(table, orderFields, null, false, false, syntax), true);
     }
 
     public void dropIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
         executeDDL("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
     }
 
-    public void renameIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
-        renameIndex(table, getOrderFields(keyFields, fields, indexOptions));
-    }
-
     public void renameIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
         renameIndex(table, getOrderFields(keyFields, oldFields, indexOptions), getOrderFields(keyFields, newFields, indexOptions), ifExists);
     }
 
-    public void renameIndex(NamedTable table, ImOrderMap<String, Boolean> fields) throws SQLException {
-        executeDDL("ALTER INDEX " + getOldIndexName(table, fields, syntax) + " RENAME TO " + getIndexName(table, fields, syntax));
-    }
-
     public void renameIndex(NamedTable table, ImOrderMap<String, Boolean> oldFields, ImOrderMap<String, Boolean> newFields, boolean ifExists) throws SQLException {
         executeDDL("ALTER INDEX " + (ifExists ? "IF EXISTS " : "" ) + getIndexName(table, oldFields, syntax) + " RENAME TO " + getIndexName(table, newFields, syntax));
+    }
+
+    public void renameIndex(String oldIndexName, String newIndexName) throws SQLException {
+        logger.info("Renaming index from " + oldIndexName + " to " + newIndexName);
+        executeDDL("ALTER INDEX " + oldIndexName + " RENAME TO " + newIndexName);
     }
 
 /*    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {

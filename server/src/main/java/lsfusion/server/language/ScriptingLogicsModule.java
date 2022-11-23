@@ -137,6 +137,7 @@ import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
 import lsfusion.server.physics.admin.reflection.property.CanonicalNameProperty;
 import lsfusion.server.physics.dev.debug.*;
+import lsfusion.server.physics.dev.debug.action.ShowRecDepAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
@@ -179,7 +180,6 @@ import static lsfusion.server.language.ScriptedStringUtils.*;
 import static lsfusion.server.language.navigator.window.AlignmentUtils.*;
 import static lsfusion.server.logics.classes.data.StringClass.getv;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
-import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
 
 public class ScriptingLogicsModule extends LogicsModule {
 
@@ -484,6 +484,20 @@ public class ScriptingLogicsModule extends LogicsModule {
             result = findLAByPropertyUsage(true, pUsage);
         return result;
     }
+    public LAP<?, ?> findLAPByEventOrPropertyUsage(ActionOrPropertyUsage orUsage) throws ScriptingErrorLog.SemanticErrorException {
+        NamedPropertyUsage pUsage = orUsage.property;
+        if(orUsage instanceof PropertyUsage) {
+            return findLPByPropertyUsage(pUsage);
+        }
+        if(orUsage instanceof ActionUsage) {
+            return findLANoParamsByPropertyUsage(pUsage);
+        }
+        assert orUsage instanceof PropertyElseActionUsage;
+        LAP<?, ?> result = findLPByPropertyUsage(true, pUsage);
+        if(result == null)
+            result = findLANoParamsByPropertyUsage(true, pUsage);
+        return result;
+    }
     public LAP<?, ?> findLAPByActionOrPropertyUsage(ActionOrPropertyUsage orUsage, FormEntity form, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         NamedPropertyUsage pUsage = orUsage.property;
         if(orUsage instanceof PropertyUsage) {
@@ -699,10 +713,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LA<?> findLANoParamsByPropertyUsage(NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
+        return findLANoParamsByPropertyUsage(false, pUsage);
+    }
+    public LA<?> findLANoParamsByPropertyUsage(boolean orPropertyMessage, NamedPropertyUsage pUsage) throws ScriptingErrorLog.SemanticErrorException {
         if (pUsage.classNames == null) {
             pUsage.classNames = Collections.emptyList();
         }
-        LA<?> LA = findLAByPropertyUsage(pUsage);
+        LA<?> LA = findLAByPropertyUsage(orPropertyMessage, pUsage);
         ValueClass[] paramClasses = LA.getInterfaceClasses(ClassType.signaturePolicy);
         if (paramClasses.length != 0) {
             errLog.emitPropertyWithParamsExpectedError(getParser(), pUsage.name, "[]");
@@ -749,8 +766,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return forms;
     }
 
-    public Event createScriptedEvent(BaseEvent base, List<String> formIds, List<NamedPropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
-        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
+    public Event createScriptedEvent(String name, BaseEvent base, List<String> formIds, List<ActionOrPropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
+        return new Event(name, base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : findEventActionsOrPropsByUsages(afterIds));
     }
 
     public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
@@ -1039,6 +1056,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             super(action, usedParams);
         }
 
+        public LAWithParams(LA<?> action, LAPWithParams mapLP) {
+            this(action, mapLP.usedParams);
+        }
+
         public LA<?> getLP() {
             return (LA<?>) super.getLP();
         }
@@ -1063,6 +1084,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         public LPWithParams(LP<?> property) {
             this(property, Collections.emptyList());
+        }
+
+        public LPWithParams(LP<?> property, boolean notEmpty) {
+            this(property, consecutiveList(property.listInterfaces.size(), 0));
+            assert notEmpty;
         }
 
         public LP<?> getLP() {
@@ -1179,7 +1205,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         makeActionPublic(action, name, signature);
     }
 
-    public void addSettingsToProperty(LP<?> property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature,
+    public <K extends PropertyInterface> void addSettingsToProperty(LP<K> property, String name, LocalizedString caption, List<TypedParameter> params, List<ResolveClassSet> signature,
                                     PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateProperty(name, signature);
 
@@ -1209,9 +1235,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         BooleanDebug notNull = ps.notNull;
         if (notNull != null) {
             BooleanDebug notNullResolve = ps.notNullResolve;
-            setNotNull(property, notNull.debugPoint, ps.notNullEvent,
-                    notNullResolve != null ? ListFact.singleton(new PropertyFollowsDebug(false, true, notNullResolve.debugPoint)) :
-                                             ListFact.EMPTY());
+            Event notNullEvent = ps.notNullEvent;
+            Event notNullResolveEvent = ps.notNullResolveEvent;
+            setNotNull(property.property, notNull.debugPoint,
+                    notNullResolve != null ? ListFact.singleton(new PropertyFollowsDebug(notNullResolveEvent, false, true, notNullResolve.debugPoint,
+                        LocalizedString.concatList(LocalizedString.create("{logics.property} "), property.property.caption, " [" + property.property.getSID(), LocalizedString.create("]. {logics.property.not.defined.resolve}")))) : ListFact.EMPTY(),
+                    // not sure that this is needed, but this way it works closer to the AGGR mechanism
+                    notNullResolve != null && useOptResolve ? ListFact.singleton(property.property.getImplement().mapChanged(IncrementType.DROP, (notNullResolveEvent != null ? notNullResolveEvent : notNullEvent).getScope())) : null,
+                    notNullEvent);
 
             if(notNullResolve != null)
                 property.property.setAggr(true);
@@ -1804,6 +1835,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
 
         return new LA(new InternalClientAction(ListFact.EMPTY(), ListFact.EMPTY(), syncType, resourceName, ListFact.toList(types)));
+    }
+
+    public LAWithParams addScriptedShowRecDepAction(List<ActionOrPropertyUsage> ids, boolean showRec, boolean global) throws ScriptingErrorLog.SemanticErrorException {
+        return new LAWithParams(addAProp(null, new ShowRecDepAction(showRec, ids != null ? findEventActionsOrPropsByUsages(ids).getSet() : SetFact.EMPTY(), global)), new ArrayList<>());
     }
 
     public LA addScriptedInternalAction(String javaClassName, List<String> paramClasses, List<ResolveClassSet> signature, boolean allowNullValue) throws ScriptingErrorLog.SemanticErrorException {
@@ -3037,7 +3072,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             return new Pair<>(new LPWithParams(ci.property, ci.usedContext), null);
     }
 
-    public LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr, boolean showRec, DebugInfo.DebugPoint classDebugPoint, DebugInfo.DebugPoint exprDebugPoint, DebugInfo.DebugPoint aggrDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
+    public <T extends PropertyInterface> LPContextIndependent addScriptedAGProp(List<TypedParameter> context, String aggClassName, LPWithParams whereExpr, Event aggrEvent, DebugInfo.DebugPoint aggrDebugPoint, Event newEvent, DebugInfo.DebugPoint newDebugPoint, Event deleteEvent, DebugInfo.DebugPoint deleteDebugPoint, boolean innerPD) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkNoInline(innerPD);
 
         LP<?> whereLP = whereExpr.getLP();
@@ -3052,38 +3087,52 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<LPWithParams> groupProps = new ArrayList<>();
         List<ResolveClassSet> resultSignature = new ArrayList<>();
         ResolveClassSet aggSignature = aggClass.getResolveSet();
-        for (TypedParameter param : context) {
+        Object[] prevGroupProps = new Object[context.size() * 2];
+        for (int i = 0, contextSize = context.size(); i < contextSize; i++) {
+            TypedParameter param = context.get(i);
             LP lp = addDProp(LocalizedString.NONAME, param.cls, aggClass);
 
             makePropertyPublic(lp, param.paramName, aggSignature);
             lp.property.markStored(null);
 
             groupProps.add(new LPWithParams(lp, 0));
+            prevGroupProps[2 * i] = lp.getOld((deleteEvent != null ? deleteEvent : aggrEvent.onlyScope()).getScope());
+            prevGroupProps[2 * i + 1] = 1;
             resultSignature.add(param.cls.getResolveSet());
         }
 
 //        aggrObject (prim1Object, prim2Object) =
 //                GROUP AGGR aggrClass aggrObject
 //        WHERE aggrObject IS aggrClass BY prim1Object(aggrObject), prim2Object(aggrObject);
-        LP lcp = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), false,
+        LP<T> aggrObjectLP = addScriptedGProp(groupProps, GroupingType.AGGR, Collections.singletonList(new LPWithParams(0)), Collections.emptyList(), false,
                 new LPWithParams(is(aggClass), 0), Collections.singletonList(aggSignature));
-        ((AggregateGroupProperty) lcp.property).isFullAggr = true;
+        ((AggregateGroupProperty) aggrObjectLP.property).isFullAggr = true;
 
+        // RESOLVING
+        List<PropertyFollowsDebug> resolveNew, resolveDelete;
+
+        resolveNew = singletonList(new PropertyFollowsDebug(newEvent, true, false, newDebugPoint, LocalizedString.concatList(LocalizedString.create("{logics.property.violated.aggr.new.resolve}"), ": " + aggrDebugPoint.toString())));
+        resolveDelete = singletonList(new PropertyFollowsDebug(deleteEvent, false, false, deleteDebugPoint, LocalizedString.concatList(LocalizedString.create("{logics.property.violated.aggr.delete.resolve}"), ": " + aggrDebugPoint.toString())));
+
+        // this provides simpler events, with the more relevant event order (because we eliminate a lot of recursive links, especially in DELETE event)
+        // WHEN SET(aggrExpr) DO SETNOTNULL lcp
+        ImList<LP> optResNewConds = useOptResolve ? ListFact.singleton(whereLP.getChanged(IncrementType.SET, (newEvent != null ? newEvent : aggrEvent.onlyScope()).getScope())) : null;
+        // WHEN DROPPED(aggrExpr)(PREV(prim1Object(aggrObject)), PREV(prim2Object(aggrObject)) DO DELETE aggrObject // we need prev because the param object in aggrExpr can be deleted => aggobject will be changed to null
+        ImList<LP> optResDeleteConds = useOptResolve ? ListFact.singleton(addJProp(whereLP.getChanged(IncrementType.DROP, (deleteEvent != null ? deleteEvent : aggrEvent.onlyScope()).getScope()), prevGroupProps)) : null;
+
+        // CONSTRAINING
         LocalizedString details = LocalizedString.concatList(aggClass.toString() + " WHERE ", whereLP.property.localizedToString());
 
-//        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // добавление
-        addScriptedAGFollows(whereLP, new LPWithParams(lcp, whereExpr), true, showRec, classDebugPoint, aggrDebugPoint, details);
+//        aggrProperty(prim1Class prim1Object, prim2Class prim2Object) => aggrObject(prim1Object, prim2Object) RESOLVE LEFT; // new
+        addScriptedFollows(whereLP, new LPWithParams(aggrObjectLP, whereExpr), resolveNew, optResNewConds, aggrEvent, aggrDebugPoint, false, LocalizedString.create("{logics.property.violated.aggr.new}"), details);
 
-//        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // удаление
-        addScriptedAGFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), false, showRec, exprDebugPoint, aggrDebugPoint, details);
+//        aggrObject IS aggrClass => aggrProperty(prim1Object(aggrObject), prim2Object(aggrObject)) RESOLVE RIGHT; // delete
+        addScriptedFollows(is(aggClass), addScriptedJProp(whereLP, groupProps), resolveDelete, optResDeleteConds, aggrEvent, aggrDebugPoint, false, LocalizedString.create("{logics.property.violated.aggr.delete}"), details);
 
-        return new LPContextIndependent(lcp, resultSignature, Collections.emptyList());
+        return new LPContextIndependent(aggrObjectLP, resultSignature, Collections.emptyList());
     }
 
-    private void addScriptedAGFollows(LP mainProp, LPWithParams rightProp, boolean isTrue, boolean showRec, DebugInfo.DebugPoint debugPoint, DebugInfo.DebugPoint aggrDebugPoint, LocalizedString details) {
-        addScriptedFollows(mainProp, rightProp, singletonList(new PropertyFollowsDebug(isTrue, debugPoint)), Event.APPLY, showRec, aggrDebugPoint,
-                false, isTrue ? LocalizedString.create("{logics.property.violated.aggr.new}") : LocalizedString.create("{logics.property.violated.aggr.delete}"), details);
-    }
+    public static boolean useOptResolve = true;
 
     public LPWithParams addScriptedMaxProp(List<LPWithParams> paramProps, boolean isMin) throws ScriptingErrorLog.SemanticErrorException {
         if (isMin) {
@@ -4585,17 +4634,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkParamCount(mainProp, namedParams.size());
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
-        addScriptedFollows(mainProp, rightProp, resolveOptions, event, false, debugPoint,
+        addScriptedFollows(mainProp, rightProp, resolveOptions, null, event, debugPoint,
                 true, LocalizedString.create("{logics.property.violated.consequence.from}"), LocalizedString.concatList(mainProp.property.localizedToString(), " => ",  rightProp.getLP().property.localizedToString()));
     }
 
-    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, Event event, boolean showRec, DebugInfo.DebugPoint debugPoint, boolean useDebugPoint, LocalizedString caption, LocalizedString details) {
+    private void addScriptedFollows(LP mainProp, LPWithParams rightProp, List<PropertyFollowsDebug> resolveOptions, ImList<LP> optResConds, Event event, DebugInfo.DebugPoint debugPoint, boolean useDebugPoint, LocalizedString caption, LocalizedString details) {
         Integer[] params = new Integer[rightProp.usedParams.size()];
         for (int j = 0; j < params.length; j++) {
             params[j] = rightProp.usedParams.get(j) + 1;
         }
-        addFollows(mainProp, useDebugPoint ? debugPoint : null, ListFact.fromJavaList(resolveOptions), event, showRec, rightProp.getLP(),
-                LocalizedString.concatList(caption, ": " + debugPoint.toString()), LocalizedString.concatList(LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details), params);
+        addFollows(mainProp, useDebugPoint ? debugPoint : null, ListFact.fromJavaList(resolveOptions), optResConds, event,
+                rightProp.getLP(), LocalizedString.concatList(caption, ": " + debugPoint.toString(), "\n", LocalizedString.create("{logics.property.violated.consequence.details}"), ": ", details), params);
     }
 
     public void addScriptedWriteWhen(NamedPropertyUsage mainPropUsage, List<TypedParameter> namedParams, LPWithParams valueProp, LPWithParams whenProp, boolean action) throws ScriptingErrorLog.SemanticErrorException {
@@ -4607,7 +4656,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDistinctParameters(getParamNamesFromTypedParams(namedParams));
 
         List<Object> params = getParamsPlainList(asList(valueProp, whenProp));
-        mainProp.setEventChange(this, action && !Settings.get().isDisableWhenCalcDo() ? Event.SESSION : null, params.toArray());
+        mainProp.setWhenChange(this, action && !Settings.get().isDisableWhenCalcDo() ? Event.SESSION : null, params.toArray());
     }
 
     public Set<Property> findPropsByPropertyUsages(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
@@ -4622,26 +4671,31 @@ public class ScriptingLogicsModule extends LogicsModule {
         return props;
     }
 
-    public void addScriptedEvent(LPWithParams whenProp, LAWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, boolean showRec) throws ScriptingErrorLog.SemanticErrorException {
+    public ImOrderSet<ActionOrProperty> findEventActionsOrPropsByUsages(List<ActionOrPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
+        if(propUsages==null)
+            return null;
+
+        MOrderSet<ActionOrProperty> mProps = SetFact.mOrderSetMax(propUsages.size());
+        for (ActionOrPropertyUsage usage : propUsages) {
+            LAP<?, ?> lp = findLAPByEventOrPropertyUsage(usage);
+            mProps.add(lp.getActionOrProperty());
+        }
+        return mProps.immutableOrder();
+    }
+
+    public void addScriptedWhen(LPWithParams whenProp, LAWithParams event, List<LPWithParams> orders, boolean descending, Event baseEvent, List<LPWithParams> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) throws ScriptingErrorLog.SemanticErrorException {
         if(noInline==null) {
             noInline = new ArrayList<>();
             for(Integer usedParam : whenProp.usedParams)
                 noInline.add(new LPWithParams(usedParam));
         }
         List<Object> params = getParamsPlainList(asList(event, whenProp), orders, noInline);
-        addEventAction(baseEvent, descending, false, noInline.size(), forceInline, showRec, debugPoint, params.toArray());
+        addWhenAction(baseEvent, descending, false, noInline.size(), forceInline, debugPoint, debugCaption, params.toArray());
     }
 
-    public void addScriptedGlobalEvent(LAWithParams event, Event baseEvent, boolean single, ActionOrPropertyUsage showDep) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGlobalEvent(LAWithParams event, Event baseEvent, boolean single) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkEventNoParameters(event.getLP());
-        Action action = event.getLP().action;
-        if(showDep!=null)
-            action.showDep = findLAPByActionOrPropertyUsage(showDep).getActionOrProperty();
-        addBaseEvent(action, baseEvent, false, single);
-    }
-
-    public void addScriptedShowDep(ActionOrPropertyUsage property, ActionOrPropertyUsage propFrom) throws ScriptingErrorLog.SemanticErrorException {
-        findLAPByActionOrPropertyUsage(property).getActionOrProperty().showDep = findLAPByActionOrPropertyUsage(propFrom).getActionOrProperty();
+        addBaseEvent((Action) event.getLP().action, baseEvent, single);
     }
 
     public void addScriptedAspect(NamedPropertyUsage mainPropUsage, List<TypedParameter> mainPropParams, LAWithParams action, boolean before) throws ScriptingErrorLog.SemanticErrorException {

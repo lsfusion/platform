@@ -723,9 +723,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 if(pushAsyncResult != null)
                     asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
                 
+                logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                 form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack);
+                logger.info(String.format("executeEventAction ended: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
 
-                logger.info(String.format("executeEventAction: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                 if (logger.isTraceEnabled()) {
                     if (keys.size() > 0) {
                         logger.trace("   columnKeys: ");
@@ -811,7 +812,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 // so if we see that thread was forced to be interrupted, but has not been interrupted yet, we do the sleep to "catch" it
                 if(asyncInterruptingThreads.remove(Thread.currentThread()) && !wasInterrupted) {
                     try {
+                        logger.info("getAsyncValues before sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
                         Thread.sleep(1000);
+                        logger.info("getAsyncValues after sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
                     } catch (InterruptedException e) {
                     }
                 }

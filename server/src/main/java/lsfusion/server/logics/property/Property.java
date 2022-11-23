@@ -1522,10 +1522,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
     public Expr changeExpr;
 
-    public <D extends PropertyInterface, W extends PropertyInterface> void setEventChange(LogicsModule lm, Event actionEvent, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
+    public <D extends PropertyInterface, W extends PropertyInterface> void setWhenChange(LogicsModule lm, Event actionEvent, PropertyInterfaceImplement<T> valueImplement, PropertyMapImplement<W, T> whereImplement) {
         if(actionEvent != null) {
             ActionMapImplement<?, T> setAction = PropertyFact.createSetAction(interfaces, getImplement(), valueImplement);
-            lm.addEventAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, actionEvent, SetFact.EMPTY(), false, false, false, null, null);
+            lm.addCheckPrevWhenAction(interfaces, setAction, whereImplement, MapFact.EMPTYORDER(), false, actionEvent, SetFact.EMPTY(), false, null, null);
             return;
         }
 

@@ -46,6 +46,7 @@
 
     <http pattern="/forgot-password" security="none"/>
     <http pattern="/change-password" security="none"/>
+    <http pattern="/registration" security="none"/>
 
     <http pattern="/app-not-available" security="none"/>
 
@@ -55,7 +56,6 @@
     <http pattern="/lsfusion-client*" security="none"/>
     <!-- UI security -->
     <http entry-point-ref="entryPoint">
-        <intercept-url pattern="/registration" access="! @lsfClientRegistrationRepository.isForbidAccessRegistrationPage()"/>
         <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <oauth2-login login-page="/login"

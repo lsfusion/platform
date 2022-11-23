@@ -543,11 +543,11 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     }
 
     @Override
-    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getSelectedColumns() {
+    public List<Pair<lsfusion.gwt.client.form.view.Column, String>> getFilterColumns() {
         List<Pair<lsfusion.gwt.client.form.view.Column, String>> result = new ArrayList<>();
         for(GPropertyDraw property : properties)
             for(GGroupObjectValue columnKey : columnKeys.get(property))
-                result.add(getSelectedColumn(property, columnKey));
+                result.add(getFilterColumn(property, columnKey));
         return result;
     }
 

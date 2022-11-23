@@ -1575,7 +1575,7 @@ public abstract class LogicsModule {
         StoredDataProperty data = new StoredDataProperty(LocalizedString.create("{logics.log}" + " " + lp.property), where.getInterfaceClasses(ClassType.logPolicy), value.property.getValueClass(ClassType.logPolicy));
         LP log = addProperty(null, new LP<>(data));
 
-        log.setEventChange(systemEventsLM, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
+        log.setWhenChange(systemEventsLM, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
 
         makePropertyPublic(log, name, signature);
         markLoggableStored(log, namingPolicy);
@@ -2085,37 +2085,47 @@ public abstract class LogicsModule {
         addConstraint(addProp(property), baseLM.addCProp(StringClass.text, message), ListFact.EMPTY(), (checkChange ? Property.CheckType.CHECK_ALL : Property.CheckType.CHECK_NO), null, Event.APPLY, this, debugPoint);
     }
 
-    protected <P extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
+    protected <P extends PropertyInterface, T extends PropertyInterface> void addConstraint(LP<?> lp, LP<?> messageLP, ImList<PropertyMapImplement<?, P>> properties, Property.CheckType type, ImSet<Property<?>> checkProps, Event event, LogicsModule lm, DebugInfo.DebugPoint debugPoint) {
 //      will not check for constraint prev value (i.e. do not let the user set any value if constraint was already broken)
-        lp.property.checkChange = type;
-        lp.property.checkProperties = checkProps;
+        Property<?> property = lp.property;
+        Property<?> messageProperty = messageLP.property;
 
-        // not sure if it's needed, but lp is used instead of property to ensure that SET property is added to property list
-        if(!lp.property.noDB()) // wrapping in SET
-            lp = addCHProp(lp, IncrementType.SET, event.getScope());
+        property.checkChange = type;
+        property.checkProperties = checkProps;
 
         assert type != Property.CheckType.CHECK_SOME || checkProps != null;
 
-//      will check for constraint prev value (i.e. let the user set any value if constraint was already broken)
-//        lp.property.checkChange = type;
-//        lp.property.checkProperties = checkProps;
+        LocalizedString debugCaption = LocalizedString.concat("Constraint - ", property.caption);
 
-        ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface> logAction;
-//            logAction = new LogPropertyActionProperty<T>(property, messageProperty).getImplement();
-        //  PRINT OUT property MESSAGE NOWAIT;
-        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, LocalizedString.concat("Constraint - ", lp.property.caption), new OutFormSelector<P>((Property) lp.property, messageLP.property, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, 30, null, true, null, null, null).action.getImplement();
-        ActionMapImplement<?, ClassPropertyInterface> constraintAction =
-                PropertyFact.createListAction(
-                        SetFact.EMPTY(),
-                        ListFact.toList(logAction,
-                                baseLM.cancel.action.getImplement(SetFact.EMPTYORDER())
-                        )
-                );
-        constraintAction.mapEventAction(this, PropertyFact.createAnyGProp(lp.property).getImplement(), event, true, false, debugPoint, null);
-        addProp(constraintAction.action);
+        Action<?> resolveAction = null;
+        if(!property.noDB()) { // wrapping in SET
+            resolveAction = createConstraintAction(property, properties, messageProperty, false, debugCaption);
+
+            property = property.getChanged(IncrementType.SET, event.getScope());
+        }
+
+        Action<?> eventAction = createConstraintAction(property, properties, messageProperty, true, debugCaption);
+        
+        addSimpleEvent(eventAction, resolveAction, event, debugPoint, debugCaption);
     }
 
-    public <T extends PropertyInterface> void addEventAction(Event event, boolean descending, boolean ordersNotNull, int noInline, boolean forceInline, boolean showRec, DebugInfo.DebugPoint debugPoint, Object... params) {
+    private <P extends PropertyInterface> Action<?> createConstraintAction(Property<?> property, ImList<PropertyMapImplement<?, P>> properties, Property<?> messageProperty, boolean cancel, LocalizedString debugCaption) {
+        ActionMapImplement<?, ClassPropertyInterface> logAction;
+        //  PRINT OUT property MESSAGE NOWAIT;
+        logAction = (ActionMapImplement<ClassPropertyInterface, ClassPropertyInterface>) addPFAProp(null, debugCaption, new OutFormSelector<P>((Property) property, messageProperty, properties), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(), FormPrintType.MESSAGE, false, false, false, 30, null, true, null, null, null).action.getImplement();
+        if(cancel)
+            logAction = PropertyFact.createListAction(
+                    SetFact.EMPTY(),
+                    ListFact.toList(logAction,
+                            baseLM.cancel.action.getImplement(SetFact.EMPTYORDER())
+                    )
+            );
+        return PropertyFact.createIfAction(SetFact.EMPTY(),
+            PropertyFact.createAnyGProp(property).getImplement(),
+                logAction, null).action;
+    }
+
+    public <T extends PropertyInterface> void addWhenAction(Event event, boolean descending, boolean ordersNotNull, int noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
 
         ImList<ActionOrPropertyInterfaceImplement> listImplements = readImplements(innerInterfaces, params);
@@ -2125,22 +2135,34 @@ public abstract class LogicsModule {
 
         ImSet<PropertyInterface> noInlineInterfaces = BaseUtils.<ImList<PropertyInterface>>immutableCast(listImplements.subList(implCnt - noInline, implCnt)).toOrderExclSet().getSet();
 
-        addEventAction(innerInterfaces.getSet(), (ActionMapImplement<?, PropertyInterface>) listImplements.get(0), (PropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, noInlineInterfaces, forceInline, false, showRec, debugPoint, null);
+        addCheckPrevWhenAction(innerInterfaces.getSet(), (ActionMapImplement<?, PropertyInterface>) listImplements.get(0), (PropertyMapImplement<?, PropertyInterface>) listImplements.get(1), orders, ordersNotNull, event, noInlineInterfaces, forceInline, debugPoint, debugCaption);
     }
 
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(Action<P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, boolean resolve, boolean showRec, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) {
-        addEventAction(action.interfaces, action.getImplement(), whereImplement, orders, ordersNotNull, event, SetFact.EMPTY(), false, resolve, showRec, debugPoint, debugCaption);
-    }
-
-    public <P extends PropertyInterface, D extends PropertyInterface> void addEventAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, boolean resolve, boolean showRec, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) {
+    public <P extends PropertyInterface, D extends PropertyInterface> void addCheckPrevWhenAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) {
         if(!(whereImplement.property).noDB())
             whereImplement = whereImplement.mapChanged(IncrementType.SET, event.getScope());
 
-        Action<? extends PropertyInterface> eventAction =
-                innerInterfaces.isEmpty() ?
-                    PropertyFact.createIfAction(innerInterfaces, whereImplement, action, null).action :
-                    PropertyFact.createForAction(innerInterfaces, SetFact.EMPTY(), whereImplement, orders, ordersNotNull, action, null, false, noInline, forceInline).action;
+        addWhenAction(innerInterfaces, action, whereImplement, null, orders, ordersNotNull, event, noInline, forceInline, debugPoint, debugCaption);
+    }
+    public <P extends PropertyInterface, D extends PropertyInterface> void addWhenAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> action, PropertyMapImplement<?, P> where, PropertyMapImplement<?, P> resolveWhere, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, Event event, ImSet<P> noInline, boolean forceInline, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) {
+        Action<? extends PropertyInterface> resolveAction = null;
+        if(resolveWhere != null)
+            resolveAction = createWhenAction(innerInterfaces, action, resolveWhere, orders, ordersNotNull, noInline, forceInline);
 
+        Action<? extends PropertyInterface> eventAction = createWhenAction(innerInterfaces, action, where, orders, ordersNotNull, noInline, forceInline);
+
+        eventAction.where = where.property;
+
+        addSimpleEvent(eventAction, resolveAction, event, debugPoint, debugCaption);
+    }
+
+    public static <P extends PropertyInterface> Action<? extends PropertyInterface> createWhenAction(ImSet<P> innerInterfaces, ActionMapImplement<?, P> action, PropertyMapImplement<?, P> whereImplement, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, boolean ordersNotNull, ImSet<P> noInline, boolean forceInline) {
+        return innerInterfaces.isEmpty() ?
+                PropertyFact.createIfAction(innerInterfaces, whereImplement, action, null).action :
+                PropertyFact.createForAction(innerInterfaces, SetFact.EMPTY(), whereImplement, orders, ordersNotNull, action, null, false, noInline, forceInline).action;
+    }
+
+    public <P extends PropertyInterface> void addSimpleEvent(Action<P> eventAction, Action<?> resolveAction, Event event, DebugInfo.DebugPoint debugPoint, LocalizedString debugCaption) {
         if(debugPoint != null) { // создано getEventDebugPoint
             if(debugger.isEnabled()) // topContextActionDefinitionBodyCreated
                 debugger.setNewDebugStack(eventAction);
@@ -2149,25 +2171,22 @@ public abstract class LogicsModule {
             ScriptingLogicsModule.setDebugInfo(true, debugPoint, eventAction); // actionDefinitionBodyCreated
         }
 
-        if(showRec)
-            eventAction.showRec = whereImplement.property;
-
-//        action.setStrongUsed(whereImplement.property); // добавить сильную связь, уже не надо поддерживается более общий механизм - смотреть на Session Calc
-//        action.caption = "WHEN " + whereImplement.property + " " + actionProperty;
         if(debugCaption != null)
             eventAction.caption = debugCaption;
 
         addProp(eventAction);
 
-        addBaseEvent(eventAction, event, resolve, false);
-    }
+        addBaseEvent(eventAction, event, false);
 
-    public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean resolve, boolean single) {
+        eventAction.resolve = resolveAction;
+    }
+    public <P extends PropertyInterface> void addBaseEvent(Action<P> action, Event event, boolean single) {
         action.addEvent(event.base, event.session);
         if(event.after != null)
             action.addStrongUsed(event.after);
+        if(event.name != null)
+            makeActionPublic(new LA<>(action), event.name);
         action.singleApply = single;
-        action.resolve = resolve;
     }
 
     public <P extends PropertyInterface> void addAspectEvent(int interfaces, ActionImplement<P, Integer> action, String mask, boolean before) {
@@ -2181,56 +2200,57 @@ public abstract class LogicsModule {
             action.addAfterAspect(aspect);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface> void addFollows(final LP<T> first, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event, boolean showRec, LP<L> second, LocalizedString caption, LocalizedString details, final Integer... mapping) {
+    protected <L extends PropertyInterface, T extends PropertyInterface, K extends PropertyInterface> void addFollows(final LP<T> first, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> resolves, ImList<LP> optResConds, Event event, LP<L> second, LocalizedString caption, final Integer... mapping) {
         addFollows(first.property, new PropertyMapImplement<L, T>(second.property, second.getRevMap(first.listInterfaces, mapping)),
-                caption, details, debugPoint, options, event, showRec);
+                caption, debugPoint, resolves,
+                optResConds != null ? BaseUtils.<ImList<LP<K>>>immutableCast(optResConds).mapListValues(lp -> new PropertyMapImplement<>(lp.property, lp.getRevMap(first.listInterfaces))) : null,
+                event);
     }
 
-    public <T extends PropertyInterface, L extends PropertyInterface> void setNotNull(Property<T> property, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event) {
+    public <T extends PropertyInterface, L extends PropertyInterface, K extends PropertyInterface> void setNotNull(Property<T> property, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, ImList<PropertyMapImplement<?, T>> optResConds, Event event) {
         PropertyMapImplement<L, T> mapClasses = (PropertyMapImplement<L, T>) IsClassProperty.getMapProperty(property.getInterfaceClasses(ClassType.logPolicy));
         property.notNull = true;
         addFollows(mapClasses.property, new PropertyMapImplement<>(property, mapClasses.mapping.reverse()),
-                LocalizedString.concatList(LocalizedString.create("{logics.property} "), property.caption, " [" + property.getSID(), LocalizedString.create("] {logics.property.not.defined}")), null,
-                debugPoint, options, event, false);
+                LocalizedString.concatList(LocalizedString.create("{logics.property} "), property.caption, " [" + property.getSID(), LocalizedString.create("] {logics.property.not.defined}")),
+                debugPoint, options,
+                optResConds != null ? BaseUtils.<ImList<PropertyMapImplement<K, T>>>immutableCast(optResConds).mapListValues(cond -> cond.map(mapClasses.mapping.reverse())) : null,
+                event);
     }
 
     public <P extends PropertyInterface> void disableInputList(LP<P> lp) {
         lp.property.disableInputList = true;
     }
 
-    public <T extends PropertyInterface, L extends PropertyInterface> void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, LocalizedString caption, LocalizedString details, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> options, Event event, boolean showRec) {
+    public <T extends PropertyInterface, L extends PropertyInterface, S extends PropertyInterface>
+        void addFollows(Property<T> property, PropertyMapImplement<L, T> implement, LocalizedString caption, DebugInfo.DebugPoint debugPoint, ImList<PropertyFollowsDebug> resolve, ImList<PropertyMapImplement<?, T>> optResConds, Event event) {
 //        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
 
-        for(PropertyFollowsDebug option : options) {
+        PropertyMapImplement<?, T> constraint = PropertyFact.createAndNot(property, implement);
+
+        for (int i = 0, resolveSize = resolve.size(); i < resolveSize; i++) {
+            PropertyFollowsDebug option = resolve.get(i);
             assert !option.isTrue || property.interfaces.size() == implement.mapping.size(); // assert что количество
-            ActionMapImplement<?, T> setAction = option.isTrue ? implement.getSetNotNullAction(true) : property.getSetNotNullAction(false);
-            if(setAction!=null) {
+            ActionMapImplement<S, T> setAction = (ActionMapImplement<S, T>) (option.isTrue ? implement.getSetNotNullAction(true) : property.getSetNotNullAction(false));
+            if (setAction != null) {
                 PropertyMapImplement<?, T> condition;
-                if(option.isFull)
-                    condition = PropertyFact.createAndNot(property, implement).mapChanged(IncrementType.SET, event.getScope());
-                else {
-                    if (option.isTrue)
-                        condition = PropertyFact.createAndNot(property.getChanged(IncrementType.SET, event.getScope()), implement);
-                    else
-                        condition = PropertyFact.createAnd(property, implement.mapChanged(IncrementType.DROP, event.getScope()));
+                if (optResConds != null) {
+                    condition = optResConds.get(i);
+                } else {
+                    if (option.isFull)
+                        condition = PropertyFact.createAndNot(property, implement).mapChanged(IncrementType.SET, event.getScope());
+                    else {
+                        if (option.isTrue)
+                            condition = PropertyFact.createAndNot(property.getChanged(IncrementType.SET, event.getScope()), implement);
+                        else
+                            condition = createAnd(property, implement.mapChanged(IncrementType.DROP, event.getScope()));
+                    }
                 }
-                setAction.mapEventAction(this, condition, event, true, showRec, option.debugPoint, caption);
+                addWhenAction(setAction.action.interfaces, setAction.action.getImplement(), condition.map(setAction.mapping.reverse()), constraint.map(setAction.mapping.reverse()), MapFact.EMPTYORDER(), false,
+                        option.event != null ? option.event : event.onlyScope(), SetFact.EMPTY(), false, option.debugPoint, option.caption);
             }
         }
 
-        if(details != null)
-            caption = LocalizedString.concatList(caption, "\n", details);
-
-        Property constraint = PropertyFact.createAndNot(property, implement).property;
-        addConstraint(constraint, caption, false, debugPoint);
-    }
-
-    public <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, ImList<PropertyFollowsDebug> resolve) {
-        setNotNull(lp, null, Event.APPLY, resolve);
-    }
-
-    public <P extends PropertyInterface, C extends PropertyInterface> void setNotNull(LP<P> lp, DebugInfo.DebugPoint debugPoint, Event event, ImList<PropertyFollowsDebug> resolve) {
-        setNotNull(lp.property, debugPoint, resolve, event);
+        addConstraint(constraint.property, caption, false, debugPoint);
     }
 
     public static <P extends PropertyInterface, T extends PropertyInterface> ActionMapImplement<P, T> mapActionListImplement(LA<P> property, ImOrderSet<T> mapList) {
