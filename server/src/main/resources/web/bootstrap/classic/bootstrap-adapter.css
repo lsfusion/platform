@@ -13,6 +13,8 @@
     --border-label-vert-padding: var(--border-padding);
     --border-cont-horz-padding: 1rem;
     --border-cont-vert-padding: 1rem;
+
+    --table-outline-width: 1px;
 }
 
 .caption-panel-header {
@@ -113,8 +115,12 @@
 .scrolled-down:not(.table-borderless) .dataGridHeaderRow,
 .scrolled-up:not(.table-borderless) .dataGridFooterRow,
 .table:not(.table-borderless) .dataGridFooter:not(.empty-footer) .dataGridFooterRow {
-    outline: 1px solid var(--bs-table-border-color);
+    outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
+
+/* 'border-collapse: collapse' + sticky header/footer make header/footer borders disappear 
+ In fact it looks as if border became transparent. As outline is being drawn outside border, we still see empty line 
+ between header/footer and outline. So we need to hide these borders */
 .scrolled-down:not(.table-borderless) .dataGridHeaderCell,
 .scrolled-down.table-bordered .dataGridHeaderRow,
 .table.table-bordered .empty-header .dataGridHeaderRow,
@@ -122,7 +128,7 @@
 .table.table-bordered .dataGridColumnRow,
 .table:not(.table-bordered) .empty-header .dataGridHeaderCell,
 .empty-footer .dataGridFooterCell,
-.dataGridFooterRow:not(.empty-footer) .dataGridFooterCell{
+.dataGridFooterRow:not(.empty-footer) .dataGridFooterCell {
     border-bottom: none;
 }
 .scrolled-down.table-bordered .dataGridHeaderRow,
@@ -130,21 +136,23 @@
 .table-bordered .dataGridBody .dataGridRow {
     border-top: none;
 }
+/* move header and footer on border width in order to see top/bottom outline,
+ which otherwise hides under table container */
 .scrolled-down.table-bordered :not(.empty-header) .dataGridHeaderRow {
-    top: 1px;
+    top: var(--table-outline-width);
 }
 .table :not(.empty-footer) .dataGridFooterRow {
-    bottom: 1px;
+    bottom: var(--table-outline-width);
 }
 .empty-header .dataGridHeaderCell,
 .empty-footer .dataGridFooterCell {
     padding: 0;
 }
 /* only partly fixes vertical borders */
-.table.table-bordered .dataGridStickyHeader, 
+.table.table-bordered .dataGridStickyHeader,
 .table.table-bordered .dataGridStickyCell,
 .table.table-bordered .dataGridStickyFooter {
-    outline: 1px solid var(--bs-table-border-color);
+    outline: var(--table-outline-width) solid var(--bs-table-border-color);
     border-right: none;
 }
 /* --- --- */
