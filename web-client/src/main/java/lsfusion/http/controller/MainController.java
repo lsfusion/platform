@@ -89,7 +89,7 @@ public class MainController {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
                     getDirectUrl(authorizationRequestBaseUri + registration.getRegistrationId(), null, null, request)));
             model.addAttribute("urls", oauth2AuthenticationUrls);
-        } catch (AuthenticationException e){
+        } catch (Throwable e){
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
             request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION_HEADER", "oauthException");
         }
@@ -217,29 +217,29 @@ public class MainController {
 
     @RequestMapping(value = "/main", method = RequestMethod.GET)
     public String processMain(ModelMap model, HttpServletRequest request) {
-        StringResult result;
+        ServerSettings serverSettings = getServerSettings(request, false);
+
+        addStandardModelAttributes(model, request);
+        model.addAttribute("logicsName", getLogicsName(serverSettings));
+        model.addAttribute("lsfParams", getLsfParams(serverSettings));
+        model.addAttribute("mainResources",
+                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources) : null);
+
         try {
-            result = logicsProvider.runRequest(request, (sessionObject, retry) -> {
+            model.addAttribute("sessionID", logicsProvider.runRequest(request, (sessionObject, retry) -> {
                 try {
                     return new StringResult(navigatorProvider.createNavigator(sessionObject, request));
                 } catch (RemoteMessageException e) {
                     request.getSession().setAttribute(AUTHENTICATION_EXCEPTION, new InternalAuthenticationServiceException(e.getMessage()));
                     throw e;
                 }
-            });
+            }).get());
+        } catch (AuthenticationException authenticationException) {
+            return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
-            throw new RuntimeException(e);
+            model.addAttribute("errorMessage", e.getMessage());
+            return "app-not-available";
         }
-        model.addAttribute("sessionID", result.get());
-
-        ServerSettings serverSettings = getServerSettings(request, false);
-
-        model.addAttribute("title", getTitle(serverSettings));
-        model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
-        model.addAttribute("logicsName", getLogicsName(serverSettings));
-        model.addAttribute("lsfParams", getLsfParams(serverSettings));
-        model.addAttribute("mainResources",
-                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources) : null);
 
         return "main";
     }

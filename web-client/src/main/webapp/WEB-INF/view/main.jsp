@@ -193,7 +193,7 @@
                 setCookie('LSFUSION_CLIENT_DATE_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('L')));
 
                 //setSessionID
-                setCookie('LSFUSION_SESSION_ID', '${sessionID}');
+                this.sessionID = '${sessionID}';
             }
         </script>
     </head>

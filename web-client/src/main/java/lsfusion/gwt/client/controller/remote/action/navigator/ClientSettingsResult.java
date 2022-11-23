@@ -1,25 +1,12 @@
 package lsfusion.gwt.client.controller.remote.action.navigator;
 
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.window.GAbstractWindow;
-import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.GColorTheme;
 import net.customware.gwt.dispatch.shared.Result;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-public class GetSettingsResult implements Result {
-//    GetNavigatorInfoResult
-    public GNavigatorElement root;
-    public ArrayList<GNavigatorWindow> navigatorWindows;
-    public GAbstractWindow log;
-    public GAbstractWindow status;
-    public GAbstractWindow forms;
-
-//    GetClientSettingsResult
+public class ClientSettingsResult implements Result {
     public long busyDialogTimeout;
     public boolean devMode;
     public String projectLSFDir;
@@ -37,19 +24,13 @@ public class GetSettingsResult implements Result {
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
 
-
-    public GetSettingsResult() {
+    public ClientSettingsResult() {
     }
-    public GetSettingsResult(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, List<GAbstractWindow> commonWindows, long busyDialogTimeout, boolean devMode,
-                             String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
-                             boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme,
-                             Map<String, String> versionedColorThemesCss, GColorPreferences colorPreferences, String dateFormat,
-                             String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames, boolean useTextAsFilterSeparator) {
-        this.root = root;
-        this.navigatorWindows = navigatorWindows;
-        this.log = commonWindows.get(0);
-        this.status = commonWindows.get(1);
-        this.forms = commonWindows.get(2);
+
+    public ClientSettingsResult(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
+                                boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, Map<String, String> versionedColorThemesCss,
+                                GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
+                                boolean useTextAsFilterSeparator) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;

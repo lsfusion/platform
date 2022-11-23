@@ -16,6 +16,7 @@ import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.json.JSONObject;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -56,8 +57,10 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
             });
 
             return new LSFAuthenticationToken(username, password, authLocale.first, authLocale.second);
-        } catch (IOException e) {
+        } catch (IOException e) { //todo ??
             throw Throwables.propagate(e);
+        } catch (Throwable e) {
+            throw new InternalAuthenticationServiceException(e.getMessage()); //need to throw AuthenticationException for SpringSecurity to redirect to /login
         }
     }
 

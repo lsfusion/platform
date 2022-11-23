@@ -11,7 +11,6 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -128,7 +127,7 @@ public class MainFrame implements EntryPoint {
             }
         });
 
-        initializeLogicsAndNavigator(0);
+        initializeLogicsAndNavigator();
     }
 
     private static boolean ignoreException(Throwable exception) {
@@ -258,7 +257,7 @@ public class MainFrame implements EntryPoint {
         return GwtClientUtils.getParentWithAttribute(element, IGNORE_DBLCLICK_CHECK) == null;
     }
 
-    public void initializeFrame(GetSettingsResult result) {
+    public void initializeFrame(NavigatorInfoResult result) {
         currentForm = null;
 
         final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
@@ -454,7 +453,7 @@ public class MainFrame implements EntryPoint {
         return modalPopup;
     }
 
-    private void initializeWindows(GetSettingsResult result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
+    private void initializeWindows(NavigatorInfoResult result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
         GwtClientUtils.removeLoaderFromHostedPage();
 
         GAbstractWindow formsWindow = result.forms;
@@ -497,7 +496,15 @@ public class MainFrame implements EntryPoint {
         });
     }
 
-    public void initializeLogicsAndNavigator(final int attemptCount) {
+    private native String getSessionId() /*-{
+        var sessionId = $wnd.sessionID;
+        if (sessionId != null)
+            delete $wnd.sessionID;
+
+        return sessionId;
+    }-*/;
+
+    public void initializeLogicsAndNavigator() {
         String portString = Window.Location.getParameter("port");
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
@@ -505,36 +512,37 @@ public class MainFrame implements EntryPoint {
 
         logicsDispatchAsync = new LogicsDispatchAsync(Window.Location.getParameter("host"), portString != null ? Integer.valueOf(portString) : null,
                 Window.Location.getParameter("exportName"));
-        navigatorDispatchAsync = new NavigatorDispatchAsync(Cookies.getCookie("LSFUSION_SESSION_ID"));
-        navigatorDispatchAsync.executePriority(new GetSettings(), new PriorityErrorHandlingCallback<GetSettingsResult>() {
-            @Override
-            public void onSuccess(GetSettingsResult result) {
-                versionedColorThemesCss = result.versionedColorThemesCss;
-                busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
 
-                staticImagesURL = result.staticImagesURL;
+        navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>() {
+            @Override
+            public void onSuccess(InitializeNavigatorResult result) {
+                ClientSettingsResult clientSettingsResult = result.clientSettingsResult;
+
+                versionedColorThemesCss = clientSettingsResult.versionedColorThemesCss;
+                busyDialogTimeout = Math.max(clientSettingsResult.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
+
+                staticImagesURL = clientSettingsResult.staticImagesURL;
                 for(Runnable listener : staticImagesURLListeners)
                     listener.run();
                 staticImagesURLListeners = null;
 
-                devMode = result.devMode;
-                projectLSFDir = result.projectLSFDir;
-                showDetailedInfo = result.showDetailedInfo;
-                forbidDuplicateForms = result.forbidDuplicateForms;
-                showNotDefinedStrings = result.showNotDefinedStrings;
-                pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
-                matchSearchSeparator = result.matchSearchSeparator;
-                changeColorTheme(result.colorTheme);
-                colorPreferences = result.colorPreferences;
+                devMode = clientSettingsResult.devMode;
+                projectLSFDir = clientSettingsResult.projectLSFDir;
+                showDetailedInfo = clientSettingsResult.showDetailedInfo;
+                forbidDuplicateForms = clientSettingsResult.forbidDuplicateForms;
+                showNotDefinedStrings = clientSettingsResult.showNotDefinedStrings;
+                pivotOnlySelectedColumn = clientSettingsResult.pivotOnlySelectedColumn;
+                matchSearchSeparator = clientSettingsResult.matchSearchSeparator;
+                changeColorTheme(clientSettingsResult.colorTheme);
+                colorPreferences = clientSettingsResult.colorPreferences;
                 StyleDefaults.init();
-                dateFormat = result.dateFormat;
-                timeFormat = result.timeFormat;
-                dateTimeFormat = result.dateFormat + " " + result.timeFormat;
-                preDefinedDateRangesNames = result.preDefinedDateRangesNames;
+                dateFormat = clientSettingsResult.dateFormat;
+                timeFormat = clientSettingsResult.timeFormat;
+                dateTimeFormat = clientSettingsResult.dateFormat + " " + clientSettingsResult.timeFormat;
+                preDefinedDateRangesNames = clientSettingsResult.preDefinedDateRangesNames;
 
-                initializeFrame(result);
-
-                navigatorDispatchAsync.executePriority(new UpdateNavigatorClientSettings(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<>());
+                initializeFrame(result.navigatorInfoResult);
             }
         });
     }
