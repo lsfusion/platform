@@ -27,6 +27,8 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;
     RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException;
 
+    void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException;
+
     // RESTful interfaces
     // external requests (interface is similar to RemoteSessionInterface but with token)
     ExternalResponse exec(AuthenticationToken token, SessionInfo sessionInfo, String action, ExternalRequest request) throws RemoteException;

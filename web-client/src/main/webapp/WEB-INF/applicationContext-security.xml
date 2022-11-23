@@ -48,6 +48,8 @@
     <http pattern="/change-password" security="none"/>
     <http pattern="/registration" security="none"/>
 
+    <http pattern="/app-not-available" security="none"/>
+
     <!--for backward compatibility-->
     <http pattern="/client.jnlp" security="none"/>
     <!--for jar -->

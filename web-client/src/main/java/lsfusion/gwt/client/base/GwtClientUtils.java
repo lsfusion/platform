@@ -102,8 +102,6 @@ public class GwtClientUtils {
     // the one that is in gwt(main)/public/static/images
     // FileUtils.STATIC_IMAGE_FOLDER_PATH
     public static String getStaticImageURL(String imagePath) {
-        if(imagePath != null && MainFrame.staticImagesURL == null)
-            return GWT.getModuleBaseURL() + "static/images/" + imagePath;
         return getURL(imagePath != null ? MainFrame.staticImagesURL + imagePath : null); // myapp/imagepath
 //        return imagePath == null ? null : GWT.getModuleBaseURL() + "static/images/" + imagePath; // myapp/main/static/images/myimage/imagepath
     }
@@ -127,14 +125,7 @@ public class GwtClientUtils {
     }
 
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
-        if (imagePath != null && !colorTheme.isDefault()) {
-            modifier.accept(getStaticImageURL(colorTheme.getImagePath(imagePath)));
-        } else {
-            modifier.accept(getStaticImageURL(imagePath));
-
-            if(MainFrame.staticImagesURL == null)
-                MainFrame.staticImagesURLListeners.add(() -> setThemeImage(imagePath, modifier));
-        }
+        modifier.accept(getStaticImageURL(colorTheme.getImagePath(imagePath)));
     }
 
     public static Map<String, String> getPageParameters() {

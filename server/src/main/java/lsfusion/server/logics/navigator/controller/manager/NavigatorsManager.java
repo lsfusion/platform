@@ -6,6 +6,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
@@ -125,6 +126,22 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
+    public void updateNavigatorClientSettings(ExecutionStack stack, String screenSize, boolean mobile) {
+        DataObject newConnection;
+
+        try (DataSession session = createSession()) {
+            newConnection = session.addObject(businessLogics.systemEventsLM.connection);
+            businessLogics.systemEventsLM.screenSizeConnection.change(screenSize, session, newConnection);
+            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID((mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP).toString()), session, newConnection);
+
+            String result = session.applyMessage(businessLogics, stack);
+            if(result != null)
+                throw new RemoteMessageException(result);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     public void navigatorCreated(ExecutionStack stack, RemoteNavigator navigator, NavigatorInfo navigatorInfo) throws SQLException, SQLHandledException {
         DataObject newConnection;
 
@@ -141,9 +158,11 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             businessLogics.systemEventsLM.freeMemoryConnection.change(navigatorInfo.freeMemory, session, newConnection);
             businessLogics.systemEventsLM.javaVersionConnection.change(navigatorInfo.javaVersion, session, newConnection);
             businessLogics.systemEventsLM.is64JavaConnection.change(navigatorInfo.javaVersion != null && navigatorInfo.javaVersion.endsWith("64 bit"), session, newConnection);
-            businessLogics.systemEventsLM.screenSizeConnection.change(navigatorInfo.screenSize, session, newConnection);
+            String screenSize = navigatorInfo.screenSize;
+            businessLogics.systemEventsLM.screenSizeConnection.change(screenSize == null ? "1366x768" : screenSize, session, newConnection);//1366x768 default???
             businessLogics.systemEventsLM.computerConnection.change(navigator.getComputer(), session, newConnection);
-            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID(navigatorInfo.clientType.toString()), session, newConnection);
+            ClientType clientType = navigatorInfo.clientType;
+            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID((clientType == null ? ClientType.WEB_DESKTOP : clientType).toString()), session, newConnection);
             businessLogics.systemEventsLM.connectionStatusConnection.change(businessLogics.systemEventsLM.connectionStatus.getObjectID("connectedConnection"), session, newConnection);
             businessLogics.systemEventsLM.connectTimeConnection.change(businessLogics.timeLM.currentDateTime.readClasses(session), session, newConnection);
             businessLogics.systemEventsLM.remoteAddressConnection.change(navigator.getLogInfo().remoteAddress, session, newConnection);

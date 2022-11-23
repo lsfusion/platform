@@ -26,10 +26,13 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
 
     private final LinkedList<QueuedAction> q = new LinkedList<>();
 
-    public LoadingManager loadingManager;
+    private LoadingManager loadingManager;
 
-    public RemoteDispatchAsync() {
-        loadingManager = new GBusyDialogDisplayer(this);
+    public LoadingManager getLoadingManager() {
+        if (loadingManager == null)
+            loadingManager = new GBusyDialogDisplayer(this);
+
+        return loadingManager;
     }
 
     protected abstract <A extends BaseAction<R>, R extends Result> void fillAction(A action);
@@ -94,7 +97,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
             //      started = syncCount > 0 && flushCount == 0
             // so all the checks is an incremental when set(started) do start; when dropped(start) do stop
             if (syncCount == 0 && flushCount == 0)
-                loadingManager.start();
+                getLoadingManager().start();
             syncCount++;
         } else
             onAsyncStarted();
@@ -109,7 +112,7 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
                 if(sync) {
                     syncCount--;
                     if (syncCount == 0 && flushCount == 0)
-                        loadingManager.stop(true);
+                        getLoadingManager().stop(true);
                 } else
                     onAsyncFinished();
             }
@@ -143,12 +146,12 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
     private void flushCompletedRequests() {
         flushCompletedRequests(() -> {
             if(syncCount > 0 && flushCount == 0)
-                loadingManager.stop(false);
+                getLoadingManager().stop(false);
             flushCount++;
         }, () -> {
             flushCount--;
             if(syncCount > 0 && flushCount == 0)
-                loadingManager.start();
+                getLoadingManager().start();
         });
     }
 

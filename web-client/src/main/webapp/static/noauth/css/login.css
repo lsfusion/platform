@@ -211,3 +211,20 @@ details summary::-webkit-details-marker {
 .link, .error-block, .reg-block {
     font-size: 12px;
 }
+
+.appNotAvailable {
+    align-self: center;
+}
+
+.appNotAvailableReconnect {
+    padding-top: 3em;
+}
+
+.appNotAvailableReconnect button {
+    background: none;
+    border: none;
+    color: #2069b4;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 1em;
+}

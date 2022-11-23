@@ -19,10 +19,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
-import lsfusion.gwt.client.base.exception.AuthenticationDispatchException;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
-import lsfusion.gwt.client.base.exception.RemoteMessageDispatchException;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.VoidResult;
 import lsfusion.gwt.client.base.view.DialogBoxHelper;
@@ -37,7 +34,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.navigator.ConnectionInfo;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -46,7 +42,6 @@ import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
-import net.customware.gwt.dispatch.shared.general.StringResult;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -76,7 +71,6 @@ public class MainFrame implements EntryPoint {
     private static Boolean shouldRepeatPingRequest = true;
     public static boolean disableConfirmDialog = false;
     public static String staticImagesURL;
-    public static List<Runnable> staticImagesURLListeners = new ArrayList<>();
     
     public static GColorTheme colorTheme = GColorTheme.DEFAULT;
     public static Map<String, String> versionedColorThemesCss;
@@ -132,7 +126,7 @@ public class MainFrame implements EntryPoint {
             }
         });
 
-        initializeLogicsAndNavigator(0);
+        initializeLogicsAndNavigator();
     }
 
     private static boolean ignoreException(Throwable exception) {
@@ -262,38 +256,8 @@ public class MainFrame implements EntryPoint {
         return GwtClientUtils.getParentWithAttribute(element, IGNORE_DBLCLICK_CHECK) == null;
     }
 
-    public void initializeFrame() {
+    public void initializeFrame(NavigatorInfo result) {
         currentForm = null;
-
-        // we need to read settings first to have loadingManager set (for syncDispatch)
-        navigatorDispatchAsync.executePriority(new GetClientSettings(), new PriorityErrorHandlingCallback<GetClientSettingsResult>() {
-            @Override
-            public void onSuccess(GetClientSettingsResult result) {
-                versionedColorThemesCss = result.versionedColorThemesCss;
-                busyDialogTimeout = Math.max(result.busyDialogTimeout - 500, 500); //минимальный таймаут 500мс + всё равно возникает задержка около 500мс
-
-                staticImagesURL = result.staticImagesURL;
-                for(Runnable listener : staticImagesURLListeners)
-                    listener.run();
-                staticImagesURLListeners = null;
-
-                devMode = result.devMode;
-                projectLSFDir = result.projectLSFDir;
-                showDetailedInfo = result.showDetailedInfo;
-                forbidDuplicateForms = result.forbidDuplicateForms;
-                showNotDefinedStrings = result.showNotDefinedStrings;
-                pivotOnlySelectedColumn = result.pivotOnlySelectedColumn;
-                matchSearchSeparator = result.matchSearchSeparator;
-                changeColorTheme(result.colorTheme);
-                colorPreferences = result.colorPreferences;
-                StyleDefaults.init();
-                dateFormat = result.dateFormat;
-                timeFormat = result.timeFormat;
-                dateTimeFormat = result.dateFormat + " " + result.timeFormat;
-                preDefinedDateRangesNames = result.preDefinedDateRangesNames;
-                useTextAsFilterSeparator = result.useTextAsFilterSeparator;
-            }
-        });
 
         final Linker<GAbstractWindow> formsWindowLink = new Linker<>();
         final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink = new Linker<>();
@@ -369,7 +333,7 @@ public class MainFrame implements EntryPoint {
         };
         navigatorControllerLink.link = navigatorController;
 
-        initializeWindows(formsController, windowsController, navigatorController, formsWindowLink, commonWindowsLink);
+        initializeWindows(result, formsController, windowsController, navigatorController, formsWindowLink, commonWindowsLink);
 
         GConnectionLostManager.start();
 
@@ -488,89 +452,91 @@ public class MainFrame implements EntryPoint {
         return modalPopup;
     }
 
-    private void initializeWindows(final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
-        navigatorDispatchAsync.executePriority(new GetNavigatorInfo(), new PriorityErrorHandlingCallback<GetNavigatorInfoResult>() {
+    private void initializeWindows(NavigatorInfo result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
+        GwtClientUtils.removeLoaderFromHostedPage();
+
+        GAbstractWindow formsWindow = result.forms;
+        formsWindowLink.link = formsWindow;
+        Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
+        commonWindows.put(result.log, GLog.createLogPanel(result.log.visible));
+        commonWindows.put(result.status, new Label(result.status.caption));
+        commonWindowsLink.link = commonWindows;
+
+        // пока прячем всё, что не поддерживается
+        result.status.visible = false;
+
+        if (mobile) {
+            mobileNavigatorView = new GMobileNavigatorView(result.root, navigatorController);
+            RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
+        } else {
+            navigatorController.initializeNavigatorViews(result.navigatorWindows);
+            navigatorController.setRootElement(result.root);
+
+            List<GAbstractWindow> allWindows = new ArrayList<>();
+            allWindows.addAll(result.navigatorWindows);
+            allWindows.addAll(commonWindows.keySet());
+
+            windowsController.initializeWindows(allWindows, formsWindow);
+
+            navigatorController.update();
+        }
+
+        formsController.initRoot(formsController);
+
+        formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
             @Override
-            public void onSuccess(GetNavigatorInfoResult result) {
-                GwtClientUtils.removeLoaderFromHostedPage();
-
-                GAbstractWindow formsWindow = result.forms;
-                formsWindowLink.link = formsWindow;
-                Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
-                commonWindows.put(result.log, GLog.createLogPanel(result.log.visible));
-                commonWindows.put(result.status, new Label(result.status.caption));
-                commonWindowsLink.link = commonWindows;
-
-                // пока прячем всё, что не поддерживается
-                result.status.visible = false;
-
-                if (mobile) {
-                    mobileNavigatorView = new GMobileNavigatorView(result.root, navigatorController);
-                    RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
-                } else {
-                    navigatorController.initializeNavigatorViews(result.navigatorWindows);
-                    navigatorController.setRootElement(result.root);
-                    
-                    List<GAbstractWindow> allWindows = new ArrayList<>();
-                    allWindows.addAll(result.navigatorWindows);
-                    allWindows.addAll(commonWindows.keySet());
-
-                    windowsController.initializeWindows(allWindows, formsWindow);
-
-                    navigatorController.update();
-                }
-                
-                formsController.initRoot(formsController);
-
-                formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
-                    @Override
-                    protected Runnable getOnRequestFinished() {
-                        return () -> {
-                            if (formsController.getFormsCount() == 0) {
-                                openNavigatorMenu();
-                            }
-                        };
+            protected Runnable getOnRequestFinished() {
+                return () -> {
+                    if (formsController.getFormsCount() == 0) {
+                        openNavigatorMenu();
                     }
-                });
+                };
             }
         });
     }
 
-    public void initializeLogicsAndNavigator(final int attemptCount) {
-        String host = Window.Location.getParameter("host");
+    private native String getSessionId() /*-{
+        var sessionId = $wnd.sessionID;
+        if (sessionId != null)
+            delete $wnd.sessionID;
+
+        return sessionId;
+    }-*/;
+
+    public void initializeLogicsAndNavigator() {
         String portString = Window.Location.getParameter("port");
-        Integer port = portString != null ? Integer.valueOf(portString) : null;
-        String exportName = Window.Location.getParameter("exportName");
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
         mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
-        logicsDispatchAsync = new LogicsDispatchAsync(host, port, exportName);
-        logicsDispatchAsync.execute(new CreateNavigatorAction(new ConnectionInfo(screenWidth + "x" + screenHeight, mobile)), new PriorityErrorHandlingCallback<StringResult>() {
-            @Override
-            public void onSuccess(StringResult result) {
-                navigatorDispatchAsync = new NavigatorDispatchAsync(result.get());
-                initializeFrame();
-            }
 
+        logicsDispatchAsync = new LogicsDispatchAsync(Window.Location.getParameter("host"), portString != null ? Integer.valueOf(portString) : null,
+                Window.Location.getParameter("exportName"));
+
+        navigatorDispatchAsync = new NavigatorDispatchAsync(getSessionId());
+        navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>() {
             @Override
-            public void onFailure(Throwable caught) {
-                if(caught instanceof AuthenticationDispatchException) { // token is invalid, then we need to relogin (and actually need to logout, to reauthenticate and get new token) - it's the only place on client where token is checked
-                    GwtClientUtils.logout();
-                } else if(caught instanceof RemoteMessageDispatchException) {
-                    GwtClientUtils.logout(); //see issue #312
-                } else if(caught instanceof AppServerNotAvailableDispatchException) {
-                    new Timer()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            GwtClientUtils.setAttemptCount(attemptCount + 1);
-                            initializeLogicsAndNavigator(attemptCount + 1);
-                        }
-                    }.schedule(2000);
-                } else {
-                    super.onFailure(caught);
-                }
+            public void onSuccess(InitializeNavigatorResult result) {
+                WebClientSettings webClientSettings = result.webClientSettings;
+
+                versionedColorThemesCss = webClientSettings.versionedColorThemesCss;
+                busyDialogTimeout = Math.max(webClientSettings.busyDialogTimeout - 500, 500); // minimum timeout 500ms + there is still a delay of about 500ms
+                staticImagesURL = webClientSettings.staticImagesURL;
+                devMode = webClientSettings.devMode;
+                projectLSFDir = webClientSettings.projectLSFDir;
+                showDetailedInfo = webClientSettings.showDetailedInfo;
+                forbidDuplicateForms = webClientSettings.forbidDuplicateForms;
+                showNotDefinedStrings = webClientSettings.showNotDefinedStrings;
+                pivotOnlySelectedColumn = webClientSettings.pivotOnlySelectedColumn;
+                matchSearchSeparator = webClientSettings.matchSearchSeparator;
+                changeColorTheme(webClientSettings.colorTheme);
+                colorPreferences = webClientSettings.colorPreferences;
+                StyleDefaults.init();
+                dateFormat = webClientSettings.dateFormat;
+                timeFormat = webClientSettings.timeFormat;
+                dateTimeFormat = webClientSettings.dateFormat + " " + webClientSettings.timeFormat;
+                preDefinedDateRangesNames = webClientSettings.preDefinedDateRangesNames;
+
+                initializeFrame(result.navigatorInfo);
             }
         });
     }
