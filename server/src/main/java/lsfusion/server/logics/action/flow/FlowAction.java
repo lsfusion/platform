@@ -32,8 +32,11 @@ public abstract class FlowAction extends Action<PropertyInterface> {
     @ManualLazy
     public ActionMapImplement<?, PropertyInterface> compile() {
         if(!compiled) {
-            compile = aspectCompile();
-            compiled = true;
+            ActionMapImplement<?, PropertyInterface> compiled = aspectCompile();
+            if(compiled != null)
+                compiled.action.caption = LocalizedString.create("Compiled - " + this, false);
+            this.compile = compiled;
+            this.compiled = true;
         }
         return compile;
     }
