@@ -1697,7 +1697,9 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public String recalculateFollows(SessionCreator creator, boolean isolatedTransaction, final ExecutionStack stack) throws SQLException, SQLHandledException {
         final List<String> messageList = new ArrayList<>();
         final long maxRecalculateTime = Settings.get().getMaxRecalculateTime();
-        for (final Action<?> action : getRecalculateFollows()) {
+        ImSet<Action> actions = getRecalculateFollows();
+        for (int i = 0; i < actions.size(); i++) {
+            final Action<?> action = actions.get(i);
             long start = System.currentTimeMillis();
             try {
                 DBManager.runData(creator, isolatedTransaction, session -> ((DataSession) session).resolve(action, stack));
@@ -1705,7 +1707,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
                 serviceLogger.info(e.getMessage());
             }
             long time = System.currentTimeMillis() - start;
-            String message = String.format("Recalculate Follows: %s, %sms", action.getSID(), time);
+            String message = String.format("Recalculate Follows %s of %s: %s, %sms", i + 1, actions.size(), action.getSID(), time);
             serviceLogger.info(message);
             if (time > maxRecalculateTime)
                 messageList.add(message);
