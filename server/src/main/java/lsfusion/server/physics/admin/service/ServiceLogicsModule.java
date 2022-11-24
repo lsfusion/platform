@@ -53,6 +53,9 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
     public LP transactTimeoutUser;
     public LP inDevMode;
 
+    public LA readMainResources;
+    public LP mainResources;
+
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Service.lsf");
     }
@@ -97,5 +100,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
+
+        readMainResources = findAction("readMainResources[]");
+        mainResources = findProperty("mainResources[]");
     }
 }

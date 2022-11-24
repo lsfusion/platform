@@ -226,10 +226,9 @@ public class MainController {
         addStandardModelAttributes(model, request);
         model.addAttribute("logicsName", getLogicsName(serverSettings));
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
-        model.addAttribute("mainResources",
-                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources) : null);
 
         String sessionId;
+        List<Pair<String, RawFileData>> mainResources;
         try {
             sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
                 try {
@@ -239,6 +238,7 @@ public class MainController {
                     throw e;
                 }
             }).get();
+            mainResources = navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator.getClientSettings().mainResources;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -247,6 +247,7 @@ public class MainController {
         }
 
         model.addAttribute("sessionID", sessionId);
+        model.addAttribute("mainResources", serverSettings != null && mainResources != null ? saveResources(serverSettings, mainResources) : null);
 
         return "main";
     }

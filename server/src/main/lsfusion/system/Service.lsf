@@ -429,16 +429,6 @@ getServerSettings() + WHEN TRUE THEN {
     }
     LOCAL loginResources = JSON ();
     EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
-     
-    LOCAL webClientLoadedResources = RAWFILE(STRING);
-    LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
-    FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
-        readResource(s);
-        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
-    }
-    LOCAL mainResources = JSON ();
-    EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
     
     generateJnlpUrls();
     EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
@@ -446,9 +436,20 @@ getServerSettings() + WHEN TRUE THEN {
                 jnlpUrls=exportText(), 
                 disableRegistration=disableRole('selfRegister'),
                 lsfParams=jsonLsfParams(),
-                loginResources = loginResources(),
-                mainResources = mainResources();
+                loginResources = loginResources();
 };
+
+mainResources = DATA JSON();
+readMainResources() {
+    LOCAL webClientLoadedResources = RAWFILE(STRING);
+    LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
+    FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
+        readResource(s);
+        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
+        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
+    }
+    EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
+}
 
 // logging for user
 

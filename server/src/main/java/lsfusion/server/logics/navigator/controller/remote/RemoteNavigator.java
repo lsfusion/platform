@@ -10,6 +10,7 @@ import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
@@ -18,6 +19,7 @@ import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -269,6 +271,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         ColorTheme colorTheme;
         ColorPreferences colorPreferences;
         List<String> preDefinedDateRangesNames = new ArrayList<>();
+        List<Pair<String, RawFileData>> mainResourcesData;
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -285,7 +288,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
             colorTheme = BaseUtils.nvl(ColorTheme.get(colorThemeString), ColorTheme.DEFAULT);
 
-            useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session) != null;
+            useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, user) != null;
 
             Color selectedRowBackground = (Color) businessLogics.serviceLM.overrideSelectedRowBackgroundColor.read(session);
             Color selectedCellBackground = (Color) businessLogics.serviceLM.overrideSelectedCellBackgroundColor.read(session);
@@ -297,13 +300,16 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
             fillRanges((String) businessLogics.authenticationLM.dateTimePickerRanges.read(session, user), preDefinedDateRangesNames);
             fillRanges((String) businessLogics.authenticationLM.intervalPickerRanges.read(session, user), preDefinedDateRangesNames);
+
+            businessLogics.serviceLM.readMainResources.execute(session, getStack());
+            mainResourcesData = LogicsSessionObject.getFileData(new JSONArray((String) businessLogics.serviceLM.mainResources.read(session)));
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
-                Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
-                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator());
+                Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(), colorTheme, useBootstrap, colorPreferences,
+                preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator(), mainResourcesData);
     }
 
     private void fillRanges(String json, List<String> ranges) {

@@ -9,10 +9,12 @@ onWebClientStarted  ABSTRACT LIST ( );
 
 onWebClientLoad ABSTRACT LIST ();
 
-useBootstrap = DATA BOOLEAN();
+onLoginLoad = ABSTRACT CASE INTEGER(STRING);
+onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 
+useBootstrap = DATA BOOLEAN(CustomUser);
 toggleBootstrap 'Toggle bootstrap' () {
-    useBootstrap() <- NOT useBootstrap();
+    useBootstrap(currentUser()) <- NOT useBootstrap(currentUser());
     APPLY;
     INTERNAL CLIENT 'reload';
 }
@@ -21,31 +23,27 @@ NAVIGATOR {
     NEW toggleBootstrap FIRST;
 }
 
-onWebClientLoad() + {
-    IF useBootstrap() THEN {
-        INTERNAL CLIENT 'bootstrap.min.css';
-        INTERNAL CLIENT 'bootstrap-background-inherit.css';
-        INTERNAL CLIENT 'bootstrap-adapter.css';
-    } ELSE {
-        INTERNAL CLIENT 'table.css';
-        INTERNAL CLIENT 'table-border.css';
-        INTERNAL CLIENT 'table-sticky.css';
-        INTERNAL CLIENT 'table-container-border.css';
-        INTERNAL CLIENT 'caption-panel-border.css';
-        INTERNAL CLIENT 'tab-panel.css';
-        INTERNAL CLIENT 'navigator.css';
-        INTERNAL CLIENT 'split-window-border.css';
-        INTERNAL CLIENT 'layout.css';
-        INTERNAL CLIENT 'panel-renderer-border.css';
-        INTERNAL CLIENT 'property-toolbar-border.css';
-        INTERNAL CLIENT 'main.css';
-        INTERNAL CLIENT 'main-border.css';
-        INTERNAL CLIENT 'scrollbar.css';
-        INTERNAL CLIENT 'resizable-window.css';
-        INTERNAL CLIENT 'property.css';
-        INTERNAL CLIENT 'button.css';
-    }
-}
+onWebClientLoad(STRING s) += WHEN useBootstrap(currentUser()) AND s = 'bootstrap.min.css' THEN 1;
+onWebClientLoad(STRING s) += WHEN useBootstrap(currentUser()) AND s = 'bootstrap-background-inherit.css' THEN 2;
+onWebClientLoad(STRING s) += WHEN useBootstrap(currentUser()) AND s = 'bootstrap-adapter.css' THEN 3;
+
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'table.css' THEN 1;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'table-border.css' THEN 2;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'table-sticky.css' THEN 3;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'table-container-border.css' THEN 4;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'caption-panel-border.css' THEN 5;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'tab-panel.css' THEN 6;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'navigator.css' THEN 7;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'split-window-border.css' THEN 8;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'layout.css' THEN 9;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'panel-renderer-border.css' THEN 10;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'property-toolbar-border.css' THEN 11;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'main.css' THEN 12;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'main-border.css' THEN 13;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'scrollbar.css' THEN 14;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'resizable-window.css' THEN 15;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'property.css' THEN 16;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap(currentUser()) AND s = 'button.css' THEN 17;
 
 onWebClientStarted () +{ 
     onWebClientLoad();
@@ -58,9 +56,6 @@ onWebClientStarted () +{
     INTERNAL CLIENT 'option.js';
     INTERNAL CLIENT WAIT 'option.css';
 }
-
-onLoginLoad = ABSTRACT CASE INTEGER(STRING);
-onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 
 readDBNames INTERNAL 'lsfusion.server.logics.action.ReadDBNamesAction' ();
 currentDBName = DATA LOCAL STRING ();

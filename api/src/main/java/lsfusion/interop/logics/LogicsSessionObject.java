@@ -53,25 +53,25 @@ public class LogicsSessionObject {
 
             boolean disableRegistration = json.optBoolean("disableRegistration");
             Map<String, String> lsfParams = getMapFromJSONArray(json.optJSONArray("lsfParams"));
-
-            List<Pair<String, RawFileData>> loginResources = getFileData(getMapFromJSONArray(json.optJSONArray("loginResources")));
-            List<Pair<String, RawFileData>> mainResources = getFileData(getMapFromJSONArray(json.optJSONArray("mainResources")));
+            List<Pair<String, RawFileData>> loginResources = getFileData(json.optJSONArray("loginResources"));
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResources, mainResources);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResources);
         }
         return serverSettings;
     }
 
-    private Map<String, String> getMapFromJSONArray(JSONArray jsonArray) {
+    private static Map<String, String> getMapFromJSONArray(JSONArray jsonArray) {
         Map<String, String> map = new LinkedHashMap<>();
         for (int i = 0; i < jsonArray.length(); i++) {
-            map.put(jsonArray.optJSONObject(i).optString("key"), jsonArray.optJSONObject(i).optString("value"));
+            JSONObject jsonObject = jsonArray.optJSONObject(i);
+            map.put(jsonObject.optString("key"), jsonObject.optString("value"));
         }
         return map;
     }
 
-    private List<Pair<String, RawFileData>> getFileData(Map<String, String> files) {
+    public static List<Pair<String, RawFileData>> getFileData(JSONArray jsonArray) {
+        Map<String, String> files = getMapFromJSONArray(jsonArray);
         List<Pair<String, RawFileData>> resultFiles = new LinkedList<>();
         files.forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, new RawFileData(new String(Base64.decodeBase64(file)).getBytes()))));
         return resultFiles;
