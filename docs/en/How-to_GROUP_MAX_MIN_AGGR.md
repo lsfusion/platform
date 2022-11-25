@@ -60,7 +60,7 @@ We need to calculate the minimum price per category.
 ### Solution
 
 ```lsf
-minPrice 'Maximum number' (Category c) = GROUP MIN price(Book b) BY category(b);
+minPrice 'Minimum price' (Category c) = GROUP MIN price(Book b) BY category(b);
 ```
 
 ## Example 4
