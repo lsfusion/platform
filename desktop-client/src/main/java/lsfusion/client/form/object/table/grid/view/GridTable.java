@@ -301,12 +301,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         });
 
         getSelectionModel().addListSelectionListener(e -> {
-            if (isEditing()) {
-                TableCellEditor cellEditor = getCellEditor();
-                if (cellEditor != null) {
-                    cellEditor.stopCellEditing();
-                }
-            }
+            stopCellEditing();
             if (!properties.isEmpty()) {
                 changeCurrentObjectLater();
             }
@@ -314,6 +309,15 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         });
 
         initializeActionMap();
+    }
+
+    private void stopCellEditing() {
+        if (isEditing()) {
+            TableCellEditor cellEditor = getCellEditor();
+            if (cellEditor != null) {
+                cellEditor.stopCellEditing();
+            }
+        }
     }
 
     @Override
@@ -681,6 +685,11 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
     private void selectRow(int rowNumber) {
         selectCell(rowNumber, getColumnModel().getSelectionModel().getLeadSelectionIndex());
+    }
+
+    private void stopCellEditingAndSelectRow(int rowNumber) {
+        stopCellEditing();
+        selectRow(rowNumber);
     }
 
     private void selectCell(int row, int col) {
@@ -1389,64 +1398,58 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     void configureEnclosingScrollPane(final JScrollPane pane) {
         assert pane.getViewport() == getParent();
         if (groupObject.pageSize != 0) {
-            pane.getHorizontalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-                @Override
-                public void adjustmentValueChanged(AdjustmentEvent e) {
-                    if (skipScrollingAdjusments) {
+            pane.getHorizontalScrollBar().addAdjustmentListener(e -> {
+                if (skipScrollingAdjusments) {
+                    return;
+                }
+
+                int currCol = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                if (currCol != -1 && getColumnCount() > 0) {
+                    Pair<Integer, Integer> firstAndLast = getFirstAndLastVisibleColumns(pane);
+
+                    int firstCol = firstAndLast.first;
+                    int lastCol = firstAndLast.second;
+
+                    if (lastCol < firstCol) {
                         return;
                     }
 
-                    int currCol = getColumnModel().getSelectionModel().getLeadSelectionIndex();
-                    if (currCol != -1 && getColumnCount() > 0) {
-                        Pair<Integer, Integer> firstAndLast = getFirstAndLastVisibleColumns(pane);
-
-                        int firstCol = firstAndLast.first;
-                        int lastCol = firstAndLast.second;
-
-                        if (lastCol < firstCol) {
-                            return;
-                        }
-
-                        if (isLayouting > 0) {
-                            selectColumn(currCol);
-                        } else {
-                            if (currCol > lastCol) {
-                                selectColumn(lastCol);
-                            } else if (currCol < firstCol) {
-                                selectColumn(firstCol);
-                            }
+                    if (isLayouting > 0) {
+                        selectColumn(currCol);
+                    } else {
+                        if (currCol > lastCol) {
+                            selectColumn(lastCol);
+                        } else if (currCol < firstCol) {
+                            selectColumn(firstCol);
                         }
                     }
                 }
             });
 
-            pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-                @Override
-                public void adjustmentValueChanged(AdjustmentEvent e) {
-                    //ignore AdjustmentEvent if grid is not showing to prevent selection wrong row
-                    if (!isShowing() || skipScrollingAdjusments) {
+            pane.getVerticalScrollBar().addAdjustmentListener(e -> {
+                //ignore AdjustmentEvent if grid is not showing to prevent selection wrong row
+                if (!isShowing() || skipScrollingAdjusments) {
+                    return;
+                }
+                int currRow = getCurrentRow();
+                if (currRow != -1) {
+                    Rectangle viewRect = pane.getViewport().getViewRect();
+                    int firstRow = rowAtPoint(new Point(0, viewRect.y + getRowHeight() - 1));
+                    int lastRow = rowAtPoint(new Point(0, viewRect.y + viewRect.height - getRowHeight() + 1));
+
+                    if (lastRow < firstRow) {
                         return;
                     }
-                    int currRow = getCurrentRow();
-                    if (currRow != -1) {
-                        Rectangle viewRect = pane.getViewport().getViewRect();
-                        int firstRow = rowAtPoint(new Point(0, viewRect.y + getRowHeight() - 1));
-                        int lastRow = rowAtPoint(new Point(0, viewRect.y + viewRect.height - getRowHeight() + 1));
 
-                        if (lastRow < firstRow) {
-                            return;
-                        }
-
-                        if (isLayouting > 0) {
-                            selectRow(currRow);
-                        } else {
-                            if (currRow > lastRow) {
-                                keyController.record(false, lastRow);
-                                selectRow(lastRow);
-                            } else if (currRow < firstRow) {
-                                keyController.record(true, firstRow);
-                                selectRow(firstRow);
-                            }
+                    if (isLayouting > 0) {
+                        selectRow(currRow);
+                    } else {
+                        if (currRow > lastRow) {
+                            keyController.record(false, lastRow);
+                            stopCellEditingAndSelectRow(lastRow);
+                        } else if (currRow < firstRow) {
+                            keyController.record(true, firstRow);
+                            stopCellEditingAndSelectRow(firstRow);
                         }
                     }
                 }
