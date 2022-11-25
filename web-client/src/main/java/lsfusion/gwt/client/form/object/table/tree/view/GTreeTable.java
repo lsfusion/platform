@@ -201,15 +201,18 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         vert.getStyle().setHeight(100, Style.Unit.PCT);
 
         DivElement top = vert.appendChild(Document.get().createDivElement());
-        top.getStyle().setHeight(50, Style.Unit.PCT);
+        top.getStyle().setHeight(MainFrame.useBootstrap ? 0 : 50, Style.Unit.PCT);
 
         DivElement bottom = vert.appendChild(Document.get().createDivElement());
-        bottom.getStyle().setHeight(50, Style.Unit.PCT);
+        bottom.getStyle().setHeight(MainFrame.useBootstrap ? 100 : 50, Style.Unit.PCT);
         bottom.getStyle().setPosition(Style.Position.RELATIVE);
 
         Element img = bottom.appendChild(StaticImage.TREE_EMPTY.createImage()); //need some initial value
         img.getStyle().setPosition(Style.Position.ABSOLUTE);
-        img.getStyle().setTop(-8, Style.Unit.PX);
+
+        if (!MainFrame.useBootstrap) {
+            img.getStyle().setTop(-8, Style.Unit.PX);
+        }
 
         vert.setPropertyObject(IMAGE, img);
 
