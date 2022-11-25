@@ -551,20 +551,22 @@ public class ImplementTable extends DBTable { // последний интерф
 
             ImMap<Object, Object> result = mResult.immutable();
 
-            DataObject tableObject = safeReadClasses(session, reflectionLM.tableSID, new DataObject(getName()));
-            if(tableObject == null && getName() != null) {
+            String tableName = getName();
+            DataObject tableObject = safeReadClasses(session, reflectionLM.tableSID, new DataObject(tableName));
+            if(tableObject == null) {
                 tableObject = session.addObject(reflectionLM.table);
-                reflectionLM.sidTable.change(getName(), session, tableObject);
+                reflectionLM.sidTable.change(tableName, session, tableObject);
             }
 
             if (!skipRecalculateAllFields) {
                 reflectionLM.rowsTable.change(total, session, tableObject);
 
                 for (KeyField key : keys) {
-                    DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(getName() + "." + key.getName()));
+                    DataObject keyObject = safeReadClasses(session, reflectionLM.tableKeySID, new DataObject(tableName + "." + key.getName()));
                     if (keyObject == null) {
                         keyObject = session.addObject(reflectionLM.tableKey);
-                        reflectionLM.sidTableKey.change(getName() + "." + key.getName(), session, keyObject);
+                        reflectionLM.sidTableKey.change(tableName + "." + key.getName(), session, keyObject);
+                        reflectionLM.tableTableKey.change(tableObject, session, keyObject);
                     }
                     int quantity = BaseUtils.nvl((Integer) result.get(key), 0);
                     (top ? reflectionLM.quantityTopTableKey : reflectionLM.quantityTableKey).change(quantity, session, keyObject);
@@ -575,7 +577,7 @@ public class ImplementTable extends DBTable { // последний интерф
 
             for (PropertyField property : propertyFieldSet) {
                 if(!disableStatsTableColumnSet.contains(property.getName())) {
-                    DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(getName()), new DataObject(property.getName()));
+                    DataObject propertyObject = safeReadClasses(session, reflectionLM.propertyTableSID, new DataObject(tableName), new DataObject(property.getName()));
                     if (propertyObject == null && props != null) {
                         String canonicalName = props.get(property);
                         propertyObject = safeReadClasses(session, reflectionLM.propertyCanonicalName, new DataObject(canonicalName));
@@ -585,7 +587,7 @@ public class ImplementTable extends DBTable { // последний интерф
                         }
                         reflectionLM.storedProperty.change(true, session, propertyObject);
                         reflectionLM.dbNameProperty.change(property.getName(), session, propertyObject);
-                        reflectionLM.tableSIDProperty.change(getName(), session, propertyObject);
+                        reflectionLM.tableSIDProperty.change(tableName, session, propertyObject);
                     }
                     if (propertyObject != null) {
                         (top ? reflectionLM.quantityTopProperty : reflectionLM.quantityProperty).change((Integer) result.get(property), session, propertyObject); // если не расчитывается статистика запишется null (что в общем то и требуется)
@@ -593,7 +595,7 @@ public class ImplementTable extends DBTable { // последний интерф
                         int notNull = BaseUtils.nvl((Integer) notNulls.get(property), 0);
                         int quantity = BaseUtils.nvl((Integer) result.get(property), 0);
                         reflectionLM.notNullQuantityProperty.change(notNull, session, propertyObject);
-                        propStats = propStats.addExcl(getName() + "." + property.getName(), Pair.create(quantity, notNull));
+                        propStats = propStats.addExcl(tableName + "." + property.getName(), Pair.create(quantity, notNull));
                     }
                 }
             }

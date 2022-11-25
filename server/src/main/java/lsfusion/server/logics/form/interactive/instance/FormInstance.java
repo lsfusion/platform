@@ -361,7 +361,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 }
             }
         }
-        mapObjects = MapFact.override(mSeekCachedObjects.immutable(), mapObjects);
+        mapObjects = MapFact.override(mSeekCachedObjects.immutable(), DataObject.filterDataObjects(mapObjects));
         for (int i = 0, size = mapObjects.size(); i < size; i++)
             seekObject(instanceFactory.getInstance(mapObjects.getKey(i)), mapObjects.getValue(i));
 

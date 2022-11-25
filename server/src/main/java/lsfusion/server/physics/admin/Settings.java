@@ -150,7 +150,7 @@ public class Settings implements Cloneable {
 
     private int limitHintComplexComplexity = 1000;
 
-    private int limitHintPrereadComplexity = 50;
+    private int limitHintPrereadComplexity = 200;
 
     private int limitHintIncrementComplexity = 50; // есть проблема когда идет G(очень большого числа данных) = значение, статистика нормальная, сложность большая, начинает hint'ить что мешает проталкиванию
 
