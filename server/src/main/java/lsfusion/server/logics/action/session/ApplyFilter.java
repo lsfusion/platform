@@ -31,7 +31,7 @@ public enum ApplyFilter {
         return property instanceof Action && ((Action) property).hasFlow(ChangeFlowType.CANCEL);
     }
 
-    public boolean contains(ActionOrProperty property) {
+    public boolean containsChange(ActionOrProperty property) {
         if(this == SESSION)
             return property instanceof Action && ((Action<?>) property).getSessionEnv(SystemEvent.SESSION) != null;
 
@@ -40,15 +40,17 @@ public enum ApplyFilter {
             return false;
         else
             assert property instanceof Action || ((Property<?>)property).isStored() || (property instanceof ChangedProperty && ((ChangedProperty<?>) property).isSingleApplyDroppedIsClassProp());
-//        if(property instanceof Property) {
-//            if(!((Property<?>) property).isStored())
-//                return false;
-//        } else {
-//            if(((Action<?>) property).getSessionEnv(SystemEvent.APPLY) == null)
-//                return false;
-//        }
-//
+
+        // we need "action change" links for all global filters, since event actions / properties can depend on each other
+        return true;
+    }
+
+    public boolean contains(ActionOrProperty property) {
+        if(!containsChange(property))
+            return false;
+
         switch (this) {
+            case SESSION:
             case NO:
                 return true;
             case ONLY_CALC:

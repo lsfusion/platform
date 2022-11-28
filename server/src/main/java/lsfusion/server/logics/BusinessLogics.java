@@ -803,7 +803,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public void fillActionChangeProps(ApplyFilter filter) { // используется только для getLinks, соответственно построения лексикографики и поиска зависимостей
         for (Action action : getOrderActions()) {
-            if (filter.contains(action)) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
+            if (filter.containsChange(action)) { // вырежем Action'ы без Event'ов, они нигде не используются, а дают много компонент связности
                 ImMap<Property, Boolean> change = ((Action<?>) action).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++) // вообще говоря DataProperty и IsClassProperty
                     change.getKey(i).addActionChangeProp(new Pair<Action<?>, LinkType>((Action<?>) action, change.getValue(i) ? LinkType.RECCHANGE : LinkType.DEPEND));
@@ -813,7 +813,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public void dropActionChangeProps(ApplyFilter filter) { // для экономии памяти - симметричное удаление ссылок
         for (Action action : getOrderActions()) {
-            if (filter.contains(action)) {
+            if (filter.containsChange(action)) {
                 ImMap<Property, Boolean> change = ((Action<?>) action).getChangeExtProps();
                 for (int i = 0, size = change.size(); i < size; i++)
                     change.getKey(i).dropActionChangeProps();
@@ -1678,7 +1678,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @IdentityLazy
     public ImSet<Property> getCheckConstrainedProperties() {
         ImSet<Property> result = getCheckConstrainedProperties(getOrderActionOrProperties()); // in theory all data properties with event should be in this method (because is used only for propertyExpression properties)
-        assert result.equals(getCheckConstrainedProperties(getPropertyList(ApplyFilter.NO)));
+        assert result.equals(getCheckConstrainedProperties(getPropertyList(ApplyFilter.NO))); // can be broken in CONSRAINT LOCAL
         return result;
     }
 
