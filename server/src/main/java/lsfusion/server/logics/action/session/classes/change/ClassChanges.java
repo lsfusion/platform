@@ -721,7 +721,7 @@ public class ClassChanges {
             return EMPTY_SPLIT;
 
         CustomClass customClass = (CustomClass) classProperty.getInterfaceClass();
-        if(customClass.disableSingleApply())
+        if(customClass.disableSingleApply()) // here also can be a class inconsistency problem with the props that uses BaseClass (System.Object), see optimization comment below
             return EMPTY_SPLIT;
         
         ImMap<ClassDataProperty, ObjectValueClassSet> classDataProps = BaseUtils.immutableCast(customClass.getUpObjectClassFields());
@@ -737,13 +737,18 @@ public class ClassChanges {
                 mOld.addAll(changedDataClasses.old);
             }
         }
-        if(mOld == null)
+        if(mOld == null) // no changes
             return EMPTY_SPLIT;
 
-        OrObjectClassSet oldCustomSet = new OrObjectClassSet(BaseUtils.<ImSet<ConcreteCustomClass>>immutableCast(mOld.immutable().remove(SetFact.singleton(baseClass.unknown)))); // unknown'ы не интересуют
-        for(CustomClass childClass : customClass.getChildrenIt())
-            if(childClass.getUpSet().containsAll(oldCustomSet, false)) // если есть child который содержит все old'ы пусть и обрабатывает их
-                return EMPTY_SPLIT;
+        // it's an incorrect optimization, since single apply assumes following the event order (with no going back), and this order is build is based on DROPPED of the specific class (and not all it's parents / children what is used in single apply depends)
+        // so if we delay single apply, some events / materializations may already have been proceeded before this delayed single apply is executed (which will lead to class / db inconsistency)
+        // this may be solved by adding some parent links : DROPPED(parent) -> DROPPED(child), but even in this case that optimization doesn't make sense (because the child will be proceeded before the parent)
+        if(Settings.get().isRemoveClassesFallback()) {
+            OrObjectClassSet oldCustomSet = new OrObjectClassSet(BaseUtils.<ImSet<ConcreteCustomClass>>immutableCast(mOld.immutable().remove(SetFact.singleton(baseClass.unknown)))); // unknown'ы не интересуют
+            for (CustomClass childClass : customClass.getChildrenIt())
+                if (childClass.getUpSet().containsAll(oldCustomSet, false)) // если есть child который содержит все old'ы пусть и обрабатывает их
+                    return EMPTY_SPLIT;
+        }
 
         checkTransaction.run();
 
