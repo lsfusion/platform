@@ -60,9 +60,6 @@ import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.TypeObject;
-import lsfusion.server.data.type.parse.LogicalParseInterface;
-import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.parse.StringParseInterface;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
@@ -81,9 +78,7 @@ import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.increment.IncrementChangeProps;
 import lsfusion.server.logics.action.session.change.increment.IncrementTableProps;
 import lsfusion.server.logics.action.session.change.modifier.*;
-import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.action.session.changed.OldProperty;
-import lsfusion.server.logics.action.session.changed.SessionProperty;
 import lsfusion.server.logics.action.session.changed.UpdateResult;
 import lsfusion.server.logics.action.session.classes.change.ClassChange;
 import lsfusion.server.logics.action.session.classes.change.ClassChanges;
@@ -2117,12 +2112,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
+    public Integer executingApplyEvent;
     private boolean recursiveApply(ImOrderSet<ActionValueImplement> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        for (ActionValueImplement action : actions)
-            if(!executeApplyAction(BL, stack, action))
-                return false;
-        
         try {
+            executingApplyEvent = -1;
+            for (ActionValueImplement action : actions)
+                if(!executeApplyAction(BL, stack, action))
+                    return false;
+        
             BusinessLogics.Next next = null;
             ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = BL.getApplyEvents(applyFilter);
             while(true) {
@@ -2131,12 +2128,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     break;
                 if(next.sessionEnv.contains(this)) {
                     sql.statusMessage = next.statusMessage;
+                    executingApplyEvent = next.index;
                     if (!executeApplyEvent(BL, stack, next.event, new ProgressBar(localize("{logics.server.apply.message}"), next.statusMessage.index, next.statusMessage.total, next.event.toString())))
                         return false;
                 }
             }
         } finally {
             sql.statusMessage = null;
+            executingApplyEvent = null;
         }
 
         if (applyFilter == ApplyFilter.ONLYCHECK) {

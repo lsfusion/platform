@@ -1566,7 +1566,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     @IdentityLazy
-    private ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>> getOrderMapSingleApplyDepends(ApplyFilter increment, boolean includeCorrelations) {
+    private Pair<ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>>, ImMap<ApplyUpdatePrevEvent, Integer>> getOrderMapSingleApplyDepends(ApplyFilter increment, boolean includeCorrelations) {
         assert Settings.get().isEnableApplySingleStored();
 
         ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = getApplyEvents(increment);
@@ -1574,11 +1574,19 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         // нам нужны будут сами persistent свойства + prev'ы у action'ов
         boolean canBeOutOfDepends = increment != ApplyFilter.NO;
         MExclMap<ApplyCalcEvent, MOrderMap<ApplySingleEvent, SessionEnvEvent>> mMapDepends = MapFact.mExclMap();
-        MAddMap<OldProperty, SessionEnvEvent> singleAppliedOld = MapFact.mAddMap(SessionEnvEvent.mergeSessionEnv());
+        MAddMap<ApplyUpdatePrevEvent, SessionEnvEvent> singleAppliedOld = MapFact.mAddMap(SessionEnvEvent.mergeSessionEnv());
+        MMap<ApplyUpdatePrevEvent, Integer> mLastUsed = MapFact.mMap(MapFact.override());
         for(int i = 0, size = applyEvents.size(); i<size; i++) {
             ApplyGlobalEvent applyEvent = applyEvents.getKey(i);
             SessionEnvEvent sessionEnv = applyEvents.getValue(i);
-            singleAppliedOld.addAll(applyEvent.getEventOldDepends().toMap(sessionEnv));
+
+            ImSet<OldProperty> oldDepends = applyEvent.getEventOldDepends();
+            for(OldProperty oldDepend : oldDepends) {
+                ApplyUpdatePrevEvent event = new ApplyUpdatePrevEvent(oldDepend);
+
+                singleAppliedOld.add(event, sessionEnv);
+                mLastUsed.add(event, i);
+            }
             
             if(applyEvent instanceof ApplyCalcEvent) { // сначала классы и stored обрабатываем
                 mMapDepends.exclAdd((ApplyCalcEvent) applyEvent, MapFact.mOrderMap(SessionEnvEvent.mergeSessionEnv()));
@@ -1589,23 +1597,37 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
             }
         }
         for (int i=0,size= singleAppliedOld.size();i<size;i++) { // old'ы по идее не важно в каком порядке будут (главное что stored до)
-            OldProperty<?> old = singleAppliedOld.getKey(i);
+            ApplyUpdatePrevEvent event = singleAppliedOld.getKey(i);
             SessionEnvEvent sessionEnv = singleAppliedOld.getValue(i);
 
-            ApplyUpdatePrevEvent event = new ApplyUpdatePrevEvent(old);
-            fillSingleApplyDependFrom(old.property, event, sessionEnv, mMapDepends, canBeOutOfDepends);
+            Property<?> oldProperty = event.property.property;
+            fillSingleApplyDependFrom(oldProperty, event, sessionEnv, mMapDepends, canBeOutOfDepends);
             
             if(includeCorrelations)
-                for(Correlation<?> corProp : old.property.getCorrelations(ClassType.materializeChangePolicy))
+                for(Correlation<?> corProp : oldProperty.getCorrelations(ClassType.materializeChangePolicy))
                     fillSingleApplyDependFrom(corProp.getProperty(), event, sessionEnv, mMapDepends, true);
         }
 
-        return mMapDepends.immutable().mapValues(MOrderMap::immutableOrder);
+        return new Pair<>(mMapDepends.immutable().mapValues(MOrderMap::immutableOrder), mLastUsed.immutable());
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
     public ImOrderSet<ApplySingleEvent> getSingleApplyDependFrom(ApplyCalcEvent event, DataSession session, boolean includeCorrelations) {
-        return session.filterOrderEnv(getOrderMapSingleApplyDepends(session.applyFilter, includeCorrelations).get(event));
+        Pair<ImMap<ApplyCalcEvent, ImOrderMap<ApplySingleEvent, SessionEnvEvent>>, ImMap<ApplyUpdatePrevEvent, Integer>> orderMapSingleApplyDepends = getOrderMapSingleApplyDepends(session.applyFilter, includeCorrelations);
+
+        ImOrderMap<ApplySingleEvent, SessionEnvEvent> depends = orderMapSingleApplyDepends.first.get(event);
+        ImMap<ApplyUpdatePrevEvent, Integer> lastUsedEvents = orderMapSingleApplyDepends.second;
+
+        if(!Settings.get().isRemoveClassesFallback()) {
+            depends = depends.filterOrder(element -> {
+                if(element instanceof ApplyUpdatePrevEvent) {
+                    return lastUsedEvents.get((ApplyUpdatePrevEvent)element) >= session.executingApplyEvent;
+                }
+                return true;
+            });
+
+        }
+        return session.filterOrderEnv(depends);
     }
 
     @IdentityLazy
