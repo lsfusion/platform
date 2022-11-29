@@ -17,9 +17,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
     public ConcreteCustomClass userRole;
     public ConcreteCustomClass policy;
 
-    public LP forbidDuplicateFormsCustomUser;
-    public LP showDetailedInfoCustomUser;
-
     public LP<?> permissionUserRoleNavigatorElement;
     public LP<?> permissionViewUserRoleActionOrProperty;
     public LP<?> permissionChangeUserRoleActionOrProperty;
@@ -62,12 +59,6 @@ public class SecurityLogicsModule extends ScriptingLogicsModule{
         createSystemUserRoles = findAction("createSystemUserRoles[]");
 
         disableRole = findProperty("disableRole[UserRole]");
-
-        // ---- Политики для доменной логики
-
-        // Разрешения для всех свойств
-        forbidDuplicateFormsCustomUser = findProperty("forbidDuplicateForms[CustomUser]");
-        showDetailedInfoCustomUser = findProperty("showDetailedInfo[CustomUser]");
 
         // ---- Политики для логики представлений
 

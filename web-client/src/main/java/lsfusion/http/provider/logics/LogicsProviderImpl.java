@@ -6,11 +6,13 @@ import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
+import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.AbstractLogicsProviderImpl;
 import lsfusion.interop.logics.LogicsConnection;
 import lsfusion.interop.logics.LogicsRunnable;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
+import lsfusion.interop.navigator.ClientSettings;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +97,10 @@ public class LogicsProviderImpl extends AbstractLogicsProviderImpl implements In
 
     public ServerSettings getServerSettings(final HttpServletRequest request, boolean noCache) {
         return getServerSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), request.getContextPath(), noCache);
+    }
+
+    public ClientSettings getClientSettings(final HttpServletRequest request, AuthenticationToken token) {
+        return getClientSettings(getLogicsConnection(request), NavigatorProviderImpl.getSessionInfo(request), token);
     }
 
     public <R> R runRequest(String host, Integer port, String exportName, LogicsRunnable<R> runnable) throws RemoteException, AppServerNotAvailableDispatchException {

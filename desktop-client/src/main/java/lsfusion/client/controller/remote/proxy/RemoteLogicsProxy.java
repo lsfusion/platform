@@ -4,6 +4,7 @@ import lsfusion.client.navigator.controller.remote.proxy.RemoteNavigatorProxy;
 import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.Settings;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -85,5 +86,13 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
         List<String> result = target.saveAndGetCustomReportPathList(formSID, recreate);
         logRemoteMethodEndVoidCall("saveCustomReportPathList");
         return result;
+    }
+
+    @Override
+    public Settings getSettings() throws RemoteException {
+        logRemoteMethodStartVoidCall("getSettings");
+        Settings settings = target.getSettings();
+        logRemoteMethodEndVoidCall("getSettings");
+        return settings;
     }
 }

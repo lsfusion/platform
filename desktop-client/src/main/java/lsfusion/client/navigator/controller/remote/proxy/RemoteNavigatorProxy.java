@@ -2,11 +2,9 @@ package lsfusion.client.navigator.controller.remote.proxy;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import lsfusion.client.controller.remote.proxy.PendingRemoteObjectProxy;
 import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.remote.RemoteFormInterface;
-import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 
@@ -43,11 +41,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public ClientSettings getClientSettings() throws RemoteException {
-        return target.getClientSettings();
     }
 
     @Override

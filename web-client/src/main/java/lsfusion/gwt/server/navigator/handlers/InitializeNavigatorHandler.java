@@ -18,7 +18,9 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
+import lsfusion.http.authentication.LSFAuthenticationToken;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
@@ -36,9 +38,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
 
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
-        RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
-        NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, getServerSettings(action));
-        WebClientSettings webClientSettings = getClientSettings(remoteNavigator, servlet);
+        NavigatorInfo navigatorInfo = getNavigatorInfo(getRemoteNavigator(action), servlet, getServerSettings(action));
+        WebClientSettings webClientSettings = getClientSettings(servlet);
 
         servlet.getNavigatorProvider().updateNavigatorClientSettings(action.screenSize, action.mobile);
 
@@ -73,8 +74,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         return new NavigatorInfo(root, navigatorWindows, windows);
     }
 
-    private static WebClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet) throws RemoteException {
-        lsfusion.interop.navigator.ClientSettings clientSettings = remoteNavigator.getClientSettings();
+    private static WebClientSettings getClientSettings(MainDispatchServlet servlet) throws RemoteException {
+        ClientSettings clientSettings = servlet.getLogicsProvider().getClientSettings(servlet.getRequest(), LSFAuthenticationToken.getAppServerToken());
         ClientFormChangesToGwtConverter converter = ClientFormChangesToGwtConverter.getInstance();
 
         GColorTheme colorTheme = GColorTheme.valueOf(clientSettings.colorTheme.name());

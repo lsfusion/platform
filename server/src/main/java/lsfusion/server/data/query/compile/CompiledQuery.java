@@ -83,6 +83,7 @@ import lsfusion.server.logics.classes.data.ArrayClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
@@ -1907,6 +1908,8 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         mMapValues.exclAdd(SQLSession.connectionParam, env.getSQLConnection());
         mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
         mMapValues.exclAdd(SQLSession.isDevParam, SystemProperties.inDevMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+        mMapValues.exclAdd(SQLSession.inTestModeParam, SystemProperties.inTestMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+        mMapValues.exclAdd(SQLSession.projectLSFDirParam, SystemProperties.projectLSFDir != null ? new TypeObject(SystemProperties.projectLSFDir, TextClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
     }
 
     private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {

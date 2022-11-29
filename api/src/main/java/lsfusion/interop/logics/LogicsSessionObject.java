@@ -1,10 +1,15 @@
 package lsfusion.interop.logics;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
+import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.LocalePreferences;
+import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
+import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.commons.net.util.Base64;
@@ -12,11 +17,14 @@ import org.castor.core.util.Base64Decoder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static lsfusion.base.BaseUtils.trimToNull;
@@ -79,5 +87,64 @@ public class LogicsSessionObject {
 
     private RawFileData getRawFileData(String base64) {
         return base64 != null ? new RawFileData(Base64Decoder.decode(base64)) : null;
+    }
+
+    public ClientSettings getClientSettings(SessionInfo sessionInfo, AuthenticationToken token) throws RemoteException {
+
+        ExternalResponse result = remoteLogics.exec(token, sessionInfo, "Service.getClientSettings[]", sessionInfo.externalRequest);
+        JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+
+        String currentUserName = json.optString("currentUserName");
+        Integer fontSize = !json.has("fontSize") ? null : json.optInt("fontSize");
+        boolean useBusyDialog = json.optBoolean("useBusyDialog");
+        boolean useRequestTimeout = json.optBoolean("useRequestTimeout");
+        boolean forbidDuplicateForms = json.optBoolean("forbidDuplicateForms");
+        boolean showDetailedInfo = json.optBoolean("showDetailedInfo");
+        boolean devMode = json.optBoolean("devMode");
+        String projectLSFDir = json.optString("projectLSFDir");
+
+        ColorTheme colorTheme = BaseUtils.nvl(ColorTheme.get(json.optString("colorThemeString")), ColorTheme.DEFAULT);
+        boolean useBootstrap = json.optBoolean("useBootstrap");
+
+        String selectedRowBackground = json.optString("selectedRowBackground");
+        String selectedCellBackground = json.optString("selectedCellBackground");
+        String focusedCellBackground = json.optString("focusedCellBackground");
+        String focusedCellBorder = json.optString("focusedCellBorder");
+        String tableGridColor = json.optString("tableGridColor");
+
+        ColorPreferences colorPreferences = new ColorPreferences(selectedRowBackground.isEmpty() ? null : Color.decode(selectedRowBackground),
+                selectedCellBackground.isEmpty() ? null : Color.decode(selectedCellBackground),
+                focusedCellBackground.isEmpty() ? null : Color.decode(focusedCellBackground),
+                focusedCellBorder.isEmpty() ? null : Color.decode(focusedCellBorder),
+                tableGridColor.isEmpty() ? null : Color.decode(tableGridColor));
+
+        List<String> preDefinedDateRangesNames = new ArrayList<>();
+        fillRanges(json.optJSONArray("dateTimePickerRanges"), preDefinedDateRangesNames);
+        fillRanges(json.optJSONArray("intervalPickerRanges"), preDefinedDateRangesNames);
+
+        List<Pair<String, RawFileData>> mainResourcesData = getFileData(json.getJSONArray("mainResources"));
+
+        String language = json.optString("language");
+        String country = json.optString("country");
+        Locale locale = LocalePreferences.getLocale(language, country);
+
+            String timeZone = json.optString("timeZone");
+        Integer twoDigitYearStart = !json.has("twoDigitYearStart") ? null : json.optInt("twoDigitYearStart");
+        String dateFormat = json.optString("dateFormat");
+        String timeFormat = json.optString("timeFormat");
+
+        LocalePreferences localePreferences = new LocalePreferences(locale, timeZone, twoDigitYearStart, dateFormat, timeFormat);
+        Settings settings = remoteLogics.getSettings();
+
+        return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, settings.getBusyDialogTimeout(),
+                useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, settings.isShowNotDefinedStrings(),
+                settings.isPivotOnlySelectedColumn(), settings.getMatchSearchSeparator(), colorTheme, useBootstrap, colorPreferences,
+                preDefinedDateRangesNames.toArray(new String[0]), settings.isUseTextAsFilterSeparator(), mainResourcesData);
+    }
+
+    private void fillRanges(JSONArray rangesJson, List<String> ranges) {
+        for (int i = 0; i < rangesJson.length(); i++) {
+            ranges.add(rangesJson.getJSONObject(i).getString("range"));
+        }
     }
 }

@@ -406,7 +406,6 @@ CLASS ColorTheme '{authentication.color.theme}' {
 }
 TABLE colorTheme(ColorTheme);
 colorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
-colorThemeStaticName (CustomUser user) = staticName(colorTheme(user));
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
 colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(colorTheme(user));
 
@@ -945,9 +944,6 @@ isIntervalRangeSelected '{logics.property.select}' = DATA BOOLEAN (DateTimeInter
 selectedDateTimeRangesCount(user) = GROUP SUM 1 IF isDateTimeRangeSelected(DateTimePickerRanges r, user);
 selectedIntervalRangesCount(user) = GROUP SUM 1 IF isIntervalRangeSelected(DateTimeIntervalPickerRanges ir, user);
 CONSTRAINT selectedDateTimeRangesCount(CustomUser cu) > 7 OR selectedIntervalRangesCount(cu) > 7 MESSAGE '{date.time.picker.range.constraint}';
-
-dateTimePickerRanges(CustomUser cu) = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, cu);
-intervalPickerRanges(CustomUser cu) = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, cu);
 
 setDefaultRanges(CustomUser cu) {
     //dateTime

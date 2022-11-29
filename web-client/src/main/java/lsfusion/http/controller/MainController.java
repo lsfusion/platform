@@ -20,6 +20,7 @@ import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import net.customware.gwt.dispatch.shared.general.StringResult;
@@ -238,7 +239,7 @@ public class MainController {
                     throw e;
                 }
             }).get();
-            mainResources = navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator.getClientSettings().mainResources;
+            mainResources = getClientSettings(request, LSFAuthenticationToken.getAppServerToken()).mainResources;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -263,6 +264,10 @@ public class MainController {
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
         return logicsProvider.getServerSettings(request, noCache);
+    }
+
+    private ClientSettings getClientSettings(HttpServletRequest request, AuthenticationToken token) {
+        return logicsProvider.getClientSettings(request, token);
     }
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {

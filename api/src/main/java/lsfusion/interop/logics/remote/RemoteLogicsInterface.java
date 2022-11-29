@@ -3,6 +3,7 @@ package lsfusion.interop.logics.remote;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.Settings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
@@ -41,4 +42,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     byte[] findClass(String name) throws RemoteException;
 
     List<String> saveAndGetCustomReportPathList(String formSID, boolean recreate) throws RemoteException;
+
+    Settings getSettings() throws RemoteException;;
 }

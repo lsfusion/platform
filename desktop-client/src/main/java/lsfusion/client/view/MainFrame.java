@@ -14,6 +14,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.view.ClientFormDockable;
+import lsfusion.client.logics.LogicsProvider;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.interop.action.ICleanListener;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
@@ -92,7 +93,7 @@ public abstract class MainFrame extends JFrame {
 
             startSplashScreen();
 
-            ClientSettings clientSettings = remoteNavigator.getClientSettings();
+            ClientSettings clientSettings = LogicsProvider.instance.getClientSettings(MainController.serverInfo, MainController.getSessionInfo(), MainController.authToken);
 
             LocalePreferences localePreferences = clientSettings.localePreferences;
             fontSize = clientSettings.fontSize;

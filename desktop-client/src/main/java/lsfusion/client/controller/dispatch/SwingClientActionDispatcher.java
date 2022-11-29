@@ -22,6 +22,7 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.form.view.ClientModalForm;
+import lsfusion.client.logics.LogicsProvider;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
@@ -451,11 +452,8 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     public void execute(UserChangedClientAction action) {
-        try {
-            MainFrame.instance.updateUser(MainFrame.instance.remoteNavigator.getClientSettings().currentUserName);
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        //todo exception?
+        MainFrame.instance.updateUser(LogicsProvider.instance.getClientSettings(MainController.serverInfo, MainController.getSessionInfo(), MainController.authToken).currentUserName);
     }
 
     public void execute(MessageClientAction action) {
