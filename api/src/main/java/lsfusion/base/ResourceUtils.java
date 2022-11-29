@@ -280,7 +280,7 @@ public class ResourceUtils {
 //                    return optimisticPath;
 //            }
 
-            if(!(multipleUsages)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
+//            if(!(multipleUsages)) { // if we have "not init" read and we are not in devMode, ignore caches to have better DX
                 boolean simpleFile = fileName.equals(BaseUtils.getFileNameAndExtension(fileName));
 
                 String template = BaseUtils.replaceFileName(fileName, ".*", true);
@@ -299,12 +299,12 @@ public class ResourceUtils {
                 for (String entry : cachedResources.first)
                     if (entry.endsWith("/" + fileName))
                         return entry;
-            } else {
-                Pattern pattern = Pattern.compile(".*/" + fileName.replace(".", "\\."));
-                List<String> result = ResourceUtils.getResources(pattern);
-                if(!result.isEmpty())
-                    return result.get(0);
-            }
+//            } else {
+//                Pattern pattern = Pattern.compile(".*/" + fileName.replace(".", "\\."));
+//                List<String> result = ResourceUtils.getResources(pattern);
+//                if(!result.isEmpty())
+//                    return result.get(0);
+//            }
         }
         if(!nullIfNotExists) {
             throw new RuntimeException(ApiResourceBundle.getString("exceptions.file.not.found", fileName));
