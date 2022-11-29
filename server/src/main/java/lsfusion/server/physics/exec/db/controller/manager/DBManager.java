@@ -2378,14 +2378,31 @@ public class DBManager extends LogicsManager implements InitializingBean {
         sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
         try {
             sql.dropColumn(tableName, columnName, Settings.get().isStartServerAnyWay());
-            ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // надо упаковать таблицу, если удалили колонку
-            if (table != null)
-                sql.packTable(table, OperationOwner.unknown, TableOwner.global);
+            packTable(sql, tableName);
             sql.commitTransaction();
         } catch(SQLException e) {
             sql.rollbackTransaction();
             throw e;
         }
+    }
+
+    public void dropColumns(String tableName, List<String> columnNames) throws SQLException, SQLHandledException {
+        SQLSession sql = getThreadLocalSql();
+        sql.startTransaction(DBManager.START_TIL, OperationOwner.unknown);
+        try {
+            sql.dropColumns(tableName, columnNames);
+            packTable(sql, tableName);
+            sql.commitTransaction();
+        } catch(SQLException e) {
+            sql.rollbackTransaction();
+            throw e;
+        }
+    }
+
+    private void packTable(SQLSession sql, String tableName) throws SQLException {
+        ImplementTable table = LM.tableFactory.getImplementTablesMap().get(tableName); // need to pack table after column is deleted
+        if (table != null)
+            sql.packTable(table, OperationOwner.unknown, TableOwner.global);
     }
 
     // может вызываться до инициализации DBManager

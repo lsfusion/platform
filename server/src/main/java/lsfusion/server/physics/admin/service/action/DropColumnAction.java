@@ -27,7 +27,7 @@ public class DropColumnAction extends InternalAction {
         try {
             context.getDbManager().dropColumn(tableName, columnName);
         } catch (SQLException e) {
-            ServerLoggers.sqlLogger.error("Ошибка при удалении колонки", e);
+            ServerLoggers.sqlLogger.error("Error dropping column", e);
         }
     }
 }
