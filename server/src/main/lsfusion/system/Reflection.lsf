@@ -300,6 +300,12 @@ sidTable '{reflection.sid.table.drop.column}' = DATA STRING[100] (DropColumn);
 time '{reflection.time.drop.column}' = DATA DATETIME (DropColumn);
 revision '{reflection.revision.drop.column}' = DATA STRING[10] (DropColumn);
 
+dropColumns INTERNAL  'lsfusion.server.physics.admin.service.action.DropColumnsAction' ();
+dropAllColumns '{reflection.drop.drop.columns}' ()  {
+    dropColumns();
+    DELETE DropColumn cl WHERE sid(cl) AND sidTable(cl);
+}
+
 CLASS GroupObject '{reflection.group.object}';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
@@ -365,6 +371,8 @@ FORM physicalModel '{reflection.form.physical.model}'
     OBJECTS dc=DropColumn
     PROPERTIES(dc) READONLY sidTable, sid, time, revision
     PROPERTIES(dc) drop GRID
+    
+    PROPERTIES() dropAllColumns DRAW dc TOOLBAR
 
     FILTERGROUP filtersForm
         FILTER '{reflection.form.physical.model.filter.table}' table(tc)==t 'F8' DEFAULT

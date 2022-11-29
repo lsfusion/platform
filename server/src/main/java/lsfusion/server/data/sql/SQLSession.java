@@ -103,6 +103,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static lsfusion.server.data.table.IndexOptions.defaultIndexOptions;
 import static lsfusion.server.physics.admin.log.ServerLoggers.explainLogger;
@@ -994,16 +995,17 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL("ALTER TABLE " + table.getName(syntax) + " ADD " + field.getDeclare(syntax, env), env.finish()); //COLUMN
     }
 
-    public void dropColumn(NamedTable table, Field field, boolean ifExists) throws SQLException {
-        innerDropColumn(table.getName(syntax), field.getName(syntax), ifExists);
-    }
-
     public void dropColumn(String table, String field, boolean ifExists) throws SQLException {
         innerDropColumn(syntax.getTableName(table), syntax.getFieldName(field), ifExists);
     }
 
     private void innerDropColumn(String table, String field, boolean ifExists) throws SQLException {
         executeDDL("ALTER TABLE " + table + " DROP COLUMN " + (ifExists ? "IF EXISTS " : "" ) + field);
+    }
+
+    public void dropColumns(String table, List<String> fields) throws SQLException {
+        executeDDL("ALTER TABLE " + syntax.getTableName(table) + " " + fields.stream().map(
+                field -> "DROP COLUMN IF EXISTS " + syntax.getFieldName(field)).collect(Collectors.joining(", ")));
     }
 
     public void renameColumn(String table, String columnName, String newColumnName) throws SQLException {
