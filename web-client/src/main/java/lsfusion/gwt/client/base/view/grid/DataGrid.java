@@ -1601,7 +1601,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
 
 
     private boolean isStickyCell(TableCellElement cell) {
-        return cell.hasClassName("dataGridStickyCell");
+        return cell.hasClassName("dataGridStickyCell") && !cell.hasClassName("dataGridStickyOverflow");
     }
 
     private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, NodeList<TableRowElement> headerRows, boolean focused) {
