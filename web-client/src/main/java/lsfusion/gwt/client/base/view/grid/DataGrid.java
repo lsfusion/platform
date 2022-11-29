@@ -1350,7 +1350,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
 
     private boolean isStickyCell(TableCellElement cell) {
-        return cell.hasClassName("dataGridStickyCell");
+        return cell.hasClassName("dataGridStickyCell") && !cell.hasClassName("dataGridStickyOverflow");
     }
 
     private void setFocusedCellStyles(int row, int column, NodeList<TableRowElement> rows, TableRowElement headerRow, boolean focused) {

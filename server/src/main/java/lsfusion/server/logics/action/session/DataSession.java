@@ -2191,12 +2191,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         rollbackInfo.add(run);
     }
 
+    public Integer executingApplyEvent;
     private boolean recursiveApply(ImOrderSet<ActionValueImplement> actions, BusinessLogics BL, ExecutionStack stack) throws SQLException, SQLHandledException {
-        for (ActionValueImplement action : actions)
-            if(!executeApplyAction(BL, stack, action))
-                return false;
-        
         try {
+            executingApplyEvent = -1;
+            for (ActionValueImplement action : actions)
+                if(!executeApplyAction(BL, stack, action))
+                    return false;
+        
             BusinessLogics.Next next = null;
             ImOrderMap<ApplyGlobalEvent, SessionEnvEvent> applyEvents = BL.getApplyEvents(applyFilter);
             while(true) {
@@ -2205,12 +2207,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     break;
                 if(next.sessionEnv.contains(this)) {
                     sql.statusMessage = next.statusMessage;
+                    executingApplyEvent = next.index;
                     if (!executeApplyEvent(BL, stack, next.event, new ProgressBar(localize("{logics.server.apply.message}"), next.statusMessage.index, next.statusMessage.total, next.event.toString())))
                         return false;
                 }
             }
         } finally {
             sql.statusMessage = null;
+            executingApplyEvent = null;
         }
 
         if (applyFilter == ApplyFilter.ONLYCHECK) {

@@ -2674,6 +2674,17 @@ public class Settings implements Cloneable {
         return updateSavePointsMinMultiplier;
     }
 
+    // temporary fallback
+    private boolean removeClassesFallback = false;
+
+    public boolean isRemoveClassesFallback() {
+        return removeClassesFallback;
+    }
+
+    public void setRemoveClassesFallback(boolean removeClassesFallback) {
+        this.removeClassesFallback = removeClassesFallback;
+    }
+
     public void setUpdateSavePointsMinMultiplier(double updateSavePointsMinMultiplier) {
         this.updateSavePointsMinMultiplier = updateSavePointsMinMultiplier;
     }

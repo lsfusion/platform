@@ -153,6 +153,8 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
         if(interfaceClass instanceof CustomClass) { // возвращаем и parent'ы и children'ов (так как при удалении надо и конкретные и абстрактные свойства смотреть)
             CustomClass customClass = (CustomClass) interfaceClass;
             MSet<CustomClass> mDependClasses = SetFact.mSet();
+
+            // correlations
             for(Property upAggrProp : customClass.getUpAggrProps()) {
                 ValueClass valueClass = upAggrProp.getValueClass(ClassType.materializeChangePolicy);
                 if(valueClass instanceof CustomClass) { // нас также интересует класс значения корреляций (так как они тоже могут single apply'ся, а значения корреляций никто не обновит) 
@@ -160,7 +162,9 @@ public class IsClassProperty extends SimpleIncrementProperty<ClassPropertyInterf
                     mDependClasses.addAll(customAggrClass.getAllChildrenParents());
                 }
             }
+
             mDependClasses.addAll(customClass.getAllChildrenParents());
+
             return mDependClasses.immutable().mapSetValues(value -> value.getProperty().getChanged(IncrementType.DROP, ChangeEvent.scope));
         }
         return SetFact.EMPTY();
