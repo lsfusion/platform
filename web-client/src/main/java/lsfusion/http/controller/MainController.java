@@ -243,6 +243,7 @@ public class MainController {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
             model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("redirectURL", getDirectUrl("/main", null, null, request));
             return "app-not-available";
         }
 
