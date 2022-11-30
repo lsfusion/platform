@@ -5,6 +5,7 @@ grammar LsfLogics;
 
     import lsfusion.base.BaseUtils;
     import lsfusion.base.Pair;
+    import lsfusion.base.col.MapFact;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
@@ -3463,7 +3464,8 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, hasHeader, separator, noEscape,
-		                                       new SelectTop(selectTop, $selectTops.selectTops), charset, $pUsage.propUsage, $pUsages.pUsages,
+		                                       new SelectTop(selectTop, $selectTops.selectTops != null ? MapFact.fromJavaOrderMap($selectTops.selectTops) : null),
+		                                       charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
 }
