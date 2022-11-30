@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -14,12 +15,14 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.open.stat.ExportAction;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -53,7 +56,7 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                                     FormIntegrationType staticType,
                                     LP exportFile,
-                                    Integer selectTop,
+                                    SelectTop selectTop,
                                     String charset,
                                     ValueClass root, ValueClass tag) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));

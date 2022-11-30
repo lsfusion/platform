@@ -5,6 +5,7 @@ grammar LsfLogics;
 
     import lsfusion.base.BaseUtils;
     import lsfusion.base.Pair;
+    import lsfusion.base.col.MapFact;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
@@ -66,6 +67,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
+    import lsfusion.server.logics.form.stat.SelectTop;
     import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -3461,7 +3463,9 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages,
+		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, hasHeader, separator, noEscape,
+		                                       new SelectTop(selectTop, $selectTops.selectTops != null ? MapFact.fromJavaOrderMap($selectTops.selectTops) : null),
+		                                       charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
 }
@@ -3472,7 +3476,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
         	                                                    charset = $type.charset; root = $type.root; tag = $type.tag; attr = $type.attr; })?
-		('TOP' selectTop = intLiteral)?
+		('TOP' (selectTops=groupObjectSelectTopMap[$mf.form] | selectTop = intLiteral))?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
 
@@ -3509,6 +3513,15 @@ hasHeaderOption returns [boolean hasHeader]
 noEscapeOption returns [boolean noEscape]
     :	'NOESCAPE' { $noEscape = true; }
     |	'ESCAPE'{ $noEscape = false; }
+	;
+
+groupObjectSelectTopMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, Integer> selectTops]
+@init {
+	$selectTops = new OrderedMap<>();
+	GroupObjectEntity go = null;
+}
+	:	firstGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $firstGroupObject.text); } }  EQ firstSelectTop=intLiteral { if(inMainParseState()) { $selectTops.put(go, $firstSelectTop.val); } }
+		(',' nextGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextSelectTop = intLiteral { if(inMainParseState()) { $selectTops.put(go, $nextSelectTop.val); } } )*
 	;
 
 groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, NamedPropertyUsage> pUsages]
