@@ -79,9 +79,6 @@ public class GridController extends AbstractTableController {
         panel = new PanelController(GridController.this.formController, formLayout) {
             protected void addGroupObjectActions(final JComponent comp) {
                 GridController.this.registerGroupObject(comp);
-                if (filter != null) {
-                    filter.addActionsToPanelInputMap(comp);
-                }
             }
         };
 
@@ -109,9 +106,6 @@ public class GridController extends AbstractTableController {
             table = view.getTable();
 
             registerGroupObject(view);
-            if (table instanceof GridTable) {
-                filter.addActionsToInputMap((GridTable) table);
-            }
 
             formLayout.addBaseComponent(groupObject.grid, view);
 

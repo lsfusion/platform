@@ -6,18 +6,18 @@ import lsfusion.client.form.design.view.widget.ScrollPaneWidget;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
+import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.property.ClientPropertyDraw;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Map;
 
 public class TreeView extends FlexPanel {
     private final TreeGroupTable groupTree;
 
-    public TreeView(ClientFormController form, ClientTreeGroup treeGroup) {
+    public TreeView(ClientFormController form, TreeGroupController treeGroupController, ClientTreeGroup treeGroup) {
         super(false);
-        groupTree = new TreeGroupTable(form, treeGroup);
+        groupTree = new TreeGroupTable(form, treeGroupController, treeGroup);
 
 //        treeGroup.installMargins(this);
 

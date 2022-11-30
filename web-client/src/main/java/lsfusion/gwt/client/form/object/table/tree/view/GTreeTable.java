@@ -873,7 +873,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
     public GPropertyDraw getSelectedFilterProperty() {
         GPropertyDraw property = getSelectedProperty();
-        if (property == null && getColumnCount() > 1) {
+        if (property == null && getColumnCount() > 1 && getSelectedRow() >= 0) {
             property = getProperty(getSelectedCell(1));
         }
         return property;
