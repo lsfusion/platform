@@ -267,6 +267,9 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
                 conditionViews.remove(filter);
             }
         }
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
         applyFilters(focusFirstComponent);
     }
 
