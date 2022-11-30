@@ -15,6 +15,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.StaticFormDataManager;
 import lsfusion.server.logics.form.stat.print.PrintMessageData;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
@@ -69,11 +70,11 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        boolean server,
                        boolean syncType,
                        boolean autoPrint,
-                       Integer top,
+                       SelectTop selectTop,
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
                        ValueClass printer, ValueClass sheetName, ValueClass password) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, top, null, getExtraParams(printer, sheetName, password));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, getExtraParams(printer, sheetName, password));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         this.passwordInterface = password != null ? orderInterfaces.get(orderInterfaces.size() - 1) : null;
@@ -95,7 +96,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         if (staticType == FormPrintType.MESSAGE) {
             // getting data
-            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, selectTops, removeNullsAndDuplicates);
+            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);
 
             // proceeding data
             LogMessageClientAction action = new LogMessageClientAction(reportData.message, reportData.titles, reportData.rows, !context.getSession().isNoCancelInTransaction());
@@ -106,7 +107,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         } else {
             // getting data
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context, contextFilters);
-            ReportGenerationData reportData = formReportManager.getReportData(staticType, selectTop, selectTops);
+            ReportGenerationData reportData = formReportManager.getReportData(staticType, selectTop);
 
             String sheetName = sheetNameInterface != null ? (String) context.getKeyObject(sheetNameInterface) : null;
             String password = passwordInterface != null ? (String) context.getKeyObject(passwordInterface) : null;

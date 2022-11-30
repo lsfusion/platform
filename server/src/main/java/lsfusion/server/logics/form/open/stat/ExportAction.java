@@ -10,6 +10,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.stat.FormDataManager;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.StaticFormDataManager;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
@@ -30,9 +31,8 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
     protected final String charset;
     
     public ExportAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls, ImOrderSet<PropertyInterface> orderContextInterfaces,
-                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops,
-                        String charset, ValueClass... extraParams) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, selectTops, extraParams);
+                        ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters, FormIntegrationType staticType, SelectTop selectTop, String charset, ValueClass... extraParams) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, extraParams);
         this.charset = charset;
     }
     
@@ -41,7 +41,7 @@ public abstract class ExportAction<O extends ObjectSelector> extends FormStaticA
     @Override
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         StaticFormDataManager formDataManager = new StaticFormDataManager(form, mapObjectValues, context, contextFilters);
-        FormDataManager.ExportResult exportData = formDataManager.getExportData(selectTop, selectTops);
+        FormDataManager.ExportResult exportData = formDataManager.getExportData(selectTop);
         try {
             export(context, new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
         } catch (IOException e) {

@@ -66,6 +66,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
+    import lsfusion.server.logics.form.stat.SelectTop;
     import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -3462,7 +3463,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 @after {
 	if (inMainParseState()) {
 		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, root, tag, attr, hasHeader, separator, noEscape,
-		                                       selectTop, $selectTops.selectTops, charset, $pUsage.propUsage, $pUsages.pUsages,
+		                                       new SelectTop(selectTop, $selectTops.selectTops), charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
 }

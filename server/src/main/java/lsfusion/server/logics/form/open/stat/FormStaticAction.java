@@ -13,6 +13,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -25,8 +26,7 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
 
     protected final T staticType;
     
-    protected int selectTop;
-    protected OrderedMap<GroupObjectEntity, Integer> selectTops;
+    protected SelectTop selectTop;
 
     public FormStaticAction(LocalizedString caption,
                             FormSelector<O> form,
@@ -35,14 +35,12 @@ public abstract class FormStaticAction<O extends ObjectSelector, T extends FormS
                             ImOrderSet<PropertyInterface> orderContextInterfaces,
                             ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
                             T staticType,
-                            Integer selectTop,
-                            OrderedMap<GroupObjectEntity, Integer> selectTops,
+                            SelectTop selectTop,
                             ValueClass... extraValueClasses) {
         super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, null, extraValueClasses);
 
         this.staticType = staticType;
-        this.selectTop = selectTop == null ? 0 : selectTop;
-        this.selectTops = selectTops;
+        this.selectTop = selectTop;
     }
 
     protected static void writeResult(LP<?> exportFile, FormStaticType staticType, ExecutionContext<ClassPropertyInterface> context, RawFileData singleFile) throws SQLException, SQLHandledException {

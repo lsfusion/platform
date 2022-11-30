@@ -14,6 +14,7 @@ import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
 import lsfusion.server.logics.form.open.stat.ExportAction;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
@@ -42,14 +43,14 @@ public abstract class ExportPlainAction<O extends ObjectSelector> extends Export
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, String charset) {
-        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset, false);
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop selectTop, String charset) {
+        this(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false);
     }
 
     public ExportPlainAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                              ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, String charset, boolean useCaptionInsteadOfIntegrationSID) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, selectTops, charset);
+                             FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop selectTop, String charset, boolean useCaptionInsteadOfIntegrationSID) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset);
         this.exportFiles = exportFiles;
         this.useCaptionInsteadOfIntegrationSID = useCaptionInsteadOfIntegrationSID;
     }

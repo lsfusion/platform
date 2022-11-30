@@ -82,6 +82,7 @@ import lsfusion.server.logics.form.open.interactive.FormInteractiveAction;
 import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.open.stat.PrintAction;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.IntegrationFormEntity;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.ExportJSONAction;
@@ -576,7 +577,7 @@ public abstract class LogicsModule {
                                                           FormPrintType staticType, boolean server, boolean autoPrint, boolean syncType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates,
                                                           ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, autoPrint, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
+                staticType, server, syncType, autoPrint, new SelectTop(selectTop), targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters) {
@@ -586,31 +587,30 @@ public abstract class LogicsModule {
     }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                                                       FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape,
-                                                       Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, String charset,
+                                                       FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape, SelectTop selectTop, String charset,
                                                        LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass root, ValueClass tag) {
         ExportAction<O> exportAction;
         switch(staticType) {
             case XML:
-                exportAction = new ExportXMLAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, selectTops, hasHeader != null && !hasHeader, charset, root, tag);
+                exportAction = new ExportXMLAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, hasHeader != null && !hasHeader, charset, root, tag);
                 break;
             case JSON:
-                exportAction = new ExportJSONAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, selectTops, charset);
+                exportAction = new ExportJSONAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, singleExportFile, selectTop, charset);
                 break;
             case CSV:
-                exportAction = new ExportCSVAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset, hasHeader == null || !hasHeader, separator, noEscape);
+                exportAction = new ExportCSVAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, hasHeader == null || !hasHeader, separator, noEscape);
                 break;
             case XLS:
-                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset, false, hasHeader == null || !hasHeader);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, false, hasHeader == null || !hasHeader);
                 break;
             case XLSX:
-                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset, true, hasHeader == null || !hasHeader);
+                exportAction = new ExportXLSAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset, true, hasHeader == null || !hasHeader);
                 break;
             case DBF:
-                exportAction = new ExportDBFAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset);
+                exportAction = new ExportDBFAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset);
                 break;
             case TABLE:
-                exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset);
+                exportAction = new ExportTableAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset);
                 break;
             default:
                 throw new UnsupportedOperationException();                
@@ -743,7 +743,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, selectTop, null, charset, singleExportFile, exportFiles, root, tag);
+        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, new SelectTop(selectTop), charset, singleExportFile, exportFiles, root, tag);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LP<?> whereLCP,

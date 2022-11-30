@@ -34,9 +34,9 @@ public abstract class FormDataManager {
         return dataInterface.getFormEntity();
     }
 
-    public PrintMessageData getPrintMessageData(int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
+    public PrintMessageData getPrintMessageData(SelectTop selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
 
-        ExportResult sources = getExportData(selectTop, selectTops);
+        ExportResult sources = getExportData(selectTop);
 
         // filling message (root group)
         GroupObjectEntity root = sources.hierarchy.getRoot();
@@ -72,9 +72,9 @@ public abstract class FormDataManager {
         return new PrintMessageData(message, titles, rows);
     }
 
-    public ExportResult getExportData(int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops) throws SQLException, SQLHandledException {
+    public ExportResult getExportData(SelectTop selectTop) throws SQLException, SQLHandledException {
         ExportStaticDataGenerator sourceGenerator = new ExportStaticDataGenerator(dataInterface);
-        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop, selectTops);
+        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop);
         return new ExportResult(data.first, data.second, sourceGenerator.hierarchy);
     }
 
@@ -118,7 +118,7 @@ public abstract class FormDataManager {
     }
 
     public ExportResult getExportData() throws SQLException, SQLHandledException {
-        return getExportData(0, null);
+        return getExportData(SelectTop.NULL);
     }
 
     public static class ExportResult {

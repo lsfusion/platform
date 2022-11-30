@@ -6,6 +6,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.plain.ExportPlainAction;
 import lsfusion.server.logics.form.stat.struct.export.plain.ExportPlainWriter;
@@ -22,9 +23,8 @@ public class ExportXLSAction<O extends ObjectSelector> extends ExportPlainAction
 
     public ExportXLSAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops,
-                           String charset, boolean xlsx, boolean noHeader) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset);
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, SelectTop selectTop, String charset, boolean xlsx, boolean noHeader) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset);
         this.xlsx = xlsx;
         this.noHeader = noHeader;
     }

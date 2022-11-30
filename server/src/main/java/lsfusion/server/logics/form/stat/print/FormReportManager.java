@@ -101,7 +101,7 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     public ReportGenerationData getReportData(FormPrintType printType) throws SQLException, SQLHandledException {
-        return getReportData(printType, 0, null);
+        return getReportData(printType, SelectTop.NULL);
     }
 
     // backward compatibility
@@ -110,10 +110,10 @@ public abstract class FormReportManager extends FormDataManager {
         throw new UnsupportedOperationException();
     }
 
-    public ReportGenerationData getReportData(FormPrintType printType, int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops) throws SQLException, SQLHandledException {
+    public ReportGenerationData getReportData(FormPrintType printType, SelectTop selectTop) throws SQLException, SQLHandledException {
         // report sources
         ReportStaticDataGenerator sourceGenerator = new ReportStaticDataGenerator(reportInterface);
-        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyReaderEntity>> sources = sourceGenerator.generate(selectTop, selectTops);
+        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyReaderEntity>> sources = sourceGenerator.generate(selectTop);
         Map<GroupObjectEntity, StaticKeyData> keyData = sources.first;
         StaticPropertyData<PropertyReaderEntity> propData = sources.second;
 

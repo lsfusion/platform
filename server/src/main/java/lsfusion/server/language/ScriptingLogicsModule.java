@@ -99,6 +99,7 @@ import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -3894,10 +3895,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, Boolean hasHeader,
-                                                                           String separator, boolean noEscape, Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops,
-                                                                           String charset, NamedPropertyUsage propUsage, OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages,
-                                                                           List<TypedParameter> objectsContext, List<LPWithParams> contextFilters, List<TypedParameter> params)
-            throws ScriptingErrorLog.SemanticErrorException {
+                                                                           String separator, boolean noEscape, SelectTop selectTop, String charset, NamedPropertyUsage propUsage,
+                                                                           OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> objectsContext,
+                                                                           List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
             exportType = FormIntegrationType.JSON;
 
@@ -3951,7 +3951,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         CFEWithParams<O> contextEntities = getContextFilterEntities(params.size(), contextObjects, ListFact.fromJavaList(contextFilters));
 
         LA action = addEFAProp(null, LocalizedString.NONAME, mapped.form, mappedObjects, mNulls.immutableList(),
-                contextEntities.orderInterfaces, contextEntities.filters, exportType, hasHeader, separator, noEscape, selectTop, selectTops, charset, singleExportFile, exportFiles.immutable(), root, tag);
+                contextEntities.orderInterfaces, contextEntities.filters, exportType, hasHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles.immutable(), root, tag);
 
         for (int usedParam : contextEntities.usedParams) {
             mapping.add(new LPWithParams(usedParam));
