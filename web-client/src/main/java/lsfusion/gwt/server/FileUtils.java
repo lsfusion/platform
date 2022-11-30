@@ -196,10 +196,11 @@ public class FileUtils {
     }
 
     private final static boolean useDownloadForAppResources = true;
-    public static String saveWebFile(String fileName, RawFileData fileData, ServerSettings settings) {
+    public static String saveWebFile(String fileName, RawFileData fileData, ServerSettings settings, boolean noAuth) {
         // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
         // UPD: server settings is cached, so we want to always override file (which can change after app server update)
-        return saveDownloadFile(useDownloadForAppResources, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC, getStaticPath(settings), fileName, null, fileData, fileData.getID());
+        return saveDownloadFile(useDownloadForAppResources, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC,
+                (noAuth ? NOAUTH_FOLDER_PREFIX + "/" : "") + getStaticPath(settings), fileName, null, fileData, fileData.getID());
     }
 
     private static String saveImageFile(EConsumer<OutputStream, IOException> file, String ID, boolean override, String imagesFolder, String imagePath, Result<String> rUrl) {
