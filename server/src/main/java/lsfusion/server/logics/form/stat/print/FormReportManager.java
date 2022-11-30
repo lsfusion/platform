@@ -6,6 +6,7 @@ import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.classloader.ReadUsedClassLoader;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -100,7 +101,7 @@ public abstract class FormReportManager extends FormDataManager {
     }
 
     public ReportGenerationData getReportData(FormPrintType printType) throws SQLException, SQLHandledException {
-        return getReportData(printType, 0);
+        return getReportData(printType, SelectTop.NULL);
     }
 
     // backward compatibility
@@ -109,7 +110,7 @@ public abstract class FormReportManager extends FormDataManager {
         throw new UnsupportedOperationException();
     }
 
-    public ReportGenerationData getReportData(FormPrintType printType, int selectTop) throws SQLException, SQLHandledException {
+    public ReportGenerationData getReportData(FormPrintType printType, SelectTop selectTop) throws SQLException, SQLHandledException {
         // report sources
         ReportStaticDataGenerator sourceGenerator = new ReportStaticDataGenerator(reportInterface);
         Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyReaderEntity>> sources = sourceGenerator.generate(selectTop);
