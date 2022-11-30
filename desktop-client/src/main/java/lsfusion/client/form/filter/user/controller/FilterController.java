@@ -17,20 +17,17 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.controller.TableController;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.ToolbarGridButton;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.panel.view.DataPanelView;
 import lsfusion.client.form.view.Column;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.*;
 
 import static lsfusion.client.ClientResourceBundle.getString;
-import static lsfusion.interop.form.event.KeyStrokes.getFilterKeyStroke;
 
 public abstract class FilterController implements FilterConditionView.UIHandler, FiltersHandler {
     public static final String FILTER_ICON_PATH = "filt.png";
@@ -80,8 +77,6 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
 
     private void initUIHandlers() {
         if (hasFiltersContainer()) {
-            addActionsToInputMap(filtersContainerComponent);
-
             filtersContainerComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getEnter(), "applyQuery");
             filtersContainerComponent.getActionMap().put("applyQuery", new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
@@ -90,73 +85,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
             });
 
             filtersContainerComponent.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
-        }
-    }
-
-    // используется для того, чтобы во внешнем компоненте по нажатии кнопок можно было создать отбор/поиск
-    public void addActionsToInputMap(JComponent comp) {
-        if (hasFiltersContainer()) {
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
-            comp.getActionMap().put("newFilter", new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    performNewFilterAction(ae);
-                }
-            });
-
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(0), "addFilter");
-            comp.getActionMap().put("addFilter", new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    performAddFilterAction(ae);
-                }
-            });
-        }
-
-        comp.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStrokes.getRemoveFiltersKeyStroke(), "removeAll");
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
-        comp.getActionMap().put("removeAll", createResetAllAction());
-    }
-
-    public void addActionsToPanelInputMap(final JComponent comp) {
-        if (hasFiltersContainer()) {
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.ALT_DOWN_MASK), "newFilter");
-            comp.getActionMap().put("newFilter", new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    if (comp instanceof DataPanelView) {
-                        performNewFilterAction(ae);
-                    }
-                }
-            });
-
-            //кто-то съедает pressed F2, поэтому ловим released
-            comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0, true), "addFilter");
-            comp.getActionMap().put("addFilter", new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    performAddFilterAction(ae);
-                }
-            });
-        }
-
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(getFilterKeyStroke(InputEvent.SHIFT_DOWN_MASK), "removeAll");
-        comp.getActionMap().put("removeAll", createResetAllAction());
-    }
-    
-    private void performNewFilterAction(ActionEvent ae) {
-        if (!logicsSupplier.getFormController().isEditing()) {
-            SwingUtilities.invokeLater(() -> {
-                boolean added = addCondition(ae, true, true);
-                if (added) {
-                    setControlsVisible(true);
-                }
-            });
-        }
-    }
-    
-    private void performAddFilterAction(ActionEvent ae) {
-        if (!logicsSupplier.getFormController().isEditing()) {
-            boolean added = addCondition(ae, false, true);
-            if (added) {
-                setControlsVisible(true);
-            }
+            filtersContainerComponent.getActionMap().put("removeAll", createResetAllAction());
         }
     }
 
@@ -238,14 +167,14 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
     }
 
     public boolean addCondition() {
+        return addCondition(false);
+    }
+    
+    public boolean addCondition(boolean replace) {
         if (hasFiltersContainer()) {
-            return addCondition(createAddUserFilterEvent(filtersContainerComponent));
+            return addCondition(createAddUserFilterEvent(filtersContainerComponent), replace);
         }
         return false;
-    }
-
-    public boolean addCondition(EventObject keyEvent) {
-        return addCondition(keyEvent, false);
     }
 
     public boolean addCondition(EventObject keyEvent, boolean replace) {
@@ -419,5 +348,9 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         for (FilterConditionView conditionView : conditionViews.values()) {
             SwingUtils.setGridVisible(conditionView, visible);
         }
+    }
+    
+    public boolean hasFilters() {
+        return !conditionViews.isEmpty();
     }
 }

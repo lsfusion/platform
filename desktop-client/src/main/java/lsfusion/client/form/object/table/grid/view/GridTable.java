@@ -428,6 +428,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         //quickSearch / quickFilter binding
         form.addKeySetBinding(getQuickSearchFilterBinding());
+
+        gridController.addFilterBindings(groupObject);
     }
 
     private ClientFormController.Binding getQuickSearchFilterBinding() {

@@ -47,7 +47,7 @@ public class TreeGroupController extends AbstractTableController {
         super(formController, formLayout, itreeGroup.toolbar);
         treeGroup = itreeGroup;
 
-        view = new TreeView(this.formController, treeGroup);
+        view = new TreeView(this.formController, this, treeGroup);
         tree = view.getTree();
 
         panel = new PanelController(this.formController, formLayout);
@@ -75,8 +75,6 @@ public class TreeGroupController extends AbstractTableController {
             };
 
             initFilterButtons();
-
-            filter.addActionsToInputMap(tree);
 
             addToolbarSeparator();
             
