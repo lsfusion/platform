@@ -83,7 +83,7 @@ public class MainController {
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
         model.addAttribute("loginResources",
-                serverSettings != null && serverSettings.loginResources != null ? saveResources(serverSettings, serverSettings.loginResources) : null);
+                serverSettings != null && serverSettings.loginResources != null ? saveResources(serverSettings, serverSettings.loginResources, true) : null);
 
         try {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
@@ -227,7 +227,7 @@ public class MainController {
         model.addAttribute("logicsName", getLogicsName(serverSettings));
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
         model.addAttribute("mainResources",
-                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources) : null);
+                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources, false) : null);
 
         String sessionId;
         try {
@@ -251,11 +251,11 @@ public class MainController {
         return "main";
     }
 
-    private Map<String, String> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources) {
+    private Map<String, String> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources, boolean noAuth) {
         Map<String, String> versionedResources = new LinkedHashMap<>();
         for (Pair<String, RawFileData> resource : resources) {
             String fileName = resource.first;
-            versionedResources.put(FileUtils.saveWebFile(fileName, resource.second, serverSettings), fileName.substring(fileName.lastIndexOf(".") + 1));
+            versionedResources.put(FileUtils.saveWebFile(fileName, resource.second, serverSettings, noAuth), fileName.substring(fileName.lastIndexOf(".") + 1));
         }
         return versionedResources;
     }
