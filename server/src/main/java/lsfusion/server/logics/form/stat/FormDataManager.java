@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.stat;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
@@ -33,9 +34,9 @@ public abstract class FormDataManager {
         return dataInterface.getFormEntity();
     }
 
-    public PrintMessageData getPrintMessageData(int selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
+    public PrintMessageData getPrintMessageData(int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
 
-        ExportResult sources = getExportData(selectTop);
+        ExportResult sources = getExportData(selectTop, selectTops);
 
         // filling message (root group)
         GroupObjectEntity root = sources.hierarchy.getRoot();
@@ -71,9 +72,9 @@ public abstract class FormDataManager {
         return new PrintMessageData(message, titles, rows);
     }
 
-    public ExportResult getExportData(int selectTop) throws SQLException, SQLHandledException {
+    public ExportResult getExportData(int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops) throws SQLException, SQLHandledException {
         ExportStaticDataGenerator sourceGenerator = new ExportStaticDataGenerator(dataInterface);
-        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop);
+        Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop, selectTops);
         return new ExportResult(data.first, data.second, sourceGenerator.hierarchy);
     }
 
@@ -117,7 +118,7 @@ public abstract class FormDataManager {
     }
 
     public ExportResult getExportData() throws SQLException, SQLHandledException {
-        return getExportData(0);
+        return getExportData(0, null);
     }
 
     public static class ExportResult {

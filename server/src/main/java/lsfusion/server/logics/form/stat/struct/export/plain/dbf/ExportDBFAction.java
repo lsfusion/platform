@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.stat.struct.export.plain.dbf;
 
 import com.google.common.base.Throwables;
 import com.hexiong.jdbf.JDBFException;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.session.ExternalUtils;
 import lsfusion.server.data.type.Type;
@@ -22,8 +23,8 @@ public class ExportDBFAction<O extends ObjectSelector> extends ExportPlainAction
 
     public ExportDBFAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, String charset) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, charset != null ? charset : ExternalUtils.defaultDBFCharset);
+                           FormIntegrationType staticType, ImMap<GroupObjectEntity, LP> exportFiles, Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, String charset) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFiles, selectTop, selectTops, charset != null ? charset : ExternalUtils.defaultDBFCharset);
     }
 
     @Override

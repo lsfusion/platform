@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy.xml;
 
 import lsfusion.base.Result;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -12,6 +13,7 @@ import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.ExportHierarchicalAction;
 import lsfusion.server.logics.form.stat.struct.hierarchy.xml.XMLNode;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.jdom.Document;
@@ -31,8 +33,9 @@ public class ExportXMLAction<O extends ObjectSelector> extends ExportHierarchica
 
     public ExportXMLAction(LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                            ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                           FormIntegrationType staticType, LP exportFile, Integer selectTop, boolean noHeader, String charset, ValueClass root, ValueClass tag) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, charset, root, tag);
+                           FormIntegrationType staticType, LP exportFile, Integer selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops,
+                           boolean noHeader, String charset, ValueClass root, ValueClass tag) {
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, exportFile, selectTop, selectTops, charset, root, tag);
 
         this.noHeader = noHeader;
     }

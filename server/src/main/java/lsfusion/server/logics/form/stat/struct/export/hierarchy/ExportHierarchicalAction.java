@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
@@ -20,6 +21,7 @@ import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.hierarchy.Node;
 import lsfusion.server.logics.form.stat.struct.hierarchy.ParseNode;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
+import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -54,9 +56,10 @@ public abstract class ExportHierarchicalAction<T extends Node<T>, O extends Obje
                                     FormIntegrationType staticType,
                                     LP exportFile,
                                     Integer selectTop,
+                                    OrderedMap<GroupObjectEntity, Integer> selectTops,
                                     String charset,
                                     ValueClass root, ValueClass tag) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, selectTop, selectTops, charset != null ? charset : ExternalUtils.defaultXMLJSONCharset, getExtraParams(root, tag));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         if (tag != null)

@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.stat;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
@@ -116,10 +117,10 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         }
     }
 
-    public Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<SDP>> generate(int selectTop) throws SQLException, SQLHandledException {
+    public Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<SDP>> generate(int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops) throws SQLException, SQLHandledException {
         Map<GroupObjectEntity, StaticKeyData> keySources = new HashMap<>();
         StaticPropertyData<SDP> propSources = new StaticPropertyData<>();
-        iterateChildGroup(hierarchy.getRoot(),  SetFact.EMPTYORDER(), MapFact.EMPTYORDER(), null, selectTop, keySources, propSources, hierarchy.getValueGroups());
+        iterateChildGroup(hierarchy.getRoot(),  SetFact.EMPTYORDER(), MapFact.EMPTYORDER(), null, selectTop, selectTops, keySources, propSources, hierarchy.getValueGroups());
         return new Pair<>(keySources, propSources);
     }
     
@@ -161,14 +162,14 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
         return mOrders.immutableOrder();
     }
 
-    private void iterateChildGroups(ImOrderSet<GroupObjectEntity> children, ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, int selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
+    private void iterateChildGroups(ImOrderSet<GroupObjectEntity> children, ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
         for (GroupObjectEntity node : children) {
-            iterateChildGroup(node, parentGroups, parentOrders, parentTable, selectTop, keySources, propSources, valueGroups);
+            iterateChildGroup(node, parentGroups, parentOrders, parentTable, selectTop, selectTops, keySources, propSources, valueGroups);
         }
     }
 
     @StackMessage("{message.form.read.report.node}")
-    private void iterateChildGroup(@ParamMessage final GroupObjectEntity thisGroup, final ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, int selectTop, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
+    private void iterateChildGroup(@ParamMessage final GroupObjectEntity thisGroup, final ImOrderSet<GroupObjectEntity> parentGroups, ImOrderMap<CompareEntity, Boolean> parentOrders, SessionTableUsage<ObjectEntity, CompareEntity> parentTable, int selectTop, OrderedMap<GroupObjectEntity, Integer> selectTops, Map<GroupObjectEntity, StaticKeyData> keySources, StaticPropertyData<SDP> propSources, ImSet<GroupObjectEntity> valueGroups) throws SQLException, SQLHandledException {
 
         ImSet<SDP> queryProperties = getQueryProperties(hierarchy.getProperties(thisGroup).getSet());
         
@@ -239,7 +240,8 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
             QueryEnvironment queryEnv = formInterface.getQueryEnv();
             BaseClass baseClass = formInterface.getBaseClass();
             SQLSession sql = session.sql;
-            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, orderTypes, selectTop);
+            SessionTableUsage<ObjectEntity, CompareEntity> keysTable = new SessionTableUsage<>("ichreports", sql, query, baseClass, queryEnv, keyTypes, orderTypes,
+                    selectTops != null ? selectTops.getOrDefault(thisGroup, selectTop) : selectTop);
 
             try {
                 // column groups data
@@ -304,7 +306,7 @@ public abstract class StaticDataGenerator<SDP extends PropertyReaderEntity> {
                 }
 
                 if(noColumnGroups)
-                    iterateChildGroups(hierarchy.getDependencies(thisGroup), allGroups, allOrders, keysTable, selectTop, keySources, propSources, valueGroups);
+                    iterateChildGroups(hierarchy.getDependencies(thisGroup), allGroups, allOrders, keysTable, selectTop, selectTops, keySources, propSources, valueGroups);
             } finally {
                 keysTable.drop(sql, session.getOwner());
             }

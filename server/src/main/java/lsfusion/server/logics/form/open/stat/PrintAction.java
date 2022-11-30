@@ -73,7 +73,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
                        LP exportFile,
                        LP formPageCount, boolean removeNullsAndDuplicates,
                        ValueClass printer, ValueClass sheetName, ValueClass password) {
-        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, top, getExtraParams(printer, sheetName, password));
+        super(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters, staticType, top, null, getExtraParams(printer, sheetName, password));
 
         ImOrderSet<ClassPropertyInterface> orderInterfaces = getOrderInterfaces();
         this.passwordInterface = password != null ? orderInterfaces.get(orderInterfaces.size() - 1) : null;
@@ -95,7 +95,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
     protected void executeInternal(FormEntity form, ImMap<ObjectEntity, ? extends ObjectValue> mapObjectValues, ExecutionContext<ClassPropertyInterface> context, ImRevMap<ObjectEntity, O> mapResolvedObjects, ImSet<ContextFilterInstance> contextFilters) throws SQLException, SQLHandledException {
         if (staticType == FormPrintType.MESSAGE) {
             // getting data
-            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, removeNullsAndDuplicates);
+            PrintMessageData reportData = new StaticFormDataManager(form, mapObjectValues, context, contextFilters).getPrintMessageData(selectTop, selectTops, removeNullsAndDuplicates);
 
             // proceeding data
             LogMessageClientAction action = new LogMessageClientAction(reportData.message, reportData.titles, reportData.rows, !context.getSession().isNoCancelInTransaction());
@@ -106,7 +106,7 @@ public class PrintAction<O extends ObjectSelector> extends FormStaticAction<O, F
         } else {
             // getting data
             StaticFormReportManager formReportManager = new StaticFormReportManager(form, mapObjectValues, context, contextFilters);
-            ReportGenerationData reportData = formReportManager.getReportData(staticType, selectTop);
+            ReportGenerationData reportData = formReportManager.getReportData(staticType, selectTop, selectTops);
 
             String sheetName = sheetNameInterface != null ? (String) context.getKeyObject(sheetNameInterface) : null;
             String password = passwordInterface != null ? (String) context.getKeyObject(passwordInterface) : null;
