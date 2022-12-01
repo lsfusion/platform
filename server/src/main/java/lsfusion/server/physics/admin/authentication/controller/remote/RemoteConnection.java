@@ -356,9 +356,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        ExecSession execSession = null;
+        ExecSession execSession = getExecSession();
         try {
-            execSession = getExecSession();
             DataSession dataSession = execSession.dataSession;
 
             checkEnableApi(property);
@@ -369,8 +368,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
             return readResult(request.returnNames, property.action, dataSession);
         } finally {
-            if (execSession != null)
-                execSession.close();
+            execSession.close();
         }
     }
 
