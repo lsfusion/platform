@@ -15,7 +15,7 @@ vacuumTablesAction '{sql.utils.vacuum.tables.action}' ()  {
         vacuumTableAction(table);
     }
     
-    //vacuum части системных таблиц
+    //vacuum system tables
     runSQL('VACUUM FULL pg_catalog.pg_statistic');
     runSQL('VACUUM FULL pg_catalog.pg_attribute');
     runSQL('VACUUM FULL pg_catalog.pg_class');

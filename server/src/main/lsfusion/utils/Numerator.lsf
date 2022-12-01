@@ -9,7 +9,6 @@ DESIGN options {
         }
     }            
 }
-// ------------------------------------------- Нумераторы ----------------------------------------------- //
 
 CLASS Numerator '{numerator.numerator}';
 TABLE numerator (Numerator);
@@ -46,8 +45,7 @@ incrementValue '{numerator.increment.value.numerator}'(Numerator numerator)  {
 	}
 };
 
-// -------------- Генерация счетчиков на форме с целью выноса из общей транзакции для уменьшения вероятности CONFLICT UPDATE
-
+// -------------- Generate number on the form to take out of transaction to reduce probability of CONFLICT UPDATE
 @defineOption(generateNumberOnForm, '{numerator.generate.number.on.form}', numerator);
 
 META addEventGenerateNumberOnForm(form, o, object)
@@ -114,8 +112,7 @@ NAVIGATOR {
     }
 }
 
-// --------------------------------------------- Макрос по объявлению нумерируемого объекта ---------------------------- //
-
+// --------------------------------------------- Numbered object ---------------------------- //
 GROUP numbered '{numerator.numerator}' : id;
 
 META defineNumberedAbstract(class, stype)
@@ -228,7 +225,7 @@ END
 META defineNumeratedID(object, caption)
     @defineNumeratedID(object, caption, );
 END
-// --------------------------------------------- Стандартные значения ---------------------------- //
+// --------------------------------------------- Default numerators ---------------------------- //
 
 loadDefaultNumerators '{numerator.load.default.numerators}'  ABSTRACT LIST ( );
 @implementLoadDefaultData(loadDefaultNumerators);

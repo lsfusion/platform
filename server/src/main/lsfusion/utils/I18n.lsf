@@ -2,8 +2,6 @@ MODULE I18n;
 
 REQUIRE System, MasterData, Utils;
 
-// ------------------------------------------------ Язык ---------------------------------------------- //
-
 CLASS Dictionary '{i18n.dictionary}';
 TABLE dictionary (Dictionary);
 
@@ -62,8 +60,7 @@ translationInput '{i18n.translation.input}' = DATA LOCAL TEXT ();
 translationCode = DATA INTEGER ();
 translationResult '{i18n.translation.result}' = DATA LOCAL TEXT ();
 
-// ------------------------------------ Перевод через Google Translate -------------------------------- //
-
+// ------------------------------------ Google Translate -------------------------------- //
 languageFromTranslation = DATA Language ();
 nameLanguageFromTranslation '{i18n.name.language.from}'() = name(languageFromTranslation());
 languageToTranslation = DATA Language ();
@@ -81,8 +78,7 @@ translateText '{i18n.translate}'()  {
     translate(translationInput(), languageFromTranslation(), languageToTranslation());
 }
 
-// ------------------------------------ Перевод через словарь -------------------------------- //
-
+// ------------------------------------ Translate dictionary -------------------------------- //
 translate INTERNAL  'lsfusion.server.physics.dev.i18n.action.TranslateDictionaryAction' (Dictionary, TEXT);
 
 WHEN LOCAL CHANGED (translationInput()) AND Dictionary dictionary IS Dictionary DO EXEC translate(dictionary, translationInput());
@@ -123,15 +119,13 @@ NAVIGATOR {
     }
 }
 
-// ---------------------------------------------- Мультиязычный объект -------------------------------- //
-
+// ---------------------------------------------- Multilanguage name -------------------------------- //
 CLASS MultiLanguageNamed '{i18n.multi.language.named}';
 
 TABLE multiLanguageNamedLanguage(MultiLanguageNamed, Language);
 languageName '{i18n.language.name.multi.language.named}' = DATA ISTRING[110] (MultiLanguageNamed, Language);
 
-// ---------------------------------------------- Словари --------------------------------------------- //
-
+// ---------------------------------------------- Dictionary --------------------------------------------- //
 FORM dictionary '{i18n.dictionary}'
     OBJECTS d = Dictionary PANEL
     PROPERTIES(d) name, insensitive, nameLanguageFrom, nameLanguageTo
