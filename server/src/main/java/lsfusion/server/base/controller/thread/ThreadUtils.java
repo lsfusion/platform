@@ -112,7 +112,8 @@ public class ThreadUtils {
         return status != null && (status.equals("RUNNABLE") || status.equals("BLOCKED")) && (stackTrace != null
                 && !stackTrace.startsWith("java.net.DualStackPlainSocketImpl")
                 && !stackTrace.startsWith("sun.awt.windows.WToolkit.eventLoop")
-                && (ignoreSocketRead || !stackTrace.startsWith("java.net.SocketInputStream.socketRead0"))
+                && (ignoreSocketRead || !stackTrace.contains("java.net.SocketInputStream.socketRead0"))
+                && !stackTrace.contains("sun.nio.ch.Net.poll") //java 17
                 && !stackTrace.startsWith("sun.management.ThreadImpl.dumpThreads0")
                 && !stackTrace.startsWith("java.net.SocketOutputStream.socketWrite")
                 && !stackTrace.startsWith("java.net.PlainSocketImpl")

@@ -813,9 +813,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 // so if we see that thread was forced to be interrupted, but has not been interrupted yet, we do the sleep to "catch" it
                 if(asyncInterruptingThreads.remove(Thread.currentThread()) && !wasInterrupted) {
                     try {
-                        logger.info("getAsyncValues before sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
+                        logger.info("getAsyncValues before 1 sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
                         Thread.sleep(1000);
-                        logger.info("getAsyncValues after sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
+                        logger.info("getAsyncValues before 2 sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
+                        Thread.sleep(1000); // it seems that even if interrupt is done a tiny time before the first sleep, it's still not interrupted
+                        logger.info("getAsyncValues after 2 sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
                     } catch (InterruptedException e) {
                     }
                 }
