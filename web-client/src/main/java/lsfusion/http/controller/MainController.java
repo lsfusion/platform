@@ -19,7 +19,10 @@ import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.navigator.ClientSettings;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import net.customware.gwt.dispatch.shared.general.StringResult;
@@ -42,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -226,10 +230,9 @@ public class MainController {
         addStandardModelAttributes(model, request);
         model.addAttribute("logicsName", getLogicsName(serverSettings));
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
-        model.addAttribute("mainResources",
-                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources) : null);
 
         String sessionId;
+        List<Pair<String, RawFileData>> mainResources;
         try {
             sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
                 try {
@@ -239,6 +242,7 @@ public class MainController {
                     throw e;
                 }
             }).get();
+            mainResources = getClientSettings(sessionId, request).mainResources;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -247,6 +251,7 @@ public class MainController {
         }
 
         model.addAttribute("sessionID", sessionId);
+        model.addAttribute("mainResources", serverSettings != null && mainResources != null ? saveResources(serverSettings, mainResources) : null);
 
         return "main";
     }
@@ -262,6 +267,14 @@ public class MainController {
 
     private ServerSettings getServerSettings(HttpServletRequest request, boolean noCache) {
         return logicsProvider.getServerSettings(request, noCache);
+    }
+
+    private ClientSettings getClientSettings(String sessionId, HttpServletRequest request) throws RemoteException {
+        return getClientSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request);
+    }
+
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request) throws RemoteException {
+        return LogicsSessionObject.getClientSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
     }
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {

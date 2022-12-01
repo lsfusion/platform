@@ -362,6 +362,7 @@ defaultValue '{service.default.value.setting}' = DATA STRING[100] (Setting);
 value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
 value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
 valueSetting (ISTRING[100] name) = value(setting(name)); 
+valueSettingBoolean (ISTRING[100] name) = value(setting(name)) == 'true';
 
 pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PushSettingAction' (STRING[100], STRING[100]);
 popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PopSettingAction' (STRING[100]);
@@ -429,16 +430,6 @@ getServerSettings() + WHEN TRUE THEN {
     }
     LOCAL loginResources = JSON ();
     EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
-     
-    LOCAL webClientLoadedResources = RAWFILE(STRING);
-    LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
-    FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
-        readResource(s);
-        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
-    }
-    LOCAL mainResources = JSON ();
-    EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
     
     generateJnlpUrls();
     EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
@@ -446,8 +437,7 @@ getServerSettings() + WHEN TRUE THEN {
                 jnlpUrls=exportText(), 
                 disableRegistration=disableRole('selfRegister'),
                 lsfParams=jsonLsfParams(),
-                loginResources = loginResources(),
-                mainResources = mainResources();
+                loginResources = loginResources();
 };
 
 // logging for user
@@ -637,15 +627,12 @@ onStarted() + {
 } 
 
 useBusyDialogCustom '{service.use.busy.dialog.user}' = DATA BOOLEAN (CustomUser);
-useBusyDialog () = useBusyDialogCustom(currentUser());
 
 allowExcessAllocatedBytes '{service.allow.excess.allocated.bytes.user}' = DATA BOOLEAN (CustomUser);
 
-useRequestTimeout '{service.use.request.timeout.user}' = DATA BOOLEAN (CustomUser); 
-useRequestTimeout() = useRequestTimeout(currentUser());
+useRequestTimeout '{service.use.request.timeout.user}' = DATA BOOLEAN (CustomUser);
 
-devMode '{service.dev.mode.user}' = DATA BOOLEAN (CustomUser); // for debug purposes 
-devMode = devMode(currentUser());
+devMode '{service.dev.mode.user}' = DATA BOOLEAN (CustomUser); // for debug purposes
 
 transactTimeout '{service.transact.timeout}' (User user) = DATA INTEGER (CustomUser);
 
@@ -672,11 +659,8 @@ DESIGN settings {
 // GUI for user
 
 selectedRowBackgroundColor '{service.selected.row.background.color}' = DATA COLOR (User);
-overrideSelectedRowBackgroundColor '{service.selected.row.background.color}' = OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor();
 selectedCellBackgroundColor '{service.selected.cell.background.color}' = DATA COLOR (User);
-overrideSelectedCellBackgroundColor '{service.selected.cell.background.color}' = OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor();
 focusedCellBackgroundColor '{service.focused.cell.background.color}' = DATA COLOR (User);
-overrideFocusedCellBackgroundColor '{service.focused.cell.background.color}' = OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor();
 focusedCellBorderColor '{service.focused.cell.border.color}' = DATA COLOR (User);
 overrideFocusedCellBorderColor '{service.focused.cell.border.color}' = OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor();
 tableGridColor '{service.table.grid.color}' = DATA COLOR (User);
@@ -759,6 +743,63 @@ DESIGN editProfile {
             }
         }
     }
+}
+
+inTestMode = NATIVE BOOLEAN ();
+projectLSFDir = NATIVE STRING();
+
+getClientSettings(User user) ABSTRACT CASE;
+getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
+    LOCAL mainResources = JSON();
+    LOCAL webClientLoadedResources = RAWFILE(STRING);
+    LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
+    FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
+        readResource(s);
+        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
+        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
+    }
+    EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
+
+    LOCAL forbidDuplicateForms = BOOLEAN();
+    forbidDuplicateForms() <- OVERRIDE dataForbidDuplicateForms(user), abstractForbidDuplicateForms(user), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(user, ur);
+    
+    LOCAL colorThemeStaticName = STRING();
+    colorThemeStaticName() <- staticName(colorTheme(user));
+    
+    EXPORT FROM
+        currentUserName = (OVERRIDE currentUserName(), '(без имени)'),
+        fontSize = fontSize(user),
+        useBusyDialog = (valueSettingBoolean('busyDialog') OR inTestMode() OR useBusyDialogCustom(user)),
+        useRequestTimeout = (valueSettingBoolean('useRequestTimeout') OR useRequestTimeout(user)),
+        forbidDuplicateForms = forbidDuplicateForms(),
+        showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
+        devMode = inDevMode() OR (devMode(user)),
+        projectLSFDir = projectLSFDir(),
+        colorThemeString = IF (colorThemeStaticName()) THEN substrFrom(colorThemeStaticName(), strpos(colorThemeStaticName(), '.') + 1),
+        useBootstrap = useBootstrap(),
+        selectedRowBackground = (OVERRIDE selectedRowBackgroundColor(user), selectedRowBackgroundColor()),
+        selectedCellBackground = (OVERRIDE selectedCellBackgroundColor(user), selectedCellBackgroundColor()),
+        focusedCellBackground = (OVERRIDE focusedCellBackgroundColor(user), focusedCellBackgroundColor()),
+        focusedCellBorder = (OVERRIDE focusedCellBorderColor(user), focusedCellBorderColor()),
+        tableGridColor = overrideTableGridColor(),
+        dateTimePickerRanges = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, user),
+        intervalPickerRanges = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, user),
+        mainResources = mainResources(),
+        language = language(user),
+        country = country(user),
+        timeZone = timeZone(user),
+        twoDigitYearStart = twoDigitYearStart(user),
+        dateFormat = dateFormat(user),
+        timeFormat = timeFormat(user),
+        busyDialogTimeout = valueSetting('busyDialogTimeout'),
+        showNotDefinedStrings = valueSettingBoolean('showNotDefinedStrings'),
+        pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
+        matchSearchSeparator = valueSetting('matchSearchSeparator'),
+        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator');
+}
+
+getClientSettings() {
+    getClientSettings(currentUser());
 }
 
 //Temporary. For migration. Сan be deleted later. Need to fill in fields for existing users

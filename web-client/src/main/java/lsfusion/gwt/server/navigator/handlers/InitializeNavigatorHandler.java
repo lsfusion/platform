@@ -5,7 +5,7 @@ import lsfusion.base.ServerUtils;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
-import lsfusion.gwt.client.controller.remote.action.navigator.WebClientSettings;
+import lsfusion.gwt.client.controller.remote.action.navigator.GClientSettings;
 import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigator;
 import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigatorResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorInfo;
@@ -18,7 +18,9 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
+import lsfusion.http.controller.MainController;
 import lsfusion.interop.logics.ServerSettings;
+import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
 
@@ -38,11 +40,11 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
         NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, getServerSettings(action));
-        WebClientSettings webClientSettings = getClientSettings(remoteNavigator, servlet);
+        GClientSettings gClientSettings = getClientSettings(remoteNavigator, servlet);
 
         servlet.getNavigatorProvider().updateNavigatorClientSettings(action.screenSize, action.mobile);
 
-        return new InitializeNavigatorResult(webClientSettings, navigatorInfo);
+        return new InitializeNavigatorResult(gClientSettings, navigatorInfo);
     }
 
     private static NavigatorInfo getNavigatorInfo(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, ServerSettings serverSettings) throws RemoteException {
@@ -73,8 +75,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         return new NavigatorInfo(root, navigatorWindows, windows);
     }
 
-    private static WebClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet) throws RemoteException {
-        lsfusion.interop.navigator.ClientSettings clientSettings = remoteNavigator.getClientSettings();
+    private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet) throws RemoteException {
+        ClientSettings clientSettings = MainController.getClientSettings(remoteNavigator, servlet.getRequest());
         ClientFormChangesToGwtConverter converter = ClientFormChangesToGwtConverter.getInstance();
 
         GColorTheme colorTheme = GColorTheme.valueOf(clientSettings.colorTheme.name());
@@ -87,7 +89,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
                 converter.convertOrCast(clientSettings.colorPreferences.getTableGridColor())
         );
 
-        return new WebClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
+        return new GClientSettings(clientSettings.busyDialogTimeout, clientSettings.devMode, clientSettings.projectLSFDir, clientSettings.showDetailedInfo,
                 clientSettings.forbidDuplicateForms, clientSettings.pivotOnlySelectedColumn, clientSettings.matchSearchSeparator,
                 colorTheme, clientSettings.useBootstrap, getVersionedColorThemesCss(servlet), colorPreferences, clientSettings.localePreferences.dateFormat, clientSettings.localePreferences.timeFormat,
                 servlet.staticImagesURL, clientSettings.preDefinedDateRangesNames, clientSettings.useTextAsFilterSeparator);

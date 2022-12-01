@@ -1,7 +1,6 @@
 package lsfusion.server.logics.navigator.controller.remote;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -13,12 +12,9 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
-import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.LocalePreferences;
-import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
-import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
@@ -50,7 +46,6 @@ import lsfusion.server.logics.navigator.controller.env.FormController;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
-import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
@@ -60,10 +55,8 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -256,61 +249,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public ClientSettings getClientSettings() {
-        String currentUserName;
-        Integer fontSize;
-        boolean useBusyDialog;
-        boolean useRequestTimeout;
-        boolean forbidDuplicateForms;
-        boolean showDetailedInfo;
-        boolean devMode;
-        boolean useBootstrap;
-        String projectLSFDir;
-        ColorTheme colorTheme;
-        ColorPreferences colorPreferences;
-        List<String> preDefinedDateRangesNames = new ArrayList<>();
-
-        try (DataSession session = createSession()) {
-            currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
-            fontSize = (Integer) businessLogics.authenticationLM.userFontSize.read(session, user);
-            useBusyDialog = Settings.get().isBusyDialog() || SystemProperties.inTestMode || businessLogics.serviceLM.useBusyDialog.read(session) != null;
-            useRequestTimeout = Settings.get().isUseRequestTimeout() || businessLogics.serviceLM.useRequestTimeout.read(session) != null;
-            forbidDuplicateForms = businessLogics.securityLM.forbidDuplicateFormsCustomUser.read(session, user) != null;
-            showDetailedInfo = businessLogics.securityLM.showDetailedInfoCustomUser.read(session, user) != null;
-
-            devMode = SystemProperties.inDevMode || businessLogics.serviceLM.devMode.read(session) != null;
-            projectLSFDir = SystemProperties.projectLSFDir;
-
-            String colorThemeStaticName = (String) businessLogics.authenticationLM.colorThemeStaticName.read(session, user);
-            String colorThemeString = colorThemeStaticName != null ? colorThemeStaticName.substring(colorThemeStaticName.indexOf(".") + 1) : null; 
-            colorTheme = BaseUtils.nvl(ColorTheme.get(colorThemeString), ColorTheme.DEFAULT);
-
-            useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session) != null;
-
-            Color selectedRowBackground = (Color) businessLogics.serviceLM.overrideSelectedRowBackgroundColor.read(session);
-            Color selectedCellBackground = (Color) businessLogics.serviceLM.overrideSelectedCellBackgroundColor.read(session);
-            Color focusedCellBackground = (Color) businessLogics.serviceLM.overrideFocusedCellBackgroundColor.read(session);
-            Color focusedCellBorder = (Color) businessLogics.serviceLM.overrideFocusedCellBorderColor.read(session);
-            Color tableGridColor = (Color) businessLogics.serviceLM.overrideTableGridColor.read(session);
-            colorPreferences = new ColorPreferences(selectedRowBackground, selectedCellBackground,
-                    focusedCellBackground, focusedCellBorder, tableGridColor);
-
-            fillRanges((String) businessLogics.authenticationLM.dateTimePickerRanges.read(session, user), preDefinedDateRangesNames);
-            fillRanges((String) businessLogics.authenticationLM.intervalPickerRanges.read(session, user), preDefinedDateRangesNames);
-        } catch (SQLException | SQLHandledException e) {
-            throw Throwables.propagate(e);
-        }
-        return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
-                useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
-                Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
-                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator());
-    }
-
-    private void fillRanges(String json, List<String> ranges) {
-        JSONArray rangesJson = new JSONArray(json);
-        for (int i = 0; i < rangesJson.length(); i++) {
-            ranges.add(rangesJson.getJSONObject(i).getString("range"));
-        }
+    public ExecSession getExecSession() throws SQLException {
+        return new ExecSession(createSession()) {
+            @Override
+            public void close() throws SQLException {
+                dataSession.close();
+            }
+        };
     }
 
     public void gainedFocus(FormInstance form) {

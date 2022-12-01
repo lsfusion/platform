@@ -230,10 +230,8 @@ copy (UserRole from, UserRole to) +{
 forbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
 dataForbidDuplicateForms '{security.forbid.duplicate.forms}' = DATA BOOLEAN (CustomUser) CHARWIDTH 10;
 abstractForbidDuplicateForms(CustomUser u) = ABSTRACT BOOLEAN (CustomUser);
-forbidDuplicateForms (CustomUser u) = OVERRIDE dataForbidDuplicateForms(u), abstractForbidDuplicateForms(u), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(u, ur);
 
 showDetailedInfo '{security.user.role.show.detailed.info}' = DATA BOOLEAN (UserRole) CHARWIDTH 10;
-showDetailedInfo (CustomUser u) = GROUP MAX showDetailedInfo(UserRole ur) IF has(u, ur);
 
 // Default forms
 defaultNumber '{security.default.forms.number}' = DATA INTEGER (UserRole, NavigatorElement);

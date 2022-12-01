@@ -139,7 +139,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         onStarted = findAction("onStarted[]");
 
-        useBootstrap = findProperty("useBootstrap[]");
+        useBootstrap = findProperty("useBootstrap[CustomUser]");
 
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");
