@@ -87,6 +87,8 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
     T parseXML(String value) throws ParseException;
     T parseXLS(Cell cell, CellValue formulaValue) throws ParseException;
 
+    T parsePaste(String value) throws ParseException;
+
     OverJDBField formatDBF(String fieldName) throws JDBFException;
     Object formatJSON(T object);
     String formatJSONSource(String valueSource, SQLSyntax syntax); // should correspond formatJSON

@@ -697,13 +697,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             if (property != null) {
                 try {
                     String value = table.get(0).get(0);
-                    Object newValue = value == null ? null : property.parsePaste(value);
+                    Object newValue = property.parsePaste(value);
                     if (property.canUsePasteValueForRendering()) {
                         model.setValueAt(newValue, row, column);
                     }
 
                     form.pasteMulticellValue(
-                            singletonMap(property, new PasteData(newValue, singletonList(currentPath), singletonList(getValueAt(row, column))))
+                            singletonMap(property, new PasteData(newValue, value, singletonList(currentPath), singletonList(getValueAt(row, column))))
                     );
                 } catch (IOException e) {
                     throw Throwables.propagate(e);

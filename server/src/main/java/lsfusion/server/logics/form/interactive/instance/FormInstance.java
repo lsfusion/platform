@@ -53,6 +53,7 @@ import lsfusion.server.data.sql.lambda.SQLCallable;
 import lsfusion.server.data.sql.lambda.SQLFunction;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
@@ -74,6 +75,7 @@ import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.OverridePropSourceSessionModifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.action.session.classes.change.UpdateCurrentClassesSession;
+import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
@@ -83,12 +85,10 @@ import lsfusion.server.logics.form.interactive.FormCloseType;
 import lsfusion.server.logics.form.interactive.FormEventType;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
 import lsfusion.server.logics.form.interactive.UpdateType;
-import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
-import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncInput;
-import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
+import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputListExpr;
+import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.changed.*;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
@@ -982,6 +982,10 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             session.changeClass(objectInstance, dataObject, cls);
     }
 
+    public void executeExternalEventAction(final PropertyDrawInstance<?> property, final ImMap<ObjectInstance, ? extends ObjectValue> keys, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
+        executeEventAction(property, CHANGE, keys, true, asyncResult, stack);
+    }
+
     @ThisMessage
     public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean externalChange, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
         SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
@@ -994,12 +998,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         PushAsyncResult result = null;
         if(asyncResult != null) {
             AsyncEventExec asyncEventExec = property.getEntity().getAsyncEventExec(entity, securityPolicy, eventActionSID, externalChange);
-            if(asyncEventExec != null) { // in case of paste can be null
-                result = asyncResult.apply(asyncEventExec);
-                if(result == null) // in case of paste can be null
-                    return;
-            } else
-                return;
+            result = asyncResult.apply(asyncEventExec);
+//            if(result == null) // in case of paste can be null
+//                return;
         } else {
             if (ServerResponse.isChangeEvent(CHANGE)) { //ask confirm logics... it is assumed that async logics checks confirm logics itself
                 PropertyDrawEntity propertyDraw = property.getEntity();
@@ -1017,7 +1018,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
     }
 
-    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
+    public void pasteExternalTable(List<PropertyDrawInstance> properties, List<ImMap<ObjectInstance, DataObject>> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues, ExecutionStack stack) throws SQLException, IOException, SQLHandledException {
         GroupObjectInstance groupObject = properties.get(0).toDraw;
         ImOrderSet<ImMap<ObjectInstance, DataObject>> executeList = groupObject.seekObjects(session.sql, getQueryEnv(), getModifier(), BL.LM.baseClass, values.size()).keyOrderSet();
 
@@ -1030,32 +1031,44 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for (int i = 0; i < properties.size(); i++) {
             PropertyDrawInstance property = properties.get(i);
 
-            ImOrderValueMap<ImMap<ObjectInstance, DataObject>, Object> mvPasteRows = executeList.mapItOrderValues();
+            ImOrderValueMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>> mvPasteRows = executeList.mapItOrderValues();
             for (int j = 0; j < executeList.size(); j++) {
                 Object value = deserializeObject(values.get(j).get(i));
-                mvPasteRows.mapValue(j, value);
+                mvPasteRows.mapValue(j, new Pair<>(value, rawValues.get(j).get(i)));
             }
 
             executePasteAction(property, columnKeys.get(i), mvPasteRows.immutableValueOrder(), stack);
         }
     }
 
-    public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> cellsValues, ExecutionStack stack) throws SQLException, SQLHandledException {
-        for (Entry<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> e : cellsValues.entrySet()) { // бежим по ячейкам
+    public void pasteMulticellValue(Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> cellsValues, ExecutionStack stack) throws SQLException, SQLHandledException {
+        for (Entry<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> e : cellsValues.entrySet()) { // бежим по ячейкам
             PropertyDrawInstance property = e.getKey();
             executePasteAction(property, null, e.getValue(), stack);
         }
     }
 
-    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
+    private void executePasteAction(PropertyDrawInstance<?> property, ImMap<ObjectInstance, DataObject> columnKey, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>> pasteRows, ExecutionStack stack) throws SQLException, SQLHandledException {
         if (!pasteRows.isEmpty()) {
             for (int i = 0, size = pasteRows.size(); i < size; i++) {
                 ImMap<ObjectInstance, DataObject> key = pasteRows.getKey(i);
-                Object value = pasteRows.getValue(i);
+                Pair<Object, String> value = pasteRows.getValue(i);
                 if (columnKey != null) {
                     key = key.addExcl(columnKey);
                 }
-                executeEventAction(property, CHANGE, key, true, asyncChange -> asyncChange instanceof AsyncInput ? new PushAsyncInput(ObjectValue.getValue(value, ((AsyncInput) asyncChange).changeType)) : null, stack);
+                Type propType = property.getType();
+                executeExternalEventAction(property, key, asyncEventExec -> asyncEventExec instanceof AsyncInput ?
+                        new PushAsyncInput(new InputResult(ObjectValue.getValue(value.first, ((AsyncInput) asyncEventExec).changeType), null)) :
+                        new PushExternalInput(type -> {
+                            if(type.getCompatible(propType) != null)
+                                return value.first;
+
+                            try {
+                                return type.parsePaste(value.second);
+                            } catch (ParseException e) {
+                                return null;
+                            }
+                        }), stack);
             }
         }
     }

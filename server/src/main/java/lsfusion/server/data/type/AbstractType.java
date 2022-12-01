@@ -218,6 +218,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
     }
 
     @Override
+    public T parsePaste(String value) throws ParseException {
+        return parseNullableString(value, false);
+    }
+
+    @Override
     public OverJDBField formatDBF(String fieldName) throws JDBFException {
         return OverJDBField.createField(fieldName, 'C', 253, 0);
     }

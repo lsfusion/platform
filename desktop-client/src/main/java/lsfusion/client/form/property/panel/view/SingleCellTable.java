@@ -144,13 +144,13 @@ public abstract class SingleCellTable extends ClientPropertyTable {
                     }
                 }
                 if(matches) {
-                    Object newValue = value == null ? null : property.parsePaste(value);
+                    Object newValue = property.parsePaste(value);
                     if (property.canUsePasteValueForRendering()) {
                         setValue(newValue);
                     }
 
                     getForm().pasteMulticellValue(
-                            singletonMap(property, new PasteData(newValue, singletonList(model.getColumnKey()), singletonList(model.getValue())))
+                            singletonMap(property, new PasteData(newValue, value, singletonList(model.getColumnKey()), singletonList(model.getValue())))
                     );
                 }
             } catch (IOException e) {

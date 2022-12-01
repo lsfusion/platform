@@ -85,7 +85,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
-import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 // фасад для работы с клиентом
 public class RemoteForm<F extends FormInstance> extends RemoteRequestObject implements RemoteFormInterface {
@@ -410,7 +409,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             List<PropertyDrawInstance> properties = new ArrayList<>();
             List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
@@ -430,23 +429,24 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
             
-            form.pasteExternalTable(properties, keys, values, stack);
+            form.pasteExternalTable(properties, keys, values, rawValues, stack);
         });
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> bkeys, final Map<Integer, byte[]> bvalues) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> bkeys, final Map<Integer, byte[]> bvalues, Map<Integer, String> rawValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> keysValues
+            Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> keysValues
                     = new HashMap<>();
 
             if (logger.isDebugEnabled())
                 logger.debug("pasteMultiCellValue Action");
             
             for (Map.Entry<Integer, List<byte[]>> e : bkeys.entrySet()) {
-                PropertyDrawInstance propertyDraw = form.getPropertyDraw(e.getKey());
-                Object propValue = deserializeObject(bvalues.get(e.getKey()));
+                Integer propId = e.getKey();
+                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propId);
+                Pair<Object, String> propValue = new Pair<>(deserializeObject(bvalues.get(propId)), rawValues.get(propId));
 
-                MOrderMap<ImMap<ObjectInstance, DataObject>, Object> propKeys = MapFact.mOrderMap();
+                MOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>> propKeys = MapFact.mOrderMap();
                 for (byte[] bkey : e.getValue()) {
                     
                     if(logger.isDebugEnabled())
@@ -723,7 +723,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 byte[] pushAsyncResult = pushAsyncResults[j];
                 if(pushAsyncResult != null)
                     asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
-                
+
                 logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                 form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack);
                 logger.info(String.format("executeEventAction ended: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
@@ -1138,15 +1138,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
-        Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
+        PushAsyncResult asyncResult = null;
         if(propertyDraw.isProperty()) {
-            asyncResult = asyncEventExec -> {
+            asyncResult = new PushExternalInput(type -> {
                 try {
-                    return asyncEventExec instanceof AsyncInput ? new PushAsyncInput(ObjectValue.getValue(((AsyncInput) asyncEventExec).changeType.parseJSON(value), ((AsyncInput) asyncEventExec).changeType)) : null;
+                    return type.parseJSON(value);
                 } catch (ParseException e) {
                     throw Throwables.propagate(e);
                 }
-            };
+            });
 
             // it's tricky here, unlike changeGroupObject, changeProperty is cancelable, i.e. its change may be canceled, but there will be no undo change in getChanges
             // so there are 2 ways store previous values on client (just like it is done now on desktop and web-client, which is not that easy task), or just force that property reread
@@ -1156,13 +1156,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             Pair<ObjectInstance, Boolean> newDelete;
             if(groupSID != null && (newDelete = getNewDeleteExternal(groupSID, propertySID)) != null) {
                 if(newDelete.second)
-                    asyncResult = asyncEventExec -> new PushAsyncAdd((DataObject) currentObjects.get(newDelete.first));
+                    asyncResult = new PushAsyncAdd((DataObject) currentObjects.get(newDelete.first));
 
                 // see comment above
                 newDelete.first.groupTo.forceUpdateKeys();
             }
         }
-        form.executeEventAction(propertyDraw, CHANGE, currentObjects, true, asyncResult, stack);
+        final PushAsyncResult fAsyncResult = asyncResult;
+        form.executeExternalEventAction(propertyDraw, currentObjects, asyncEventExec -> fAsyncResult, stack);
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
