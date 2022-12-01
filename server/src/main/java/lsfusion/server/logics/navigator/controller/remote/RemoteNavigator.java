@@ -252,7 +252,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     public ExecSession getExecSession() throws SQLException {
         return new ExecSession(createSession()) {
             @Override
-            public void close() throws Exception {
+            public void close() throws SQLException {
                 dataSession.close();
             }
         };

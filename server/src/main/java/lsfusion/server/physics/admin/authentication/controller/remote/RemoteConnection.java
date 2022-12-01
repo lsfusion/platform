@@ -30,7 +30,6 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.navigator.controller.env.*;
-import lsfusion.server.logics.navigator.controller.remote.ExecSessionInterface;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -51,7 +50,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface, ExecSessionInterface {
+public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
 
     protected SQLSession sql;
 
@@ -357,7 +356,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        try (ExecSession execSession = getExecSession()) {
+        ExecSession execSession = null;
+        try {
+            execSession = getExecSession();
             DataSession dataSession = execSession.dataSession;
 
             checkEnableApi(property);
@@ -367,8 +368,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             property.execute(dataSession, getStack(), ExternalHTTPAction.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
 
             return readResult(request.returnNames, property.action, dataSession);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        } finally {
+            if (execSession != null)
+                execSession.close();
         }
     }
 
@@ -497,7 +499,9 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         return returnProperty.getType().formatHTTP(returnValue, null);
     }
 
-    public class ExecSession implements AutoCloseable {
+    protected abstract ExecSession getExecSession() throws SQLException;
+
+    public class ExecSession {
 
         public DataSession dataSession;
 
@@ -505,8 +509,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
            this.dataSession = dataSession;
         }
 
-        @Override
-        public void close() throws Exception {
+        public void close() throws SQLException {
         }
     }
 }
