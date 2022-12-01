@@ -426,6 +426,13 @@ public class SetFact {
         return mSet.immutableOrder();
     }
 
+    public static <T> ImSet<T> fromJavaSet(Iterable<T> set) {
+        MExclSet<T> mSet = SetFact.mExclSet();
+        for(T element : set)
+            mSet.exclAdd(element);
+        return mSet.immutable();
+    }
+
     public static <T> void addJavaAll(Set<T> set, ImSet<T> add) {
         for(T element : add)
             set.add(element);
