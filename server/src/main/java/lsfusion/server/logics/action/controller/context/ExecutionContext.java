@@ -425,7 +425,7 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public NewSession<P> newSession() throws SQLException { // the same as override, bu 
         return newSession(getSession().sql);
     }
-    public NewSession<P> newSession(SQLSession sql) throws SQLException { // the same as override, bu 
+    public NewSession<P> newSession(SQLSession sql) throws SQLException { // the same as override, bu
         return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql), executorService, form, stack);
     }
 
@@ -649,6 +649,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         assertNotUserInteractionInTransaction();
         if(pushedAsyncResult instanceof PushAsyncInput)
             return ((PushAsyncInput) pushedAsyncResult).value;
+        if(pushedAsyncResult instanceof PushExternalInput)
+            return new InputResult(ObjectValue.getValue(((PushExternalInput) pushedAsyncResult).value.apply(dataClass), dataClass), null);
 
         InputContext<T> inputContext = null;
         if(list != null)

@@ -15,10 +15,7 @@ import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterface> implements RemoteFormInterface {
@@ -154,16 +151,16 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, List<Integer> propertyIDs, List<byte[]> columnKeys, List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
-        ServerResponse result = target.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys, values);
+        ServerResponse result = target.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIDs, columnKeys, values, rawValues);
         logRemoteMethodEndCall("pasteExternalTable", result);
         return result;
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, Map<Integer, List<byte[]>> keys, Map<Integer, byte[]> values, Map<Integer, String> rawValues) throws RemoteException {
         logRemoteMethodStartCall("pasteMulticellValue");
-        ServerResponse result = target.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, keys, values);
+        ServerResponse result = target.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, keys, values, rawValues);
         logRemoteMethodEndCall("pasteMulticellValue", result);
         return result;
     }

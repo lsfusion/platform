@@ -1219,17 +1219,21 @@ public class ClientFormController implements AsyncListener {
     public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<ClientGroupObjectValue> columnKeys, final List<List<String>> table) throws IOException {
         int propertyColumns = propertyList.size();
 
-        final List<List<byte[]>> values = new ArrayList<>();
+        List<List<byte[]>> values = new ArrayList<>();
+        List<ArrayList<String>> rawValues = new ArrayList<>();
         for (List<String> sRow : table) {
             List<byte[]> valueRow = new ArrayList<>();
+            ArrayList<String> rawValueRow = new ArrayList<>();
 
             for (int i = 0; i < propertyColumns; i++) {
                 ClientPropertyDraw property = propertyList.get(i);
                 String sCell = i < sRow.size() ? sRow.get(i) : null;
-                Object oCell = sCell == null ? null : property.parsePaste(sCell);
+                Object oCell = property.parsePaste(sCell);
                 valueRow.add(serializeObject(oCell));
+                rawValueRow.add(sCell);
             }
             values.add(valueRow);
+            rawValues.add(rawValueRow);
         }
 
         final List<Integer> propertyIdList = new ArrayList<>();
@@ -1243,7 +1247,7 @@ public class ClientFormController implements AsyncListener {
         rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("pasteExternalTable") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIdList, serializedColumnKeys, values);
+                return remoteForm.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIdList, serializedColumnKeys, values, rawValues);
             }
         });
     }
@@ -1255,6 +1259,7 @@ public class ClientFormController implements AsyncListener {
 
         final Map<Integer, List<byte[]>> mKeys = new HashMap<>();
         final Map<Integer, byte[]> mValues = new HashMap<>();
+        final Map<Integer, String> mRawValues = new HashMap<>();
 
         for (Map.Entry<ClientPropertyDraw, PasteData> keysEntry : paste.entrySet()) {
             ClientPropertyDraw property = keysEntry.getKey();
@@ -1265,8 +1270,10 @@ public class ClientFormController implements AsyncListener {
                 propMKeys.add(getFullCurrentKey(pasteData.keys.get(i)));
             }
 
-            mKeys.put(property.getID(), propMKeys);
-            mValues.put(property.getID(), serializeObject(pasteData.newValue));
+            int propertyID = property.getID();
+            mKeys.put(propertyID, propMKeys);
+            mValues.put(propertyID, serializeObject(pasteData.value));
+            mRawValues.put(propertyID, pasteData.rawValue);
         }
 
         rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("pasteMulticellValue") {
@@ -1275,7 +1282,7 @@ public class ClientFormController implements AsyncListener {
                 for (Map.Entry<ClientPropertyDraw, PasteData> e : paste.entrySet()) {
                     ClientPropertyDraw property = e.getKey();
                     PasteData pasteData = e.getValue();
-                    Object newValue = pasteData.newValue;
+                    Object newValue = pasteData.value;
                     boolean canUseNewValueForRendering = property.canUsePasteValueForRendering();
 
                     for (int i = 0; i < pasteData.keys.size(); ++i) {
@@ -1291,7 +1298,7 @@ public class ClientFormController implements AsyncListener {
 
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, mKeys, mValues);
+                return remoteForm.pasteMulticellValue(requestIndex, lastReceivedRequestIndex, mKeys, mValues, mRawValues);
             }
         });
     }
@@ -1849,13 +1856,15 @@ public class ClientFormController implements AsyncListener {
     }
 
     public final static class PasteData {
-        public final Object newValue;
+        public final Object value;
+        public final String rawValue;
 
         public final List<ClientGroupObjectValue> keys;
         public final List<Object> oldValues;
 
-        public PasteData(Object newValue, List<ClientGroupObjectValue> keys, List<Object> oldValues) {
-            this.newValue = newValue;
+        public PasteData(Object value, String rawValue, List<ClientGroupObjectValue> keys, List<Object> oldValues) {
+            this.value = value;
+            this.rawValue = rawValue;
             this.keys = keys;
             this.oldValues = oldValues;
         }
