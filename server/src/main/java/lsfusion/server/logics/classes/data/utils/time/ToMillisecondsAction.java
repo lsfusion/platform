@@ -3,7 +3,6 @@ package lsfusion.server.logics.classes.data.utils.time;
 import com.google.common.base.Throwables;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
-import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
@@ -18,7 +17,7 @@ import static lsfusion.base.DateConverter.localDateTimeToSqlTimestamp;
 public class ToMillisecondsAction extends InternalAction {
     private final ClassPropertyInterface timestampInterface;
 
-    public ToMillisecondsAction(UtilsLogicsModule LM, ValueClass... classes) {
+    public ToMillisecondsAction(TimeLogicsModule LM, ValueClass... classes) {
         super(LM, classes);
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
