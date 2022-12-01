@@ -60,7 +60,7 @@ META defineHistorizable(property, propPostfix, caption, type, object, objectIden
     dialog###property caption (###object object)  { SHOW dialog###property###object###propPostfix OBJECTS a = object; }  ASON CONTEXTMENU property[###object] ASON CHANGE property[###object];
 END
 
-// ---------------------------------- Свойство объект-дата для (пример, стат.класса)------------------------------------------ //
+// ---------------------------------- Object-date ------------------------------------------ //
 
 META defineHistorizableCustom(property, caption, type, typeIdentity, classIdentity, object, objectIdentity, group)
     data###property caption = DATA type (###object, DATE);
@@ -95,7 +95,7 @@ META defineHistorizableCustom(property, caption, type, typeIdentity, classIdenti
     dialog###property caption (###object object)  { SHOW dialog###property###object OBJECTS a = object; }  ASON CONTEXTMENU typeIdentity###classIdentity###property[###object] ASON CHANGE typeIdentity###classIdentity###property[###object];
 END
 
-// ----------------------------------- Свойство объект1-объект2-дата------------------------------------------ //
+// ----------------------------------- Object1-object2-date ------------------------------------------ //
 META defineHistorizable(property, caption, type, object1, object1Identity, object2, object2Identity, group)
     data###property caption = DATA type (###object1, ###object2, DATE) IN group;
 

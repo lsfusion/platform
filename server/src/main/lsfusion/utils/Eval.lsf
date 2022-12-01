@@ -57,7 +57,7 @@ DESIGN exception {
     }
 }
 
-// Универсальная таблица для последующего импорта
+// Rows
 CLASS Row '{eval.script.row}';
 TABLE row(Row);
 

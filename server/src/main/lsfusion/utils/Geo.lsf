@@ -75,7 +75,7 @@ recalculateAllDistances '{geo.recalculate.all.distances}'()  {
     }
 }
 
-// Показать на карте одну точку
+// Point
 showOnMap '{geo.show.on.map}' INTERNAL  'lsfusion.server.logics.classes.data.utils.geo.ShowOnMapAction' (DOUBLE, DOUBLE, MapProvider, BPSTRING[100]);
 showOnMap(DOUBLE latitude, DOUBLE longitude, BPSTRING[100] address)  { showOnMap (latitude, longitude, showMapProvider(), address); }
 
@@ -83,7 +83,7 @@ showOnMap '{geo.show.on.map}'(POI POI) {
     EXEC showOnMap (latitude (POI), longitude (POI), address(POI));
 }
 
-// Показать на карте путь
+// Path
 numberPath '{geo.number.path.poi}' = DATA LOCAL INTEGER (POI);
 descriptionPath '{geo.description.path.poi}' = DATA LOCAL STRING[200] (POI);
 

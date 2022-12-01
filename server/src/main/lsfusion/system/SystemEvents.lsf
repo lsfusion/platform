@@ -251,7 +251,6 @@ onClientStarted () + {
     }
 }
 
-//заменили user на customUser
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session));
 nameContact '{system.events.user.session}' (Session session) = name[Contact](user(session));
