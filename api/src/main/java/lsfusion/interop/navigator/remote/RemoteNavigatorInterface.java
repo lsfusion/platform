@@ -13,6 +13,8 @@ public interface RemoteNavigatorInterface extends RemoteRequestInterface {
 
     byte[] getNavigatorTree() throws RemoteException;
 
+    Object exec(String action) throws RemoteException;
+
     // main interface
 
     ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String script) throws RemoteException;

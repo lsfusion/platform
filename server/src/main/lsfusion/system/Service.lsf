@@ -747,8 +747,8 @@ DESIGN editProfile {
 inTestMode = NATIVE BOOLEAN ();
 projectLSFDir = NATIVE STRING();
 
-getClientSettings() ABSTRACT CASE @@noauth;
-getClientSettings() + WHEN TRUE THEN {
+getClientSettings(User user) ABSTRACT CASE;
+getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     LOCAL mainResources = JSON();
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
@@ -760,36 +760,45 @@ getClientSettings() + WHEN TRUE THEN {
     EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
 
     LOCAL forbidDuplicateForms = BOOLEAN();
-    forbidDuplicateForms() <- OVERRIDE dataForbidDuplicateForms(currentUser()), abstractForbidDuplicateForms(currentUser()), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(currentUser(), ur);
+    forbidDuplicateForms() <- OVERRIDE dataForbidDuplicateForms(user), abstractForbidDuplicateForms(user), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(user, ur);
     
     LOCAL colorThemeStaticName = STRING();
-    colorThemeStaticName() <- staticName(colorTheme(currentUser()));
+    colorThemeStaticName() <- staticName(colorTheme(user));
     
     EXPORT FROM
         currentUserName = (OVERRIDE currentUserName(), '(без имени)'),
-        fontSize = fontSize(currentUser()),
-        useBusyDialog = (valueSetting('busyDialog') == 'true' OR inTestMode() OR useBusyDialogCustom(currentUser())),
-        useRequestTimeout = (valueSetting('useRequestTimeout') == 'true' OR useRequestTimeout(currentUser())),
-        forbidDuplicateForms = forbidDuplicateForms(), // проверить на false
-        showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(currentUser(), ur)),
-        devMode = inDevMode() OR (devMode(currentUser())),
+        fontSize = fontSize(user),
+        useBusyDialog = (valueSetting('busyDialog') == 'true' OR inTestMode() OR useBusyDialogCustom(user)),
+        useRequestTimeout = (valueSetting('useRequestTimeout') == 'true' OR useRequestTimeout(user)),
+        forbidDuplicateForms = forbidDuplicateForms(),
+        showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
+        devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
         colorThemeString = IF (colorThemeStaticName()) THEN substrFrom(colorThemeStaticName(), strpos(colorThemeStaticName(), '.') + 1),
         useBootstrap = useBootstrap(),
-        selectedRowBackground = (OVERRIDE selectedRowBackgroundColor(currentUser()), selectedRowBackgroundColor()),
-        selectedCellBackground = (OVERRIDE selectedCellBackgroundColor(currentUser()), selectedCellBackgroundColor()),
-        focusedCellBackground = (OVERRIDE focusedCellBackgroundColor(currentUser()), focusedCellBackgroundColor()),
-        focusedCellBorder = (OVERRIDE focusedCellBorderColor(currentUser()), focusedCellBorderColor()),
+        selectedRowBackground = (OVERRIDE selectedRowBackgroundColor(user), selectedRowBackgroundColor()),
+        selectedCellBackground = (OVERRIDE selectedCellBackgroundColor(user), selectedCellBackgroundColor()),
+        focusedCellBackground = (OVERRIDE focusedCellBackgroundColor(user), focusedCellBackgroundColor()),
+        focusedCellBorder = (OVERRIDE focusedCellBorderColor(user), focusedCellBorderColor()),
         tableGridColor = overrideTableGridColor(),
-        dateTimePickerRanges = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, currentUser()),
-        intervalPickerRanges = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, currentUser()),
+        dateTimePickerRanges = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, user),
+        intervalPickerRanges = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, user),
         mainResources = mainResources(),
-        language = language(currentUser()),
-        country = country(currentUser()),
-        timeZone = timeZone(currentUser()),
-        twoDigitYearStart = twoDigitYearStart(currentUser()),
-        dateFormat = dateFormat(currentUser()),
-        timeFormat = timeFormat(currentUser());
+        language = language(user),
+        country = country(user),
+        timeZone = timeZone(user),
+        twoDigitYearStart = twoDigitYearStart(user),
+        dateFormat = dateFormat(user),
+        timeFormat = timeFormat(user),
+        busyDialogTimeout = valueSetting('busyDialogTimeout'),
+        showNotDefinedStrings = valueSetting('showNotDefinedStrings') == 'true',
+        pivotOnlySelectedColumn = valueSetting('pivotOnlySelectedColumn') == 'true',
+        matchSearchSeparator = valueSetting('matchSearchSeparator'),
+        useTextAsFilterSeparator = valueSetting('useTextAsFilterSeparator') == 'true';
+}
+
+getClientSettings() {
+    getClientSettings(currentUser());
 }
 
 //Temporary. For migration. Сan be deleted later. Need to fill in fields for existing users

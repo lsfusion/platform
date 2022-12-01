@@ -19,8 +19,10 @@ import lsfusion.http.provider.navigator.NavigatorProviderImpl;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.ClientSettings;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
 import lsfusion.interop.session.ExternalResponse;
 import net.customware.gwt.dispatch.shared.general.StringResult;
@@ -43,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -239,7 +242,7 @@ public class MainController {
                     throw e;
                 }
             }).get();
-            mainResources = getClientSettings(request, LSFAuthenticationToken.getAppServerToken()).mainResources;
+            mainResources = getClientSettings(sessionId).mainResources;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -266,8 +269,12 @@ public class MainController {
         return logicsProvider.getServerSettings(request, noCache);
     }
 
-    private ClientSettings getClientSettings(HttpServletRequest request, AuthenticationToken token) {
-        return logicsProvider.getClientSettings(request, token);
+    private ClientSettings getClientSettings(String sessionId) throws RemoteException {
+        return getClientSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator);
+    }
+
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
+        return LogicsSessionObject.getClientSettings(remoteNavigator);
     }
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {

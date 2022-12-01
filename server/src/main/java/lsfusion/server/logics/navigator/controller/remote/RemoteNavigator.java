@@ -2,6 +2,7 @@ package lsfusion.server.logics.navigator.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashMap;
@@ -246,6 +247,17 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     protected ChangesController createChangesController() {
         return new WeakChangesUserProvider(changesSync);
+    }
+
+    @Override
+    public Object exec(String action) {
+        try (DataSession session = createSession()) {
+            LA<?> actionByCompoundName = businessLogics.findActionByCompoundName(action);
+            actionByCompoundName.execute(session, getStack());
+            return businessLogics.LM.getExportValueProperty().readFirstNotNull(session, new Result<>(), actionByCompoundName.action).getValue();
+        } catch (Throwable t) {
+            throw Throwables.propagate(t);
+        }
     }
 
     public void gainedFocus(FormInstance form) {

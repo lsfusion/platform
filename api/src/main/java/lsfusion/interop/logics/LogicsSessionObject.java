@@ -10,6 +10,7 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.ClientSettings;
+import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalResponse;
 import lsfusion.interop.session.SessionInfo;
 import org.apache.commons.net.util.Base64;
@@ -89,10 +90,8 @@ public class LogicsSessionObject {
         return base64 != null ? new RawFileData(Base64Decoder.decode(base64)) : null;
     }
 
-    public ClientSettings getClientSettings(SessionInfo sessionInfo, AuthenticationToken token) throws RemoteException {
-
-        ExternalResponse result = remoteLogics.exec(token, sessionInfo, "Service.getClientSettings[]", sessionInfo.externalRequest);
-        JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
+        JSONObject json = new JSONObject(new String(((FileData) remoteNavigator.exec("Service.getClientSettings[]")).getRawFile().getBytes(), StandardCharsets.UTF_8));
 
         String currentUserName = json.optString("currentUserName");
         Integer fontSize = !json.has("fontSize") ? null : json.optInt("fontSize");
@@ -134,15 +133,19 @@ public class LogicsSessionObject {
         String timeFormat = json.optString("timeFormat");
 
         LocalePreferences localePreferences = new LocalePreferences(locale, timeZone, twoDigitYearStart, dateFormat, timeFormat);
-        Settings settings = remoteLogics.getSettings();
 
-        return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, settings.getBusyDialogTimeout(),
-                useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, settings.isShowNotDefinedStrings(),
-                settings.isPivotOnlySelectedColumn(), settings.getMatchSearchSeparator(), colorTheme, useBootstrap, colorPreferences,
-                preDefinedDateRangesNames.toArray(new String[0]), settings.isUseTextAsFilterSeparator(), mainResourcesData);
+        long busyDialogTimeout = json.optLong("busyDialogTimeout");
+        boolean showNotDefinedStrings = json.optBoolean("showNotDefinedStrings");
+        boolean pivotOnlySelectedColumn = json.optBoolean("pivotOnlySelectedColumn");
+        String matchSearchSeparator = json.optString("matchSearchSeparator");
+        boolean useTextAsFilterSeparator = json.optBoolean("useTextAsFilterSeparator");
+
+        return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
+                projectLSFDir, showDetailedInfo, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, mainResourcesData);
     }
 
-    private void fillRanges(JSONArray rangesJson, List<String> ranges) {
+    private static void fillRanges(JSONArray rangesJson, List<String> ranges) {
         for (int i = 0; i < rangesJson.length(); i++) {
             ranges.add(rangesJson.getJSONObject(i).getString("range"));
         }

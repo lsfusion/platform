@@ -14,7 +14,6 @@ import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.print.view.EditReportInvoker;
 import lsfusion.client.form.view.ClientFormDockable;
-import lsfusion.client.logics.LogicsProvider;
 import lsfusion.client.navigator.controller.AsyncFormController;
 import lsfusion.interop.action.ICleanListener;
 import lsfusion.interop.base.exception.AppServerNotAvailableException;
@@ -26,6 +25,7 @@ import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.event.EventBus;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
+import lsfusion.interop.logics.LogicsSessionObject;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.NavigatorInfo;
@@ -93,7 +93,7 @@ public abstract class MainFrame extends JFrame {
 
             startSplashScreen();
 
-            ClientSettings clientSettings = LogicsProvider.instance.getClientSettings(MainController.serverInfo, MainController.getSessionInfo(), MainController.authToken);
+            ClientSettings clientSettings = getClientSettings(remoteNavigator);
 
             LocalePreferences localePreferences = clientSettings.localePreferences;
             fontSize = clientSettings.fontSize;
@@ -444,4 +444,8 @@ public abstract class MainFrame extends JFrame {
     public abstract Integer runReport(boolean isModal, String formCaption, ReportGenerationData generationData, String printerName, EditReportInvoker editInvoker) throws IOException, ClassNotFoundException;
 
     public abstract ClientFormDockable runForm(AsyncFormController asyncFormController, String canonicalName, String formSID, boolean forbidDuplicate, RemoteFormInterface remoteForm, byte[] firstChanges, FormCloseListener closeListener, String formId);
+
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
+        return LogicsSessionObject.getClientSettings(remoteNavigator);
+    }
 }

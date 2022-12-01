@@ -27,7 +27,6 @@ import lsfusion.server.logics.controller.manager.RestartManager;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.controller.manager.SecurityManager;
 import lsfusion.server.physics.admin.log.RemoteLoggerAspect;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -200,12 +199,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public lsfusion.interop.logics.Settings getSettings() {
-        return new lsfusion.interop.logics.Settings(Settings.get().getBusyDialogTimeout(), Settings.get().isShowNotDefinedStrings(),
-                Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(), Settings.get().isUseTextAsFilterSeparator());
     }
 
     @Override
