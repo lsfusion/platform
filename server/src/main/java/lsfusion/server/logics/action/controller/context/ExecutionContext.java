@@ -652,6 +652,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         assertNotUserInteractionInTransaction();
         if(pushedAsyncResult instanceof PushAsyncInput)
             return ((PushAsyncInput) pushedAsyncResult).value;
+        if(pushedAsyncResult instanceof PushExternalInput)
+            return new InputResult(ObjectValue.getValue(((PushExternalInput) pushedAsyncResult).value.apply(dataClass), dataClass), null);
 
         InputContext<T> inputContext = null;
         if(list != null)
