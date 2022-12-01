@@ -2147,24 +2147,21 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         sessionEventOldDepends = null;
     }
     public ImSet<FormInstance> getAllActiveFormInstances() { // including nested
-        MSet<FormInstance> result = SetFact.mSet();
+        ImSet<FormInstance> result;
         synchronized(closeLock) {
-            result.addAll(SetFact.fromJavaSet(new HashSet<>(BaseUtils.toList(activeForms.keysIt()))));
+            result = SetFact.fromJavaSet(activeForms.keysIt());
         }
         if(parentSession != null)
-            result.addAll(parentSession.getAllActiveFormInstances());
-        return result.immutable();
+            result = result.addExcl(parentSession.getAllActiveFormInstances());
+        return result;
     }
 
     public ImSet<FormEntity> getAllActiveForms() {
-        MSet<FormEntity> result = SetFact.mSet();
-        for(FormInstance formInstance : getAllActiveFormInstances()) {
-            result.add(formInstance.entity);
-        }
+        ImSet<FormEntity> result = getAllActiveFormInstances().mapSetValues(formInstance -> formInstance.entity);
         if(fixedForms != null) {
-            result.addAll(fixedForms);
+            result = result.addExcl(fixedForms);
         }
-        return result.immutable();
+        return result;
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
         return elements.filterOrderValues(session -> session.contains(DataSession.this));
