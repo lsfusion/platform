@@ -945,14 +945,20 @@ public abstract class LogicsModule {
     // ------------------- NEWSESSION ----------------- //
 
     public LA addNewSessionAProp(Group group,
-                                    LA la, boolean isNested, boolean singleApply, boolean newSQL,
-                                    FunctionSet<SessionDataProperty> migrateSessionProps) {
+                                 LA la, boolean isNested, boolean singleApply, boolean newSQL,
+                                 FunctionSet<SessionDataProperty> migrateSessionProps) {
+        return addNewSessionAProp(group, la, isNested, singleApply, newSQL, migrateSessionProps, null);
+    }
+
+    public LA addNewSessionAProp(Group group,
+                                 LA la, boolean isNested, boolean singleApply, boolean newSQL,
+                                 FunctionSet<SessionDataProperty> migrateSessionProps, ImSet<FormEntity> fixedForms) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(la.listInterfaces.size());
         ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(la, listInterfaces);
 
         NewSessionAction action = new NewSessionAction(
-                LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
-        
+                LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested, fixedForms);
+
         return addAction(group, new LA<>(action));
     }
 
@@ -1842,39 +1848,6 @@ public abstract class LogicsModule {
     }
 
     // ---------------------- Add Form ---------------------- //
-
-    // assumes 1 parameter - new, others - context
-    protected LA addNewEditAction2(CustomClass cls, LA setAction, LA doAction, int contextParams) {
-        int newIndex = contextParams + 1;
-        Object[] setEditWithParams = new Object[]{baseLM.getPolyEdit(), newIndex};
-        if(setAction != null) // adding setAction if any
-            setEditWithParams = directLI(addListAProp(BaseUtils.add(directLI(setAction), setEditWithParams)));
-
-        LA edit = addRequestAProp(null, true, LocalizedString.NONAME, // REQUEST
-                BaseUtils.add(BaseUtils.add(
-                                setEditWithParams, // edit(x);
-                                directLI(doAction)), // DO <<doAction>>
-                        new Object[]{addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), newIndex}) // ELSE IF seekOwners THEN delete(x)
-        );
-
-        return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, contextParams, cls, true, false, 0, false,
-                BaseUtils.add(getUParams(contextParams + 1), directLI(edit))); // context + addedInterface + action
-    }
-
-    public LA<?> addNewEditAction2(CustomClass cls, LP targetProp, int contextParams, FormSessionScope scope, Object... setProperty) {
-        Object[] externalParams = getUParams(contextParams + 1); // + new object
-        LA action = addNewEditAction2(cls,
-                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, setProperty)),
-                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, new Object[] {targetProp, contextParams + 1})), // targetProp() <- new object
-                contextParams);
-
-        if(scope.isNewSession())
-            action = addNewSessionAProp(null, action, scope.isNestedSession(), false, false, getMigrateInputProps(ListFact.singleton(targetProp)));
-
-        return action;
-    }
-
-
 
     // assumes 1 parameter - new, others - context
     protected LA addNewEditAction(CustomClass cls, LA setAction, LA doAction, int contextParams) {

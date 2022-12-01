@@ -2598,13 +2598,17 @@ newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean isNested = false;
 	boolean singleApply = false;
 	boolean newSQL = false;
+	List<String> ids = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewSessionAProp($aDB.action, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL);
+		$action = self.addScriptedNewSessionAProp($aDB.action, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL, ids);
 	}
 }
-	:	(	'NEWSESSION' ('NEWSQL' { newSQL = true; })? (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+	:	(	'NEWSESSION' ('NEWSQL' { newSQL = true; })?
+	        ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
+	        (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+
 		|	'NESTEDSESSION' { isNested = true; }
 		)
 		('SINGLE' { singleApply = true; })?
