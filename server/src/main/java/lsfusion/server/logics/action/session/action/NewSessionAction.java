@@ -16,6 +16,7 @@ import lsfusion.server.logics.action.flow.FlowResult;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
+import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -26,18 +27,28 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
+import java.util.List;
 
 public class NewSessionAction extends AroundAspectAction {
     private final FunctionSet<SessionDataProperty> explicitMigrateProps; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
     private final boolean isNested;
     private final boolean singleApply;
-    private final boolean newSQL; 
+    private final boolean newSQL;
+    private final List<FormEntity> fixedForms;
 
     public <I extends PropertyInterface> NewSessionAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                           ActionMapImplement<?, I> action, boolean singleApply,
                                                           boolean newSQL,
                                                           FunctionSet<SessionDataProperty> explicitMigrateProps,
                                                           boolean isNested) {
+        this(caption, innerInterfaces, action, singleApply, newSQL, explicitMigrateProps, isNested, null);
+    }
+
+    public <I extends PropertyInterface> NewSessionAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
+                                                          ActionMapImplement<?, I> action, boolean singleApply,
+                                                          boolean newSQL,
+                                                          FunctionSet<SessionDataProperty> explicitMigrateProps,
+                                                          boolean isNested, List<FormEntity> fixedForms) {
         super(caption, innerInterfaces, action);
 
         this.singleApply = singleApply;
@@ -45,6 +56,8 @@ public class NewSessionAction extends AroundAspectAction {
 
         this.isNested = isNested;
         this.explicitMigrateProps = explicitMigrateProps;
+
+        this.fixedForms = fixedForms;
 
         // (nested || explicitly nested) and used in action
         migrateProps = BaseUtils.remove(BaseUtils.merge(DataSession.keepNested(false), explicitMigrateProps),
@@ -86,10 +99,10 @@ public class NewSessionAction extends AroundAspectAction {
             } catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
                 throw Throwables.propagate(e);
             }
-            newContext = context.newSession(sql);
+            newContext = context.newSession(sql, fixedForms);
             newContext.getSession().isPrivateSql = true; // not pretty, in theory createSQL and isPrivateSql should be in DataSession constructor but it is a really rare case
         } else {
-            newContext = context.newSession();
+            newContext = context.newSession(fixedForms);
             DataSession newSession = newContext.getSession();
             if (isNested) {
                 context.executeSessionEvents();

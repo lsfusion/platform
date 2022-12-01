@@ -60,9 +60,6 @@ import lsfusion.server.data.sql.lambda.SQLRunnable;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.table.*;
 import lsfusion.server.data.type.ObjectType;
-import lsfusion.server.data.type.TypeObject;
-import lsfusion.server.data.type.parse.LogicalParseInterface;
-import lsfusion.server.data.type.parse.ParseInterface;
 import lsfusion.server.data.type.parse.StringParseInterface;
 import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.value.DataObject;
@@ -469,7 +466,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return sessionEventOldDepends;
     }
 
-    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale, IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession, ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner) {
+    private List<FormEntity> fixedForms;
+
+    public DataSession(SQLSession sql, final UserController user, final FormController form, TimeoutController timeout, ChangesController changes, LocaleController locale,
+                       IsServerRestartingController isServerRestarting, BaseClass baseClass, ConcreteCustomClass sessionClass, LP currentSession, SQLSession idSession,
+                       ImOrderMap<Action, SessionEnvEvent> sessionEvents, OperationOwner upOwner, List<FormEntity> fixedForms) {
         this.sql = sql;
 
         this.baseClass = baseClass;
@@ -520,6 +521,8 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             sql.addFifo("DCR");
 
         env = new ContextQueryEnvironment(sql.contextProvider, this.owner, isServerRestarting, timeout, form, locale);
+
+        this.fixedForms = fixedForms;
     }
     
     private final static RegisterClassRemove NOREGISTER = new RegisterClassRemove() {
@@ -535,10 +538,10 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     private boolean createdInTransaction;
 
     public DataSession createSession() throws SQLException {
-        return createSession(sql);
+        return createSession(sql, null);
     }
-    public DataSession createSession(SQLSession sql) throws SQLException {
-        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null);
+    public DataSession createSession(SQLSession sql, List<FormEntity> fixedForms) throws SQLException {
+        return new DataSession(sql, user, env.form, env.timeout, changes, env.locale, env.isServerRestarting, baseClass, sessionClass, currentSession, idSession, sessionEvents, null, fixedForms);
     }
 
     public static FunctionSet<SessionDataProperty> keepNested(boolean manageSession) {
@@ -884,7 +887,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     }
                 }
 
-                for (FormInstance form : getAllActiveForms()) {
+                for (FormInstance form : getAllActiveFormInstances()) {
                     form.dataChanged = true;
                 }
             } //else
@@ -2143,13 +2146,24 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         dropActiveSessionEventsCaches();
         sessionEventOldDepends = null;
     }
-    public Iterable<FormInstance> getAllActiveForms() { // including nested
+    public Iterable<FormInstance> getAllActiveFormInstances() { // including nested
         Iterable<FormInstance> result;
         synchronized(closeLock) {
             result = BaseUtils.toList(activeForms.keysIt());
         }
         if(parentSession != null)
-            result = Iterables.concat(result, parentSession.getAllActiveForms());
+            result = Iterables.concat(result, parentSession.getAllActiveFormInstances());
+        return result;
+    }
+
+    public List<FormEntity> getAllActiveForms() {
+        List<FormEntity> result = new ArrayList<>();
+        for(FormInstance formInstance : getAllActiveFormInstances()) {
+            result.add(formInstance.entity);
+        }
+        if(fixedForms != null) {
+            result.addAll(fixedForms);
+        }
         return result;
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
