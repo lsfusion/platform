@@ -2149,22 +2149,25 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         dropActiveSessionEventsCaches();
         sessionEventOldDepends = null;
     }
-    public ImSet<FormInstance> getAllActiveFormInstances() { // including nested
-        ImSet<FormInstance> result;
+    public Iterable<FormInstance> getAllActiveFormInstances() { // including nested
+        Iterable<FormInstance> result;
         synchronized(closeLock) {
-            result = SetFact.fromJavaSet(activeForms.keysIt());
+            result = BaseUtils.toList(activeForms.keysIt());
         }
         if(parentSession != null)
-            result = result.addExcl(parentSession.getAllActiveFormInstances());
+            result = Iterables.concat(result, parentSession.getAllActiveFormInstances());
         return result;
     }
 
     public ImSet<FormEntity> getAllActiveForms() {
-        ImSet<FormEntity> result = getAllActiveFormInstances().mapSetValues(formInstance -> formInstance.entity);
-        if(fixedForms != null) {
-            result = result.addExcl(fixedForms);
+        MSet<FormEntity> result = SetFact.mSet();
+        for(FormInstance formInstance : getAllActiveFormInstances()) {
+            result.add(formInstance.entity);
         }
-        return result;
+        if(fixedForms != null) {
+            result.addAll(fixedForms);
+        }
+        return result.immutable();
     }
     public <K> ImOrderSet<K> filterOrderEnv(ImOrderMap<K, SessionEnvEvent> elements) {
         return elements.filterOrderValues(session -> session.contains(DataSession.this));
