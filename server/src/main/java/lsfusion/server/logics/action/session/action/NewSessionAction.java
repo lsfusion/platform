@@ -27,14 +27,13 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
-import java.util.List;
 
 public class NewSessionAction extends AroundAspectAction {
     private final FunctionSet<SessionDataProperty> explicitMigrateProps; // актуальны и для nested, так как иначе будет отличаться поведение от NEW SESSION
     private final boolean isNested;
     private final boolean singleApply;
     private final boolean newSQL;
-    private final List<FormEntity> fixedForms;
+    private final ImSet<FormEntity> fixedForms;
 
     public <I extends PropertyInterface> NewSessionAction(LocalizedString caption, ImOrderSet<I> innerInterfaces,
                                                           ActionMapImplement<?, I> action, boolean singleApply,
@@ -48,7 +47,7 @@ public class NewSessionAction extends AroundAspectAction {
                                                           ActionMapImplement<?, I> action, boolean singleApply,
                                                           boolean newSQL,
                                                           FunctionSet<SessionDataProperty> explicitMigrateProps,
-                                                          boolean isNested, List<FormEntity> fixedForms) {
+                                                          boolean isNested, ImSet<FormEntity> fixedForms) {
         super(caption, innerInterfaces, action);
 
         this.singleApply = singleApply;

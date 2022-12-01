@@ -951,7 +951,7 @@ public abstract class LogicsModule {
 
     public LA addNewSessionAProp(Group group,
                                  LA la, boolean isNested, boolean singleApply, boolean newSQL,
-                                 FunctionSet<SessionDataProperty> migrateSessionProps, List<FormEntity> fixedForms) {
+                                 FunctionSet<SessionDataProperty> migrateSessionProps, ImSet<FormEntity> fixedForms) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(la.listInterfaces.size());
         ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(la, listInterfaces);
 

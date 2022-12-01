@@ -425,10 +425,10 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     public NewSession<P> newSession() throws SQLException {
         return newSession(null);
     }
-    public NewSession<P> newSession(List<FormEntity> fixedForms) throws SQLException { // the same as override, bu
+    public NewSession<P> newSession(ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
         return newSession(getSession().sql, fixedForms);
     }
-    public NewSession<P> newSession(SQLSession sql, List<FormEntity> fixedForms) throws SQLException { // the same as override, bu
+    public NewSession<P> newSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
         return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), executorService, form, stack);
     }
 

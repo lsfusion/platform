@@ -742,16 +742,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private List<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
-        List<FormEntity> forms = new ArrayList<>();
+    private ImSet<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
+        MSet<FormEntity> forms = SetFact.mSet();
         for (String name : names) {
             forms.add(findForm(name));
         }
-        return forms;
+        return forms.immutable();
     }
 
     public Event createScriptedEvent(BaseEvent base, List<String> formIds, List<NamedPropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
-        return new Event(base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
+        return new Event(base, formIds != null ? new SessionEnvEvent(findForms(formIds)) : SessionEnvEvent.ALWAYS, afterIds == null? null : SetFact.fromJavaSet(findPropsByPropertyUsages(afterIds)));
     }
 
     public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
@@ -2197,7 +2197,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public LAWithParams addScriptedNewSessionAProp(LAWithParams action, List<NamedPropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
                                                    boolean isNested, boolean singleApply, boolean newSQL, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
-        LA<?> sessionLA = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps), formIds != null ? findForms(formIds) : null);
+        ImSet<FormEntity> fixedForms = formIds != null ? findForms(formIds) : null;
+        LA<?> sessionLA = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps), fixedForms);
         return new LAWithParams(sessionLA, action.usedParams);
     }
 
