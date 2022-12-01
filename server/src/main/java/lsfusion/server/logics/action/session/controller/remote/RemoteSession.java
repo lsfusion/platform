@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 
 public class RemoteSession extends RemoteConnection implements RemoteSessionInterface {
+    private final DataSession dataSession;
 
     public RemoteSession(int port, LogicsInstance logicsInstance, AuthenticationToken token, SessionInfo sessionInfo, ExecutionStack stack) throws RemoteException, ClassNotFoundException, SQLException, SQLHandledException, InstantiationException, IllegalAccessException {
         super(port, "session", stack);
@@ -26,7 +27,7 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         setContext(new RemoteSessionContext(this));
         initContext(logicsInstance, token, sessionInfo, stack);
 
-        dataSession = createSession();
+        this.dataSession = createSession();
     }
 
     @Override
@@ -88,5 +89,10 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
         }
         
         super.onClose();
+    }
+
+    @Override
+    public ExecSession getExecSession() {
+        return new ExecSession(dataSession);
     }
 }

@@ -30,6 +30,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.navigator.controller.env.*;
+import lsfusion.server.logics.navigator.controller.remote.ExecSessionInterface;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.data.SessionDataProperty;
 import lsfusion.server.physics.admin.Settings;
@@ -50,7 +51,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
+public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface, ExecSessionInterface {
 
     protected SQLSession sql;
 
@@ -67,7 +68,6 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     protected LocalePreferences localePreferences;
     public Long userRole;
     protected Integer transactionTimeout;
-    protected DataSession dataSession;
 
     public RemoteConnection(int port, String sID, ExecutionStack upStack) throws RemoteException {
         super(port, upStack, sID, SyncType.NOSYNC);
@@ -357,13 +357,19 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
-        checkEnableApi(property);
+        try (ExecSession execSession = getExecSession()) {
+            DataSession dataSession = execSession.dataSession;
 
-        writeRequestInfo(dataSession, property.action, request);
+            checkEnableApi(property);
 
-        property.execute(dataSession, getStack(), ExternalHTTPAction.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
+            writeRequestInfo(dataSession, property.action, request);
 
-        return readResult(request.returnNames, property.action);
+            property.execute(dataSession, getStack(), ExternalHTTPAction.getParams(dataSession, property, request.params, Charset.forName(request.charsetName)));
+
+            return readResult(request.returnNames, property.action, dataSession);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     protected AuthenticationException authException;
@@ -454,7 +460,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    private ExternalResponse readResult(String[] returnNames, Action<?> property) throws SQLException, SQLHandledException {
+    private ExternalResponse readResult(String[] returnNames, Action<?> property, DataSession dataSession) throws SQLException, SQLHandledException {
         List<Object> returns = new ArrayList<>();
 
         LP[] returnProps;
@@ -489,5 +495,18 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     private Object formatReturnValue(Object returnValue, Property returnProperty) {
         return returnProperty.getType().formatHTTP(returnValue, null);
+    }
+
+    public class ExecSession implements AutoCloseable {
+
+        public DataSession dataSession;
+
+        public ExecSession(DataSession dataSession) {
+           this.dataSession = dataSession;
+        }
+
+        @Override
+        public void close() throws Exception {
+        }
     }
 }

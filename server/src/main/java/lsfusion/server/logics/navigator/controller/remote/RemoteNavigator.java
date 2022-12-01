@@ -17,8 +17,6 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
-import lsfusion.interop.session.ExternalRequest;
-import lsfusion.interop.session.ExternalResponse;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -251,20 +249,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public ExternalResponse exec(String actionName, ExternalRequest request) {
-        try {
-            dataSession = createSession();
-            return super.exec(actionName, request);
-        } catch (Throwable t) {
-            throw Throwables.propagate(t);
-        } finally {
-            try {
+    public ExecSession getExecSession() throws SQLException {
+        return new ExecSession(createSession()) {
+            @Override
+            public void close() throws Exception {
                 dataSession.close();
-            } catch (SQLException ignored) {
-            } finally {
-                dataSession = null;
             }
-        }
+        };
     }
 
     public void gainedFocus(FormInstance form) {
