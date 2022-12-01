@@ -7,6 +7,8 @@ import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
 
 import java.rmi.RemoteException;
 import java.util.concurrent.Callable;
@@ -44,11 +46,6 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     }
 
     @Override
-    public Object exec(String action) throws RemoteException {
-        return target.exec(action);
-    }
-
-    @Override
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String script) throws RemoteException {
         return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, script);
     }
@@ -56,5 +53,15 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     @Override
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String navigatorActionSID, int type) throws RemoteException {
         return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, navigatorActionSID, type);
+    }
+
+    @Override
+    public ExternalResponse exec(String action, ExternalRequest request) throws RemoteException {
+        return target.exec(action, request);
+    }
+
+    @Override
+    public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) throws RemoteException {
+        return target.eval(action, paramScript, request);
     }
 }

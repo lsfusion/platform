@@ -514,26 +514,26 @@ public class MainFrame implements EntryPoint {
         navigatorDispatchAsync.executePriority(new InitializeNavigator(screenWidth + "x" + screenHeight, mobile), new PriorityErrorHandlingCallback<InitializeNavigatorResult>() {
             @Override
             public void onSuccess(InitializeNavigatorResult result) {
-                WebClientSettings webClientSettings = result.webClientSettings;
+                GClientSettings gClientSettings = result.gClientSettings;
 
-                versionedColorThemesCss = webClientSettings.versionedColorThemesCss;
-                busyDialogTimeout = Math.max(webClientSettings.busyDialogTimeout - 500, 500); // minimum timeout 500ms + there is still a delay of about 500ms
-                staticImagesURL = webClientSettings.staticImagesURL;
-                useBootstrap = webClientSettings.useBootstrap;
-                devMode = webClientSettings.devMode;
-                projectLSFDir = webClientSettings.projectLSFDir;
-                showDetailedInfo = webClientSettings.showDetailedInfo;
-                forbidDuplicateForms = webClientSettings.forbidDuplicateForms;
-                pivotOnlySelectedColumn = webClientSettings.pivotOnlySelectedColumn;
-                matchSearchSeparator = webClientSettings.matchSearchSeparator;
-                changeColorTheme(webClientSettings.colorTheme);
-                colorPreferences = webClientSettings.colorPreferences;
+                versionedColorThemesCss = gClientSettings.versionedColorThemesCss;
+                busyDialogTimeout = Math.max(gClientSettings.busyDialogTimeout - 500, 500); // minimum timeout 500ms + there is still a delay of about 500ms
+                staticImagesURL = gClientSettings.staticImagesURL;
+                useBootstrap = gClientSettings.useBootstrap;
+                devMode = gClientSettings.devMode;
+                projectLSFDir = gClientSettings.projectLSFDir;
+                showDetailedInfo = gClientSettings.showDetailedInfo;
+                forbidDuplicateForms = gClientSettings.forbidDuplicateForms;
+                pivotOnlySelectedColumn = gClientSettings.pivotOnlySelectedColumn;
+                matchSearchSeparator = gClientSettings.matchSearchSeparator;
+                changeColorTheme(gClientSettings.colorTheme);
+                colorPreferences = gClientSettings.colorPreferences;
                 StyleDefaults.init();
-                dateFormat = webClientSettings.dateFormat;
-                timeFormat = webClientSettings.timeFormat;
-                dateTimeFormat = webClientSettings.dateFormat + " " + webClientSettings.timeFormat;
-                preDefinedDateRangesNames = webClientSettings.preDefinedDateRangesNames;
-                useTextAsFilterSeparator = webClientSettings.useTextAsFilterSeparator;
+                dateFormat = gClientSettings.dateFormat;
+                timeFormat = gClientSettings.timeFormat;
+                dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
+                preDefinedDateRangesNames = gClientSettings.preDefinedDateRangesNames;
+                useTextAsFilterSeparator = gClientSettings.useTextAsFilterSeparator;
 
                 initializeFrame(result.navigatorInfo);
             }

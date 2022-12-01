@@ -2,7 +2,6 @@ package lsfusion.server.logics.navigator.controller.remote;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
-import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashMap;
@@ -18,6 +17,8 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.interop.session.ExternalRequest;
+import lsfusion.interop.session.ExternalResponse;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -250,13 +251,19 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
-    public Object exec(String action) {
-        try (DataSession session = createSession()) {
-            LA<?> actionByCompoundName = businessLogics.findActionByCompoundName(action);
-            actionByCompoundName.execute(session, getStack());
-            return businessLogics.LM.getExportValueProperty().readFirstNotNull(session, new Result<>(), actionByCompoundName.action).getValue();
+    public ExternalResponse exec(String actionName, ExternalRequest request) {
+        try {
+            dataSession = createSession();
+            return super.exec(actionName, request);
         } catch (Throwable t) {
             throw Throwables.propagate(t);
+        } finally {
+            try {
+                dataSession.close();
+            } catch (SQLException ignored) {
+            } finally {
+                dataSession = null;
+            }
         }
     }
 

@@ -362,6 +362,7 @@ defaultValue '{service.default.value.setting}' = DATA STRING[100] (Setting);
 value '{service.value.setting.user.role}' (Setting p, UserRole ur) = OVERRIDE baseValue(p, ur), baseValue(p), defaultValue(p);
 value (Setting p) = OVERRIDE baseValue(p), defaultValue(p);
 valueSetting (ISTRING[100] name) = value(setting(name)); 
+valueSettingBoolean (ISTRING[100] name) = value(setting(name)) == 'true';
 
 pushSetting '{service.push.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PushSettingAction' (STRING[100], STRING[100]);
 popSetting '{service.pop.setting}'  INTERNAL  'lsfusion.server.physics.admin.service.action.PopSettingAction' (STRING[100]);
@@ -768,8 +769,8 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
     EXPORT FROM
         currentUserName = (OVERRIDE currentUserName(), '(без имени)'),
         fontSize = fontSize(user),
-        useBusyDialog = (valueSetting('busyDialog') == 'true' OR inTestMode() OR useBusyDialogCustom(user)),
-        useRequestTimeout = (valueSetting('useRequestTimeout') == 'true' OR useRequestTimeout(user)),
+        useBusyDialog = (valueSettingBoolean('busyDialog') OR inTestMode() OR useBusyDialogCustom(user)),
+        useRequestTimeout = (valueSettingBoolean('useRequestTimeout') OR useRequestTimeout(user)),
         forbidDuplicateForms = forbidDuplicateForms(),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         devMode = inDevMode() OR (devMode(user)),
@@ -791,10 +792,10 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         dateFormat = dateFormat(user),
         timeFormat = timeFormat(user),
         busyDialogTimeout = valueSetting('busyDialogTimeout'),
-        showNotDefinedStrings = valueSetting('showNotDefinedStrings') == 'true',
-        pivotOnlySelectedColumn = valueSetting('pivotOnlySelectedColumn') == 'true',
+        showNotDefinedStrings = valueSettingBoolean('showNotDefinedStrings'),
+        pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
-        useTextAsFilterSeparator = valueSetting('useTextAsFilterSeparator') == 'true';
+        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator');
 }
 
 getClientSettings() {

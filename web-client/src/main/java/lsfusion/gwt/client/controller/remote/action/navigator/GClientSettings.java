@@ -6,7 +6,7 @@ import lsfusion.gwt.client.view.GColorTheme;
 import java.io.Serializable;
 import java.util.Map;
 
-public class WebClientSettings implements Serializable {
+public class GClientSettings implements Serializable {
     public long busyDialogTimeout;
     public boolean devMode;
     public String projectLSFDir;
@@ -25,13 +25,13 @@ public class WebClientSettings implements Serializable {
     public boolean useTextAsFilterSeparator;
 
     @SuppressWarnings("unused")
-    public WebClientSettings() {
+    public GClientSettings() {
     }
 
-    public WebClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms,
-                             boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
-                             GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
-                             boolean useTextAsFilterSeparator) {
+    public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms,
+                           boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
+                           GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
+                           boolean useTextAsFilterSeparator) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;

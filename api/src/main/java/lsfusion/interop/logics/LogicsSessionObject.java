@@ -44,9 +44,8 @@ public class LogicsSessionObject {
     public ServerSettings serverSettings; // caching
     public ServerSettings getServerSettings(SessionInfo sessionInfo, String contextPath, boolean noCache) throws RemoteException {
         if(serverSettings == null || serverSettings.inDevMode || noCache) {
-            ExternalResponse result = remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest);
+            JSONObject json = getJSONResult(remoteLogics.exec(AuthenticationToken.ANONYMOUS, sessionInfo, "Service.getServerSettings[]", sessionInfo.externalRequest));
 
-            JSONObject json = new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
             String logicsName = trimToNull(json.optString("logicsName"));
             String displayName = trimToNull(json.optString("displayName"));
             RawFileData logicsLogo = getRawFileData(trimToNull(json.optString("logicsLogo")));
@@ -90,8 +89,8 @@ public class LogicsSessionObject {
         return base64 != null ? new RawFileData(Base64Decoder.decode(base64)) : null;
     }
 
-    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        JSONObject json = new JSONObject(new String(((FileData) remoteNavigator.exec("Service.getClientSettings[]")).getRawFile().getBytes(), StandardCharsets.UTF_8));
+    public static ClientSettings getClientSettings(SessionInfo sessionInfo, RemoteNavigatorInterface remoteNavigator) throws RemoteException {
+        JSONObject json = getJSONResult(remoteNavigator.exec("Service.getClientSettings[]", sessionInfo.externalRequest));
 
         String currentUserName = json.optString("currentUserName");
         Integer fontSize = !json.has("fontSize") ? null : json.optInt("fontSize");
@@ -149,5 +148,9 @@ public class LogicsSessionObject {
         for (int i = 0; i < rangesJson.length(); i++) {
             ranges.add(rangesJson.getJSONObject(i).getString("range"));
         }
+    }
+
+    private static JSONObject getJSONResult(ExternalResponse result) {
+        return new JSONObject(new String(((FileData) result.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
     }
 }

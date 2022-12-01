@@ -242,7 +242,7 @@ public class MainController {
                     throw e;
                 }
             }).get();
-            mainResources = getClientSettings(sessionId).mainResources;
+            mainResources = getClientSettings(sessionId, request).mainResources;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -269,12 +269,12 @@ public class MainController {
         return logicsProvider.getServerSettings(request, noCache);
     }
 
-    private ClientSettings getClientSettings(String sessionId) throws RemoteException {
-        return getClientSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator);
+    private ClientSettings getClientSettings(String sessionId, HttpServletRequest request) throws RemoteException {
+        return getClientSettings(navigatorProvider.getNavigatorSessionObject(sessionId).remoteNavigator, request);
     }
 
-    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator) throws RemoteException {
-        return LogicsSessionObject.getClientSettings(remoteNavigator);
+    public static ClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, HttpServletRequest request) throws RemoteException {
+        return LogicsSessionObject.getClientSettings(NavigatorProviderImpl.getSessionInfo(request), remoteNavigator);
     }
 
     private boolean getDisableRegistration(ServerSettings serverSettings) {
