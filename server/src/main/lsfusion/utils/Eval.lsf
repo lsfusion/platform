@@ -117,6 +117,14 @@ executionScriptTypeName (ScriptType st) = getWord(staticName(st),'.',2);
 evalString = DATA LOCAL STRING();
 executeScript '{eval.execution}' (Script s) {
     preRunScript(s);
+    
+    LOCAL isContainsRunAction = BOOLEAN();
+    isContainsRunAction() <- regexPatternMatch(text(s), '.*run[ \n]*\\(.*\n*.*\\)[ \n]*\{.*');
+    IF executionScriptTypeName(calculateScriptType()) == 'script' AND NOT isContainsRunAction() THEN {
+        SHOW exception OBJECTS message = '{eval.script.form.exception.without.run.block}' WAIT;
+        RETURN;
+    }
+
     NEWSESSION TRY { 
         IF executionScriptTypeName(calculateScriptType()) == 'script' OR executionScriptTypeName(calculateScriptType()) == 'action' THEN evalString() <- text(s); 
         IF executionScriptTypeName(calculateScriptType()) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}'; 
