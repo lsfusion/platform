@@ -144,7 +144,7 @@ account = DATA Account (Email) NONULL DELETE;
 uid = DATA LONG (Email);  
 emailAccountUID = GROUP AGGR Email email BY account(email), uid (email); 
 
-subject '{email.subject.email}' = DATA STRING[100] (Email);
+subject '{email.subject.email}' = DATA STRING (Email) CHARWIDTH 50;
 fromAddress '{email.from.address.email}' = DATA STRING[100] (Email);
 toAddress '{email.to.address.email}' = DATA STRING[100] (Email);
 dateTimeSent '{email.date.time.sent.email}' = DATA DATETIME (Email);
