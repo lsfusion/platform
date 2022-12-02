@@ -59,8 +59,8 @@ public class SingletonSet<K> implements ImSet<K>, ImList<K>, ImOrderSet<K> {
         return false;
     }
 
-    public int hashCode() {
-        return key.hashCode();
+    public int hashCode() { // should match ACol hashCode
+        return key.hashCode() * 31;
     }
 
     private class SingleIterator implements Iterator<K> {

@@ -25,6 +25,7 @@ import lsfusion.server.physics.admin.Settings;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
@@ -88,7 +89,9 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
                     }
 
                     if(!found) { // значит остались циклы, берем любую и перекидываем в where
-                        java.util.Map.Entry<ParamExpr, Expr> cycle = mTransEq1.entrySet().iterator().next();
+                        it = mTransEq1.entrySet().iterator();
+                        java.util.Map.Entry<ParamExpr, Expr> cycle = it.next();
+                        it.remove();
                         where1 = where1.and(cycle.getKey().compare(cycle.getValue(), Compare.EQUALS));
                     }
                 }

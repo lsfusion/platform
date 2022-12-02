@@ -2222,7 +2222,7 @@ public class Settings implements Cloneable {
     public void setClassOptimizationActionCasesCount(int classOptimizationActionCasesCount) {
         this.classOptimizationActionCasesCount = classOptimizationActionCasesCount;
     }
-    
+
     private boolean extendedSQLConnectionLog = false;
 
     public boolean isExtendedSQLConnectionLog() {
@@ -2414,7 +2414,7 @@ public class Settings implements Cloneable {
     public void setDefaultCompareForStringContains(boolean defaultCompareForStringContains) {
         this.defaultCompareForStringContains = defaultCompareForStringContains;
     }
-    
+
     // should be enabled only when there will be constraint that AGGR property should not be changed
     private boolean disableCorrelations = true; // enable onl;y when sinpleApplyRemoveClasses is on (if singleApply is on), otherwise when singleApply is on, aggregation property changes (correlations) are applied, and in changes where this aggregation properties are used, no one refresh their values
 
@@ -2573,6 +2573,17 @@ public class Settings implements Cloneable {
 
     public double getUpdateSavePointsMinMultiplier() {
         return updateSavePointsMinMultiplier;
+    }
+
+    // temporary fallback
+    private boolean removeClassesFallback = false;
+
+    public boolean isRemoveClassesFallback() {
+        return removeClassesFallback;
+    }
+
+    public void setRemoveClassesFallback(boolean removeClassesFallback) {
+        this.removeClassesFallback = removeClassesFallback;
     }
 
     public void setUpdateSavePointsMinMultiplier(double updateSavePointsMinMultiplier) {
