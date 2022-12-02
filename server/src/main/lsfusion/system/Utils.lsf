@@ -151,6 +151,8 @@ regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FO
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
 
+regexPatternMatch (TEXT str, STRING pattern) = FORMULA BOOLEAN PG '$1~$2';
+
 ltrim (TEXT p1) = FORMULA TEXT 'ltrim($1)';
 rtrim (TEXT p1) = FORMULA TEXT 'rtrim($1)';
 
