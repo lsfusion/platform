@@ -221,14 +221,18 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         private final ImMap<DataProperty, SessionData> data;
 
         private Transaction() {
-            assert sessionEventChangedOld.isEmpty(); // в транзакции никаких сессионных event'ов быть не может
+            checkSessionEventEmpty();
 //            assert applyModifier.getHintProps().isEmpty(); // равно как и хинт'ов, не факт, потому как транзакция не сразу создается
 
             data = SessionTableUsage.saveData(DataSession.this.data);
-            
+
             classChanges = DataSession.this.classChanges.startTransaction();
         }
-        
+
+        private void checkSessionEventEmpty() {
+            ServerLoggers.assertLog(sessionEventChangedOld.isEmpty(), "SESSION EVENTS NOT EMPTY"); // в транзакции никаких сессионных event'ов быть не может
+        }
+
         private void rollData() throws SQLException {
             Map<DataProperty, PropertyChangeTableUsage<ClassPropertyInterface>> rollData = MapFact.mAddRemoveMap();
             for(int i=0,size=data.size();i<size;i++) {
@@ -248,7 +252,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         }
 
         private void rollback() throws SQLException, SQLHandledException {
-            ServerLoggers.assertLog(sessionEventChangedOld.isEmpty(), "SESSION EVENTS NOT EMPTY"); // в транзакции никаких сессионных event'ов быть не может
+            checkSessionEventEmpty();
             ServerLoggers.assertLog(applyModifier.getHintProps().isEmpty(), "APPLY HINTS NOT EMPTY"); // равно как и хинт'ов
 
             dropTables(SetFact.EMPTY()); // старые вернем, таблицу удалятся (но если нужны будут, rollback откатит эти изменения)
@@ -582,13 +586,6 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         assert dataModifier.getHintProps().isEmpty(); // hint'ы все должны также уйти
 
-        if(cancel) {
-            sessionEventChangedOld.clear(sql, getOwner());
-        } else
-            assert sessionEventChangedOld.isEmpty();
-        sessionEventNotChangedOld.clear();
-        updateNotChangedOld.clear();
-
         applyObject = null; // сбрасываем в том числе когда cancel потому как cancel drop'ает в том числе и добавление объекта
     }
 
@@ -900,10 +897,11 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         return false;        
     }
 
+    // don not need to be put in Transaction, since there is an assestion, that all this collections are not changed during the transaction
     // для OldProperty хранит изменения с предыдущего execute'а
     private IncrementTableProps sessionEventChangedOld = new IncrementTableProps(); // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
     private IncrementChangeProps sessionEventNotChangedOld = new IncrementChangeProps(); // assert что OldProperty, при этом у которых Scope соответствующий локальному событию
-    private Map<OldProperty, Boolean> updateNotChangedOld = new HashMap<>(); // для того чтобы не заботиться об изменениях между локальными событиями
+    private Map<OldProperty, Boolean> updateNotChangedOld = new HashMap<>(); // для того чтобы не заботиться обta изменениях между локальными событиями
 
     // потом можно было бы оптимизировать создание OverrideSessionModifier'а (в рамках getPropertyChanges) и тогда можно создавать modifier'ы непосредственно при запуске
     private boolean inSessionEvent;
@@ -912,6 +910,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             return SetFact.singleton(old.property);
         }
         protected void updateSource(OldProperty property, boolean dataChanged, boolean forceUpdate) throws SQLException, SQLHandledException {
+            assert !isInTransaction(); // because notifySourceChange (and thus this method) is called only when this modifier is used (and sessionEventModifier can't be used during the transaction)
             ServerLoggers.assertLog(forceUpdate || isInSessionEvent(), "UPDATING SOURCE SHOULD BE IN SESSION EVENT"); // так как идет в getPropertyChanges
             updateSessionNotChangedEvents(property, dataChanged);
         }
@@ -970,7 +969,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
     private void updateSessionEventNotChangedOld(ExecutionEnvironment env) throws SQLException, SQLHandledException {
         // обновляем прямо перед началом локального события, чтобы не заботиться о clearHints и других изменениях между локальными событиями
-        assert isInSessionEvent();
+        assert isInSessionEvent() && !isInTransaction();
         if(!updateNotChangedOld.isEmpty()) { // оптимизация
             Map<OldProperty, Boolean> snapUpdateNotChangedOld = new HashMap<>(updateNotChangedOld); // чтобы не нарушать assertion сверху assert updateNotChangedOld.isEmpty();
             updateNotChangedOld.clear();
@@ -1019,6 +1018,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
     }
 
     private void dropSessionEventChangedOld() throws SQLException, SQLHandledException {
+        assert !isInTransaction();
         // закидываем старые изменения
         for(Property changedOld : sessionEventChangedOld.getProperties()) // assert что только old'ы
             updateNotChangedOld.put((OldProperty)changedOld, true);
@@ -2187,7 +2187,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
             recursiveActions.clear();
             return recursiveApply(execRecursiveActions, BL, stack);
         }
-        
+
         FunctionSet<SessionDataProperty> keepProps = keepUpProps; // because it is set to empty in endTransaction
 
         long checkedTimestamp;
@@ -2206,9 +2206,20 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         registerClassRemove.checked(checkedTimestamp);
 
-        updateSessionNotChangedEvents(keepProps); // need this to mark that nested props are not changed, not in restart to be out of transaction
+        restartFinal(false, keepProps);
 
         return true;
+    }
+
+    private void restartFinal(boolean cancel, FunctionSet<SessionDataProperty> keepProps) throws SQLException, SQLHandledException {
+        if(cancel) {
+            sessionEventChangedOld.clear(sql, getOwner());
+        } else
+            assert sessionEventChangedOld.isEmpty();
+        sessionEventNotChangedOld.clear();
+        updateNotChangedOld.clear();
+
+        updateSessionNotChangedEvents(keepProps); // need this to mark that nested props are not changed, not in restart to be out of transaction
     }
 
     private void updateAndRemoveClasses(UpdateCurrentClassesSession updateSession, ExecutionStack stack, BusinessLogics BL, boolean onlyRemove) throws SQLException, SQLHandledException {
@@ -2562,7 +2573,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
 
         restart(true, keep);
 
-        updateSessionNotChangedEvents(keep); // need this to mark that nested props are not changed
+        restartFinal(true, keep);
 
         if (parentSession != null) {
             parentSession.copyDataTo(this, keep);
