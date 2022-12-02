@@ -27,10 +27,6 @@ public class TabbedContainerView extends GAbstractContainerView {
 
         panel = new FlexTabbedPanel(vertical);
 
-        if (container.children.size() > 0) {
-            currentChild = container.children.get(0);
-        }
-
         panel.setSelectionHandler(index -> {
             onTabSelected(index, formController, container);
         });

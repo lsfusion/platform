@@ -26,10 +26,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
 
         panel = new FlexTabbedPanel(vertical);
 
-        if (container.children.size() > 0) {
-            currentChild = container.children.get(0);
-        }
-
         panel.setSelectionHandler(index -> {
             onTabSelected(index, formController, container);
         });
