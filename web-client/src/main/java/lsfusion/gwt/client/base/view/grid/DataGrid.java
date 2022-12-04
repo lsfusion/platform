@@ -32,6 +32,7 @@ import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -528,8 +529,15 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
             if (footer != null)
                 footer.onBrowserEvent(footerParent, event);
         } else {
-            if (column != null)
-                onBrowserEvent(new Cell(row, getColumnIndex(column), column, (RowIndexHolder) getRowValue(row)), event, column, columnParent);
+            if (column != null) {
+                RowIndexHolder rowValue;
+                try {
+                    rowValue = (RowIndexHolder) getRowValue(row);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    throw new RuntimeException("INCORRECT ROW " + row + " " + event + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()));
+                }
+                onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), event, column, columnParent);
+            }
         }
     }
 
