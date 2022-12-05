@@ -2301,7 +2301,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
-        Where where = getExpr(innerExprs).compare(getValueParamExpr(), Compare.EQUALS);
+        Where where = getExpr(innerExprs).compare(getValueParamExpr(), Compare.MATCH); // we need MATCH when calculating the cost, in theory we might use EQUALS for the stat calculation, but using MATCH everywhere will use less caches
 
         innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
         StatKeys<KeyExpr> statRows = getStatRows(innerKeys, where);
