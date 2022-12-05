@@ -257,6 +257,9 @@ round4 (number) = round(number, 4);
 round5 (number) = round(number, 5);
 round6 (number) = round(number, 6);
 
+// --------------------------------------------- COLOR --------------------------------- //
+colorToHexString(COLOR i) = FORMULA STRING  '\'#\'||substring(to_hex($1::integer),3)';
+
 // ---------------------------------- JSON functions  ---------------------------------- //
 
 jsonObject (TEXT j, STRING key) = FORMULA STRING '(($1)::json->($2))::varchar';
