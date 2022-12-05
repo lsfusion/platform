@@ -803,7 +803,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String changeKeyText = changeKey == null ? "" : String.format(EDIT_KEY_TOOL_TIP_FORMAT, getChangeKeyCaption());
 
         if (!MainController.showDetailedInfo) {
-            return String.format(TOOL_TIP_FORMAT, propCaption, changeKeyText);
+            return propCaption.isEmpty() ? null : String.format(TOOL_TIP_FORMAT, propCaption, changeKeyText);
         } else {
             String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";
