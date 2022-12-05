@@ -47,7 +47,7 @@ public class RichTextPropertyEditor extends JPanel implements PropertyEditor, Cl
                 tableEditor.stopCellEditing();
             }
         });
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getCtrlEnter(), "commitEditAction");
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStrokes.getShiftEnter(), "commitEditAction");
     }
 
     public void setTableEditor(PropertyTableCellEditor tableEditor) {
