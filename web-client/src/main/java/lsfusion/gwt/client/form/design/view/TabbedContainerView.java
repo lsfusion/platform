@@ -53,7 +53,6 @@ public class TabbedContainerView extends GAbstractContainerView {
     public void activateTab(GComponent component) {
         int index = getTabIndex(component);
         if(index >= 0) {
-            currentChild = component;
             panel.selectTab(index);
         }
     }
