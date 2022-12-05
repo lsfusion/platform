@@ -25,6 +25,7 @@ import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.PropStat;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.stat.StatType;
+import lsfusion.server.data.table.IndexType;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.type.reader.ClassReader;
 import lsfusion.server.data.where.Where;
@@ -283,12 +284,26 @@ public abstract class BaseExpr extends Expr {
     }
 
     // assert InnerExpr или KeyExpr
-    public boolean isIndexed() {
+    public boolean isIndexed(Compare compare) {
+        IndexType indexType = getIndexType();
+        if(indexType != null) {
+            switch (compare) {
+                case MATCH:
+                    return indexType.isMatch();
+                case CONTAINS:
+                    return indexType.isLike() || indexType.isMatch();
+                default:
+                    return true;
+            }
+        }
         return false;
     }
 
+    protected IndexType getIndexType() {
+        return null;
+    }
+
     public boolean hasALotOfNulls() {
-        assert isIndexed();
         return false;
     }
 

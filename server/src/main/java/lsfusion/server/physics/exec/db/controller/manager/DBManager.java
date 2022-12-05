@@ -2293,7 +2293,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         PropertyRevImplement<Z, String> propertyImplement = (PropertyRevImplement<Z, String>) findProperty(index);
         if(propertyImplement != null) {
             indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, Settings.get().getFilterMatchLanguage()));
-            propertyImplement.property.markIndexed(propertyImplement.mapping, index);
+            propertyImplement.property.markIndexed(propertyImplement.mapping, index, indexType);
         }
     }
 

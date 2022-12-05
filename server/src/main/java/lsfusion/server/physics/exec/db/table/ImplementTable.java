@@ -86,7 +86,7 @@ public class ImplementTable extends DBTable { // последний интерф
 
     private TableStatKeys statKeys = null;
     private ImMap<PropertyField, PropStat> statProps = null;
-    private ImSet<PropertyField> indexedProps = SetFact.EMPTY();
+    private ImMap<PropertyField, IndexType> indexedProps = MapFact.EMPTY();
     private ImSet<ImOrderSet<Field>> indexes = SetFact.EMPTY();
 
     public boolean markedFull;
@@ -132,8 +132,8 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     @Override
-    protected boolean isIndexed(PropertyField field) {
-        return indexedProps.contains(field);
+    protected IndexType getIndexType(PropertyField field) {
+        return indexedProps.get(field);
     }
 
     public ImplementTable(String name, final ValueClass... implementClasses) {
@@ -180,13 +180,13 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     @NFLazy
-    public void addIndex(ImOrderSet<Field> index) { // кривовато конечно, но пока другого варианта нет
+    public void addIndex(ImOrderSet<Field> index, IndexType indexType) { // кривовато конечно, но пока другого варианта нет
         assert CacheAspect.checkNoCaches(this, CacheAspect.Type.SIMPLE, Table.class, "getIndexes");
         indexes = indexes.addExcl(index);
 
         Field field = index.get(0);
-        if(field instanceof PropertyField && !indexedProps.contains((PropertyField) field)) // временно
-            indexedProps = indexedProps.addExcl((PropertyField) field);
+        if(field instanceof PropertyField)
+            indexedProps = indexedProps.merge((PropertyField) field, indexType, IndexType.addValue());
     }
 
     private NFOrderSet<ImplementTable> parents;

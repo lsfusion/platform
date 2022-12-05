@@ -17,6 +17,7 @@ import lsfusion.server.data.query.compile.FJData;
 import lsfusion.server.data.query.compile.where.UpWhere;
 import lsfusion.server.data.stat.KeyStat;
 import lsfusion.server.data.stat.StatType;
+import lsfusion.server.data.table.IndexType;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
@@ -82,8 +83,8 @@ public class NullableKeyExpr extends ParamExpr implements NullableExprInterface 
     }
 
     @Override
-    public boolean isIndexed() {
-        throw new RuntimeException("not supported yet");
+    protected IndexType getIndexType() {
+        throw new UnsupportedOperationException();
     }
 
     private final static GlobalInteger keyClass = new GlobalInteger(39316401);

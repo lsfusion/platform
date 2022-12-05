@@ -414,6 +414,15 @@ public abstract class AMap<K, V> extends AColObject implements ImMap<K, V> {
             return addExcl(key, value);
     }
 
+    @Override
+    public ImMap<K, V> merge(K key, V value, AddValue<K, V> addValue) {
+        V oldValue = get(key);
+        if(oldValue != null) // optimization
+            return replaceValue(key, addValue.addValue(key, oldValue, value));
+        else
+            return addExcl(key, value);
+    }
+
     public ImMap<K, V> replaceValue(final K replaceKey, final V replaceValue) {
         return mapValues((key, value) -> BaseUtils.hashEquals(key, replaceKey) ? replaceValue : value);
     }

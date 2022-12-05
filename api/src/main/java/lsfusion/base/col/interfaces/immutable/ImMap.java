@@ -99,6 +99,7 @@ public interface ImMap<K, V> {
 
     ImMap<K, V> replaceValues(V value);
     ImMap<K, V> override(K key, V value);
+    ImMap<K, V> merge(K key, V value, AddValue<K, V> addValue);
     ImMap<K, V> replaceValue(K key, V value);
     ImMap<K, V> replaceValues(ImMap<? extends V, ? extends V> map);
     ImMap<K,V> override(ImMap<? extends K,? extends V> map); // перекрываем this, значениями из map, replace в BaseUtils !!! тут важно разделить те которые добавляют и нет

@@ -1153,7 +1153,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         this.field = field;
     }
 
-    public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index) {
+    public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index, IndexType indexType) {
         assert isStored();
 
         ImList<Field> indexFields = index.mapListValues((PropertyObjectInterfaceImplement<String> indexField) -> {
@@ -1166,7 +1166,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return property.field;
             }
         });
-        mapTable.table.addIndex(indexFields.toOrderExclSet());
+        mapTable.table.addIndex(indexFields.toOrderExclSet(), indexType);
     }
 
     public AndClassSet getValueClassSet() {

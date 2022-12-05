@@ -81,6 +81,10 @@ public enum Compare {
                 return GREATER_EQUALS;
             case NOT_EQUALS:
                 return NOT_EQUALS;
+            case CONTAINS:
+                return CONTAINS;
+            case MATCH:
+                return MATCH;
         }
         throw new RuntimeException("not supported yet");
     }
