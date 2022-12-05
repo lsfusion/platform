@@ -46,7 +46,6 @@ public class TabbedClientContainerView extends AbstractClientContainerView {
     public void activateTab(ClientComponent component) {
         int index = getTabIndex(component);
         if(index >= 0) {
-            currentChild = component;
             panel.selectTab(index);
         }
     }
