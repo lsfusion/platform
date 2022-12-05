@@ -51,7 +51,7 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
     private ExprIndexedJoin(BaseExpr baseExpr, Compare compare, InnerJoins valueJoins, boolean not, boolean isOrderTop) {
         super(baseExpr);
         assert !compare.equals(Compare.EQUALS);
-        assert baseExpr.isIndexed();
+        assert baseExpr.isIndexed(compare);
         this.valueJoins = valueJoins;
         this.compare = compare;
         this.not = not;

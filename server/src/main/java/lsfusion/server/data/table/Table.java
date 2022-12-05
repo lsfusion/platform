@@ -493,8 +493,8 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
         }.proceed(joinImplement);
     }
 
-    protected boolean isIndexed(PropertyField field) {
-        return false;
+    protected IndexType getIndexType(PropertyField field) {
+        return null;
     }
 
     public Join joinAnd(ImMap<KeyField, ? extends BaseExpr> joinImplement) {
@@ -919,13 +919,12 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             }
 
             @Override
-            public boolean isIndexed() {
-                return Table.this.isIndexed(property);
+            protected IndexType getIndexType() {
+                return Table.this.getIndexType(property);
             }
 
             @Override
             public boolean hasALotOfNulls() {
-                assert isIndexed();
                 Stat notNull = getStatProps().get(property).notNull;
                 return notNull != null && notNull.less(Table.this.getStatRows());
             }

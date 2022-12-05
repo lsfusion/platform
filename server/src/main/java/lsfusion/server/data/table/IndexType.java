@@ -1,5 +1,8 @@
 package lsfusion.server.data.table;
 
+import lsfusion.base.col.interfaces.mutable.AddValue;
+import lsfusion.base.col.interfaces.mutable.SymmAddValue;
+
 public enum IndexType {
     DEFAULT, LIKE, MATCH;
 
@@ -39,4 +42,17 @@ public enum IndexType {
         throw new RuntimeException("Serialize IndexType");
     }
 
+    private static final AddValue<Object, IndexType> addValue = new SymmAddValue<Object, IndexType>() {
+        @Override
+        public IndexType addValue(Object key, IndexType prevValue, IndexType newValue) {
+            if(prevValue.isMatch() || newValue.isMatch())
+                return MATCH;
+            if(prevValue.isLike() || newValue.isLike())
+                return LIKE;
+            return DEFAULT;
+        }
+    };
+    public static <K> AddValue<K, IndexType> addValue() {
+        return (AddValue<K, IndexType>) addValue;
+    }
 }
