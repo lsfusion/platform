@@ -443,6 +443,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return baseType instanceof GActionType;
     }
 
+    public boolean isBoolean() {
+        return baseType instanceof GLogicalType;
+    }
+
     public boolean isHtmlText() {
         return baseType instanceof GHTMLTextType;
     }
@@ -601,7 +605,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof GLogicalType && !panelCaptionVertical && container.isVertical());
+        return panelCaptionLast != null ? panelCaptionLast : (isBoolean() && !panelCaptionVertical);
     }
 
     public GFlexAlignment getPanelCaptionAlignment() {
@@ -757,6 +761,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     @Override
     public boolean isAlignCaption() {
-        return caption != null && !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical;
+        return caption != null && !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical && !isBoolean();
     }
 }
