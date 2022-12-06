@@ -85,10 +85,6 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return getBaseDotNetSize() + 1; // для boolean
     }
 
-    public boolean useIndexedJoin() {
-        return false;
-    }
-
     @Override
     public boolean isFlex() {
         return false;

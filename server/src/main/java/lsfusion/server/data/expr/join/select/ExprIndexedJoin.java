@@ -62,19 +62,11 @@ public class ExprIndexedJoin extends ExprJoin<ExprIndexedJoin> {
         return isOrderTop;
     }
 
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type) {
         if (not)
             return new StatKeys<>(SetFact.EMPTY(), Stat.ONE);
-        else {
-            if (oldMech) {
-                if (compare.equals(Compare.EQUALS) && !givesNoKeys()) { // если не дает ключей, нельзя уменьшать статистику, так как паковка может съесть другие join'ы и тогда будет висячий ключ
-                    assert false; // так как !compare.equals(Compare.EQUALS)
-                    return new StatKeys<>(SetFact.singleton(0), Stat.ONE);
-                } else
-                    return new StatKeys<>(SetFact.singleton(0), baseExpr.getTypeStat(keyStat, true));
-            }
+        else
             throw new UnsupportedOperationException(); // так как вырезается в buildGraph
-        }
     }
 
     @Override

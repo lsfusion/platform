@@ -32,8 +32,6 @@ import java.sql.SQLException;
 
 public interface Type<T> extends ClassReader<T>, FunctionType {
 
-    boolean useIndexedJoin();
-
     interface Getter<K> {
         Type getType(K key);
     }

@@ -84,7 +84,7 @@ public class KeyJoinExpr extends BaseExpr implements InnerBaseJoin<Object> {
     }
 
     @Override
-    public StatKeys<Object> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+    public StatKeys<Object> getStatKeys(KeyStat keyStat, StatType type) {
         return new StatKeys<>(SetFact.singleton(0), Stat.ALOT);
     }
 

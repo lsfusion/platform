@@ -24,7 +24,7 @@ public class ExprStatJoin extends ExprJoin<ExprStatJoin> {
     }
 
     @Override
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type) {
         return new StatKeys<>(SetFact.singleton(0), stat);
     }
 

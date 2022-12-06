@@ -16,7 +16,7 @@ public interface BaseJoin<K> {
 
     ImMap<K, BaseExpr> getJoins();
 
-    StatKeys<K> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech);
+    StatKeys<K> getStatKeys(KeyStat keyStat, StatType type);
 
     // pushedKeys могут / должны заполняться только для InnerJoin
     Cost getPushedCost(KeyStat keyStat, StatType type, Cost pushCost, Stat pushStat, ImMap<K, Stat> pushKeys, ImMap<K, Stat> pushNotNullKeys, ImMap<BaseExpr, Stat> pushProps, Result<ImSet<K>> rPushedKeys, Result<ImSet<BaseExpr>> rPushedProps); // должен кэшироваться, так как несколько раз в цикле выполняется

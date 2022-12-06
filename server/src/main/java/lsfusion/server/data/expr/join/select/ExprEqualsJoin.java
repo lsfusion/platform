@@ -5,19 +5,13 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
-import lsfusion.server.data.expr.inner.InnerExpr;
-import lsfusion.server.data.expr.join.base.UnionJoin;
-import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.where.WhereJoin;
-import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translate.MapTranslate;
 
@@ -55,7 +49,7 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
         return expr1.getTypeStat(keyStat, false).min(expr2.getTypeStat(keyStat, false));
     }
 
-    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) { // тут по идее forJoin и true и false подойдут
+    public StatKeys<Integer> getStatKeys(KeyStat keyStat, StatType type) { // тут по идее forJoin и true и false подойдут
         return new StatKeys<>(SetFact.toExclSet(0, 1), getStat(keyStat));
     }
 

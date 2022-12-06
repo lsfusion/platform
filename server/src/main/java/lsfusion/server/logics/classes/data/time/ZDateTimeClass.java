@@ -201,11 +201,6 @@ public class ZDateTimeClass extends TimeSeriesClass<Instant> {
     }
 
     @Override
-    public boolean useIndexedJoin() {
-        return true;
-    }
-
-    @Override
     public String getIntervalProperty() {
         return "interval[ZDATETIME,ZDATETIME]";
     }

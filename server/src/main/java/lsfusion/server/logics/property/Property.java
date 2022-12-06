@@ -2291,17 +2291,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     private Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
-        return getSelectCostStat(fixedExprs).first;
+        // we can't use MATCH here, because there is a bug, that now MATCH, CONTAINS stats is not calculate properly if the expr is not indexed
+        // it's not clear how to fix this, because the table join cost is calculated based on stat, without knowing how this stat was obtained
+        // for INTERVAL it could be fixed by removing isIndexed check, but for MATCH, CONTAINS we need to know what type of index we should use (it may be solved with some virtual join probably)
+        // however here EQUALS is even semantically the right type to use
+        return getSelectCostStat(fixedExprs, Compare.EQUALS).first;
     }
 
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Pair<Stat, Cost> getSelectCostStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+    private Pair<Stat, Cost> getSelectCostStat(ImMap<T, StaticParamNullableExpr> fixedExprs, Compare compare) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
-        Where where = getExpr(innerExprs).compare(getValueParamExpr(), Compare.MATCH); // we need MATCH when calculating the cost, in theory we might use EQUALS for the stat calculation, but using MATCH everywhere will use less caches
+        Where where = getExpr(innerExprs).compare(getValueParamExpr(), compare);
 
         innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
         StatKeys<KeyExpr> statRows = getStatRows(innerKeys, where);
@@ -2325,7 +2329,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public Cost getSelectCost(ImSet<T> fixedInterfaces) {
-        return getSelectCostStat(getInterfaceParamExprs(fixedInterfaces)).second;
+        // the obtained stat will be incorrect here (see getSelectStat comment) but we don't need it anyway
+        return getSelectCostStat(getInterfaceParamExprs(fixedInterfaces), Compare.MATCH).second;
     }
 
     @IdentityInstanceLazy
