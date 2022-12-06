@@ -3,7 +3,6 @@ package lsfusion.gwt.client.form.filter.user.view;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
-import lsfusion.gwt.client.classes.data.GLogicalType;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
@@ -77,7 +76,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
 
     public void startEditing(Event keyEvent) {
         if (GwtClientUtils.isShowing(cell) && !logicsSupplier.getForm().isEditing()) { // suggest box may appear in (0,0) if filter is already gone (as it's called in scheduleDeferred)
-            if (!(cell.getProperty().baseType instanceof GLogicalType)) {
+            if (!cell.getProperty().isBoolean()) {
                 if (isAddUserFilterKeyEvent(keyEvent) || isReplaceUserFilterKeyEvent(keyEvent)) {
                     cell.startEditing(keyEvent);
                 } else {
