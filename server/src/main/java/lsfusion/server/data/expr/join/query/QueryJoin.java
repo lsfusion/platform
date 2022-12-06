@@ -5,7 +5,6 @@ import lsfusion.base.Result;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.ContextEnumerator;
 import lsfusion.server.data.caches.AbstractInnerContext;
@@ -16,10 +15,8 @@ import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.NullableExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.base.BaseJoin;
-import lsfusion.server.data.expr.join.base.UnionJoin;
 import lsfusion.server.data.expr.join.classes.InnerExprFollows;
 import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
@@ -27,7 +24,6 @@ import lsfusion.server.data.expr.join.where.WhereJoin;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
-import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.stat.*;
 import lsfusion.server.data.translate.MapTranslate;
 import lsfusion.server.data.translate.MapValuesTranslate;
@@ -188,7 +184,7 @@ public abstract class QueryJoin<K extends Expr,I extends QueryJoin.Query<K, I>, 
     }
 
     @Override
-    public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+    public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type) {
         return getStatKeys(this, keyStat, type);
     }
 

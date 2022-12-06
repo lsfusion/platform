@@ -562,7 +562,7 @@ public abstract class Table extends AbstractOuterContext<Table> implements MapKe
             return Table.this instanceof RecursiveTable ? (RecursiveTable)Table.this : null;
         }
 
-        public StatKeys<KeyField> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+        public StatKeys<KeyField> getStatKeys(KeyStat keyStat, StatType type) {
             return QueryJoin.getStatKeys(this, keyStat, type);
         }
 

@@ -34,6 +34,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
@@ -100,7 +101,7 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     }
 
     public static boolean needIndexedJoin(BaseExpr expr, Compare compare, BaseExpr valueExpr, ImOrderSet<Expr> orderTop, Result<Boolean> resultIsOrderTop) {
-        if((valueExpr == null || valueExpr.isValue()) && expr.isIndexed(compare)) {
+        if((valueExpr == null || valueExpr.isValue()) && expr.isIndexed(compare)) { // this indexed check is not that good here (at least for "greater" compares), see Property.getSelectStat comment
             boolean isOrderTop = orderTop.contains(expr);
             if(resultIsOrderTop != null)
                 resultIsOrderTop.set(isOrderTop);
@@ -113,10 +114,9 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             // доступ по индексированному полю, нужно для поиска интервалов в WhereJoins.getStatKeys() и соответствующего уменьшения статистики
             if(valueExpr == null)
                 return false;
-            else {
-                Type type = valueExpr.getSelfType();
-                return type != null && type.useIndexedJoin();
-            }
+            if(compare == Compare.CONTAINS || compare == Compare.MATCH)
+                return true;
+            return valueExpr.getSelfType() instanceof TimeSeriesClass;
         }
         return false;
     }

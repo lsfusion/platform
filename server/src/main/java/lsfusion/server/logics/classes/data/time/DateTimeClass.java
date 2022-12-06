@@ -205,11 +205,6 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
     }
 
     @Override
-    public boolean useIndexedJoin() {
-        return true;
-    }
-
-    @Override
     public String getIntervalProperty() {
         return "interval[DATETIME,DATETIME]";
     }

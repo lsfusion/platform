@@ -58,7 +58,6 @@ import lsfusion.server.physics.admin.Settings;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
 
@@ -1562,7 +1561,7 @@ public class WhereJoins extends ExtraMultiIntersectSetWhere<WhereJoin, WhereJoin
 
     private void buildStats(Result<ImSet<BaseJoin>> joins, Result<ImSet<BaseExpr>> exprs, ImSet<Edge> edges, MAddMap<BaseJoin, Stat> joinStats, MAddMap<BaseExpr, PropStat> exprStats, MAddMap<Edge, Stat> keyStats, MAddMap<BaseJoin, DistinctKeys> keyDistinctStats, MAddMap<BaseJoin, Cost> indexedStats, final StatType statType, final KeyStat keyStat) {
 
-        ImMap<BaseJoin, StatKeys> joinStatKeys = joins.result.mapValues((BaseJoin value) -> value.getStatKeys(keyStat, statType, false));
+        ImMap<BaseJoin, StatKeys> joinStatKeys = joins.result.mapValues((BaseJoin value) -> value.getStatKeys(keyStat, statType));
 
         // читаем статистику по join'ам
         for(int i=0,size=joinStatKeys.size();i<size;i++) {

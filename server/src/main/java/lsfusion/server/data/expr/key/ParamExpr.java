@@ -57,7 +57,7 @@ public abstract class ParamExpr extends VariableSingleClassExpr implements Inner
 //        return FormulaExpr.getStatValue(this, keyStat);
     }
 
-    public StatKeys<Object> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+    public StatKeys<Object> getStatKeys(KeyStat keyStat, StatType type) {
         return new StatKeys<>(Stat.ALOT);
 //        return new StatKeys<Object>(SetFact.EMPTY(), keyStat.getKeyStat(this));
     }

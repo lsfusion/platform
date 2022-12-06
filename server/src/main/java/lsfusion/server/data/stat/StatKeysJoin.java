@@ -4,19 +4,13 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.caches.AbstractOuterContext;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
-import lsfusion.server.data.expr.inner.InnerExpr;
-import lsfusion.server.data.expr.join.base.UnionJoin;
-import lsfusion.server.data.expr.join.inner.InnerJoin;
 import lsfusion.server.data.expr.join.inner.InnerJoins;
 import lsfusion.server.data.expr.join.where.WhereJoin;
-import lsfusion.server.data.query.compile.where.UpWheres;
 import lsfusion.server.data.translate.MapTranslate;
 
 public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatKeysJoin<K>> implements WhereJoin<K, StatKeysJoin<K>> {
@@ -43,7 +37,7 @@ public class StatKeysJoin<K extends BaseExpr> extends AbstractOuterContext<StatK
         return BaseUtils.immutableCast(stat.getKeys().toMap());
     }
 
-    public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type, boolean oldMech) {
+    public StatKeys<K> getStatKeys(KeyStat keyStat, StatType type) {
         return stat;
     }
 
