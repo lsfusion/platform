@@ -2363,7 +2363,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp((DataClass) requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, new InputActionContextSelector<>(contextEntity.where), contextEntity.contextActions, customEditorFunction, notNull);
+            action = addDataInputAProp((DataClass) requestValueClass, tprop, oldValue != null, oldValue != null ? oldValue.getLP().getActionOrProperty() : null, contextEntity.orderInterfaces, contextEntity.list, contextEntity.where, listScope, contextEntity.contextActions, customEditorFunction, notNull);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();

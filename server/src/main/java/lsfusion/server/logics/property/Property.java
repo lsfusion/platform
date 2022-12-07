@@ -1669,28 +1669,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
-            InputListEntity<?, PropertyInterface> inputList = null;
-            InputContextSelector<PropertyInterface> inputContextSelector = null;
-
-            // completion
-            if(isDefaultWYSInput(valueClass) && !Property.this.disableInputList) { // && // if string and not disabled
-                inputList = new InputListEntity<>(this, MapFact.EMPTYREV());
-                // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
-                inputContextSelector = new InputContextSelector<PropertyInterface>() {
-                    public Pair<InputFilterEntity<?, PropertyInterface>, ImOrderMap<InputOrderEntity<?, PropertyInterface>, Boolean>> getFilterAndOrders() {
-                        if(tooMuchSelectData(MapFact.EMPTY()))  // if cost-per-row * numberRows > max read count, won't read
-                            return null;
-                        return new Pair<>(null, MapFact.EMPTYORDER());
-                    }
-
-                    public <C extends PropertyInterface> InputContextSelector<C> map(ImRevMap<PropertyInterface, C> map) {
-                        return (InputContextSelector<C>) this;
-                    }
-                };
-            }
-
-            action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    inputList, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), inputContextSelector, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
+            action = lm.addDataInputAProp((DataClass) valueClass, targetProp, false, this, SetFact.EMPTYORDER(),
+                    null, null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
         }
 
         ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
@@ -1703,7 +1683,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return result;
     }
 
-    protected boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+    public boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return !getSelectCost(fixedExprs.keys()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
     }
 

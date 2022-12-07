@@ -1,16 +1,18 @@
 package lsfusion.server.logics.form.interactive.action.async.map;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
+import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
@@ -23,45 +25,54 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
 
     public final AsyncMapInputList<T> inputList;
 
+    public final boolean hasOldValue;
+    public final PropertyInterfaceImplement<T> oldValue;
+
     public final String customEditorFunction;
 
-    public AsyncMapInput(DataClass type, InputListEntity<?, T> list, AsyncMapInputList<T> inputList, String customEditorFunction) {
+    public AsyncMapInput(DataClass type, InputListEntity<?, T> list, AsyncMapInputList<T> inputList, boolean hasOldValue, PropertyInterfaceImplement<T> oldValue, String customEditorFunction) {
         this.type = type;
         this.list = list;
         this.inputList = inputList;
+
+        this.hasOldValue = hasOldValue;
+        this.oldValue = oldValue;
+
         this.customEditorFunction = customEditorFunction;
     }
 
     public AsyncMapInput<T> override(String action, AsyncMapEventExec<T> asyncExec) {
-        return new AsyncMapInput<>(type, list, inputList != null ? inputList.replace(action, asyncExec) : null, customEditorFunction);
+        return new AsyncMapInput<>(type, list, inputList != null ? inputList.replace(action, asyncExec) : null, hasOldValue, oldValue, customEditorFunction);
     }
 
-    private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P> list, AsyncMapInputList<P> inputList) {
-        return new AsyncMapInput<P>(type, list, inputList, customEditorFunction);
+    private <P extends PropertyInterface> AsyncMapInput<P> override(InputListEntity<?, P> list, AsyncMapInputList<P> inputList, boolean hasOldValue, PropertyInterfaceImplement<P> oldValue) {
+        return new AsyncMapInput<P>(type, list, inputList, hasOldValue, oldValue, customEditorFunction);
     }
 
     public AsyncMapInput<T> newSession() {
-        return override(list != null ? list.newSession() : null, inputList);
+        return override(list != null ? list.newSession() : null, inputList, hasOldValue, oldValue);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> map(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.map(mapping) : null, inputList != null ? inputList.map(mapping) : null);
+        return override(list != null ? list.map(mapping) : null, inputList != null ? inputList.map(mapping) : null, hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapInner(ImRevMap<T, P> mapping) {
-        return override(list != null ? list.mapInner(mapping) : null, inputList != null ? inputList.mapInner(mapping) : null);
+        return override(list != null ? list.mapInner(mapping) : null, inputList != null ? inputList.mapInner(mapping) : null, hasOldValue, oldValue != null ? oldValue.map(mapping) : null);
     }
 
     @Override
     public <P extends PropertyInterface> AsyncMapFormExec<P> mapJoin(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
-        return override(list != null ? list.mapJoin(mapping) : null, inputList != null ? inputList.mapJoin(mapping) : null);
+        return override(list != null ? list.mapJoin(mapping) : null, inputList != null ? inputList.mapJoin(mapping) : null, hasOldValue, oldValue instanceof PropertyInterface ? mapping.get((T)oldValue) : null);
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
-        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, policy, securityProperty, toDraw) : null, customEditorFunction);
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+        if (hasOldValue && !(oldValue instanceof PropertyMapImplement && ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty)))
+            return null;
+        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, policy, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
     }
 
     @Override
@@ -75,7 +86,8 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
 
         DataClass compatibleType = ((DataClass<?>)type).getCompatible(dataInput.type, true);
         if(compatibleType != null)
-            return new AsyncMapInput<>(compatibleType, null, null, customEditorFunction);
+            return new AsyncMapInput<>(compatibleType, null, null, hasOldValue || dataInput.hasOldValue,
+                    oldValue == null || dataInput.oldValue == null || oldValue.equals(dataInput.oldValue) ? BaseUtils.nvl(oldValue, dataInput.oldValue) : null, customEditorFunction);
         return null;
     }
 
