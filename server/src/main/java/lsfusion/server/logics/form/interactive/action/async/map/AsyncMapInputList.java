@@ -3,14 +3,12 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.server.logics.action.Action;
-import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -32,8 +30,8 @@ public class AsyncMapInputList<T extends PropertyInterface> {
         return new InputList(actions.mapListValues((Function<AsyncMapInputListAction<T>, InputListAction>) AsyncMapInputListAction::map).toArray(new InputListAction[actions.size()]), strict);
     }
 
-    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw) {
-        return new InputList(actions.mapListValues(action -> action.map(mapObjects, form, policy, securityProperty, toDraw)).toArray(new InputListAction[actions.size()]), strict).filter(policy, securityProperty);
+    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+        return new InputList(actions.mapListValues(action -> action.map(mapObjects, form, policy, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()]), strict).filter(policy, securityProperty);
     }
 
     public <P extends PropertyInterface> AsyncMapInputList<P> map(ImRevMap<T, P> mapping) {

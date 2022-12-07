@@ -45,10 +45,10 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return this.property.getGroupChange(entity, mapping);
     }
 
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, GroupObjectEntity toDraw, boolean optimistic) {
+    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
         AsyncMapEventExec<P> asyncExec = property.getAsyncEventExec(optimistic);
         if(asyncExec != null)
-            return asyncExec.map(mapping, form, policy, securityProperty, toDraw);
+            return asyncExec.map(mapping, form, policy, securityProperty, drawProperty, toDraw);
         return null;
     }
 

@@ -7,7 +7,6 @@ import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
@@ -991,6 +990,35 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Input ----------------- //
+
+    public <T extends PropertyInterface, V extends PropertyInterface> LA<?> addDataInputAProp(DataClass valueClass, LP targetProp, boolean hasOldValue, Property<V> valueProperty,
+                                                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
+                                                                                              InputFilterEntity<?, T> contextFilter, FormSessionScope contextScope,
+                                                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
+        InputContextSelector<T> contextSelector = null;
+        if(contextList == null && contextFilter == null && valueProperty != null) {
+            if(Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList) { // && // if string and not disabled
+                contextList = new InputListEntity<>(valueProperty, MapFact.EMPTYREV());
+
+                // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
+                contextSelector = new InputContextSelector<T>() {
+                    public Pair<InputFilterEntity<?, T>, ImOrderMap<InputOrderEntity<?, T>, Boolean>> getFilterAndOrders() {
+                        if (valueProperty.tooMuchSelectData(MapFact.EMPTY()))  // if cost-per-row * numberRows > max read count, won't read
+                            return null;
+                        return new Pair<>(null, MapFact.EMPTYORDER());
+                    }
+
+                    public <C extends PropertyInterface> InputContextSelector<C> map(ImRevMap<T, C> map) {
+                        return (InputContextSelector<C>) this;
+                    }
+                };
+            }
+        } else {
+            contextSelector = new InputActionContextSelector<>(contextFilter);
+        }
+
+        return addInputAProp(valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextScope, contextSelector, contextActions, customEditorFunction, notNull);
+    }
 
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue,
                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,

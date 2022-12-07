@@ -96,4 +96,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
         return new InputOrderEntity<P, T>(property, mapOrderObjects);
     }
+
+    public boolean equalsMap(PropertyObjectEntity<?> mapProp) {
+        return property.equals(mapProp.property) && mapping.equals(mapProp.mapping);
+    }
 }

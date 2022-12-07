@@ -16,13 +16,11 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputList;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputListAction;
-import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.lang3.ArrayUtils;
@@ -128,11 +126,9 @@ public class InputAction extends SystemExplicitAction {
 
     @Override
     public AsyncMapEventExec<ClassPropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-        if (optimistic || oldValueInterface == null) {
-            InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-            return new AsyncMapInput<>(getInputClass(fullContextList), fullContextList, getMapInputList(), customChangeFunction);
-        }
-        return null;
+        InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
+        boolean hasOldValue = !optimistic && oldValueInterface != null;
+        return new AsyncMapInput<>(getInputClass(fullContextList), fullContextList, getMapInputList(), hasOldValue, hasOldValue ? oldValueInterface : null, customChangeFunction);
     }
 
 //    FormInteractiveAction doesn't include contextFilters, so not sure that InputAction should
