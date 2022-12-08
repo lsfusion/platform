@@ -533,7 +533,7 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 RowIndexHolder rowValue;
                 try {
                     rowValue = (RowIndexHolder) getRowValue(row);
-                } catch (ArrayIndexOutOfBoundsException e) {
+                } catch (IndexOutOfBoundsException e) {
                     throw new RuntimeException("INCORRECT ROW " + row + " " + event + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()));
                 }
                 onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), event, column, columnParent);
