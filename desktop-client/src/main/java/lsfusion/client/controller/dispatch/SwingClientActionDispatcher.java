@@ -539,6 +539,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     public void execute(ProcessFormChangesClientAction action) {
     }
 
+    public void execute(ProcessNavigatorChangesClientAction action) {
+    }
+
     public Object execute(RequestUserInputClientAction action) {
         throw new UnsupportedOperationException("Request user input action is not supported for this dispatcher");
     }

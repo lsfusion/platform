@@ -72,6 +72,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.status));
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.forms));
 
+        put in navigator info navigator data first changes
+
         return new NavigatorInfo(root, navigatorWindows, windows);
     }
 

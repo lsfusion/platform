@@ -56,6 +56,8 @@ public class NavigatorData {
             }
         }
 
+        deserialize and add to navigatordata
+
         ClientAbstractWindow logs =new ClientAbstractWindow(inStream);
         ClientAbstractWindow status = new ClientAbstractWindow(inStream);
         ClientAbstractWindow forms = new ClientAbstractWindow(inStream);

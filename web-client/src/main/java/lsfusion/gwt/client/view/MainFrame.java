@@ -481,6 +481,9 @@ public class MainFrame implements EntryPoint {
 
         formsController.initRoot(formsController);
 
+        apply initial navigator changes from navigatorinfo somewhere around here
+        applyNavigatorChanges(result.firstChanges)
+
         formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
             @Override
             protected Runnable getOnRequestFinished() {

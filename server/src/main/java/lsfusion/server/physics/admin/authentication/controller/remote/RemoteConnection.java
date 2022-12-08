@@ -297,11 +297,6 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     @Override
-    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
-        return null;
-    }
-
-    @Override
     public ExternalResponse exec(String actionName, ExternalRequest request) {
         ExternalResponse result;
         try {

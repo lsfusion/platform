@@ -872,10 +872,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
-        return prepareRemoteChangesResponse(requestIndex, pendingActions, stack, forceLocalEvents);
-    }
-
-    private ServerResponse prepareRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
         boolean delayedGetRemoteChanges = false;
         boolean delayedHideForm = false;
         for(ClientAction action : pendingActions) {
