@@ -54,7 +54,10 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
 
     @Override
     public void trySetFocus() {
-        setFocus(true); // we can check if it's focusable, but it will be done automatically in onFocus
+        //it's also checked in onFocus, but there is also focusLastBlurredElement which can return false
+        if(isFocusable() || forceSetFocus) {
+            setFocus(true);
+        }
     }
 
     public void onBinding(Event event) {
