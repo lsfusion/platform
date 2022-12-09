@@ -16,6 +16,7 @@ import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.classes.data.GFormatType;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -37,7 +38,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
 
@@ -384,10 +384,10 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                             boolean succeededEmpty = false;
                             if(result.first != null) {
                                 List<String> rawSuggestions = new ArrayList<>();
-                                ArrayList<SuggestBox.Suggestion> suggestionList = new ArrayList<>();
+                                ArrayList<PopupMenuItemValue> suggestionList = new ArrayList<>();
                                 for (GAsync suggestion : result.first) {
                                     rawSuggestions.add(suggestion.rawString);
-                                    suggestionList.add(new SuggestBox.Suggestion() {
+                                    suggestionList.add(new PopupMenuItemValue() {
                                         @Override
                                         public String getDisplayString() {
                                             return suggestion.displayString;

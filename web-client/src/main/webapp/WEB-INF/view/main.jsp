@@ -172,9 +172,8 @@
 
                 "static/css/gwt/main.css",
 
-                "static/css/gwt/form/components/property/suggest-box.css",
-
                 "static/css/gwt/form/components/base/dialog.css",
+                "static/css/gwt/form/components/base/popup-menu.css",
                 "static/css/gwt/form/components/base/progress-bar.css",
                 "static/css/gwt/form/components/base/resizable-window.css",
 

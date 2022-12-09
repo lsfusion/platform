@@ -1,4 +1,4 @@
-package lsfusion.gwt.client.form.property.cell.classes.controller.suggest;
+package lsfusion.gwt.client.base.view.popup;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
@@ -11,7 +11,6 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.util.ArrayList;
@@ -19,11 +18,11 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
-public class PopupPanel extends ComplexPanel {
+public class PopupMenuPanel extends ComplexPanel {
 
-    private ArrayList<MenuItem> items = new ArrayList<>();
+    private ArrayList<PopupMenuItem> items = new ArrayList<>();
 
-    private MenuItem selectedItem;
+    private PopupMenuItem selectedItem;
 
     private boolean showing;
 
@@ -37,7 +36,7 @@ public class PopupPanel extends ComplexPanel {
     // The top style attribute in pixels
     private int topPosition = -1;
 
-    public PopupPanel() {
+    public PopupMenuPanel() {
         super();
 
         setElement(createULElement());
@@ -372,21 +371,23 @@ public class PopupPanel extends ComplexPanel {
     }
 
     public void addTextItem(String text) {
-        addItem(new MenuItem(null, null, text, false));
+        addItem(new PopupMenuItem(null, null, text, false));
     }
 
     public void addBottomPanelItem(FlexPanel bottomPanel) {
         bottomPanel.removeFromParent();
         add(bottomPanel, getElement());
-        addItem(new MenuItem(null, null, bottomPanel, false));
+        addItem(new PopupMenuItem(null, null, bottomPanel, false));
     }
 
-    public void addItem(SuggestBox.Suggestion suggestion, SuggestBox.SuggestionCallback callback) throws IndexOutOfBoundsException {
-        addItem(new MenuItem(suggestion, () -> callback.onSuggestionSelected(suggestion), suggestion.getDisplayString(), true));
+    public void addItem(PopupMenuItemValue itemValue, PopupMenuCallback callback) throws IndexOutOfBoundsException {
+        PopupMenuItem menuItem = new PopupMenuItem(itemValue, () -> callback.onMenuItemSelected(itemValue), true);
+        menuItem.setTitle(itemValue.getTooltipString());
+        addItem(menuItem);
     }
 
-    private void addItem(MenuItem menuItem) {
-        if (menuItem.interactive) {
+    public void addItem(PopupMenuItem menuItem) {
+        if (menuItem.isInteractive()) {
             items.add(menuItem);
         }
         add(menuItem, getElement());
@@ -423,7 +424,7 @@ public class PopupPanel extends ComplexPanel {
 
     @Override
     public void onBrowserEvent(Event event) {
-        MenuItem item = findItem(DOM.eventGetTarget(event));
+        PopupMenuItem item = findItem(DOM.eventGetTarget(event));
         switch (DOM.eventGetType(event)) {
             case Event.ONMOUSEDOWN: {
                 // Fire an item's command when the user clicks on it.
@@ -492,7 +493,7 @@ public class PopupPanel extends ComplexPanel {
         super.onBrowserEvent(event);
     }
 
-    public void selectItem(MenuItem item) {
+    public void selectItem(PopupMenuItem item) {
         if (item != selectedItem) {
             if (selectedItem != null) {
                 selectedItem.setSelectionStyle(false);
@@ -506,30 +507,30 @@ public class PopupPanel extends ComplexPanel {
         }
     }
 
-    protected SuggestBox.Suggestion getSelectedItemSuggestion() {
-        return selectedItem != null ? selectedItem.suggestion : null;
+    public PopupMenuItemValue getSelectedItemValue() {
+        return selectedItem != null ? selectedItem.getItemValue() : null;
     }
 
-    void clearSelectedItem() {
+    public void clearSelectedItem() {
         selectItem(null);
     }
 
-    void doItemAction(final MenuItem item) {
+    void doItemAction(final PopupMenuItem item) {
         // Ensure that the item is selected.
         selectItem(item);
 
         // if the command should be fired and the item has one, fire it
-        if (item.command != null) {
+        if (item.getCommand() != null) {
             clearSelectedItem();
 
             // Fire the item's command. The command must be fired in the same event
             // loop or popup blockers will prevent popups from opening.
-            Scheduler.get().scheduleFinally(item.command);
+            Scheduler.get().scheduleFinally(item.getCommand());
         }
     }
 
-    private MenuItem findItem(Element hItem) {
-        for (MenuItem item : items) {
+    private PopupMenuItem findItem(Element hItem) {
+        for (PopupMenuItem item : items) {
             if (item.getElement().isOrHasChild(hItem)) {
                 return item;
             }
@@ -581,56 +582,9 @@ public class PopupPanel extends ComplexPanel {
 
     }
 
-    private class MenuItem extends SimplePanel {
-        private SuggestBox.Suggestion suggestion;
-        private Scheduler.ScheduledCommand command;
-        private boolean interactive;
-
-        //menu items
-        public MenuItem(SuggestBox.Suggestion suggestion, Scheduler.ScheduledCommand command, String text, boolean interactive) {
-            this(createLIElement(text, interactive), suggestion, command, interactive);
-        }
-
-        //bottom panel
-        public MenuItem(SuggestBox.Suggestion suggestion, Scheduler.ScheduledCommand command, FlexPanel panel, boolean interactive) {
-            this(createLIElement(panel, interactive), suggestion, command, interactive);
-        }
-
-        public MenuItem(LIElement liElement, SuggestBox.Suggestion suggestion, Scheduler.ScheduledCommand command, boolean interactive) {
-            super(liElement);
-            this.suggestion = suggestion;
-            this.command = command;
-            this.interactive = interactive;
-        }
-
-        private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
-
-        protected void setSelectionStyle(boolean selected) {
-            if (selected) {
-                addStyleDependentName(DEPENDENT_STYLENAME_SELECTED_ITEM);
-            } else {
-                removeStyleDependentName(DEPENDENT_STYLENAME_SELECTED_ITEM);
-            }
-        }
-    }
-
     private UListElement createULElement() {
         UListElement element = Document.get().createULElement();
         element.addClassName("dropdown-menu show");
-        return element;
-    }
-
-    private LIElement createLIElement(String text, boolean interactive) {
-        LIElement element = Document.get().createLIElement();
-        element.setInnerHTML(text);
-        element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
-        return element;
-    }
-
-    private LIElement createLIElement(FlexPanel panel, boolean interactive) {
-        LIElement element = Document.get().createLIElement();
-        element.appendChild(panel.getElement());
-        element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
         return element;
     }
 }

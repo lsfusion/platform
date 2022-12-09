@@ -52,7 +52,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         this.initialFilters = filters;
         this.hasFiltersContainer = hasFiltersContainer;
 
-        toolbarButton = new GToolbarButton(StaticImage.FILTER_ICON_PATH) {
+        toolbarButton = new GToolbarButton(StaticImage.FILTER) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> {
