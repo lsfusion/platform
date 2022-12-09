@@ -315,3 +315,32 @@ NAVIGATOR {
         NEW Scheduler.scheduledTask FIRST;
     }
 }
+
+// default tasks
+
+createScheduledTask '{scheduler.default.data.load.default.scheduled.task}'(STRING[100] iname, DATETIME startTime, INTEGER integer, SchedulerStartType type)  {
+    NEW s = UserScheduledTask {
+        name(s) <- iname;
+        active(s) <- TRUE;
+        startDate(s) <- startTime;
+        period(s) <- integer;
+        schedulerStartType(s) <- type;
+    }
+}
+
+createScheduledTaskDetail '{scheduler.default.data.load.default.scheduled.task.detail}'(STRING[100] iname, INTEGER order, STRING prop)  {
+    NEW d = UserScheduledTaskDetail {
+        order(d) <- order;
+        active(d) <- TRUE;
+        action(d) <- actionCanonicalName(prop);
+        scheduledTask(d) <- scheduledTask(iname);
+    }
+}
+
+onStarted() + {
+    IF (NOT GROUP SUM 1 IF d IS ScheduledTask) AND actionCanonicalName('Service.recalculateStatsAction[]') AND actionCanonicalName('Service.vacuumDBAction[]') THEN {
+        createScheduledTask ('{scheduler.default.data.load.default.service.db}', dateTimeToDateTime(currentDate(), 03:00), 86400, SchedulerStartType.afterStart);
+        createScheduledTaskDetail ('{scheduler.default.data.load.default.service.db}', 1, 'Service.recalculateStatsAction[]');
+        createScheduledTaskDetail ('{scheduler.default.data.load.default.service.db}', 2, 'Service.vacuumDBAction[]');
+    }
+}
