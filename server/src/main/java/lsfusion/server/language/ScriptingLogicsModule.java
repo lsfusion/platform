@@ -3298,7 +3298,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
+    public Pair<LPWithParams, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
         LP lp = null;
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
@@ -3314,7 +3314,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 } else {
                     LocalizedString lstr = transformLocalizedStringLiteral((String) value);
                     lp = addUnsafeCProp(getStringConstClass(lstr), lstr);
-                    return Pair.create(lp, new LPLiteral(lstr));
+                    return Pair.create(new LPWithParams(lp), new LPLiteral(lstr));
                 }
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
             case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
@@ -3325,14 +3325,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             case COLOR: lp =  addUnsafeCProp(ColorClass.instance, value); break;
             case NULL: lp =  baseLM.vnull; break;
         }
-        return Pair.create(lp, new LPLiteral(value));
+        return Pair.create(new LPWithParams(lp), new LPLiteral(value));
     }
 
-    protected LP addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+    protected LPWithParams addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
         String resourceName = transformToResourceName(source.substring(INLINE_PREFIX.length(), source.length() - 1));
         String code = parseStringInlineProp(resourceName);
         code = quote(escapeInlineContent(code));
-        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic).getLP();
+        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic);
     }
 
     private String parseStringInlineProp(String resourceName) throws ScriptingErrorLog.SemanticErrorException {
@@ -3343,14 +3343,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    protected LP<?> addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+    protected LPWithParams addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
         String code = null;
         try {
             code = StringUtils.join(ScriptedStringUtils.parseStringInterpolateProp(source), " + ");
         } catch (TransformationError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
-        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
+        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic);
     }
 
     private LP addNumericConst(BigDecimal value) {
@@ -4056,7 +4056,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumberBefore, lineNumberAfter, enabledMeta);
     }
 
-    private Pair<LP, LPNotExpr> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
+    private Pair<LPWithParams, LPNotExpr> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
 
@@ -4084,7 +4084,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             else
                 throw e;
         }
-        return new Pair<>(resultProp, isCompoundID ? new LPCompoundID(name, semanticError) : null);
+        return new Pair<>(new LPWithParams(resultProp), isCompoundID ? new LPCompoundID(name, semanticError) : null);
     }
 
     public Pair<LPWithParams, LPNotExpr> addSingleParameter(TypedParameter param, List<TypedParameter> context, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
