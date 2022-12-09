@@ -496,11 +496,7 @@ public class MainFrame implements EntryPoint {
     }
 
     private native String getSessionId() /*-{
-        var sessionId = $wnd.sessionID;
-        if (sessionId != null)
-            delete $wnd.sessionID;
-
-        return sessionId;
+        return $wnd.document.body.getAttribute("sessionID");
     }-*/;
 
     public void initializeLogicsAndNavigator() {
