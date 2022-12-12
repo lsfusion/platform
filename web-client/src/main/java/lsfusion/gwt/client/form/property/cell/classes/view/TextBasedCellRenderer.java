@@ -110,10 +110,14 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         } else {
             String stringValue = unicodeEscape(format((T) value));
             setInnerText(element, stringValue);
-            element.setTitle(property.echoSymbols ? "" : stringValue);
+            element.setTitle(property.echoSymbols ? "" : getTitle(element, stringValue));
         }
 
         return true;
+    }
+
+    protected String getTitle(Element element, String stringValue) {
+        return stringValue;
     }
 
     public abstract String format(T value);
