@@ -264,7 +264,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return mResult.immutableOrder();
     }
 
-    public CompiledQuery(final Query<K, V> query, SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext, boolean noExclusive, boolean noInline, ImMap<V, Type> exCastTypes, boolean needDebugInfo) {
+    public CompiledQuery(final Query<K, V> query, SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Result<Boolean> ordersSplit, LimitOptions limit, SubQueryContext subcontext, boolean noExclusive, boolean noInline, ImMap<V, Type> exCastTypes, boolean needDebugInfo) {
 
         Result<ImOrderSet<K>> resultKeyOrder = new Result<>(); Result<ImOrderSet<V>> resultPropertyOrder = new Result<>();
 
@@ -296,7 +296,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         noExclusive = noExclusive || distinctValues || Settings.get().isNoExclusiveCompile(); // we don't want exclusiveness for distinct values since we can't use UNION ALL in that case
         Result<Boolean> unionAll = new Result<>();
         ImCol<GroupJoinsWhere> queryJoins = query.getWhereJoins(!useFJ && !noExclusive, unionAll,
-                                limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapList(query.properties).toOrderSet() : SetFact.EMPTYORDER());
+                                limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapList(query.properties).toOrderSet() : SetFact.EMPTYORDER(), ordersSplit);
         boolean union = queryJoins.size() >= 2 && ((!useFJ && (unionAll.result || !Settings.get().isUseFJInsteadOfUnion())) || distinctValues); // it doesn't make sense (and apparently is not possible) to use full join for distinct values
         if (union) { // сложный UNION запрос
             ImMap<V, Type> castTypes = BaseUtils.immutableCast(

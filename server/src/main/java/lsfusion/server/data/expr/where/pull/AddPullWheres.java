@@ -16,10 +16,12 @@ public abstract class AddPullWheres<K,R> extends PullWheres<R, K> {
         return proceedIf(ifWhere, proceed(mapTrue), proceed(mapFalse)); 
     }
 
-    protected R proceedCases(MapCaseList<K> cases) {
+    protected R proceedCases(MapCaseList<K> cases, ImMap<K, Expr> nullCase) {
         MCaseList<R, ?, ?> caseList = initCaseList(cases.exclusive);
         for(MapCase<K> exprCase : cases)
             caseList.add(exprCase.where, proceed(exprCase.data));
+        if(supportNulls())
+            caseList.add(Where.TRUE(), proceed(nullCase));
         return caseList.getFinal();
     }
 }

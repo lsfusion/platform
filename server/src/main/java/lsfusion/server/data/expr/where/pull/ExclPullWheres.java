@@ -9,25 +9,47 @@ import lsfusion.server.data.where.Where;
 
 public abstract class ExclPullWheres<R, K, W extends AndContext<W>> {
 
-    protected abstract R proceedBase(W data, ImMap<K, BaseExpr> map);
+    protected abstract R proceedBase(W data, ImMap<K, BaseExpr> map); // assert !supportNulls
+    protected abstract R initEmpty(); // assert !supportNulls
 
-    protected abstract R initEmpty();
+    protected boolean supportNulls() {
+        return false;
+    }
+    protected R proceedNullBase(W data, ImMap<K, ? extends Expr> map) {
+        return proceedBase(data, (ImMap<K, BaseExpr>) map);
+    }
+
     protected abstract R add(R op1, R op2);
 
     public R proceed(final W data, ImMap<K, ? extends Expr> map) {
         return new PullWheres<R, K>() {
-            protected R proceedCases(MapCaseList<K> cases) {
-                R aggregator = initEmpty();
+            protected R proceedCases(MapCaseList<K> cases, ImMap<K, Expr> nullCase) {
+                R result = null;
+                boolean exclusive = cases.exclusive;
+                boolean supportNulls = supportNulls();
                 Where upWhere = Where.FALSE();
                 for(MapCase<K> exprCase : cases) {
                     Where caseWhere = exprCase.where;
-                    if(!cases.exclusive) {
+                    if(!exclusive)
                         caseWhere = caseWhere.and(upWhere.not());
+                    if(!exclusive || supportNulls)
                         upWhere = upWhere.or(caseWhere);
-                    }
-                    aggregator = add(aggregator, ExclPullWheres.this.proceed(data.and(caseWhere), exprCase.data));
+
+                    R caseResult = ExclPullWheres.this.proceed(data.and(caseWhere), exprCase.data);
+
+                    if(result == null)
+                        result = caseResult;
+                    else
+                        result = add(result, caseResult);
                 }
-                return aggregator;
+                if(supportNulls) {
+                    assert result != null; // see where proceedCases is called and isNull check
+                    result = add(result, ExclPullWheres.this.proceed(data.and(upWhere.not()), nullCase));
+                } else {
+                    if (result == null)
+                        result = initEmpty();
+                }
+                return result;
             }
 
             protected R initEmpty() {
@@ -40,7 +62,15 @@ public abstract class ExclPullWheres<R, K, W extends AndContext<W>> {
             }
 
             protected R proceedBase(ImMap<K, BaseExpr> map) {
-                return ExclPullWheres.this.proceedBase(data, map);
+                throw new UnsupportedOperationException();
+            }
+
+            protected boolean supportNulls() {
+                return ExclPullWheres.this.supportNulls();
+            }
+
+            protected R proceedNullBase(ImMap<K, ? extends Expr> map) {
+                return ExclPullWheres.this.proceedNullBase(data, map);
             }
         }.proceed(map);
     }
