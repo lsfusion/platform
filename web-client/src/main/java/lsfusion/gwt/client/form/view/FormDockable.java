@@ -33,7 +33,7 @@ public final class FormDockable extends FormContainer {
     }
 
     @Override
-    protected Element getFocusedElement() {
+    public Element getFocusedElement() {
         return contentWidget.getElement();
     }
 

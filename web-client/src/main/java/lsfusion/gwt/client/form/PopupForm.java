@@ -111,7 +111,7 @@ public class PopupForm extends EditingForm {
     }
 
     @Override
-    protected Element getFocusedElement() {
+    public Element getFocusedElement() {
         return getPopup().getElement();
     }
 
