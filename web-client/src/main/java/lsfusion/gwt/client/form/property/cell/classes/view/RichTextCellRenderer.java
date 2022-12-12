@@ -62,6 +62,11 @@ public class RichTextCellRenderer extends TextBasedCellRenderer{
     }-*/;
 
     @Override
+    protected String getTitle(Element element, String stringValue) {
+        return element.getInnerText();
+    }
+
+    @Override
     public boolean isCustomRenderer() {
         return true;
     }
