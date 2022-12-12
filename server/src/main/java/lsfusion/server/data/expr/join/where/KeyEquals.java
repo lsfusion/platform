@@ -25,7 +25,6 @@ import lsfusion.server.physics.admin.Settings;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
@@ -194,27 +193,30 @@ public class KeyEquals extends WrapMap<KeyEqual, Where> {
 
     public <K extends BaseExpr> Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(boolean tryExclusive, ImSet<K> keepStat, StatType type, ImOrderSet<Expr> orderTop) {
         ImCol<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat, type, orderTop, GroupJoinsWheres.Type.WHEREJOINS, false);
-        if(!tryExclusive || whereJoins.size()<=1 || whereJoins.size() > Settings.get().getLimitExclusiveCount())
-            return new Pair<>(whereJoins, whereJoins.size() <= 1);
-        ImList<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
-        long sortedComplexity = getComplexity(sortedWhereJoins);
-        if(sortedComplexity > Settings.get().getLimitExclusiveComplexity())
-            return new Pair<>(whereJoins, false);
-
-        // если сложность превышает порог - просто andNot'им верхние
-        if(sortedWhereJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || sortedComplexity > Settings.get().getLimitExclusiveSimpleComplexity()) {
-            MCol<GroupJoinsWhere> exclJoins = ListFact.mCol(sortedWhereJoins.size()); // есть последействие
-            Where prevWhere = Where.FALSE();
-            for(GroupJoinsWhere whereJoin : sortedWhereJoins) {
-                exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not()), orderTop));
-                prevWhere.or(whereJoin.getFullWhere());
+        if (tryExclusive && whereJoins.size() > 1 && whereJoins.size() <= Settings.get().getLimitExclusiveCount()) {
+            if(!Settings.get().isNoExclusiveCompile()) {
+                ImList<GroupJoinsWhere> sortedWhereJoins = GroupWhere.sort(whereJoins);
+                long sortedComplexity = getComplexity(sortedWhereJoins);
+                if (sortedComplexity <= Settings.get().getLimitExclusiveComplexity()) {
+                    // если сложность превышает порог - просто andNot'им верхние
+                    if (sortedWhereJoins.size() > Settings.get().getLimitExclusiveSimpleCount() || sortedComplexity > Settings.get().getLimitExclusiveSimpleComplexity()) {
+                        MCol<GroupJoinsWhere> exclJoins = ListFact.mCol(sortedWhereJoins.size()); // есть последействие
+                        Where prevWhere = Where.FALSE();
+                        for (GroupJoinsWhere whereJoin : sortedWhereJoins) {
+                            exclJoins.add(new GroupJoinsWhere(whereJoin.keyEqual, whereJoin.joins, whereJoin.upWheres, whereJoin.where.and(prevWhere.not()), orderTop));
+                            prevWhere.or(whereJoin.getFullWhere());
+                        }
+                        return new Pair<>(exclJoins.immutableCol(), true);
+                    } else { // иначе запускаем рекурсию
+                        GroupJoinsWhere firstJoin = sortedWhereJoins.iterator().next();
+                        Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(true, keepStat, type, orderTop);
+                        return new Pair<>(merge(recWhereJoins.first, firstJoin, orderTop), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+                    }
+                }
             }
-            return new Pair<>(exclJoins.immutableCol(), true);
-        } else { // иначе запускаем рекурсию
-            GroupJoinsWhere firstJoin = sortedWhereJoins.iterator().next();
-            Pair<ImCol<GroupJoinsWhere>, Boolean> recWhereJoins = getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(true, keepStat, type, orderTop);
-            return new Pair<>(merge(recWhereJoins.first, firstJoin, orderTop), recWhereJoins.second); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
+
+        return new Pair<>(whereJoins, whereJoins.size() <= 1);
     }
 
     public <K extends BaseExpr> ImCol<GroupSplitWhere<K>> getSplitJoins(final ImSet<K> keepStat, final StatType type, boolean forcePackReduce) {

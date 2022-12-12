@@ -293,7 +293,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         ImOrderMap<V, CompileOrder> compileOrders = query.getPackedCompileOrders(orders);
 
         boolean useFJ = syntax.useFJ();
-        noExclusive = noExclusive || distinctValues || Settings.get().isNoExclusiveCompile(); // we don't want exclusiveness for distinct values since we can't use UNION ALL in that case
+        noExclusive = noExclusive || distinctValues; // we don't want exclusiveness for distinct values since we can't use UNION ALL in that case
         Result<Boolean> unionAll = new Result<>();
         ImCol<GroupJoinsWhere> queryJoins = query.getWhereJoins(!useFJ && !noExclusive, unionAll,
                                 limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapList(query.properties).toOrderSet() : SetFact.EMPTYORDER(), ordersSplit);
@@ -725,7 +725,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
             }
 
             protected boolean isEmptySelect(Where groupWhere, ImSet<KeyExpr> keys) {
-                return groupWhere.pack().getPackWhereJoins(!syntax.useFJ() && !Settings.get().isNoExclusiveCompile(), keys, SetFact.EMPTYORDER()).first.isEmpty();
+                return groupWhere.pack().getPackWhereJoins(!syntax.useFJ(), keys, SetFact.EMPTYORDER()).first.isEmpty();
             }
 
             protected SQLQuery getEmptySelect(final Where groupWhere) {
