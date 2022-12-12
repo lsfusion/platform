@@ -1068,4 +1068,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             return super.handleKeyEvent(event);
         }
     }
+
+    @Override
+    protected void scrollToEnd(boolean toEnd) {
+        selectionHandler.changeRow(toEnd ? (getRowCount() - 1) : 0, FocusUtils.Reason.KEYMOVENAVIGATE);
+    }
 }

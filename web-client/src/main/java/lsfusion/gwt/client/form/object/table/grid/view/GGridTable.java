@@ -1250,4 +1250,9 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
     public int getPageSize() {
         return -1;
     }
+
+    @Override
+    protected void scrollToEnd(boolean toEnd) {
+        form.scrollToEnd(groupObject, toEnd);
+    }
 }

@@ -46,3 +46,22 @@
     /* ??? */
     /*overflow: hidden;*/
 }
+
+.arrow-container {
+    position: sticky;
+    height: 0;
+    right: 0;
+    padding: 0 !important;
+    cursor: pointer;
+}
+
+.top-arrow {
+    position: absolute;
+    right: 5px;
+}
+
+.bottom-arrow {
+    position: absolute;
+    right: 5px;
+    bottom: 10px;
+}

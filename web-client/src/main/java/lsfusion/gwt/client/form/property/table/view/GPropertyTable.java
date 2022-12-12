@@ -31,7 +31,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
     protected final GFormController form;
     protected final GGroupObject groupObject;
 
-    public GPropertyTable(GFormController iform, GGroupObject groupObject, TableContainer tableContainer, boolean noHeaders, boolean noFooters, boolean noScrollers) {
+    public GPropertyTable(GFormController iform, GGroupObject groupObject, TableContainer tableContainer, boolean noHeaders, boolean noFooters) {
         super(tableContainer, noHeaders, noFooters);
 
         this.form = iform;

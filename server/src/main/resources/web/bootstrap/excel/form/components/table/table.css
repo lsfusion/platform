@@ -31,3 +31,15 @@
     padding: 0; /* Remove padding */
     margin: 0; /* Remove margins */
 }
+
+.top-arrow {
+    padding: 5px;
+    background: var(--background-color);
+    border-radius: 5px;
+}
+
+.bottom-arrow {
+    padding: 5px;
+    background: var(--background-color);
+    border-radius: 5px;
+}

@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
@@ -142,15 +143,69 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         MainFrame.addColorThemeChangeListener(this);
     }
-    
+
+    private Timer hideScrollButtonsTimer = new Timer() {
+        @Override
+        public void run() {
+            hideScrollButtons();
+        }
+    };
+
     public ScrollHandler getScrollHandler() {
         return event -> {
             calcLeftNeighbourRightBorder(true);
             checkSelectedRowVisible();
-            
+
             updateScrolledState();
+
+            showScrollButtons();
+            if (hideScrollButtonsTimer.isRunning())
+                hideScrollButtonsTimer.cancel();
+
+            hideScrollButtonsTimer.schedule(3000);
         };
     }
+
+    public native void hideScrollButtons() /*-{
+        var thisObj = this;
+        thisObj.@DataGrid::getHeaderBuilder()().@lsfusion.gwt.client.base.view.grid.HeaderBuilder::getHeaderRow()().arrow.style.display = "none";
+        thisObj.@DataGrid::getFooterBuilder()().@lsfusion.gwt.client.base.view.grid.HeaderBuilder::getHeaderRow()().arrow.style.display = "none";
+    }-*/;
+
+    public native void showScrollButtons() /*-{
+        var thisObj = this;
+        var header = thisObj.@DataGrid::getHeaderBuilder()().@lsfusion.gwt.client.base.view.grid.HeaderBuilder::getHeaderRow()();
+        var footer = thisObj.@DataGrid::getFooterBuilder()().@lsfusion.gwt.client.base.view.grid.HeaderBuilder::getHeaderRow()();
+        var topArrow = header.arrow == null ? thisObj.@DataGrid::getArrow(*)(header, false) : header.arrow;
+        var bottomArrow = footer.arrow == null ? thisObj.@DataGrid::getArrow(*)(footer, true) : footer.arrow;
+
+        topArrow.style.display = thisObj.@DataGrid::checkRowVisible(*)(0) === -1 ? "none" : "block"; // тут ошибка если кнопка вверх не видна и нажать кнопку вниз
+        bottomArrow.style.display = thisObj.@DataGrid::checkRowVisible(*)(thisObj.@DataGrid::getRowCount()() - 1) === -1 ? "none" : "block";
+    }-*/;
+
+    protected abstract void scrollToEnd(boolean toEnd);
+
+    public native Element getArrow(Element parent, boolean bottom) /*-{
+        var thisObj = this;
+
+        var arrow = bottom ? @lsfusion.gwt.client.base.StaticImage::CHEVRON_DOWN.@lsfusion.gwt.client.base.StaticImage::createImage()() :
+            @lsfusion.gwt.client.base.StaticImage::CHEVRON_UP.@lsfusion.gwt.client.base.StaticImage::createImage()();
+
+        arrow.onclick = function () { thisObj.@DataGrid::scrollToEnd(*)(bottom) }
+        arrow.classList.add( bottom ? "bottom-arrow" : "top-arrow");
+
+        if (!bottom)
+            arrow.style.bottom = "-" + (parent.offsetHeight + (@MainFrame::useBootstrap ? 26 : 36)) + "px";
+
+        var container = document.createElement("div");
+        container.classList.add("arrow-container");
+        container.appendChild(arrow);
+
+        parent.appendChild(container);
+        parent.arrow = container;
+
+        return container;
+    }-*/;
     
     private void updateScrolledState() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
@@ -623,6 +678,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     /**
+     * Get the {@link HeaderBuilder} used to generate the header section.
+     */
+    public HeaderBuilder<T> getHeaderBuilder() {
+        return headerBuilder;
+    }
+
+    /**
      * Get the {@link Header} from the header section that was added with a
      * {@link Column}.
      */
@@ -985,31 +1047,38 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     public void checkSelectedRowVisible() {
-        int selectedRow = getSelectedRow();
+        int selectedRow = checkRowVisible(getSelectedRow());
+        if (selectedRow != -1)
+            selectionHandler.changeRow(selectedRow, FocusUtils.Reason.SCROLLNAVIGATE);
+    }
+
+    private int checkRowVisible(int selectedRow) {
         if (selectedRow >= 0) {
-            int scrollHeight = tableContainer.getClientHeight();
-            int scrollTop = tableContainer.getVerticalScrollPosition();
-
             TableRowElement rowElement = getChildElement(selectedRow);
-            int rowTop = rowElement.getOffsetTop();
-            int rowBottom = rowTop + rowElement.getClientHeight();
+            if (rowElement != null) {
+                int rowTop = rowElement.getOffsetTop();
+                int rowBottom = rowTop + rowElement.getClientHeight();
 
-            int headerHeight = getTableHeadElement().getClientHeight();
-            int footerHeight = getTableFootElement().getClientHeight();
-            int visibleTop = scrollTop + headerHeight;
-            int visibleBottom = scrollTop + scrollHeight - footerHeight;
+                int scrollHeight = tableContainer.getClientHeight();
+                int scrollTop = tableContainer.getVerticalScrollPosition();
 
-            int newRow = -1;
-            if (rowBottom > visibleBottom + 1) { // 1 for border
-                newRow = getLastVisibleRow(rowTop <= visibleBottom ? visibleTop : null, visibleBottom, selectedRow - 1);
-            }
-            if (rowTop < visibleTop) {
-                newRow = getFirstVisibleRow(visibleTop, rowBottom >= visibleTop ? visibleBottom : null, selectedRow + 1);
-            }
-            if (newRow != -1) {
-                selectionHandler.changeRow(newRow, FocusUtils.Reason.SCROLLNAVIGATE);
+                int headerHeight = getTableHeadElement().getClientHeight();
+                int footerHeight = getTableFootElement().getClientHeight();
+                int visibleTop = scrollTop + headerHeight;
+                int visibleBottom = scrollTop + scrollHeight - footerHeight;
+
+                int newRow = -1;
+                if (rowBottom > visibleBottom + 1) { // 1 for border
+                    newRow = getLastVisibleRow(rowTop <= visibleBottom ? visibleTop : null, visibleBottom, selectedRow - 1);
+                }
+                if (rowTop < visibleTop) {
+                    newRow = getFirstVisibleRow(visibleTop, rowBottom >= visibleTop ? visibleBottom : null, selectedRow + 1);
+                }
+
+                return newRow;
             }
         }
+        return -1;
     }
 
     private void beforeUpdateDOMScroll(SetPendingScrollState pendingState) {
