@@ -69,6 +69,15 @@
                             <type>pack.gz</type>
                             <destFileName>lsfusion-client.jar.pack.gz</destFileName>
                         </artifactItem>
+                        <!-- for Java 17 where unpack200 has been removed -->
+                        <artifactItem>
+                            <groupId>lsfusion.platform</groupId>
+                            <artifactId>desktop-client</artifactId>
+                            <version>${lsfusion.version}</version>
+                            <classifier>assembly</classifier>
+                            <type>jar</type>
+                            <destFileName>lsfusion-client.jar</destFileName>
+                        </artifactItem>
                     </artifactItems>
                     <outputDirectory>${war.explodedDir}</outputDirectory>
                 </configuration>
