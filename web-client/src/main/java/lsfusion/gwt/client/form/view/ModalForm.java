@@ -27,7 +27,7 @@ public class ModalForm extends FormContainer {
     }
 
     @Override
-    protected Element getFocusedElement() {
+    public Element getFocusedElement() {
         return contentWidget.getElement();
     }
 

@@ -60,7 +60,7 @@ public class EmbeddedForm extends EditingForm {
     }
 
     @Override
-    protected Element getFocusedElement() {
+    public Element getFocusedElement() {
         return renderElement;
     }
 

@@ -1680,7 +1680,12 @@ public class GFormController implements EditManager {
             }
         }
 
-        panelController.focusFirstWidget();
+        if(panelController.focusFirstWidget()) {
+           return;
+        }
+
+        //focus form container if no one element is focusable
+        formContainer.getFocusedElement().focus();
     }
 
     private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
