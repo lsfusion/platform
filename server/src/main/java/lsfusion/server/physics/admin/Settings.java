@@ -138,6 +138,8 @@ public class Settings implements Cloneable {
 
     private boolean noExclusiveCompile = true;
 
+    private boolean noOrderTopSplit = false;
+
     private int limitExclusiveCount = 7; // когда вообще не пытаться строить exclusive (count)
 
     private int limitExclusiveComplexity = 100; // когда вообще не пытаться строить exclusive (complexity)
@@ -641,6 +643,14 @@ public class Settings implements Cloneable {
 
     public void setNoExclusiveCompile(boolean noExclusiveCompile) {
         this.noExclusiveCompile = noExclusiveCompile;
+    }
+
+    public boolean isNoOrderTopSplit() {
+        return noOrderTopSplit;
+    }
+
+    public void setNoOrderTopSplit(boolean noOrderTopSplit) {
+        this.noOrderTopSplit = noOrderTopSplit;
     }
 
     public int getLimitWhereJoinsCount() {
