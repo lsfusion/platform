@@ -149,6 +149,9 @@ public abstract class AbstractDataGridBuilder<T> {
         checkRowValueIndex(tr, rowIndex);
     }
 
+    protected RowIndexHolder getRowIndexHolder(Element row) {
+        return (RowIndexHolder) row.getPropertyObject(ROW_ATTRIBUTE);
+    }
     protected int getRowValueIndex(Element row) {
         RowIndexHolder rowIndexHolder = (RowIndexHolder) row.getPropertyObject(ROW_ATTRIBUTE);
         if(rowIndexHolder != null)
