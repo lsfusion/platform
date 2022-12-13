@@ -198,27 +198,19 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                 }
             } else {
                 rows.removeRange(newSize, currentSize);
-//                for (int i = currentSize - 1; i >= newSize; --i) {
-//                    rows.remove(i);
-//                }
             }
         } else if (currentSize < newSize) {
-            for (int i = currentSize; i < newSize; ++i) {
-                GGroupObjectValue rowKey = rowKeys.get(i);
-
-                GridDataRecord record = new GridDataRecord(i, rowKey);
-                record.setRowBackground(rowBackgroundValues.get(rowKey));
-                record.setRowForeground(rowForegroundValues.get(rowKey));
-
-                rows.add(record);
-            }
+            for (int i = currentSize; i < newSize; i++)
+                rows.add(new GridDataRecord(i));
         }
 
-        for (int i = 0; i < min(newSize, currentSize); ++i) {
+        for (int i = 0; i < newSize; i++) {
             GGroupObjectValue rowKey = rowKeys.get(i);
-
             GridDataRecord record = rows.get(i);
-            record.reinit(rowKey, rowBackgroundValues.get(rowKey), rowForegroundValues.get(rowKey));
+            record.setKey(rowKey);
+
+            record.setRowBackground(rowBackgroundValues.get(rowKey));
+            record.setRowForeground(rowForegroundValues.get(rowKey));
         }
     }
 
