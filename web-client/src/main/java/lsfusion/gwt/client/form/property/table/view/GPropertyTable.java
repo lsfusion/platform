@@ -206,4 +206,9 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
         form.checkCommitEditing();
         super.changeSelectedRow(row);
     }
+
+    @Override
+    protected String getGridInfo() {
+        return form.form.sID + " " + groupObject.sID;
+    }
 }

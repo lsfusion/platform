@@ -21,10 +21,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.Focusable;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
@@ -480,6 +477,9 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         Header footer = null;
         Element footerParent = null;
 
+        // debug
+        RowIndexHolder rowIndexHolder = null;
+
         TableSectionElement targetTableSection = null;
 
         if (target == getTableDataFocusElement() || GKeyStroke.isPasteFromClipboardEvent(event)) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
@@ -500,8 +500,10 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                     break;
                 }
 
-                if(row < 0)
+                if(row < 0) {
                     row = tableBuilder.getRowValueIndex(cur);
+                    rowIndexHolder = tableBuilder.getRowIndexHolder(cur);
+                }
                 if (column == null) {
                     column = tableBuilder.getColumn(cur);
                     if(column != null)
@@ -534,12 +536,14 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 try {
                     rowValue = (RowIndexHolder) getRowValue(row);
                 } catch (IndexOutOfBoundsException e) {
-                    throw new RuntimeException("INCORRECT ROW " + row + " " + event + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()));
+                    throw new RuntimeException("INCORRECT ROW " + row + " " + event + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
                 }
                 onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), event, column, columnParent);
             }
         }
     }
+
+    protected abstract String getGridInfo();
 
     public abstract <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent);
 
