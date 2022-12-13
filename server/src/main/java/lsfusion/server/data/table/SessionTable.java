@@ -703,7 +703,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         assert !(session.inconsistent && inconsistent);
         assert checkClassesUpdate || !inconsistent;
 
-        if(session.inconsistent || !checkClassesUpdate || (!inconsistent && Settings.get().isDisableReadClasses()))
+        if(session.inconsistent || !checkClassesUpdate || (!inconsistent && count > Settings.get().getDisableAdjustClassesCount()))
             return this;
 
         if(baseClass==null)
