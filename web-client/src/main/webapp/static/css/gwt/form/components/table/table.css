@@ -53,7 +53,7 @@
     right: 0;
     padding: 0 !important;
     cursor: pointer;
-    display: block;
+    display: none;
 }
 
 .top-arrow {
@@ -67,6 +67,10 @@
     bottom: 0.5rem;
 }
 
-.arrow-hidden {
+.was-scrolled {
+    display: block;
+}
+
+.arrow-container.scrolled-up, .arrow-container.scrolled-down {
     display: none;
 }

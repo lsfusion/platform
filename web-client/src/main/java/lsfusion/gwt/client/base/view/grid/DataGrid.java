@@ -148,14 +148,22 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private final Timer hideScrollButtonsTimer = new Timer() {
         @Override
         public void run() {
-            hideScrollButtons(getHeaderBuilder().getHeaderRow(), getFooterBuilder().getHeaderRow());
+            setArrowsScrolled(false);
         }
     };
 
-    public native void hideScrollButtons(Element header, Element footer) /*-{
-        header.arrow.classList.add("arrow-hidden");
-        footer.arrow.classList.add("arrow-hidden");
-    }-*/;
+    public void updateScrollButtons() {
+        setArrowsScrolled(true);
+
+        int verticalScrollPosition = getVerticalScrollPosition();
+        GwtClientUtils.setStyleName(getArrow(false), "scrolled-up", verticalScrollPosition <= 0);
+        GwtClientUtils.setStyleName(getArrow(true), "scrolled-down", verticalScrollPosition >= tableContainer.getScrollHeight() - tableContainer.getClientHeight());
+
+        if (hideScrollButtonsTimer.isRunning())
+            hideScrollButtonsTimer.cancel();
+
+        hideScrollButtonsTimer.schedule(3000);
+    }
 
     public ScrollHandler getScrollHandler() {
         return event -> {
@@ -164,27 +172,30 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             updateScrolledState();
 
-            if (hideScrollButtonsTimer.isRunning())
-                hideScrollButtonsTimer.cancel();
-
-            hideScrollButtonsTimer.schedule(3000);
+            updateScrollButtons();
         };
     }
 
     protected abstract void scrollToEnd(boolean toEnd);
     
     private void updateScrolledState() {
-        int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
+        int verticalScrollPosition = getVerticalScrollPosition();
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 0);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight());
-
-        GwtClientUtils.setStyleName(getArrow(getHeaderBuilder().getHeaderRow()), "arrow-hidden", verticalScrollPosition <= 0);
-        GwtClientUtils.setStyleName(getArrow(getFooterBuilder().getHeaderRow()), "arrow-hidden", verticalScrollPosition >= tableContainer.getScrollHeight() - tableContainer.getClientHeight());
     }
 
-    public native Element getArrow(Element parent) /*-{
-        return parent.arrow;
-    }-*/;
+    private int getVerticalScrollPosition() {
+        return tableContainer.getVerticalScrollPosition();
+    }
+
+    private Element getArrow(boolean bottom) {
+        return GwtClientUtils.getField(bottom ? getFooterBuilder().getHeaderRow() : getHeaderBuilder().getHeaderRow(), "arrow").cast();
+    }
+
+    private void setArrowsScrolled(boolean add) {
+        GwtClientUtils.setStyleName(getArrow(false), "was-scrolled", add);
+        GwtClientUtils.setStyleName(getArrow(true), "was-scrolled", add);
+    }
 
     private static Set<String> browserKeyEvents;
     private static Set<String> getBrowserKeyEvents() {
@@ -1471,29 +1482,26 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         headerBuilder.update(columnsChanged);
         footerBuilder.update(columnsChanged);
 
-        initArrow(headerBuilder.getHeaderRow(), StaticImage.CHEVRON_UP.createImage(), false);
-        initArrow(footerBuilder.getHeaderRow(), StaticImage.CHEVRON_DOWN.createImage(), true);
+        initArrow(false);
+        initArrow(true);
     }
 
-    public native Element initArrow(Element parent, Element arrow, boolean bottom) /*-{
-        var thisObj = this;
+    private void initArrow(boolean bottom) {
+        Element arrow = bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage();
+        arrow.addClassName(bottom ? "bottom-arrow" : "top-arrow");
+        GwtClientUtils.setOnClick(arrow, event -> scrollToEnd(bottom));
 
-        arrow.classList.add( bottom ? "bottom-arrow" : "top-arrow");
-        arrow.onclick = function () { thisObj.@DataGrid::scrollToEnd(*)(bottom) }
+//        if (!bottom)
+//            arrow.getStyle().setProperty("bottom", "-" + parent.getOffsetHeight() + (MainFrame.useBootstrap ? 23 : 36) + "px");
 
-        if (!bottom)
-            arrow.style.bottom = "-" + (parent.offsetHeight + (@MainFrame::useBootstrap ? 23 : 36)) + "px";
-
-        var container = document.createElement("div");
-        container.classList.add("arrow-container");
-        container.classList.add("arrow-hidden");
+        Element container = Document.get().createElement("div");
+        container.addClassName("arrow-container");
         container.appendChild(arrow);
 
+        Element parent = bottom ? footerBuilder.getHeaderRow() : headerBuilder.getHeaderRow();
         parent.appendChild(container);
-        parent.arrow = container;
-
-        return container;
-    }-*/;
+        GwtClientUtils.setField(parent, "arrow", container);
+    }
 
     public Element getHeaderElement(int element) {
         assert !noHeaders;
