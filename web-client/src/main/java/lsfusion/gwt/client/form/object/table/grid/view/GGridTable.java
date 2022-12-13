@@ -187,12 +187,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         if (currentSize > newSize) {
             if (modifyGroupObject) {
-                ArrayList<GridDataRecord> oldRecords = new ArrayList<>(rows);
-                for (int i = 0; i < oldRecords.size(); i++) {
-                    GridDataRecord record = oldRecords.get(i);
+                for (int i = rows.size() - 1; i >= 0; i--) {
+                    GridDataRecord record = rows.get(i);
                     if (!rowKeys.contains(record.getKey())) {
+                        // not so sure about this incDeleteRows, because it can be called during dispatching process (when canceling async changes), and not at the beggining of the event loop
                         tableBuilder.incDeleteRows(tableData.getSection(), i, i + 1);
-                        rows.remove(record);
+                        rows.remove(i);
                         incUpdateRowIndices(i, -1);
                     }
                 }
