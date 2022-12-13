@@ -33,13 +33,13 @@
 }
 
 .top-arrow {
-    padding: 5px;
+    padding: 0.25rem;
     background: var(--background-color);
-    border-radius: 5px;
+    border-radius: 0.25rem;
 }
 
 .bottom-arrow {
-    padding: 5px;
+    padding: 0.25rem;
     background: var(--background-color);
-    border-radius: 5px;
+    border-radius: 0.25rem;
 }

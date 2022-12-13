@@ -53,15 +53,20 @@
     right: 0;
     padding: 0 !important;
     cursor: pointer;
+    display: block;
 }
 
 .top-arrow {
     position: absolute;
-    right: 5px;
+    right: 0.25rem;
 }
 
 .bottom-arrow {
     position: absolute;
-    right: 5px;
-    bottom: 10px;
+    right: 0.25rem;
+    bottom: 0.5rem;
+}
+
+.arrow-hidden {
+    display: none;
 }
