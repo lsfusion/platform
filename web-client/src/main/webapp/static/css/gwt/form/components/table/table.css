@@ -67,10 +67,14 @@
     bottom: 0.5rem;
 }
 
-.was-scrolled {
-    display: block;
+.scrolled-up:not(.scrolled-down) .top-arrow {
+    display: none;
 }
 
-.arrow-container.scrolled-up, .arrow-container.scrolled-down {
+.scrolled-down:not(.scrolled-up) .bottom-arrow {
     display: none;
+}
+
+.was-scrolled-recently .arrow-container {
+    display: block;
 }

@@ -16,6 +16,8 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.size.GSize;
 
 import java.util.List;
@@ -36,6 +38,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         void setCellStyle(TableCellElement element);
         void addFirstCellStyle(TableCellElement element);
         void addLastCellStyle(TableCellElement element);
+        boolean isFooter();
     }
 
     /**
@@ -54,7 +57,6 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
      * Create a new DefaultHeaderBuilder for the header of footer section.
      *
      * @param table    the table being built
-     * @param isFooter true if building the footer, false if the header
      */
     public DataGridHeaderBuilder(DataGrid<T> table, HeaderDelegate delegate) {
         this.delegate = delegate;
@@ -73,9 +75,25 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
             // see .tableContainerBoxed comment
             headerRow.addClassName("background-inherit"); // because it's assumed that header and footer are sticky
             buildHeaderImpl(headerRow);
+
+            initArrow(headerRow, delegate.isFooter());
         } else {
             updateHeaderImpl(headerRow);
         }
+    }
+
+    private void initArrow(Element parent, boolean bottom) {
+        Element arrow = bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage();
+        arrow.addClassName(bottom ? "bottom-arrow" : "top-arrow");
+        GwtClientUtils.setOnClick(arrow, event -> table.scrollToEnd(bottom));
+
+//        if (!bottom)
+//            arrow.getStyle().setProperty("bottom", "-" + parent.getOffsetHeight() + (MainFrame.useBootstrap ? 23 : 36) + "px");
+
+        Element container = Document.get().createElement("div");
+        container.addClassName("arrow-container");
+        container.appendChild(arrow);
+        parent.appendChild(container);
     }
 
     public TableRowElement getHeaderRow() {

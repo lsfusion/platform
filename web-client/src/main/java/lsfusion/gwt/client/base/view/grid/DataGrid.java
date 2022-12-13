@@ -28,7 +28,6 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
@@ -145,25 +144,12 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         MainFrame.addColorThemeChangeListener(this);
     }
 
-    private final Timer hideScrollButtonsTimer = new Timer() {
+    private final Timer recentlyScrolledTimer = new Timer() {
         @Override
         public void run() {
-            setArrowsScrolled(false);
+            tableWidget.removeStyleName("was-scrolled-recently");
         }
     };
-
-    public void updateScrollButtons() {
-        setArrowsScrolled(true);
-
-        int verticalScrollPosition = getVerticalScrollPosition();
-        GwtClientUtils.setStyleName(getArrow(false), "scrolled-up", verticalScrollPosition <= 0);
-        GwtClientUtils.setStyleName(getArrow(true), "scrolled-down", verticalScrollPosition >= tableContainer.getScrollHeight() - tableContainer.getClientHeight());
-
-        if (hideScrollButtonsTimer.isRunning())
-            hideScrollButtonsTimer.cancel();
-
-        hideScrollButtonsTimer.schedule(3000);
-    }
 
     public ScrollHandler getScrollHandler() {
         return event -> {
@@ -171,8 +157,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             checkSelectedRowVisible();
 
             updateScrolledState();
-
-            updateScrollButtons();
         };
     }
 
@@ -182,19 +166,16 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int verticalScrollPosition = getVerticalScrollPosition();
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 0);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight());
+
+        tableWidget.setStyleName("was-scrolled-recently", true);
+        if (recentlyScrolledTimer.isRunning())
+            recentlyScrolledTimer.cancel();
+
+        recentlyScrolledTimer.schedule(3000);
     }
 
     private int getVerticalScrollPosition() {
         return tableContainer.getVerticalScrollPosition();
-    }
-
-    private Element getArrow(boolean bottom) {
-        return GwtClientUtils.getField(bottom ? getFooterBuilder().getHeaderRow() : getHeaderBuilder().getHeaderRow(), "arrow").cast();
-    }
-
-    private void setArrowsScrolled(boolean add) {
-        GwtClientUtils.setStyleName(getArrow(false), "was-scrolled", add);
-        GwtClientUtils.setStyleName(getArrow(true), "was-scrolled", add);
     }
 
     private static Set<String> browserKeyEvents;
@@ -1481,26 +1462,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     public void updateHeadersDOM(boolean columnsChanged) {
         headerBuilder.update(columnsChanged);
         footerBuilder.update(columnsChanged);
-
-        initArrow(false);
-        initArrow(true);
-    }
-
-    private void initArrow(boolean bottom) {
-        Element arrow = bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage();
-        arrow.addClassName(bottom ? "bottom-arrow" : "top-arrow");
-        GwtClientUtils.setOnClick(arrow, event -> scrollToEnd(bottom));
-
-//        if (!bottom)
-//            arrow.getStyle().setProperty("bottom", "-" + parent.getOffsetHeight() + (MainFrame.useBootstrap ? 23 : 36) + "px");
-
-        Element container = Document.get().createElement("div");
-        container.addClassName("arrow-container");
-        container.appendChild(arrow);
-
-        Element parent = bottom ? footerBuilder.getHeaderRow() : headerBuilder.getHeaderRow();
-        parent.appendChild(container);
-        GwtClientUtils.setField(parent, "arrow", container);
     }
 
     public Element getHeaderElement(int element) {
