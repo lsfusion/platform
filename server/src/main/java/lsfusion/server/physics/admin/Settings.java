@@ -219,7 +219,7 @@ public class Settings implements Cloneable {
 
     private boolean disableReadSingleValues = false; // определять ли конкретные значения при записи запроса в таблицы
 
-    private boolean disableReadClasses = false; // определять ли конкретные кдассы при записи запроса в таблицы
+    private int disableAdjustClassesCount = 10000; // temporary table size, exceeding which classes won't be adjusted
 
     private int reserveIDStep = 50; // по сколько ID'ков будут резервировать себе сервера приложений у сервера БД
 
@@ -1073,12 +1073,12 @@ public class Settings implements Cloneable {
         this.disableReadSingleValues = disableReadSingleValues;
     }
 
-    public boolean isDisableReadClasses() {
-        return disableReadClasses;
+    public int getDisableAdjustClassesCount() {
+        return disableAdjustClassesCount;
     }
 
-    public void setDisableReadClasses(boolean disableReadClasses) {
-        this.disableReadClasses = disableReadClasses;
+    public void setDisableAdjustClassesCount(int disableAdjustClassesCount) {
+        this.disableAdjustClassesCount = disableAdjustClassesCount;
     }
 
     private byte enableUI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled
