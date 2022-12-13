@@ -16,6 +16,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -37,6 +38,7 @@ public abstract class NavigatorElement {
     public NavigatorWindow window = null;
 
     private final int ID;
+    public Property captionProperty;
     public LocalizedString caption;
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
@@ -44,10 +46,11 @@ public abstract class NavigatorElement {
     private NFProperty<NavigatorElement> parent = NFFact.property();
     private NFOrderSet<NavigatorElement> children = NFFact.orderSet();
 
-    protected NavigatorElement(String canonicalName, LocalizedString caption) {
+    protected NavigatorElement(String canonicalName, Property captionProperty, LocalizedString caption) {
         assert canonicalName != null;
         this.canonicalName = canonicalName;
         this.ID = BaseLogicsModule.generateStaticNewID();
+        this.captionProperty = captionProperty;
         this.caption = caption;
     }
 

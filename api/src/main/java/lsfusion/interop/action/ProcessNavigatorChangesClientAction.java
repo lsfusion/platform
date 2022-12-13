@@ -2,11 +2,11 @@ package lsfusion.interop.action;
 
 public class ProcessNavigatorChangesClientAction extends ExecuteClientAction {
     public final long requestIndex;
-    public final byte[] formChanges;
+    public final byte[] navigatorChanges;
 
-    public ProcessNavigatorChangesClientAction(long requestIndex, byte[] formChanges) {
+    public ProcessNavigatorChangesClientAction(long requestIndex, byte[] navigatorChanges) {
         this.requestIndex = requestIndex;
-        this.formChanges = formChanges;
+        this.navigatorChanges = navigatorChanges;
     }
 
     @Override

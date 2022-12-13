@@ -6,6 +6,7 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashMap;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
@@ -26,6 +27,7 @@ import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -44,8 +46,10 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
+import lsfusion.server.logics.navigator.CaptionPropertyNavigator;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.PropertyNavigator;
 import lsfusion.server.logics.navigator.changed.NavigatorChanges;
 import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContext;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
@@ -479,7 +483,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         resultActions.addAll(pendingActions);
 
-        return returnRemoteChangesResponse(requestIndex, pendingActions);
+        return returnRemoteChangesResponse(requestIndex, resultActions);
     }
 
     private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions) {
@@ -499,10 +503,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private ImSet<PropertyNavigator> getPropertyNavigators() {
         MExclSet<PropertyNavigator> mResult = SetFact.mExclSet();
         for(NavigatorElement navigatorElement : getNavigatorTreeObjects().keyIt()) {
-            if(navigatorElement.propertyCaption != null)
-                mResult.exclAdd(...);
-            if(navigatorElement.propertyImage != null)
-                mResult.exclAdd(...);
+            if(navigatorElement.captionProperty != null)
+                mResult.exclAdd(new CaptionPropertyNavigator(navigatorElement.captionProperty, navigatorElement.getCanonicalName()));
+            //if(navigatorElement.propertyImage != null)
+            //    mResult.exclAdd(new ImagePropertyNavigator());
         }
         return mResult.immutable();
     }

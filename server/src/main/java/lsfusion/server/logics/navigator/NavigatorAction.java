@@ -5,14 +5,15 @@ import lsfusion.base.file.AppImages;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorAction extends NavigatorElement {
     private final Action<?> action;
     private final FormEntity form;
 
-    public NavigatorAction(Action<?> action, String canonicalName, LocalizedString caption, FormEntity form) {
-        super(canonicalName, caption);
+    public NavigatorAction(Action<?> action, String canonicalName, Property captionProperty, LocalizedString caption, FormEntity form) {
+        super(canonicalName, captionProperty, caption);
         
         this.action = action;
         this.form = form;

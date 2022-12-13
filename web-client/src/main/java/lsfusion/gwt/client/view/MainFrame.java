@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
@@ -35,6 +36,8 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
+import lsfusion.gwt.client.navigator.GCaptionPropertyNavigator;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -450,6 +453,9 @@ public class MainFrame implements EntryPoint {
         return modalPopup;
     }
 
+    static GNavigatorElement root;
+    static GNavigatorController navigatorController;
+
     private void initializeWindows(NavigatorInfo result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
         GwtClientUtils.removeLoaderFromHostedPage();
 
@@ -462,6 +468,9 @@ public class MainFrame implements EntryPoint {
 
         // пока прячем всё, что не поддерживается
         result.status.visible = false;
+
+        this.root = result.root;
+        this.navigatorController = navigatorController;
 
         if (mobile) {
             mobileNavigatorView = new GMobileNavigatorView(result.root, navigatorController);
@@ -481,8 +490,8 @@ public class MainFrame implements EntryPoint {
 
         formsController.initRoot(formsController);
 
-        apply initial navigator changes from navigatorinfo somewhere around here
-        applyNavigatorChanges(result.firstChanges)
+        //apply initial navigator changes from navigatorinfo somewhere around here
+        applyNavigatorChanges(result.root, result.navigatorChanges, navigatorController);
 
         formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
             @Override
@@ -494,6 +503,22 @@ public class MainFrame implements EntryPoint {
                 };
             }
         });
+    }
+
+    public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO) {
+        applyNavigatorChanges(root, navigatorChangesDTO, navigatorController);
+    }
+
+    public static void applyNavigatorChanges(GNavigatorElement root, GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController) {
+        if (navigatorChangesDTO == null) {
+            return;
+        }
+
+        for(int i = 0; i < navigatorChangesDTO.properties.length; i++) {
+            navigatorChangesDTO.properties[i].update(root, navigatorChangesDTO.values[i]);
+        }
+
+        navigatorController.update();
     }
 
     private native String getSessionId() /*-{

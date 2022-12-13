@@ -1,4 +1,43 @@
 package lsfusion.server.logics.navigator.changed;
 
+import com.google.common.base.Throwables;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.logics.navigator.PropertyNavigator;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import static lsfusion.base.BaseUtils.serializeObject;
+import static lsfusion.base.BaseUtils.serializeString;
+
 public class NavigatorChanges {
+
+    ImMap<PropertyNavigator, Object> properties;
+
+    public NavigatorChanges(ImMap<PropertyNavigator, Object> properties) {
+        this.properties = properties;
+    }
+
+    public byte[] serialize() {
+        try {
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            serialize(new DataOutputStream(outStream));
+            return outStream.toByteArray();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeInt(properties.size());
+        for (int i = 0, size = properties.size(); i < size; i++) {
+            PropertyNavigator propertyNavigator = properties.getKey(i);
+            Object value = properties.getValue(i);
+
+            outStream.writeByte(propertyNavigator.getTypeID());
+            serializeString(outStream, propertyNavigator.getCanonicalName());
+            serializeObject(outStream, value);
+        }
+    }
 }

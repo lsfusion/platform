@@ -4,6 +4,9 @@ import com.google.common.base.Throwables;
 import lsfusion.client.controller.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.navigator.ClientNavigator;
+import lsfusion.client.navigator.ClientNavigatorChanges;
+import lsfusion.client.view.DockableMainFrame;
+import lsfusion.client.view.MainFrame;
 import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.base.remote.PendingRemoteInterface;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
@@ -37,7 +40,8 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
 
     public void execute(ProcessNavigatorChangesClientAction action) {
         try {
-            clientNavigator.applyNavigatorChanges(action.requestIndex, action.formChanges, false);
+            clientNavigator.applyNavigatorChanges(new ClientNavigatorChanges(action.navigatorChanges));
+            ((DockableMainFrame) MainFrame.instance).updateNavigatorController();
         } catch (IOException e) {
             Throwables.propagate(e);
         }

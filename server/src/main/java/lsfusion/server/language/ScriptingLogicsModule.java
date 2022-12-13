@@ -4925,7 +4925,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public String windowName;
     }
 
-    public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
+    public NavigatorElement createScriptedNavigatorElement(String name, NamedPropertyUsage captionPropertyUsage, LocalizedString caption, DebugInfo.DebugPoint point,
                                                            NamedPropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
         LA<?> action = null;
         FormEntity form = null;
@@ -4946,6 +4946,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkNavigatorElementName(name);
         checks.checkDuplicateNavigatorElement(name);
 
+        Property captionProperty = null;
+        if(captionPropertyUsage != null) {
+            LP captionLP = findProperty(captionPropertyUsage.name);
+            captionProperty = captionLP.property;
+        }
+
         if (caption == null) {
             caption = createDefaultNavigatorElementCaption(action, form);
             if (caption == null) {
@@ -4953,7 +4959,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        return createNavigatorElement(elementCanonicalName(name), caption, point, action, form);
+        return createNavigatorElement(elementCanonicalName(name), captionProperty, caption, point, action, form);
     }
 
     private String createDefaultNavigatorElementName(LA<?> action, FormEntity form) {
@@ -4974,14 +4980,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private NavigatorElement createNavigatorElement(String canonicalName, LocalizedString caption, DebugInfo.DebugPoint point, LA<?> action, FormEntity form) {
+    private NavigatorElement createNavigatorElement(String canonicalName, Property captionProperty, LocalizedString caption, DebugInfo.DebugPoint point, LA<?> action, FormEntity form) {
         NavigatorElement newElement;
         if (form != null) {
-            newElement = addNavigatorForm(form, canonicalName, caption);
+            newElement = addNavigatorForm(form, canonicalName, captionProperty, caption);
         } else if (action != null) {
-            newElement = addNavigatorAction(action, canonicalName, caption);
+            newElement = addNavigatorAction(action, canonicalName, captionProperty, caption);
         } else {
-            newElement = addNavigatorFolder(canonicalName, caption);
+            newElement = addNavigatorFolder(canonicalName, captionProperty, caption);
         }
         newElement.setDebugPoint(point);
         return newElement;

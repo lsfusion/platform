@@ -4,6 +4,10 @@ import com.google.common.base.Throwables;
 import lsfusion.base.ServerUtils;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
+import lsfusion.gwt.client.GNavigatorChangesDTO;
+import lsfusion.gwt.client.base.jsni.Function;
+import lsfusion.gwt.client.base.jsni.Function2;
+import lsfusion.gwt.client.navigator.GNavigatorChanges;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.controller.remote.action.navigator.GClientSettings;
 import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigator;
@@ -11,6 +15,7 @@ import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigato
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorInfo;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.navigator.GPropertyNavigator;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.GColorTheme;
@@ -72,9 +77,10 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.status));
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.forms));
 
-        put in navigator info navigator data first changes
+        //put in navigator info navigator data first changes
+        GNavigatorChangesDTO navigatorChanges = converter.convertOrCast(navigatorData.navigatorChanges);
 
-        return new NavigatorInfo(root, navigatorWindows, windows);
+        return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows);
     }
 
     private static GClientSettings getClientSettings(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet) throws RemoteException {

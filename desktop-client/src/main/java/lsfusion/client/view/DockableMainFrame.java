@@ -204,6 +204,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         initDockStations(navigatorData);
 
+        mainNavigator.applyNavigatorChanges(navigatorData.navigatorChanges);
         navigatorController.update();
 
         bindUIHandlers();
@@ -633,5 +634,9 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         if(!formsController.openedForms.isEmpty()) {
             formsController.openedForms.get(0).setExtendedMode(ExtendedMode.MAXIMIZED);
         }
+    }
+
+    public void updateNavigatorController() {
+        navigatorController.update();
     }
 }

@@ -1,9 +1,7 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
-import lsfusion.gwt.client.action.GActivateFormAction;
-import lsfusion.gwt.client.action.GCloseFormAction;
-import lsfusion.gwt.client.action.GFormAction;
-import lsfusion.gwt.client.action.GMaximizeFormAction;
+import com.google.gwt.core.client.GWT;
+import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -46,6 +44,11 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
                 continueDispatching();
             }
         }, action.formId);
+    }
+
+    @Override
+    public void execute(GProcessNavigatorChangesAction action) {
+        MainFrame.applyNavigatorChanges(action.navigatorChanges);
     }
 
     @Override

@@ -2,17 +2,14 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.client.form.property.async.ClientAsyncCloseForm;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
-import lsfusion.client.navigator.ClientNavigatorAction;
-import lsfusion.client.navigator.ClientNavigatorElement;
-import lsfusion.client.navigator.ClientNavigatorFolder;
+import lsfusion.client.navigator.*;
 import lsfusion.client.navigator.tree.window.ClientTreeNavigatorWindow;
 import lsfusion.client.navigator.window.*;
+import lsfusion.gwt.client.GNavigatorChangesDTO;
+import lsfusion.gwt.client.navigator.*;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
-import lsfusion.gwt.client.navigator.GNavigatorAction;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ContainerWindowFormType;
@@ -20,10 +17,14 @@ import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.ServletContext;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
+
+    private final ClientNavigatorChangesToGwtConverter navigatorConverter = ClientNavigatorChangesToGwtConverter.getInstance();
 
     public ClientNavigatorToGwtConverter(ServletContext servletContext, ServerSettings settings) {
         super(servletContext, settings);
@@ -140,6 +141,12 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientTreeNavigatorWindow.class)
     public GTreeNavigatorWindow convertTreeNavigatorWindow(ClientTreeNavigatorWindow clientWindow) {
         return initNavigatorWindow(clientWindow, new GTreeNavigatorWindow());
+    }
+
+    @Cached
+    @Converter(from = ClientNavigatorChanges.class)
+    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges) {
+        return navigatorConverter.convertOrCast(clientChanges);
     }
 
     @Converter(from = ModalityWindowFormType.class)

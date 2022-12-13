@@ -108,6 +108,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
@@ -2282,14 +2283,14 @@ public abstract class LogicsModule {
         return addAFProp(nots);
     }
 
-    protected NavigatorElement addNavigatorFolder(String canonicalName, LocalizedString caption) {
-        NavigatorElement elem = new NavigatorFolder(canonicalName, caption);
+    protected NavigatorElement addNavigatorFolder(String canonicalName, Property captionProperty, LocalizedString caption) {
+        NavigatorElement elem = new NavigatorFolder(canonicalName, captionProperty, caption);
         addNavigatorElement(elem);
         return elem;
     }
 
-    protected NavigatorAction addNavigatorAction(LA<?> property, String canonicalName, LocalizedString caption) {
-        NavigatorAction navigatorAction = new NavigatorAction(property.action, canonicalName, caption, null);
+    protected NavigatorAction addNavigatorAction(LA<?> property, String canonicalName, Property captionProperty, LocalizedString caption) {
+        NavigatorAction navigatorAction = new NavigatorAction(property.action, canonicalName, captionProperty, caption, null);
         addNavigatorElement(navigatorAction);
         return navigatorAction;
     }
@@ -2298,8 +2299,8 @@ public abstract class LogicsModule {
         return baseLM.getFormNavigatorAction(form);
     }
 
-    protected NavigatorElement addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
-        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).action, canonicalName, caption, form);
+    protected NavigatorElement addNavigatorForm(FormEntity form, String canonicalName, Property captionProperty, LocalizedString caption) {
+        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).action, canonicalName, captionProperty, caption, form);
 
         addNavigatorElement(navigatorForm);
         return navigatorForm;
