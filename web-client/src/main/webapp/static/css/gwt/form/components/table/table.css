@@ -47,28 +47,35 @@
     /*overflow: hidden;*/
 }
 
-.arrow-container {
+.arrow-th {
     position: sticky;
     right: 0;
     padding: 0 !important;
     cursor: pointer;
+}
+
+.arrow-th.top-arrow {
     vertical-align: bottom;
 }
 
-.top-arrow, .bottom-arrow {
+.arrow-th.bottom-arrow {
+    vertical-align: top;
+}
+
+.arrow {
     position: absolute;
     right: 0;
     margin: var(--border-padding);
 }
 
-.bottom-arrow {
+.arrow-container {
+    position:relative;
+}
+
+.bottom-arrow .arrow {
     bottom: 0;
 }
 
-.table:not(.was-scrolled-recently.scrolled-down) .top-arrow {
-    display: none;
-}
-
-.table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow {
+.table:not(.was-scrolled-recently.scrolled-down) .top-arrow, .table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow {
     display: none;
 }

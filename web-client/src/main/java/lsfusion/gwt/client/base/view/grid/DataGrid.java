@@ -163,7 +163,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     protected abstract void scrollToEnd(boolean toEnd);
     
     private void updateScrolledState() {
-        int verticalScrollPosition = getVerticalScrollPosition();
+        int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 0);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight());
 
@@ -172,10 +172,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             recentlyScrolledTimer.cancel();
 
         recentlyScrolledTimer.schedule(3000);
-    }
-
-    private int getVerticalScrollPosition() {
-        return tableContainer.getVerticalScrollPosition();
     }
 
     private static Set<String> browserKeyEvents;

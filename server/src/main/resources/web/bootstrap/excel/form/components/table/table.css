@@ -32,6 +32,6 @@
     margin: 0; /* Remove margins */
 }
 
-.top-arrow.btn, .bottom-arrow.btn {
+.arrow.btn {
     padding: 0.1rem 0.25rem;
 }
