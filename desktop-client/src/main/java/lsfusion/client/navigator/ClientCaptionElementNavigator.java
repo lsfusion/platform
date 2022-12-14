@@ -1,8 +1,8 @@
 package lsfusion.client.navigator;
 
-public class ClientCaptionPropertyNavigator extends ClientPropertyNavigator {
+public class ClientCaptionElementNavigator extends ClientElementNavigator {
 
-    public ClientCaptionPropertyNavigator(String canonicalName) {
+    public ClientCaptionElementNavigator(String canonicalName) {
         super(canonicalName);
     }
 

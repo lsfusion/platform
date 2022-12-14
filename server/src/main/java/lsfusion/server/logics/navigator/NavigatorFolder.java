@@ -3,12 +3,11 @@ package lsfusion.server.logics.navigator;
 import lsfusion.base.file.AppImage;
 import lsfusion.base.file.AppImages;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorFolder extends NavigatorElement {
-    public NavigatorFolder(String canonicalName, Property captionProperty, LocalizedString caption) {
-        super(canonicalName, captionProperty, caption);
+    public NavigatorFolder(String canonicalName, LocalizedString caption) {
+        super(canonicalName, caption);
     }
 
     @Override

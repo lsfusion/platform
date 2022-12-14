@@ -2,23 +2,24 @@ package lsfusion.server.logics.navigator;
 
 import lsfusion.server.logics.property.Property;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 
 public abstract class PropertyNavigator {
 
-    private Property property;
-    private String canonicalName;
+    private final Property property;
 
-    public PropertyNavigator(Property property, String canonicalName) {
+    public PropertyNavigator(Property property) {
         this.property = property;
-        this.canonicalName = canonicalName;
     }
 
     public Property getProperty() {
         return property;
     }
 
-    public String getCanonicalName() {
-        return canonicalName;
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeByte(getTypeID());
     }
 
     public abstract byte getTypeID();

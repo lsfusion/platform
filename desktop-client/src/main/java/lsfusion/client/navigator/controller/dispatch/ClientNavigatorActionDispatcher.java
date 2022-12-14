@@ -40,8 +40,7 @@ public class ClientNavigatorActionDispatcher extends SwingClientActionDispatcher
 
     public void execute(ProcessNavigatorChangesClientAction action) {
         try {
-            clientNavigator.applyNavigatorChanges(new ClientNavigatorChanges(action.navigatorChanges));
-            ((DockableMainFrame) MainFrame.instance).updateNavigatorController();
+            clientNavigator.applyNavigatorChanges(new ClientNavigatorChanges(action.navigatorChanges), ((DockableMainFrame) MainFrame.instance).getNavigatorController());
         } catch (IOException e) {
             Throwables.propagate(e);
         }

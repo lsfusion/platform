@@ -1,10 +1,10 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.client.navigator.ClientCaptionPropertyNavigator;
+import lsfusion.client.navigator.ClientCaptionElementNavigator;
 import lsfusion.client.navigator.ClientNavigatorChanges;
 import lsfusion.client.navigator.ClientPropertyNavigator;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
-import lsfusion.gwt.client.navigator.GCaptionPropertyNavigator;
+import lsfusion.gwt.client.navigator.GCaptionElementNavigator;
 import lsfusion.gwt.client.navigator.GPropertyNavigator;
 
 import java.io.Serializable;
@@ -39,8 +39,8 @@ public class ClientNavigatorChangesToGwtConverter extends ObjectConverter {
     }
 
     @Cached
-    @Converter(from = ClientCaptionPropertyNavigator.class)
-    public GPropertyNavigator convertPropertyNavigator(ClientCaptionPropertyNavigator clientPropertyNavigator) {
-        return new GCaptionPropertyNavigator(clientPropertyNavigator.canonicalName);
+    @Converter(from = ClientCaptionElementNavigator.class)
+    public GPropertyNavigator convertPropertyNavigator(ClientCaptionElementNavigator clientPropertyNavigator) {
+        return new GCaptionElementNavigator(clientPropertyNavigator.canonicalName);
     }
 }

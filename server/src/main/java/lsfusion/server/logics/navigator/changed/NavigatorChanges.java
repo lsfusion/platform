@@ -9,7 +9,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import static lsfusion.base.BaseUtils.serializeObject;
-import static lsfusion.base.BaseUtils.serializeString;
 
 public class NavigatorChanges {
 
@@ -35,8 +34,7 @@ public class NavigatorChanges {
             PropertyNavigator propertyNavigator = properties.getKey(i);
             Object value = properties.getValue(i);
 
-            outStream.writeByte(propertyNavigator.getTypeID());
-            serializeString(outStream, propertyNavigator.getCanonicalName());
+            propertyNavigator.serialize(outStream);
             serializeObject(outStream, value);
         }
     }

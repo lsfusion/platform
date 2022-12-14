@@ -38,7 +38,7 @@ public abstract class NavigatorElement {
     public NavigatorWindow window = null;
 
     private final int ID;
-    public Property captionProperty;
+    public Property headerProperty;
     public LocalizedString caption;
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
@@ -46,11 +46,10 @@ public abstract class NavigatorElement {
     private NFProperty<NavigatorElement> parent = NFFact.property();
     private NFOrderSet<NavigatorElement> children = NFFact.orderSet();
 
-    protected NavigatorElement(String canonicalName, Property captionProperty, LocalizedString caption) {
+    protected NavigatorElement(String canonicalName, LocalizedString caption) {
         assert canonicalName != null;
         this.canonicalName = canonicalName;
         this.ID = BaseLogicsModule.generateStaticNewID();
-        this.captionProperty = captionProperty;
         this.caption = caption;
     }
 
@@ -211,6 +210,10 @@ public abstract class NavigatorElement {
 
     public void setImage(AppImage image) {
         this.image = image;
+    }
+
+    public void setHeaderProperty(Property headerProperty) {
+        this.headerProperty = headerProperty;
     }
 
     public void finalizeAroundInit(BaseLogicsModule LM) {

@@ -4923,9 +4923,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         public NavigatorElement anchor;
         public InsertType position;
         public String windowName;
+        public LPWithParams headerProperty;
     }
 
-    public NavigatorElement createScriptedNavigatorElement(String name, NamedPropertyUsage captionPropertyUsage, LocalizedString caption, DebugInfo.DebugPoint point,
+    public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
                                                            NamedPropertyUsage actionUsage, String formName, boolean isAction) throws ScriptingErrorLog.SemanticErrorException {
         LA<?> action = null;
         FormEntity form = null;
@@ -4946,12 +4947,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkNavigatorElementName(name);
         checks.checkDuplicateNavigatorElement(name);
 
-        Property captionProperty = null;
-        if(captionPropertyUsage != null) {
-            LP captionLP = findProperty(captionPropertyUsage.name);
-            captionProperty = captionLP.property;
-        }
-
         if (caption == null) {
             caption = createDefaultNavigatorElementCaption(action, form);
             if (caption == null) {
@@ -4959,7 +4954,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
 
-        return createNavigatorElement(elementCanonicalName(name), captionProperty, caption, point, action, form);
+        return createNavigatorElement(elementCanonicalName(name), caption, point, action, form);
     }
 
     private String createDefaultNavigatorElementName(LA<?> action, FormEntity form) {
@@ -4980,14 +4975,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private NavigatorElement createNavigatorElement(String canonicalName, Property captionProperty, LocalizedString caption, DebugInfo.DebugPoint point, LA<?> action, FormEntity form) {
+    private NavigatorElement createNavigatorElement(String canonicalName, LocalizedString caption, DebugInfo.DebugPoint point, LA<?> action, FormEntity form) {
         NavigatorElement newElement;
         if (form != null) {
-            newElement = addNavigatorForm(form, canonicalName, captionProperty, caption);
+            newElement = addNavigatorForm(form, canonicalName, caption);
         } else if (action != null) {
-            newElement = addNavigatorAction(action, canonicalName, captionProperty, caption);
+            newElement = addNavigatorAction(action, canonicalName, caption);
         } else {
-            newElement = addNavigatorFolder(canonicalName, captionProperty, caption);
+            newElement = addNavigatorFolder(canonicalName, caption);
         }
         newElement.setDebugPoint(point);
         return newElement;
@@ -5013,7 +5008,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         setNavigatorElementWindow(element, options.windowName);
-        setNavigatorElementImage(element, parent, options.imagePath != null ? new AppImage(options.imagePath) : null);
+        setNavigatorElementImage(element, options.imagePath != null ? new AppImage(options.imagePath) : null);
+        setNavigatorElementHeaderProperty(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
 
         if (parent != null && (!isEditOperation || options.position != InsertType.IN)) {
             moveElement(element, parent, options.position, options.anchor, isEditOperation);
@@ -5046,9 +5042,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setNavigatorElementImage(NavigatorElement element, NavigatorElement parent, AppImage image) {
+    public void setNavigatorElementImage(NavigatorElement element, AppImage image) {
         if (image != null)
             element.setImage(image);
+    }
+
+    public void setNavigatorElementHeaderProperty(NavigatorElement element, Property headerProperty) {
+        if (headerProperty != null)
+            element.setHeaderProperty(headerProperty);
     }
 
     public LPWithParams propertyExpressionCreated(LPWithParams property, List<TypedParameter> context, boolean needFullContext) {

@@ -30,7 +30,7 @@ public class ClientNavigatorChanges {
         switch (type) {
             case 0:
                 String canonicalName = deserializeString(inStream);
-                return new ClientCaptionPropertyNavigator(canonicalName);
+                return new ClientCaptionElementNavigator(canonicalName);
             default:
                 throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");
         }

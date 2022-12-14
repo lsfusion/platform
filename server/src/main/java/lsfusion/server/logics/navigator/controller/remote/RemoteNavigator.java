@@ -46,7 +46,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
-import lsfusion.server.logics.navigator.CaptionPropertyNavigator;
+import lsfusion.server.logics.navigator.CaptionElementNavigator;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.PropertyNavigator;
@@ -503,8 +503,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private ImSet<PropertyNavigator> getPropertyNavigators() {
         MExclSet<PropertyNavigator> mResult = SetFact.mExclSet();
         for(NavigatorElement navigatorElement : getNavigatorTreeObjects().keyIt()) {
-            if(navigatorElement.captionProperty != null)
-                mResult.exclAdd(new CaptionPropertyNavigator(navigatorElement.captionProperty, navigatorElement.getCanonicalName()));
+            if(navigatorElement.headerProperty != null)
+                mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement.getCanonicalName()));
             //if(navigatorElement.propertyImage != null)
             //    mResult.exclAdd(new ImagePropertyNavigator());
         }

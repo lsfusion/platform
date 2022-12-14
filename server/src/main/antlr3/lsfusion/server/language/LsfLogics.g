@@ -4853,16 +4853,15 @@ newNavigatorElementStatement[NavigatorElement parentElement]
 navigatorElementDescription returns [NavigatorElement element]
 @init {
 	boolean isAction = false;
-    Object literal = null;
 }
 @after {
 	if (inMainParseState()) {
- 		$element = self.createScriptedNavigatorElement($name.text, $captionProp.propUsage, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
+ 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
  	}	
 }
-	:	'FOLDER' name=ID (captionProp=propertyUsage | caption=localizedStringLiteral)?
-	|	'FORM' ((name=ID)? (captionProp=propertyUsage | caption=localizedStringLiteral)? '=')? formName=compoundID
-	|	('ACTION' { isAction = true; } )? ((name=ID)? (captionProp=propertyUsage | caption=localizedStringLiteral)? '=')? pu=propertyUsage
+	:	'FOLDER' name=ID (caption=localizedStringLiteral)?
+	|	'FORM' ((name=ID)? (caption=localizedStringLiteral)? '=')? formName=compoundID
+	|	('ACTION' { isAction = true; } )? ((name=ID)? (caption=localizedStringLiteral)? '=')? pu=propertyUsage
 	;
 
 navigatorElementOptions returns [NavigatorElementOptions options] 
@@ -4873,7 +4872,8 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	:	
 	(	'WINDOW' wid=compoundID { $options.windowName = $wid.sid; }
 	|	pos=navigatorElementInsertPosition { $options.position = $pos.position; $options.anchor = $pos.anchor; }
-	|	'IMAGE' path=stringLiteral { $options.imagePath = $path.val; }	
+	|	'IMAGE' path=stringLiteral { $options.imagePath = $path.val; }
+	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }
 	)*
 	;
 	

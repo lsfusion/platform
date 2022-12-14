@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.navigator;
 
-public class GCaptionPropertyNavigator extends GPropertyNavigator {
+public class GCaptionElementNavigator extends GElementNavigator {
 
-    public GCaptionPropertyNavigator() {
+    public GCaptionElementNavigator() {
         super();
     }
 
-    public GCaptionPropertyNavigator(String canonicalName) {
+    public GCaptionElementNavigator(String canonicalName) {
         super(canonicalName);
     }
 
