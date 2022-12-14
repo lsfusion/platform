@@ -32,14 +32,6 @@
     margin: 0; /* Remove margins */
 }
 
-.top-arrow {
-    padding: 0.25rem;
-    background: var(--background-color);
-    border-radius: 0.25rem;
-}
-
-.bottom-arrow {
-    padding: 0.25rem;
-    background: var(--background-color);
-    border-radius: 0.25rem;
+.top-arrow.btn, .bottom-arrow.btn {
+    padding: 0.1rem 0.25rem;
 }

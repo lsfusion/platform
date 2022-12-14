@@ -1231,9 +1231,4 @@ public class GwtClientUtils {
     public static native void draggable(Element element, String handle)/*-{
         $wnd.$(element).draggable({ handle: handle});
     }-*/;
-
-    public static native void setStyleName(Element element, String styleName, boolean add) /*-{
-        if (element != null)
-            element.classList[add ? "add" : "remove"](styleName);
-    }-*/;
 }

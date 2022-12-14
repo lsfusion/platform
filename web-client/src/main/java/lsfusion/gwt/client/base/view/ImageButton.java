@@ -24,11 +24,8 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
 
         setText(caption);
 
-        if(baseImage != null) {
-            // we want useBootstrap to be initialized (to know what kind of image should be used)
-            if(MainFrame.staticImagesURL != null)
-                initImage(baseImage, vertical);
-        }
+        if(baseImage != null)
+            initImage(baseImage, vertical);
 
 //        setFocusable(false);
     }

@@ -83,16 +83,17 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
     }
 
     private void initArrow(Element parent, boolean bottom) {
-        Element arrow = bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage();
-        arrow.addClassName(bottom ? "bottom-arrow" : "top-arrow");
-        GwtClientUtils.setOnClick(arrow, event -> table.scrollToEnd(bottom));
+        Element button = Document.get().createElement("button");
+        button.addClassName("btn");
+        button.addClassName("btn-light");
+        button.addClassName("btn-sm");
+        button.addClassName(bottom ? "bottom-arrow" : "top-arrow");
+        button.insertFirst(bottom ? StaticImage.CHEVRON_DOWN.createImage() : StaticImage.CHEVRON_UP.createImage());
+        GwtClientUtils.setOnClick(button, event -> table.scrollToEnd(bottom));
 
-//        if (!bottom)
-//            arrow.getStyle().setProperty("bottom", "-" + parent.getOffsetHeight() + (MainFrame.useBootstrap ? 23 : 36) + "px");
-
-        Element container = Document.get().createElement("div");
+        Element container = Document.get().createElement("th");
         container.addClassName("arrow-container");
-        container.appendChild(arrow);
+        container.appendChild(button);
         parent.appendChild(container);
     }
 

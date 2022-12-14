@@ -147,7 +147,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private final Timer recentlyScrolledTimer = new Timer() {
         @Override
         public void run() {
-            tableWidget.removeStyleName("was-scrolled-recently");
+            tableWidget.setStyleName("was-scrolled-recently", false);
         }
     };
 

@@ -49,32 +49,26 @@
 
 .arrow-container {
     position: sticky;
-    height: 0;
     right: 0;
     padding: 0 !important;
     cursor: pointer;
-    display: none;
+    vertical-align: bottom;
 }
 
-.top-arrow {
+.top-arrow, .bottom-arrow {
     position: absolute;
-    right: 0.25rem;
+    right: 0;
+    margin: var(--border-padding);
 }
 
 .bottom-arrow {
-    position: absolute;
-    right: 0.25rem;
-    bottom: 0.5rem;
+    bottom: 0;
 }
 
-.scrolled-up:not(.scrolled-down) .top-arrow {
+.table:not(.was-scrolled-recently.scrolled-down) .top-arrow {
     display: none;
 }
 
-.scrolled-down:not(.scrolled-up) .bottom-arrow {
+.table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow {
     display: none;
-}
-
-.was-scrolled-recently .arrow-container {
-    display: block;
 }
