@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.form.design;
 
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -169,15 +169,16 @@ public class GContainer extends GComponent {
         return grid;
     }
     public boolean isAlignCaptions() {
+        // children count in filters container changes in runtime, so this should go before check on children.size()
+        if (alignCaptions != null) {
+            return alignCaptions;
+        }
+        
         // align caption has a higher priority than wrap
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
         if(children.size() <= lines) // if there are fewer components than lines, there is no point in creating grids (however later it makes sense to avoid creating grids for specific lines)
             return false;
-
-        if (alignCaptions != null) {
-            return alignCaptions;
-        }
 
         boolean otherAligned = false;
         // only simple property draws

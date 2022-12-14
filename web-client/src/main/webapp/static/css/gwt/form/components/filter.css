@@ -35,6 +35,10 @@
     align-items : center;
 }
 
+.filter-selector {
+    width: unset; /* is set to 100% for .form-control */
+}
+
 .filter-selector, .filter-selector .background-inherit {
     background-color: var(--component-background-color);
 }

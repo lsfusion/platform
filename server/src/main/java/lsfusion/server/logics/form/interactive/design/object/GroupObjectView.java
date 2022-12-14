@@ -79,7 +79,10 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
             filtersContainer.setType(ContainerType.CONTAINERH);
         }
         filtersContainer.setAlignment(FlexAlignment.STRETCH);
-//        filtersContainer.setAlignCaptions(true);
+
+        // behaves weirdly if unset as alignCaptions property sometimes depends on children count, which changes in runtime for filters container
+        filtersContainer.setAlignCaptions(false); 
+        
 //        filtersContainer.setLineSize(0);
 //        filtersContainer.setCaption(LocalizedString.create(ThreadLocalContext.localize("{form.view.filters.container}")));
 
