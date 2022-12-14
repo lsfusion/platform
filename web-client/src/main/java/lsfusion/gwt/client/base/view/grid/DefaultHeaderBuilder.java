@@ -66,6 +66,11 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         public void addLastCellStyle(TableCellElement element) {
             element.addClassName("dataGridLastHeaderCell");
         }
+
+        @Override
+        public boolean isFooter() {
+            return false;
+        }
     }
 
     public static final class FooterDelegateImpl implements HeaderDelegate {
@@ -103,6 +108,11 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
         @Override
         public void addLastCellStyle(TableCellElement element) {
             element.addClassName("dataGridLastFooterCell");
+        }
+
+        @Override
+        public boolean isFooter() {
+            return true;
         }
     }
 

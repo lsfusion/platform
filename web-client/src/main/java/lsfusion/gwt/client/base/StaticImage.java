@@ -92,4 +92,7 @@ public class StaticImage extends BaseStaticImage {
     public static final StaticImage EXECUTE = new StaticImage("bi bi-play", "action.png");
     public static final StaticImage EMPTY = new StaticImage("empty.png");
     public static final StaticImage FILE = new StaticImage("bi bi-file-earmark", "file.png");
+
+    public static final StaticImage CHEVRON_UP = new StaticImage("fa-solid fa-chevron-up", "up-arrow.png");
+    public static final StaticImage CHEVRON_DOWN = new StaticImage("fa-solid fa-chevron-down", "down-arrow.png");
 }

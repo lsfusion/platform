@@ -46,3 +46,40 @@
     /* ??? */
     /*overflow: hidden;*/
 }
+
+.arrow-th {
+    position: sticky;
+    right: 0;
+    padding: 0 !important;
+    cursor: pointer;
+}
+
+.arrow-th.top-arrow {
+    vertical-align: bottom;
+}
+
+.arrow-th.bottom-arrow {
+    vertical-align: top;
+}
+
+.arrow {
+    position: absolute;
+    right: 0;
+    margin: var(--border-padding);
+}
+
+.arrow-container {
+    position:relative;
+}
+
+.bottom-arrow .arrow {
+    bottom: 0;
+}
+
+.top-arrow .arrow {
+    top: 0; /*Does not do anything. It is needed for symmetry with ".bottom-arrow .arrow"*/
+}
+
+.table:not(.was-scrolled-recently.scrolled-down) .top-arrow, .table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow {
+    display: none;
+}

@@ -1178,6 +1178,12 @@ public class GwtClientUtils {
         }
     }-*/;
 
+    public static native void setOnClick(Element element, Consumer<NativeEvent> run)/*-{
+        element.onclick = function(event) {
+            run.@Consumer::accept(*)(event);
+        }
+    }-*/;
+
     private static String showIfVisible = "showIfVisible";
     public static void setShowIfVisible(Widget widget, boolean visible) {
         widget.getElement().setAttribute(showIfVisible, String.valueOf(visible));

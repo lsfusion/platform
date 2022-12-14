@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
@@ -142,20 +143,35 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         MainFrame.addColorThemeChangeListener(this);
     }
-    
+
+    private final Timer recentlyScrolledTimer = new Timer() {
+        @Override
+        public void run() {
+            tableWidget.setStyleName("was-scrolled-recently", false);
+        }
+    };
+
     public ScrollHandler getScrollHandler() {
         return event -> {
             calcLeftNeighbourRightBorder(true);
             checkSelectedRowVisible();
-            
+
             updateScrolledState();
         };
     }
+
+    protected abstract void scrollToEnd(boolean toEnd);
     
     private void updateScrolledState() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 0);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight());
+
+        tableWidget.setStyleName("was-scrolled-recently", true);
+        if (recentlyScrolledTimer.isRunning())
+            recentlyScrolledTimer.cancel();
+
+        recentlyScrolledTimer.schedule(3000);
     }
 
     private static Set<String> browserKeyEvents;
@@ -620,6 +636,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
      */
     public HeaderBuilder<T> getFooterBuilder() {
         return footerBuilder;
+    }
+
+    /**
+     * Get the {@link HeaderBuilder} used to generate the header section.
+     */
+    public HeaderBuilder<T> getHeaderBuilder() {
+        return headerBuilder;
     }
 
     /**
