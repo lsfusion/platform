@@ -6,10 +6,12 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.server.data.query.IQuery;
 import lsfusion.server.data.query.compile.CompileOptions;
 import lsfusion.server.data.query.compile.CompiledQuery;
+import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.value.Value;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 
 import java.lang.ref.WeakReference;
+import java.util.Map;
 
 // этот класс нужен в том числе чтобы debugInfo получать только на запросах превысивших threshold
 public class SQLDebugInfo<K, V> {
@@ -64,13 +66,19 @@ public class SQLDebugInfo<K, V> {
         return sqlDebugInfoMap;
     }
 
-    public String getDebugInfoForProcessMonitor() {
+    public static String getSqlDebugInfo(SQLSession session) {
+        SQLDebugInfo debugInfo = sqlDebugInfoMap.get(Thread.currentThread());
+        return debugInfo != null ? debugInfo.toString(session) : "";
+    }
+
+    public String toString(SQLSession sqlSession) {
         IQuery iQuery = wQuery.get();
         StringBuilder debugInfo = new StringBuilder();
         if (iQuery != null) {
+            Map<String, String> sessionDebugInfo = sqlSession.sessionDebugInfo;
             ImSet<Value> contextValues = iQuery.getContextValues();
             for (Value contextValue : contextValues) {
-                debugInfo.append(debugInfo.length() == 0 ? "" : "\n").append(contextValue.toDebugString());
+                debugInfo.append(debugInfo.length() == 0 ? "" : "\n").append(contextValue.toDebugString(sessionDebugInfo));
             }
         }
         return debugInfo.length() == 0 ? null : debugInfo.toString();

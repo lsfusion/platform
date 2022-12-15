@@ -31,6 +31,8 @@ import lsfusion.server.data.value.Value;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 
+import java.util.Map;
+
 // вообще надо по хорошему через множественное наследование связать с ValueExpr, но т.к. это локальный case пока делать не будем
 // класс нужен так как classExpr работает только с VariableClassExpr
 public class InconsistentStaticValueExpr extends VariableSingleClassExpr implements Value, StaticExprInterface {
@@ -102,7 +104,7 @@ public class InconsistentStaticValueExpr extends VariableSingleClassExpr impleme
     }
 
     @Override
-    public String toDebugString() {
+    public String toDebugString(Map<String, String> sessionDebugInfo) {
         return toString();
     }
 
