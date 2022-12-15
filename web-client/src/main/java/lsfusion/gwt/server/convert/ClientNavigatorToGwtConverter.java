@@ -17,9 +17,7 @@ import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.ServletContext;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Map;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
@@ -43,7 +41,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.path = clientElement.path;
         element.children = new ArrayList<>();
 
-        element.image = createImage(clientElement.image, false);
+        element.appImage = createImage(clientElement.appImage, false);
 
         element.asyncExec = convertOrCast(clientElement.asyncExec);
 

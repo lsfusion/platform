@@ -30,11 +30,11 @@ public abstract class ClientNavigatorElement {
     
     public List<ClientNavigatorElement> parents = new ArrayList<>();
     public List<ClientNavigatorElement> children = new ArrayList<>();
-    public AppImage image;
-    public Image dynamicImage = null;
+    public AppImage appImage;
+    public Image fileImage = null;
 
     public ImageIcon getImage() {
-        return dynamicImage != null ? new ImageIcon(dynamicImage) : ClientImages.getImage(image);
+        return fileImage != null ? new ImageIcon(fileImage) : ClientImages.getImage(appImage);
     }
 
     public ClientAsyncExec asyncExec;
@@ -55,7 +55,7 @@ public abstract class ClientNavigatorElement {
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);
 
-        image = IOUtils.readImageIcon(inStream);
+        appImage = IOUtils.readImageIcon(inStream);
 
         asyncExec = (ClientAsyncExec) ClientAsyncSerializer.deserializeEventExec(inStream);
     }

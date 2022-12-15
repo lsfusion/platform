@@ -1,7 +1,6 @@
 package lsfusion.client.navigator.view;
 
 import com.formdev.flatlaf.ui.FlatButtonBorder;
-import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.ToggleButtonWidget;
@@ -12,6 +11,7 @@ import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
 import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.base.view.FlexAlignment;
 
+import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -57,7 +57,10 @@ public class ToolBarNavigatorView extends NavigatorView {
             @Override
             public void updateUI() {
                 super.updateUI();
-                setIcon(new IndentedIcon(element.getImage(), indent));
+                ImageIcon icon = element.getImage();
+                if(icon != null) {
+                    setIcon(new IndentedIcon(icon, indent));
+                }
                 if (isSelected()) {
                     setBorder(getSelectionBorder());
                 } else {
@@ -65,7 +68,10 @@ public class ToolBarNavigatorView extends NavigatorView {
                 }
             }
         };
-        button.setIcon(new IndentedIcon(element.getImage(), indent));
+        ImageIcon icon = element.getImage();
+        if(icon != null) {
+            button.setIcon(new IndentedIcon(icon, indent));
+        }
 
         LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
         button.addMouseListener(new NavigatorMouseAdapter(element));

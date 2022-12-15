@@ -6,6 +6,6 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 public class NavigatorImageButton extends ImageButton {
 
     public NavigatorImageButton(GNavigatorElement element, boolean vertical) {
-        super(element.caption, element.image, element.dynamicImage, vertical, Document.get().createAnchorElement());
+        super(element.caption, element.appImage, element.fileImage, vertical, Document.get().createAnchorElement());
     }
 }

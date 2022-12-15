@@ -4,7 +4,6 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -44,8 +43,8 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
         LIElement liElement = Document.get().createLIElement();
 
         Element iconImageElement = null;
-        if (navigatorElement.image != null) {
-            iconImageElement = navigatorElement.image.createImage();
+        if (navigatorElement.appImage != null) {
+            iconImageElement = navigatorElement.appImage.createImage();
             icons.put(navigatorElement, iconImageElement);
         }
 
@@ -103,6 +102,6 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
     @Override
     public void colorThemeChanged() {
         for (Map.Entry<GNavigatorElement, Element> icon : icons.entrySet())
-            icon.getKey().image.setImageSrc(icon.getValue());
+            icon.getKey().appImage.setImageSrc(icon.getValue());
     }
 }

@@ -2,7 +2,6 @@ package lsfusion.gwt.client.navigator;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
@@ -20,8 +19,8 @@ public abstract class GNavigatorElement implements Serializable {
     public String caption;
     public String creationPath;
     public String path;
-    public AppStaticImage image;
-    public String dynamicImage;
+    public AppStaticImage appImage;
+    public String fileImage;
 
     public GAsyncExec asyncExec;
 

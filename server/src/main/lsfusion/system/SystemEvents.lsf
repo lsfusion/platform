@@ -30,8 +30,8 @@ toggleNightMode() {
 }
 
 NAVIGATOR {
-    NEW toggleBootstrap FIRST;
-    NEW toggleNightMode HEADER '' IMAGE nightModeImage() AFTER toggleBootstrap;
+    NEW toggleBootstrap WINDOW system;
+    NEW toggleNightMode HEADER '' IMAGE nightModeImage() WINDOW system;
 }
 
 useBootstrap = useBootstrap(currentUser());
