@@ -109,8 +109,7 @@ CLASS ScriptType {
 }
 
 dataScriptType = DATA ScriptType();
-calculateScriptType = OVERRIDE dataScriptType(), ScriptType.action;
-selectedExecutionScriptType (ScriptType st) = st == calculateScriptType();
+selectedExecutionScriptType (ScriptType st) = st == dataScriptType();
 executionScriptTypeCaption (ScriptType st) = staticCaption(st);
 executionScriptTypeName (ScriptType st) = getWord(staticName(st),'.',2);
 
@@ -120,17 +119,17 @@ executeScript '{eval.execution}' (Script s) {
     
     LOCAL isContainsRunAction = BOOLEAN();
     isContainsRunAction() <- regexPatternMatch(text(s), '.*run[ \n]*\\(.*\n*.*\\)[ \n]*\{.*');
-    IF executionScriptTypeName(calculateScriptType()) == 'script' AND NOT isContainsRunAction() THEN {
+    IF executionScriptTypeName(dataScriptType()) == 'script' AND NOT isContainsRunAction() THEN {
         SHOW exception OBJECTS message = '{eval.script.form.exception.without.run.block}' WAIT;
         RETURN;
     }
 
     NEWSESSION TRY { 
-        IF executionScriptTypeName(calculateScriptType()) == 'script' OR executionScriptTypeName(calculateScriptType()) == 'action' THEN evalString() <- text(s); 
-        IF executionScriptTypeName(calculateScriptType()) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}'; 
-        IF executionScriptTypeName(calculateScriptType()) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;'; 
+        IF executionScriptTypeName(dataScriptType()) == 'script' OR executionScriptTypeName(dataScriptType()) == 'action' THEN evalString() <- text(s);
+        IF executionScriptTypeName(dataScriptType()) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}';
+        IF executionScriptTypeName(dataScriptType()) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
          
-        IF executionScriptTypeName(calculateScriptType()) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
+        IF executionScriptTypeName(dataScriptType()) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
     } CATCH {
         SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
     }
@@ -157,7 +156,7 @@ javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s)  {
 }
 
 json '{eval.script.text.script}' (Script s) = [FORMULA TEXT 'json_build_object(\'text\',$1,\'type\',$2)'] 
-            ((OVERRIDE text(s), ''), (OVERRIDE executionScriptTypeName(calculateScriptType()), ''));
+            ((OVERRIDE text(s), ''), (OVERRIDE executionScriptTypeName(dataScriptType()), ''));
 
 changeScript(Script sc) {
     INPUT s = TEXT DO {
@@ -176,6 +175,7 @@ FORM interpreter '{eval.script.form.interpreter}'
     ORDERS executionScriptTypeName(st)
     EVENTS 
         ON INIT {
+            IF NOT dataScriptType() THEN dataScriptType() <- ScriptType.action;
             SEEK interpreter.st = dataScriptType();
         }
     
@@ -190,6 +190,14 @@ FORM interpreter '{eval.script.form.interpreter}'
     PROPERTIES(r) numeric1, numeric2, numeric3, numeric4, numeric5, date1, date2, date3
     PROPERTIES(r) NEW, DELETE GRID
 ;
+
+//option.js works like a checkboxes and we want radio-button behaviour.
+//When click again to script-type in the WEB, we want the selection to remain as it is.
+previousScriptType() = DATA ScriptType();
+WHEN LOCAL CHANGED(dataScriptType()) DO {
+    IF NOT dataScriptType() THEN dataScriptType() <- previousScriptType();
+    previousScriptType() <- dataScriptType();
+}
 
 copyScript '{eval.script.copy.script}' (Script sf)  { 
     NEW s = Script {
