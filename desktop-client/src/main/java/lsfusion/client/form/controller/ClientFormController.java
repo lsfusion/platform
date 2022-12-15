@@ -17,7 +17,6 @@ import lsfusion.client.base.TableManager;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.ItemAdapter;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.classes.ClientActionClass;
 import lsfusion.client.classes.data.ClientLogicalClass;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherListener;
@@ -59,7 +58,10 @@ import lsfusion.client.form.view.ClientFormDockable;
 import lsfusion.client.navigator.ClientNavigator;
 import lsfusion.client.view.DockableMainFrame;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.action.*;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ExceptionClientAction;
+import lsfusion.interop.action.LogMessageClientAction;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.InputEvent;
@@ -1464,7 +1466,7 @@ public class ClientFormController implements AsyncListener {
 
         for (List<ClientPropertyFilter> groupFilters : currentFilters.values()) {
             for (ClientPropertyFilter filter : groupFilters) {
-                if (!(filter.property.baseType instanceof ClientActionClass))
+                if (!filter.property.isAction())
                     filters.add(serializeClientFilter(filter));
             }
         }
