@@ -57,7 +57,7 @@ public class ToolBarNavigatorView extends NavigatorView {
             @Override
             public void updateUI() {
                 super.updateUI();
-                setIcon(new IndentedIcon(ClientImages.getImage(element.image), indent));
+                setIcon(new IndentedIcon(element.getImage(), indent));
                 if (isSelected()) {
                     setBorder(getSelectionBorder());
                 } else {
@@ -65,7 +65,7 @@ public class ToolBarNavigatorView extends NavigatorView {
                 }
             }
         };
-        button.setIcon(new IndentedIcon(ClientImages.getImage(element.image), indent));
+        button.setIcon(new IndentedIcon(element.getImage(), indent));
 
         LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
         button.addMouseListener(new NavigatorMouseAdapter(element));

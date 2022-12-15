@@ -4872,7 +4872,15 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	:	
 	(	'WINDOW' wid=compoundID { $options.windowName = $wid.sid; }
 	|	pos=navigatorElementInsertPosition { $options.position = $pos.position; $options.anchor = $pos.anchor; }
-	|	'IMAGE' path=stringLiteral { $options.imagePath = $path.val; }
+	|	'IMAGE' image=propertyExpressionOrLiteral[null] {
+	        if (inMainParseState()) {
+	            if($image.literal != null && $image.literal.value instanceof LocalizedString) {
+	                $options.imagePath = ((LocalizedString) $image.literal.value).toString();
+	            } else {
+	                $options.imageProperty = $image.property;
+	            }
+	        }
+	    }
 	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }
 	)*
 	;

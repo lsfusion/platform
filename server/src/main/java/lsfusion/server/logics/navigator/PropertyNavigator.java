@@ -5,6 +5,8 @@ import lsfusion.server.logics.property.Property;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import static lsfusion.base.BaseUtils.serializeObject;
+
 
 public abstract class PropertyNavigator {
 
@@ -20,6 +22,10 @@ public abstract class PropertyNavigator {
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
+    }
+
+    public void serializeValue(DataOutputStream outStream, Object value) throws IOException {
+        serializeObject(outStream, value);
     }
 
     public abstract byte getTypeID();

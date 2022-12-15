@@ -1,5 +1,7 @@
 package lsfusion.client.navigator;
 
+import lsfusion.base.file.IOUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -21,19 +23,25 @@ public class ClientNavigatorChanges {
         properties = new HashMap<>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
-            properties.put(deserializePropertyNavigator(inStream), deserializeObject(inStream));
+            byte type = inStream.readByte();
+            ClientPropertyNavigator propertyNavigator;
+            Object value;
+            switch (type) {
+                case 0:
+                    String canonicalName = deserializeString(inStream);
+                    propertyNavigator = new ClientCaptionElementNavigator(canonicalName);
+                    value = deserializeObject(inStream);
+                    break;
+                case 1:
+                    canonicalName = deserializeString(inStream);
+                    propertyNavigator = new ClientImageElementNavigator(canonicalName);
+                    boolean staticImage = inStream.readBoolean();
+                    value = staticImage ? IOUtils.readImageIcon(inStream) : deserializeObject(inStream);
+                    break;
+                default:
+                    throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");
+            }
+            properties.put(propertyNavigator, value);
         }
     }
-
-    public ClientPropertyNavigator deserializePropertyNavigator(DataInputStream inStream) throws IOException {
-        byte type = inStream.readByte();
-        switch (type) {
-            case 0:
-                String canonicalName = deserializeString(inStream);
-                return new ClientCaptionElementNavigator(canonicalName);
-            default:
-                throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");
-        }
-    }
-
 }

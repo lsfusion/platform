@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ImageElement;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -14,13 +15,15 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
 
     protected BaseStaticImage baseImage;
     protected BaseStaticImage overrideImage;
+    protected String dynamicImage;
 
-    public ImageButton(String caption, BaseStaticImage baseImage, boolean vertical, Element element) {
+    public ImageButton(String caption, BaseStaticImage baseImage, String dynamicImage, boolean vertical, Element element) {
         super(element);
 
         addStyleName("btn-image");
 
         this.baseImage = baseImage; // need to do it before setText for the updateStyle call
+        this.dynamicImage = dynamicImage;
 
         setText(caption);
 
@@ -43,6 +46,10 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
             imageElement.addClassName("wrap-img-vert-margins");
         else
             imageElement.addClassName("wrap-img-horz-margins");
+
+        if(dynamicImage != null) {
+            ((ImageElement) imageElement).setSrc(dynamicImage);
+        }
 
         MainFrame.addColorThemeChangeListener(this);
     }

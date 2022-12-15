@@ -2,12 +2,15 @@ package lsfusion.client.navigator;
 
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.AppImage;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +31,11 @@ public abstract class ClientNavigatorElement {
     public List<ClientNavigatorElement> parents = new ArrayList<>();
     public List<ClientNavigatorElement> children = new ArrayList<>();
     public AppImage image;
+    public Image dynamicImage = null;
+
+    public ImageIcon getImage() {
+        return dynamicImage != null ? new ImageIcon(dynamicImage) : ClientImages.getImage(image);
+    }
 
     public ClientAsyncExec asyncExec;
 

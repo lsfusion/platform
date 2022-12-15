@@ -145,8 +145,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientNavigatorChanges.class)
-    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges) {
-        return navigatorConverter.convertOrCast(clientChanges);
+    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges, ServletContext servletContext, ServerSettings settings) {
+        return navigatorConverter.convertOrCast(clientChanges, servletContext, settings);
     }
 
     @Converter(from = ModalityWindowFormType.class)

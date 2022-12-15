@@ -17,18 +17,4 @@ public class GCaptionElementNavigator extends GElementNavigator {
             result.caption = (String) value;
         }
     }
-
-    private GNavigatorElement findNavigatorElementByCanonicalName(GNavigatorElement root) {
-        for(GNavigatorElement child : root.children) {
-            if(child.canonicalName.equals(canonicalName)) {
-                return child;
-            } else {
-                GNavigatorElement element = findNavigatorElementByCanonicalName(child);
-                if(element != null) {
-                    return element;
-                }
-            }
-        }
-        return null;
-    }
 }

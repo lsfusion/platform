@@ -19,8 +19,19 @@ toggleBootstrap 'Toggle bootstrap' () {
     INTERNAL CLIENT 'reload';
 }
 
+nightModeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'moon.png' ELSE 'sun.png';
+toggleNightMode() {
+    IF colorTheme(currentUser()) == ColorTheme.dark THEN
+        colorTheme(currentUser()) <- ColorTheme.light;
+    ELSE
+        colorTheme(currentUser()) <- ColorTheme.dark;
+    apply();
+    formRefresh();
+}
+
 NAVIGATOR {
     NEW toggleBootstrap FIRST;
+    NEW toggleNightMode HEADER '' IMAGE nightModeImage() AFTER toggleBootstrap;
 }
 
 useBootstrap = useBootstrap(currentUser());

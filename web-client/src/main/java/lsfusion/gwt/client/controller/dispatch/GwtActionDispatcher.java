@@ -29,6 +29,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -347,6 +348,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GChangeColorThemeAction action) {
+        MainFrame.changeColorTheme(action.colorTheme);
     }
 
     @Override

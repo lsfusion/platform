@@ -78,7 +78,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.forms));
 
         //put in navigator info navigator data first changes
-        GNavigatorChangesDTO navigatorChanges = converter.convertOrCast(navigatorData.navigatorChanges);
+        GNavigatorChangesDTO navigatorChanges = converter.convertOrCast(navigatorData.navigatorChanges, servlet.getServletContext(), serverSettings);
 
         return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows);
     }

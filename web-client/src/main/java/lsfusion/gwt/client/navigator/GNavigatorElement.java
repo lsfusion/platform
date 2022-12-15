@@ -21,6 +21,7 @@ public abstract class GNavigatorElement implements Serializable {
     public String creationPath;
     public String path;
     public AppStaticImage image;
+    public String dynamicImage;
 
     public GAsyncExec asyncExec;
 

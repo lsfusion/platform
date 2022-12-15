@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
@@ -46,10 +47,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
-import lsfusion.server.logics.navigator.CaptionElementNavigator;
-import lsfusion.server.logics.navigator.NavigatorAction;
-import lsfusion.server.logics.navigator.NavigatorElement;
-import lsfusion.server.logics.navigator.PropertyNavigator;
+import lsfusion.server.logics.navigator.*;
 import lsfusion.server.logics.navigator.changed.NavigatorChanges;
 import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContext;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
@@ -422,7 +420,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 }
             }
 
-            dataStream.write(getNavigatorChangesByteArray(getStack(), true, false, new ArrayList<>()));
+            dataStream.write(getNavigatorChangesByteArray(true));
 
             businessLogics.LM.baseWindows.log.serialize(dataStream);
             businessLogics.LM.baseWindows.status.serialize(dataStream);
@@ -477,7 +475,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
         List<ClientAction> resultActions = new ArrayList<>();
 
-        byte[] navigatorChanges = getNavigatorChangesByteArray(stack, false, forceLocalEvents, resultActions);
+        byte[] navigatorChanges = getNavigatorChangesByteArray(false);
 
         resultActions.add(new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges));
 
@@ -490,9 +488,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
     }
 
-    public byte[] getNavigatorChangesByteArray(ExecutionStack stack, boolean refresh, boolean forceLocalEvents, List<ClientAction> resultActions) {
+    public byte[] getNavigatorChangesByteArray(boolean refresh) {
         try {
-            NavigatorChanges navigatorChanges = getChanges(stack, refresh, forceLocalEvents, resultActions);
+            NavigatorChanges navigatorChanges = getChanges(refresh);
             return navigatorChanges.serialize();
         } catch (Exception e) {
             throw Throwables.propagate(e);
@@ -503,10 +501,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private ImSet<PropertyNavigator> getPropertyNavigators() {
         MExclSet<PropertyNavigator> mResult = SetFact.mExclSet();
         for(NavigatorElement navigatorElement : getNavigatorTreeObjects().keyIt()) {
+            if(navigatorElement.imageProperty != null)
+                mResult.exclAdd(new ImageElementNavigator(navigatorElement.imageProperty, navigatorElement.getCanonicalName()));
             if(navigatorElement.headerProperty != null)
                 mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement.getCanonicalName()));
-            //if(navigatorElement.propertyImage != null)
-            //    mResult.exclAdd(new ImagePropertyNavigator());
         }
         return mResult.immutable();
     }
@@ -514,7 +512,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @StackMessage("{message.form.end.apply}")
     @ThisMessage
     @AssertSynchronized
-    public NavigatorChanges getChanges(ExecutionStack stack, boolean refresh, boolean forceLocalEvents, List<ClientAction> resultActions) throws SQLException, SQLHandledException {
+    public NavigatorChanges getChanges(boolean refresh) throws SQLException, SQLHandledException {
 
         ImMap<PropertyNavigator, Object> changes = MapFact.EMPTY();
 
@@ -543,8 +541,16 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                     }
                 }
 
-                if(session != null)
+                if (session != null) {
                     changes = query.execute(session).singleValue();
+                    changes = changes.mapItValues((propertyNavigator, value) -> {
+                        if (propertyNavigator instanceof ImageElementNavigator && value instanceof String) {
+                            value = new AppImage((String) value);
+                        }
+                        return value;
+                    });
+                }
+
             } finally {
                 if(session != null)
                     session.close();

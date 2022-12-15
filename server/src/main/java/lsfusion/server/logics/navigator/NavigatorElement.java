@@ -30,16 +30,19 @@ import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
 import static lsfusion.base.col.MapFact.singletonOrder;
 
 public abstract class NavigatorElement {
-    
-    private AppImage image;
 
     protected abstract AppImage getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
 
     private final int ID;
+
+    public Property imageProperty;
+    private AppImage image;
+
     public Property headerProperty;
     public LocalizedString caption;
+
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
 
@@ -207,6 +210,10 @@ public abstract class NavigatorElement {
     public abstract byte getTypeID();
 
     public abstract AsyncExec getAsyncExec();
+
+    public void setImageProperty(Property imageProperty) {
+        this.imageProperty = imageProperty;
+    }
 
     public void setImage(AppImage image) {
         this.image = image;

@@ -4919,10 +4919,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class NavigatorElementOptions {
-        public String imagePath;
         public NavigatorElement anchor;
         public InsertType position;
         public String windowName;
+        public String imagePath;
+        public LPWithParams imageProperty;
         public LPWithParams headerProperty;
     }
 
@@ -5008,8 +5009,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         setNavigatorElementWindow(element, options.windowName);
-        setNavigatorElementImage(element, options.imagePath != null ? new AppImage(options.imagePath) : null);
-        setNavigatorElementHeaderProperty(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
+        setNavigatorElementImage(element, options.imageProperty != null ? options.imageProperty.getLP().property : null, options.imagePath != null ? new AppImage(options.imagePath) : null);
+        setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
 
         if (parent != null && (!isEditOperation || options.position != InsertType.IN)) {
             moveElement(element, parent, options.position, options.anchor, isEditOperation);
@@ -5042,12 +5043,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setNavigatorElementImage(NavigatorElement element, AppImage image) {
+    public void setNavigatorElementImage(NavigatorElement element, Property imageProperty, AppImage image) {
+        if(imageProperty != null)
+            element.setImageProperty(imageProperty);
         if (image != null)
             element.setImage(image);
     }
 
-    public void setNavigatorElementHeaderProperty(NavigatorElement element, Property headerProperty) {
+    public void setNavigatorElementHeader(NavigatorElement element, Property headerProperty) {
         if (headerProperty != null)
             element.setHeaderProperty(headerProperty);
     }

@@ -88,7 +88,7 @@ public class TreeNavigatorView extends NavigatorView {
 
         @Override
         public Icon getIcon() {
-            return ClientImages.getImage(getTypedObject().image);
+            return getTypedObject().getImage();
         }
     }
 }

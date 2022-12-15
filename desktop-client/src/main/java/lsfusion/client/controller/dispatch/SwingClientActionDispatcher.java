@@ -694,6 +694,7 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
 
     @Override
     public void execute(ChangeColorThemeClientAction action) {
+        MainController.changeColorTheme(action.colorTheme);
     }
 
     @Override

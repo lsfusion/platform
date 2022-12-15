@@ -154,7 +154,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GProcessNavigatorChangesAction convertAction(ProcessNavigatorChangesClientAction action, FormSessionObject form, MainDispatchServlet servlet) throws IOException {
         ClientNavigatorChanges changes = new ClientNavigatorChanges(action.navigatorChanges);
 
-        GNavigatorChangesDTO navigatorChanges = navigatorConverter.convertOrCast(changes);
+        GNavigatorChangesDTO navigatorChanges = navigatorConverter.convertOrCast(changes, servlet.getServletContext(), servlet.getNavigatorProvider().getServerSettings(form.navigatorID));
 
         return new GProcessNavigatorChangesAction(navigatorChanges);
     }
