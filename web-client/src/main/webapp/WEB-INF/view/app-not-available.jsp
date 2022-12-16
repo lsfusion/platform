@@ -21,10 +21,12 @@
             if (interval == null) {
                 button.innerHTML = "<%= ServerMessages.getString(request, "app.server.unavailable.timer.stop") %>";
                 interval = setInterval(() => {
-                    if (timeToReconnect > 0)
+                    if (timeToReconnect > 0) {
                         timeToReconnect = timeToReconnect - 1;
-                    else
+                    } else {
+                        timeToReconnect = 5;
                         window.location.href = "${redirectURL}";
+                    }
 
                     document.getElementById("reconnectTime").innerHTML = timeToReconnect;
                 }, 1000);
