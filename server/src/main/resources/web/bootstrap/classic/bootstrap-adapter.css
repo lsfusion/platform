@@ -129,7 +129,9 @@
 .table.table-bordered .dataGridColumnRow,
 .table:not(.table-bordered) .empty-header .dataGridHeaderCell,
 .empty-footer .dataGridFooterCell,
-.dataGridFooterRow:not(.empty-footer) .dataGridFooterCell {
+.empty-footer .arrow-th, /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
+.dataGridFooterRow:not(.empty-footer) .dataGridFooterCell,
+.dataGridFooterRow:not(.empty-footer) .arrow-th {
     border-bottom: none;
 }
 .scrolled-down.table-bordered .dataGridHeaderRow,
@@ -142,11 +144,14 @@
 .scrolled-down.table-bordered :not(.empty-header) .dataGridHeaderRow {
     top: var(--table-outline-width);
 }
-.table :not(.empty-footer) .dataGridFooterRow {
-    bottom: var(--table-outline-width);
+@media (min-width: 570px) {  /* likely because of rounding in mobile version we see "empty" border under footer with bottom: 1px */
+    .table :not(.empty-footer) .dataGridFooterRow {
+        bottom: var(--table-outline-width);
+    }
 }
 .empty-header .dataGridHeaderCell,
-.empty-footer .dataGridFooterCell {
+.empty-footer .dataGridFooterCell,
+.empty-footer .arrow-th {  /* cell with .arrow-th doesn't have .dataGridFooterCell class. adding for them to behave the same way */
     padding: 0;
 }
 /* only partly fixes vertical borders */

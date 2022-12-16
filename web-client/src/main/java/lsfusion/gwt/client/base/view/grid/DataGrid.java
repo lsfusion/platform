@@ -166,8 +166,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
         //The mobile version does not set the "scrolled-up" class correctly when scrolling to the bottom of the table due to size rounding.
         // This is solved by adding one pixel to the calculation
-        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 1);
-        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - 1);
+        int adjustment = MainFrame.mobile ? 1 : 0;
+        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
+        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
 
         tableWidget.setStyleName("was-scrolled-recently", true);
         if (recentlyScrolledTimer.isRunning())
