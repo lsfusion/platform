@@ -33,10 +33,18 @@ public class GToolbarNavigatorView extends GNavigatorView {
             panel.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
                               (window.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "align-items-end" :
                                                                                                "align-items-start"));
+
+            main.addStyleName(window.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+                              (window.alignmentY == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "justify-content-end" :
+                                                                                                        "justify-content-start"));
         } else {
             panel.addStyleName(window.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
                               (window.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
                                                                                                "align-items-start"));
+
+            main.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+                              (window.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "justify-content-end" :
+                                                                                                      "justify-content-start"));
         }
         main.add(panel);
 

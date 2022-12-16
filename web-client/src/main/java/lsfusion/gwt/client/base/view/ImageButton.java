@@ -39,6 +39,7 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
     private void initImage(BaseStaticImage baseImage, boolean vertical) {
         if(fileImage != null) {
             imageElement = GwtClientUtils.createAppDownloadImage(null, null);
+            updateImageSrc();
         } else {
             imageElement = baseImage.createImage();
         }

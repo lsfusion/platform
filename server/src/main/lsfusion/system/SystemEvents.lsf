@@ -12,6 +12,22 @@ onWebClientLoad ABSTRACT LIST ();
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
 onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 
+defaultLogo() = DATA IMAGEFILE ();
+onStarted() + {
+    IF NOT defaultLogo() THEN {
+        readResource('/images/logo.png');
+        defaultLogo() <- IMAGEFILE(resourceFile());
+    }
+}
+
+logo() = OVERRIDE logicsLogo(), defaultLogo();
+
+logoAction() {}
+
+NAVIGATOR {
+    NEW logoAction WINDOW logo HEADER '' IMAGE logo();
+}
+
 useBootstrap = DATA BOOLEAN(CustomUser);
 toggleBootstrap 'Toggle bootstrap' () {
     useBootstrap(currentUser()) <- NOT useBootstrap(currentUser());

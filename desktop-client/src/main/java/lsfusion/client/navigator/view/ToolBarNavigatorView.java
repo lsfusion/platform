@@ -28,11 +28,11 @@ public class ToolBarNavigatorView extends NavigatorView {
     private final ClientToolBarNavigatorWindow window;
     private ClientNavigatorElement selected;
 
-    public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
-        super(iWindow, new FlexPanel(iWindow.isVertical(), FlexAlignment.START), controller);
-        window = iWindow;
+    public ToolBarNavigatorView(ClientToolBarNavigatorWindow window, INavigatorController controller) {
+        super(window, new FlexPanel(window.isVertical(), window.getFlexAlignment()), controller);
+        this.window = window;
 
-        toolBarPanel = (FlexPanel) getComponent();
+        this.toolBarPanel = (FlexPanel) getComponent();
     }
 
     @Override
