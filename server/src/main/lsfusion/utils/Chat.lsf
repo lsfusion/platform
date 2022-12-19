@@ -478,7 +478,7 @@ seekChat (Chat chat) + { SEEK fullChat.c = chat; }
 seekLastMessage() + { SEEK LAST fullChat.m; }
 
 NAVIGATOR {
-    NEW fullChat IMAGE 'chat.png' BEFORE Authentication.account WINDOW system;
+    NEW fullChat IMAGE 'chat.png' WINDOW system FIRST;
 }
 
 //---------------------------- SHORT CHAT ----------------------------//
