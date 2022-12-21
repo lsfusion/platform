@@ -39,7 +39,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         if ((MOUSEMOVE.equals(eventType) || MOUSEDOWN.equals(eventType)) && resizeHandler == null) {
             ResizedChild resizedChild = getResizedChild(helper, event, childIndexSupplier);
             Style cursorStyle = cursorElement.getStyle();
-            if (resizedChild != null && resizedChild.mainBorder && resizedChild.outsideBorder && helper.isChildResizable(resizedChild.index)) {
+            if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index)) {
                 cursorStyle.setProperty("cursor", (helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE).getCssName());
 //                    GwtClientUtils.setProperty(cursorStyle, "cursor", (helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE).getCssName(), "important");
 //                    cursorStyle.setProperty("cursor", (helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE).getCssName() + " !important");
