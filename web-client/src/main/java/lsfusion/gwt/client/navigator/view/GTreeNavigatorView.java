@@ -74,10 +74,6 @@ public class GTreeNavigatorView extends GNavigatorView {
                 addNavigatorElement(null, element, newElements);
             }
         }
-
-        if (window.drawRoot && tree.getItemCount() > 0) {
-            tree.getItem(0).setState(true);
-        }
     }
 
     private void doubleClicked(Event event) {

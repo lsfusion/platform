@@ -4779,7 +4779,6 @@ windowOptions returns [NavigatorWindowOptions options]
 	$options = new NavigatorWindowOptions();
 }
 	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
-		|	'DRAWROOT' { $options.setDrawRoot(true); }
 		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
 		|	o=orientation { $options.setOrientation($o.val); }
 		|	dp=dockPosition { $options.setDockPosition($dp.val); }
@@ -4870,7 +4869,7 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	$options.position = InsertType.IN;
 }
 	:	
-	(	'WINDOW' wid=compoundID { $options.windowName = $wid.sid; }
+	(	('WINDOW' wid=compoundID { $options.windowName = $wid.sid; } ('PARENT' { $options.parentWindow = true; })? )
 	|	pos=navigatorElementInsertPosition { $options.position = $pos.position; $options.anchor = $pos.anchor; }
 	|	'IMAGE' image=propertyExpressionOrLiteral[null] {
 	        if (inMainParseState()) {

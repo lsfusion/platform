@@ -50,6 +50,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
             element.children.add(childElement);
         }
         element.window = convertOrCast(clientElement.window);
+        element.parentWindow = clientElement.parentWindow;
         for (ClientNavigatorElement parent : clientElement.parents) {
             element.parents.add((GNavigatorElement) convertOrCast(parent));
         }
@@ -88,7 +89,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     public <E extends GNavigatorWindow> E initNavigatorWindow(ClientNavigatorWindow clientWindow, E window) {
         initAbstractNavigatorWindow(clientWindow, window);
 
-        window.drawRoot = clientWindow.drawRoot;
         window.drawScrollBars = clientWindow.drawScrollBars;
         for (ClientNavigatorElement clientElement : clientWindow.elements) {
             GNavigatorElement element = convertOrCast(clientElement);

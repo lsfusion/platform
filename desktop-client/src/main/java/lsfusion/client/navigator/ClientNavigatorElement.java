@@ -45,6 +45,7 @@ public abstract class ClientNavigatorElement {
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
+    public boolean parentWindow;
 
     public ClientNavigatorElement(DataInputStream inStream) throws IOException {
         canonicalName = SerializationUtil.readString(inStream);
@@ -54,6 +55,9 @@ public abstract class ClientNavigatorElement {
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);
+        if(window != null) {
+            parentWindow = inStream.readBoolean();
+        }
 
         appImage = IOUtils.readImageIcon(inStream);
 
@@ -96,6 +100,23 @@ public abstract class ClientNavigatorElement {
         
         for (ClientNavigatorElement child : children) {
             ClientNavigatorElement found = child.findElementByCanonicalName(canonicalName);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    public ClientNavigatorElement findChild(ClientNavigatorElement element) {
+        if (element == null) {
+            return null;
+        }
+        if (element == this) {
+            return this;
+        }
+
+        for (ClientNavigatorElement child : children) {
+            ClientNavigatorElement found = child.findChild(element);
             if (found != null) {
                 return found;
             }

@@ -34,6 +34,7 @@ public abstract class NavigatorElement {
     protected abstract AppImage getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
+    public boolean parentWindow;
 
     private final int ID;
 
@@ -264,6 +265,7 @@ public abstract class NavigatorElement {
             outStream.writeInt(WindowType.NULL_VIEW);
         } else {
             window.serialize(outStream);
+            outStream.writeBoolean(parentWindow);
         }
 
         IOUtils.writeImageIcon(outStream, image);

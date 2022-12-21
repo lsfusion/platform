@@ -4828,7 +4828,6 @@ public class ScriptingLogicsModule extends LogicsModule {
                 break;
         }
 
-        window.drawRoot = nvl(options.getDrawRoot(), false);
         window.drawScrollBars = nvl(options.getDrawScrollBars(), true);
         window.titleShown = nvl(options.getDrawTitle(), true);
 
@@ -4922,6 +4921,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         public NavigatorElement anchor;
         public InsertType position;
         public String windowName;
+        public boolean parentWindow;
         public String imagePath;
         public LPWithParams imageProperty;
         public LPWithParams headerProperty;
@@ -5008,7 +5008,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
-        setNavigatorElementWindow(element, options.windowName);
+        setNavigatorElementWindow(element, options.windowName, options.parentWindow);
         setNavigatorElementImage(element, options.imageProperty != null ? options.imageProperty.getLP().property : null, options.imagePath != null ? new AppImage(options.imagePath) : null);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
 
@@ -5029,7 +5029,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setNavigatorElementWindow(NavigatorElement element, String windowName) throws ScriptingErrorLog.SemanticErrorException {
+    public void setNavigatorElementWindow(NavigatorElement element, String windowName, boolean parentWindow) throws ScriptingErrorLog.SemanticErrorException {
         assert element != null;
 
         if (windowName != null) {
@@ -5037,6 +5037,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
             if (window instanceof NavigatorWindow) {
                 element.window = (NavigatorWindow) window;
+                element.parentWindow = parentWindow;
             } else {
                 errLog.emitAddToSystemWindowError(parser, element.getName(), windowName);
             }

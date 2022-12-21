@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.navigator;
 
 import lsfusion.gwt.client.ClientMessages;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.AppStaticImage;
+import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
@@ -28,12 +28,30 @@ public abstract class GNavigatorElement implements Serializable {
     public HashSet<GNavigatorElement> parents = new HashSet<>();
 
     public GNavigatorWindow window;
+    public boolean parentWindow;
 
     public boolean containsParent(Set<GNavigatorElement> set) {
         for (GNavigatorElement parent : parents) {
             if (set.contains(parent)) return true;
         }
         return false;
+    }
+
+    public GNavigatorElement findChild(GNavigatorElement element) {
+        if (element == null) {
+            return null;
+        }
+        if (element == this) {
+            return this;
+        }
+
+        for (GNavigatorElement child : children) {
+            GNavigatorElement found = child.findChild(element);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 
     public String getTooltipText() {

@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.NavigatorImageButton;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
@@ -63,55 +65,52 @@ public class GToolbarNavigatorView extends GNavigatorView {
     }
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        //temporary fix to hide systemRoot folder
-        if (!(element instanceof GNavigatorFolder && element.canonicalName.equals("Authentication.systemRoot"))) {
-            FormButton button = new NavigatorImageButton(element, verticalTextAlign);
-            button.addStyleName("nav-item");
-            button.addStyleName("nav-link");
-            button.addStyleName("navbar-text");
+        FormButton button = new NavigatorImageButton(element, verticalTextAlign);
+        button.addStyleName("nav-item");
+        button.addStyleName("nav-link");
+        button.addStyleName("navbar-text");
 
-            button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
-            button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);
+        button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
+        button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);
 
-            // debug info
-            button.getElement().setAttribute("lsfusion-container", element.canonicalName);
+        // debug info
+        button.getElement().setAttribute("lsfusion-container", element.canonicalName);
 
-            button.addClickHandler(event -> {
-                selected = element;
-                navigatorController.update();
-                navigatorController.openElement(element, event.getNativeEvent());
-            });
+        button.addClickHandler(event -> {
+            navigatorController.resetSelectedElements(selected);
+            selected = element;
+            navigatorController.update();
+            navigatorController.openElement(element, event.getNativeEvent());
+        });
 
-            TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
-                @Override
-                public String getTooltip() {
-                    return element.getTooltipText();
-                }
-
-                @Override
-                public String getPath() {
-                    return element.path;
-                }
-
-                @Override
-                public String getCreationPath() {
-                    return element.creationPath;
-                }
-
-                @Override
-                public boolean stillShowTooltip() {
-                    return button.isAttached() && button.isVisible();
-                }
-            };
-            TooltipManager.registerWidget(button, tooltipHelper);
-
-            if (element instanceof GNavigatorFolder && element.equals(selected)) {
-                button.addStyleName("active");
+        TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                return element.getTooltipText();
             }
 
-            panel.add(button);
+            @Override
+            public String getPath() {
+                return element.path;
+            }
 
+            @Override
+            public String getCreationPath() {
+                return element.creationPath;
+            }
+
+            @Override
+            public boolean stillShowTooltip() {
+                return button.isAttached() && button.isVisible();
+            }
+        };
+        TooltipManager.registerWidget(button, tooltipHelper);
+
+        if (element instanceof GNavigatorFolder && element.equals(selected)) {
+            button.addStyleName("active");
         }
+
+        panel.add(button);
 
         if ((element.window != null) && (!element.window.equals(window))) {
             return;
@@ -136,5 +135,13 @@ public class GToolbarNavigatorView extends GNavigatorView {
     @Override
     public int getWidth() {
         return panel.getOffsetWidth();
+    }
+
+    @Override
+    public void resetSelectedElement(GNavigatorElement newSelectedElement) {
+        GNavigatorElement selectedElement = getSelectedElement();
+        if(selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
+            selected = null;
+        }
     }
 }

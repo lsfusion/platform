@@ -53,77 +53,74 @@ public class ToolBarNavigatorView extends NavigatorView {
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
-        //temporary fix to hide systemRoot folder
-        if(!(element instanceof ClientNavigatorFolder && element.getCanonicalName().equals("Authentication.systemRoot"))) {
-            ToggleButtonWidget button = new ToggleButtonWidget(element.toString()) {
-                @Override
-                public void updateUI() {
-                    super.updateUI();
-                    ImageIcon icon = element.getImage();
-                    if (icon != null) {
-                        setIcon(new IndentedIcon(icon, indent));
-                    }
-                    if (isSelected()) {
-                        setBorder(getSelectionBorder());
-                    } else {
-                        setBackground(null);
-                    }
+        ToggleButtonWidget button = new ToggleButtonWidget(element.toString()) {
+            @Override
+            public void updateUI() {
+                super.updateUI();
+                ImageIcon icon = element.getImage();
+                if (icon != null) {
+                    setIcon(new IndentedIcon(icon, indent));
                 }
-            };
-            ImageIcon icon = element.getImage();
-            if (icon != null) {
-                button.setIcon(new IndentedIcon(icon, indent));
-            }
-
-            LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
-            button.addMouseListener(new NavigatorMouseAdapter(element));
-            button.setVerticalTextPosition(window.verticalTextPosition);
-            button.setHorizontalTextPosition(window.horizontalTextPosition);
-            button.setVerticalAlignment(window.verticalAlignment);
-            button.setHorizontalAlignment(window.horizontalAlignment);
-            button.setFocusable(false);
-            button.getModel().setArmed(true);
-            if (window.isVertical()) {
-                button.setPreferredSize(new Dimension(button.getPreferredSize().width, SwingDefaults.getVerticalToolbarNavigatorButtonHeight()));
-            }
-
-            button.setBackground(null);
-            button.setBorder(getNormalBorder());
-
-            button.addItemListener(e -> {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    button.setBorder(getSelectionBorder());
+                if (isSelected()) {
+                    setBorder(getSelectionBorder());
                 } else {
-                    button.setBorder(getNormalBorder());
+                    setBackground(null);
                 }
-            });
+            }
+        };
+        ImageIcon icon = element.getImage();
+        if (icon != null) {
+            button.setIcon(new IndentedIcon(icon, indent));
+        }
 
-            button.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    if (!button.isSelected()) {
-                        button.setBorder(getSelectionBorder());
-                    }
-                    button.setBackground(getToggleButtonHoverBackground());
+        LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
+        button.addMouseListener(new NavigatorMouseAdapter(element));
+        button.setVerticalTextPosition(window.verticalTextPosition);
+        button.setHorizontalTextPosition(window.horizontalTextPosition);
+        button.setVerticalAlignment(window.verticalAlignment);
+        button.setHorizontalAlignment(window.horizontalAlignment);
+        button.setFocusable(false);
+        button.getModel().setArmed(true);
+        if (window.isVertical()) {
+            button.setPreferredSize(new Dimension(button.getPreferredSize().width, SwingDefaults.getVerticalToolbarNavigatorButtonHeight()));
+        }
+
+        button.setBackground(null);
+        button.setBorder(getNormalBorder());
+
+        button.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                button.setBorder(getSelectionBorder());
+            } else {
+                button.setBorder(getNormalBorder());
+            }
+        });
+
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!button.isSelected()) {
+                    button.setBorder(getSelectionBorder());
                 }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    if (!button.isSelected()) {
-                        button.setBorder(getNormalBorder());
-                        button.setBackground(null);
-                    } else {
-                        button.setBackground(getSelectionColor());
-                    }
-                }
-            });
-
-            if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
-                button.setSelected(true);
+                button.setBackground(getToggleButtonHoverBackground());
             }
 
-            toolBarPanel.add(button, FlexAlignment.STRETCH, 0.0);
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!button.isSelected()) {
+                    button.setBorder(getNormalBorder());
+                    button.setBackground(null);
+                } else {
+                    button.setBackground(getSelectionColor());
+                }
+            }
+        });
+
+        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
+            button.setSelected(true);
         }
+
+        toolBarPanel.add(button, FlexAlignment.STRETCH, 0.0);
 
         if (element.window == null || element.window.equals(window)) {
             for (ClientNavigatorElement childEl : element.children) {
@@ -152,6 +149,14 @@ public class ToolBarNavigatorView extends NavigatorView {
         selected = element;
     }
 
+    @Override
+    public void resetSelectedElement(ClientNavigatorElement newSelectedElement) {
+        ClientNavigatorElement selectedElement = getSelectedElement();
+        if(selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
+            setSelectedElement(null);
+        }
+    }
+
     private class NavigatorMouseAdapter extends MouseAdapter {
         ClientNavigatorElement selected;
 
@@ -161,6 +166,7 @@ public class ToolBarNavigatorView extends NavigatorView {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            controller.resetSelectedElements(selected);
             setSelectedElement(selected);
             controller.update();
             controller.openElement(getSelectedElement(), e.getModifiers());

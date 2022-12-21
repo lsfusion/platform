@@ -478,7 +478,7 @@ seekChat (Chat chat) + { SEEK fullChat.c = chat; }
 seekLastMessage() + { SEEK LAST fullChat.m; }
 
 NAVIGATOR {
-    NEW fullChat IMAGE 'chat.png' WINDOW system FIRST;
+    NEW fullChat IMAGE 'chat.png' WINDOW system PARENT AFTER findNavigator;
 }
 
 //---------------------------- SHORT CHAT ----------------------------//

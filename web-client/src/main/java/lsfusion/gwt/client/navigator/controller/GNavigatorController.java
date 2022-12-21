@@ -13,6 +13,8 @@ import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import java.util.*;
 import java.util.function.Function;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+
 public abstract class GNavigatorController implements GINavigatorController {
     private final FormsController formsController;
 
@@ -65,23 +67,19 @@ public abstract class GNavigatorController implements GINavigatorController {
     }
 
     private void dfsAddElements(GNavigatorElement currentElement, GNavigatorWindow currentWindow, Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result) {
-        if ((currentElement.window != null) && (currentElement.window.drawRoot)) {
-            result.get(currentElement.window).add(currentElement);
-        } else {
-            if (currentWindow != null) {
-                result.get(currentWindow).add(currentElement);
-            }
+        GNavigatorWindow parentWindow = nvl(currentElement.window, currentWindow);
+        GNavigatorWindow window = currentElement.parentWindow ? parentWindow : currentWindow;
+        if(window != null) {
+            result.get(window).add(currentElement);
         }
-        GNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
 
         if (currentElement.window == null
                 || currentWindow == null
-                || currentElement == views.get(currentWindow).getSelectedElement()
-                || currentElement.window == currentWindow
-                || currentElement.window.drawRoot) {
+                || currentElement == views.get(window).getSelectedElement()
+                || currentElement.window == currentWindow) {
             for (GNavigatorElement element : currentElement.children) {
-                if (!result.get(nextWindow).contains(element)) {
-                    dfsAddElements(element, nextWindow, result);
+                if (!result.get(parentWindow).contains(element)) {
+                    dfsAddElements(element, parentWindow, result);
                 }
             }
         }
@@ -97,6 +95,12 @@ public abstract class GNavigatorController implements GINavigatorController {
             } else {
                 element.asyncExec.exec(formsController, null, null, nativeEvent instanceof Event ? (Event) nativeEvent : null, new GAsyncExecutor(formsController.getDispatcher(), asyncExec));
             }
+        }
+    }
+
+    public void resetSelectedElements(GNavigatorElement newSelectedElement) {
+        for (GNavigatorView value : views.values()) {
+            value.resetSelectedElement(newSelectedElement);
         }
     }
 }

@@ -10,7 +10,6 @@ import java.util.List;
 public abstract class GNavigatorWindow extends GAbstractWindow {
     public List<GNavigatorElement> elements = new ArrayList<>();
 
-    public boolean drawRoot;
     public boolean drawScrollBars;
 
     public abstract GNavigatorView createView(GINavigatorController navigatorController);

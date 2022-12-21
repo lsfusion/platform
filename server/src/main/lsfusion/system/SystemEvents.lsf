@@ -25,7 +25,7 @@ logo() = OVERRIDE logicsLogo(), defaultLogo();
 logoAction() {}
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo HEADER '' IMAGE logo();
+    NEW logoAction WINDOW logo PARENT HEADER '' IMAGE logo();
 }
 
 useBootstrap = DATA BOOLEAN(CustomUser);
@@ -46,8 +46,8 @@ toggleNightMode() {
 }
 
 NAVIGATOR {
-    NEW toggleBootstrap WINDOW system;
-    NEW toggleNightMode HEADER '' IMAGE nightModeImage() WINDOW system;
+    NEW toggleBootstrap WINDOW system PARENT;
+    NEW toggleNightMode HEADER '' IMAGE nightModeImage() WINDOW system PARENT;
 }
 
 useBootstrap = useBootstrap(currentUser());
