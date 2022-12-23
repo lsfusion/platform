@@ -98,7 +98,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.*;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -1354,7 +1357,7 @@ public class GFormController implements EditManager {
 
     private long applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-        currentFilters.foreachValue(groupFilters -> groupFilters.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
+        currentFilters.foreachValue(groupFilters -> groupFilters.stream().filter(filter -> !filter.property.isAction()).map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
         return asyncResponseDispatch(new SetUserFilters(filters));
     }
 
