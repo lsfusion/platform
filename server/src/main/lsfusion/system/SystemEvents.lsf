@@ -29,14 +29,15 @@ NAVIGATOR {
 }
 
 useBootstrap = DATA BOOLEAN(CustomUser);
+bootstrapImage = IF useBootstrap(currentUser()) THEN 'bootstrap.png' ELSE 'excel.png';
 toggleBootstrap 'Toggle bootstrap' () {
     useBootstrap(currentUser()) <- NOT useBootstrap(currentUser());
     APPLY;
     INTERNAL CLIENT 'reload';
 }
 
-nightModeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'moon.png' ELSE 'sun.png';
-toggleNightMode() {
+colorThemeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'darkMode.png' ELSE 'lightMode.png';
+toggleColorTheme() {
     IF colorTheme(currentUser()) == ColorTheme.dark THEN
         colorTheme(currentUser()) <- ColorTheme.light;
     ELSE
@@ -46,8 +47,8 @@ toggleNightMode() {
 }
 
 NAVIGATOR {
-    NEW toggleBootstrap WINDOW system PARENT;
-    NEW toggleNightMode HEADER '' IMAGE nightModeImage() WINDOW system PARENT;
+    NEW toggleColorTheme WINDOW system PARENT FIRST HEADER NULL IMAGE colorThemeImage();
+    NEW toggleBootstrap WINDOW system PARENT AFTER toggleColorTheme HEADER NULL IMAGE bootstrapImage();
 }
 
 useBootstrap = useBootstrap(currentUser());
