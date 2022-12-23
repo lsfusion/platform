@@ -34,7 +34,7 @@
         <postgresql.version>42.2.8</postgresql.version>
         <jasper.version>6.12.2</jasper.version>
         <jasper.htmlcomponent.version>6.12.2</jasper.htmlcomponent.version>
-        <ecj.version>4.6.1</ecj.version>
+        <ecj.version>3.17.0</ecj.version>
         <olap4j.version>1.2.0</olap4j.version>
         <apache.poi.version>4.1.2</apache.poi.version>
         <docking.frames.version>1.1.3p1</docking.frames.version>
@@ -84,7 +84,7 @@
         <httpcomponents.httpclient-android.version>4.3.5.1</httpcomponents.httpclient-android.version>
 
         <!-- note: gwt jar-ки пропатчены, поэтому нельзя просто поменять эту версию на более новую, нужно сначала перенакатить патч... см. описание в jar-ках  -->
-        <gwt.version>2.9.0-patched-1</gwt.version>
+        <gwt.version>2.10.0-patched-1</gwt.version>
 
         <com.google.gson.version>2.2.4</com.google.gson.version>
         <org.apache.tomcat.api.version>9.0.36</org.apache.tomcat.api.version>
@@ -103,6 +103,9 @@
         <javax.xml.bind.version>2.3.0</javax.xml.bind.version>
         <jakarta.activation.version>1.2.1</jakarta.activation.version>
         <javax.activation.version>1.1.1</javax.activation.version>
+        
+        <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
+        <javax.servlet.jsp.api.version>2.3.3</javax.servlet.jsp.api.version>
 
         <com.google.zxing.version>3.4.1-patched</com.google.zxing.version>
 
@@ -220,7 +223,7 @@
             <!--подменяем для обхода бага Jasper при запуске на Java 8 приложения, скомпилированного на Java 7 (api)-->
             <!--нужна для правильной компиляции клиента-->
             <dependency>
-                <groupId>org.eclipse.jdt.core.compiler</groupId>
+                <groupId>org.eclipse.jdt</groupId>
                 <artifactId>ecj</artifactId>
                 <version>${ecj.version}</version>
             </dependency>
@@ -525,7 +528,12 @@
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
-                <version>4.0.1</version>
+                <version>${javax.servlet.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet.jsp</groupId>
+                <artifactId>javax.servlet.jsp-api</artifactId>
+                <version>${javax.servlet.jsp.api.version}</version>
             </dependency>
 
             <!-- GWT-related libraries -->
@@ -537,6 +545,11 @@
             <dependency>
                 <groupId>com.google.gwt</groupId>
                 <artifactId>gwt-user</artifactId>
+                <version>${gwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt-dev</artifactId>
                 <version>${gwt.version}</version>
             </dependency>
             <dependency>
@@ -684,14 +697,14 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
+                    <groupId>net.ltgt.gwt.maven</groupId>
                     <artifactId>gwt-maven-plugin</artifactId>
-                    <version>2.9.0</version>
+                    <version>1.0.1</version>
                     <executions>
                         <execution>
                             <phase>compile</phase>
                             <goals>
-                                <goal>resources</goal>
+                                <goal>compile</goal>
                             </goals>
                         </execution>
                     </executions>
