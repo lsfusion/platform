@@ -25,16 +25,16 @@
         <plugins>
             <!-- compiling gwt-->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>net.ltgt.gwt.maven</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
                 <configuration>
                     <!--it seems because it needs full path, rename-to is not applied here-->
-                    <module>lsfusion.gwt.main</module>
+                    <moduleName>lsfusion.gwt.main</moduleName>
 
                     <webappDirectory>${war.explodedDir}</webappDirectory>
-                    <force>true</force>
+                    <forceCompilation>true</forceCompilation>
                     <draftCompile>false</draftCompile>
-                    <optimizationLevel>2</optimizationLevel>
+                    <optimize>2</optimize>
                     <style>OBFUSCATED</style>
                 </configuration>
                 <executions>
@@ -160,13 +160,14 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
+                        <groupId>net.ltgt.gwt.maven</groupId>
                         <artifactId>gwt-maven-plugin</artifactId>
                         <configuration>
+                            <moduleName>lsfusion.gwt.main</moduleName>
                             <draftCompile>false</draftCompile>
-                            <optimizationLevel>1</optimizationLevel>
+                            <optimize>1</optimize>
                             <style>DETAILED</style>
-                            <extraJvmArgs>-Xmx2512m</extraJvmArgs>
+                            <jvmArgs>-Xmx2512m</jvmArgs>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -184,32 +185,12 @@
                     <groupId>org.eclipse.jdt.core.compiler</groupId>
                     <artifactId>ecj</artifactId>
                 </exclusion>
-
-                <!-- JasperReports library 6.10.0+ started to use newer versions of these 4 libraries, which are Multi-Release JARs (JEP-238)
-                 GWT needs at least Jetty 9.4.9+ to run in DevMode with such libraries. For now attempt to patch GWT (to use newer Jetty) was not successful,
-                 and as we actually don't use JR functionality in web-client, just exclude these dependencies. -->
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-annotations</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15on</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
         <!--required for correct Jasper report generation-->
         <dependency>
-            <groupId>org.eclipse.jdt.core.compiler</groupId>
+            <groupId>org.eclipse.jdt</groupId>
             <artifactId>ecj</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -217,6 +198,11 @@
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-dev</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -350,6 +336,16 @@
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
