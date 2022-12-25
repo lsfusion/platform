@@ -23,6 +23,8 @@ public abstract class AutoFormEntity extends FormEntity {
         PropertyDrawEntity propertyDraw = addPropertyDraw(valueProp.first, version, object);
         if(valueProp.second != null)
             propertyDraw.setEventAction(ServerResponse.CHANGE, valueProp.second, true);
+        // assert that there is no richDesign / FormView yet
+        propertyDraw.initCaption = LocalizedString.concatList(object.getCaption(), " (", LocalizedString.create("{logics.id}"), ")");
         return propertyDraw;
     }
 }

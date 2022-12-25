@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.stat.print.PrintMessageData;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -90,8 +91,9 @@ public abstract class FormDataManager {
 
         // filling titles
         List<String> titles = new ArrayList<>();
+        FormView formView = getFormEntity().getRichDesign();
         for(PropertyDrawEntity<?> property : tableProperties)
-            titles.add(ThreadLocalContext.localize(property.getCaption()));
+            titles.add(ThreadLocalContext.localize(formView.get(property).getCaption()));
 
         // filling data
         List<List<String>> rows = new ArrayList<>();
