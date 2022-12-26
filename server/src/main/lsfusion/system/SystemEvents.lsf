@@ -29,14 +29,14 @@ NAVIGATOR {
 }
 
 useBootstrap = DATA BOOLEAN(CustomUser);
-bootstrapImage = IF useBootstrap(currentUser()) THEN 'bootstrap.png' ELSE 'excel.png';
+bootstrapImage = IF useBootstrap(currentUser()) THEN 'excel.png' ELSE 'bootstrap.png';
 toggleBootstrap 'Toggle bootstrap' () {
     useBootstrap(currentUser()) <- NOT useBootstrap(currentUser());
     APPLY;
     INTERNAL CLIENT 'reload';
 }
 
-colorThemeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'darkMode.png' ELSE 'lightMode.png';
+colorThemeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'lightMode.png' ELSE 'darkMode.png';
 toggleColorTheme() {
     IF colorTheme(currentUser()) == ColorTheme.dark THEN
         colorTheme(currentUser()) <- ColorTheme.light;
