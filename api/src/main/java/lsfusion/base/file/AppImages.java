@@ -47,7 +47,7 @@ public class AppImages {
         AppImages.predefinedFontClasses.exclAdd("play.png", "fa-solid fa-play");
 
         AppImages.predefinedFontClasses.exclAdd("bootstrap.png", "fa-solid bi-bootstrap");
-        AppImages.predefinedFontClasses.exclAdd("excel.png", "fa-solid bi-file-spreadsheet");
+        AppImages.predefinedFontClasses.exclAdd("excel.png", "fa-solid bi-file-earmark-excel");
 
         AppImages.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid bi-brightness-high");
         AppImages.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid bi-moon");
