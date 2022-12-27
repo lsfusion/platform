@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -431,9 +432,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if (super.isNotNull()) {
             return true;
         }
-        if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement) {
-            return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();    
-        }
+        if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement &&
+                ((implement.property.isValueFull(MapFact.EMPTY()) && implement.property.isValueUnique(MapFact.EMPTY(), false)) || implement.property.isNotNull()))
+            return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();
         return false;
     }
 
