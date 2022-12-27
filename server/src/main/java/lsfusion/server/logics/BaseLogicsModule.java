@@ -467,6 +467,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         minus = addSFProp("(-(prm1))", 1);
 
         object = addAFProp();
+        object.property.caption = LocalizedString.create("{logics.id}");
 
         // Константы
         vtrue = addCProp(LogicalClass.instance, true);
@@ -716,6 +717,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     @IdentityStrongLazy
     public LP object(ValueClass valueClass) {
         LP lcp = addJProp(and1, 1, is(valueClass), 1);
+        ((JoinProperty)lcp.property).caption = LocalizedString.concatList(valueClass.getCaption(), " (", LocalizedString.create("{logics.id}"), ")");
         ((JoinProperty)lcp.property).objectPropertyClass = valueClass;
         return lcp;
     }

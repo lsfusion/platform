@@ -597,10 +597,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return null;
     }
 
-    public void inheritCaption(ActionOrProperty property) {
-        caption = property.caption;         
-    }
-    
     public interface DefaultProcessor {
         // из-за inherit entity и view могут быть другого свойства
         void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form);

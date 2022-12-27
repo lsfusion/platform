@@ -33,7 +33,7 @@ public class PropertyFormEntity extends AutoFormEntity {
 
         ImRevMap<P, ObjectEntity> mapObjects = interfaceClasses.mapRevValues((ValueClass value) -> {
             // need to specify baseClass anyway, because we need it when adding recognizeGroup
-            return new ObjectEntity(genID(), value, LocalizedString.create(value.toString(), false), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
+            return new ObjectEntity(genID(), value, value.getCaption(), true); // because heuristics can be incorrect, but we don't need classes (to be more specific, when there is DROPPED operator)
         });
 
         ImOrderSet<ObjectEntity> objects;
@@ -55,11 +55,6 @@ public class PropertyFormEntity extends AutoFormEntity {
                 addPropertyDraw(prop.property, prop.mapping.join(mapObjects), version);
             }
         }
-
-        //todo: раскомментить, чтобы можно было использовать форму в LogPropertyActionProperty
-//        for (ObjectEntity object : objects) {
-//            addPropertyDraw(LM.objectValue, false, object);
-//        }
 
         addFixedFilter(new FilterEntity<>(new PropertyObjectEntity<>(property, mapObjects)), version);
 

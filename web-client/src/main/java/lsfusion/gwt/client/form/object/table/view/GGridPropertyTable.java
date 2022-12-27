@@ -181,6 +181,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
 
         @Override
+        public boolean isResizeOnScroll(int index, NativeEvent event) {
+            return false;
+        }
+
+        @Override
+        public int getScrollSize(int index) {
+            return 0;
+        }
+
+        @Override
         public int getChildCount() {
             return getColumnCount();
         }
