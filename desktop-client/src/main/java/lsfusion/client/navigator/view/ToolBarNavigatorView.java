@@ -52,6 +52,9 @@ public class ToolBarNavigatorView extends NavigatorView {
         component.setPreferredSize(component.getPreferredSize());
     }
 
+    //open first folder at start
+    boolean firstFolder = true;
+
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
         ToggleButtonWidget button = new ToggleButtonWidget(element.toString()) {
             @Override
@@ -116,8 +119,15 @@ public class ToolBarNavigatorView extends NavigatorView {
             }
         });
 
-        if (window.showSelect && element.equals(getSelectedElement()) && (element.getClass() == ClientNavigatorFolder.class)) {
-            button.setSelected(true);
+        if(element instanceof ClientNavigatorFolder) {
+            if (window.showSelect && element.equals(getSelectedElement())) {
+                button.setSelected(true);
+            }
+
+            if (window.isRoot() && firstFolder) {
+                firstFolder = false;
+                click(element, 0);
+            }
         }
 
         toolBarPanel.add(button, FlexAlignment.STRETCH, 0.0);
@@ -166,11 +176,15 @@ public class ToolBarNavigatorView extends NavigatorView {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            controller.resetSelectedElements(selected);
-            setSelectedElement(selected);
-            controller.update();
-            controller.openElement(getSelectedElement(), e.getModifiers());
+            click(selected, e.getModifiers());
         }
+    }
+
+    private void click(ClientNavigatorElement selected, int modifiers) {
+        controller.resetSelectedElements(selected);
+        setSelectedElement(selected);
+        controller.update();
+        controller.openElement(getSelectedElement(), modifiers);
     }
 }
 

@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.view;
 
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FormButton;
@@ -64,6 +65,9 @@ public class GToolbarNavigatorView extends GNavigatorView {
         }
     }
 
+    //open first folder at start
+    boolean firstFolder = true;
+
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
         FormButton button = new NavigatorImageButton(element, verticalTextAlign);
         button.addStyleName("nav-item");
@@ -76,12 +80,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         // debug info
         button.getElement().setAttribute("lsfusion-container", element.canonicalName);
 
-        button.addClickHandler(event -> {
-            navigatorController.resetSelectedElements(element);
-            selected = element;
-            navigatorController.update();
-            navigatorController.openElement(element, event.getNativeEvent());
-        });
+        button.addClickHandler(event -> click(element, event.getNativeEvent()));
 
         TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
@@ -106,8 +105,15 @@ public class GToolbarNavigatorView extends GNavigatorView {
         };
         TooltipManager.registerWidget(button, tooltipHelper);
 
-        if (element instanceof GNavigatorFolder && element.equals(selected)) {
-            button.addStyleName("active");
+        if(element instanceof GNavigatorFolder) {
+            if (element.equals(selected)) {
+                button.addStyleName("active");
+            }
+
+            if (window.isRoot() && firstFolder) {
+                firstFolder = false;
+                click(element, null);
+            }
         }
 
         panel.add(button);
@@ -120,6 +126,13 @@ public class GToolbarNavigatorView extends GNavigatorView {
                 addElement(childEl, newElements, step + 1);
             }
         }
+    }
+
+    public void click(GNavigatorElement element, NativeEvent event) {
+        navigatorController.resetSelectedElements(element);
+        selected = element;
+        navigatorController.update();
+        navigatorController.openElement(element, event);
     }
 
     @Override

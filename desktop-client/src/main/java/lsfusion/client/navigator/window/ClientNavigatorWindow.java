@@ -36,4 +36,8 @@ public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
                 throw new IllegalArgumentException("Illegal view type");
         }
     }
+
+    public boolean isRoot() {
+        return canonicalName.equals("System.root");
+    }
 }
