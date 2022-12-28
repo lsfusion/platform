@@ -16,6 +16,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -29,15 +30,20 @@ import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
 import static lsfusion.base.col.MapFact.singletonOrder;
 
 public abstract class NavigatorElement {
-    
-    private AppImage image;
 
     protected abstract AppImage getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
+    public boolean parentWindow;
 
     private final int ID;
+
+    public Property imageProperty;
+    private AppImage image;
+
+    public Property headerProperty;
     public LocalizedString caption;
+
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
 
@@ -206,8 +212,16 @@ public abstract class NavigatorElement {
 
     public abstract AsyncExec getAsyncExec();
 
+    public void setImageProperty(Property imageProperty) {
+        this.imageProperty = imageProperty;
+    }
+
     public void setImage(AppImage image) {
         this.image = image;
+    }
+
+    public void setHeaderProperty(Property headerProperty) {
+        this.headerProperty = headerProperty;
     }
 
     public void finalizeAroundInit(BaseLogicsModule LM) {
@@ -251,6 +265,7 @@ public abstract class NavigatorElement {
             outStream.writeInt(WindowType.NULL_VIEW);
         } else {
             window.serialize(outStream);
+            outStream.writeBoolean(parentWindow);
         }
 
         IOUtils.writeImageIcon(outStream, image);

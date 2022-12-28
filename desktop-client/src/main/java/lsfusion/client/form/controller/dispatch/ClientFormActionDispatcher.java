@@ -88,9 +88,4 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     public void execute(AsyncGetRemoteChangesClientAction action) {
         getFormController().getRemoteChanges(true, action.forceLocalEvents);
     }
-
-    @Override
-    public void execute(ChangeColorThemeClientAction action) {
-        MainController.changeColorTheme(action.colorTheme);
-    }
 }

@@ -40,6 +40,8 @@ public interface ClientActionDispatcher {
 
     void execute(ProcessFormChangesClientAction action);
 
+    void execute(ProcessNavigatorChangesClientAction action);
+
     Object execute(RequestUserInputClientAction action);
 
     void execute(EditNotPerformedClientAction action);

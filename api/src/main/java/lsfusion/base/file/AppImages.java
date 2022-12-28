@@ -35,7 +35,7 @@ public class AppImages {
         AppImages.predefinedFontClasses.exclAdd("open.png", "fa-regular fa-folder");
 
         AppImages.predefinedFontClasses.exclAdd("tools.png", "fa-solid fa-screwdriver-wrench");
-        AppImages.predefinedFontClasses.exclAdd("lock.png", "fa-solid fa-lock");
+        AppImages.predefinedFontClasses.exclAdd("lock.png", "fa-solid bi-person-fill");
         AppImages.predefinedFontClasses.exclAdd("search.png", "fa-solid fa-magnifying-glass");
 
         AppImages.predefinedFontClasses.exclAdd("relogin.png", "fa-solid fa-elevator");
@@ -45,6 +45,12 @@ public class AppImages {
 
         AppImages.predefinedFontClasses.exclAdd("chat.png", "fa-solid fa-comment");
         AppImages.predefinedFontClasses.exclAdd("play.png", "fa-solid fa-play");
+
+        AppImages.predefinedFontClasses.exclAdd("bootstrap.png", "fa-brands fa-bootstrap");
+        AppImages.predefinedFontClasses.exclAdd("excel.png", "fa-solid fa-file-excel");
+
+        AppImages.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid fa-sun");
+        AppImages.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid fa-moon");
 
         AppImages.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
 

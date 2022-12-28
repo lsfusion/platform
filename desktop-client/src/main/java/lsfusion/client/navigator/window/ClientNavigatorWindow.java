@@ -15,13 +15,11 @@ import static lsfusion.interop.navigator.window.WindowType.*;
 public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
     public List<ClientNavigatorElement> elements = new ArrayList<>();
 
-    public boolean drawRoot;
     public boolean drawScrollBars;
 
     public ClientNavigatorWindow(DataInputStream inStream) throws IOException {
         super(inStream);
 
-        drawRoot = inStream.readBoolean();
         drawScrollBars = inStream.readBoolean();
     }
 

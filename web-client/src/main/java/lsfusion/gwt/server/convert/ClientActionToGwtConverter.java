@@ -9,11 +9,10 @@ import lsfusion.client.classes.ClientTypeSerializer;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.controller.remote.proxy.RemoteFormProxy;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
-import lsfusion.client.form.property.cell.ClientAsync;
+import lsfusion.client.navigator.ClientNavigatorChanges;
 import lsfusion.gwt.client.GFormChangesDTO;
+import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.action.*;
-import lsfusion.gwt.client.base.GAsync;
-import lsfusion.gwt.client.base.GProgressBar;
 import lsfusion.gwt.client.classes.GObjectClass;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.async.GInputList;
@@ -24,7 +23,6 @@ import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.http.provider.form.FormSessionObject;
-import lsfusion.interop.ProgressBar;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.ContainerShowFormType;
 import lsfusion.interop.form.ModalityShowFormType;
@@ -56,6 +54,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
+    private final ClientNavigatorChangesToGwtConverter navigatorConverter = ClientNavigatorChangesToGwtConverter.getInstance();
 
     private ClientActionToGwtConverter() {
     }
@@ -149,6 +148,15 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         GFormChangesDTO changesDTO = valuesConverter.convertOrCast(changes, (int)action.requestIndex, form, servlet);
 
         return new GProcessFormChangesAction(changesDTO);
+    }
+
+    @Converter(from = ProcessNavigatorChangesClientAction.class)
+    public GProcessNavigatorChangesAction convertAction(ProcessNavigatorChangesClientAction action, FormSessionObject form, MainDispatchServlet servlet) throws IOException {
+        ClientNavigatorChanges changes = new ClientNavigatorChanges(action.navigatorChanges);
+
+        GNavigatorChangesDTO navigatorChanges = navigatorConverter.convertOrCast(changes, servlet.getServletContext(), servlet.getNavigatorProvider().getServerSettings(form.navigatorID));
+
+        return new GProcessNavigatorChangesAction(navigatorChanges);
     }
 
     @Converter(from = ReportClientAction.class)

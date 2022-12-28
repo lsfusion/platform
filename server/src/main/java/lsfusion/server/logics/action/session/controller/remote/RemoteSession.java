@@ -1,5 +1,7 @@
 package lsfusion.server.logics.action.session.controller.remote;
 
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.session.SessionInfo;
@@ -17,6 +19,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.List;
 
 public class RemoteSession extends RemoteConnection implements RemoteSessionInterface {
     private final DataSession dataSession;
@@ -38,6 +41,11 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             authException = e;
             super.initUser(securityManager, AuthenticationToken.ANONYMOUS, session);
         }
+    }
+
+    @Override
+    protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
+        return null;
     }
 
     @Override

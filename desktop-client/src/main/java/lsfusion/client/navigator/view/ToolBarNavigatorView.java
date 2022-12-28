@@ -1,7 +1,6 @@
 package lsfusion.client.navigator.view;
 
 import com.formdev.flatlaf.ui.FlatButtonBorder;
-import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.design.view.FlexPanel;
 import lsfusion.client.form.design.view.widget.ToggleButtonWidget;
@@ -12,6 +11,7 @@ import lsfusion.client.navigator.window.ClientToolBarNavigatorWindow;
 import lsfusion.client.tooltip.LSFTooltipManager;
 import lsfusion.interop.base.view.FlexAlignment;
 
+import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ItemEvent;
@@ -28,11 +28,11 @@ public class ToolBarNavigatorView extends NavigatorView {
     private final ClientToolBarNavigatorWindow window;
     private ClientNavigatorElement selected;
 
-    public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
-        super(iWindow, new FlexPanel(iWindow.isVertical(), FlexAlignment.START), controller);
-        window = iWindow;
+    public ToolBarNavigatorView(ClientToolBarNavigatorWindow window, INavigatorController controller) {
+        super(window, new FlexPanel(window.isVertical(), window.getFlexAlignment()), controller);
+        this.window = window;
 
-        toolBarPanel = (FlexPanel) getComponent();
+        this.toolBarPanel = (FlexPanel) getComponent();
     }
 
     @Override
@@ -57,7 +57,10 @@ public class ToolBarNavigatorView extends NavigatorView {
             @Override
             public void updateUI() {
                 super.updateUI();
-                setIcon(new IndentedIcon(ClientImages.getImage(element.image), indent));
+                ImageIcon icon = element.getImage();
+                if (icon != null) {
+                    setIcon(new IndentedIcon(icon, indent));
+                }
                 if (isSelected()) {
                     setBorder(getSelectionBorder());
                 } else {
@@ -65,7 +68,10 @@ public class ToolBarNavigatorView extends NavigatorView {
                 }
             }
         };
-        button.setIcon(new IndentedIcon(ClientImages.getImage(element.image), indent));
+        ImageIcon icon = element.getImage();
+        if (icon != null) {
+            button.setIcon(new IndentedIcon(icon, indent));
+        }
 
         LSFTooltipManager.initTooltip(button, element.getTooltip(), element.path, element.creationPath);
         button.addMouseListener(new NavigatorMouseAdapter(element));
@@ -78,7 +84,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         if (window.isVertical()) {
             button.setPreferredSize(new Dimension(button.getPreferredSize().width, SwingDefaults.getVerticalToolbarNavigatorButtonHeight()));
         }
-        
+
         button.setBackground(null);
         button.setBorder(getNormalBorder());
 
@@ -89,7 +95,7 @@ public class ToolBarNavigatorView extends NavigatorView {
                 button.setBorder(getNormalBorder());
             }
         });
-        
+
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -143,6 +149,14 @@ public class ToolBarNavigatorView extends NavigatorView {
         selected = element;
     }
 
+    @Override
+    public void resetSelectedElement(ClientNavigatorElement newSelectedElement) {
+        ClientNavigatorElement selectedElement = getSelectedElement();
+        if(selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
+            setSelectedElement(null);
+        }
+    }
+
     private class NavigatorMouseAdapter extends MouseAdapter {
         ClientNavigatorElement selected;
 
@@ -152,6 +166,7 @@ public class ToolBarNavigatorView extends NavigatorView {
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            controller.resetSelectedElements(selected);
             setSelectedElement(selected);
             controller.update();
             controller.openElement(getSelectedElement(), e.getModifiers());

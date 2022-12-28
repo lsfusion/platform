@@ -130,11 +130,6 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     }
 
     @Override
-    public void execute(final GChangeColorThemeAction action) {
-        MainFrame.changeColorTheme(action.colorTheme);
-    }
-
-    @Override
     public void execute(GResetWindowsLayoutAction action) {
         if (!MainFrame.mobile) {
             form.resetWindowsLayout();

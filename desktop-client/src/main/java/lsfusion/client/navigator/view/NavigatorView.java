@@ -41,4 +41,7 @@ public abstract class NavigatorView {
 
     public abstract ClientNavigatorElement getSelectedElement();
 
+    public void resetSelectedElement(ClientNavigatorElement newSelectedElement) {
+    }
+
 }

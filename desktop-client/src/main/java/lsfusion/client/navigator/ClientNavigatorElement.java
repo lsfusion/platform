@@ -2,12 +2,15 @@ package lsfusion.client.navigator;
 
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.AppImage;
+import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.controller.MainController;
 import lsfusion.client.form.property.async.ClientAsyncExec;
 import lsfusion.client.form.property.async.ClientAsyncSerializer;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,7 +30,12 @@ public abstract class ClientNavigatorElement {
     
     public List<ClientNavigatorElement> parents = new ArrayList<>();
     public List<ClientNavigatorElement> children = new ArrayList<>();
-    public AppImage image;
+    public AppImage appImage;
+    public Image fileImage = null;
+
+    public ImageIcon getImage() {
+        return fileImage != null ? new ImageIcon(fileImage) : ClientImages.getImage(appImage);
+    }
 
     public ClientAsyncExec asyncExec;
 
@@ -37,6 +45,7 @@ public abstract class ClientNavigatorElement {
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
+    public boolean parentWindow;
 
     public ClientNavigatorElement(DataInputStream inStream) throws IOException {
         canonicalName = SerializationUtil.readString(inStream);
@@ -46,8 +55,11 @@ public abstract class ClientNavigatorElement {
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);
+        if(window != null) {
+            parentWindow = inStream.readBoolean();
+        }
 
-        image = IOUtils.readImageIcon(inStream);
+        appImage = IOUtils.readImageIcon(inStream);
 
         asyncExec = (ClientAsyncExec) ClientAsyncSerializer.deserializeEventExec(inStream);
     }
@@ -88,6 +100,23 @@ public abstract class ClientNavigatorElement {
         
         for (ClientNavigatorElement child : children) {
             ClientNavigatorElement found = child.findElementByCanonicalName(canonicalName);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    public ClientNavigatorElement findChild(ClientNavigatorElement element) {
+        if (element == null) {
+            return null;
+        }
+        if (element == this) {
+            return this;
+        }
+
+        for (ClientNavigatorElement child : children) {
+            ClientNavigatorElement found = child.findChild(element);
             if (found != null) {
                 return found;
             }

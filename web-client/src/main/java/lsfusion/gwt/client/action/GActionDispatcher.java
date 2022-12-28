@@ -19,6 +19,8 @@ public interface GActionDispatcher {
 
     void execute(GProcessFormChangesAction action);
 
+    void execute(GProcessNavigatorChangesAction action);
+
     Object execute(GRequestUserInputAction action);
 
     void execute(GUpdateEditValueAction action);

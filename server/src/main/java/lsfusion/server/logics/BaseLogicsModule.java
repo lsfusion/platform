@@ -649,7 +649,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
     // Окна
     public class Windows {
+        public ToolBarNavigatorWindow logo;
         public ToolBarNavigatorWindow root;
+        public ToolBarNavigatorWindow system;
         public NavigatorWindow toolbar;
         public NavigatorWindow tree;
         public AbstractWindow forms;
@@ -672,8 +674,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         // Окна
         baseWindows = new Windows();
+
+        baseWindows.logo = (ToolBarNavigatorWindow) findWindow("logo");
+        baseWindows.logo.elementClass = "navbar-expand bg-dark navbar-dark d-flex align-items-stretch";
+
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
         baseWindows.root.elementClass = "navbar-expand bg-dark navbar-dark d-flex align-items-stretch";
+
+        baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
+        baseWindows.system.elementClass = "navbar-expand bg-dark navbar-dark d-flex align-items-stretch";
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
         baseWindows.toolbar.elementClass = "navbar-text";

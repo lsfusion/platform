@@ -4779,7 +4779,6 @@ windowOptions returns [NavigatorWindowOptions options]
 	$options = new NavigatorWindowOptions();
 }
 	:	(	'HIDETITLE' { $options.setDrawTitle(false); }
-		|	'DRAWROOT' { $options.setDrawRoot(true); }
 		|	'HIDESCROLLBARS' { $options.setDrawScrollBars(false); }
 		|	o=orientation { $options.setOrientation($o.val); }
 		|	dp=dockPosition { $options.setDockPosition($dp.val); }
@@ -4859,9 +4858,9 @@ navigatorElementDescription returns [NavigatorElement element]
  		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
  	}	
 }
-	:	'FOLDER' name=ID (caption=localizedStringLiteral)? 
-	|	'FORM' ((name=ID)? (caption=localizedStringLiteral)? '=')? formName=compoundID 
-	|	('ACTION' { isAction = true; } )? ((name=ID)? (caption=localizedStringLiteral)? '=')? pu=propertyUsage 
+	:	'FOLDER' name=ID (caption=localizedStringLiteral)?
+	|	'FORM' ((name=ID)? (caption=localizedStringLiteral)? '=')? formName=compoundID
+	|	('ACTION' { isAction = true; } )? ((name=ID)? (caption=localizedStringLiteral)? '=')? pu=propertyUsage
 	;
 
 navigatorElementOptions returns [NavigatorElementOptions options] 
@@ -4870,9 +4869,18 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	$options.position = InsertType.IN;
 }
 	:	
-	(	'WINDOW' wid=compoundID { $options.windowName = $wid.sid; }
+	(	('WINDOW' wid=compoundID { $options.windowName = $wid.sid; } ('PARENT' { $options.parentWindow = true; })? )
 	|	pos=navigatorElementInsertPosition { $options.position = $pos.position; $options.anchor = $pos.anchor; }
-	|	'IMAGE' path=stringLiteral { $options.imagePath = $path.val; }	
+	|	'IMAGE' image=propertyExpressionOrLiteral[null] {
+	        if (inMainParseState()) {
+	            if($image.literal != null && $image.literal.value instanceof LocalizedString) {
+	                $options.imagePath = ((LocalizedString) $image.literal.value).toString();
+	            } else {
+	                $options.imageProperty = $image.property;
+	            }
+	        }
+	    }
+	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }
 	)*
 	;
 	

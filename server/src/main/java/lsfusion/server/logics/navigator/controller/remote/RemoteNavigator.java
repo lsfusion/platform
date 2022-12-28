@@ -6,10 +6,15 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashMap;
 import lsfusion.base.col.heavy.weak.WeakIdentityHashSet;
+import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.file.AppImage;
+import lsfusion.base.lambda.set.FullFunctionSet;
+import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ProcessNavigatorChangesClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
@@ -17,8 +22,13 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
+import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.controller.remote.context.RemoteContextAspect;
+import lsfusion.server.base.controller.stack.StackMessage;
+import lsfusion.server.base.controller.stack.ThisMessage;
+import lsfusion.server.base.controller.thread.AssertSynchronized;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -37,10 +47,11 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
-import lsfusion.server.logics.navigator.NavigatorAction;
-import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.*;
+import lsfusion.server.logics.navigator.changed.NavigatorChanges;
 import lsfusion.server.logics.navigator.controller.context.RemoteNavigatorContext;
 import lsfusion.server.logics.navigator.controller.env.ChangesController;
+import lsfusion.server.logics.navigator.controller.env.ChangesObject;
 import lsfusion.server.logics.navigator.controller.env.ClassCache;
 import lsfusion.server.logics.navigator.controller.env.FormController;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
@@ -72,7 +83,7 @@ import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
 
 // it would be better if there was NavigatorInstance (just like FormInstance and LogicsInstance), but for now will leave it this way
-public class RemoteNavigator extends RemoteConnection implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener {
+public class RemoteNavigator extends RemoteConnection implements RemoteNavigatorInterface, FocusListener, CustomClassListener, RemoteFormListener, ChangesObject {
     protected final static Logger logger = ServerLoggers.systemLogger;
 
     private static NotificationsMap notificationsMap = new NotificationsMap();
@@ -98,7 +109,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         setContext(new RemoteNavigatorContext(this));
         initContext(logicsInstance, token, navigatorInfo.session, stack);
 
-        changesSync = new ChangesSync(dbManager);
+        changesSync = new ChangesSync(dbManager, this);
         
         ServerLoggers.remoteLifeLog("NAVIGATOR OPEN : " + this);
 
@@ -218,7 +229,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 changesSync.regLocalChange(changes, session);
         }
 
-        public ImSet<Property> update(DataSession session, FormInstance form) {
+        public ImSet<Property> update(DataSession session, ChangesObject form) {
             ChangesSync changesSync = weakThis.get();
             if(changesSync != null)
                 return changesSync.update(session, form);
@@ -389,7 +400,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     @Override
     public byte[] getNavigatorTree() {
 
-        ImOrderMap<NavigatorElement, List<String>> elements = businessLogics.LM.root.getChildrenMap(securityPolicy);
+        ImOrderMap<NavigatorElement, List<String>> elements = getNavigatorTreeObjects();
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -409,6 +420,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 }
             }
 
+            dataStream.write(getNavigatorChangesByteArray(true));
+
             businessLogics.LM.baseWindows.log.serialize(dataStream);
             businessLogics.LM.baseWindows.status.serialize(dataStream);
             businessLogics.LM.baseWindows.forms.serialize(dataStream);
@@ -418,6 +431,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
 
         return outStream.toByteArray();
+    }
+
+    private ImOrderMap<NavigatorElement, List<String>> getNavigatorTreeObjects() {
+        return businessLogics.LM.root.getChildrenMap(securityPolicy);
     }
 
     @Override
@@ -452,8 +469,97 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
+        if (numberOfFormChangesRequests.get() > 1) {
+            return returnRemoteChangesResponse(requestIndex, pendingActions);
+        }
+
+        List<ClientAction> resultActions = new ArrayList<>();
+
+        byte[] navigatorChanges = getNavigatorChangesByteArray(false);
+
+        resultActions.add(new ProcessNavigatorChangesClientAction(requestIndex, navigatorChanges));
+
+        resultActions.addAll(pendingActions);
+
+        return returnRemoteChangesResponse(requestIndex, resultActions);
+    }
+
+    private ServerResponse returnRemoteChangesResponse(long requestIndex, List<ClientAction> pendingActions) {
         return new ServerResponse(requestIndex, pendingActions.toArray(new ClientAction[pendingActions.size()]), false);
     }
+
+    public byte[] getNavigatorChangesByteArray(boolean refresh) {
+        try {
+            NavigatorChanges navigatorChanges = getChanges(refresh);
+            return navigatorChanges.serialize();
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @IdentityInstanceLazy
+    private ImSet<PropertyNavigator> getPropertyNavigators() {
+        MExclSet<PropertyNavigator> mResult = SetFact.mExclSet();
+        for(NavigatorElement navigatorElement : getNavigatorTreeObjects().keyIt()) {
+            if(navigatorElement.imageProperty != null)
+                mResult.exclAdd(new ImageElementNavigator(navigatorElement.imageProperty, navigatorElement.getCanonicalName()));
+            if(navigatorElement.headerProperty != null)
+                mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement.getCanonicalName()));
+        }
+        return mResult.immutable();
+    }
+
+    @StackMessage("{message.form.end.apply}")
+    @ThisMessage
+    @AssertSynchronized
+    public NavigatorChanges getChanges(boolean refresh) throws SQLException, SQLHandledException {
+
+        ImMap<PropertyNavigator, Object> changes = MapFact.EMPTY();
+
+        FunctionSet<Property> changedProps = refresh ? FullFunctionSet.instance() : changesSync.update(null, this);
+        if (!changedProps.isEmpty()) { // optimization
+            DataSession session = null;
+            try {
+                // iterating through all used "dynamic" props - check changes (depends on)
+                // propertyCaption / propertyImage just like in ContainerView
+
+                // abstract / interop classes : just like PropertyReaderInstance
+                // PropertyNavigator, ClientPropertyNavigator, GPropertyNavigator
+
+                // concrete classes
+                // (abs ElementPropertyNavigator - with element id) ElementCaptionNavigator (+ string), ElementImageNavigator ( + AppImage ???, or the same that is used in ActionRenderer), later WindowCustomNavigator (window id + string source)
+                // on client update caption, image, window custom
+
+
+                QueryBuilder<Object, PropertyNavigator> query = new QueryBuilder<Object, PropertyNavigator>(MapFact.EMPTYREV());
+                for (PropertyNavigator propertyNavigator : getPropertyNavigators()) {
+                    Property property = propertyNavigator.getProperty();
+                    if (Property.depends(property, changedProps)) {
+                        if (session == null)
+                            session = createSession();
+                        query.addProperty(propertyNavigator, property.getExpr(MapFact.EMPTY(), session.getModifier()));
+                    }
+                }
+
+                if (session != null) {
+                    changes = query.execute(session).singleValue();
+                    changes = changes.mapItValues((propertyNavigator, value) -> {
+                        if (propertyNavigator instanceof ImageElementNavigator && value instanceof String) {
+                            value = new AppImage((String) value);
+                        }
+                        return value;
+                    });
+                }
+
+            } finally {
+                if(session != null)
+                    session.close();
+            }
+        }
+
+        return new NavigatorChanges(changes);
+    }
+
 
     @Override
     public Pair<RemoteFormInterface, String> createFormExternal(String json) {
@@ -583,18 +689,25 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
 
     }
+
+    @Override
+    public DataSession getChangesSession() {
+        return null;
+    }
+
     // обмен изменениями между сессиями в рамках одного подключения
     private static class ChangesSync extends ChangesController {
 
         private DBManager dbManager;
 
         private final Map<Property, LastChanges> changes = MapFact.mAddRemoveMap();
-        private final WeakIdentityHashMap<FormInstance, Long> formStamps = new WeakIdentityHashMap<>();
+        private final WeakIdentityHashMap<ChangesObject, Long> objectStamps = new WeakIdentityHashMap<>();
         private long minPrevUpdatedStamp = 0;
         private long currentStamp = 0;
 
-        public ChangesSync(DBManager dbManager) {
+        public ChangesSync(DBManager dbManager, RemoteNavigator navigator) {
             this.dbManager = dbManager;
+            objectStamps.put(navigator, currentStamp);
         }
 
         public DBManager getDbManager() {
@@ -602,10 +715,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
 
         private void updateLastStamp(long prevStamp) {
-            assert !formStamps.isEmpty();
+            assert !objectStamps.isEmpty();
             if(minPrevUpdatedStamp >= prevStamp) {
                 minPrevUpdatedStamp = currentStamp; // ищем новый stamp
-                for(Pair<FormInstance, Long> entry : formStamps.entryIt())
+                for(Pair<ChangesObject, Long> entry : objectStamps.entryIt())
                     if(entry.second < minPrevUpdatedStamp)
                         minPrevUpdatedStamp = entry.second;
 
@@ -627,10 +740,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             }
         }
 
-        public synchronized ImSet<Property> update(DataSession session, FormInstance form) {
-            assert session == form.session;
+        public synchronized ImSet<Property> update(DataSession session, ChangesObject object) {
+            assert session == object.getChangesSession();
 
-            Long lPrevStamp = formStamps.get(form);
+            Long lPrevStamp = objectStamps.get(object);
             assert lPrevStamp != null;
             if(lPrevStamp == null) // just in case
                 return SetFact.EMPTY();
@@ -644,17 +757,17 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 if(change.getValue().isChanged(prevStamp, session))
                     mProps.exclAdd(change.getKey());
             }
-            formStamps.put(form, currentStamp);
+            objectStamps.put(object, currentStamp);
             updateLastStamp(prevStamp);
             return mProps.immutable();
         }
 
         public synchronized void registerForm(FormInstance form) {
-            formStamps.put(form, currentStamp);
+            objectStamps.put(form, currentStamp);
         }
 
         public synchronized void unregisterForm(FormInstance form) {
-            formStamps.remove(form);
+            objectStamps.remove(form);
         }
     }
 

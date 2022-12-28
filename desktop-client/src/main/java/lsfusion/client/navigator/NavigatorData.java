@@ -15,14 +15,18 @@ public class NavigatorData {
     public final ClientNavigatorElement root;
     public final Map<String, ClientNavigatorWindow> windows;
 
+    public final ClientNavigatorChanges navigatorChanges;
+
     public final ClientAbstractWindow logs;
     public final ClientAbstractWindow status;
     public final ClientAbstractWindow forms;
 
     public NavigatorData(ClientNavigatorElement root, Map<String, ClientNavigatorWindow> windows,
+                         ClientNavigatorChanges navigatorChanges,
                          ClientAbstractWindow logs, ClientAbstractWindow status, ClientAbstractWindow forms) {
         this.root = root;
         this.windows = windows;
+        this.navigatorChanges = navigatorChanges;
         this.logs = logs;
         this.status = status;
         this.forms = forms;
@@ -56,10 +60,13 @@ public class NavigatorData {
             }
         }
 
+        //deserialize and add to navigatordata
+        ClientNavigatorChanges clientNavigatorChanges = new ClientNavigatorChanges(inStream);
+
         ClientAbstractWindow logs =new ClientAbstractWindow(inStream);
         ClientAbstractWindow status = new ClientAbstractWindow(inStream);
         ClientAbstractWindow forms = new ClientAbstractWindow(inStream);
 
-        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, logs, status, forms);
+        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, status, forms);
     }
 }

@@ -6,6 +6,6 @@ import lsfusion.gwt.client.view.ColorThemeChangeListener;
 public class StaticImageButton extends ImageButton implements ColorThemeChangeListener {
 
     public StaticImageButton(String caption, BaseStaticImage baseImage) {
-        super(caption, baseImage, false, null);
+        super(caption, baseImage, null, false, null);
     }
 }

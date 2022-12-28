@@ -2,17 +2,14 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.client.form.property.async.ClientAsyncCloseForm;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
-import lsfusion.client.navigator.ClientNavigatorAction;
-import lsfusion.client.navigator.ClientNavigatorElement;
-import lsfusion.client.navigator.ClientNavigatorFolder;
+import lsfusion.client.navigator.*;
 import lsfusion.client.navigator.tree.window.ClientTreeNavigatorWindow;
 import lsfusion.client.navigator.window.*;
+import lsfusion.gwt.client.GNavigatorChangesDTO;
+import lsfusion.gwt.client.navigator.*;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
-import lsfusion.gwt.client.navigator.GNavigatorAction;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ContainerWindowFormType;
@@ -24,6 +21,8 @@ import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
 public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
+
+    private final ClientNavigatorChangesToGwtConverter navigatorConverter = ClientNavigatorChangesToGwtConverter.getInstance();
 
     public ClientNavigatorToGwtConverter(ServletContext servletContext, ServerSettings settings) {
         super(servletContext, settings);
@@ -42,7 +41,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.path = clientElement.path;
         element.children = new ArrayList<>();
 
-        element.image = createImage(clientElement.image, false);
+        element.appImage = createImage(clientElement.appImage, false);
 
         element.asyncExec = convertOrCast(clientElement.asyncExec);
 
@@ -51,6 +50,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
             element.children.add(childElement);
         }
         element.window = convertOrCast(clientElement.window);
+        element.parentWindow = clientElement.parentWindow;
         for (ClientNavigatorElement parent : clientElement.parents) {
             element.parents.add((GNavigatorElement) convertOrCast(parent));
         }
@@ -89,7 +89,6 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     public <E extends GNavigatorWindow> E initNavigatorWindow(ClientNavigatorWindow clientWindow, E window) {
         initAbstractNavigatorWindow(clientWindow, window);
 
-        window.drawRoot = clientWindow.drawRoot;
         window.drawScrollBars = clientWindow.drawScrollBars;
         for (ClientNavigatorElement clientElement : clientWindow.elements) {
             GNavigatorElement element = convertOrCast(clientElement);
@@ -140,6 +139,12 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
     @Converter(from = ClientTreeNavigatorWindow.class)
     public GTreeNavigatorWindow convertTreeNavigatorWindow(ClientTreeNavigatorWindow clientWindow) {
         return initNavigatorWindow(clientWindow, new GTreeNavigatorWindow());
+    }
+
+    @Cached
+    @Converter(from = ClientNavigatorChanges.class)
+    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges, ServletContext servletContext, ServerSettings settings) {
+        return navigatorConverter.convertOrCast(clientChanges, servletContext, settings);
     }
 
     @Converter(from = ModalityWindowFormType.class)

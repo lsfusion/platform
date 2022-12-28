@@ -121,6 +121,7 @@ import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.navigator.controller.env.ChangesObject;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
@@ -158,7 +159,7 @@ import static lsfusion.server.logics.form.interactive.instance.object.GroupObjec
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable {
+public class FormInstance extends ExecutionEnvironment implements ReallyChanged, ProfiledObject, AutoCloseable, ChangesObject {
 
     private final Function<ComponentView, PropertyObjectInstance<?>> GET_COMPONENT_SHOWIF =
             new Function<ComponentView, PropertyObjectInstance<?>>() {
@@ -2677,6 +2678,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     public DataSession getSession() {
+        return session;
+    }
+
+    @Override
+    public DataSession getChangesSession() {
         return session;
     }
 

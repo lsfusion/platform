@@ -108,6 +108,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;

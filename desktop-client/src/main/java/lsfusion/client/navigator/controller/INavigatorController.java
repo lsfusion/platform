@@ -7,4 +7,6 @@ public interface INavigatorController {
     void update();
 
     void openElement(ClientNavigatorElement element, int modifiers);
+
+    void resetSelectedElements(ClientNavigatorElement newSelectedElement);
 }

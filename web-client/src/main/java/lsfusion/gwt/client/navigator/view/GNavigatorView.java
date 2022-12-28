@@ -43,4 +43,7 @@ public abstract class GNavigatorView {
     public abstract int getHeight();
 
     public abstract int getWidth();
+
+    public void resetSelectedElement(GNavigatorElement newSelectedElement) {
+    }
 }

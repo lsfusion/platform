@@ -43,9 +43,6 @@ public class TreeNavigatorView extends NavigatorView {
         }
         model = new DefaultTreeModel(root);
         tree.setModelPreservingState(model);
-        if (window.drawRoot) {
-            tree.expandRow(0);
-        }
     }
 
     private void addElement(DefaultMutableTreeNode parent, ClientNavigatorElement element, Set<ClientNavigatorElement> newElements) {
@@ -88,7 +85,7 @@ public class TreeNavigatorView extends NavigatorView {
 
         @Override
         public Icon getIcon() {
-            return ClientImages.getImage(getTypedObject().image);
+            return getTypedObject().getImage();
         }
     }
 }

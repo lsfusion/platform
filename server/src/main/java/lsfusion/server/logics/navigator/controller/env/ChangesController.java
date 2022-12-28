@@ -20,7 +20,7 @@ public abstract class ChangesController {
 
     protected void regLocalChange(ImSet<Property> changes, DataSession session) {}
 
-    public ImSet<Property> update(DataSession session, FormInstance form) { return SetFact.EMPTY(); }
+    public ImSet<Property> update(DataSession session, ChangesObject form) { return SetFact.EMPTY(); }
 
     public void registerForm(FormInstance form) {}
 

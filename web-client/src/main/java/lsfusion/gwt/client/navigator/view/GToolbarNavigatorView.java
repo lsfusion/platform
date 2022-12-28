@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.Panel;
 import lsfusion.gwt.client.base.TooltipManager;
-import lsfusion.gwt.client.base.view.*;
+import lsfusion.gwt.client.base.view.FormButton;
+import lsfusion.gwt.client.base.view.NavigatorImageButton;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
@@ -33,10 +35,18 @@ public class GToolbarNavigatorView extends GNavigatorView {
             panel.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
                               (window.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "align-items-end" :
                                                                                                "align-items-start"));
+
+            main.addStyleName(window.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+                              (window.alignmentY == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "justify-content-end" :
+                                                                                                        "justify-content-start"));
         } else {
             panel.addStyleName(window.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
                               (window.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
                                                                                                "align-items-start"));
+
+            main.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+                              (window.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "justify-content-end" :
+                                                                                                      "justify-content-start"));
         }
         main.add(panel);
 
@@ -67,6 +77,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         button.getElement().setAttribute("lsfusion-container", element.canonicalName);
 
         button.addClickHandler(event -> {
+            navigatorController.resetSelectedElements(selected);
             selected = element;
             navigatorController.update();
             navigatorController.openElement(element, event.getNativeEvent());
@@ -124,5 +135,13 @@ public class GToolbarNavigatorView extends GNavigatorView {
     @Override
     public int getWidth() {
         return panel.getOffsetWidth();
+    }
+
+    @Override
+    public void resetSelectedElement(GNavigatorElement newSelectedElement) {
+        GNavigatorElement selectedElement = getSelectedElement();
+        if(selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
+            selected = null;
+        }
     }
 }

@@ -2,8 +2,10 @@ package lsfusion.client.navigator.window;
 
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.view.ToolBarNavigatorView;
+import lsfusion.interop.base.view.FlexAlignment;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 
@@ -39,6 +41,12 @@ public class ClientToolBarNavigatorWindow extends ClientNavigatorWindow {
     
     public boolean isVertical() {
         return type == SwingConstants.VERTICAL;
+    }
+
+    public FlexAlignment getFlexAlignment() {
+        return isVertical() ?
+                (alignmentY == Component.RIGHT_ALIGNMENT ? FlexAlignment.END : alignmentY == Component.CENTER_ALIGNMENT ? FlexAlignment.CENTER : FlexAlignment.START) :
+                (alignmentX == Component.RIGHT_ALIGNMENT ? FlexAlignment.END : alignmentX == Component.CENTER_ALIGNMENT ? FlexAlignment.CENTER : FlexAlignment.START);
     }
 
     @Override

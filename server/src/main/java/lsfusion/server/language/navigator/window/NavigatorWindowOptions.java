@@ -5,7 +5,6 @@ import lsfusion.interop.base.view.FlexAlignment;
 public class NavigatorWindowOptions {
 
     private Boolean drawTitle;
-    private Boolean drawRoot;
     private Boolean drawScrollBars;
 
     private Orientation orientation;
@@ -25,14 +24,6 @@ public class NavigatorWindowOptions {
 
     public void setDrawTitle(Boolean drawTitle) {
         this.drawTitle = drawTitle;
-    }
-
-    public Boolean getDrawRoot() {
-        return drawRoot;
-    }
-
-    public void setDrawRoot(Boolean drawRoot) {
-        this.drawRoot = drawRoot;
     }
 
     public Boolean getDrawScrollBars() {
@@ -103,7 +94,6 @@ public class NavigatorWindowOptions {
     public String toString() {
         return "NavigatorWindowOptions{" +
                "drawTitle=" + drawTitle +
-               ", drawRoot=" + drawRoot +
                ", drawScrollBars=" + drawScrollBars +
                ", orientation=" + orientation +
                ", borderPosition=" + borderPosition +
