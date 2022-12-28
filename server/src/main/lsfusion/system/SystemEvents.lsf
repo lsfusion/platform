@@ -70,11 +70,12 @@ onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'panel-renderer-bor
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'property-toolbar-border.css' THEN 11;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'main.css' THEN 12;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'main-border.css' THEN 13;
-onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'scrollbar.css' THEN 14;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'resizable-window.css' THEN 15;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'property.css' THEN 16;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'button.css' THEN 17;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'filter.css' THEN 18;
+
+onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 19; //for bootstrap and excell themes
 
 onWebClientStarted () +{ 
     onWebClientLoad();

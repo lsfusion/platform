@@ -1,6 +1,6 @@
 body {
     /*firefox*/
-    scrollbar-color: var(--scrollbar-color) var(--component-background-color);
+    scrollbar-color: var(--scrollbar-color) transparent;
     scrollbar-width: thin;
     /*ie*/
     scrollbar-face-color: var(--scrollbar-color);
@@ -18,6 +18,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
     background-color: var(--scrollbar-color);
+    border-radius: var(--bs-border-radius);
 }
 
 ::-webkit-scrollbar-thumb:hover {
