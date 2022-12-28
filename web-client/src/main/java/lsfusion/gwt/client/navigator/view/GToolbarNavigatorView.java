@@ -77,7 +77,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
         button.getElement().setAttribute("lsfusion-container", element.canonicalName);
 
         button.addClickHandler(event -> {
-            navigatorController.resetSelectedElements(selected);
+            navigatorController.resetSelectedElements(element);
             selected = element;
             navigatorController.update();
             navigatorController.openElement(element, event.getNativeEvent());
