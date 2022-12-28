@@ -46,11 +46,11 @@ public class AppImages {
         AppImages.predefinedFontClasses.exclAdd("chat.png", "fa-solid fa-comment");
         AppImages.predefinedFontClasses.exclAdd("play.png", "fa-solid fa-play");
 
-        AppImages.predefinedFontClasses.exclAdd("bootstrap.png", "fa-solid bi-bootstrap");
-        AppImages.predefinedFontClasses.exclAdd("excel.png", "fa-solid bi-file-earmark-excel");
+        AppImages.predefinedFontClasses.exclAdd("bootstrap.png", "fa-brands fa-bootstrap");
+        AppImages.predefinedFontClasses.exclAdd("excel.png", "fa-solid fa-file-excel");
 
-        AppImages.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid bi-brightness-high");
-        AppImages.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid bi-moon");
+        AppImages.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid fa-sun");
+        AppImages.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid fa-moon");
 
         AppImages.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
 
