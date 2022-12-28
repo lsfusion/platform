@@ -28,6 +28,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.file.Paths;
 
+import static lsfusion.base.BaseUtils.isEmpty;
 import static lsfusion.client.ClientResourceBundle.getString;
 
 public class LSFTooltipManager {
@@ -42,8 +43,10 @@ public class LSFTooltipManager {
     };
 
     public static void initTooltip(JComponent component, String tooltipText, String path, String creationPath) {
-        setComponentMouseListeners(component, new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath),
-                new LSFTooltipStyle(), false)));
+        if(!isEmpty(tooltipText)) {
+            setComponentMouseListeners(component, new Timer(1500, evt -> balloonTip = new BalloonTip(component, createTooltipPanel(tooltipText, path, creationPath),
+                    new LSFTooltipStyle(), false)));
+        }
     }
 
     public static void initTooltip(JComponent component, Object model, JTable gridTable) {
