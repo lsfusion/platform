@@ -172,9 +172,8 @@
 
                 "static/css/gwt/main.css",
 
-                "static/css/gwt/form/components/property/suggest-box.css",
-
                 "static/css/gwt/form/components/base/dialog.css",
+                "static/css/gwt/form/components/base/popup-menu.css",
                 "static/css/gwt/form/components/base/progress-bar.css",
                 "static/css/gwt/form/components/base/resizable-window.css",
 
@@ -220,13 +219,10 @@
                 momentLocale.locale(intlOptions.locale);
                 setCookie('LSFUSION_CLIENT_TIME_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('LT')));
                 setCookie('LSFUSION_CLIENT_DATE_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('L')));
-
-                //setSessionID
-                this.sessionID = '${sessionID}';
             }
         </script>
     </head>
-    <body onload="init();">
+    <body onload="init();" sessionID = '${sessionID}'>
         <script language="JavaScript">
             var pageSetup = {
                 webAppRoot: "<%= request.getContextPath() + "/" %>",

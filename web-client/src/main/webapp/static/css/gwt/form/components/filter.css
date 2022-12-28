@@ -10,35 +10,36 @@
 
 
 /* ------------ User Filters ------------ */
-.userFilterNegationCheckBox label {
+.filter-negation-check label {
     vertical-align: middle;
 }
 
-.userFilterLabel {
+.filter-label {
     cursor: default;
     margin: 0 0.1875rem 0 0.3125rem;
 }
 
-.userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
+.filter-data-property-value, .filter-selector, .filter-button {
     margin-left: var(--border-comp-horz-padding);
 }
 
 /* mimicry of propertyPanelRendererValue / panelRendererValue, CELL_HORIZONTAL_PADDING (textbasedCellRenderer) */
-.userFilterSelector {
+.filter .filter-selector {
     cursor : default;
     border: 1px solid var(--component-border-color);
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
-    border-radius: var(--textfield-border-radius);
-
-    padding-left: 0.1875rem;
-    padding-right: 0.1875rem;
+    width: unset;
 
     /* aligning text vertically (the other way with line-height) */
     display : flex;
     align-items : center;
 }
 
-.userFilterSelector, .userFilterSelector .background-inherit {
+.filter-selector {
+    width: unset; /* is set to 100% for .form-control */
+}
+
+.filter-selector, .filter-selector .background-inherit {
     background-color: var(--component-background-color);
 }
 
@@ -46,20 +47,32 @@
     background-color: var(--selection-color);
 }
 
-.userFilterNegationCheckBox input {
+.filter-negation-check input {
     margin-left: 0.1875rem;
 }
 
-.userFilterJunctionSeparator {
+.filter-separator {
     margin: 0 0.4375rem 0 0.75rem;
 }
 
-.userFilterJunctionSeparatorButton {
-    margin: 0 12px 0 12px;
-    padding: 5px;
+.filter-controls {
+    margin: var(--border-comp-vert-padding) 0;
 }
 
-.userFilterJunctionSeparatorButtonText {
+.filter .filter-button,
+.filter-controls .btn.filter-button{
+    border: none;
+    background: transparent;
+
+    padding: 0.25em;
+}
+
+.filter .filter-separator-button {
+    margin: 0 12px 0 12px;
+    padding: 0 5px;
+}
+
+.filter-separator-button-text {
     margin: 0 4px 0 4px;
     padding: 5px;
 }

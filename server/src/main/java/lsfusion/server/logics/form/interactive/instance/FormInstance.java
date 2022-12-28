@@ -2786,8 +2786,14 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         formHide(context);
     }
 
-    private void formHide(ExecutionContext context) {
+    private void formHide(ExecutionContext context) throws SQLException, SQLHandledException {
         ServerLoggers.remoteLifeLog("FORM HIDE : " + this);
+
+        //reset all activeTab properties
+        for(ComponentView visibleTab : visibleTabs.values()) {
+                visibleTab.updateActiveTabProperty(session, null);
+        }
+
         context.delayUserInteraction(new HideFormClientAction(Settings.get().getCloseConfirmedDelay(), Settings.get().getCloseNotConfirmedDelay()));
         // здесь не делаем close, так как нет RemoteForm + надо делать closeLater, так как могут остаться еще запросы к форме которые возможно надо обработать, так что это делается prepareRemoteChangesResponse
     }

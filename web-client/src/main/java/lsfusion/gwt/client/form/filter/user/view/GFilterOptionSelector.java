@@ -1,51 +1,47 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.FocusWidget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.view.DivWidget;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
-import lsfusion.gwt.client.form.design.GFont;
-import lsfusion.gwt.client.form.design.GFontMetrics;
-import lsfusion.gwt.client.form.design.GFontWidthString;
+import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
+import lsfusion.gwt.client.base.view.popup.PopupMenuPanel;
 import lsfusion.gwt.client.form.event.GKeyStroke;
-import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.util.Collections;
 import java.util.List;
 
 public abstract class GFilterOptionSelector<T> extends FocusWidget {
-    protected PopupDialogPanel popup = new PopupDialogPanel();
-    protected MenuBar menuBar = new MenuBar(true);
+    protected PopupMenuPanel popup = new PopupMenuPanel();
     protected T currentValue;
-    
-    public GFilterOptionSelector() {
-        this(Collections.emptyList(), Collections.emptyList());
+
+    public GFilterOptionSelector(GFilterConditionView.UIHandler uiHandler) {
+        this(uiHandler, Collections.emptyList(), Collections.emptyList());
     }
 
-    public GFilterOptionSelector(List<T> values, List<String> popupCaptions) {
+    public GFilterOptionSelector(GFilterConditionView.UIHandler uiHandler, List<T> values, List<String> popupCaptions) {
         setElement(Document.get().createDivElement());
 
-        addStyleName("userFilterSelector");
-        setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
-//        setReadOnly(true);
-
-        Style menuBarStyle = menuBar.getElement().getStyle();
-        menuBarStyle.setProperty("maxHeight", StyleDefaults.VALUE_HEIGHT * 12, Style.Unit.PX); // 12 rows
-        menuBarStyle.setOverflowY(Style.Overflow.AUTO);
-
-        menuBar.addHandler(event -> {
-            if (GKeyStroke.isEscapeKeyEvent(event.getNativeEvent())) {
-                GwtClientUtils.stopPropagation(event);
-                popup.hide();
-            }
-        }, KeyDownEvent.getType());
+        addStyleName("form-control filter-selector");
         
         addMouseDownHandler(event -> showMenu());
-        addKeyPressHandler(event -> showMenu());
+        addKeyPressHandler(event -> {
+            showMenu();
+        });
+        addKeyDownHandler(event -> {
+            
+            if (GKeyStroke.isEscapeKeyEvent(event.getNativeEvent())) {
+                if (popup.isShowing()) {
+                    hidePopup();
+                } else {
+                    uiHandler.resetConditions();
+                }
+                GwtClientUtils.stopPropagation(event);
+            } else {
+                popup.onBrowserEvent(Event.as(event.getNativeEvent()));
+            }
+        });
 
         for (T value : values) {
             addMenuItem(value, value.toString(), popupCaptions.get(values.indexOf(value)));
@@ -71,12 +67,9 @@ public abstract class GFilterOptionSelector<T> extends FocusWidget {
         getElement().setInnerText(GwtSharedUtils.nullTrim(text));
     }
 
-    protected Widget getPopupContent() {
-        return menuBar;
-    }
-
     private void showMenu() {
-        GwtClientUtils.showPopupInWindow(popup, getPopupContent(), getAbsoluteLeft(), getAbsoluteTop() + getOffsetHeight());
+        popup.setPopupPositionAndShow(getElement());
+        popup.selectFirstItem();
     }
 
     public void add(T value, String caption) {
@@ -87,16 +80,26 @@ public abstract class GFilterOptionSelector<T> extends FocusWidget {
         addMenuItem(value, caption, popupCaption);
     }
 
-    protected MenuItem addMenuItem(T value, String caption, String popupCaption) {
-        MenuItem menuItem = new MenuItem(popupCaption, () -> {
+    protected void addMenuItem(T value, String caption, String popupCaption) {
+        popup.addItem(createItem(value, caption, popupCaption), suggestion -> {
             popup.hide();
             setSelectedValue(value, caption);
             valueChanged(value);
         });
+    }
+    
+    protected PopupMenuItemValue createItem(T value, String caption, String popupCaption) {
+        return new PopupMenuItemValue() {
+            @Override
+            public String getDisplayString() {
+                return popupCaption;
+            }
 
-        menuBar.addItem(menuItem);
-        
-        return menuItem;
+            @Override
+            public String getReplacementString() {
+                return caption;
+            }
+        };
     }
 
     public void hidePopup() {

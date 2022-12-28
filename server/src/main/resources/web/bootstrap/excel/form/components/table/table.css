@@ -31,3 +31,7 @@
     padding: 0; /* Remove padding */
     margin: 0; /* Remove margins */
 }
+
+.arrow.btn {
+    padding: 0.1rem 0.25rem;
+}

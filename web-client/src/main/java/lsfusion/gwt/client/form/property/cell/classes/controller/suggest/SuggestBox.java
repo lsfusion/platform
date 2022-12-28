@@ -11,6 +11,9 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.popup.PopupMenuCallback;
+import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
+import lsfusion.gwt.client.base.view.popup.PopupMenuPanel;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
@@ -32,7 +35,7 @@ public abstract class SuggestBox {
     private boolean selectsFirstItem = true;
     private final SuggestOracle oracle;
     private String currentText;
-    private final PopupPanel suggestionPopup;
+    private final PopupMenuPanel suggestionPopup;
     private final InputElement inputElement;
     private FlexPanel bottomPanel;
     private final boolean strict;
@@ -46,27 +49,23 @@ public abstract class SuggestBox {
     
     private final Callback callback = new Callback() {
         public void onSuggestionsReady(Request request, Response response) {
-            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanel, suggestionCallback);
+            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanel, popupMenuCallback);
         }
     };
 
-    public interface SuggestionCallback {
-        void onSuggestionSelected(Suggestion suggestion);
-    }
+    private final PopupMenuCallback popupMenuCallback;
 
-    private final SuggestionCallback suggestionCallback;
-
-    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, boolean strict, SuggestionCallback callback) {
+    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, boolean strict, PopupMenuCallback callback) {
         this.oracle = oracle;
         this.inputElement = inputElement;
         this.strict = strict;
 
-        this.suggestionPopup = new PopupPanel();
-        this.suggestionCallback = suggestion -> {
+        this.suggestionPopup = new PopupMenuPanel();
+        this.popupMenuCallback = suggestion -> {
             focus();
             setNewSelection(suggestion);
 
-            callback.onSuggestionSelected(suggestion);
+            callback.onMenuItemSelected(suggestion);
         };
 
         this.bottomPanel = createBottomPanel(parent);
@@ -82,9 +81,9 @@ public abstract class SuggestBox {
         }
     }
 
-    protected Suggestion getCurrentSelection() {
+    protected PopupMenuItemValue getCurrentSelection() {
         if (isSuggestionListShowing()) {
-            return suggestionPopup.getSelectedItemSuggestion();
+            return suggestionPopup.getSelectedItemValue();
         } else {
             return null;
         }
@@ -98,7 +97,7 @@ public abstract class SuggestBox {
         suggestionPopup.clearSelectedItem();
     }
 
-    protected void showSuggestions(final Element suggestElement, boolean initial, Collection<? extends Suggestion> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final SuggestionCallback callback) {
+    protected void showSuggestions(final Element suggestElement, boolean initial, Collection<? extends PopupMenuItemValue> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final PopupMenuCallback callback) {
         suggestionPopup.clearItems();
 
         if (suggestions.isEmpty()) {
@@ -106,7 +105,7 @@ public abstract class SuggestBox {
             suggestionPopup.addTextItem(initial ? "" : messages.noResults());
         }
 
-        for (final Suggestion suggestion : suggestions) {
+        for (final PopupMenuItemValue suggestion : suggestions) {
             suggestionPopup.addItem(suggestion, callback);
         }
 
@@ -225,7 +224,7 @@ public abstract class SuggestBox {
                 break;
             case KeyCodes.KEY_ENTER:
             case KeyCodes.KEY_TAB:
-                Suggestion suggestion = getCurrentSelection();
+                PopupMenuItemValue suggestion = getCurrentSelection();
                 if (suggestion != null && strict) {
                     setNewSelection(suggestion);
                 }
@@ -251,12 +250,12 @@ public abstract class SuggestBox {
      *
      * @param curSuggestion the new suggestion
      */
-    private void setNewSelection(Suggestion curSuggestion) {
+    private void setNewSelection(PopupMenuItemValue curSuggestion) {
         setSelection(curSuggestion);
         suggestionPopup.hide();
     }
 
-    public void setSelection(Suggestion suggestion) {
+    public void setSelection(PopupMenuItemValue suggestion) {
         currentText = suggestion != null ? suggestion.getReplacementString() : null;
         SimpleTextBasedCellEditor.setInputValue(inputElement, currentText);
     }
@@ -265,12 +264,6 @@ public abstract class SuggestBox {
         public abstract void requestSuggestions(SuggestBox.Request request, SuggestBox.Callback callback);
     }
 
-    public interface Suggestion {
-        String getDisplayString();
-
-        String getReplacementString();
-    }
-    
     public static class Request {
         public String query;
 
@@ -280,10 +273,10 @@ public abstract class SuggestBox {
     }
 
     public static class Response {
-        ArrayList<Suggestion> suggestions;
+        ArrayList<PopupMenuItemValue> suggestions;
         boolean initial;
 
-        public Response(ArrayList<Suggestion> suggestions, boolean initial) {
+        public Response(ArrayList<PopupMenuItemValue> suggestions, boolean initial) {
             this.suggestions = suggestions;
             this.initial = initial;
         }

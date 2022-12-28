@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Label;
@@ -41,6 +40,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         void removeCondition(GPropertyFilter condition);
         void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
         void enableApplyButton();
+        void resetConditions();
     }
 
     private GPropertyFilter condition;
@@ -82,28 +82,31 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
     public boolean isRemoved;
 
-    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, final UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, boolean readSelectedValue) {
+    public GFilterConditionView(GPropertyFilter iCondition, GTableController logicsSupplier, UIHandler uiHandler, ColumnsProvider columnsProvider, boolean controlsVisible, boolean readSelectedValue) {
         this.condition = iCondition;
         this.uiHandler = uiHandler;
         this.columnsProvider = columnsProvider;
         this.controlsVisible = controlsVisible;
 
         this.sID = "" + (idCounter++);
+        
+        addStyleName("filter");
 
         allowNull = !condition.isFixed();
         
         leftPanel = new FlexPanel();
         rightPanel = new FlexPanel();
+        rightPanel.addStyleName("btn-toolbar");
 
         Column currentColumn = new Column(condition.property, condition.columnKey != null ? condition.columnKey : GGroupObjectValue.EMPTY);
         String currentCaption = columnsProvider.getColumns().get(currentColumn);
         
         propertyLabel = new Label(currentCaption);
         propertyLabel.setTitle(currentCaption);
-        propertyLabel.addStyleName("userFilterLabel");
+        propertyLabel.addStyleName("filter-label");
         leftPanel.addCentered(propertyLabel);
 
-        propertyView = new GFilterOptionSelector<Column>() {
+        propertyView = new GFilterOptionSelector<Column>(uiHandler) {
             @Override
             public void valueChanged(Column column) {
                 condition.property = column.property;
@@ -126,7 +129,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         
         compareLabel = new Label();
         updateCompareLabelText();
-        compareLabel.addStyleName("userFilterLabel");
+        compareLabel.addStyleName("filter-label");
         compareLabel.setVisible(isFixed() && !controlsVisible);
         leftPanel.addCentered(compareLabel);
 
@@ -135,7 +138,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         for (GCompare filterCompare : filterCompares) {
             conditionsFullStrings.add(filterCompare.getFullString());
         }
-        compareView = new GFilterCompareSelector(condition, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
+        compareView = new GFilterCompareSelector(condition, uiHandler, Arrays.asList(filterCompares), conditionsFullStrings, allowNull) {
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
@@ -189,23 +192,23 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
         rightPanel.addCentered(valueView);
         uiHandler.addEnterBinding(valueView.cell);
 
-        deleteButton = new GToolbarButton(StaticImage.DELETE_ICON_PATH, messages.formFilterRemoveCondition()) {
+        deleteButton = new GToolbarButton(StaticImage.DELETE_FILTER, messages.formFilterRemoveCondition()) {
             @Override
             public ClickHandler getClickHandler() {
                 return event -> GFilterConditionView.this.remove();
             }
         };
-        deleteButton.addStyleName("userFilterButton");
+        deleteButton.addStyleName("filter-button");
         deleteButton.setVisible(!isFixed() || controlsVisible);
         rightPanel.add(deleteButton, GFlexAlignment.CENTER, 0, false, GSize.CONST(COMPONENT_HEIGHT));
 
         junctionSeparator = GwtClientUtils.createVerticalSeparator(StyleDefaults.COMPONENT_HEIGHT);
-        junctionSeparator.addStyleName("userFilterJunctionSeparator");
+        junctionSeparator.addStyleName("filter-separator");
         rightPanel.addCentered(junctionSeparator);
 
         junctionView = new GToolbarButton(
                 MainFrame.useTextAsFilterSeparator ? messages.formFilterConditionViewAnd() : null,
-                MainFrame.useTextAsFilterSeparator ? null : StaticImage.SEPARATOR_ICON_PATH,
+                MainFrame.useTextAsFilterSeparator ? null : StaticImage.FILTER_SEPARATOR,
                 messages.formFilterConditionViewAnd(), true) {
             @Override
             public ClickHandler getClickHandler() {
@@ -224,9 +227,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
                 };
             }
         };
-        junctionView.addStyleName("userFilterButton");
-        junctionView.addStyleName(MainFrame.useTextAsFilterSeparator ? "userFilterJunctionSeparatorButtonText" : "userFilterJunctionSeparatorButton");
-        junctionView.getElement().getStyle().setPaddingTop(0, Style.Unit.PX);
+        junctionView.addStyleName("filter-button");
+        junctionView.addStyleName(MainFrame.useTextAsFilterSeparator ? "filter-separator-button-text" : "filter-separator-button");
         junctionView.showBackground(!condition.junction);
         rightPanel.addCentered(junctionView);
     }

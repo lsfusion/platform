@@ -1,99 +1,49 @@
 .nav-tabs-vert {
     padding-left: var(--border-cont-horz-padding);
-    border-right: 1px solid var(--panel-border-color);
 }
 
 .nav.nav-tabs-vert {
     margin-right: var(--border-cont-horz-padding);
 }
 
-.nav-tabs-vert .nav-item-first {
-    height: 0.1875rem;  /* first tab distance from the top */
-    width: 0;  /* to make it invisible when all tabs are wrapped */
-}
-.nav-tabs-vert .nav-item-rest {
-    width: 0;  /* to make it invisible when all tabs are wrapped */
-}
-
 .nav-tabs-horz {
     padding-top: var(--border-cont-vert-padding);
-    border-bottom: 1px solid var(--panel-border-color);
 }
+
 .nav.nav-tabs-horz {
     margin-bottom: var(--border-cont-vert-padding);
 }
 
-.nav-tabs .nav-item-first {
-    width: 0.1875rem;  /* first tab distance from the left */
-    height: 0;  /* to make it invisible when all tabs are wrapped */
-}
-.nav-tabs .nav-item-rest {
-    height: 0;  /* to make it invisible when all tabs are wrapped */
-}
-.nav-tabs .nav-item {
-    font-weight: normal;
-    text-align: center;
-}
-.nav-tabs .nav-link {
-    border-top: 1px solid var(--panel-border-color);
-    border-left: 1px solid var(--panel-border-color);
-}
+/* cursors - now the captions are not <a> so we'll change the cursro explicitly */
+
 .nav-link {
     cursor: pointer;
 }
-.nav-link img {
-    margin-right: 0.25rem;
-}
 
-.nav-tabs-vert .nav-link {
-    border-bottom: 1px solid var(--panel-border-color);
-    margin-top: 0.1875rem;
-    border-radius: var(--tab-border-radius-vert);
-}
-.nav-tabs-horz .nav-link {
-    border-right: 1px solid var(--panel-border-color);
-    margin-left: 0.1875rem;
-    border-radius: var(--tab-border-radius-horz);
-}
 .nav-tabs .nav-link.active {
     cursor: default;
-    background: var(--selection-color);
 }
 
 .nav-tabs .nav-item-disabled {
     cursor: default;
-    color: #999999;
 }
 
-.nav-tabs .nav-link:hover {
-    border-top: 1px solid var(--component-hover-border-color);
-    border-left: 1px solid var(--component-hover-border-color);
-    /*background: var(--component-hover-background-color);*/
-}
-.nav-tabs-vert .nav-link:hover {
-    border-bottom: 1px solid var(--component-hover-border-color);
-}
-.nav-tabs-horz .nav-link:hover {
-    border-right: 1px solid var(--component-hover-border-color);
-}
 
-.nav-tabs .nav-link:focus {
-    border-top: 1px solid var(--focus-color);
-    border-left: 1px solid var(--focus-color);
-}
-.nav-tabs-vert .nav-link:focus {
-    border-bottom: 1px solid var(--focus-color);
-}
-.nav-tabs-horz .nav-link:focus {
-    border-right: 1px solid var(--focus-color);
-}
-
-.nav-tabs .nav-link.active:hover {
-    /*background: var(--selection-color); */
-}
+/* have no idea what it's for */
+/*.nav-tabs-vert .nav-item-first {*/
+/*    width: 0;  !* to make it invisible when all tabs are wrapped *!*/
+/*}*/
+/*.nav-tabs-vert .nav-item-rest {*/
+/*    width: 0;  !* to make it invisible when all tabs are wrapped *!*/
+/*}*/
+/*.nav-tabs .nav-item-first {*/
+/*    height: 0;  !* to make it invisible when all tabs are wrapped *!*/
+/*}*/
+/*.nav-tabs .nav-item-rest {*/
+/*    height: 0;  !* to make it invisible when all tabs are wrapped *!*/
+/*}*/
 
 .tab-panel {
-    /*margin: 0 1px 1px;*/
 }
 
 .tab-close-button {

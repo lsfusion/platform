@@ -89,7 +89,7 @@ public class ContainerForm extends FormContainer {
     }
 
     @Override
-    protected Element getFocusedElement() {
+    public Element getFocusedElement() {
         return widget.getElement();
     }
 }

@@ -613,7 +613,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";
 
         if (!MainFrame.showDetailedInfo) {
-            return GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, keyBindingText);
+            return propCaption.isEmpty() ? null : GwtSharedUtils.stringFormat(TOOL_TIP_FORMAT, propCaption, keyBindingText);
         } else {
             String ifaceObjects = GwtSharedUtils.toString(", ", interfacesCaptions);
             String scriptPath = creationPath != null ? escapeLineBreakHTML(creationPath) : "";

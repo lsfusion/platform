@@ -120,7 +120,7 @@ public abstract class FormContainer {
         focusedElement = remove ? null : GwtClientUtils.getFocusedChild(getFocusedElement());
     }
 
-    protected abstract Element getFocusedElement();
+    public abstract Element getFocusedElement();
 
     public void initForm(FormsController formsController, GForm gForm, BiConsumer<GAsyncFormController, EndReason> hiddenHandler, boolean isDialog, int dispatchPriority, String formId) {
         form = new GFormController(formsController, this, gForm, isDialog, dispatchPriority, editEvent) {

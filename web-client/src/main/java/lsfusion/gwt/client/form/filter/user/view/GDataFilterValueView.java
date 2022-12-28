@@ -45,7 +45,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
 
         GPropertyDraw property = condition.property;
         sizedView = cell.getSizedWidget();
-        sizedView.widget.addStyleName("userFilterDataPropertyValue");
+        sizedView.widget.addStyleName("filter-data-property-value form-control");
         sizedView.addFill(this);
 
         Object value;

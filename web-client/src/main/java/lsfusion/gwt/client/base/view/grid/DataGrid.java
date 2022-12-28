@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
@@ -142,20 +143,38 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         MainFrame.addColorThemeChangeListener(this);
     }
-    
+
+    private final Timer recentlyScrolledTimer = new Timer() {
+        @Override
+        public void run() {
+            tableWidget.setStyleName("was-scrolled-recently", false);
+        }
+    };
+
     public ScrollHandler getScrollHandler() {
         return event -> {
             calcLeftNeighbourRightBorder(true);
             checkSelectedRowVisible();
-            
+
             updateScrolledState();
         };
     }
-    
+
+    protected abstract void scrollToEnd(boolean toEnd);
+
     private void updateScrolledState() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
-        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > 0);
-        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight());
+        //The mobile version does not set the "scrolled-up" class correctly when scrolling to the bottom of the table due to size rounding.
+        // This is solved by adding one pixel to the calculation
+        int adjustment = MainFrame.mobile ? 1 : 0;
+        tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
+        tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
+
+        tableWidget.setStyleName("was-scrolled-recently", true);
+        if (recentlyScrolledTimer.isRunning())
+            recentlyScrolledTimer.cancel();
+
+        recentlyScrolledTimer.schedule(1500);
     }
 
     private static Set<String> browserKeyEvents;
@@ -620,6 +639,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
      */
     public HeaderBuilder<T> getFooterBuilder() {
         return footerBuilder;
+    }
+
+    /**
+     * Get the {@link HeaderBuilder} used to generate the header section.
+     */
+    public HeaderBuilder<T> getHeaderBuilder() {
+        return headerBuilder;
     }
 
     /**

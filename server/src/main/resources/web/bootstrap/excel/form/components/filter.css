@@ -1,0 +1,11 @@
+.filter .filter-selector {
+    border-radius: var(--textfield-border-radius);
+    height: 20px;
+
+    padding-left: 0.1875rem;
+    padding-right: 0.1875rem;
+}
+
+.filter-controls {
+    margin: 0;
+}

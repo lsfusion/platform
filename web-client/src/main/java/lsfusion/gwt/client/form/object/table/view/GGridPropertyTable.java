@@ -108,7 +108,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     public GFont font;
 
     public GGridPropertyTable(GFormController form, GGroupObject groupObject, TableContainer tableContainer, GFont font) {
-        super(form, groupObject, tableContainer, !groupObject.hasHeaders, !groupObject.hasFooters, false);
+        super(form, groupObject, tableContainer, !groupObject.hasHeaders, !groupObject.hasFooters);
         
         this.font = font;
 

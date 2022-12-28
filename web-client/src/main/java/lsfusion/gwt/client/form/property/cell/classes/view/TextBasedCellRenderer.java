@@ -69,10 +69,14 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
         return setInnerText(element, value != null ? format((T) value) : null);
     }
 
+    protected String getTitle(Element element, String stringValue) {
+        return stringValue;
+    }
+
     public abstract String format(T value);
 
     protected boolean setInnerText(Element element, String innerText) {
-        String title = property.echoSymbols ? "" : innerText;
+        String title = property.echoSymbols ? "" : getTitle(element, innerText);
         if(innerText == null) {
             element.addClassName("nullValueString");
             if(property.isEditableNotNull())

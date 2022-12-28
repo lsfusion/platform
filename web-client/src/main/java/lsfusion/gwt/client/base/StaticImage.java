@@ -58,12 +58,12 @@ public class StaticImage extends BaseStaticImage {
     public static final StaticImage LOADING_IMAGE_PATH = new StaticImage("fa-solid fa-spinner fa-spin",  "loading.gif");
     public static final StaticImage REFRESH_IMAGE_PATH = new StaticImage("bi bi-arrow-repeat", "refresh.png");
 
-    public static final StaticImage OK = new StaticImage("bi bi-check", "ok.png");
+    public static final StaticImage OK = new StaticImage(useFA ? "fa-solid fa-check" : "bi bi-check-lg", "ok.png");
 
-    public static final StaticImage ADD_ICON_PATH = new StaticImage("fa-solid fa-plus", "filtadd.png");
-    public static final StaticImage RESET_ICON_PATH = new StaticImage("fa-solid fa-xmark","filtreset.png");
-    public static final StaticImage DELETE_ICON_PATH = new StaticImage("fa-solid fa-minus", "filtdel.png");
-    public static final StaticImage SEPARATOR_ICON_PATH = new StaticImage(useFA ? "fa-solid fa-grip-lines-vertical" : "bi bi-pause", "filtseparator.png");
+    public static final StaticImage ADD_FILTER = new StaticImage(useFA ? "fa-solid fa-plus" : "bi bi-plus-lg", "filtadd.png");
+    public static final StaticImage RESET_FILTERS = new StaticImage(useFA ? "fa-solid fa-xmark" : "bi bi-x-lg","filtreset.png");
+    public static final StaticImage DELETE_FILTER = new StaticImage(useFA ? "fa-solid fa-minus" : "bi bi-dash-lg", "filtdel.png");
+    public static final StaticImage FILTER_SEPARATOR = new StaticImage(useFA ? "fa-solid fa-grip-lines-vertical" : "bi bi-pause", "filtseparator.png");
 
     public static final StaticImage GRID = new StaticImage(useFA ? "fa-solid fa-list-ul" : "bi bi-list-ul","grid.png");
     public static final StaticImage PIVOT = new StaticImage(useFA ? "fa-solid fa-table-cells-large" : "bi bi-grid-3x2", "pivot.png");
@@ -71,7 +71,7 @@ public class StaticImage extends BaseStaticImage {
     public static final StaticImage MAP = new StaticImage(useFA ? "fa-regular fa-map" : "bi bi-geo-alt", "map.png");
     public static final StaticImage CALENDAR = new StaticImage(useFA ? "fa-regular fa-calendar" : "bi bi-calendar4-week", "calendar_view.png");
 
-    public static final StaticImage FILTER_ICON_PATH = new StaticImage("bi bi-funnel", "filt.png");
+    public static final StaticImage FILTER = new StaticImage(useFA ? "fa-solid fa-filter" : "bi bi-funnel", "filt.png");
 
     public static final StaticImage USERPREFERENCES = new StaticImage(useFA ? "fa-solid fa-gear" : "bi bi-gear", "userPreferences.png");
     public static final StaticImage EXCELBW = new StaticImage(useFA ? "fa-regular fa-share-from-square" : "bi bi-download", "excelbw.png");
@@ -92,4 +92,7 @@ public class StaticImage extends BaseStaticImage {
     public static final StaticImage EXECUTE = new StaticImage("bi bi-play", "action.png");
     public static final StaticImage EMPTY = new StaticImage("empty.png");
     public static final StaticImage FILE = new StaticImage("bi bi-file-earmark", "file.png");
+
+    public static final StaticImage CHEVRON_UP = new StaticImage("fa-solid fa-chevron-up", "up-arrow.png");
+    public static final StaticImage CHEVRON_DOWN = new StaticImage("fa-solid fa-chevron-down", "down-arrow.png");
 }
