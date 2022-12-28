@@ -25,7 +25,7 @@ logo() = OVERRIDE logicsLogo(), defaultLogo();
 logoAction() {}
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo PARENT HEADER '' IMAGE logo();
+    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo();
 }
 
 useBootstrap = DATA BOOLEAN(CustomUser);
