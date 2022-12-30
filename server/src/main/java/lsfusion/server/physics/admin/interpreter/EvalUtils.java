@@ -3,6 +3,7 @@ package lsfusion.server.physics.admin.interpreter;
 import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.lambda.set.FullFunctionSet;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.language.*;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
@@ -79,7 +80,10 @@ public class EvalUtils {
         } catch (ScriptingErrorLog.SemanticErrorException e) {
             throw new UnsupportedOperationException(); // should not be since there is no currentParser in module
         } catch (ScriptErrorException e) {  // we don't need stack for ScriptErrorException, since it is obvious, so will convert it to scriptParsingException
-            throw new ScriptParsingException(e.getMessage());
+            String message = e.getMessage();
+            if(message.endsWith(" is not found")) // hack but for now will do
+                message = ThreadLocalContext.localize("{eval.script.form.exception.without.run.block}");
+            throw new ScriptParsingException(message);
         }
     }
 
