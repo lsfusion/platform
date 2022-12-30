@@ -41,6 +41,27 @@
 .dataGridColumnRowFlexCell {
 }
 
+/* it seems that firefox treats visibility:collapse as visibility hidden,
+to fix this we just collapse all heights in the virtual gridColumnRow
+it's not the perfect solution, but maybe sometime firefox will fix this bug and it will be possible to remove this hack*/
+@supports (-moz-appearance: none) {
+    .dataGridColumnRow, .dataGridColumnRow * {
+        height : 0 !important;
+        line-height: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        border-top: 0 !important;
+        border-bottom: 0 !important;
+
+        /* otherwise for input border is not set to 0px and still 2px + there extra paddings */
+        /* maybe it should be set only for input checkbox, but for now we'll do it for all dom elements */
+        -moz-appearance: none !important;
+        vertical-align: top !important;
+    }
+}
+
 .wrap-center {
     display: flex;
     justify-content: center;
