@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class RemotePausableInvocation extends PausableInvocation<ServerResponse, RemoteException> {
     private final ContextAwarePendingRemoteObject remoteObject;
@@ -101,19 +103,27 @@ public abstract class RemotePausableInvocation extends PausableInvocation<Server
      * по умолчанию вызывает {@link RemotePausableInvocation#callInvocation()}, и возвращает его результат из {@link RemotePausableInvocation#handleFinished()}
      * @throws Throwable
      */
+
+    private static final ThreadLocal<RemotePausableInvocation> runningInvocation = new ThreadLocal<>();
     protected void runInvocation() throws Throwable {
         //final long id = Thread.currentThread().getId();
         //RemoteLoggerAspect.putDateTimeCall(id, new Timestamp(System.currentTimeMillis()));
         //try {
             remoteObject.addContextThread(Thread.currentThread());
+            runningInvocation.set(this);
             try {
                 invocationResult = callInvocation();
             } finally {
+                runningInvocation.set(null);
                 remoteObject.removeContextThread(Thread.currentThread());
             }
         //} finally {
         //    RemoteLoggerAspect.removeDateTimeCall(id);
         //}
+    }
+
+    public static <T> T runUserInteraction(Function<RemotePausableInvocation, T> userInteraction) {
+        return userInteraction.apply(runningInvocation.get());
     }
 
     /**

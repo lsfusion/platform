@@ -206,7 +206,7 @@ public class ClientFormController implements AsyncListener {
             formsController = iformsController;
             form = iform;
 
-            rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this);
+            rmiQueue = new RmiQueue(tableManager, serverMessageProvider, serverMessageListProvider, this, true);
 
             actionDispatcher = new ClientFormActionDispatcher(rmiQueue) {
                 @Override

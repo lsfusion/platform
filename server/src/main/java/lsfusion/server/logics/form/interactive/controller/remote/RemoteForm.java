@@ -892,7 +892,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         // (for example there is difference in web and desktop client behaviour: DIALOG some change that requires a lot of time to update form, from which the call is made - then that form will have "gained focus" event, in web that call will be before continue, and in desktop after)
         // in that case sync call will get no data, and all the work async call will do the work (in upper example, in web there will be no busy dialog, and in desktop there will be oone)
         // however so far it doesn't seem to be a problem (to solve it we have to pass if the call is sync / async and delay getting remote changes only for async changes)
-        if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
+        if (getInvocationsCount() > 1 || delayedGetRemoteChanges) {
             return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm, stack);
         }
 
@@ -939,7 +939,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(message != null) // we'll proceed this message in popLogMessage
                 return;
         }
-        super.delayUserInteraction(action);
+        delayUserInteraction(action);
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {
@@ -976,7 +976,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public JSONObject getFormChangesExternal(ExecutionStack stack) {
         try {
             FormChanges formChanges;
-            if(numberOfFormChangesRequests.get() > 1 || isDeactivated())
+            if(getInvocationsCount() > 1 || isDeactivated())
                 formChanges = FormChanges.EMPTY;
             else
                 formChanges = form.getChanges(stack);
