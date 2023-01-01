@@ -142,7 +142,7 @@ public abstract class RemoteRequestObject extends ContextAwarePendingRemoteObjec
         }
     }
 
-    private void clearRecentResults(long lastReceivedRequestIndex) {
+    private synchronized void clearRecentResults(long lastReceivedRequestIndex) {
         //assert: current thread holds the request lock
         if(lastReceivedRequestIndex == -1)
             return;
