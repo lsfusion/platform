@@ -79,12 +79,16 @@ public abstract class RemoteDispatchAsync implements ServerMessageProvider {
         }
     }
 
+    protected boolean synchronizeRequests() { // should be synchronized with the same method in RemoteRequestObject
+        return true;
+    }
+
     public <A extends RequestAction<R>, R extends Result> long executeQueue(A action, RequestAsyncCallback<R> callback, boolean sync, boolean continueInvocation) {
         // in desktop there is direct query mechanism (for continuing single invocating), which blocks EDT, and guarantee synchronization
         // in web there is no such mechanism, so we'll put the queued action to the very beginning of the queue
         // otherwise there might be deadlock, when, for example, between ExecuteEventAction and continueServerInvocation there was changePageSize
         long requestIndex = fillQueuedAction(action);
-        final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, action instanceof GetAsyncValues);
+        final QueuedAction queuedAction = new QueuedAction(requestIndex, callback, action instanceof GetAsyncValues || !synchronizeRequests());
         if (continueInvocation) {
             q.add(0, queuedAction);
             waitingForContinueInvocation = false;
