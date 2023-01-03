@@ -246,6 +246,7 @@ public class GFontMetrics {
         TableElement tableElement = Document.get().createTableElement();
 
         tableElement.getStyle().setProperty("width", "fit-content"); // because bootstrap sets table width to 100%
+        tableElement.getStyle().setProperty("display", "block"); //in firefox width does not calculate correctly because in firefox "width: fit-content" does not work without "display: block".
         tableElement.addClassName("table");
 
         if(hasHeaders) {
