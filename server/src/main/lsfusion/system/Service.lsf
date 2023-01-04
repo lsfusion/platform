@@ -423,9 +423,14 @@ getServerSettings() + WHEN TRUE THEN {
     LOCAL loginLoadedResources = RAWFILE(STRING);
     LOCAL loginLoadedResourcesOrder = INTEGER(STRING);
     FOR onLoginLoad(STRING s) ORDER onLoginLoad(s) DO {
-        readResource(s);
-        loginLoadedResources(resourcePath()) <- RAWFILE (resource());
-        loginLoadedResourcesOrder(resourcePath()) <- onLoginLoad(s); 
+        IF endsWith(s, '.custom') THEN {
+            loginLoadedResources(s) <- RAWFILE(s);
+            loginLoadedResourcesOrder(s) <- onLoginLoad(s);
+        } ELSE {
+            readResource(s);
+            loginLoadedResources(resourcePath()) <- RAWFILE (resource());
+            loginLoadedResourcesOrder(resourcePath()) <- onLoginLoad(s); 
+        }
     }
     LOCAL loginResources = JSON ();
     EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
@@ -433,9 +438,14 @@ getServerSettings() + WHEN TRUE THEN {
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
-        readResource(s);
-        webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
+        IF endsWith(s, '.custom') THEN {
+            webClientLoadedResources(s) <- RAWFILE(s);
+            webClientLoadedResourcesOrder(s) <- onWebClientLoad(s);
+        } ELSE {
+            readResource(s);
+            webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
+            webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
+        }
     }
     LOCAL mainResources = JSON ();
     EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
