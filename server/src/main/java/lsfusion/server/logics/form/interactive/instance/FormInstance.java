@@ -1742,11 +1742,12 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private ImList<ComponentView> userActivateTabs = ListFact.EMPTY();
-    // программный activate tab
+    // programmatic activate tab
     public void activateTab(ComponentView view) throws SQLException, SQLHandledException {
-        setTabVisible(view.getContainer(), view);
-        
-        userActivateTabs = userActivateTabs.addList(view);
+        if (!(view instanceof ContainerView && ((ContainerView) view).getChildrenList().isEmpty())) {
+            setTabVisible(view.getContainer(), view);
+            userActivateTabs = userActivateTabs.addList(view);
+        }
     }
 
     private ImList<PropertyDrawInstance> userActivateProps = ListFact.EMPTY(); 
