@@ -1,7 +1,7 @@
 package lsfusion.server.physics.admin.drilldown.form;
 
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -17,16 +17,15 @@ public class ChangedDrillDownFormEntity extends DrillDownFormEntity<ClassPropert
     private PropertyDrawEntity newPropertyDraw;
     private PropertyDrawEntity oldPropertyDraw;
 
-    public ChangedDrillDownFormEntity(LocalizedString caption, ChangedProperty property, LogicsModule LM) {
+    public ChangedDrillDownFormEntity(LocalizedString caption, ChangedProperty property, BaseLogicsModule LM) {
         super(caption, property, LM);
     }
 
     @Override
     protected void setupDrillDownForm() {
-        Version version = LM.getVersion();
-        propertyDraw = addPropertyDraw(property, interfaceObjects, version);
-        newPropertyDraw = addPropertyDraw(property.property, interfaceObjects, version);
-        oldPropertyDraw = addPropertyDraw(property.property.getOld(PrevScope.DB), interfaceObjects, version);
+        propertyDraw = addPropertyDraw(property, interfaceObjects);
+        newPropertyDraw = addPropertyDraw(property.property, interfaceObjects);
+        oldPropertyDraw = addPropertyDraw(property.property.getOld(PrevScope.DB), interfaceObjects);
     }
 
     @Override

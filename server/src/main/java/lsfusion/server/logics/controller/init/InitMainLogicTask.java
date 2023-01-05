@@ -26,5 +26,6 @@ public class InitMainLogicTask extends GroupModuleTask {
 
     protected void runInnerTask(LogicsModule module) throws RecognitionException, FileNotFoundException {
         module.initMainLogic();
+        module.mainLogicsInitialized = true;
     }
 }

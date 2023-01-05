@@ -97,6 +97,7 @@ import lsfusion.server.logics.form.stat.struct.imports.plain.csv.ImportCSVAction
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.ImportDBFAction;
 import lsfusion.server.logics.form.stat.struct.imports.plain.table.ImportTableAction;
 import lsfusion.server.logics.form.stat.struct.imports.plain.xls.ImportXLSAction;
+import lsfusion.server.logics.form.struct.AutoFinalFormEntity;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
@@ -130,7 +131,7 @@ import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImpleme
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.ValueProperty;
-import lsfusion.server.physics.admin.drilldown.action.LazyAction;
+import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
 import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
@@ -175,6 +176,8 @@ public abstract class LogicsModule {
 
     public abstract void initMainLogic() throws RecognitionException;
 
+    public boolean mainLogicsInitialized;
+
     public abstract void initIndexes(DBManager dbManager) throws RecognitionException;
 
     public BaseLogicsModule baseLM;
@@ -190,12 +193,10 @@ public abstract class LogicsModule {
     protected final Map<String, ImplementTable> tables = new HashMap<>();
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
-    private final Set<FormEntity> unnamedForms = new HashSet<>();
+    protected Set<FormEntity> unnamedForms = new HashSet<>();
     private final Map<LP<?>, LocalPropertyData> locals = new HashMap<>();
 
-
-    protected final Map<LAP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
-    
+    protected Map<LAP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
 
     protected Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<>();
     
@@ -266,6 +267,7 @@ public abstract class LogicsModule {
     }
     
     protected void addModuleLAP(LAP<?, ?> lap) {
+        assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
         String name = null;
         assert getNamespace().equals(lap.getActionOrProperty().getNamespace());
         if (lap instanceof LA) {
@@ -285,7 +287,6 @@ public abstract class LogicsModule {
         moduleMap.get(name).add(lap);
     }
 
-    @NFLazy
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.getActionOrProperty().setCanonicalName(getNamespace(), name, signature, lp.listInterfaces);
         propClasses.put(lp, signature);
@@ -458,21 +459,6 @@ public abstract class LogicsModule {
         else
             table.markedExplicit = isExplicit;
         return table;
-    }
-
-    protected void markFull(ImplementTable table, ImList<ValueClass> listClasses, DBNamingPolicy namingPolicy) {
-        // создаем IS
-        PropertyRevImplement<?, Integer> mapProperty = IsClassProperty.getProperty(listClasses.toIndexedMap()); // тут конечно стремновато из кэша брать, так как остальные гарантируют создание
-        LP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
-//        addProperty(null, lcp);
-
-        // делаем public, persistent
-        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), listClasses.mapListValues(ValueClass::getResolveSet).toJavaList());
-        lcp.property.markStored(table);
-        lcp.property.initStored(baseLM.tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
-
-        // marking full
-        table.setFullField(lcp.property.field);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -712,7 +698,7 @@ public abstract class LogicsModule {
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, aliases, literals, exprs, where, orders, false, version);
-        addAutoFormEntity(form);
+        addAutoFormEntityNotFinalized(form);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
@@ -755,7 +741,7 @@ public abstract class LogicsModule {
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), aliases, literals, exprs, where, MapFact.EMPTYORDER(), attr, version);
-        addAutoFormEntity(form);
+        addAutoFormEntityNotFinalized(form);
         
         // create action
         return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasRoot, hasWhere, null);
@@ -1717,58 +1703,6 @@ public abstract class LogicsModule {
         return addAction(null, new LA(new AsyncUpdateEditValueAction(LocalizedString.create("Async Update"))));
     }
 
-    // ------------------- DRILLDOWN ----------------- //
-
-    public void setupDrillDownProperty(Property property, boolean isLightStart) {
-        if (property.supportsDrillDown()) {
-            LA<?> drillDownFormProperty = addLazyAProp(property); //isLightStart ? : addDDAProp(property);
-            Action formProperty = drillDownFormProperty.action;
-            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-            property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
-        }
-    }
-    
-    public LA addDrillDownAProp(LP<?> property) {
-        return addDDAProp(property);
-    }
-
-    public LA<?> addDDAProp(LP property) {
-        assert property.property.getReflectionOrderInterfaces().equals(property.listInterfaces);
-        if (property.property instanceof Property && property.property.supportsDrillDown())
-            return addDDAProp(property.property);
-        else 
-            throw new UnsupportedOperationException();
-    }
-
-    private String nameForDrillDownAction(Property property, List<ResolveClassSet> signature) {
-        assert property.isNamed();
-        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
-        String name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
-        signature.addAll(parser.getSignature());
-        return name;
-    }
-
-    public LA<?> addDDAProp(Property property) {
-        List<ResolveClassSet> signature = new ArrayList<>();
-        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this);
-        LA result = addMFAProp(baseLM.drillDownGroup, LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
-        if (property.isNamed()) {
-            String name = nameForDrillDownAction(property, signature);
-            makeActionPublic(result, name, signature);
-        }
-        return result;
-    }
-
-    public LA<?> addLazyAProp(Property property) {
-        LA result = addAProp(baseLM.drillDownGroup, new LazyAction(LocalizedString.create("{logics.property.drilldown.action}"), property));
-        if (property.isNamed()) {
-            List<ResolveClassSet> signature = new ArrayList<>();
-            String name = nameForDrillDownAction(property, signature);
-            makeActionPublic(result, name, signature);
-        }
-        return result;
-    }
-
     public SessionDataProperty getAddedObjectProperty() {
         return baseLM.getAddedObjectProperty();
     }
@@ -2352,18 +2286,21 @@ public abstract class LogicsModule {
         assert !namedForms.containsKey(form.getName());
         namedForms.put(form.getName(), form);
     }
-    @NFLazy
-    public boolean addAutoFormEntityNotFinalized(AutoFormEntity form) {
+    public boolean addAutoFormEntity(AutoFormEntity form) {
         assert !form.isNamed();
+        assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
         return unnamedForms.add(form);
     }
-    public void addAutoFormEntity(AutoFormEntity form) {
-        boolean added = addAutoFormEntityNotFinalized(form);
+    public void addAutoFormEntityNotFinalized(AutoFormEntity form) {
+        assert !formsFinalized;
+        addAutoFormEntity(form);
+    }
+    public void addAutoFormEntity(AutoFinalFormEntity form) {
+        boolean added = addAutoFormEntity((AutoFormEntity) form);
         if(formsFinalized && added) // last check is recursion guard
             form.finalizeAroundInit();
     }
     
-    @NFLazy
     private void addNavigatorElement(NavigatorElement element) {
         assert !navigatorElements.containsKey(element.getName());
         navigatorElements.put(element.getName(), element);

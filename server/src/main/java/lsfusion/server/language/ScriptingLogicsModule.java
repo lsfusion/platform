@@ -1261,7 +1261,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 //            if (Settings.get().isCheckClassWhere()) {
 //                checks.checkClassWhere((LP) property, name);
 //            }
-        makeLoggable(property, ps.isLoggable);
     }
 
     /** Проверяет нужно ли обернуть свойство в join.
@@ -1471,12 +1470,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setRegexp(regexp);
         if (regexpMessage != null) {
             property.setRegexpMessage(regexpMessage);
-        }
-    }
-
-    public void makeLoggable(LP property, boolean isLoggable) {
-        if (isLoggable && property != null) {
-            property.makeLoggable(this, BL.systemEventsLM);
         }
     }
 
@@ -2583,11 +2576,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<Type> paramTypes = getTypesForEvalAction(params, contextParams);
 
         return addScriptedJoinAProp(addAProp(new EvalAction(this, paramTypes, action)), BaseUtils.addList(property, params));
-    }
-
-    public LAWithParams addScriptedDrillDownAction(LPWithParams property) {
-        LA<?> res = addDrillDownAProp(property.getLP());
-        return new LAWithParams(res, property.usedParams);
     }
 
     public LAWithParams addScriptedChangePropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -4792,13 +4780,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         public TemporaryIndexInfo(ImOrderSet<String> keyNames, Object[] params) {
             this.keyNames = keyNames;
             this.params = params;
-        }
-    }
-
-    public void addScriptedLoggable(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        for (NamedPropertyUsage propUsage : propUsages) {
-            LP lp = findLPByPropertyUsage(propUsage);
-            lp.makeLoggable(this, BL.systemEventsLM);
         }
     }
 

@@ -13,7 +13,7 @@ public class EditFormEntity extends BaseClassFormEntity {
 
         object.groupTo.setViewTypePanel();
 
-        finalizeInit(LM.getVersion());
+        finalizeInit();
     }
 
     @Override

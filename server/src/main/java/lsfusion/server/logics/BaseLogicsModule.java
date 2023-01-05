@@ -26,6 +26,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.changed.IncrementType;
@@ -39,6 +40,10 @@ import lsfusion.server.logics.classes.data.time.IntervalClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
+import lsfusion.server.logics.classes.user.ObjectValueClassSet;
+import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveClassSet;
+import lsfusion.server.logics.classes.user.set.ResolveOrObjectClassSet;
 import lsfusion.server.logics.constraint.PropertyFormEntity;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
@@ -59,6 +64,7 @@ import lsfusion.server.logics.property.JoinProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
+import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.data.FormulaImplProperty;
 import lsfusion.server.logics.property.classes.data.NotFormulaProperty;
 import lsfusion.server.logics.property.classes.infer.AlgType;
@@ -68,13 +74,19 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.value.NullValueProperty;
+import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
+import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
+import lsfusion.server.physics.admin.log.form.LogFormEntity;
+import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.action.WatchAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.AbstractPropertyNameParser;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameParser;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 import lsfusion.server.physics.exec.db.table.TableFactory;
 import org.antlr.runtime.RecognitionException;
 
@@ -244,8 +256,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         super(null, BL, "/system/System.lsf");
         setBaseLogicsModule(this);
         this.BL = BL;
-        namedProperties = NFFact.simpleMap(namedProperties);
-        namedActions = NFFact.simpleMap(namedActions);
+
+        // all these collections are used in the lazy / cached elements creation mechanisms
+        namedProperties = NFFact.concurrentMap(namedProperties);
+        namedActions = NFFact.concurrentMap(namedActions);
+        propClasses = NFFact.concurrentMap(propClasses);
+        unnamedForms = SetFact.concurrentSet(unnamedForms);
     }
 
     // need to implement next methods this way, because they are used in super.initMainLogic, and can not be initialized before super.initMainLogic
@@ -1105,5 +1121,91 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
             assert prop != null;
             return prop.property;
         }).getSet().addExcl(getRequestCanceledProperty().property);
+    }
+
+    // ------------------- DRILLDOWN ----------------- //
+
+    public void setupDrillDownProperty(Property property, boolean isLightStart) {
+        if (property.supportsDrillDown()) {
+            LA<?> drillDownFormProperty = addAProp(baseLM.drillDownGroup, new LazyDrillDownAction(LocalizedString.create("{logics.property.drilldown.action}"), property));
+            if (property.isNamed()) {
+                List<ResolveClassSet> signature = new ArrayList<>();
+                String name = nameForDrillDownAction(property, signature);
+                makeActionPublic(drillDownFormProperty, name, signature);
+            }
+
+            Action formProperty = drillDownFormProperty.action;
+            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
+            property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
+        }
+    }
+
+    private String nameForDrillDownAction(Property property, List<ResolveClassSet> signature) {
+        assert property.isNamed();
+        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
+        String name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
+        signature.addAll(parser.getSignature());
+        return name;
+    }
+
+    public LA<?> addDDAProp(Property property) {
+        List<ResolveClassSet> signature = new ArrayList<>();
+        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this);
+        LA result = addMFAProp(baseLM.drillDownGroup, LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
+        if (property.isNamed()) {
+            String name = nameForDrillDownAction(property, signature);
+            makeActionPublic(result, name, signature);
+        }
+        return result;
+    }
+
+    protected void markFull(ImplementTable table, ImList<ValueClass> listClasses, DBNamingPolicy namingPolicy) {
+        // создаем IS
+        PropertyRevImplement<?, Integer> mapProperty = IsClassProperty.getProperty(listClasses.toIndexedMap()); // тут конечно стремновато из кэша брать, так как остальные гарантируют создание
+        LP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
+//        addProperty(null, lcp);
+
+        // делаем public, persistent
+        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), listClasses.mapListValues(ValueClass::getResolveSet).toJavaList());
+        lcp.property.markStored(table);
+        lcp.property.initStored(baseLM.tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
+
+        // marking full
+        table.setFullField(lcp.property.field);
+    }
+
+    public void markClassData(ImplementTable table, ImSet<ConcreteCustomClass> set, DBNamingPolicy namingPolicy) {
+        ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
+
+        CustomClass tableClass = (CustomClass) table.getMapFields().singleValue();
+        // помечаем full tables
+        assert tableClass.getUpSet().containsAll(classSet, false); // должны быть все классы по определению, исходя из логики раскладывания классов по таблицам
+        boolean isFull = classSet.containsAll(tableClass.getUpSet(), false);
+        if(isFull) // важно чтобы getInterfaceClasses дал тот же tableClass
+            classSet = tableClass.getUpSet();
+
+        ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.create(classSet.toString(), false), classSet);
+        LP<ClassPropertyInterface> lp = new LP<>(dataProperty);
+        addProperty(null, new LP<>(dataProperty));
+        makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
+        // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
+        dataProperty.markStored(table);
+        dataProperty.initStored(tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
+
+        // помечаем dataProperty
+        for(ConcreteCustomClass customClass : set)
+            customClass.dataProperty = dataProperty;
+        if(isFull) // неважно implicit или нет
+            table.setFullField(dataProperty);
+    }
+
+    public LA addLFAProp(LP lp, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
+        LP<?> logValueProperty = addLProp(systemEventsLM, lp, namingPolicy);
+        LP<?> logDropProperty = addLDropProp(systemEventsLM, lp, namingPolicy);
+        LP<?> logWhereProperty = addLWhereProp(logValueProperty, logDropProperty);
+
+        LogFormEntity logFormEntity = new LogFormEntity(LocalizedString.create("{logics.property.log.form}"), lp, logValueProperty, logWhereProperty, this, systemEventsLM.session);
+        systemEventsLM.addAutoFormEntity(logFormEntity);
+        return addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true);
     }
 }

@@ -10,7 +10,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.IncrementUnionProperty;
@@ -115,7 +115,7 @@ public class XorUnionProperty extends IncrementUnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return new XorUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.xor.union}"), this, LM
         );
     }

@@ -15,13 +15,11 @@ public class DialogFormEntity extends BaseClassFormEntity {
 
 //        LM.addObjectActions(this, object);
 
-        Version version = LM.getVersion();
-
-        setNFEditType(PropertyEditType.READONLY, version);
+        setNFEditType(PropertyEditType.READONLY);
 
         if (!cls.dialogReadOnly)
             LM.addFormActions(this, object, FormSessionScope.NEWSESSION);
 
-        finalizeInit(version);
+        finalizeInit();
     }
 }

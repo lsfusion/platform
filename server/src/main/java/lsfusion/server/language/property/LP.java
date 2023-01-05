@@ -18,6 +18,7 @@ import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.oraction.LAP;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -37,9 +38,7 @@ import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.log.form.LogFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 
 import java.math.BigDecimal;
@@ -213,32 +212,10 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         property.change(keys, env, value);
     }
 
-    public void makeLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM) {
-        setupLoggable(ownerModule, systemEventsLM, null);
-        property.setLoggable(true);
-    }
-
-    public void makeUserLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
-        setupLoggable(ownerModule, systemEventsLM, namingPolicy);
-        property.userLoggable = true;
-        property.setLoggable(true);
-    }
-
-    private void setupLoggable(LogicsModule ownerModule, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
-        if (property.getLogFormAction() == null) {
-            // assert that all LP/LA has the "same" listInterfaces
-            LP<?> logValueProperty = ownerModule.addLProp(systemEventsLM, this, namingPolicy);
-            LP<?> logDropProperty = ownerModule.addLDropProp(systemEventsLM, this, namingPolicy);
-            LP<?> logWhereProperty = ownerModule.addLWhereProp(logValueProperty, logDropProperty);
-            
-            LogFormEntity logFormEntity = new LogFormEntity(LocalizedString.create("{logics.property.log.form}"), this, logValueProperty, logWhereProperty, systemEventsLM);
-            systemEventsLM.addAutoFormEntity(logFormEntity);
-            LA<?> logFormAction = ownerModule.addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true);
-
-//            property.setLogValueProperty(logValueProperty.getImplement(listInterfaces));
-//            property.setLogWhereProperty(logWhereProperty.getImplement(listInterfaces));
-            property.setLogFormAction(logFormAction.getImplement(listInterfaces));
-        }
+    public void makeUserLoggable(BaseLogicsModule LM, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {
+        // assert that all LP/LA has the "same" listInterfaces
+        LA<?> logFormAction = LM.addLFAProp(this, systemEventsLM, namingPolicy);
+        property.setLogFormAction(logFormAction.getImplement(listInterfaces));
     }
 
     public <D extends PropertyInterface> void setWhenChange(LogicsModule lm, Event actionEvent, Object... params) {

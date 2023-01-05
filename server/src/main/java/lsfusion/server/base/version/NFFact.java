@@ -25,7 +25,7 @@ public class NFFact {
         return new NFSimpleOrderSetImpl<>(orderSet);
     }
 
-    public static <K, V> Map<K, V> simpleMap(Map<K, V> map) {
+    public static <K, V> Map<K, V> concurrentMap(Map<K, V> map) {
         return new ConcurrentHashMap<>(map);
     }
 

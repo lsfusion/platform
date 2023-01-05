@@ -294,7 +294,6 @@ statement
 		|	globalEventStatement
 		|	aspectStatement
 		|	tableStatement
-		|	loggableStatement
 		|	indexStatement
 		|	formStatement
 		|	designStatement
@@ -2739,7 +2738,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|   defaultCompareSetting [property]
 	|	autosetSetting [property]
 	|	regexpSetting [property]
-	|	loggableSetting [ps]
 	|	echoSymbolsSetting [property]
 	|	indexSetting [property]
 	|	setNotNullSetting [ps]
@@ -2791,10 +2789,6 @@ hintSettings [PropertySettings ps]
 
 tableSetting [PropertySettings ps]
 	:	'TABLE' tbl = compoundID { ps.table = $tbl.sid; }
-	;
-
-loggableSetting [PropertySettings ps]
-	:	'LOGGABLE'  { ps.isLoggable = true; }
 	;
 
 aggrSetting [LP property]
@@ -3217,7 +3211,6 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
-	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $action = $drillDownADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $action = $writeADB.action; }
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $action = $importFormADB.action; }
@@ -3939,15 +3932,6 @@ evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 	:	'EVAL' ('ACTION' { isAction = true; })? expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
 	;
 	
-drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
-@after {
-	if (inMainParseState()) {
-		$action = self.addScriptedDrillDownAction($expr.property);
-	}
-}
-	:	'DRILLDOWN' expr=propertyExpression[context, dynamic]
-	;	
-
 requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
@@ -4701,19 +4685,6 @@ tableStatement
 	}
 }
 	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
-
-////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////// LOGGABLE STATEMENT /////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-loggableStatement
-@after {
-	if (inMainParseState()) {
-		self.addScriptedLoggable($list.propUsages);
-	}	
-}
-	:	'LOGGABLE' list=nonEmptyPropertyUsageList ';'
-	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// INDEX STATEMENT /////////////////////////////

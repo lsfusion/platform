@@ -8,7 +8,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
 import lsfusion.interop.form.ModalityType;
@@ -53,7 +52,6 @@ import lsfusion.server.logics.form.stat.GroupObjectHierarchy;
 import lsfusion.server.logics.form.stat.StaticDataGenerator;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.*;
-import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
@@ -61,7 +59,6 @@ import lsfusion.server.logics.form.struct.order.OrderEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
@@ -748,15 +745,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return true;
     }
 
-    public ObjectEntity addSingleGroupObject(ValueClass baseClass, Version version, Object... groups) {
-        GroupObjectEntity groupObject = new GroupObjectEntity(genID(), (TreeGroupEntity) null);
-        ObjectEntity object = new ObjectEntity(genID(), baseClass, baseClass != null ? baseClass.getCaption() : LocalizedString.NONAME, baseClass == null);
-        groupObject.add(object);
-        addGroupObject(groupObject, version);
-
-        return object;
-    }
-
     public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, InsertType insertType, String sID, Version version, GroupObjectEntity... tGroups) {
         if (sID != null)
             treeGroup.setSID(sID);
@@ -804,31 +792,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         addGroupObject(group, null, null, version);
     }
 
-    public void addPropertyDraw(ObjectEntity object, Version version, Group group) {
-        addPropertyDraw(group, false, version, SetFact.singletonOrder(object));
-    }
-
-    protected void addPropertyDraw(Group group, boolean prev, Version version, ImOrderSet<ObjectEntity> objects) {
-        ImSet<ObjectEntity> objectsSet = objects.getSet();
-        ImFilterRevValueMap<ObjectEntity, ValueClassWrapper> mObjectToClass = objectsSet.mapFilterRevValues();
-        for(int i=0,size=objectsSet.size();i<size;i++) {
-            ObjectEntity object = objectsSet.get(i);
-            if (object.baseClass != null)
-                mObjectToClass.mapValue(i, new ValueClassWrapper(object.baseClass));
-        }
-        ImRevMap<ObjectEntity, ValueClassWrapper> objectToClass = mObjectToClass.immutableRevValue();
-        ImSet<ValueClassWrapper> valueClasses = objectToClass.valuesSet();
-
-        // here can be more precise heuristics than implemented in FormDataManager.getPrintTable (calculating expr and putting expr itself (not its values)  in a set)
-
-        ImOrderSet<ValueClassWrapper> orderInterfaces = objects.mapOrder(objectToClass);
-        for (ActionOrPropertyClassImplement implement : group.getActionOrProperties(valueClasses, version)) {
-            ImSet<ValueClassWrapper> wrappers = implement.mapping.valuesSet();
-            ImOrderSet<ObjectEntity> filterObjects = objects.filterOrderIncl(objectToClass.filterValuesRev(wrappers).keys());
-            addPropertyDraw(implement.createLP(orderInterfaces.filterOrderIncl(wrappers), prev), version, filterObjects);
-        }
-    }
-
     public static ImCol<ImSet<ValueClassWrapper>> getSubsets(ImSet<ValueClassWrapper> valueClasses) {
         if(valueClasses.size() == 1) // optimization
             return SetFact.singleton(valueClasses);
@@ -843,17 +806,8 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return classSubsets;
     }
 
-    public PropertyDrawEntity addPropertyDraw(LAP property, Version version, ObjectEntity object) {
-        return addPropertyDraw(property, version, SetFact.singletonOrder(object));
-    }
     public PropertyDrawEntity addPropertyDraw(LAP property, Version version) {
         return addPropertyDraw(property, version, SetFact.EMPTYORDER());
-    }
-
-    public void addPropertyDraw(LAP[] properties, Version version, ObjectEntity object) {
-        for (LAP property : properties) {
-            addPropertyDraw(property, version, object);
-        }
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, Version version, ImOrderSet<ObjectEntity> objects) {
@@ -897,12 +851,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return result;
     }
 
-    public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
-        ActionOrPropertyObjectEntity<I, ?> entity = ActionOrPropertyObjectEntity.create(property, mapping, null, null, null);
-        return addPropertyDraw(entity, null, entity.property.getReflectionOrderInterfaces(), false, version);
-    }
-
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath, 
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
                                                                                ImOrderSet<P> interfaces, boolean addFirst, Version version) {
         String propertySID = null;
         if (propertyImplement.property.isNamed()) 

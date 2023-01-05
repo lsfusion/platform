@@ -21,7 +21,8 @@ public class SerializableImageIconHolder implements Serializable {
     public void setImage(String imagePath) {
         for (ColorTheme colorTheme : ColorTheme.values()) {
             Result<String> fullPath = new Result<>();
-            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !colorTheme.isDefault(), false, fullPath, "images");
+            // multipleUsages true, because one imagePath is often used a lot of times
+            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !colorTheme.isDefault(), true, fullPath, "images");
             if(themedImageFile != null) {
                 themedImageFile.getID(); // to calculate the cache
                 images.put(colorTheme, themedImageFile);

@@ -2014,7 +2014,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return false;
     }
 
-    public DrillDownFormEntity getDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity getDrillDownForm(BaseLogicsModule LM) {
         DrillDownFormEntity drillDown = createDrillDownForm(LM);
         if (drillDown != null) {
             LM.addAutoFormEntity(drillDown);
@@ -2022,7 +2022,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return drillDown;
     }
 
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return null;
     }
 
@@ -2168,17 +2168,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return ListFact.singleton(this);
     }
 
-    public boolean userLoggable;
-    private boolean loggable;
-
     public ActionMapImplement<?, T> logFormAction;
 
-    public void setLoggable(boolean loggable) {
-        this.loggable = loggable;
-    }
-
     public boolean isLoggable() {
-        return loggable;
+        return logFormAction != null;
     }
 
     public void setLogFormAction(ActionMapImplement<?, T> logFormAction) {
