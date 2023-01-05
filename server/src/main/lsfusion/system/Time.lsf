@@ -23,7 +23,7 @@ currentHour = extractHour(currentTime());
 currentMinute = extractMinute(currentTime());
 currentSecond = extractSecond(currentTime());
 
-currentDate '{time.current.date}' = DATA DATE (); // actually it is a snapshot, but since it's okay to change it once a day, we'll make no difference between current and snapshot
+currentDate '{time.current.date}' = DATA DATE () PREREAD; // actually it is a snapshot, but since it's okay to change it once a day, we'll make no difference between current and snapshot
 currentDateTimeSnapshot '{logics.date.current.datetime.snapshot}' = DATA DATETIME ();
 currentZDateTimeSnapshot '{logics.date.current.datetime.snapshot}' = DATA ZDATETIME ();
 
