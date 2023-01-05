@@ -18,14 +18,6 @@ body .background-inherit {
     background-color: var(--bs-btn-hover-bg);
 }
 
-.table > :not(caption) > * > *.background-inherit,
-.table > :not(caption) > * > * .background-inherit
-{
-    background-color: var(--bs-table-bg);
-
-    box-shadow: inset 0 0 0 9999px var(--bs-table-accent-bg);
-}
-
 /* we need not transparent background, otherwise background-inherit won't work */
 .table {
     --bs-table-bg: var(--bs-body-bg);

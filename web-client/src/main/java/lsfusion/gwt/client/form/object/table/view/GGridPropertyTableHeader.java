@@ -118,6 +118,9 @@ public class GGridPropertyTableHeader extends Header<String> {
             th.addClassName("dataGridStickyHeader");
             th.addClassName("background-inherit");
         }
+        // Add background-inherit to the cell itself and not to the row, so as not to duplicate it.
+        // Because to fix the firefox bug with the lower border in the table header, the cell needs this class.
+        th.setClassName("background-inherit");
 
         PropertyPanelRenderer.setStyles(th, notNull, hasChangeAction);
     }
