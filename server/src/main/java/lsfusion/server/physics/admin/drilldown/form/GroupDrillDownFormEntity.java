@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MRevMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -33,14 +33,12 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
     private PropertyDrawEntity implPropertyDraw;
     private GroupObjectEntity detailsGroup;
 
-    public GroupDrillDownFormEntity(LocalizedString caption, GroupProperty<I> property, LogicsModule LM) {
+    public GroupDrillDownFormEntity(LocalizedString caption, GroupProperty<I> property, BaseLogicsModule LM) {
         super(caption, property, LM);
     }
 
     @Override
     protected void setupDrillDownForm() {
-        Version version = LM.getVersion();
-
         ImMap<I, GroupProperty.Interface<I>> byInnerInterfaces = BaseUtils.immutableCast(
                 property.getMapInterfaces().toRevMap(property.getReflectionOrderInterfaces()).filterFnValuesRev(element -> element instanceof PropertyInterface).reverse()
         );
@@ -64,13 +62,13 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 innerObject = new ObjectEntity(genID(), innerIntClass, LocalizedString.NONAME, innerIntClass == null);
                 detailsGroup.add(innerObject);
 
-                addValuePropertyDraw(LM, innerObject, version);
-                addPropertyDraw(innerObject, version, LM.getRecognizeGroup());
+                addValuePropertyDraw(LM, innerObject);
+                addPropertyDraw(innerObject, LM.getRecognizeGroup());
             }
 
             mInnerObjects.revAdd(innerInterface, innerObject);
         }
-        addGroupObject(detailsGroup, version);
+        addGroupObject(detailsGroup);
 
         ImRevMap<I, ObjectEntity> innerObjects = mInnerObjects.immutableRev();
         
@@ -81,9 +79,9 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 PropertyMapImplement<PropertyInterface, I> mapImplement = (PropertyMapImplement<PropertyInterface, I>) groupImplement;
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(innerObjects).mapping;
 
-                addFixedFilter(new FilterEntity(addPropertyObject(mapImplement.property, mapImplMapping)), version);
+                addFixedFilter(new FilterEntity(addPropertyObject(mapImplement.property, mapImplMapping)));
                 if (mapImplement.property.isDrillFull()) {
-                    addPropertyDraw(mapImplement.property, mapImplMapping, version);
+                    addPropertyDraw(mapImplement.property, mapImplMapping);
                 }
             }
         }
@@ -96,14 +94,14 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
 
             if (groupImplement instanceof PropertyMapImplement || !innerObjects.containsKey((I) groupImplement)) {
                 PropertyRevImplement filterProp = PropertyFact.createCompare(groupImplement, (PropertyInterface) groupInterface, Compare.EQUALS).mapRevImplement(MapFact.addRevExcl(innerObjects, groupInterface, interfaceObjects.get(groupInterface)));
-                addFixedFilter(new FilterEntity(addPropertyObject(filterProp)), version);
+                addFixedFilter(new FilterEntity(addPropertyObject(filterProp)));
 
                 if(groupImplement instanceof PropertyMapImplement) {
                     PropertyMapImplement<PropertyInterface, I> mapImplement = (PropertyMapImplement<PropertyInterface, I>) groupImplement;
                     ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(innerObjects).mapping;
                     if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasChild(mapImplement.property)) {
                         if (mapImplement.property.isDrillFull()) {
-                            addPropertyDraw(mapImplement.property, mapImplMapping, version);
+                            addPropertyDraw(mapImplement.property, mapImplMapping);
                         }
                     }
                 }
@@ -126,10 +124,10 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 orderEntity = innerObjects.get(innerInterface);
             }
 
-            addFixedOrder(orderEntity, asc != null && asc, version);
+            addFixedOrder(orderEntity, asc != null && asc);
         }
 
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
     }
 
     @Override

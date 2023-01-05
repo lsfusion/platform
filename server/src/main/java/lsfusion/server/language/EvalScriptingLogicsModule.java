@@ -62,7 +62,6 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
         emitEvalError("ON statement");
     }
 
-    @Override
     public void addScriptedLoggable(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("LOGGABLE statement");
     }
@@ -113,9 +112,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     @Override
     public <K extends PropertyInterface> void addSettingsToProperty(LP<K> property, String name, LocalizedString caption, List<TypedParameter> params,
                                       List<ResolveClassSet> signature, PropertySettings ps) throws ScriptingErrorLog.SemanticErrorException {
-        if (ps.isLoggable) {
-            emitEvalError("LOGGABLE property option");
-        } else if (ps.isPersistent) {
+        if (ps.isPersistent) {
             emitEvalError("MATERIALIZED property option");
         } else if (ps.table != null) {
             emitEvalError("TABLE property option");

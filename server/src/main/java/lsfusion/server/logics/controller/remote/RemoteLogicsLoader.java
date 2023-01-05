@@ -5,8 +5,11 @@ import lsfusion.interop.logics.remote.RemoteLogicsLoaderInterface;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.controller.remote.RmiManager;
+import lsfusion.server.base.task.PublicTask;
+import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import org.apache.log4j.Logger;
@@ -59,6 +62,12 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
         return dbManager.createSession();
     }
 
+    private PublicTask initTask;
+
+    public void setInitTask(PublicTask initTask) {
+        this.initTask = initTask;
+    }
+
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(remoteLogics, "remoteLogics must be specified");
@@ -68,13 +77,26 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     @Override
     protected void onStarted(LifecycleEvent event) {
 
-        try(DataSession session = createSession()) {
-            logger.info("Executing onStarted action");
-            remoteLogics.businessLogics.systemEventsLM.onStarted.execute(session, getStack());
-            apply(session);
+        boolean lightStart = SystemProperties.lightStart;
+        if(lightStart)
+            exportRmiObject();
+
+        // before executeOnStarted to initialize debugger
+        try {
+            new TaskRunner(getBusinessLogics()).runTask(initTask, logger);
         } catch (Exception e) {
-            throw new RuntimeException("Error executing onStarted: ", e);
+            throw new RuntimeException("Error starting ReflectionManager: ", e);
         }
+
+        executeOnStarted();
+
+        if(!lightStart)
+            exportRmiObject();
+
+        started = true;
+    }
+
+    private void exportRmiObject() {
         logger.info("Exporting RMI Logics object (port: " + rmiManager.getPort() + ")");
         try {
             rmiManager.export(remoteLogics);
@@ -84,7 +106,16 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
         } catch (Exception e) {
             throw new RuntimeException("Error binding Remote Logics Loader: ", e);
         }
-        started = true;
+    }
+
+    private void executeOnStarted() {
+        try(DataSession session = createSession()) {
+            logger.info("Executing onStarted action");
+            remoteLogics.businessLogics.systemEventsLM.onStarted.execute(session, getStack());
+            apply(session);
+        } catch (Exception e) {
+            throw new RuntimeException("Error executing onStarted: ", e);
+        }
     }
 
     @Override

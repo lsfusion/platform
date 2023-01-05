@@ -609,6 +609,14 @@
         <property name="logicsInstance" ref="logicsInstance"/>
         <property name="dependencies">
             <set>
+            </set>
+        </property>
+    </bean>
+
+    <!-- Самый верхний task -->
+    <bean id="initBLTask" class="lsfusion.server.base.task.GroupTask">
+        <property name="dependencies">
+            <set>
                 <ref bean="checkAbstractTask"/>
                 <ref bean="initClassAggrPropsTask"/>
                 <ref bean="getSessionPropertyListTask"/>
@@ -623,15 +631,14 @@
         </property>
     </bean>
 
-    <!-- Самый верхний task -->
-    <bean id="initBLTask" class="lsfusion.server.base.task.GroupTask">
+    <bean id="initRLTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
                 <ref bean="initDebugTask"/>
             </set>
         </property>
     </bean>
-    
+
     <!-- Задачи инициализации reflection manager'а -->
 
     <bean id="syncTablesTask" class="lsfusion.server.physics.admin.reflection.controller.init.SyncTablesTask">
@@ -838,6 +845,7 @@
         <property name="rmiManager" ref="rmiManager"/>
         <property name="dbManager" ref="dbManager"/>
         <property name="remoteLogics" ref="remoteLogics"/>
+        <property name="initTask" ref="initRLTask"/>
     </bean>
 
     <!-- Other services -->

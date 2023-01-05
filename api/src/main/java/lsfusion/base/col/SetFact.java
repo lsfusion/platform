@@ -15,10 +15,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.lambda.set.FunctionSet;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.IntFunction;
 
 public class SetFact {
@@ -405,6 +402,10 @@ public class SetFact {
         for(int i=0,size=set.size();i<size;i++)
             result.add(set.get(i));
         return result;
+    }
+
+    public static <K> Set<K> concurrentSet(Set<K> map) {
+        return Collections.synchronizedSet(map); // concurrent hash set would be better
     }
 
     // remove при необходимости получения mutable интерфейсов

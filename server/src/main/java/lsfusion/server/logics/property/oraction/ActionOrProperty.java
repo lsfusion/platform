@@ -314,83 +314,22 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public ImOrderSet<ActionOrProperty> getActionOrProperties() {
         return SetFact.singletonOrder(this);
     }
-    
-    public static void cleanPropCaches() {
-        hashProps.clear();
-    }
 
-    private static class CacheEntry {
-        private final ActionOrProperty property;
-        private final ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses;
-
-        private ImList<ActionOrPropertyClassImplement> result;
-        
-        public CacheEntry(ActionOrProperty property, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
-            this.property = property;
-            this.mapClasses = mapClasses;
-        }
-
-        public ImRevMap<ValueClassWrapper, ValueClassWrapper> map(CacheEntry entry) {
-            if(!(mapClasses.size() == entry.mapClasses.size() && BaseUtils.hashEquals(property, entry.property)))
-                return null;
-
-            MRevMap<ValueClassWrapper, ValueClassWrapper> mResult = MapFact.mRevMap();
-            for(int i=0,size=mapClasses.size();i<size;i++) {
-                ImSet<ValueClassWrapper> wrappers = mapClasses.getValue(i);
-                ImSet<ValueClassWrapper> entryWrappers = entry.mapClasses.get(mapClasses.getKey(i));
-                if(entryWrappers == null || wrappers.size() != entryWrappers.size())
-                    return null;
-                for(int j=0,sizeJ=wrappers.size();j<sizeJ;j++)
-                    mResult.revAdd(wrappers.get(j), entryWrappers.get(j));
-            }
-            return mResult.immutableRev();
-        }
-        
-        public int hash() {
-            int result = 0;
-            for(int i=0,size=mapClasses.size();i<size;i++) {
-                result += mapClasses.getKey(i).hashCode() ^ mapClasses.getValue(i).size();
-            }
-            
-            return 31 * result + property.hashCode();
-        }
-    }    
-    final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
-
-    protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
+    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
         if(valueClasses.size() == 1) { // optimization primarily for DrillDown
             if(interfaces.size() == 1 && isInValueClassInterface(getOrderInterfaces(), valueClasses.toOrderSet()))
                 return ListFact.singleton(createClassImplement(valueClasses.toOrderSet(), SetFact.singletonOrder(interfaces.single())));
             return ListFact.EMPTY();
         }
 
-        CacheEntry entry = new CacheEntry(this, mapClasses); // кэширование
-        int hash = entry.hash();
-        MAddCol<CacheEntry> col = hashProps.get(hash);
-        if(col == null) {
-            col = ListFact.mAddCol();
-            hashProps.put(hash, col);                    
-        } else {
-            synchronized (col) {
-                for (CacheEntry cachedEntry : col.it()) {
-                    final ImRevMap<ValueClassWrapper, ValueClassWrapper> map = cachedEntry.map(entry);
-                    if (map != null) {
-                        return cachedEntry.result.mapListValues((ActionOrPropertyClassImplement value) -> value.map(map));
-                    }
-                }
-            }
-        }
-        
-        ImList<ActionOrPropertyClassImplement> result = getActionOrProperties(FormEntity.getSubsets(valueClasses));
-        
-        entry.result = result;
-        synchronized (col) {
-            col.add(entry);
-        }
-        
-        return result;
+        return super.getActionOrProperties(valueClasses, mapClasses);
     }
-    
+
+    @Override
+    public ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
+        return getActionOrProperties(FormEntity.getSubsets(valueClasses));
+    }
+
     private ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImCol<ImSet<ValueClassWrapper>> classLists) {
         MList<ActionOrPropertyClassImplement> mResultList = ListFact.mList();
         for (ImSet<ValueClassWrapper> classes : classLists) {

@@ -162,10 +162,10 @@ public class Group extends AbstractNode {
     }
 
     @Override
-    protected ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses, Version version) {
+    public ImList<ActionOrPropertyClassImplement> calcActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
         MList<ActionOrPropertyClassImplement> mResult = ListFact.mList();
-        for (AbstractNode child : getNFChildrenListIt(version)) {
-            mResult.addAll(child.getActionOrProperties(valueClasses, mapClasses, version));
+        for (AbstractNode child : getChildrenListIt()) {
+            mResult.addAll(child.getActionOrProperties(valueClasses, mapClasses));
         }
         return mResult.immutableList();
     }
@@ -202,11 +202,4 @@ public class Group extends AbstractNode {
         return canonicalName != null;
     }
 
-    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> classLists, Version version) {
-        return getActionOrProperties(classLists, classLists.group(key -> key.valueClass), version);
-    }
-
-    public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ValueClass valueClass, Version version) {
-        return getActionOrProperties(valueClass != null ? SetFact.singleton(new ValueClassWrapper(valueClass)) : SetFact.EMPTY(), version);
-    }
 }
