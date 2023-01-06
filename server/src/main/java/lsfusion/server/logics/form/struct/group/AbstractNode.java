@@ -9,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.add.MAddCol;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.mutability.ImmutableObject;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
@@ -87,6 +88,7 @@ public abstract class AbstractNode extends ImmutableObject {
     }
     final static LRUSVSMap<Integer, MAddCol<CacheEntry>> hashProps = new LRUSVSMap<>(LRUUtil.G2);
 
+    @ManualLazy
     public ImList<ActionOrPropertyClassImplement> getActionOrProperties(ImSet<ValueClassWrapper> valueClasses, ImMap<ValueClass, ImSet<ValueClassWrapper>> mapClasses) {
         CacheEntry entry = new CacheEntry(this, mapClasses); // кэширование
         int hash = entry.hash();

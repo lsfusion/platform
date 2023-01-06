@@ -11,6 +11,7 @@ import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MOrderSet;
 import lsfusion.server.base.caches.IdentityStartLazy;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -89,6 +90,8 @@ public class Group extends AbstractNode {
         }
         children.add(prop, version);
         prop.setParent(this, version);
+        if(isSimple)
+            cleanParentActionOrPropertiesCaches();
     }
 
     @IdentityStartLazy
@@ -127,12 +130,34 @@ public class Group extends AbstractNode {
         return false;
     }
 
+    public void cleanAllActionOrPropertiesCaches() {
+        actionOrProperties = null;
+
+        for (AbstractNode child : getChildrenListIt())
+            if(child instanceof Group)
+                ((Group) child).cleanAllActionOrPropertiesCaches();
+    }
+    public void cleanParentActionOrPropertiesCaches() {
+        actionOrProperties = null;
+
+        Group parent = getParent();
+        if(parent != null)
+            parent.cleanParentActionOrPropertiesCaches();
+    }
+
+    private ImOrderSet<ActionOrProperty> actionOrProperties;
+
+    @ManualLazy
     public ImOrderSet<ActionOrProperty> getActionOrProperties() {
-        MOrderSet<ActionOrProperty> result = SetFact.mOrderSet();
-        for (AbstractNode child : getChildrenListIt()) {
-            result.addAll(child.getActionOrProperties());
+        if (actionOrProperties == null) {
+            MOrderSet<ActionOrProperty> mResult = SetFact.mOrderSet();
+            for (AbstractNode child : getChildrenListIt()) {
+                mResult.addAll(child.getActionOrProperties());
+            }
+            actionOrProperties = mResult.immutableOrder();
         }
-        return result.immutableOrder();
+
+        return actionOrProperties;
     }
     
     public ImList<Group> getParentGroups() {

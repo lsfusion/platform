@@ -6,6 +6,7 @@ public class FinalizeFormsTask extends GroupFormsTask {
 
     protected boolean prerun() {
         getBL().markFormsForFinalization();
+        getBL().getCheckConstrainedProperties(); // to avoid the concurrent calculation
         return true;
     }
 
