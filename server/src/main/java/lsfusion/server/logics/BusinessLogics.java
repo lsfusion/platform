@@ -19,11 +19,8 @@ import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.base.caches.CacheStats;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.base.caches.CacheStats.CacheType;
-import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.caches.IdentityStartLazy;
-import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleAdapter;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -281,6 +278,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         startLruCache = null;
         MapCacheAspect.cleanClassCaches();
         AbstractNode.cleanPropCaches();
+        cleanPropCaches();
 
         startLogger.info("Obsolete caches were successfully cleaned");
     }
@@ -547,7 +545,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         LM.getRootGroup().finalizeAroundInit();
     }
 
-    @IdentityStartLazy
+    public void cleanPropCaches() {
+        LM.getRootGroup().cleanAllActionOrPropertiesCaches();
+    }
+
+    // the problem is in the changeChildrenToSimple method, when some props are added to that groups during the runtime
+    // actually most of the getOrderActionOrProperties calls filter action / props immediately, so the caching can be more sophisticated
+    // but right now we just do pretty simple memoization with the manual update
     public ImOrderSet<ActionOrProperty> getOrderActionOrProperties() {
         return LM.getRootGroup().getActionOrProperties();
     }
