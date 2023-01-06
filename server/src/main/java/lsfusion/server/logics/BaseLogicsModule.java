@@ -1205,7 +1205,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         LP<?> logWhereProperty = addLWhereProp(logValueProperty, logDropProperty);
 
         LogFormEntity logFormEntity = new LogFormEntity(LocalizedString.create("{logics.property.log.form}"), lp, logValueProperty, logWhereProperty, this, systemEventsLM.session);
-        systemEventsLM.addAutoFormEntity(logFormEntity);
+        addAutoFormEntity(logFormEntity);
         return addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true);
     }
 }

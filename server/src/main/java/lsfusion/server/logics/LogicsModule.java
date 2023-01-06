@@ -1597,7 +1597,7 @@ public abstract class LogicsModule {
         StoredDataProperty data = new StoredDataProperty(LocalizedString.create("{logics.log}" + " " + lp.property), where.getInterfaceClasses(ClassType.logPolicy), value.property.getValueClass(ClassType.logPolicy));
         LP log = addProperty(null, new LP<>(data));
 
-        log.setWhenChange(systemEventsLM, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
+        log.setWhenChange(this, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
 
         makePropertyPublic(log, name, signature);
         markLoggableStored(log, namingPolicy);
