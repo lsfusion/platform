@@ -118,6 +118,13 @@
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
 
+@supports (-moz-appearance: none) {
+    /*Fixes missing line under header */
+    .dataGridHeaderRow{
+        outline: var(--table-outline-width) solid var(--bs-table-border-color);
+    }
+}
+
 /* 'border-collapse: collapse' + sticky header/footer make header/footer borders disappear 
  In fact it looks as if border became transparent. As outline is being drawn outside border, we still see empty line 
  between header/footer and outline. So we need to hide these borders */
@@ -167,10 +174,5 @@
     Firefox bug is active more than 11 years https://bugzilla.mozilla.org/show_bug.cgi?id=688556*/
     .table > :not(caption) > * > * {
         background-clip: padding-box;
-    }
-
-    /*Fixes missing line under header */
-    .dataGridHeaderRow{
-        outline: var(--table-outline-width) solid var(--bs-table-border-color);
     }
 }
