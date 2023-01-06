@@ -175,6 +175,13 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
             assert isTagInput();
+            if(property.isEditableNotNull()) {
+                if (innerText.isEmpty()) {
+                    inputElement.addClassName("is-invalid");
+                } else {
+                    inputElement.removeClassName("is-invalid");
+                }
+            }
             SimpleTextBasedCellEditor.setInputValue(inputElement.cast(), innerText);
             return false;
         }

@@ -31,3 +31,18 @@
 .property-not-null::after {
     border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
 }
+
+.nullValueString.requiredValueString {
+    /*color: var(--required-value-string-color);*/
+    position: relative;
+}
+.nullValueString.requiredValueString::before { /* using ::before to do not conflict with triangles  */
+    content: "";
+    background: var(--not-null-line-color);
+    height: 1px;
+    bottom: 2px;
+    right:0;
+    left:0;
+    margin: 0 0.3125rem;
+    position:absolute;
+}
