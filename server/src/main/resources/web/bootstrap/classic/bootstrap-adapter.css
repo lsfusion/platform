@@ -111,13 +111,11 @@
     background-color: var(--component-hover-background-color-rgba);
 }
 
-
 /* --- workaround for disappearing sticky cell borders when scrolling --- */
 .scrolled-down:not(.table-borderless) .dataGridHeaderRow,
 .scrolled-up:not(.table-borderless) .dataGridFooterRow,
 .table:not(.table-borderless) .dataGridFooter:not(.empty-footer) .dataGridFooterRow {
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
-    background-color: var(--bs-body-bg) !important;/*this is because when scrolling table with header, firefox leaves a small space between the bottom border of the header and the header itself with a transparent background, and the row data is visible through the header*/
 }
 
 /* 'border-collapse: collapse' + sticky header/footer make header/footer borders disappear 
@@ -164,11 +162,15 @@
 }
 /* --- --- */
 
-
-/*This is because in firefox, table cells lose their bottom border because they are hidden by the background.
-    Firefox bug is active more than 11 years https://bugzilla.mozilla.org/show_bug.cgi?id=688556*/
 @supports (-moz-appearance: none) {
+    /*This is because in firefox, table cells lose their bottom border because they are hidden by the background.
+    Firefox bug is active more than 11 years https://bugzilla.mozilla.org/show_bug.cgi?id=688556*/
     .table > :not(caption) > * > * {
         background-clip: padding-box;
+    }
+
+    /*Fixes missing line under header */
+    .dataGridHeaderRow{
+        outline: var(--table-outline-width) solid var(--bs-table-border-color);
     }
 }
