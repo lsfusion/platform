@@ -52,10 +52,10 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
 
     @Override
     public void renderAndUpdateDom(TableCellElement th) {
-        if (sticky) {
+        if (sticky)
             th.addClassName("dataGridStickyFooter");
-            th.addClassName("background-inherit");
-        }
+
+        th.addClassName("background-inherit");
         
         GPropertyTableBuilder.renderAndUpdate(property, th, this, this);
         prevValue = value;
