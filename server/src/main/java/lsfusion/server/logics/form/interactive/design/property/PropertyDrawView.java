@@ -13,8 +13,8 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
@@ -37,7 +37,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
@@ -258,8 +257,25 @@ public class PropertyDrawView extends BaseComponentView {
         return notNull || entity.isNotNull();
     }
 
-    public boolean isSticky(FormEntity formEntity) {
-        return entity.sticky != null ? entity.sticky : sticky != null ? sticky : isProperty() && entity.getPropertyObjectEntity().isValueUnique(entity.getToDraw(formEntity));
+    public boolean isSticky(FormEntity formEntity, BaseLogicsModule LM) {
+        if (entity.sticky != null)
+            return entity.sticky;
+
+        if (sticky != null)
+            return sticky;
+
+        if(!isProperty())
+            return false;
+
+        PropertyObjectEntity<?> property = entity.getPropertyObjectEntity();
+
+        if(property.isValueUnique(entity.getToDraw(formEntity)))
+            return true;
+
+        if(LM.isRecognize(property.property))
+            return true;
+
+        return false;
     }
 
     public Boolean getSync() {
@@ -518,7 +534,7 @@ public class PropertyDrawView extends BaseComponentView {
         }
 
         outStream.writeBoolean(isNotNull());
-        outStream.writeBoolean(isSticky(pool.context.view.entity));
+        outStream.writeBoolean(isSticky(pool.context.view.entity, pool.context.BL.LM));
         outStream.writeBoolean(entity.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null);
     }
 

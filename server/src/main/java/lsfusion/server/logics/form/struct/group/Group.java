@@ -113,12 +113,7 @@ public class Group extends AbstractNode {
     }
 
     public boolean hasChild(ActionOrProperty prop) {
-        for (AbstractNode child : getChildrenIt()) {
-            if (child.hasChild(prop)) {
-                return true;
-            }
-        }
-        return false;
+        return getActionOrProperties().contains(prop);
     }
 
     public boolean hasNFChild(ActionOrProperty prop, Version version) {

@@ -2428,6 +2428,10 @@ public abstract class LogicsModule {
         return baseLM.recognizeGroup;
     }
 
+    public boolean isRecognize(ActionOrProperty property) {
+        return getRecognizeGroup().hasChild(property);
+    }
+
     public static class LocalPropertyData {
         public String name;
         public List<ResolveClassSet> signature;
