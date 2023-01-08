@@ -72,7 +72,7 @@ public class JoinDrillDownFormEntity<I extends PropertyInterface> extends DrillD
                         PropertyMapImplement<PropertyInterface, JoinProperty.Interface> mapImplement = (PropertyMapImplement<PropertyInterface, JoinProperty.Interface>) intImpl;
                         ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
                         //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                        if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasChild(mapImplement.property)) {
+                        if (mapImplMapping.size() != 1 || isNotRecognize(mapImplement)) {
                             if (mapImplement.property.isDrillFull()) {
                                 detailsProperties.add(addPropertyDraw(mapImplement.property, mapImplMapping));
                             }

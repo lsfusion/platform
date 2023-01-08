@@ -99,7 +99,7 @@ public class GroupDrillDownFormEntity<I extends PropertyInterface> extends Drill
                 if(groupImplement instanceof PropertyMapImplement) {
                     PropertyMapImplement<PropertyInterface, I> mapImplement = (PropertyMapImplement<PropertyInterface, I>) groupImplement;
                     ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(innerObjects).mapping;
-                    if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasChild(mapImplement.property)) {
+                    if (mapImplMapping.size() != 1 || isNotRecognize(mapImplement)) {
                         if (mapImplement.property.isDrillFull()) {
                             addPropertyDraw(mapImplement.property, mapImplMapping);
                         }
