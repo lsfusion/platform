@@ -28,9 +28,15 @@
 }
 
 /* this 2 classes are not used for now (see usages) */
-.dataGridColumnRow {
-    /* does exactly what we need, used in layout, but not visible*/
-    visibility: collapse;
+
+/*Only used in firefox to make the to top / to bottom buttons visible.
+ Because these buttons are drawn in the header / footer buttons are not visible when using "visibility: collapse" and "tr" has zero height.
+*/
+@supports (not (-moz-appearance: none)) {
+    .dataGridColumnRow {
+        /* does exactly what we need, used in layout, but not visible*/
+        visibility: collapse;
+    }
 }
 .dataGridColumnRowPrefCell {
     /* we have to drop up and down borders, because otherwise in chrome there will be the problem with the visibility collapse (1px will remain creating a whole)*/
