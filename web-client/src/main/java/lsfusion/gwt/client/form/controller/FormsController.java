@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.findInList;
+import static lsfusion.gwt.client.form.event.GKeyStroke.isTabEvent;
 
 public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
@@ -174,6 +175,7 @@ public abstract class FormsController {
         Boolean ctrlKey = eventGetCtrlKey(event);
         Boolean shiftKey = eventGetShiftKey(event);
         Boolean altKey = eventGetAltKey(event);
+        boolean tab = isTabEvent(event);
         if(ctrlKey != null) {
             boolean onlyCtrl = ctrlKey && (shiftKey == null || !shiftKey) && (altKey == null || !altKey);
             pressedCtrl = onlyCtrl;
@@ -183,7 +185,7 @@ public abstract class FormsController {
                 removeForceEditMode();
         }
         if(shiftKey != null) {
-            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey);
+            boolean onlyShift = shiftKey && (ctrlKey == null || !ctrlKey) && (altKey == null || !altKey) && !tab;
             pressedShift = onlyShift;
             if (onlyShift && !isDialogMode())
                 setForceEditMode(EditMode.DIALOG);

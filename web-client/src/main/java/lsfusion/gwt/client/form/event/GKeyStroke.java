@@ -147,6 +147,10 @@ public class GKeyStroke implements Serializable {
         return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_ESCAPE;
     }
 
+    public static boolean isTabEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_TAB;
+    }
+
     public static boolean isEditObjectEvent(Event event, boolean hasEditObjectAction, boolean hasChangeAction) {
         return hasEditObjectAction && (KEYDOWN.equals(event.getType()) && event.getKeyCode() == KEY_F9
                 || (!hasChangeAction && GMouseStroke.isDblClickEvent(event))

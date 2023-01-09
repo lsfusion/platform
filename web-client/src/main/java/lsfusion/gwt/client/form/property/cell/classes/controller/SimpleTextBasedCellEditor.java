@@ -89,6 +89,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     protected void onInputReady(Element parent, Object oldValue) {
     }
 
+    private boolean started;
+
     @Override
     public void start(EventHandler handler, Element parent, Object oldValue) {
 
@@ -97,6 +99,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             commitFinish(parent, oldValue, dialogInputActionIndex, CommitReason.FORCED);
             return;
         }
+        started = true;
 
         boolean allSuggestions = true;
         if(inputElement == null) {
@@ -146,18 +149,21 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
     @Override
     public void stop(Element parent, boolean cancel, boolean blurred) {
-        if(hasList) {
-            suggestBox.hideSuggestions();
-            suggestBox = null;
+        if (started) {
+            if (hasList) {
+                suggestBox.hideSuggestions();
+                suggestBox = null;
+            }
+
+            if (isRenderInputElement(parent)) {
+                parent.removeClassName("property-hide-toolbar");
+
+                setInputValue(parent, oldStringValue);
+            }
+
+            inputElement = null;
+            started = false;
         }
-
-        if(isRenderInputElement(parent)) {
-            parent.removeClassName("property-hide-toolbar");
-
-            setInputValue(parent, oldStringValue);
-        }
-
-        inputElement = null;
     }
 
     protected void setInputValue(Element parent, String value) {
