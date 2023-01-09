@@ -26,7 +26,7 @@ public class GToolbarNavigatorView extends GNavigatorView {
 
         boolean vertical = window.isVertical();
         main = new ResizableComplexPanel();
-        main.addStyleName("navbar");
+        main.addStyleName("navbar p-0");
 
         panel = new ResizableComplexPanel();
         panel.addStyleName("navbar-nav");

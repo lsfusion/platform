@@ -685,12 +685,12 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         baseWindows.system.elementClass = "navbar-expand bg-dark navbar-dark d-flex align-items-stretch";
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
-        baseWindows.toolbar.elementClass = "navbar-text";
+        baseWindows.toolbar.elementClass += " navbar-text";
 
         baseWindows.tree = (NavigatorWindow) findWindow("tree");
 
         baseWindows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
-        baseWindows.forms.elementClass = "bg-white";
+        baseWindows.forms.elementClass = "bg-light";
 
         baseWindows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
 
