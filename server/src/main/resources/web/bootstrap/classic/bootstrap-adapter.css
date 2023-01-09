@@ -103,12 +103,8 @@
     line-height: inherit;
 }
 
-.property-toolbar-item {
-    margin: 0.25rem;
-}
-
 .table .property-toolbar-item.background-inherit:hover {
-    background-color: var(--component-hover-background-color-rgba);
+    background-color: var(--component-hover-background-color);
 }
 
 /* --- workaround for disappearing sticky cell borders when scrolling --- */
