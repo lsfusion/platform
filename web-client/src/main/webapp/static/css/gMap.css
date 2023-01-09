@@ -98,7 +98,7 @@
 
 :root {
     /*override in StyleDefaults init*/
-    --focused-cell-background-color: var(--focused-cell-background-color);
+    --focused-cell-background-color: var(--selection-color-rgba);
 }
 
 .marker-background-focused {
