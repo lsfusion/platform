@@ -690,7 +690,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         baseWindows.tree = (NavigatorWindow) findWindow("tree");
 
         baseWindows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
-        baseWindows.forms.elementClass = null;
+        baseWindows.forms.elementClass = "bg-white";
 
         baseWindows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
 

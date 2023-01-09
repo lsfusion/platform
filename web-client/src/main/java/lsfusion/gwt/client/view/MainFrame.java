@@ -119,7 +119,7 @@ public class MainFrame implements EntryPoint {
     public void onModuleLoad() {
         hackForGwtDnd();
 
-        RootPanel.getBodyElement().addClassName("bg-white");
+        RootPanel.getBodyElement().addClassName("bg-light");
         GwtClientUtils.setZeroZIndex(RootLayoutPanel.get().getElement());
 
         GWT.setUncaughtExceptionHandler(t -> {
