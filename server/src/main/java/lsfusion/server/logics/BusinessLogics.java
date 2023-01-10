@@ -2145,7 +2145,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
         SynchronizeSourcesWatcher sourcesWatcher = new SynchronizeSourcesWatcher();
-        return scheduler.createSystemTask(stack -> sourcesWatcher.watch("lsf"),
+        return scheduler.createSystemTask(stack -> sourcesWatcher.watch("lsf", ""),
                 true, null, false, "Synchronizing resources from sources to build. Only for debug");
     }
 
