@@ -15,34 +15,35 @@ import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.view.MainFrame;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static com.google.gwt.user.client.ui.DockLayoutPanel.Direction.*;
+import static lsfusion.gwt.client.base.resize.ResizeHandler.checkResizeEvent;
+
 public class CustomSplitLayoutPanel extends DockLayoutPanel {
     private ScheduledCommand layoutCommand;
     
+    private ResizeHelper hResizeHelper;
+    private ResizeHelper vResizeHelper;
+    private List<Widget> hChildren = new ArrayList<>();
+    private List<Widget> vChildren = new ArrayList<>();
+
     public CustomSplitLayoutPanel() {
         super(Unit.PX);
-    }
 
-    @Override
-    public void insertNorth(Widget widget, double size, Widget before) {
-        super.insertNorth(widget, size, before);
+        hResizeHelper = createResizeHelper(false);
+        vResizeHelper = createResizeHelper(true);
+
+        addHandler(event -> onMouseEvent(event), MouseDownEvent.getType());
+        addHandler(event -> onMouseEvent(event), MouseMoveEvent.getType());
+        DataGrid.initSinkMouseEvents(this);
     }
 
     @Override
     protected void insert(Widget widget, Direction direction, double size, Widget before) {
         super.insert(widget, direction, size, before);
-
-        boolean vertical = direction == Direction.NORTH || direction == Direction.SOUTH || (direction == Direction.CENTER && hasDirectionChild(Direction.SOUTH));
-        boolean horizontal = direction == Direction.WEST || direction == Direction.EAST || (direction == Direction.CENTER && hasDirectionChild(Direction.EAST));
-
-        if (vertical) {
-            addResizeHandler(widget, direction, true);
-        }
-        if (horizontal) {
-            addResizeHandler(widget, direction, false);
-        }
-        if (vertical || horizontal) {
-            DataGrid.initSinkMouseEvents(widget);
-        }
 
         if (!MainFrame.useBootstrap) {
             String borderPropertyName = "";
@@ -63,40 +64,70 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
             widget.getElement().getStyle().setProperty(borderPropertyName, "1px solid var(--panel-border-color)");
         }
     }
-    
-    private boolean hasDirectionChild(Direction direction) {
-        for (int i = getChildren().size() - 1; i >= 0; i--) {
-            LayoutData childLD = (LayoutData) getChildren().get(i).getLayoutData();
-            if (childLD.direction == direction) {
-                return true;
+
+    protected void refreshResizableChildren() {
+        hChildren.clear();
+        vChildren.clear();
+
+        for (Widget child : getChildren()) {
+            LayoutData ld = (LayoutData) child.getLayoutData();
+            if (ld.direction != NORTH && ld.direction != SOUTH) { // with CENTER
+                hChildren.add(child);
+            }
+            if (ld.direction != WEST && ld.direction != EAST) { // with CENTER
+                vChildren.add(child);
             }
         }
-        return false;
-    }
-    
-    private void addResizeHandler(Widget widget, Direction direction, boolean vertical) {
-        ResizeHelper resizeHelper = createResizeHelper(widget, direction, vertical);
 
-        widget.addHandler(event -> onMouseEvent(resizeHelper, widget, event),
-                MouseDownEvent.getType());
-        widget.addHandler(event -> onMouseEvent(resizeHelper, widget, event),
-                MouseMoveEvent.getType());
+        // sort children list so that center child is between north-south/west-east
+        hChildren.sort(createChildrenComparator(false));
+        vChildren.sort(createChildrenComparator(true));
     }
     
-    private void onMouseEvent(ResizeHelper resizeHelper, Widget widget, DomEvent event) {
-        ResizeHandler.checkResizeEvent(resizeHelper, widget.getElement(), null, event.getNativeEvent());
+    private Comparator<Widget> createChildrenComparator(boolean vertical) {
+        return (o1, o2) -> {
+            Direction left = vertical ? NORTH : WEST;
+            Direction right = vertical ? SOUTH : EAST;
+            LayoutData ld1 = (LayoutData) o1.getLayoutData();
+            LayoutData ld2 = (LayoutData) o2.getLayoutData();
+
+            if (ld1.direction == ld2.direction) {
+                return 0;
+            } else if (ld1.direction == left) {
+                return -1;
+            } else if (ld1.direction == right) {
+                return 1;
+            }
+            // center
+            return ld2.direction == left ? 1 : -1;
+        };
     }
-    
-    private ResizeHelper createResizeHelper(Widget widget, Direction direction, boolean vertical) {
+
+    private void onMouseEvent(DomEvent event) {
+        // skip second resize check, because it switches cursor back to default on horizontal resize pointing (without mousedown)
+        if (!checkResizeEvent(hResizeHelper, getElement(), null, event.getNativeEvent())) {
+            checkResizeEvent(vResizeHelper, getElement(), null, event.getNativeEvent());
+        }
+    }
+
+    private ResizeHelper createResizeHelper(boolean vertical) {
         return new ResizeHelper() {
+            private List<Widget> getChildren() {
+                return vertical ? vChildren : hChildren;
+            }
+            
+            private Widget getChild(int index) {
+                return getChildren().get(index);
+            }
+
             @Override
             public int getChildCount() {
-                return 1;
+                return getChildren().size();
             }
 
             @Override
             public int getChildAbsolutePosition(int index, boolean left) {
-                return ResizeHandler.getAbsolutePosition(widget.getElement(), vertical, left);
+                return ResizeHandler.getAbsolutePosition(getChild(index).getElement(), vertical, left);
             }
 
             @Override
@@ -104,20 +135,18 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
 
             @Override
             public double resizeChild(int index, int delta) {
-                if (direction == Direction.CENTER) {
+                LayoutData ld = (LayoutData) getChild(index).getLayoutData();
+                if (ld.direction == CENTER) {
                     // emulate resizing of center child by resizing south or east neighbour 
-                    for (int i = getChildren().size() - 1; i >= 0; i--) {
-                        LayoutData childLD = (LayoutData) getChildren().get(i).getLayoutData();
-                        if ((isVertical() && childLD.direction == Direction.SOUTH) || (!isVertical() && childLD.direction == Direction.EAST)) {
-                            double newSize = childLD.size - delta;
-                            childLD.size = Math.max(newSize, 0);
+                    for (int i = index + 1; i < getChildCount(); i++) {
+                        LayoutData neighbourLD = (LayoutData) getChild(i).getLayoutData();
+                        if ((vertical && neighbourLD.direction == SOUTH) || (!vertical && neighbourLD.direction == EAST)) {
+                            neighbourLD.size = Math.max(neighbourLD.size - delta, 0);
                             break;
                         }
                     }
                 } else {
-                    LayoutData ld = (LayoutData) widget.getLayoutData();
-                    double newSize = ld.size + delta;
-                    ld.size = Math.max(newSize, 0);
+                    ld.size = Math.max(ld.size + delta, 0);
                 }
 
                 // Defer actually updating the layout, so that if we receive many
@@ -134,7 +163,7 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
 
             @Override
             public boolean isChildResizable(int index) {
-                return true;
+                return index != getChildCount() - 1;
             }
 
             @Override

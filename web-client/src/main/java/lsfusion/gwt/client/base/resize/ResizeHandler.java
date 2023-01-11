@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.resize;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style;
@@ -34,7 +33,8 @@ public class ResizeHandler implements Event.NativePreviewHandler {
     }
 
     // it's important that checkResize event should be called for cursorElement element (otherwise, cursor will be incorrect)
-    public static <C> void checkResizeEvent(ResizeHelper helper, Element cursorElement, Supplier<Integer> childIndexSupplier, NativeEvent event) {
+    // returns whether event was handled or not. used in window resizing, where both vertical and horizontal are handled at the same time 
+    public static <C> boolean checkResizeEvent(ResizeHelper helper, Element cursorElement, Supplier<Integer> childIndexSupplier, NativeEvent event) {
         String eventType = event.getType();
         if ((MOUSEMOVE.equals(eventType) || MOUSEDOWN.equals(eventType)) && resizeHandler == null) {
             ResizedChild resizedChild = getResizedChild(helper, event, childIndexSupplier);
@@ -50,6 +50,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
                     // in all other cases it doesn't matter, since there is no stop propagation for MOUSEDOWN event, and it is the only known problem with preventing default (except expand tree but it seems that in grid everything works fine anyway)
                     stopPropagation(event, true, false);
                 }
+                return true;
             } else {
                 cursorStyle.clearProperty("cursor");
                 // this container can be not resizable, but the inner one can be resizable, however it will not get a mouse move event if the cursor is to the right
@@ -59,6 +60,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
                     helper.propagateChildResizeEvent(resizedChild.index + (resizedChild.outsideBorder ? 1 : 0), event, cursorElement);
             }
         }
+        return false;
     }
 
     public static int getEventPosition(boolean vertical, boolean main, NativeEvent event) {

@@ -48,6 +48,7 @@ public class SplitWindowElement extends WindowElement {
     public Widget initializeView() {
         // рекурсивно начинаем заполнять пространство окна
         fillWithChildren(new ArrayList<>(children.keySet()), x, y, width, height);
+        splitPanel.refreshResizableChildren();
         return super.initializeView();
     }
     
@@ -285,6 +286,8 @@ public class SplitWindowElement extends WindowElement {
             splitPanel.add(visibleWindows.get(visibleWindows.size() - 1).getView());
         }
         setVisible(splitPanel.getWidgetCount() > 0);
+        
+        splitPanel.refreshResizableChildren();
     }
     
     public void setBorderWindowsHidden(boolean hidden) {
