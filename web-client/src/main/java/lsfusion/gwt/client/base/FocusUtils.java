@@ -23,7 +23,7 @@ public class FocusUtils {
         OTHER;
 
         public boolean preventScroll() {
-            return this == RESTOREFOCUS || this == MOUSECHANGE || this == BINDING;
+            return this == RESTOREFOCUS || this == MOUSECHANGE;
         }
     }
 
