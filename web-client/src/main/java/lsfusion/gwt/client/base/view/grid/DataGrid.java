@@ -455,6 +455,15 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         onGridBrowserEvent(target, event);
     }
 
+    public void onFocusBrowserEvent(Element target, Event event) {
+        // Ignore spurious events (such as onblur) while we refresh the table.
+        if (isResolvingState) {
+            return;
+        }
+
+        onGridBrowserEvent(target, event);
+    }
+
     public void onGridBrowserEvent(Element target, Event event) {
         // moved to GridContainerPanel
 //        String eventType = event.getType();

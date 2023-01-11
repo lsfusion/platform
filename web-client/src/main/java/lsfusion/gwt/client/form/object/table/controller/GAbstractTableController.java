@@ -106,7 +106,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
             if(widget instanceof DataGrid) { // we have to propagate focus to grid, since GWT proceeds the FOCUS event for the first widget that have eventListener (i.e initSinkEvents is called)
                 DataGrid<?> grid = (DataGrid<?>) widget;
                 grid.onFocus();
-                grid.onGridBrowserEvent(target, event);
+                grid.onFocusBrowserEvent(target, event);
             }
 
             if(isFocused)
@@ -121,7 +121,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
             if(widget instanceof DataGrid) {
                 DataGrid<?> grid = (DataGrid<?>) widget;
                 grid.onBlur(event);
-                grid.onGridBrowserEvent(target, event);
+                grid.onFocusBrowserEvent(target, event);
             }
 
             if(!isFocused || DataGrid.isFakeBlur(event, getElement())) {
