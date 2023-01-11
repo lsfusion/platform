@@ -1676,7 +1676,7 @@ public class GFormController implements EditManager {
         }
 
         //focus form container if no one element is focusable
-        formContainer.getFocusedElement().focus();
+        FocusUtils.focus(formContainer.getFocusedElement(), reason);
     }
 
     private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {

@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class FocusUtils {
 
@@ -21,7 +20,11 @@ public class FocusUtils {
         MOUSECHANGE,
         BINDING,
 
-        OTHER
+        OTHER;
+
+        public boolean preventScroll() {
+            return this == RESTOREFOCUS || this == MOUSECHANGE;
+        }
     }
 
     private final static String focusReason = "focusReason";
@@ -33,9 +36,15 @@ public class FocusUtils {
     public static void focus(Element element, Reason reason) {
         element.setPropertyObject(focusReason, reason);
         try {
-            element.focus();
+            focus(element, reason.preventScroll());
         } finally {
             element.setPropertyObject(focusReason, null);
         }
     }
+
+    private static native void focus(Element element, boolean preventScroll) /*-{
+        element.focus({
+            preventScroll: preventScroll
+        });
+    }-*/;
 }
