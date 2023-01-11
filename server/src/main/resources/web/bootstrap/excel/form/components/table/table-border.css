@@ -31,7 +31,8 @@
     border-bottom: var(--border-width) solid var(--grid-separator-border-color);
 }
 
-.focusedCellBottomBorder {
+.focusedCellBottomBorder,
+.dataGridHeader:not(.empty-header) .dataGridHeaderCell.focusedCellBottomBorder {
     border-bottom: var(--border-width) solid var(--focused-cell-border-color);
 }
 
