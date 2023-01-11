@@ -35,3 +35,7 @@
 .arrow.btn {
     padding: 0.1rem 0.25rem;
 }
+
+.btn-toolbar .btn {
+    background: transparent;
+}
