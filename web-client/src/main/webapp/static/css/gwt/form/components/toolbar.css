@@ -5,11 +5,16 @@
 }
 
 .btn-toolbar .btn {
-    border: 0;
+    /*border: 0;*/
     background: transparent;
 
     padding: 0 0.25em;
 
+    margin-left: var(--border-padding);
+    margin-right: var(--border-padding);
+}
+
+.btn-group {
     margin-left: var(--border-padding);
     margin-right: var(--border-padding);
 }
