@@ -27,8 +27,8 @@ public class WriteResourcesJSPTag extends TagSupport {
                         out.print("<script type='text/javascript' src='" + s + "'></script>");
                     } else if (extension.equals("css")) {
                         out.print("<link rel='stylesheet' type='text/css' href='" + s + "' />");
-                    } else if (extension.equals("custom")) {
-                        out.print(s.replace(".custom", ""));
+                    } else if (extension.equals("html")) { //to add tags to header.
+                        out.print(s);
                     }
                 }
             } catch (IOException e) {
