@@ -541,11 +541,12 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null) {
+                assert getRows().contains(rowIndexHolder);
                 RowIndexHolder rowValue;
                 try {
                     rowValue = (RowIndexHolder) getRowValue(row);
                 } catch (IndexOutOfBoundsException e) {
-                    throw new RuntimeException("INCORRECT ROW " + row + " " + event + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
+                    throw new RuntimeException("INCORRECT ROW " + row + " " + event.getType() + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
                 }
                 onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), event, column, columnParent);
             }
