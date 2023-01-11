@@ -455,6 +455,15 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
         onGridBrowserEvent(target, event);
     }
 
+    public void onFocusBrowserEvent(Element target, Event event) {
+        // Ignore spurious events (such as onblur) while we refresh the table.
+        if (isResolvingState) {
+            return;
+        }
+
+        onGridBrowserEvent(target, event);
+    }
+
     public void onGridBrowserEvent(Element target, Event event) {
         // moved to GridContainerPanel
 //        String eventType = event.getType();
@@ -532,11 +541,12 @@ public abstract class DataGrid<T> extends FlexPanel implements Focusable, ColorT
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null) {
+                assert getRows().contains(rowIndexHolder);
                 RowIndexHolder rowValue;
                 try {
                     rowValue = (RowIndexHolder) getRowValue(row);
                 } catch (IndexOutOfBoundsException e) {
-                    throw new RuntimeException("INCORRECT ROW " + row + " " + event + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
+                    throw new RuntimeException("INCORRECT ROW " + row + " " + event.getType() + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
                 }
                 onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), event, column, columnParent);
             }
