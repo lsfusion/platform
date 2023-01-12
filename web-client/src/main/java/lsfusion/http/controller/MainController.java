@@ -229,7 +229,8 @@ public class MainController {
         Map<String, String> versionedResources = new LinkedHashMap<>();
         for (Pair<String, RawFileData> resource : resources) {
             String fileName = resource.first;
-            versionedResources.put(FileUtils.saveWebFile(fileName, resource.second, serverSettings, noAuth), fileName.substring(fileName.lastIndexOf(".") + 1));
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+            versionedResources.put(extension.equals("html") ? new String(resource.second.getBytes()) : FileUtils.saveWebFile(fileName, resource.second, serverSettings, noAuth), extension);
         }
         return versionedResources;
     }
