@@ -322,6 +322,12 @@
             <artifactId>fax4j</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!--rabbitmq-->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>5.16.0</version>
+        </dependency>
 
         <!--java 11 dependencies-->
         <dependency>
