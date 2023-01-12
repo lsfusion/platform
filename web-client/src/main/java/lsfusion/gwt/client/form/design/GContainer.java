@@ -21,6 +21,10 @@ public class GContainer extends GComponent {
 
     public boolean horizontal;
     public boolean tabbed;
+
+    public String path;
+    public String creationPath;
+
     public GFlexAlignment childrenAlignment;
 
     public boolean grid;
@@ -259,4 +263,12 @@ public class GContainer extends GComponent {
         }
     }
     public final GPropertyReader customDesignCaptionReader = new GCustomDesignCaptionReader();
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getCreationPath() {
+        return creationPath;
+    }
 }

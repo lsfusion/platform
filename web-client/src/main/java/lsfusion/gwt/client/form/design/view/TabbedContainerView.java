@@ -1,6 +1,10 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -8,9 +12,11 @@ import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFormComponent;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 
+import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 import static lsfusion.gwt.client.base.GwtSharedUtils.relativePosition;
 
 public class TabbedContainerView extends GAbstractContainerView {
@@ -111,7 +117,41 @@ public class TabbedContainerView extends GAbstractContainerView {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
                     final int fi = i;
-                    panel.insertTab(getTabTitle(child), index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
+
+                    Label tabWidget = new Label(getTabTitle(child), false);
+                    panel.insertTab(tabWidget, index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
+
+                    if (child instanceof GContainer) {
+                        GContainer gContainer = (GContainer) child;
+                        TooltipManager.registerWidget(tabWidget, new TooltipManager.TooltipHelper() {
+                            @Override
+                            public String getTooltip() {
+                                String tabTitle = getTabTitle(gContainer);
+                                return MainFrame.showDetailedInfo ?
+                                        GwtSharedUtils.stringFormat("<html><body>" +
+                                                "<b>%s</b><br/>" +
+                                                createTooltipHorizontalSeparator() +
+                                                "<b>" + ClientMessages.Instance.get().tooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
+                                                "</body></html>", tabTitle, getCreationPath()) :
+                                        GwtSharedUtils.stringFormat("<html><body><b>%s</b></body></html>", tabTitle);
+                            }
+
+                            @Override
+                            public String getPath() {
+                                return gContainer.getPath();
+                            }
+
+                            @Override
+                            public String getCreationPath() {
+                                return gContainer.getCreationPath();
+                            }
+
+                            @Override
+                            public boolean stillShowTooltip() {
+                                return true;
+                            }
+                        });
+                    }
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);

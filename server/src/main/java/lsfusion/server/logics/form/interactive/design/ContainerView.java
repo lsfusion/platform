@@ -9,20 +9,17 @@ import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.language.ScriptParsingException;
-import lsfusion.server.language.proxy.ViewProxyUtil;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.function.Supplier;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
@@ -36,6 +33,7 @@ public class ContainerView extends ComponentView {
     public boolean collapsed;
 
     private ContainerType type = ContainerType.CONTAINERV;
+    private DebugInfo.DebugPoint debugPoint;
     private boolean horizontal;
     private boolean tabbed;
 
@@ -253,6 +251,10 @@ public class ContainerView extends ComponentView {
         this.type = type;
     }
 
+    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
+        this.debugPoint = debugPoint;
+    }
+
     public void setHorizontal(boolean horizontal) {
         this.horizontal = horizontal;
     }
@@ -403,6 +405,12 @@ public class ContainerView extends ComponentView {
 
         pool.writeBoolean(outStream, isHorizontal());
         pool.writeBoolean(outStream, isTabbed());
+
+        pool.writeBoolean(outStream, debugPoint != null);
+        if (debugPoint != null) {
+            pool.writeString(outStream, debugPoint.path);
+            pool.writeString(outStream, debugPoint.toString());
+        }
 
         pool.writeObject(outStream, childrenAlignment);
         
