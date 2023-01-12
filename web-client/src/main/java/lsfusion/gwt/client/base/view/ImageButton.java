@@ -22,7 +22,7 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
         super(element);
 
         addStyleName("btn-image");
-        addStyleName("btn-sm");
+        addStyleName("btn-outline-secondary");
 
         this.baseImage = baseImage; // need to do it before setText for the updateStyle call
         this.fileImage = fileImage;
