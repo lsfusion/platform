@@ -51,7 +51,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         boolean captionLast = property.isPanelCaptionLast();
         SizedWidget sizedLabel = new SizedWidget(label, property.getCaptionWidth(), property.getCaptionHeight());
 
-        if(property.isAlignCaption() && captionContainer != null) { // align caption
+        if(property.isOverAlignCaption() && captionContainer != null) { // align caption
             if(!panelCaptionAlignment.equals(GFlexAlignment.END))
                 captionLast = false; // it's odd having caption last for alignments other than END
 
