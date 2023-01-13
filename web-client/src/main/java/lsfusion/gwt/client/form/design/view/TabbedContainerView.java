@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.design.view;
 
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -111,7 +113,35 @@ public class TabbedContainerView extends GAbstractContainerView {
                     index = relativePosition(child, children, visibleChildren);
                     visibleChildren.add(index, child);
                     final int fi = i;
-                    panel.insertTab(getTabTitle(child), index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
+
+                    String tabTitle = getTabTitle(child);
+                    Label tabWidget = new Label(tabTitle, false);
+                    panel.insertTab(tabWidget, index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
+
+                    if (child instanceof GContainer) {
+                        GContainer gContainer = (GContainer) child;
+                        TooltipManager.registerWidget(tabWidget, new TooltipManager.TooltipHelper() {
+                            @Override
+                            public String getTooltip() {
+                                return gContainer.getTooltipText(tabTitle);
+                            }
+
+                            @Override
+                            public String getPath() {
+                                return gContainer.getPath();
+                            }
+
+                            @Override
+                            public String getCreationPath() {
+                                return gContainer.getCreationPath();
+                            }
+
+                            @Override
+                            public boolean stillShowTooltip() {
+                                return true;
+                            }
+                        });
+                    }
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
