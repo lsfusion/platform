@@ -144,15 +144,17 @@ public class Group extends AbstractNode {
 
     @ManualLazy
     public ImOrderSet<ActionOrProperty> getActionOrProperties() {
-        if (actionOrProperties == null) {
+        ImOrderSet<ActionOrProperty> result = actionOrProperties; // need this scheme for the proper concurrency (to guarantee that cache won't be dropped)
+        if (result == null) {
             MOrderSet<ActionOrProperty> mResult = SetFact.mOrderSet();
             for (AbstractNode child : getChildrenListIt()) {
                 mResult.addAll(child.getActionOrProperties());
             }
-            actionOrProperties = mResult.immutableOrder();
+            result = mResult.immutableOrder();
+            actionOrProperties = result;
         }
 
-        return actionOrProperties;
+        return result;
     }
     
     public ImList<Group> getParentGroups() {
