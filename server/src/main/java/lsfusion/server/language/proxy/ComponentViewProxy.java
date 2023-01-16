@@ -63,8 +63,8 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.setAlignment(alignment);
     }
 
-    public void setAlignCaption(boolean alignCaptions) {
-        target.setAlignCaption(alignCaptions);
+    public void setAlignCaption(boolean alignCaption) {
+        target.setAlignCaption(alignCaption);
     }
 
     public void setMarginTop(int marginTop) {
