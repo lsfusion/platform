@@ -83,10 +83,14 @@
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-/* default toolbar with "regular" (not solid) icons looks pretty awkward, so we increase their size to look more autnentic / similar to regular buttons */
+/* the problem that for toolbar there is no appropriate class in bootstrap, default toolbar with "regular" (not solid) icons looks pretty awkward */
+/* so we increase their size, remove paddings / borders to look more autnentic / similar to regular buttons */
 
-.btn-toolbar .btn-image-img {
+.btn-toolbar .btn {
+    border: 0;
+    padding: 0 0.25em;
     font-size: 1.25rem;
+    border-radius: 0.375em;
 }
 
 /* we don't want the toolbar to have transparent background, but we still want hover background (just like for the navigator) */

@@ -4,14 +4,9 @@
     justify-content: flex-start;
 }
 
-.btn-toolbar .btn {
-    border: 0;
-    background: transparent;
-
-    padding: 0 0.25em;
-
-    margin-left: var(--border-padding);
-    margin-right: var(--border-padding);
+.btn-toolbar .btn-group {
+    margin-left: var(--border-comp-horz-padding);
+    margin-right: var(--border-comp-horz-padding);
 }
 
 .btn-toolbar .btn:hover {
