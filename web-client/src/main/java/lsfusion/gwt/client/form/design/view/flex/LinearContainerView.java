@@ -108,7 +108,7 @@ public class LinearContainerView extends LayoutContainerView {
     protected void addImpl(int index, GComponent child, Widget view, ResizableComplexPanel attachContainer) {
         if(alignCaptions) { // when adding GPropertyPanelController.Panel is empty, so we have to do everything wit callback
             AlignCaptionPanel captionPanel;
-            if(child.isAlignCaption()) { // from alignCaptions
+            if(child.isOverAlignCaption()) { // from alignCaptions
                 // need a wrapper since all elements in grid have justify-items STRETCH by default (and we want CENTERED alignment)
                 // plus captionContainer is filled later (after it has to be added to DOM)
                 captionPanel = new AlignCaptionPanel(!vertical, ((CaptionContainerHolder) view).getCaptionHAlignment());

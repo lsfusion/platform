@@ -49,6 +49,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     private FlexAlignment alignment = null;
     protected Boolean shrink = null;
     protected Boolean alignShrink = null;
+    protected Boolean alignCaption = null;
 
     public PropertyObjectEntity<?> showIf;
 
@@ -150,6 +151,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         return false;
     }
 
+    public Boolean getAlignCaption() {
+        return alignCaption;
+    }
+
     public PropertyObjectEntity<?> getShowIf() {
         return showIf;
     }
@@ -198,6 +203,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public void setAlignment(FlexAlignment alignment) {
         this.alignment = alignment;
+    }
+
+    public void setAlignCaption(boolean alignCaption) {
+        this.alignCaption = alignCaption;
     }
 
     public void setSize(Dimension size) {
@@ -362,6 +371,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, getAlignment(pool.context.entity));
         outStream.writeBoolean(isShrink(pool.context.entity));
         outStream.writeBoolean(isAlignShrink(pool.context.entity));
+        pool.writeObject(outStream, alignCaption);
 
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
@@ -387,6 +397,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         alignment = pool.readObject(inStream);
         shrink = inStream.readBoolean();
         alignShrink = inStream.readBoolean();
+        alignCaption = pool.readObject(inStream);
         marginTop = inStream.readInt();
         marginBottom = inStream.readInt();
         marginLeft = inStream.readInt();

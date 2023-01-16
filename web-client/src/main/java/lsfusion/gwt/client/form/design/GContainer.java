@@ -189,7 +189,7 @@ public class GContainer extends GComponent {
         boolean otherAligned = false;
         // only simple property draws
         for(GComponent child : children) {
-            if(child.isAlignCaption()) {
+            if(child.isOverAlignCaption()) {
                 if(otherAligned)
                     return true;
                 else

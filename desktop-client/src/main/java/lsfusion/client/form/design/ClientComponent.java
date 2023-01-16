@@ -37,6 +37,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
     public FlexAlignment alignment;
     public boolean shrink;
     public boolean alignShrink;
+    public Boolean alignCaption;
 
     public int marginTop;
     public int marginBottom;
@@ -82,6 +83,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         pool.writeObject(outStream, alignment);
         outStream.writeBoolean(shrink);
         outStream.writeBoolean(alignShrink);
+        pool.writeObject(outStream, alignCaption);
         outStream.writeInt(marginTop);
         outStream.writeInt(marginBottom);
         outStream.writeInt(marginLeft);
@@ -106,6 +108,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         alignment = pool.readObject(inStream);
         shrink = inStream.readBoolean();
         alignShrink = inStream.readBoolean();
+        alignCaption = pool.readObject(inStream);
         marginTop = inStream.readInt();
         marginBottom = inStream.readInt();
         marginLeft = inStream.readInt();
