@@ -194,6 +194,10 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     protected abstract Class getReportJavaClass();
 
+    protected boolean markupHtml() {
+        return false;
+    }
+
     public int getReportMinimumWidth() {
         return getReportPreferredWidth();
     }
@@ -205,6 +209,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
     public void fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = getReportJavaClass();
         reportField.alignment = HorizontalTextAlignEnum.LEFT;
+        reportField.markupHtml = markupHtml();
     }
 
     public ObjectInstance newInstance(ObjectEntity entity) {
