@@ -187,8 +187,11 @@ public class GBusyDialog extends WindowBox {
     }
 
     public void updateBusyDialog(List messageList) {
-        if (prevMessageList == null)
+        boolean firstUpdate = false;
+        if (prevMessageList == null) {
             prevMessageList = new ArrayList(messageList.size());
+            firstUpdate = true;
+        }
         boolean changed = false;
         boolean showTopProgressBar = true;
         boolean visibleCancelBtn = false;
@@ -267,6 +270,11 @@ public class GBusyDialog extends WindowBox {
                     int maxWidth = (int) (latestWindowWidth * 0.5);
                     mainPanel.getElement().getStyle().setProperty("maxWidth", maxWidth + "px");
                     getElement().getStyle().setProperty("maxWidth", maxWidth + "px");
+                }
+                //need to center if it's first update, initial window is centered but has small size
+                //and result window will be not at center
+                if(firstUpdate) {
+                    center();
                 }
             }
         }
