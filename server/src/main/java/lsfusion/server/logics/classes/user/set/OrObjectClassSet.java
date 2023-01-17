@@ -320,10 +320,10 @@ public class OrObjectClassSet extends TwinImmutableObject implements OrClassSet,
 
     // множественное наследование
     public static int getCount(ObjectValueClassSet set) {
-        int stat = 0;
+        long stat = 0;
         for(ConcreteCustomClass child : set.getSetConcreteChildren())
             stat += child.getCount();
-        return stat;
+        return (int)(Math.min(Integer.MAX_VALUE, stat));
     }
 
     public static int getClassCount(ObjectValueClassSet set) {
