@@ -25,4 +25,8 @@ public class HTMLTextClass extends TextClass{
         return compClass instanceof HTMLTextClass ? this : super.getCompatible(compClass, or);
     }
 
+    @Override
+    protected boolean markupHtml() {
+        return true;
+    }
 }
