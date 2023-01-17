@@ -1,8 +1,9 @@
-## 5.0-beta0 (2022-10-13)
+## 5.0 (2023-01-17)
 ##### Implemented major enhancements:
  - Support drop-down list when inputting data [#134](git@github.com:lsfusion/platform.git/issues/134)
  - Remove split and scroll container types and replace them with corresponding container attributes [#22](git@github.com:lsfusion/platform.git/issues/22)
 ##### Implemented enhancements:
+ - Empty FILTERGROUP with EXTEND is not shown [#869](git@github.com:lsfusion/platform.git/issues/869)
  - Merge images [#857](git@github.com:lsfusion/platform.git/issues/857)
  - NOHEADER option for EXPORT XML [#853](git@github.com:lsfusion/platform.git/issues/853)
  - Force escape inner xml: escapeInnerXML option [#852](git@github.com:lsfusion/platform.git/issues/852)
@@ -62,6 +63,12 @@
  - Using external jar files, located on the application server, in Jasperreports [#548](git@github.com:lsfusion/platform.git/issues/548)
  - Unobvious behavior of calendar control in web-client [#522](git@github.com:lsfusion/platform.git/issues/522)
 ##### Fixed bugs:
+ - Export xls button does not respect HTMLTEXT class [#899](git@github.com:lsfusion/platform.git/issues/899)
+ - Inefficient ORDER LIMIT plan when BY expression contain case / if expressions [#887](git@github.com:lsfusion/platform.git/issues/887)
+ - Bug of incorrect PREV in local events when transaction was canceled in the "recursive" NEWSESSION event [#885](git@github.com:lsfusion/platform.git/issues/885)
+ - Incorrect SingletonSet hashCode [#881](git@github.com:lsfusion/platform.git/issues/881)
+ - Incorrect classes (inconsistent db state) after delete operation [#880](git@github.com:lsfusion/platform.git/issues/880)
+ - Scheduler: new task has no logs [#863](git@github.com:lsfusion/platform.git/issues/863)
  - Incorrect MULTI OVERRIDE behaviour with the two equal signatures [#842](git@github.com:lsfusion/platform.git/issues/842)
  - Property with hide = TRUE shouldn't be able to make visible in grid preferences [#815](git@github.com:lsfusion/platform.git/issues/815)
  - SOF exception in getWhereJoins [#805](git@github.com:lsfusion/platform.git/issues/805)
