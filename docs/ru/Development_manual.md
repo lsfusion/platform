@@ -37,7 +37,7 @@ title: 'Для разработки'
 ### Установка веб-клиента
 
 -   Установить [Apache Tomcat](https://tomcat.apache.org/download-90.cgi) 9й версии.
--   Скачать [веб-клиента](https://download.lsfusion.org/java/lsfusion-client-5.0-beta0.war) платформы lsFusion.
+-   Скачать [веб-клиента](https://download.lsfusion.org/java/lsfusion-client-5.0.war) платформы lsFusion.
 -   Поместить war-файл в папку webapps Apache Tomcat, например, с именем lsfusion.war.
 -   Веб-клиент будет доступен по адресу http://localhost:8080/lsfusion.
 

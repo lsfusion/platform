@@ -8,7 +8,7 @@ title: 'Для разработки'
 
 ### Windows
 
-**lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **14.5**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.2.3**)
+**lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
 
 - [x64](https://download.lsfusion.org/exe/lsfusion-dev-5.0-beta0-x64.exe)
 

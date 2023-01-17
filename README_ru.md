@@ -86,51 +86,8 @@
 Более полный список возможностей можно найти на [веб-сайте](https://ru.lsfusion.org/opportunities).
 
 ## Установка
-### Windows 
-- **Разработка**
 
-    Программы установки **lsFusion 4.1**, которые установят все необходимое для разработки в один клик (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21, IntelliJ IDEA Community Edition 2020.3.1)  
-    - [x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)  
-    - [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
-
-    Помимо **lsFusion** эти программы также устанавливают **OpenJDK**, **PostgreSQL**, **Tomcat** и **IntelliJ IDEA Community Edition** со встроенным **lsFusion плагином**. Если какие-то из этих программ уже есть на вашем компьютере, то их можно будет исключить в процессе установки.
-
-    После того как установка успешно завершится, на рабочем столе будут автоматически созданы соответствующие ярлыки для запуска IDE и клиента. Описание работы с IDE после ее запуска находится [здесь](https://docs.lsfusion.org/ru/IDE/).
-
-- **Запуск**
-
-    Программы установки **lsFusion 4.1 Server & Client**, которые установят все необходимое в один клик (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21)
-    - [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)  
-    - [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
-
-    Помимо установки **lsFusion** эти программы / скрипты установки также устанавливают **OpenJDK**, **PostgreSQL** и **Tomcat**. При этом **Tomcat** встраивается в установку **lsFusion Client**, а **OpenJDK** и **PostgreSQL** устанавливаются отдельно (в частности, в отдельные папки).
-
-### Linux
-- **Разработка**
-
-    1. [Установите](https://www.jetbrains.com/help/idea/installation-guide.html) **Intellij IDEA Community Edition**.
-    1. Установите [Intellij IDEA плагин для lsFusion](https://plugins.jetbrains.com/plugin/7601-lsfusion). В настройках IDEA `File > Settings` выбрать `Plugins > Marketplace`, найти **lsFusion** плагин, нажать **Install**, перезапустить IDEA. 
-    1. Создайте новый lsFusion проект в IDEA:
-    
-        1. Выберите пункт **Create New Project** при старте IDEA. Или, если IDEA уже запущена, выберите в меню пункт `File > New > Project`. 
-        1. Выберите тип проекта **lsFusion**. Проверьте, что задан JDK. 
-        1. Нажмите на кнопку **Download**: IDEA автоматически скачает jar-файл последней (не beta) версии сервера lsFusion с центрального сервера и установит этот файл в качестве зависимости этого проекта (а точнее единственного его модуля: `File > Project Structure > Modules > имя проекта > Dependencies`). Также, при необходимости, можно скачать другую (отличную от последней) версию сервера или выбрать уже скачанный jar-файл сервера на локальном диске.  
-    
-    После старта сервера, в логе старта одной из последних строк будет строка с ссылкой на jnlp-файл, запустив который клиент автоматически установится при помощи технологии Java Web Start.
-   
-- **Запуск**
-
-    **lsFusion 4 Server & Client** (OpenJDK 1.8, PostgreSQL 11, Tomcat 9.0.21).
-
-    - RHEL 7 / CentOS 7 / Fedora 29
-
-          source <(curl -s https://download.lsfusion.org/yum/install-lsfusion4)
-
-    - Ubuntu 18 / Debian 9
-
-          source <(curl -s https://download.lsfusion.org/apt/install-lsfusion4)
-
-Для более детального описания процесса установки обратитесь к соответствующему [разделу документации](https://docs.lsfusion.org/ru/Install/). 
+См. https://docs.lsfusion.org/ru/Install/
 
 ## Примеры кода
 - [Турнирная таблица](https://docs.lsfusion.org/ru/Score_table/)

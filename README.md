@@ -84,51 +84,8 @@ Incremental computing, function-level, reactive, and event-based programming, th
 For a more complete list see [lsfusion website](https://lsfusion.org/opportunities).
 
 ## Installation
-### Windows 
-- **Development**
 
-    Single-click .exe installers of **lsFusion 4.1** (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21, IntelliJ IDEA Community Edition 2020.3.1)  
-    - [x32](https://download.lsfusion.org/exe/lsfusion-dev-4.1.exe)  
-    - [x64](https://download.lsfusion.org/exe/lsfusion-dev-4.1-x64.exe)
-
-    In addition to **lsFusion**, these installers also install **OpenJDK**, **PostgreSQL**, **Tomcat**, and **IntelliJ IDEA Community Edition** with the built-in **lsFusion plugin**. If any of these programs are already on your computer, you can exclude them during the installation process.
-
-    After the installation completes successfully, the corresponding shortcuts for launching IDE and the client will automatically be created on the desktop. A description of working with IDE after it opens is located [here](https://docs.lsfusion.org/IDE/).
-
-- **Production**
-
-    Single-click .exe installers of **lsFusion 4.1 Server & Client** (OpenJDK 11.0.9, PostgreSQL 13.1(x64)/10.8(x32), Tomcat 9.0.21)  
-    - [x32](https://download.lsfusion.org/exe/lsfusion-4.1.exe)  
-    - [x64](https://download.lsfusion.org/exe/lsfusion-4.1-x64.exe)
-
-    In addition to **lsFusion**, these installers also install **OpenJDK**, **PostgreSQL**, and **Tomcat**. **Tomcat** is embedded into the **lsFusion Client** installation, and **OpenJDK** and **PostgreSQL** are installed separately (in particular, in separate folders).
-
-### Linux
-- **Development**
-
-    1. [Install](https://www.jetbrains.com/help/idea/installation-guide.html) the **Intellij IDEA Community Edition**.
-    1. Install the [lsFusion language support](https://plugins.jetbrains.com/plugin/7601-lsfusion) Intellij IDEA plugin. In the IDEA settings `File > Settings`, select `Plugins > Marketplace`, find the **lsFusion** plugin, click **Install**, and restart IDEA. 
-    1. Create a new lsFusion project in IDEA:
-    
-        1. Select **Create New Project**, or when IDEA is already opened, select `File > New > Project` from the menu. 
-        1. Select project type **lsFusion**. Make sure that the JDK is set. 
-        1. Click the **Download** button opposed to the lsFusion library: IDEA automatically downloads the JAR file of the latest (non-beta) version of the lsFusion server from the central server and installs this file as a dependency of this project (or rather, as its only module: `File > Project Structure > Modules > project name > Dependencies tab`). Also, if necessary, you can download another version of the server (different from the latest) or select a previously downloaded server JAR file on the local disk. 
-    
-    After the server starts, in the start log one of the last lines will be a line with a link to the JNLP file, which when run will automatically install the client using Java Web Start technology. 
-   
-- **Production**
-
-    **lsFusion 4 Server & Client** (OpenJDK 1.8, PostgreSQL 11, Tomcat 9.0.21).
-
-    - RHEL 7 / CentOS 7 / Fedora 29
-
-          source <(curl -s https://download.lsfusion.org/yum/install-lsfusion4)
-
-    - Ubuntu 18 / Debian 9
-
-          source <(curl -s https://download.lsfusion.org/apt/install-lsfusion4)
-
-For more detailed information about installation process please refer to [install section](https://docs.lsfusion.org/Install/) of documentation.
+See https://docs.lsfusion.org/Install/
 
 ## Code examples
 - [Score table](https://docs.lsfusion.org/Score_table/)
