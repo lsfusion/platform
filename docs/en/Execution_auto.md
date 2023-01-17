@@ -13,9 +13,9 @@ import TabItem from '@theme/TabItem';
 <TabItem value="win">
 
 Executable exe files:
-**lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **14.5**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.2.3**)
+**lsFusion 5.0** (OpenJDK **11.0.16**, PostgreSQL **15.1**, Tomcat **9.0.67**, IntelliJ IDEA Community Edition **2022.3.1**)
 
-- [x64](https://download.lsfusion.org/exe/lsfusion-5.0-beta0-x64.exe)
+- [x64](https://download.lsfusion.org/exe/lsfusion-5.0-x64.exe)
 - <details><summary>Older versions</summary>
 
     - lsFusion 4.0 Server & Client
@@ -38,7 +38,7 @@ Subsequently, `$INSTALL_DIR$` refers to the folder selected during the installat
 
 Bash scripts using yum / apt (the latest stable releases are used as minor versions):
 
-lsFusion **5** Server & Client (+ OpenJDK **11**, PostgreSQL **14**, Tomcat **9.0.67**):
+lsFusion **5** Server & Client (+ OpenJDK **11**, PostgreSQL **15**, Tomcat **9.0.67**):
 
 | OS                               | Command / Script                                                        |
 |----------------------------------|-------------------------------------------------------------------------|
