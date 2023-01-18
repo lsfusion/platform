@@ -5,11 +5,7 @@ REQUIRE SystemEvents;
 publish 'Publish' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.PublishRabbitMQAction' (Channel, STRING);
 startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
 stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
-processConsumed ABSTRACT(STRING);
-
-processConsumed(STRING message) + {
-    MESSAGE message;
-}
+processConsumed ABSTRACT LIST (STRING);
 
 stopConsumers INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumersRabbitMQAction' ();
 
