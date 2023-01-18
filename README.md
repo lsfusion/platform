@@ -120,21 +120,9 @@ It is possible to run the code snippets in lsfusion programming language [online
   - username: guest
   - password: guest 
 
-- [ERP](https://demo.lsfusion.org/erp)
-
-  A commercial ERP system with broad functionality, operating in enterprises with more than 500 concurrent users.
-
-  - [github](https://github.com/lsfusion-solutions/erp)
-  - username: guest
-  - password: guest
-
-  This demo version is the [equ-erp-logics](https://github.com/lsfusion/erp/tree/master/erp-equ-logics) module, which includes basic [ERP logic](https://github.com/lsfusion/erp/tree/master/erp-logics) + communication interfaces ([equ-srv](https://github.com/lsfusion/erp/tree/master/equ-srv)) with the hardware server ([equ-clt](https://github.com/lsfusion/erp/tree/master/equ-clt)).
-
 ## Links
 - [Homepage](https://lsfusion.org)
 - [Documentation](https://docs.lsfusion.org/)
-- [Blog (ru)](https://habr.com/ru/company/lsfusion/blog/)
-- [Q&A (ru)](https://ru.stackoverflow.com/questions/tagged/lsfusion)
 - [Repository](https://github.com/lsfusion/platform)
 - [Downloads](https://download.lsfusion.org/)
 
