@@ -80,7 +80,6 @@ public class RabbitMQAction extends InternalAction {
                     } finally {
                         ThreadLocalContext.aspectAfterMonitorHTTP(ConsumerMonitorServer.this);
                     }
-                    System.out.println(message);
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false); //confirm delivery
                 };
 
