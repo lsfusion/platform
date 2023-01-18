@@ -411,7 +411,7 @@ public class Query<K,V> extends IQuery<K,V> {
         } else {
             OrderWhereJoins orderWhereJoins = new ExclNullPullWheres<OrderWhereJoins, Integer, Where>() {
                 protected OrderWhereJoins proceedNullBase(Where data, ImMap<Integer, ? extends Expr> map) {
-                    return new OrderWhereJoins(getWhereJoins(data, tryExclusive, (ImOrderSet<Expr>) ListFact.fromIndexedMap(map.toRevExclMap())), false);
+                    return new OrderWhereJoins(getWhereJoins(data, tryExclusive, (ImOrderSet<Expr>) ListFact.fromIndexedMap(map).toOrderSet()), false);
                 }
 
                 protected OrderWhereJoins add(OrderWhereJoins op1, OrderWhereJoins op2) {
