@@ -8,9 +8,10 @@ import lsfusion.base.file.SerializableImageIconHolder;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFProperty;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
@@ -32,6 +33,13 @@ public abstract class NavigatorElement {
     
     private SerializableImageIconHolder imageHolder;
 
+    public void addOrMove(NavigatorElement element, ComplexLocation location, Version version) {
+        removeFromParent(element, version);
+        children.add(element, location, version);
+
+        element.setParent(this, version);
+    }
+
     protected abstract String getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
@@ -42,7 +50,7 @@ public abstract class NavigatorElement {
     private DebugInfo.DebugPoint debugPoint;
 
     private NFProperty<NavigatorElement> parent = NFFact.property();
-    private NFOrderSet<NavigatorElement> children = NFFact.orderSet();
+    private NFComplexOrderSet<NavigatorElement> children = NFFact.complexOrderSet();
 
     protected NavigatorElement(String canonicalName, LocalizedString caption) {
         assert canonicalName != null;
@@ -162,38 +170,12 @@ public abstract class NavigatorElement {
         return element != null && (equals(element) || isAncestorOf(element.getNFParent(version), version));
     }
 
-    private void changeContainer(NavigatorElement comp, Version version) {
-        removeFromParent(comp, version);
-        comp.setParent(this, version);
-    }
-
     private void removeFromParent(NavigatorElement comp, Version version) {
         NavigatorElement container = comp.getNFParent(version);
         if (container != null) {
-            assert container.children.containsNF(comp, version);
             container.children.remove(comp, version);
             comp.setParent(null, version);
         }
-    }
-
-    public void addFirst(NavigatorElement child, Version version) {
-        changeContainer(child, version);
-        children.addFirst(child, version);
-    }
-
-    public void add(NavigatorElement child, Version version) {
-        changeContainer(child, version);
-        children.add(child, version);
-    }
-
-    public void addBefore(NavigatorElement child, NavigatorElement elemBefore, Version version) {
-        changeContainer(child, version);
-        children.addIfNotExistsToThenLast(child, elemBefore, false, version);
-    }
-
-    public void addAfter(NavigatorElement child, NavigatorElement elemAfter, Version version) {
-        changeContainer(child, version);
-        children.addIfNotExistsToThenLast(child, elemAfter, true, version);
     }
 
     public boolean hasChildren() {

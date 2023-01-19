@@ -4,12 +4,16 @@ import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerFactory;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormContainerSet;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -88,9 +92,6 @@ public class DefaultFormView extends FormView {
 
     private ContainerFactory<ContainerView> containerFactory = () -> new ContainerView(idGenerator.idShift());
 
-    public DefaultFormView() {
-    }
-
     public DefaultFormView(FormEntity formEntity, Version version) {
         super(formEntity, version);
 
@@ -135,8 +136,10 @@ public class DefaultFormView extends FormView {
         if(prevTree != null)
             addTreeGroupView(get(prevTree), version);
 
-        for (PropertyDrawView propertyDraw : getNFPropertiesListIt(version)) {
-            addPropertyDrawView(propertyDraw, version);
+        Pair<ImOrderSet<PropertyDrawView>, ImList<Integer>> properties = getNFPropertiesComplexOrderSet(version);
+        for (int i = 0, size = properties.first.size() ; i < size ; i++) {
+            PropertyDrawView propertyDraw = properties.first.get(i);
+            addPropertyDrawView(propertyDraw, ComplexLocation.LAST(properties.second.get(i)), version);
         }
 
         for (RegularFilterGroupView filterGroup : getNFRegularFiltersListIt(version)) {
@@ -254,13 +257,13 @@ public class DefaultFormView extends FormView {
     }
 
     private void addGroupObjectView(GroupObjectView groupObject, Version version) {
-        addGroupObjectView(groupObject, null, null, version);
+        addGroupObjectView(groupObject, ComplexLocation.DEFAULT(), version);
     }
-    private void addGroupObjectView(GroupObjectView groupObject, GroupObjectEntity neighbourGroupObject, LogicsModule.InsertType insertType, Version version) {
+    private void addGroupObjectView(GroupObjectView groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
         if(!groupObject.entity.isInTree()) {
             GroupObjectContainerSet groupSet = GroupObjectContainerSet.create(groupObject, containerFactory, version);
 
-            addPropertyGroupContainerView(groupSet.getBoxContainer(), neighbourGroupObject, insertType, version);
+            addPropertyGroupContainerView(groupSet.getBoxContainer(), location, version);
 
             registerComponent(boxContainers, groupSet.getBoxContainer(), groupObject, version);
             registerComponent(filterBoxContainers, groupSet.getFilterBoxContainer(), groupObject, version);
@@ -279,29 +282,20 @@ public class DefaultFormView extends FormView {
         }
     }
 
-    private void addPropertyGroupContainerView(ContainerView boxContainer, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
-        PropertyGroupContainerView neighbourView = neighbour != null ? (neighbour.isInTree() ? get(neighbour.treeGroup) : get(neighbour)) : null;
-        if (insertType == LogicsModule.InsertType.FIRST) {
-            objectsContainer.addFirst(boxContainer, version);
-        } else if (neighbourView != null) {
-            ContainerView neighbourBox = getBoxContainer(neighbourView);
-            if (insertType == LogicsModule.InsertType.AFTER)
-                objectsContainer.addAfter(boxContainer, neighbourBox, version);
-            else
-                objectsContainer.addBefore(boxContainer, neighbourBox, version);
-        } else {
-            objectsContainer.add(boxContainer, version);
-        }
+    private void addPropertyGroupContainerView(ContainerView boxContainer, ComplexLocation<GroupObjectEntity> location, Version version) {
+        ComplexLocation<ComponentView> mappedLocation = location.map(neighbour -> getBoxContainer(neighbour.isInTree() ? get(neighbour.treeGroup) : get(neighbour)));
+
+        objectsContainer.addOrMove(boxContainer, mappedLocation, version);
     }
 
     // сейчас во многом повторяет addGroupObjectView, потом надо рефакторить
     private void addTreeGroupView(TreeGroupView treeGroup, Version version) {
-        addTreeGroupView(treeGroup, null, null, version);
+        addTreeGroupView(treeGroup, ComplexLocation.DEFAULT(), version);
     }
-    private void addTreeGroupView(TreeGroupView treeGroup, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
+    private void addTreeGroupView(TreeGroupView treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
         TreeGroupContainerSet treeSet = TreeGroupContainerSet.create(treeGroup, containerFactory, version);
         
-        addPropertyGroupContainerView(treeSet.getBoxContainer(), neighbour, insertType, version);
+        addPropertyGroupContainerView(treeSet.getBoxContainer(), location, version);
 
         registerComponent(boxContainers, treeSet.getBoxContainer(), treeGroup, version);
         registerComponent(filterBoxContainers, treeSet.getFilterBoxContainer(), treeGroup, version);
@@ -326,7 +320,7 @@ public class DefaultFormView extends FormView {
     }
 
     // добавление в панель по сути, так как добавление в grid происходит уже на живой форме
-    private void addPropertyDrawView(PropertyDrawView propertyDraw, Version version) {
+    private void addPropertyDrawView(PropertyDrawView propertyDraw, ComplexLocation<PropertyDrawView> location, Version version) {
         PropertyDrawEntity drawEntity = propertyDraw.entity;
         drawEntity.proceedDefaultDesign(propertyDraw, this);
 
@@ -344,23 +338,23 @@ public class DefaultFormView extends FormView {
     }
 
     @Override
-    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
-        GroupObjectView view = super.addGroupObject(groupObject, neighbour, insertType, version);
-        addGroupObjectView(view, neighbour, insertType, version);
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
+        GroupObjectView view = super.addGroupObject(groupObject, location, version);
+        addGroupObjectView(view, location, version);
         return view;
     }
 
     @Override
-    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, LogicsModule.InsertType insertType, Version version) {
-        TreeGroupView view = super.addTreeGroup(treeGroup, neighbour, insertType, version);
-        addTreeGroupView(view, neighbour, insertType, version);
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
+        TreeGroupView view = super.addTreeGroup(treeGroup, location, version);
+        addTreeGroupView(view, location, version);
         return view;
     }
 
     @Override
-    public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw, boolean addFirst, Version version) {
-        PropertyDrawView view = super.addPropertyDraw(propertyDraw, addFirst, version);
-        addPropertyDrawView(view, version);
+    public PropertyDrawView addPropertyDraw(PropertyDrawEntity propertyDraw, ComplexLocation<PropertyDrawView> location, Version version) {
+        PropertyDrawView view = super.addPropertyDraw(propertyDraw, location, version);
+        addPropertyDrawView(view, location, version);
         return view;
     }
 

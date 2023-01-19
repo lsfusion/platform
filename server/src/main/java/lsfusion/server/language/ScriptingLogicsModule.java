@@ -23,6 +23,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -88,7 +89,6 @@ import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseConta
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
-import lsfusion.server.logics.form.interactive.action.input.InputActionContextSelector;
 import lsfusion.server.logics.form.interactive.action.input.InputContextAction;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
@@ -4896,8 +4896,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public static class NavigatorElementOptions {
         public String imagePath;
-        public NavigatorElement anchor;
-        public InsertType position;
+        ComplexLocation<NavigatorElement> location;
         public String windowName;
     }
 
@@ -4985,21 +4984,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementWindow(element, options.windowName);
         setNavigatorElementImage(element, parent, options.imagePath);
 
-        if (parent != null && (!isEditOperation || options.position != InsertType.IN)) {
-            moveElement(element, parent, options.position, options.anchor, isEditOperation);
-        }
+        ComplexLocation<NavigatorElement> location = options.location;
+        if (parent != null && !(isEditOperation && location == null))
+            addOrMoveElement(element, parent, location != null ? location : ComplexLocation.DEFAULT(), isEditOperation);
     }
 
-    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertType pos, NavigatorElement anchorElement, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
+    private void addOrMoveElement(NavigatorElement element, NavigatorElement parentElement, ComplexLocation<NavigatorElement> location, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
-        checks.checkNavigatorElementMoveOperation(element, parentElement, anchorElement, isEditOperation, version);
+        checks.checkNavigatorElementMoveOperation(element, parentElement, location, isEditOperation, version);
 
-        switch (pos) {
-            case IN:    parentElement.add(element, version); break;
-            case BEFORE:parentElement.addBefore(element, anchorElement, version); break;
-            case AFTER: parentElement.addAfter(element, anchorElement, version); break;
-            case FIRST: parentElement.addFirst(element, version); break;
-        }
+        parentElement.addOrMove(element, location, version);
     }
 
     public void setNavigatorElementWindow(NavigatorElement element, String windowName) throws ScriptingErrorLog.SemanticErrorException {

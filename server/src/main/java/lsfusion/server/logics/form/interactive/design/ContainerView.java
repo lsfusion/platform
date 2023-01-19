@@ -5,30 +5,29 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.base.version.interfaces.NFOrderSet;
+import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.language.ScriptParsingException;
-import lsfusion.server.language.proxy.ViewProxyUtil;
+
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.physics.admin.log.ServerLoggers;
-import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.function.Supplier;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
 public class ContainerView extends ComponentView {
 
-    public NFOrderSet<ComponentView> children = NFFact.orderSet();
+    public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
 
     public LocalizedString caption;
     private Boolean collapsible;
@@ -55,6 +54,38 @@ public class ContainerView extends ComponentView {
 
     // temp hack ???
     public GridView recordContainer;
+
+    public void add(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
+        if(addOrMoveChecked(component, location, version) != null)
+            throw new RuntimeException("Incorrect neighbour");
+    }
+
+    public <E extends Exception> ComponentView addOrMoveChecked(ComponentView component, ComplexLocation<ComponentView> location, Version version) throws E {
+        ComponentView incorrectNeighbour = checkNeighbour(component, location, version);
+        if(incorrectNeighbour != null)
+            return incorrectNeighbour;
+
+        addOrMove(component, location, version);
+        return null;
+    }
+    public void addOrMove(ComponentView component, ComplexLocation<ComponentView> location, Version version) {
+        component.removeFromParent(version);
+        children.add(component, location, version);
+
+        component.setContainer(this, version);
+    }
+
+    public <E extends Exception> ComponentView checkNeighbour(ComponentView component, ComplexLocation<ComponentView> location, Version version) throws E {
+        if(location instanceof NeighbourComplexLocation) {
+            NeighbourComplexLocation<ComponentView> neighbourLocation = (NeighbourComplexLocation<ComponentView>) location;
+
+            ComponentView neighbour = neighbourLocation.element;
+            if (!equals(neighbour.getNFContainer(version)))
+                return neighbour;
+        }
+        return null;
+    }
+
     @Override
     public ComponentView getHiddenContainer() {
         ComponentView container = super.getHiddenContainer();
@@ -315,33 +346,19 @@ public class ContainerView extends ComponentView {
         return null;
     }
 
-    private void changeContainer(ComponentView comp, Version version) {
-        comp.removeFromParent(version);
-        comp.setContainer(this, version);
-    }
-
-    public void add(ComponentView comp) {
-        add(comp, Version.descriptor());
-    }
-    
     public void add(ComponentView comp, Version version) {
-        changeContainer(comp, version);
-        children.add(comp, version);
+        add(comp, ComplexLocation.DEFAULT(), version);
     }
-
     public void addFirst(ComponentView comp, Version version) {
-        changeContainer(comp, version);
-        children.addFirst(comp, version);
+        add(comp, ComplexLocation.FIRST(), version);
     }
 
     public void addBefore(ComponentView comp, ComponentView compBefore, Version version) {
-        changeContainer(comp, version);
-        children.addIfNotExistsToThenLast(comp, compBefore, false, version);
+        add(comp, ComplexLocation.BEFORE(compBefore), version);
     }
 
     public void addAfter(ComponentView comp, ComponentView compAfter, Version version) {
-        changeContainer(comp, version);
-        children.addIfNotExistsToThenLast(comp, compAfter, true, version);
+        add(comp, ComplexLocation.AFTER(compAfter), version);
     }
 
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
@@ -428,7 +445,8 @@ public class ContainerView extends ComponentView {
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        children = NFFact.finalOrderSet(pool.deserializeList(inStream));
+        assert false;
+//        children = NFFact.finalOrderSet(pool.deserializeList(inStream));
 
         caption = LocalizedString.create(pool.readString(inStream));
         

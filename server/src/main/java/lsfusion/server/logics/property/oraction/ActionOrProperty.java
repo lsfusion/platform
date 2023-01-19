@@ -581,9 +581,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private Integer changeMousePriority;
 
         // для всех
-        private Boolean shouldBeLast;
-
-        // для всех
         private ClassViewType viewType;
         private String customRenderFunction;
         private String customEditorFunction;
@@ -596,7 +593,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
         public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
-            entity.shouldBeLast = BaseUtils.nvl(shouldBeLast, false);
             entity.viewType = viewType;
             entity.customRenderFunction = customRenderFunction;
             entity.customChangeFunction = customEditorFunction;
@@ -696,10 +692,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 setChangeMouse(options.changeMouse, options.mouseBindingsModes);
             if(changeMousePriority == null)
                 setChangeMousePriority(options.changeMousePriority);
-            
-            if(shouldBeLast == null)
-                setShouldBeLast(options.shouldBeLast);
-            
+
             if(viewType == null)
                 setViewType(options.viewType);
             if (customRenderFunction == null)
@@ -805,10 +798,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
         public void setChangeMousePriority(Integer changeMousePriority) {
             this.changeMousePriority = changeMousePriority;
-        }
-
-        public void setShouldBeLast(Boolean shouldBeLast) {
-            this.shouldBeLast = shouldBeLast;
         }
 
         public void setViewType(ClassViewType viewType) {
