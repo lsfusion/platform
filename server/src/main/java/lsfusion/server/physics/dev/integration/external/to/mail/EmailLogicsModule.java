@@ -30,8 +30,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
     public LP fromAddressAccount;
     public LP inboxAccount;
 
-    public LP emailSent;
-
     public LP receiveHostAccount;
     public LP receivePortAccount;
 
@@ -68,8 +66,6 @@ public class EmailLogicsModule extends ScriptingLogicsModule{
 
         fromAddressAccount = findProperty("fromAddress[Account]");
         inboxAccount = findProperty("inboxAccount[STRING[100]]");
-
-        emailSent = findProperty("emailSent[]");
 
         // Receiving
         receiveHostAccount = findProperty("receiveHost[Account]");

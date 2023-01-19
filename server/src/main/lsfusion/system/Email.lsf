@@ -37,8 +37,6 @@ isDefaultInbox '{email.is.default.inbox.account}' = DATA BOOLEAN (Account);
 defaultInboxAccount = GROUP MAX Account account IF isDefaultInbox(account);
 inboxAccount (STRING[100] fromAddress) = OVERRIDE accountFromAddress(fromAddress), defaultInboxAccount();
 
-emailSent '{email.email.sent}' = DATA LOCAL BOOLEAN ();
-
 // Receiving
 receiveHost '{email.receive.host.account}' = DATA STRING[50](Account);
 receivePort '{email.receive.port.account}' = DATA INTEGER(Account);
