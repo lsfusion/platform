@@ -74,7 +74,7 @@ public class RabbitMQAction extends InternalAction {
                     String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
                     try {
                         ThreadLocalContext.aspectBeforeMonitorHTTP(ConsumerMonitorServer.this);
-                        findAction("processConsumed[STRING]").execute(context, new DataObject(message));
+                        findAction("processConsumed[STRING,STRING]").execute(context, new DataObject(queue), new DataObject(message));
                     } catch (SQLException | SQLHandledException | ScriptingErrorLog.SemanticErrorException e) {
                         throw Throwables.propagate(e);
                     } finally {
