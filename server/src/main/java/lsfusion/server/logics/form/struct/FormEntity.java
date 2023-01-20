@@ -17,6 +17,7 @@ import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.*;
@@ -26,7 +27,6 @@ import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.DataSession;
@@ -125,7 +125,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
     public NFOrderSet<FormScheduler> formSchedulers = NFFact.orderSet();
 
-    private NFOrderSet<GroupObjectEntity> groups = NFFact.orderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
+    private NFComplexOrderSet<GroupObjectEntity> groups = NFFact.complexOrderSet(true); // для script'ов, findObjectEntity в FORM / EMAIL objects
     public Iterable<GroupObjectEntity> getGroupsIt() {
         return groups.getIt();
     }
@@ -141,7 +141,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<GroupObjectEntity> getNFGroupsListIt(Version version) {
         return groups.getNFListIt(version);
     }
-    
+    public Pair<ImOrderSet<GroupObjectEntity>, ImList<Integer>> getNFGroupsComplexOrderSet(Version version) {
+        return groups.getNFComplexOrderSet(version);
+    }
+
     private NFSet<TreeGroupEntity> treeGroups = NFFact.set();
     public Iterable<TreeGroupEntity> getTreeGroupsIt() {
         return treeGroups.getIt();
@@ -150,7 +153,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return treeGroups.getNFIt(version);
     }    
     
-    private NFOrderSet<PropertyDrawEntity> propertyDraws = NFFact.orderSet();
+    private NFComplexOrderSet<PropertyDrawEntity> propertyDraws = NFFact.complexOrderSet();
     public Iterable<PropertyDrawEntity> getPropertyDrawsIt() {
         return propertyDraws.getIt();
     }
@@ -163,10 +166,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public Iterable<PropertyDrawEntity> getPropertyDrawsListIt() {
         return propertyDraws.getListIt();        
     }
-    public Iterable<PropertyDrawEntity> getNFPropertyDrawsListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
-        return propertyDraws.getNFListIt(version);
+    public Pair<ImOrderSet<PropertyDrawEntity>, ImList<Integer>> getNFPropertyDrawsComplexOrderSet(Version version) {
+        return propertyDraws.getNFComplexOrderSet(version);
     }
-    
+
     private NFSet<FilterEntity> fixedFilters = NFFact.set();
     public ImSet<FilterEntity> getFixedFilters() {
         return fixedFilters.getSet();
@@ -334,7 +337,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType).property))), PropertyDrawExtraType.SHOWIF);
             propertyDraw.ignoreHasHeaders = true;
 
-            addPropertyDrawView(propertyDraw, false, version); // because it's called after form constructor
+            addPropertyDrawView(propertyDraw, ComplexLocation.DEFAULT(), version); // because it's called after form constructor
         }
     }
 
@@ -743,25 +746,22 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return true;
     }
 
-    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, InsertType insertType, String sID, Version version, GroupObjectEntity... tGroups) {
+    public TreeGroupEntity addTreeGroupObject(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, String sID, Version version, GroupObjectEntity... tGroups) {
         if (sID != null)
             treeGroup.setSID(sID);
-        for (GroupObjectEntity group : tGroups) {
-            if(!groups.containsNF(group, version))
-                groups.add(group, version);
+        for (GroupObjectEntity group : tGroups)
             treeGroup.add(group);
-        }
 
         treeGroups.add(treeGroup, version);
 
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null)
-            richDesign.addTreeGroup(treeGroup, neighbour, insertType, version);
+            richDesign.addTreeGroup(treeGroup, location, version);
 
         return treeGroup;
     }
 
-    public void addGroupObject(GroupObjectEntity group, GroupObjectEntity neighbour, InsertType insertType, Version version) {
+    public void addGroupObject(GroupObjectEntity group, ComplexLocation<GroupObjectEntity> location, Version version) {
         for (GroupObjectEntity groupOld : getNFGroupsIt(version)) {
             assert group.getID() != groupOld.getID() && !group.getSID().equals(groupOld.getSID());
             for (ObjectEntity obj : group.getObjects()) {
@@ -770,24 +770,18 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                 }
             }
         }
-        if (insertType == InsertType.FIRST) {
-            groups.addFirst(group, version);
-        } else if (neighbour != null) {
-            groups.addIfNotExistsToThenLast(group, neighbour, insertType == InsertType.AFTER, version);
-        } else {
-            groups.add(group, version);    
-        }
+        groups.add(group, location, version);
 
         initDefaultGroupElements(group, version);
 
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null) {
-            richDesign.addGroupObject(group, neighbour, insertType, version);
+            richDesign.addGroupObject(group, location, version);
         }
     }
 
     public void addGroupObject(GroupObjectEntity group, Version version) {
-        addGroupObject(group, null, null, version);
+        addGroupObject(group, ComplexLocation.DEFAULT(), version);
     }
 
     public static ImCol<ImSet<ValueClassWrapper>> getSubsets(ImSet<ValueClassWrapper> valueClasses) {
@@ -809,7 +803,11 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, Version version, ImOrderSet<ObjectEntity> objects) {
-        return addPropertyDraw(property.createObjectEntity(objects), null, property.listInterfaces, false, version);
+        return addPropertyDraw(property, ComplexLocation.DEFAULT(), version, objects);
+    }
+
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, ComplexLocation<PropertyDrawEntity> location, Version version, ImOrderSet<ObjectEntity> objects) {
+        return addPropertyDraw(property.createObjectEntity(objects), null, property.listInterfaces, location, version);
     }
 
     public GroupObjectEntity getNFApplyObject(ImSet<ObjectEntity> objects, Version version) {
@@ -850,14 +848,14 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
-                                                                               ImOrderSet<P> interfaces, boolean addFirst, Version version) {
+                                                                               ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
         String propertySID = null;
         if (propertyImplement.property.isNamed()) 
             propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);
-        return addPropertyDraw(propertyImplement, formPath, propertySID, null, addFirst, version);
+        return addPropertyDraw(propertyImplement, formPath, propertySID, null, location, version);
     }
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath, 
-                                                                               String propertySID, ActionOrProperty inheritedProperty, boolean addFirst, Version version) {
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
+                                                                               String propertySID, ActionOrProperty inheritedProperty, ComplexLocation<PropertyDrawEntity> location, Version version) {
         if(inheritedProperty == null)
             inheritedProperty = propertyImplement.property;
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), "propertyDraw" + version.getOrder() + propertyDraws.size(version), propertyImplement, inheritedProperty);
@@ -868,42 +866,17 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             
             newPropertyDraw.setIntegrationSID(inheritedProperty.getName());
         }
-        if (addFirst) {
-            propertyDraws.addFirst(newPropertyDraw, version);
-        } else {
-            propertyDraws.add(newPropertyDraw, list -> {
-                int ind = list.size() - 1;
-                if (!newPropertyDraw.shouldBeLast) {
-                    while (ind >= 0) {
-                        PropertyDrawEntity property = list.get(ind);
-                        if (!property.shouldBeLast) {
-                            break;
-                        }
-                        --ind;
-                    }
-                }
-                return ind + 1;
-            }, version);
-        }
+        propertyDraws.add(newPropertyDraw, location, version);
         newPropertyDraw.setFormPath(formPath);
         return newPropertyDraw;
     }
 
-    public PropertyDrawView addPropertyDrawView(PropertyDrawEntity propertyDraw, boolean addFirst, Version version) {
+    public PropertyDrawView addPropertyDrawView(PropertyDrawEntity propertyDraw, ComplexLocation<PropertyDrawEntity> location, Version version) {
         FormView richDesign = getNFRichDesign(version);
         if (richDesign != null) {
-            return richDesign.addPropertyDraw(propertyDraw, addFirst, version);
+            return richDesign.addPropertyDraw(propertyDraw, location.map(richDesign::get), version);
         }
         return null;
-    }
-
-    public void movePropertyDrawTo(PropertyDrawEntity property, PropertyDrawEntity newNeighbour, boolean isRightNeighbour, Version version) {
-        propertyDraws.move(property, newNeighbour, isRightNeighbour, version);
-
-        FormView richDesign = getNFRichDesign(version);
-        if (richDesign != null) {
-            richDesign.movePropertyDrawTo(property, newNeighbour, isRightNeighbour, version);
-        }
     }
     
     public <P extends PropertyInterface> PropertyObjectEntity addPropertyObject(LP<P> property, ImOrderSet<ObjectEntity> objects) {

@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.design;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -10,16 +11,12 @@ import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.*;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.version.NFFact;
-import lsfusion.server.base.version.SIDHandler;
-import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.*;
+import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 import lsfusion.server.base.version.interfaces.NFSet;
-import lsfusion.server.logics.LogicsModule.InsertType;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
-import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerCustomSerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
@@ -32,7 +29,6 @@ import lsfusion.server.logics.form.interactive.design.object.TreeGroupView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
-import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterEntity;
 import lsfusion.server.logics.form.struct.filter.RegularFilterGroupEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -50,7 +46,6 @@ import java.util.List;
 import java.util.*;
 
 import static java.util.Collections.synchronizedMap;
-import static lsfusion.server.logics.LogicsModule.InsertType.AFTER;
 import static lsfusion.server.logics.form.interactive.design.object.GroupObjectContainerSet.*;
 
 public class FormView extends IdentityObject implements ServerCustomSerializable {
@@ -79,7 +74,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     // список групп
-    public NFOrderSet<GroupObjectView> groupObjects = NFFact.orderSet();
+    public NFComplexOrderSet<GroupObjectView> groupObjects = NFFact.complexOrderSet();
     public Iterable<GroupObjectView> getGroupObjectsIt() {
         return groupObjects.getIt();
     }
@@ -94,7 +89,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     // список свойств
-    public NFOrderSet<PropertyDrawView> properties = NFFact.orderSet();
+    public NFComplexOrderSet<PropertyDrawView> properties = NFFact.complexOrderSet();
     public Iterable<PropertyDrawView> getPropertiesIt() {
         return properties.getIt();
     }
@@ -104,8 +99,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     public Iterable<PropertyDrawView> getNFPropertiesIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
         return properties.getNFIt(version);
     }
-    public Iterable<PropertyDrawView> getNFPropertiesListIt(Version version) { // предполагается все с одной версией, равной текущей (конструирование FormView)
-        return properties.getNFListIt(version);
+    public Pair<ImOrderSet<PropertyDrawView>, ImList<Integer>> getNFPropertiesComplexOrderSet(Version version) {
+        return properties.getNFComplexOrderSet(version);
     }
 
     // список фильтров
@@ -173,9 +168,6 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return mainContainer.findById(id);
     }
 
-    public FormView() {
-    }
-
     public FormView(FormEntity entity, Version version) {
         super(0);
 
@@ -186,16 +178,19 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         mainContainer = new ContainerView(idGenerator.idShift(), true);
         setComponentSID(mainContainer, getBoxContainerSID(), version);
 
-        for (GroupObjectEntity group : entity.getNFGroupsListIt(version)) {
-            addGroupObjectBase(group, version);
+        Pair<ImOrderSet<GroupObjectEntity>, ImList<Integer>> groups = entity.getNFGroupsComplexOrderSet(version);
+        for (int i = 0, size = groups.first.size() ; i < size ; i++) {
+            addGroupObjectBase(groups.first.get(i), ComplexLocation.LAST(groups.second.get(i)), version);
         }
 
         for (TreeGroupEntity treeGroup : entity.getNFTreeGroupsIt(version)) {
             addTreeGroupBase(treeGroup, version);
         }
 
-        for (PropertyDrawEntity property : entity.getNFPropertyDrawsListIt(version)) {
-            PropertyDrawView view = addPropertyDrawBase(property, false, version);
+        Pair<ImOrderSet<PropertyDrawEntity>, ImList<Integer>> properties = entity.getNFPropertyDrawsComplexOrderSet(version);
+        for (int i = 0, size = properties.first.size() ; i < size ; i++) {
+            PropertyDrawEntity property = properties.first.get(i);
+            PropertyDrawView view = addPropertyDrawBase(property, ComplexLocation.LAST(properties.second.get(i)), version);
             view.caption = property.initCaption;
         }
 
@@ -260,14 +255,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         mproperties.put(property.entity, property);
     }
 
-    private PropertyDrawView addPropertyDrawBase(PropertyDrawEntity property, boolean addFirst, Version version) {
+    private PropertyDrawView addPropertyDrawBase(PropertyDrawEntity property, ComplexLocation<PropertyDrawView> location, Version version) {
         PropertyDrawView propertyView = new PropertyDrawView(property);
-        if (addFirst) {
-            properties.addFirst(propertyView, version);
-        } else {
-            properties.add(propertyView, version);
-        }
-        properties.add(propertyView, version);
+        properties.add(propertyView, location, version);
         addPropertyDrawView(propertyView);
 
         //походу инициализируем порядки по умолчанию
@@ -279,18 +269,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         return propertyView;
     }
 
-    public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, boolean addFirst, Version version) {
-        return addPropertyDrawBase(property, addFirst, version);
+    public PropertyDrawView addPropertyDraw(PropertyDrawEntity property, ComplexLocation<PropertyDrawView> location, Version version) {
+        return addPropertyDrawBase(property, location, version);
     }
 
-    public void movePropertyDrawTo(PropertyDrawEntity property, PropertyDrawEntity newNeighbour, boolean isRightNeighbour, Version version) {
-        PropertyDrawView propertyView = mproperties.get(property);
-        PropertyDrawView neighbourView = mproperties.get(newNeighbour);
-        assert propertyView != null && neighbourView != null;
-
-        properties.move(propertyView, neighbourView, isRightNeighbour, version);
-    }
-    
     private void addGroupObjectView(GroupObjectView groupObjectView, Version version) {
         mgroupObjects.put(groupObjectView.entity, groupObjectView);
 
@@ -308,33 +290,23 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             mobjects.put(object.entity, object);
     }
     
-    public GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, GroupObjectEntity neighbour, InsertType insertType, Version version) {
+    public GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
         GroupObjectView groupObjectView = new GroupObjectView(idGenerator, groupObject);
-        if (insertType == InsertType.FIRST) {
-            groupObjects.addFirst(groupObjectView, version);
-        } else if (neighbour != null) {
-            groupObjects.addIfNotExistsToThenLast(groupObjectView, get(neighbour), insertType == AFTER, version);
-        } else {
-            groupObjects.add(groupObjectView, version);
-        }
+        groupObjects.add(groupObjectView, location.map(this::get), version);
         addGroupObjectView(groupObjectView, version);
         return groupObjectView;    
     }
 
-    private GroupObjectView addGroupObjectBase(GroupObjectEntity groupObject, Version version) {
-        return addGroupObjectBase(groupObject, null, null, version);
-    }
-
     private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, Version version) {
-        return addTreeGroupBase(treeGroup, null, null, version);
+        return addTreeGroupBase(treeGroup, ComplexLocation.DEFAULT(), version);
     }
 
-    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, GroupObjectEntity neighbour, InsertType insertType, Version version) {
-        return addGroupObjectBase(groupObject, neighbour, insertType, version);
+    public GroupObjectView addGroupObject(GroupObjectEntity groupObject, ComplexLocation<GroupObjectEntity> location, Version version) {
+        return addGroupObjectBase(groupObject, location, version);
     }
 
-    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, GroupObjectEntity neighbour, InsertType insertType, Version version) {
-        return addTreeGroupBase(treeGroup, neighbour, insertType, version);
+    public TreeGroupView addTreeGroup(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
+        return addTreeGroupBase(treeGroup, location, version);
     }
 
     private void addTreeGroupView(TreeGroupView treeGroupView, Version version) {
@@ -345,7 +317,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         setComponentSID(treeGroupView.getFilterControls(), getFilterControlsComponentSID(treeGroupView), version);
     }
 
-    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, GroupObjectEntity neighbourGroupObject, InsertType insertType, Version version) {
+    private TreeGroupView addTreeGroupBase(TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version) {
         TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup, version);
         treeGroups.add(treeGroupView, version);
         addTreeGroupView(treeGroupView, version);
@@ -723,11 +695,12 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        assert false;
         mainContainer = pool.deserializeObject(inStream);
         treeGroups = NFFact.finalSet(pool.deserializeSet(inStream));
-        groupObjects = NFFact.finalOrderSet(pool.deserializeList(inStream));
-        properties = NFFact.finalOrderSet(pool.deserializeList(inStream));
-        regularFilters = NFFact.finalOrderSet(pool.deserializeList(inStream));
+//        groupObjects = NFFact.finalOrderSet(pool.deserializeList(inStream));
+//        properties = NFFact.finalOrderSet(pool.deserializeList(inStream));
+//        regularFilters = NFFact.finalOrderSet(pool.deserializeList(inStream));
 
         int orderCount = inStream.readInt();
         MOrderExclMap<PropertyDrawView, Boolean> mDefaultOrders = MapFact.mOrderExclMap(orderCount);

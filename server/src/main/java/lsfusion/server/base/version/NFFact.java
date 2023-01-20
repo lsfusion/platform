@@ -13,6 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class NFFact {
     
+    public static <K> NFComplexOrderSet<K> complexOrderSet() {
+        return new NFComplexOrderSetImpl<>();
+    }
+    public static <K> NFComplexOrderSet<K> complexOrderSet(boolean allowVersionFinalRead) {
+        return new NFComplexOrderSetImpl<>(allowVersionFinalRead);
+    }
+
     public static <K> NFOrderSet<K> orderSet() {
         return new NFOrderSetImpl<>();
     }
@@ -39,14 +46,6 @@ public class NFFact {
 
     public static <K> NFList<K> finalList(List<K> list) {
         return finalList(ListFact.fromJavaList(list));
-    }
-
-    public static <K> NFOrderSet<K> finalOrderSet(ImOrderSet<K> list) {
-        return new NFOrderSetImpl<>(list);
-    }
-
-    public static <K> NFOrderSet<K> finalOrderSet(List<K> list) {
-        return finalOrderSet(SetFact.fromJavaOrderSet(list));
     }
 
     public static <K> NFSet<K> finalSet(ImSet<K> set) {

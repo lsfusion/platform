@@ -6,7 +6,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
-import lsfusion.server.logics.LogicsModule.InsertType;
+import lsfusion.server.base.version.ComplexLocation;
+
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -46,7 +47,6 @@ public class FormPropertyOptions {
     private Map<String, ActionObjectEntity> eventActions;
     private String eventId;
     private String integrationSID;
-    private PropertyDrawEntity neighbourPropertyDraw;
     private Boolean order;
     private Boolean filter;
     private Boolean pivotColumn;
@@ -67,7 +67,7 @@ public class FormPropertyOptions {
     private PropertyDrawEntity quickFilterPropertyDraw;
     private String neighbourPropertyText;
 
-    private InsertType insertType;
+    private ComplexLocation<PropertyDrawEntity> location;
 
     private FormSessionScope formSessionScope;
 
@@ -312,17 +312,14 @@ public class FormPropertyOptions {
         this.eventActions = eventActions;
     }
 
-    public PropertyDrawEntity getNeighbourPropertyDraw() {
-        return neighbourPropertyDraw;
+
+    public void setLocation(ComplexLocation<PropertyDrawEntity> location, String propText) {
+        this.location = location;
+        this.neighbourPropertyText = propText;
     }
 
     public String getNeighbourPropertyText() {
         return neighbourPropertyText;
-    }
-
-    public void setNeighbourPropertyDraw(PropertyDrawEntity neighbourPropertyDraw, String propText) {
-        this.neighbourPropertyDraw = neighbourPropertyDraw;
-        this.neighbourPropertyText = propText;
     }
 
     public PropertyDrawEntity getQuickFilterPropertyDraw() {
@@ -333,12 +330,8 @@ public class FormPropertyOptions {
         this.quickFilterPropertyDraw = quickFilterPropertyDraw;
     }
 
-    public InsertType getInsertType() {
-        return insertType;
-    }
-
-    public void setInsertType(InsertType insertType) {
-        this.insertType = insertType;
+    public ComplexLocation<PropertyDrawEntity> getLocation() {
+        return location;
     }
 
     public String getEventId() {
@@ -464,8 +457,7 @@ public class FormPropertyOptions {
         merged.setKeyBindings(nvl(overrides.getKeyBindings(), keyBindings));
         merged.setEventId(nvl(overrides.getEventId(), eventId));
         merged.setIntegrationSID(nvl(overrides.getIntegrationSID(), integrationSID));
-        merged.setNeighbourPropertyDraw(nvl(overrides.getNeighbourPropertyDraw(), neighbourPropertyDraw), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
-        merged.setInsertType(nvl(overrides.getInsertType(), insertType));
+        merged.setLocation(nvl(overrides.getLocation(), location), nvl(overrides.getNeighbourPropertyText(), neighbourPropertyText));
 
         merged.formula = nvl(overrides.formula, formula);
         merged.formulaOperands = nvl(overrides.formulaOperands, formulaOperands);

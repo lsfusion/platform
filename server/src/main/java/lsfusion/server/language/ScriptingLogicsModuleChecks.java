@@ -1,5 +1,7 @@
 package lsfusion.server.language;
 
+import lsfusion.server.base.version.ComplexLocation;
+import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
 import lsfusion.server.data.expr.query.PartitionType;
@@ -586,8 +588,8 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkNavigatorElementMoveOperation(NavigatorElement element, NavigatorElement parentElement, 
-                                                   NavigatorElement anchorElement, boolean isEditOperation, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkNavigatorElementMoveOperation(NavigatorElement element, NavigatorElement parentElement,
+                                                   ComplexLocation<NavigatorElement> location, boolean isEditOperation, Version version) throws ScriptingErrorLog.SemanticErrorException {
         if (parentElement.isLeafElement()) {
             errLog.emitIllegalParentNavigatorElementError(parser, parentElement.getCanonicalName());
         }
@@ -597,15 +599,24 @@ public class ScriptingLogicsModuleChecks {
             errLog.emitIllegalNavigatorElementMoveError(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }
 
-        if (anchorElement != null && !parentElement.equals(anchorElement.getNFParent(version))) {
-            errLog.emitIllegalInsertBeforeAfterElementError(parser, element.getCanonicalName(), parentElement.getCanonicalName(), anchorElement.getCanonicalName());
-        }
+        checkNeighbour(element, parentElement, location, version);
 
         if (element.isAncestorOf(parentElement, version)) {
             errLog.emitIllegalAddNavigatorToSubnavigatorError(parser, element.getCanonicalName(), parentElement.getCanonicalName());
         }
-    } 
-    
+    }
+
+    private void checkNeighbour(NavigatorElement element, NavigatorElement parentElement, ComplexLocation<NavigatorElement> location, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        if(location instanceof NeighbourComplexLocation) {
+            NeighbourComplexLocation<NavigatorElement> neighbourLocation = (NeighbourComplexLocation<NavigatorElement>) location;
+
+            NavigatorElement neighbour = neighbourLocation.element;
+            if (!parentElement.equals(neighbour.getNFParent(version))) {
+                errLog.emitIllegalInsertBeforeAfterElementError(parser, element.getCanonicalName(), parentElement.getCanonicalName(), neighbour.getCanonicalName());
+            }
+        }
+    }
+
     public void checkAssignProperty(LPWithParams fromProperty, LPWithParams toProperty) throws ScriptingErrorLog.SemanticErrorException {
         LP<?> toLCP = toProperty.getLP();
         if (!(toLCP.property instanceof DataProperty || toLCP.property instanceof CaseUnionProperty || toLCP.property instanceof JoinProperty)) { // joinproperty только с неповторяющимися параметрами

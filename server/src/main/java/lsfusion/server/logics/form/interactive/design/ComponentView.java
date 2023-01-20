@@ -352,7 +352,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public void removeFromParent(Version version) {
         ContainerView nf = getNFContainer(version);
         if(nf != null) {
-            assert nf.children.containsNF(this, version);
             nf.children.remove(this, version);
             setContainer(null, version);
         }

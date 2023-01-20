@@ -23,7 +23,6 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
-import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
@@ -126,14 +125,11 @@ import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.ValueProperty;
-import lsfusion.server.physics.admin.drilldown.action.LazyDrillDownAction;
-import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
@@ -1896,7 +1892,6 @@ public abstract class LogicsModule {
     }
     
     private void setFormActions(LA result) {
-        result.setShouldBeLast(true);
         result.setViewType(ClassViewType.TOOLBAR);
     }
 
@@ -2307,18 +2302,6 @@ public abstract class LogicsModule {
         navigatorElements.put(element.getName(), element);
     }
 
-    public void addFormActions(FormEntity form, ObjectEntity object, FormSessionScope scope) {
-        Version version = getVersion();
-        addFormAction(form, getAddFormAction(form, object, null), scope, version);
-        addFormAction(form, getEditFormAction(object, null), scope, version, object);
-        addFormAction(form, getDeleteAction(object), scope, version, object);
-    }
-
-    public void addFormAction(FormEntity form, LA formAction, FormSessionScope scope, Version version, ObjectEntity... objects) {
-        PropertyDrawEntity propertyDraw = form.addPropertyDraw(formAction, version, SetFact.toOrderExclSet(objects));
-        propertyDraw.defaultChangeEventScope = scope;
-    }
-
     public LA getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, CustomClass explicitClass) {
         CustomClass cls = explicitClass;
         if(cls == null)
@@ -2505,7 +2488,4 @@ public abstract class LogicsModule {
     public ImplementTable resolveTable(String compoundName) throws ResolvingErrors.ResolvingError {
         return resolveManager.findTable(compoundName);
     }
-
-    public enum InsertType {IN, BEFORE, AFTER, FIRST}
 }
-

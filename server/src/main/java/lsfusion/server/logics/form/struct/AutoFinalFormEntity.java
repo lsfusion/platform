@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterRevValueMap;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -80,6 +81,10 @@ public class AutoFinalFormEntity extends AutoFormEntity {
 
     public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, ImOrderSet<ObjectEntity> objects) {
         return addPropertyDraw(property, baseVersion, objects);
+    }
+
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LAP<P, ?> property, ComplexLocation<PropertyDrawEntity> location, ImOrderSet<ObjectEntity> objects) {
+        return addPropertyDraw(property, location, baseVersion, objects);
     }
 
     public PropertyDrawEntity<?> addValuePropertyDraw(BaseLogicsModule LM, ObjectEntity object) {

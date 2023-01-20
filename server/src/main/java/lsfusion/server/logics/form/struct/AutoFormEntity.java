@@ -4,10 +4,10 @@ import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.action.ServerResponse;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -35,6 +35,6 @@ public abstract class AutoFormEntity extends FormEntity {
 
     public <I extends PropertyInterface, P extends ActionOrProperty<I>> PropertyDrawEntity<I> addPropertyDraw(P property, ImRevMap<I, ObjectEntity> mapping, Version version) {
         ActionOrPropertyObjectEntity<I, ?> entity = ActionOrPropertyObjectEntity.create(property, mapping, null, null, null);
-        return addPropertyDraw(entity, null, entity.property.getReflectionOrderInterfaces(), false, version);
+        return addPropertyDraw(entity, null, entity.property.getReflectionOrderInterfaces(), ComplexLocation.DEFAULT(), version);
     }
 }
