@@ -82,7 +82,38 @@ webHookTelegram(JSONFILE f) {
     APPLY;
 } @@noauth;
 
+fileMessage = DATA NAMEDFILE(Message);
+
+telegramAttachment '{chat.attachment}' = DATA LOCAL NAMEDFILE();
 sendMessageTelegramResult = DATA LOCAL STRING();
+sendFile(Chat chat) {
+    LOCAL result = JSONFILE();
+
+    LOCAL headers = TEXT(STRING[100]);
+    headers('Content-Type') <- 'multipart/form-data;';
+    
+    LOCAL fileName = STRING();
+    fileName() <- CONCAT '', name(telegramAttachment()), IF length(extension(telegramAttachment())) > 0 THEN '.' ELSE '', extension(telegramAttachment());
+
+    EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account(chat)) + '/sendDocument?chat_id=' + id(chat)
+        BODYPARAMNAMES 'document;' + fileName() HEADERS headers PARAMS telegramAttachment() TO result;
+
+    LOCAL ok = BOOLEAN();
+    LOCAL description = STRING();
+    IMPORT FROM result() TO() ok, description;
+    IF NOT ok() THEN {
+        sendMessageTelegramResult() <- description();
+    } ELSE {
+        NEW botMessage = Message {
+            chat(botMessage) <- chat;
+            fileMessage(botMessage) <- telegramAttachment();
+            message(botMessage) <- fileName();
+            dateTime(botMessage) <- currentDateTime();
+            from(botMessage) <- 'YOU';
+        }
+    }
+}
+
 sendMessageTelegram(Chat chat, STRING message) {
     sendMessageTelegramResult() <- NULL;
     LOCAL result = JSONFILE();
@@ -102,10 +133,27 @@ sendMessageTelegram(Chat chat, STRING message) {
             from(botMessage) <- 'YOU';
         }
     }
-    APPLY;
 }
 
-sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING THEN {
-    sendMessageTelegram(chat, message);
+openFile '{system.open.file}' (Message m) {
+    open(fileMessage(m));
+}
+
+EXTEND FORM messengers
+    PROPERTIES telegramAttachment()
+    PROPERTIES (m) openFile SHOWIF isTelegram(a) READONLYIF NOT fileMessage(m);
+;
+
+DESIGN messengers {
+    sendMessage {
+        MOVE PROPERTY(telegramAttachment()) FIRST;
+        horizontal = TRUE;
+    }
+}
+
+sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING OR telegramAttachment() THEN {
+    IF message IS STRING THEN sendMessageTelegram(chat, message);
+    IF NOT sendMessageTelegramResult() AND telegramAttachment() THEN sendFile(chat);
+    APPLY;
     sendMessageResult() <- sendMessageTelegramResult();
 }

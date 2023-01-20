@@ -2000,18 +2000,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJoinAProp(addAProp(new ExternalUDPAction(clientAction, getTypesForExternalAction(params, context))), BaseUtils.addList(connectionString, params));
     }
 
-    public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl, 
-                                                      List<String> bodyParamNames, List<NamedPropertyUsage> bodyParamHeadersList,
+    public LAWithParams addScriptedExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, LPWithParams connectionString, LPWithParams bodyUrl,
+                                                      List<LPWithParams> bodyParamNames, List<NamedPropertyUsage> bodyParamHeadersList,
                                                       NamedPropertyUsage headers, NamedPropertyUsage cookies, NamedPropertyUsage headersTo, NamedPropertyUsage cookiesTo,
                                                       List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {
         LP headersProperty = headers != null ? findLPStringParamByPropertyUsage(headers) : null;
         LP cookiesProperty = cookies != null ? findLPStringParamByPropertyUsage(cookies) : null;
         LP headersToProperty = headersTo != null ? findLPStringParamByPropertyUsage(headersTo) : null;
         LP cookiesToProperty = cookiesTo != null ? findLPStringParamByPropertyUsage(cookiesTo) : null;
+        boolean hasBodyUrl = bodyUrl != null;
+        List<LPWithParams> properties = hasBodyUrl ? mergeLists(asList(connectionString, bodyUrl), bodyParamNames, params) :
+                mergeLists(singletonList(connectionString), bodyParamNames, params);
+
         return addScriptedJoinAProp(addAProp(new ExternalHTTPAction(clientAction, method != null ? method : ExternalHttpMethod.POST,
                         getTypesForExternalAction(params, context), findLPsNoParamsByPropertyUsage(toPropertyUsageList),
-                        bodyParamNames, findLPsStringParamByPropertyUsage(bodyParamHeadersList), headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, bodyUrl != null)),
-                bodyUrl != null ? BaseUtils.mergeList(Arrays.asList(connectionString, bodyUrl), params) : BaseUtils.addList(connectionString, params));
+                        bodyParamNames.size(), findLPsStringParamByPropertyUsage(bodyParamHeadersList), headersProperty, cookiesProperty, headersToProperty, cookiesToProperty, hasBodyUrl)),
+                properties);
     }
 
     public LAWithParams addScriptedExternalLSFAction(LPWithParams connectionString, LPWithParams actionLCP, boolean eval, boolean action, List<LPWithParams> params, List<TypedParameter> context, List<NamedPropertyUsage> toPropertyUsageList) throws ScriptingErrorLog.SemanticErrorException {

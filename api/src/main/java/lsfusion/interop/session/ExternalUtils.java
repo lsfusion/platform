@@ -21,6 +21,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
@@ -33,6 +34,7 @@ import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -286,6 +288,10 @@ public class ExternalUtils {
         int paramCount = results.length;
         if (paramCount > 1 || (bodyParamNames != null && !bodyParamNames.isEmpty())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            //because MultipartEntityBuilder uses US-ASCII as the default charset and we can`t pass cyrillic symbols in request headers.
+            builder.setCharset(StandardCharsets.UTF_8);
+            //BROWSER_COMPATIBLE mode uses charset from builder.setCharset(). Default mode is STRICT, which uses US-ASCII.
+            builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
             builder.setContentType(nvl(forceContentType, ExternalUtils.MULTIPART_MIXED));
             for (int i = 0; i < paramCount; i++) {
                 Object value = results[i];

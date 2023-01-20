@@ -42,13 +42,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ExternalHTTPAction extends CallAction {
     boolean clientAction;
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
-    private List<String> bodyParamNames;
+    private List<PropertyInterface> bodyParamNamesInterfaces = new ArrayList<>();
     private ImList<LP> bodyParamHeadersPropertyList;
     private LP<?> headersProperty;
     private LP<?> cookiesProperty;
@@ -56,15 +57,20 @@ public class ExternalHTTPAction extends CallAction {
     private LP cookiesToProperty;
 
     public ExternalHTTPAction(boolean clientAction, ExternalHttpMethod method, ImList<Type> params, ImList<LP> targetPropList,
-                              List<String> bodyParamNames, ImList<LP> bodyParamHeadersPropertyList,
+                              int bodyParamNamesSize, ImList<LP> bodyParamHeadersPropertyList,
                               LP headersProperty, LP cookiesProperty, LP headersToProperty, LP cookiesToProperty, boolean hasBodyUrl) {
-        super(hasBodyUrl ? 2 : 1, params, targetPropList);
+        super((hasBodyUrl ? 2 : 1) + bodyParamNamesSize, params, targetPropList);
 
         this.clientAction = clientAction;
         this.method = method;
         this.queryInterface = getOrderInterfaces().get(0);
         this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
-        this.bodyParamNames = bodyParamNames;
+
+        int startIndex = hasBodyUrl ? 2 : 1;
+        for (int i = startIndex; i < startIndex + bodyParamNamesSize; i++) {
+            this.bodyParamNamesInterfaces.add(getOrderInterfaces().get(i));
+        }
+
         this.bodyParamHeadersPropertyList = bodyParamHeadersPropertyList;
         this.headersProperty = headersProperty;
         this.cookiesProperty = cookiesProperty;
@@ -127,6 +133,9 @@ public class ExternalHTTPAction extends CallAction {
                 byte[] body = null;
                 if (method.hasBody()) {
                     String contentType = headers.get("Content-Type");
+                    List<String> bodyParamNames = bodyParamNamesInterfaces.stream()
+                            .map(bodyParamNamesInterface -> (String) context.getKeyObject(bodyParamNamesInterface))
+                            .collect(Collectors.toList());
                     HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, contentType != null ? ContentType.parse(contentType) : null);
                     body = IOUtils.readBytesFromHttpEntity(entity);
                     headers.put("Content-Type", entity.getContentType().getValue());

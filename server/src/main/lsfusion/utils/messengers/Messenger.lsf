@@ -95,7 +95,9 @@ DESIGN messengers {
     MOVE PROPERTY(newMessage(c)) {
         panelCaptionVertical = TRUE;
     }
-    MOVE PROPERTY(sendMessage(c));                              
+    NEW sendMessage {
+        MOVE PROPERTY(sendMessage(c));
+    }
     MOVE TOOLBARBOX; 
 }
 
