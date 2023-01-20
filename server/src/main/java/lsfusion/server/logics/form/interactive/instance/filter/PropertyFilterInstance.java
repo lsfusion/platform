@@ -52,7 +52,7 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
         PropertyDrawInstance<P> propertyDraw = form.getPropertyDraw(inStream.readInt());
         PropertyObjectInstance<P> propertyObject = (PropertyObjectInstance<P>) propertyDraw.getValueProperty();
         if(inStream.readBoolean())
-            propertyObject = propertyObject.getRemappedPropertyObject(RemoteForm.deserializeKeysValues(inStream, form));
+            propertyObject = propertyObject.getRemappedPropertyObject(RemoteForm.deserializeKeysValues(inStream, form), false);
         property = propertyObject;
         toDraw = propertyDraw.toDraw;
         resolveAdd = false;

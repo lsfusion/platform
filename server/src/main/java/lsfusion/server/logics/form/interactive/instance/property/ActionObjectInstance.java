@@ -21,8 +21,8 @@ public class ActionObjectInstance<P extends PropertyInterface> extends ActionOrP
         super(property, mapping);
     }
 
-    public ActionObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
-        return new ActionObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
+    public ActionObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues, boolean fullKey) {
+        return new ActionObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues, fullKey));
     }
 
     public FlowResult execute(ExecutionEnvironment env, ExecutionStack stack, PushAsyncResult pushAsyncResult, PropertyDrawInstance changingProperty, FormInstance formInstance) throws SQLException, SQLHandledException {

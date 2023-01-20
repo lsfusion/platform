@@ -988,7 +988,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @ThisMessage
     public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean externalChange, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack) throws SQLException, SQLHandledException {
-        SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys).read(FormInstance.this) != null : null;
+        SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys, true).read(FormInstance.this) != null : null;
         ActionObjectInstance<?> eventAction = property.getEventAction(eventActionSID, this, checkReadOnly, securityPolicy);
         if(eventAction == null) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
@@ -1014,7 +1014,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             }
         }
 
-        final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys);
+        final ActionObjectInstance remappedEventAction = eventAction.getRemappedPropertyObject(keys, true);
         remappedEventAction.execute(FormInstance.this, stack, result, property, FormInstance.this);
     }
 
