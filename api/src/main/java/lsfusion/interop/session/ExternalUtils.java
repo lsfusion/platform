@@ -167,7 +167,7 @@ public class ExternalUtils {
 
         if (execResult != null) {
             Result<String> singleFileExtension = new Result<>();
-            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), new ArrayList<>(), new ArrayList<>(), singleFileExtension, null);
+            entity = getInputStreamFromList(execResult.results, getBodyUrl(execResult.results, returnBodyUrl), null, new ArrayList<>(), singleFileExtension, null);
 
             if (singleFileExtension.result != null) // если возвращается один файл, задаем ему имя
                 contentDisposition = "filename=" + (returns.isEmpty() ? filename : returns.get(0)).replace(',', '_') + "." + singleFileExtension.result;
@@ -283,7 +283,7 @@ public class ExternalUtils {
     }
 
     // results byte[] || String, можно было бы попровать getRequestResult (по аналогии с getRequestParam) выделить общий, но там возвращаемые классы разные, нужны будут generic'и и оно того не стоит
-    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, List<String> bodyParamNames, List<Map<String, String>> bodyParamHeadersList, Result<String> singleFileExtension, ContentType forceContentType) {
+    public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, ImList<String> bodyParamNames, List<Map<String, String>> bodyParamHeadersList, Result<String> singleFileExtension, ContentType forceContentType) {
         HttpEntity entity;
         int paramCount = results.length;
         Charset charset = forceContentType != null ? forceContentType.getCharset() : null;

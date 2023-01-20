@@ -29,6 +29,7 @@ TABLE messages (Message);
 
 chat = DATA Chat (Message);
 message '{messenger.message}' = DATA STRING (Message);
+file = DATA NAMEDFILE(Message);
 from '{messenger.from}' = DATA STRING (Message);
 dateTime '{messenger.datetime}' = DATA DATETIME (Message);
 account = DATA Account (Chat);
@@ -39,16 +40,20 @@ chatIdAccount = GROUP AGGR Chat c BY account(c), id(c);
 name '{messenger.chat.name}' = DATA STRING (Chat) IN id;
 title '{messenger.chat.title}' = DATA STRING (Chat);
 newMessage '{messenger.chat.new.message}' = DATA LOCAL TEXT (Chat);
+newAttachment '{chat.attachment}' = DATA LOCAL NAMEDFILE(Chat);
 
 sendMessageResult = DATA LOCAL STRING();
 sendMessage '{messenger.chat.send.message}' ABSTRACT CASE (Chat, STRING);
+sendFile '{messenger.chat.send.message}' ABSTRACT CASE (Chat, NAMEDFILE);
 
 sendMessage '{messenger.chat.send.message}' (Chat chat) {
     sendMessage(chat, newMessage(chat));
+    IF NOT sendMessageResult() THEN sendFile(chat, newAttachment(chat));
     IF sendMessageResult() THEN {
         MESSAGE sendMessageResult() NOWAIT;
     }
     newMessage(chat) <- NULL;
+    newAttachment(chat) <- NULL;
 }
 
 synchronizeChats ABSTRACT LIST (Account);

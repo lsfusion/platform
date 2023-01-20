@@ -82,9 +82,6 @@ webHookTelegram(JSONFILE f) {
     APPLY;
 } @@noauth;
 
-fileMessage = DATA NAMEDFILE(Message);
-
-telegramAttachment '{chat.attachment}' = DATA LOCAL NAMEDFILE();
 sendMessageTelegramResult = DATA LOCAL STRING();
 
 processResult(Chat chat, JSONFILE result, STRING message, NAMEDFILE file) {
@@ -97,7 +94,7 @@ processResult(Chat chat, JSONFILE result, STRING message, NAMEDFILE file) {
     } ELSE {
         NEW botMessage = Message {
             chat(botMessage) <- chat;
-            fileMessage(botMessage) <- file;
+            file(botMessage) <- file;
             message(botMessage) <- message;
             dateTime(botMessage) <- currentDateTime();
             from(botMessage) <- 'YOU';
@@ -105,19 +102,20 @@ processResult(Chat chat, JSONFILE result, STRING message, NAMEDFILE file) {
     }
 }
 
-sendFile(Chat chat, NAMEDFILE attachment) {
+sendFileTelegram(Chat chat, NAMEDFILE attachment) {
     LOCAL result = JSONFILE();
 
     LOCAL headers = TEXT(STRING[100]);
     headers('Content-Type') <- 'multipart/form-data; charset=UTF-8';
     
     LOCAL fileName = STRING();
-    fileName() <- CONCAT '', name(telegramAttachment()), IF length(extension(telegramAttachment())) > 0 THEN '.' ELSE '', extension(telegramAttachment());
+    fileName() <- CONCAT '', name(attachment), IF length(extension(attachment)) > 0 THEN '.' ELSE '', extension(attachment);
 
     EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account(chat)) + '/sendDocument?chat_id=' + id(chat)
-        BODYPARAMNAMES 'document;' + fileName() HEADERS headers PARAMS telegramAttachment() TO result;
+        BODYPARAMNAMES 'document;' + fileName() HEADERS headers PARAMS attachment TO result;
 
     processResult(chat, result(), fileName(), attachment);
+    APPLY;
 }
 
 sendMessageTelegram(Chat chat, STRING message) {
@@ -126,27 +124,31 @@ sendMessageTelegram(Chat chat, STRING message) {
     EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
     
     processResult(chat, result(), message, NULL);
+    APPLY;
 }
 
 openFile '{system.open.file}' (Message m) {
-    open(fileMessage(m));
+    open(file(m));
 }
 
 EXTEND FORM messengers
-    PROPERTIES telegramAttachment()
-    PROPERTIES (m) openFile SHOWIF isTelegram(a) READONLYIF NOT fileMessage(m);
+    PROPERTIES(c) newAttachment PANEL
+    PROPERTIES (m) openFile SHOWIF isTelegram(a) READONLYIF NOT file(m);
 ;
 
 DESIGN messengers {
     sendMessage {
-        MOVE PROPERTY(telegramAttachment()) FIRST;
+        MOVE PROPERTY(newAttachment(c));
         horizontal = TRUE;
     }
 }
 
-sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING OR telegramAttachment() THEN {
-    IF message IS STRING THEN sendMessageTelegram(chat, message);
-    IF NOT sendMessageTelegramResult() AND telegramAttachment() THEN sendFile(chat, telegramAttachment());
-    APPLY;
+sendFile(Chat chat, NAMEDFILE attachment) + WHEN isTelegram(account(chat)) AND attachment IS NAMEDFILE THEN {
+    sendFileTelegram(chat, attachment);
+    sendMessageResult() <- sendMessageTelegramResult();
+}
+
+sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING THEN {
+    sendMessageTelegram(chat, message);
     sendMessageResult() <- sendMessageTelegramResult();
 }

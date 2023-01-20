@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.file.IOUtils;
 import lsfusion.interop.session.*;
 import lsfusion.server.data.sql.exception.SQLHandledException;
@@ -42,14 +43,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class ExternalHTTPAction extends CallAction {
     boolean clientAction;
     private ExternalHttpMethod method;
     private PropertyInterface queryInterface;
     private PropertyInterface bodyUrlInterface;
-    private List<PropertyInterface> bodyParamNamesInterfaces = new ArrayList<>();
+    private ImList<PropertyInterface> bodyParamNamesInterfaces;
     private ImList<LP> bodyParamHeadersPropertyList;
     private LP<?> headersProperty;
     private LP<?> cookiesProperty;
@@ -66,10 +66,12 @@ public class ExternalHTTPAction extends CallAction {
         this.queryInterface = getOrderInterfaces().get(0);
         this.bodyUrlInterface = hasBodyUrl ? getOrderInterfaces().get(1) : null;
 
+        MList<PropertyInterface> interfaceList = ListFact.mList();
         int startIndex = hasBodyUrl ? 2 : 1;
         for (int i = startIndex; i < startIndex + bodyParamNamesSize; i++) {
-            this.bodyParamNamesInterfaces.add(getOrderInterfaces().get(i));
+            interfaceList.add(getOrderInterfaces().get(i));
         }
+        bodyParamNamesInterfaces = interfaceList.immutableList();
 
         this.bodyParamHeadersPropertyList = bodyParamHeadersPropertyList;
         this.headersProperty = headersProperty;
@@ -133,9 +135,7 @@ public class ExternalHTTPAction extends CallAction {
                 byte[] body = null;
                 if (method.hasBody()) {
                     String contentType = headers.get("Content-Type");
-                    List<String> bodyParamNames = bodyParamNamesInterfaces.stream()
-                            .map(bodyParamNamesInterface -> (String) context.getKeyObject(bodyParamNamesInterface))
-                            .collect(Collectors.toList());
+                    ImList<String> bodyParamNames = bodyParamNamesInterfaces.mapItListValues(bodyParamNamesInterface -> (String) context.getKeyObject(bodyParamNamesInterface));
                     HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, contentType != null ? ContentType.parse(contentType) : null);
                     body = IOUtils.readBytesFromHttpEntity(entity);
                     headers.put("Content-Type", entity.getContentType().getValue());
