@@ -473,7 +473,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     logger.debug(String.format("new order: %s", order.toString()));
                 }
 
-                propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys), Order.deserialize(modiType));
+                propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys, false), Order.deserialize(modiType));
             }
         });
     }
@@ -497,7 +497,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 if(propertyDraw != null) { //can be set by userPreferences but hidden by security policy
                     ImMap<ObjectInstance, ObjectValue> keys = deserializeKeysValues(columnKeys);
-                    PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys);
+                    PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys, false);
                     propertyDraw.toDraw.changeOrder(property, Order.ADD);
                     if(!order)
                         propertyDraw.toDraw.changeOrder(property, Order.DIR);
