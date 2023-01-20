@@ -86,11 +86,30 @@ fileMessage = DATA NAMEDFILE(Message);
 
 telegramAttachment '{chat.attachment}' = DATA LOCAL NAMEDFILE();
 sendMessageTelegramResult = DATA LOCAL STRING();
-sendFile(Chat chat) {
+
+processResult(Chat chat, JSONFILE result, STRING message, NAMEDFILE file) {
+    sendMessageTelegramResult() <- NULL;
+    LOCAL ok = BOOLEAN();
+    LOCAL description = STRING();
+    IMPORT FROM result TO() ok, description;
+    IF NOT ok() THEN {
+        sendMessageTelegramResult() <- description();
+    } ELSE {
+        NEW botMessage = Message {
+            chat(botMessage) <- chat;
+            fileMessage(botMessage) <- file;
+            message(botMessage) <- message;
+            dateTime(botMessage) <- currentDateTime();
+            from(botMessage) <- 'YOU';
+        }
+    }
+}
+
+sendFile(Chat chat, NAMEDFILE attachment) {
     LOCAL result = JSONFILE();
 
     LOCAL headers = TEXT(STRING[100]);
-    headers('Content-Type') <- 'multipart/form-data;';
+    headers('Content-Type') <- 'multipart/form-data; charset=UTF-8';
     
     LOCAL fileName = STRING();
     fileName() <- CONCAT '', name(telegramAttachment()), IF length(extension(telegramAttachment())) > 0 THEN '.' ELSE '', extension(telegramAttachment());
@@ -98,41 +117,15 @@ sendFile(Chat chat) {
     EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account(chat)) + '/sendDocument?chat_id=' + id(chat)
         BODYPARAMNAMES 'document;' + fileName() HEADERS headers PARAMS telegramAttachment() TO result;
 
-    LOCAL ok = BOOLEAN();
-    LOCAL description = STRING();
-    IMPORT FROM result() TO() ok, description;
-    IF NOT ok() THEN {
-        sendMessageTelegramResult() <- description();
-    } ELSE {
-        NEW botMessage = Message {
-            chat(botMessage) <- chat;
-            fileMessage(botMessage) <- telegramAttachment();
-            message(botMessage) <- fileName();
-            dateTime(botMessage) <- currentDateTime();
-            from(botMessage) <- 'YOU';
-        }
-    }
+    processResult(chat, result(), fileName(), attachment);
 }
 
 sendMessageTelegram(Chat chat, STRING message) {
-    sendMessageTelegramResult() <- NULL;
     LOCAL result = JSONFILE();
     urlEncode(message);
     EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
     
-    LOCAL ok = BOOLEAN();
-    LOCAL description = STRING();
-    IMPORT FROM result() TO() ok, description;
-    IF NOT ok() THEN {
-        sendMessageTelegramResult() <- description();
-    } ELSE {
-        NEW botMessage = Message {
-            chat(botMessage) <- chat;
-            message(botMessage) <- message;
-            dateTime(botMessage) <- currentDateTime();
-            from(botMessage) <- 'YOU';
-        }
-    }
+    processResult(chat, result(), message, NULL);
 }
 
 openFile '{system.open.file}' (Message m) {
@@ -153,7 +146,7 @@ DESIGN messengers {
 
 sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING OR telegramAttachment() THEN {
     IF message IS STRING THEN sendMessageTelegram(chat, message);
-    IF NOT sendMessageTelegramResult() AND telegramAttachment() THEN sendFile(chat);
+    IF NOT sendMessageTelegramResult() AND telegramAttachment() THEN sendFile(chat, telegramAttachment());
     APPLY;
     sendMessageResult() <- sendMessageTelegramResult();
 }

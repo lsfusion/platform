@@ -34,7 +34,6 @@ import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -190,17 +189,18 @@ public class ExternalUtils {
         return bodyUrl;
     }
 
-    public static ContentType getContentType(String extension) {
+    public static ContentType getContentType(String extension, Charset charset) {
         String mimeType = MIMETypeUtils.MIMETypeForFileExtension(extension);
-        String charset = null;
-        switch (extension) {
-            case "csv":
-                charset = defaultCSVCharset;
-                break;
-            case "json":
-            case "xml":
-                charset = defaultXMLJSONCharset;
-                break;
+        if (charset == null) {
+            switch (extension) {
+                case "csv":
+                    charset = Charset.forName(defaultCSVCharset);
+                    break;
+                case "json":
+                case "xml":
+                    charset = Charset.forName(defaultXMLJSONCharset);
+                    break;
+            }
         }
         return charset != null ? ContentType.create(mimeType, charset) : ContentType.create(mimeType);
     }
@@ -286,11 +286,10 @@ public class ExternalUtils {
     public static HttpEntity getInputStreamFromList(Object[] results, String bodyUrl, List<String> bodyParamNames, List<Map<String, String>> bodyParamHeadersList, Result<String> singleFileExtension, ContentType forceContentType) {
         HttpEntity entity;
         int paramCount = results.length;
+        Charset charset = forceContentType != null ? forceContentType.getCharset() : null;
         if (paramCount > 1 || (bodyParamNames != null && !bodyParamNames.isEmpty())) {
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            //because MultipartEntityBuilder uses US-ASCII as the default charset and we can`t pass cyrillic symbols in request headers.
-            builder.setCharset(StandardCharsets.UTF_8);
-            //BROWSER_COMPATIBLE mode uses charset from builder.setCharset(). Default mode is STRICT, which uses US-ASCII.
+            //Default mode is STRICT, which uses only US-ASCII. BROWSER_COMPATIBLE mode uses charset from ContentType headers if defined or US-ASCII by default.
             builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
             builder.setContentType(nvl(forceContentType, ExternalUtils.MULTIPART_MIXED));
             for (int i = 0; i < paramCount; i++) {
@@ -301,7 +300,7 @@ public class ExternalUtils {
                 if (value instanceof FileData) {
                     String fileName = bodyParamName.length < 2 || isEmpty(bodyParamName[1]) ? "filename" : bodyParamName[1];
                     String extension = ((FileData) value).getExtension();
-                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), fileName)).build();
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension, charset), fileName)).build();
                 } else {
                     formBodyPart = FormBodyPartBuilder.create(bodyPartName, new StringBody((String) value, ExternalUtils.TEXT_PLAIN)).build();
                 }
@@ -318,7 +317,7 @@ public class ExternalUtils {
             Object value = BaseUtils.single(results);
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
-                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension)));
+                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension, charset)));
                 if(singleFileExtension != null)
                     singleFileExtension.set(extension);
             } else {
