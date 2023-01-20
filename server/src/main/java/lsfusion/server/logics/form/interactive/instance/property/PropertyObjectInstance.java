@@ -42,8 +42,8 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         super(property, mapping);
     }
 
-    public PropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
-        return new PropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues));
+    public PropertyObjectInstance<P> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues, boolean fullKey) {
+        return new PropertyObjectInstance<>(property, remapSkippingEqualsObjectInstances(mapKeyValues, fullKey));
     }
 
     public Object read(FormInstance formInstance) throws SQLException, SQLHandledException {
