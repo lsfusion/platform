@@ -85,7 +85,6 @@ writeProfilerBatch ()  {
     apply();
 }
 
-//показатели
 CLASS ProfilerIndex {
     callCount '{profiler.call.count}',
     totalTime '{profiler.profiler.index.total.time}',
@@ -159,7 +158,6 @@ value '{profiler.value.object.index}' (ProfileObject po, ProfilerIndex pi) = CAS
     WHEN pi == ProfilerIndex.inherentJavaTime THEN downValue(po, ProfilerIndex.totalJavaTime) (-) upValue(po, ProfilerIndex.totalJavaTime);
 order '{profiler.order}' (ProfileObject po) = value(po, order());
 
-//из-за того что не работают группы в колонки
 callCount(ProfileObject po) = value(po, ProfilerIndex.callCount);
 totalTime(ProfileObject po) = value(po,ProfilerIndex.totalTime);
 totalUserInteractionTime(ProfileObject po) = value(po,ProfilerIndex.totalUserInteractionTime);
@@ -181,19 +179,19 @@ isInherentJavaTime() = active(ProfilerIndex.inherentJavaTime);
 isTotalTimeNoWait() = active(ProfilerIndex.totalTimeNoWait);
 isTotalJavaTime() = active(ProfilerIndex.totalJavaTime);
 
-//по пользователям, формам
+//user-form
 downValue '{profiler.down.value}' (ProfileObject down, User u, Form f, ProfilerIndex pi) = GROUP SUM value(down, ProfileObject up, u, f, pi);
 upValue '{profiler.up.value}' (ProfileObject up, User u, Form f, ProfilerIndex pi) = GROUP SUM value(ProfileObject down, up, u, f, pi);
 value '{profiler.value.object.user.form.index}' (ProfileObject po, User u, Form f, ProfilerIndex pi) = downValue(po, u, f, pi) (-) upValue(po, u, f, pi);
 order '{profiler.order}' (ProfileObject po, User u, Form f) = value(po, u, f, order());
 
-//интерфейс
+//interface
 dataSelectedTop = DATA LOCAL ProfileObject();
 selectedTop = OVERRIDE dataSelectedTop(), ProfileObject.top;
 nameSelectedTop '{profiler.name.selected.top}' = STRING[1000](text(selectedTop()));
 
-pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link($b, b) CYCLES YES; // из a можно дойти в b
-pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b) CYCLES YES; // из a можно дойти в b
+pathTo(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link($b, b) CYCLES YES;
+pathFrom(ProfileObject a, ProfileObject b) = RECURSION a AS ProfileObject == b STEP TRUE IF link(b, $b) CYCLES YES;
 
 parent(ProfileObject down) = IF NOT down == selectedTop() THEN 
         OVERRIDE (GROUP LAST ProfileObject up IF link(up, down) AND pathTo(selectedTop(), up) ORDER order(up, down)), 
@@ -256,7 +254,7 @@ FORM profiler '{profiler.profiler}'
     
     PROPERTIES() startProfiler SHOWIF isStoppedProfiler(), stopProfiler SHOWIF isStartedProfiler(), nameOrder
   
-//настройки
+//settings
     OBJECTS pi = ProfilerIndex
     PROPERTIES (pi) active, staticCaption READONLY
 
@@ -270,7 +268,7 @@ FORM profiler '{profiler.profiler}'
     OBJECTS f = Form
     PROPERTIES (f)  BACKGROUND background(f) dataFilter, canonicalName READONLY
 
-//список
+//list
     OBJECTS ihs = ProfilerIndex GRID
     FILTERS active(ihs)
 
@@ -293,7 +291,7 @@ FORM profiler '{profiler.profiler}'
     ORDERS order(po1, po2, user, form) DESC 
     FILTERS order(po1, po2, user, form)
 
-//дерево
+//tree
     PROPERTIES nameSelectedTop() 
     
     TREE pT down=ProfileObject PARENT parent(down)

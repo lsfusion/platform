@@ -269,24 +269,21 @@ sendMessage '{chat.send.message.user}' (CustomUser user, STRING message, BOOLEAN
     sendMessage(user, currentUser(), message, notificate);
 }
 
-sendMessage '{chat.send.message.chat}' (Chat chat)  { 
+sendMessage '{chat.send.message}' (Chat chat)  { 
     IF message() OR attachment() THEN {
         sendMessage(chat, message(), NULL, notificate());
         markSeenOnChangeMessages(chat, currentUser());
         seekLastMessage();
     }
-}
+} CHANGEKEY 'ctrl ENTER;priority=200';
 
-sendMessage '{chat.send.message.user}' (CustomUser user)  { 
+sendMessage '{chat.send.message}' (CustomUser user)  { 
     createDialogChat(user, currentUser()) ;
     sendMessage(chatIn(user, currentUser()));
     seekChat(chatIn(user, currentUser()));
-}
+} CHANGEKEY 'ctrl ENTER;priority=200';
 
 recentVisible = ABSTRACT BOOLEAN ();
-sendMessage '{chat.send.message}' (Chat chat, CustomUser user) { 
-    IF recentVisible() THEN sendMessage(chat); ELSE sendMessage(user);
-} CHANGEKEY 'ctrl ENTER;priority=100';
 
 // ----- editing
 
@@ -313,7 +310,7 @@ saveEditing '{chat.save.message}' () {
         attachment(m) <- attachment();
         APPLY;
     }
-} CHANGEKEY 'ctrl ENTER;priority=100';
+} CHANGEKEY 'ctrl ENTER;priority=200';
 
 stopEditing () { 
     IF editingMessage() THEN {
@@ -387,7 +384,9 @@ FORM fullChat '{chat.chat}'
                                                  attachmentName SHOWIF TRUE IF attachment(),
                                                  deleteAttachment SHOWIF TRUE IF attachment() 
     
-    PROPERTIES(c, u) sendMessage SHOWIF NOT editingMessage()
+    PROPERTIES(c) sendMessage SHOWIF recentVisible() AND NOT editingMessage()
+    PROPERTIES(u) sendMessage SHOWIF NOT recentVisible() AND NOT editingMessage()
+    
     PROPERTIES()     saveEditing SHOWIF     editingMessage()
     
     LIST Chat OBJECT c
@@ -449,7 +448,11 @@ DESIGN fullChat {
                     }
                     NEW sendMessage {
                         alignment = STRETCH;
-                        MOVE PROPERTY(sendMessage(c, u)) {
+                        MOVE PROPERTY(sendMessage(c)) {
+                            fill = 1;                           
+                            font = 'bold 24';
+                        }                        
+                        MOVE PROPERTY(sendMessage(u)) {
                             fill = 1;                           
                             font = 'bold 24';
                         }

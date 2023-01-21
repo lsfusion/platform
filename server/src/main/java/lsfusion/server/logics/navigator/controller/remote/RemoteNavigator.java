@@ -438,10 +438,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     @Override
+    protected boolean synchronizeRequests() {
+        return false;
+    }
+
+    @Override
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, final String script) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> evaluateRun(script));
     }
-
     private void evaluateRun(String script) throws SQLException, SQLHandledException {
         try (DataSession session = createSession()) {
             LA runAction = businessLogics.evaluateRun(script, false);

@@ -16,9 +16,8 @@ public class GridDataRecord implements RowIndexHolder {
     private NativeStringMap<String> backgrounds;
     private NativeStringMap<String> foregrounds;
 
-    public GridDataRecord(int rowIndex, GGroupObjectValue key) {
+    public GridDataRecord(int rowIndex) {
         this.rowIndex = rowIndex;
-        this.key = key;
     }
 
     @Override
@@ -154,8 +153,12 @@ public class GridDataRecord implements RowIndexHolder {
     }
 
     public void reinit(GGroupObjectValue newKey, Object newRowBackground, Object newRowForeground) {
-        key = newKey;
+        setKey(newKey);
         setRowBackground(newRowBackground);
         setRowForeground(newRowForeground);
+    }
+
+    public void setKey(GGroupObjectValue newKey) {
+        key = newKey;
     }
 }

@@ -138,6 +138,8 @@ public class Settings implements Cloneable {
 
     private boolean noExclusiveCompile = true;
 
+    private boolean noOrderTopSplit = false;
+
     private int limitExclusiveCount = 7; // когда вообще не пытаться строить exclusive (count)
 
     private int limitExclusiveComplexity = 100; // когда вообще не пытаться строить exclusive (complexity)
@@ -217,7 +219,7 @@ public class Settings implements Cloneable {
 
     private boolean disableReadSingleValues = false; // определять ли конкретные значения при записи запроса в таблицы
 
-    private boolean disableReadClasses = false; // определять ли конкретные кдассы при записи запроса в таблицы
+    private int disableAdjustClassesCount = 10000; // temporary table size, exceeding which classes won't be adjusted
 
     private int reserveIDStep = 50; // по сколько ID'ков будут резервировать себе сервера приложений у сервера БД
 
@@ -643,6 +645,14 @@ public class Settings implements Cloneable {
         this.noExclusiveCompile = noExclusiveCompile;
     }
 
+    public boolean isNoOrderTopSplit() {
+        return noOrderTopSplit;
+    }
+
+    public void setNoOrderTopSplit(boolean noOrderTopSplit) {
+        this.noOrderTopSplit = noOrderTopSplit;
+    }
+
     public int getLimitWhereJoinsCount() {
         return limitWhereJoinsCount;
     }
@@ -1063,12 +1073,12 @@ public class Settings implements Cloneable {
         this.disableReadSingleValues = disableReadSingleValues;
     }
 
-    public boolean isDisableReadClasses() {
-        return disableReadClasses;
+    public int getDisableAdjustClassesCount() {
+        return disableAdjustClassesCount;
     }
 
-    public void setDisableReadClasses(boolean disableReadClasses) {
-        this.disableReadClasses = disableReadClasses;
+    public void setDisableAdjustClassesCount(int disableAdjustClassesCount) {
+        this.disableAdjustClassesCount = disableAdjustClassesCount;
     }
 
     private byte enableUI = 1; // 2 - enable anonymous, 1 - enable authenticated, 0 - disabled

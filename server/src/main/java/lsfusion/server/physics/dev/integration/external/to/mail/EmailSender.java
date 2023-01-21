@@ -5,10 +5,7 @@ import com.sun.mail.smtp.SMTPMessage;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.controller.thread.ExecutorFactory;
-import lsfusion.server.base.controller.thread.ThreadLocalContext;
-import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
 
@@ -24,7 +21,9 @@ import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static lsfusion.base.BaseUtils.trimToEmpty;
@@ -76,13 +75,11 @@ public class EmailSender {
 
         message.setContent(mp);
 
-        final LP emailSent = context.getBL().emailLM.emailSent;
-
         if (syncType) {
-            processEmail(subject, emailSent, true, smtpHost, smtpPort, user, password, fromAddress, message);
+            processEmail(subject, true, smtpHost, smtpPort, user, password, fromAddress, message);
         } else {
             ScheduledExecutorService executor = ExecutorFactory.createNewThreadService(context);
-            executor.submit(() -> processEmail(subject, emailSent, false, smtpHost, smtpPort, user, password, fromAddress, message));
+            executor.submit(() -> processEmail(subject, false, smtpHost, smtpPort, user, password, fromAddress, message));
             executor.shutdown();
         }
     }
@@ -123,7 +120,7 @@ public class EmailSender {
         }
     }
 
-    private static void processEmail(String subject, LP emailSent, boolean syncType, String smtpHost, String smtpPort, String user, String password, String fromAddress, SMTPMessage message) {
+    private static void processEmail(String subject, boolean syncType, String smtpHost, String smtpPort, String user, String password, String fromAddress, SMTPMessage message) {
         String messageInfo = trimToEmpty(subject);
         try {
             Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
@@ -137,39 +134,29 @@ public class EmailSender {
 
         boolean send = false;
         int count = 0;
-        try {
-            while (!send) {
-                send = true;
-                count++;
-                try {
-                     sendMessage(message, smtpHost, smtpPort, user, password);
-                    logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
-                } catch (MessagingException e) {
-                    if (!syncType) {
-                        send = false;
-                        if (count < 40) {
-                            logger.info(localize("{mail.unsuccessful.attempt.to.send.mail}") + " : " + e.getMessage() + " " + messageInfo);
-                            try {
-                                Thread.sleep(30000);
-                            } catch (InterruptedException ignored) {
-                            }
-                        } else {
-                            logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
-                            throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
+        while (!send) {
+            send = true;
+            count++;
+            try {
+                 sendMessage(message, smtpHost, smtpPort, user, password);
+                logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
+            } catch (MessagingException e) {
+                if (!syncType) {
+                    send = false;
+                    if (count < 40) {
+                        logger.info(localize("{mail.unsuccessful.attempt.to.send.mail}") + " : " + e.getMessage() + " " + messageInfo);
+                        try {
+                            Thread.sleep(30000);
+                        } catch (InterruptedException ignored) {
                         }
                     } else {
                         logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
                         throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
                     }
+                } else {
+                    logger.error(localize("{mail.failed.to.send.mail}") + " : " + messageInfo, e);
+                    throw new RuntimeException(localize("{mail.error.send.mail}") + " : " + messageInfo, e);
                 }
-            }
-        } finally {
-            try {
-                try (DataSession session = ThreadLocalContext.createSession()){
-                    emailSent.change(send ? true : null, session);
-                }
-            } catch (Exception e) {
-                logger.error("emailSent writing error", e);
             }
         }
     }

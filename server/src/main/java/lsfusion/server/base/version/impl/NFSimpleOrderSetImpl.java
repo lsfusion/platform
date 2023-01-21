@@ -4,7 +4,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.server.base.version.FindIndex;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
 
@@ -98,26 +97,6 @@ public class NFSimpleOrderSetImpl<T> implements NFOrderSet<T> {
     @Override
     public int size(Version version) {
         return list.size();
-    }
-
-    public void addIfNotExistsToThenLast(T element, T to, boolean isRightNeighbour, Version version) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void move(T element, T otherElement, boolean isRightNeighbour, Version version) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void move(T element, FindIndex<T> finder, Version version) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void add(T element, FindIndex<T> finder, Version version) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void addFirst(T element, Version version) {
-        throw new UnsupportedOperationException();
     }
 
     public ImOrderSet<T> getNFOrderSet(Version version) {

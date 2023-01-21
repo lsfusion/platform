@@ -7,6 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.mutability.TwinImmutableObject;
+import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.caches.OuterContext;
 import lsfusion.server.data.caches.hash.HashContext;
 import lsfusion.server.data.expr.BaseExpr;
@@ -51,7 +52,7 @@ public abstract class NotNullWhere extends DataWhere {
     public <K extends BaseExpr> GroupJoinsWheres groupNotJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {
         BaseExpr expr = getExpr();
         Result<Boolean> isOrderTop = new Result<>();
-        if(BinaryWhere.needIndexedJoin(expr, orderTop, null, isOrderTop))
+        if(BinaryWhere.needIndexedJoin(expr, Compare.EQUALS, null, orderTop, isOrderTop))
             return groupDataNotJoinsWheres(new ExprIndexedJoin(expr, isOrderTop.result), type); // кривовато конечно, но пока достаточно
         return super.groupNotJoinsWheres(keepStat, statType, keyStat, orderTop, type);
     }

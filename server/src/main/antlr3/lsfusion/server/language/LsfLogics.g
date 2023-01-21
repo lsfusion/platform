@@ -5,6 +5,7 @@ grammar LsfLogics;
 
     import lsfusion.base.BaseUtils;
     import lsfusion.base.Pair;
+    import lsfusion.base.col.MapFact;
     import lsfusion.base.col.heavy.OrderedMap;
     import lsfusion.base.col.interfaces.immutable.ImOrderSet;
     import lsfusion.interop.action.ServerResponse;
@@ -67,6 +68,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
     import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
     import lsfusion.server.logics.form.open.MappedForm;
+    import lsfusion.server.logics.form.stat.SelectTop;
     import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
     import lsfusion.server.logics.form.struct.FormEntity;
     import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -77,7 +79,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.navigator.NavigatorElement;
     import lsfusion.server.logics.property.cases.CaseUnionProperty;
     import lsfusion.server.logics.property.set.Cycle;
-	import lsfusion.server.logics.LogicsModule.InsertType;
+	import lsfusion.server.base.version.ComplexLocation;
     import lsfusion.server.physics.admin.reflection.ReflectionPropertyType;
     import lsfusion.server.physics.dev.debug.BooleanDebug;
     import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -292,7 +294,6 @@ statement
 		|	globalEventStatement
 		|	aspectStatement
 		|	tableStatement
-		|	loggableStatement
 		|	indexStatement
 		|	formStatement
 		|	designStatement
@@ -545,7 +546,7 @@ formTreeGroupObjectList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.neighbourObject, $opts.insertType, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint());
 	}
 }
 	:	'TREE'
@@ -567,7 +568,7 @@ formGroupObjectOptions[ScriptingGroupObject groupObject]
 	                                           $groupObject.setMapTileProvider($viewType.mapTileProvider);}
 		|	pageSize=formGroupObjectPageSize { $groupObject.setPageSize($pageSize.value); }
 		|	update=formGroupObjectUpdate { $groupObject.setUpdateType($update.updateType); }
-		|	relative=formGroupObjectRelativePosition { $groupObject.setNeighbourGroupObject($relative.groupObject, $relative.insertType); }
+		|	relative=formGroupObjectRelativePosition { $groupObject.setLocation($relative.location); }
 		|	group=formGroupObjectGroup { $groupObject.setPropertyGroupName($group.formObjectGroup); }
 		|   extID=formExtID { $groupObject.setIntegrationSID($extID.extID); }
 		|   formExtKey { $groupObject.setIntegrationKey(true); }
@@ -589,8 +590,8 @@ formGroupObjectOptionsContext[ScriptingGroupObject groupObject]
 		)*
 	;
 
-formTreeGroupObjectOptions returns [GroupObjectEntity neighbourObject, InsertType insertType]
-	:	(	relative=formGroupObjectRelativePosition { $neighbourObject = $relative.groupObject; $insertType = $relative.insertType; }
+formTreeGroupObjectOptions returns [ComplexLocation<GroupObjectEntity> location]
+	:	(	relative=formGroupObjectRelativePosition { $location = $relative.location; }
 		)*
 	;
 
@@ -703,11 +704,35 @@ propertyFormula returns [String formula, List<PropertyDrawEntity> operands]
 formGroupObjectPageSize returns [Integer value = null]
 	:	'PAGESIZE' size=intLiteral { $value = $size.val; }
 	;
-	
-formGroupObjectRelativePosition returns [GroupObjectEntity groupObject, InsertType insertType = null]
-	:	'AFTER' go=formGroupObjectEntity { $groupObject = $go.groupObject; $insertType = InsertType.AFTER; }
-	|	'BEFORE' go=formGroupObjectEntity { $groupObject = $go.groupObject; $insertType = InsertType.BEFORE; }
-	|	'FIRST' { $insertType = InsertType.FIRST; }
+
+staticRelativePosition returns [ComplexLocation location]
+	:	'FIRST' { $location = ComplexLocation.FIRST(); }
+    |	'LAST' { $location = ComplexLocation.LAST(); }
+    |	'DEFAULT' { $location = ComplexLocation.DEFAULT(); }
+	;
+
+formGroupObjectRelativePosition returns [ComplexLocation<GroupObjectEntity> location]
+	:	'AFTER' go=formGroupObjectEntity { $location = ComplexLocation.AFTER($go.groupObject); }
+	|	'BEFORE' go=formGroupObjectEntity { $location = ComplexLocation.BEFORE($go.groupObject); }
+	|	st=staticRelativePosition { $location = $st.location; }
+	;
+
+formPropertyDrawRelativePosition returns [ComplexLocation<PropertyDrawEntity> location, String propText]
+	:	'AFTER' pd=formPropertyDraw { $location = ComplexLocation.AFTER($pd.property); $propText = $pd.text; }
+	|	'BEFORE' pd=formPropertyDraw { $location = ComplexLocation.BEFORE($pd.property); $propText = $pd.text; }
+	|	st=staticRelativePosition { $location = $st.location; }
+	;
+
+componentRelativePosition returns [ComplexLocation<ComponentView> location]
+	:	'AFTER' cm=componentSelector { $location = ComplexLocation.AFTER($cm.component); }
+	|	'BEFORE' cm=componentSelector { $location = ComplexLocation.BEFORE($cm.component); }
+    |	st=staticRelativePosition { $location = $st.location; }
+	;
+
+navigatorElementRelativePosition returns [ComplexLocation<NavigatorElement> location]
+	:	'AFTER' ne=navigatorElementSelector { $location = ComplexLocation.AFTER($ne.element); }
+	|	'BEFORE' ne=navigatorElementSelector { $location = ComplexLocation.BEFORE($ne.element); }
+	|	st=staticRelativePosition { $location = $st.location; }
 	;
 
 formGroupObjectBackground[List<TypedParameter> extraContext] returns [FormLPUsage background]
@@ -831,9 +856,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
 		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
-		|	'BEFORE' pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setInsertType(InsertType.BEFORE); }
-		|	'AFTER'  pdraw=formPropertyDraw { $options.setNeighbourPropertyDraw($pdraw.property, $pdraw.text); $options.setInsertType(InsertType.AFTER); }
-		|	'FIRST' { $options.setInsertType(InsertType.FIRST); }
+		|   pl=formPropertyDrawRelativePosition { $options.setLocation($pl.location, $pl.propText); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
 		|	'ON' et=formEventType prop=formActionObject { $options.addEventAction($et.type, $prop.action); }
 		|	'ON' 'CONTEXTMENU' (c=localizedStringLiteralNoID)? prop=formActionObject { $options.addContextMenuAction($c.val, $prop.action); }
@@ -1814,7 +1837,7 @@ expressionFriendlyPD[List<TypedParameter> context, boolean dynamic] returns [LPW
 	|	signDef=signaturePropertyDefinition[context, dynamic] { $property = $signDef.property; }
 	|	activeTabDef=activeTabPropertyDefinition[context, dynamic] { $property = $activeTabDef.property; }
 	|	roundProp=roundPropertyDefinition[context, dynamic] { $property = $roundProp.property; }
-	|	constDef=constantProperty[context, dynamic] { $property = new LPWithParams($constDef.property); $ci = $constDef.ci; }
+	|	constDef=constantProperty[context, dynamic] { $property = $constDef.property; $ci = $constDef.ci; }
 	;
 
 contextIndependentPD[List<TypedParameter> context, boolean dynamic, boolean innerPD] returns [LP property, List<ResolveClassSet> signature, List<Integer> usedContext = Collections.emptyList()]
@@ -2596,13 +2619,17 @@ newSessionActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	boolean isNested = false;
 	boolean singleApply = false;
 	boolean newSQL = false;
+	List<String> ids = null;
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedNewSessionAProp($aDB.action, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL);
+		$action = self.addScriptedNewSessionAProp($aDB.action, migrateSessionProps, migrateAllSessionProps, isNested, singleApply, newSQL, ids);
 	}
 }
-	:	(	'NEWSESSION' ('NEWSQL' { newSQL = true; })? (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+	:	(	'NEWSESSION' ('NEWSQL' { newSQL = true; })?
+	        ('FORMS' (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; }) )?
+	        (mps=nestedPropertiesSelector { migrateAllSessionProps = $mps.all; migrateSessionProps = $mps.props; })?
+
 		|	'NESTEDSESSION' { isNested = true; }
 		)
 		('SINGLE' { singleApply = true; })?
@@ -2733,7 +2760,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 	|   defaultCompareSetting [property]
 	|	autosetSetting [property]
 	|	regexpSetting [property]
-	|	loggableSetting [ps]
 	|	echoSymbolsSetting [property]
 	|	indexSetting [property]
 	|	setNotNullSetting [ps]
@@ -2785,10 +2811,6 @@ hintSettings [PropertySettings ps]
 
 tableSetting [PropertySettings ps]
 	:	'TABLE' tbl = compoundID { ps.table = $tbl.sid; }
-	;
-
-loggableSetting [PropertySettings ps]
-	:	'LOGGABLE'  { ps.isLoggable = true; }
 	;
 
 aggrSetting [LP property]
@@ -3211,7 +3233,6 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
-	|	drillDownADB=drillDownActionDefinitionBody[context, dynamic] { $action = $drillDownADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
 	|	writeADB=writeActionDefinitionBody[context, dynamic] { $action = $writeADB.action; }
 	|	importFormADB=importFormActionDefinitionBody[context, dynamic] { $action = $importFormADB.action; }
@@ -3475,7 +3496,9 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 }
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, hasHeader, separator, noEscape, selectTop, charset, $pUsage.propUsage, $pUsages.pUsages,
+		$action = self.addScriptedExportFAProp($mf.mapped, $mf.props, format, sheetName, root, tag, attr, hasHeader, separator, noEscape,
+		                                       new SelectTop(selectTop, $selectTops.selectTops != null ? MapFact.fromJavaOrderMap($selectTops.selectTops) : null),
+		                                       charset, $pUsage.propUsage, $pUsages.pUsages,
 		                                       objectsContext, contextFilters, context);
 	}
 }
@@ -3486,7 +3509,7 @@ exportFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] re
 	    (cf = contextFiltersClause[context, objectsContext] { contextFilters.addAll($cf.contextFilters); })?
 		(type = exportSourceFormat [context, dynamic] { format = $type.format; separator = $type.separator; hasHeader = $type.hasHeader; noEscape = $type.noEscape;
         	                                                    charset = $type.charset; sheetName = $type.sheetName; root = $type.root; tag = $type.tag; attr = $type.attr; })?
-		('TOP' selectTop = intLiteral)?
+		('TOP' (selectTops=groupObjectSelectTopMap[$mf.form] | selectTop = intLiteral))?
 		('TO' (pUsages=groupObjectPropertyUsageMap[$mf.form] | pUsage=propertyUsage))?
 	;
 
@@ -3528,6 +3551,15 @@ noEscapeOption returns [boolean noEscape]
 sheetExpression[List<TypedParameter> context, boolean dynamic] returns [LPWithParams sheetName]
         :   'SHEET' name = propertyExpression[context, dynamic] { $sheetName = $name.property; }
         ;
+
+groupObjectSelectTopMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, Integer> selectTops]
+@init {
+	$selectTops = new OrderedMap<>();
+	GroupObjectEntity go = null;
+}
+	:	firstGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $firstGroupObject.text); } }  EQ firstSelectTop=intLiteral { if(inMainParseState()) { $selectTops.put(go, $firstSelectTop.val); } }
+		(',' nextGroupObject=ID { if(inMainParseState()) { go=self.findGroupObjectEntity(formEntity, $nextGroupObject.text); } } EQ nextSelectTop = intLiteral { if(inMainParseState()) { $selectTops.put(go, $nextSelectTop.val); } } )*
+	;
 
 groupObjectPropertyUsageMap[FormEntity formEntity] returns [OrderedMap<GroupObjectEntity, NamedPropertyUsage> pUsages]
 @init {
@@ -3932,15 +3964,6 @@ evalActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns 
 }
 	:	'EVAL' ('ACTION' { isAction = true; })? expr=propertyExpression[context, dynamic] ('PARAMS' exprList=propertyExpressionList[context, dynamic])?
 	;
-	
-drillDownActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
-@after {
-	if (inMainParseState()) {
-		$action = self.addScriptedDrillDownAction($expr.property);
-	}
-}
-	:	'DRILLDOWN' expr=propertyExpression[context, dynamic]
-	;	
 
 requestActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
@@ -4697,19 +4720,6 @@ tableStatement
 	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
 
 ////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////// LOGGABLE STATEMENT /////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-loggableStatement
-@after {
-	if (inMainParseState()) {
-		self.addScriptedLoggable($list.propUsages);
-	}	
-}
-	:	'LOGGABLE' list=nonEmptyPropertyUsageList ';'
-	;
-
-////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// INDEX STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -4866,11 +4876,10 @@ navigatorElementDescription returns [NavigatorElement element]
 navigatorElementOptions returns [NavigatorElementOptions options] 
 @init {
 	$options = new NavigatorElementOptions();
-	$options.position = InsertType.IN;
 }
 	:	
 	(	('WINDOW' wid=compoundID { $options.windowName = $wid.sid; } ('PARENT' { $options.parentWindow = true; })? )
-	|	pos=navigatorElementInsertPosition { $options.position = $pos.position; $options.anchor = $pos.anchor; }
+	|	pos=navigatorElementRelativePosition { $options.location = $pos.location; }
 	|	'IMAGE' image=propertyExpressionOrLiteral[null] {
 	        if (inMainParseState()) {
 	            if($image.literal != null && $image.literal.value instanceof LocalizedString) {
@@ -4882,14 +4891,6 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	    }
 	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }
 	)*
-	;
-	
-navigatorElementInsertPosition returns [InsertType position, NavigatorElement anchor]
-@init {
-	$anchor = null;
-}
-	:	pos=insertRelativePositionLiteral { $position = $pos.val; } elem=navigatorElementSelector { $anchor = $elem.element; }
-	|	'FIRST' { $position = InsertType.FIRST; }
 	;
 
 editNavigatorElementStatement[NavigatorElement parentElement]
@@ -4963,10 +4964,10 @@ newComponentStatement[ComponentView parentComponent]
 @init {
 	ComponentView newComp = null;
 }
-	:	'NEW' cid=ID insPosition=componentInsertPosition
+	:	'NEW' cid=ID (insPosition=componentRelativePosition)?
 		{
 			if (inMainParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
+				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.location, self.getVersion());
 			}
 		}
 		componentStatementBody[newComp]
@@ -4976,23 +4977,13 @@ moveComponentStatement[ComponentView parentComponent]
 @init {
 	ComponentView insComp = null;
 }
-	:	'MOVE' insSelector=componentSelector { insComp = $insSelector.component; } insPosition=componentInsertPosition
+	:	'MOVE' insSelector=componentSelector { insComp = $insSelector.component; } (insPosition=componentRelativePosition)?
 		{
 			if (inMainParseState()) {
-				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.position, $insPosition.anchor, self.getVersion());
+				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.location, self.getVersion());
 			}
 		}
 		componentStatementBody[insComp]
-	;
-	
-componentInsertPosition returns [InsertType position, ComponentView anchor]
-@init {
-	$position = InsertType.IN;
-	$anchor = null;
-}
-	:	(	(pos=insertRelativePositionLiteral { $position = $pos.val; } comp=componentSelector { $anchor = $comp.component; })
-		|	'FIRST' { $position = InsertType.FIRST; }
-		)?
 	;
 
 removeComponentStatement
@@ -5391,7 +5382,7 @@ nonEmptyPropertyExpressionList[List<TypedParameter> context, boolean dynamic] re
 		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); })* 
 	;
 	
-constantProperty[List<TypedParameter> context, boolean dynamic] returns [LP property, LPNotExpr ci]
+constantProperty[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
     int lineNumber = self.getParser().getCurrentParserLineNumber();
 	ScriptingLogicsModule.ConstType cls = null;
@@ -5399,7 +5390,7 @@ constantProperty[List<TypedParameter> context, boolean dynamic] returns [LP prop
 }
 @after {
 	if (inMainParseState()) {
-		Pair<LP, LPNotExpr> constantProp = self.addConstantProp(cls, value, lineNumber, context, dynamic);
+		Pair<LPWithParams, LPNotExpr> constantProp = self.addConstantProp(cls, value, lineNumber, context, dynamic);
 		$property = constantProp.first;
 		$ci = constantProp.second;
 	}
@@ -5593,11 +5584,6 @@ boundsDoubleLiteral returns [Bounds val]
 
 codeLiteral returns [String val]
 	:	s=CODE_LITERAL { $val = $s.text; }
-	;
-
-insertRelativePositionLiteral returns [InsertType val]
-	:	'BEFORE' { $val = InsertType.BEFORE; }
-	|	'AFTER' { $val = InsertType.AFTER; }
 	;
 
 containerTypeLiteral returns [ContainerType val]

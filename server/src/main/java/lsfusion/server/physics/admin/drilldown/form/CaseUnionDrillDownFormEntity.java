@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -27,14 +27,12 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
     protected List<PropertyDrawEntity> whereProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public CaseUnionDrillDownFormEntity(LocalizedString caption, CaseUnionProperty property, LogicsModule LM) {
+    public CaseUnionDrillDownFormEntity(LocalizedString caption, CaseUnionProperty property, BaseLogicsModule LM) {
         super(caption, property, LM);
     }
 
     @Override
     protected void setupDrillDownForm() {
-        Version version = LM.getVersion();
-        
         propProperties = new ArrayList<>();
         whereProperties = new ArrayList<>();
 
@@ -49,10 +47,10 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || isNotRecognize(mapImplement)) {
                     if (mapImplement.property.isDrillFull()) {
                         propProperties.add(
-                                addPropertyDraw(mapImplement.property, mapImplMapping, version)
+                                addPropertyDraw(mapImplement.property, mapImplMapping)
                         );
                     }
                 }
@@ -66,16 +64,16 @@ public class CaseUnionDrillDownFormEntity<I extends PropertyInterface> extends D
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || isNotRecognize(mapImplement)) {
                     if (mapImplement.property.isDrillFull()) {
                         whereProperties.add(
-                                addPropertyDraw(mapImplement.property, mapImplMapping, version)
+                                addPropertyDraw(mapImplement.property, mapImplMapping)
                         );
                     }
                 }
             }
         }
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
     }
 
     @Override

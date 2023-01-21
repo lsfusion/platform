@@ -18,6 +18,7 @@ import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.object.table.tree.ClientTreeGroup;
 import lsfusion.client.form.object.table.tree.GroupTreeTableModel;
 import lsfusion.client.form.object.table.tree.TreeGroupNode;
+import lsfusion.client.form.object.table.tree.controller.TreeGroupController;
 import lsfusion.client.form.object.table.view.GridPropertyTable;
 import lsfusion.client.form.order.user.MultiLineHeaderRenderer;
 import lsfusion.client.form.order.user.TableSortableHeaderManager;
@@ -95,6 +96,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
 
     private final TreeGroupNode rootNode;
     public final ClientFormController form;
+    private TreeGroupController treeGroupController;
     private final ClientTreeGroup treeGroup;
 
     public GroupTreeTableModel model;
@@ -119,8 +121,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         return treeGroup.groups.size() > 0 ? treeGroup.groups.get(treeGroup.groups.size() - 1) : null;
     }
 
-    public TreeGroupTable(ClientFormController iform, ClientTreeGroup itreeGroup) {
+    public TreeGroupTable(ClientFormController iform, TreeGroupController treeGroupController, ClientTreeGroup itreeGroup) {
         form = iform;
+        this.treeGroupController = treeGroupController;
         treeGroup = itreeGroup;
         plainTreeMode = itreeGroup.plainTreeMode;
 
@@ -349,6 +352,8 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
         actionMap.put("selectLastRow", lastRowAction);
 
         this.moveToNextCellAction = nextColumnAction;
+
+        treeGroupController.addFilterBindings(lastGroupObject(treeGroup));
     }
 
     private ClientFormController.Binding getEnterBinding(boolean shiftPressed) {
@@ -692,13 +697,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements AsyncChangeCe
             if (property != null) {
                 try {
                     String value = table.get(0).get(0);
-                    Object newValue = value == null ? null : property.parsePaste(value);
+                    Object newValue = property.parsePaste(value);
                     if (property.canUsePasteValueForRendering()) {
                         model.setValueAt(newValue, row, column);
                     }
 
                     form.pasteMulticellValue(
-                            singletonMap(property, new PasteData(newValue, singletonList(currentPath), singletonList(getValueAt(row, column))))
+                            singletonMap(property, new PasteData(newValue, value, singletonList(currentPath), singletonList(getValueAt(row, column))))
                     );
                 } catch (IOException e) {
                     throw Throwables.propagate(e);

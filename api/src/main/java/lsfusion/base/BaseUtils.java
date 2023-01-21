@@ -4,8 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
-import lsfusion.base.col.implementations.HMap;
-import lsfusion.base.col.implementations.HSet;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
@@ -15,7 +13,6 @@ import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.comb.map.GlobalObject;
 import lsfusion.base.file.*;
 import lsfusion.base.lambda.ArrayInstancer;
-import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.base.lambda.set.MergeFunctionSet;
 import lsfusion.base.lambda.set.RemoveFunctionSet;
@@ -53,14 +50,12 @@ public class BaseUtils {
     public static final Logger systemLogger = Logger.getLogger("SystemLogger");
     public static final Logger serviceLogger = Logger.getLogger("ServiceLogger");
 
-    public static final String lineSeparator = System.getProperty("line.separator");
-
     //Длина строки может быть маскимум 65535, каждый символ может занимать от 1 до 3х байт
     //используем пессимистичный вариант, чтобы не заниматься реальным рассчётом длины, т.к. это долго
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 225;
+        return 229;
     }
 
     public static String getPlatformVersion() {
@@ -100,73 +95,6 @@ public class BaseUtils {
         return obj == null ? 0 : obj.hashCode();
     }
 
-    public static <T> boolean findByReference(Collection<T> col, Object obj) {
-        for (T objCol : col)
-            if (objCol == obj) return true;
-        return false;
-    }
-
-    public static boolean[] convertArray(Boolean[] array) {
-        boolean[] result = new boolean[array.length];
-        for (int i = 0; i < array.length; i++)
-            result[i] = array[i];
-        return result;
-    }
-
-    public static <KA, VA, KB, VB> boolean mapEquals(Map<KA, VA> mapA, Map<KB, VB> mapB, Map<KA, KB> mapAB) {
-        for (Map.Entry<KA, VA> A : mapA.entrySet())
-            if (!mapB.get(mapAB.get(A.getKey())).equals(A.getValue()))
-                return false;
-        return true;
-    }
-
-    public static <K, E, V> Map<K, V> nullJoin(Map<K, ? extends E> map, Map<E, V> joinMap) {
-        return joinMap == null ? null : join(map, joinMap);
-    }
-
-    public static <K, E, V> Map<K, V> join(Map<K, ? extends E> map, Map<E, V> joinMap) {
-        Map<K, V> result = new HashMap<>();
-        for (Map.Entry<K, ? extends E> entry : map.entrySet())
-            result.put(entry.getKey(), joinMap.get(entry.getValue()));
-        return result;
-    }
-
-    // есть баг
-    public static <K, E> Map<K, E> joinKeep(Map<K, ? extends E> map, Map<E, E> joinMap) {
-        Map<K, E> result = new HashMap<>();
-        for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
-            E value = entry.getValue();
-            E joinValue = joinMap.get(value);
-            result.put(entry.getKey(), joinValue == null ? value : joinValue );
-        }
-        return result;
-    }
-
-    public static <K, E, V, R extends E> Map<K, V> rightJoin(Map<K, E> map, Map<R, V> joinMap) {
-        return BaseUtils.join(BaseUtils.filterValues(map, joinMap.keySet()), joinMap);
-    }
-
-    public static <K, VA, VB> Map<VA, VB> rightCrossJoin(Map<K, VA> map, Map<K, VB> joinMap) {
-        return BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
-    }
-
-    public static <K, VA, VB> Map<VA, VB> rightNullCrossJoin(Map<K, VA> map, Map<K, VB> joinMap) {
-        return joinMap==null? null : BaseUtils.rightJoin(BaseUtils.reverse(map), joinMap);
-    }
-
-    public static <K, E, V> List<Map<K, V>> joinCol(Map<K, ? extends E> map, Collection<Map<E, V>> list) {
-        List<Map<K, V>> result = new ArrayList<>();
-        for (Map<E, V> joinMap : list)
-            result.add(BaseUtils.join(map, joinMap));
-        return result;
-    }
-
-    public static <K, V> List<V> mapList(List<? extends K> list, ImMap<K, ? extends V> map) {
-        List<V> result = new ArrayList<>();
-        for (K element : list)
-            result.add(map.get(element));
-        return result;
-    }
 //
 //    // mapList - zero-based, reverseable, size of list
 //    public static <K> List<K> mapList(Integer[] mapList, List<K> list) {
@@ -186,49 +114,6 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> OrderedMap<K, V> mapOrder(List<? extends K> list, Map<K, ? extends V> map) {
-        OrderedMap<K, V> result = new OrderedMap<>();
-        for (K element : list)
-            result.put(element, map.get(element));
-        return result;
-    }
-
-    public static <K, E, V> OrderedMap<V, E> mapOrder(OrderedMap<K, E> list, Map<K, ? extends V> map) { // map предполагается reversed
-        OrderedMap<V, E> result = new OrderedMap<>();
-        for (Map.Entry<K, E> entry : list.entrySet())
-            result.put(map.get(entry.getKey()), entry.getValue());
-        return result;
-    }
-
-    public static <K, V> Set<V> mapSet(Set<K> set, Map<K, ? extends V> map) { // map предполагается reversed
-        Set<V> result = new HashSet<>();
-        for (K element : set)
-            result.add(map.get(element));
-        return result;
-    }
-
-    public static <K, E, V> Map<K, V> innerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
-        Map<K, V> result = new HashMap<>();
-        for (Map.Entry<K, ? extends E> entry : map.entrySet()) {
-            V joinValue = joinMap.get(entry.getValue());
-            if (joinValue != null) result.put(entry.getKey(), joinValue);
-        }
-        return result;
-    }
-
-    public static <K, E, V> Map<K, V> nullInnerJoin(Map<K, ? extends E> map, Map<? extends E, V> joinMap) {
-        return joinMap == null ? null : innerJoin(map, joinMap);
-    }
-
-    public static <K, E, V> OrderedMap<K, V> innerJoin(OrderedMap<K, E> map, Map<E, V> joinMap) {
-        OrderedMap<K, V> result = new OrderedMap<>();
-        for (Map.Entry<K, E> entry : map.entrySet()) {
-            V joinValue = joinMap.get(entry.getValue());
-            if (joinValue != null) result.put(entry.getKey(), joinValue);
-        }
-        return result;
-    }
-
     public static <K, V, F> Map<K, F> filterValues(Map<K, V> map, Collection<F> values) {
         Map<K, F> result = new HashMap<>();
         for (Map.Entry<K, V> entry : map.entrySet())
@@ -236,16 +121,6 @@ public class BaseUtils {
                 result.put(entry.getKey(), (F) entry.getValue());
         return result;
     }
-
-    // необходимо чтобы пересоздавал объект !!! потому как на вход идут mutable'ы
-    public static <K, V> Collection<K> filterValues(Map<K, V> map, V value) {
-        Collection<K> result = new ArrayList<>();
-        for (Map.Entry<K, V> entry : map.entrySet())
-            if (value.equals(entry.getValue()))
-                result.add(entry.getKey());
-        return result;
-    }
-
 
     public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Set<? extends K> keys) {
         if(keys.size() == map.size()) { // optimization
@@ -279,25 +154,6 @@ public class BaseUtils {
                     result.put(key, entry.getValue());
                 }
             }
-        }
-        return result;
-    }
-
-    public static <BK, K extends BK, V> Map<K, V> filterKeys(Iterable<BK> keys, Map<K, V> map) {
-        Map<K, V> result = new HashMap<>();
-        for (BK key : keys) {
-            V value = map.get(key);
-            if (value != null) result.put((K) key, value);
-        }
-        return result;
-    }
-
-    public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Iterable<? extends K> keys) {
-        Map<K, V> result = new HashMap<>();
-        for (K key : keys) {
-            V value = map.get(key);
-            assert value!=null;
-            result.put(key, value);
         }
         return result;
     }
@@ -345,123 +201,12 @@ public class BaseUtils {
         };
     }
 
-    public static <K, V, CV extends V> Map<K, CV> filterClass(Map<K, V> map, Class<CV> cvClass) {
-        for (Map.Entry<K, V> entry : map.entrySet())
-            if (!cvClass.isInstance(entry.getValue()))
-                return new HashMap<>();
-        return (Map<K, CV>) map;
-    }
-
-    public static <K, V> Map<K, V> filterNotKeys(Map<K, V> map, Collection<? extends K> keys) {
-        Map<K, V> result = new HashMap<>();
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (!keys.contains(entry.getKey()))
-                result.put(entry.getKey(), entry.getValue());
-        }
-        return result;
-    }
-
     public static <K, T extends K, V> Map<K, V> filterNotKeys(Map<K, V> map, FunctionSet<T> keys, Class<T> aClass) {
         Map<K, V> result = new HashMap<>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (!aClass.isInstance(entry.getKey()) || !((FunctionSet<K>) keys).contains(entry.getKey()))
                 result.put(entry.getKey(), entry.getValue());
         }
-        return result;
-    }
-
-    public static <K, V> Map<K, V> filterNotValues(Map<K, V> map, Collection<? extends V> values) {
-        Map<K, V> result = new HashMap<>();
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (!values.contains(entry.getValue()))
-                result.put(entry.getKey(), entry.getValue());
-        }
-        return result;
-    }
-
-    public static <BK, K extends BK> Collection<K> filter(Collection<K> col, Collection<BK> filter) {
-        List<K> result = new ArrayList<>();
-        for (K element : col)
-            if (filter.contains(element))
-                result.add(element);
-        return result;
-    }
-
-    public static <K> List<K> filterList(List<K> list, ImSet<K> filter) {
-        List<K> result = new ArrayList<>();
-        for (K element : list)
-            if (filter.contains(element))
-                result.add(element);
-        return result;
-    }
-
-    public static <K> List<K> filterList(List<K> list, Collection<K> filter) {
-        List<K> result = new ArrayList<>();
-        for (K element : list)
-            if (filter.contains(element))
-                result.add(element);
-        return result;
-    }
-
-    public static <K> List<K> filterNotList(List<K> list, Collection<K> filter) {
-        List<K> result = new ArrayList<>();
-        for (K element : list)
-            if (!filter.contains(element))
-                result.add(element);
-        return result;
-    }
-
-    public static <K> Set<K> filterSet(Set<K> set, Collection<K> filter) {
-        Set<K> result = new HashSet<>();
-        for (K element : filter)
-            if (set.contains(element))
-                result.add(element);
-        return result;
-    }
-
-    public static <K> Set<K> filterNotSet(Set<K> set, Collection<K> filter) {
-        Set<K> result = new HashSet<>();
-        for (K element : set)
-            if (!filter.contains(element))
-                result.add(element);
-        return result;
-    }
-
-    public static <BK, K extends BK> Collection<K> filterNot(Collection<K> col, Collection<BK> filter) {
-        List<K> result = new ArrayList<>();
-        for (K element : col)
-            if (!filter.contains(element))
-                result.add(element);
-        return result;
-    }
-
-    public static <BK, K extends BK, V> Map<K, V> splitKeys(Map<BK, V> map, HSet<K> keys, Map<BK, V> rest) {
-        Map<K, V> result = new HashMap<>();
-        for (Map.Entry<BK, V> entry : map.entrySet())
-            if (keys.contains((K) entry.getKey()))
-                result.put((K) entry.getKey(), entry.getValue());
-            else
-                rest.put(entry.getKey(), entry.getValue());
-        return result;
-    }
-
-    public static <BV, V extends BV, K> Map<K, V> splitValues(Map<K, BV> map, Collection<V> keys, Map<K, BV> rest) {
-        Map<K, V> result = new HashMap<>();
-        for (Map.Entry<K, BV> entry : map.entrySet())
-            if (keys.contains(entry.getValue()))
-                result.put(entry.getKey(), (V) entry.getValue());
-            else
-                rest.put(entry.getKey(), entry.getValue());
-        return result;
-    }
-
-    public static <K, V> Map<K, V> mergeEquals(Map<K, V> full, Map<K, V> part) {
-        assert full.keySet().containsAll(part.keySet());
-
-        Map<K, V> result = new HashMap<>();
-        for (Map.Entry<K, V> partEntry : part.entrySet())
-            if (full.get(partEntry.getKey()).equals(partEntry.getValue()))
-                result.put(partEntry.getKey(), partEntry.getValue());
         return result;
     }
 
@@ -478,115 +223,10 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, VA, VB> Map<VA, VB> crossJoin(Map<K, VA> map, Map<K, VB> mapTo) {
-        return join(reverse(map), mapTo);
-    }
-
-    public static <KA, VA, KB, VB> Map<VA, VB> crossJoin(Map<KA, VA> map, Map<KB, VB> mapTo, Map<KA, KB> mapJoin) {
-        return join(crossJoin(map, mapJoin), mapTo);
-    }
-
-    public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo) {
-        return crossValues(map, mapTo, false);
-    }
-
-    public static <KA, KB, V> Map<KA, KB> rightCrossValues(Map<KA, V> map, Map<KB, V> mapTo) {
-        return rightJoin(map, reverse(mapTo));
-    }
-
-    public static <KA, KB, V> Map<KA, KB> crossInnerValues(Map<KA, V> map, Map<KB, V> mapTo) {
-        return innerJoin(map, reverse(mapTo));
-    }
-
-    public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo, boolean ignoreUnique) {
-        return join(map, reverse(mapTo, ignoreUnique));
-    }
-
-    public static <K, T, VA, VB> Map<T, VA> splitInnerJoin(Map<T, K> mapTo, Map<K, VA> map1, Map<K, VB> map2, Map<T, VB> res2) {
-        Map<T, VA> res1 = new HashMap<>();
-        for (Map.Entry<T, K> map : mapTo.entrySet()) {
-            VA value1 = map1.get(map.getValue());
-            if (value1 != null)
-                res1.put(map.getKey(), value1);
-            else
-                res2.put(map.getKey(), map2.get(map.getValue()));
-        }
-        return res1;
-    }
-
-    public static <K> Collection<K> join(Collection<K> col1, Collection<K> col2) {
-        Set<K> result = new HashSet<>(col1);
-        result.addAll(col2);
-        return result;
-    }
-
-    public static <K, V> boolean identity(Map<K, V> map) {
-        for (Map.Entry<K, V> entry : map.entrySet())
-            if (!entry.getKey().equals(entry.getValue())) return false;
-        return true;
-    }
-
-    public static <K> Map<K, K> toMap(Set<K> collection) {
-        Map<K, K> result = new HashMap<>();
-        for (K object : collection)
-            result.put(object, object);
-        return result;
-    }
-
-    public static <K> Map<K, K> toMap(Collection<K> collection) {
-        Map<K, K> result = new HashMap<>();
-        for (K object : collection)
-            result.put(object, object);
-        return result;
-    }
-
-    public static <K, V> Map<K, V> toMap(List<K> from, List<V> to) {
-        assert from.size() == to.size();
-        Map<K, V> result = new HashMap<>();
-        for (int i = 0; i < from.size(); i++)
-            result.put(from.get(i), to.get(i));
-        return result;
-    }
-
-    public static <K> Map<Object, K> toObjectMap(Set<K> collection) {
-        Map<Object, K> result = new HashMap<>();
-        for (K object : collection)
-            result.put(new Object(), object);
-        return result;
-    }
-
     public static <K, V> Map<K, V> toMap(Collection<K> collection, V value) {
         Map<K, V> result = new HashMap<>();
         for (K object : collection)
             result.put(object, value);
-        return result;
-    }
-
-    public static <K> Map<Integer, K> toMap(List<K> list) {
-        Map<Integer, K> result = new HashMap<>();
-        for (int i = 0; i < list.size(); i++)
-            result.put(i, list.get(i));
-        return result;
-    }
-
-    public static <K, V> OrderedMap<K, V> toOrderedMap(List<? extends K> list, V value) {
-        OrderedMap<K, V> result = new OrderedMap<>();
-        for (K element : list)
-            result.put(element, value);
-        return result;
-    }
-
-    public static <K> Map<Integer, K> toMap(K[] list) {
-        Map<Integer, K> result = new HashMap<>();
-        for (int i = 0; i < list.length; i++)
-            result.put(i, list[i]);
-        return result;
-    }
-
-    public static <K> List<K> toList(Map<Integer, K> map) {
-        List<K> result = new ArrayList<>();
-        for (int i = 0; i < map.size(); i++)
-            result.add(map.get(i));
         return result;
     }
 
@@ -915,14 +555,6 @@ public class BaseUtils {
         return removeMap;
     }
 
-    public static <K, V> Map<K, V> removeKey(Map<K, V> map, K remove) {
-        Map<K, V> removeMap = new HashMap<>();
-        for (Map.Entry<K, V> property : map.entrySet())
-            if (!property.getKey().equals(remove))
-                removeMap.put(property.getKey(), property.getValue());
-        return removeMap;
-    }
-
     public static <K> Collection<K> add(Collection<? extends K> col, K add) {
         Collection<K> result = new ArrayList<>(col);
         result.add(add);
@@ -954,27 +586,9 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> Collection<K> remove(Collection<? extends K> set, Collection<? extends K> remove) {
-        Collection<K> result = new ArrayList<>(set);
-        result.removeAll(remove);
-        return result;
-    }
-
-    public static <K> Collection<K> remove(Collection<? extends K> set, K remove) {
-        Collection<K> result = new ArrayList<>(set);
-        result.remove(remove);
-        return result;
-
-    }
     public static <K> List<K> remove(List<? extends K> set, int remove) {
         List<K> result = new ArrayList<>(set);
         result.remove(remove);
-        return result;
-    }
-
-    public static <K> Set<K> removeSet(Set<? extends K> set, Collection<? extends K> remove) {
-        Set<K> result = new HashSet<>(set);
-        result.removeAll(remove);
         return result;
     }
 
@@ -990,42 +604,12 @@ public class BaseUtils {
         return removeList(list, Collections.singleton(remove));
     }
 
-    public static <K> List<K> removeList(List<K> list, int index) {
-        return removeList(list, Collections.singleton(list.get(index)));
-    }
-
     public static <K> K lastSetElement(Set<K> set) {
         K key = null;
         for (K k : set) {
             key = k;
         }
         return key;
-    }
-
-    public static <K> void moveElement(List<K> list, K elemFrom, K elemTo) {
-
-        int indFrom = list.indexOf(elemFrom);
-        int indTo = list.indexOf(elemTo);
-
-        if (indFrom == -1 || indTo == -1 || indFrom == indTo) return;
-
-        boolean up = indFrom >= indTo;
-
-        list.remove(elemFrom);
-        list.add(list.indexOf(elemTo) + (up ? 0 : 1), elemFrom);
-    }
-
-    public static <K> void moveElement(List<K> list, K elemFrom, int index) {
-
-        if (index == -1) {
-            list.remove(elemFrom);
-            list.add(elemFrom);
-        } else {
-            boolean up = list.indexOf(elemFrom) >= index;
-
-            list.remove(elemFrom);
-            list.add(index + (up ? 0 : -1), elemFrom);
-        }
     }
 
     public static <B, K1 extends B, K2 extends B, V> LinkedHashMap<B, V> mergeLinked(LinkedHashMap<K1, ? extends V> map1, LinkedHashMap<K2, ? extends V> map2) {
@@ -1057,62 +641,9 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replace(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
-        Map<K1, V> result = new HashMap<>(map1);
-        for (Map.Entry<K1, V> entry : result.entrySet()) {
-            V value2 = map2.get(entry.getKey());
-            if (value2 != null)
-                entry.setValue(value2);
-        }
-        return result;
-    }
-
-    public static <B, K1 extends B, V> Map<K1, V> replaceValues(Map<K1, ? extends V> map1, Map<? extends V, ? extends V> map2) {
-        Map<K1, V> result = new HashMap<>(map1);
-        for (Map.Entry<K1, V> entry : result.entrySet()) {
-            V value2 = map2.get(entry.getValue());
-            if (value2 != null)
-                entry.setValue(value2);
-        }
-        return result;
-    }
-
-    public static <K, V> Map<K, V> replace(Map<K, ? extends V> map, K key, V value) {
-        Map<K, V> result = new HashMap<>(map);
-        result.put(key, value);
-        return result;
-    }
-
-    public static <K, V> boolean isSubMap(Map<? extends K, ? extends V> map1, Map<K, ? extends V> map2) {
-        for (Map.Entry<? extends K, ? extends V> entry : map1.entrySet()) {
-            V value2 = map2.get(entry.getKey());
-            if (!(value2 != null && hashEquals(value2, entry.getValue())))
-                return false;
-        }
-        return true;
-    }
-
     public static <B, K1 extends B, K2 extends B> Collection<B> merge(Collection<K1> col1, Collection<K2> col2) {
         Collection<B> result = new ArrayList<>(col1);
         result.addAll(col2);
-        return result;
-    }
-
-    public static <B, K1 extends B, K2 extends B> Set<B> mergeSet(Set<K1> set1, Set<K2> set2) {
-        Set<B> result = new HashSet<>(set1);
-        result.addAll(set2);
-        return result;
-    }
-
-    public static <B, K1 extends B, K2 extends B> Set<B> mergeColSet(Collection<K1> set1, Collection<K2> set2) {
-        Set<B> result = new HashSet<>(set1);
-        result.addAll(set2);
-        return result;
-    }
-
-    public static <B, K1 extends B, K2 extends B> Set<B> mergeItem(Set<K1> set, K2 item) {
-        Set<B> result = new HashSet<>(set);
-        result.add(item);
         return result;
     }
 
@@ -1136,49 +667,6 @@ public class BaseUtils {
             result.addAll(list);
         }
         return result;
-    }
-
-    public static <V, MV, EV> Map<Object, EV> mergeMaps(Map<V, EV> map, Map<MV, EV> toMerge, Map<MV, Object> mergedMap) {
-        Map<Object, EV> merged = new HashMap<>(map);
-        Map<EV, Object> reversed = BaseUtils.reverse(merged);
-        for (Map.Entry<MV, EV> transEntry : toMerge.entrySet()) {
-            Object mergedProp = reversed.get(transEntry.getValue());
-            if (mergedProp == null) {
-                mergedProp = new Object();
-                merged.put(mergedProp, transEntry.getValue());
-            }
-            mergedMap.put(transEntry.getKey(), mergedProp);
-        }
-        return merged;
-    }
-
-    // строит декартово произведение нескольких упорядоченных множеств
-    public static <T> List<List<T>> cartesianProduct(List<List<T>> data) {
-        LinkedList<List<T>> queue = new LinkedList<>();
-        queue.add(new ArrayList<>());
-        final int tupleSize = data.size();
-        while (!queue.isEmpty()) {
-            if (queue.peekFirst().size() == tupleSize) {
-                break;
-            }
-            List<T> queueItem = queue.removeFirst();
-            final int currentTupleSize = queueItem.size();
-            for (T item : data.get(currentTupleSize)) {
-                List<T> newItem = new ArrayList<>(queueItem);
-                newItem.add(item);
-                queue.addLast(newItem);
-            }
-        }
-        return queue;
-    }
-
-    // ищет в Map рекурсивно тупик
-    public static <K> K findDeadEnd(Map<K, K> map, K end) {
-        K next = map.get(end);
-        if (next == null)
-            return end;
-        else
-            return findDeadEnd(map, next);
     }
 
     public static <T> boolean equalArraySets(T[] array1, T[] array2) {
@@ -1219,77 +707,12 @@ public class BaseUtils {
         return (primary.length() == 0 ? secondary : primary);
     }
 
-    public static String nevl(String primary, String secondary) {
-        return primary == null ? secondary : evl(primary, secondary);
-    }
-
     public static boolean hashEquals(Object obj1, Object obj2) {
         return obj1 == obj2 || (obj1.hashCode() == obj2.hashCode() && obj1.equals(obj2));
     }
 
-    public static <T> boolean contains(T[] array, T element) {
-        return contains(array, element, array.length);
-    }
-
-    public static <T> boolean contains(T[] array, T element, int num) {
-        for (int i = 0; i < num; i++)
-            if (array[i].equals(element))
-                return true;
-        return false;
-    }
-
-    public static <T> Set<T> toSet(T... array) {
-        return new HashSet<>(Arrays.asList(array));
-    }
-
-    public static <T> T getRandom(List<T> list, Random randomizer) {
-        return list.get(randomizer.nextInt(list.size()));
-    }
-
     public static String clause(String clause, String data) {
         return (data.length() == 0 ? "" : " " + clause + " " + data);
-    }
-
-    static String clause(String clause, int data) {
-        return (data == 0 ? "" : " " + clause + " " + data);
-    }
-
-    public static <T, K> OrderedMap<T, K> orderMap(Map<T, K> map, Iterable<T> list) {
-        OrderedMap<T, K> result = new OrderedMap<>();
-        for (T element : list) {
-            K value = map.get(element);
-            if (value != null)
-                result.put(element, value);
-        }
-        return result;
-    }
-
-    public static <BT, T extends BT> List<T> orderList(Set<T> map, Iterable<BT> list) {
-        List<T> result = new ArrayList<>();
-        for (BT element : list)
-            if (map.contains(element))
-                result.add((T) element);
-        return result;
-    }
-
-    public static <K, V> OrderedMap<K, V> mergeOrders(OrderedMap<K, V> map1, OrderedMap<K, V> map2) {
-        OrderedMap<K, V> result = new OrderedMap<>(map1);
-        result.putAll(map2);
-        return result;
-    }
-
-    public static <V> Map<V, V> mergeMaps(Map<V, V>[] maps) {
-        Map<V, V> result = new HashMap<>();
-        for (Map<V, V> map : maps)
-            result.putAll(map);
-        return result;
-    }
-
-    public static <T> void replaceListElements(List<T> list, T from, T to) {
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i) == from)
-                list.set(i, to);
-        }
     }
 
     public static <T> boolean replaceListElements(List<T> list, ImMap<T, T> to) {
@@ -1308,15 +731,6 @@ public class BaseUtils {
         return value == null ? 0 : value;
     }
 
-    public static Object nullZero(String str) {
-        return nullBoolean((Integer.parseInt(BaseUtils.nevl(str, "0")) == 1));
-    }
-
-    public static Object nullString(String str) {
-        if ("".equals(str)) return null;
-        else return str;
-    }
-
     public static String nullToString(Object str) {
         if (str == null) return "NULL";
         else return str.toString();
@@ -1325,11 +739,6 @@ public class BaseUtils {
     public static Object nullBoolean(Boolean b) {
         if (b) return true;
         else return null;
-    }
-
-    public static Integer nullParseInt(String s) {
-        if (s == null) return null;
-        else return Integer.parseInt(s);
     }
 
     public static Integer parseInt(String value) {
@@ -1420,22 +829,6 @@ public class BaseUtils {
         return result;
     }
 
-    public static <G, K> Map<G, Set<K>> groupSet(Group<G, K> getter, Collection<K> keys) { // assert что keys - set
-        Map<G, Set<K>> result = new HashMap<>();
-        for (K key : keys) {
-            G group = getter.group(key);
-            if (group != null) {
-                Set<K> groupSet = result.get(group);
-                if (groupSet == null) {
-                    groupSet = new HashSet<>();
-                    result.put(group, groupSet);
-                }
-                groupSet.add(key);
-            }
-        }
-        return result;
-    }
-
     public static <G, K> Map<G, Long> groupSum(Group<G, K> getter, Map<K, Long> map) { // assert что keys - set
         Map<G, Long> result = new HashMap<>();
         for (Map.Entry<K, Long> entry : map.entrySet()) {
@@ -1446,83 +839,12 @@ public class BaseUtils {
         return result;
     }
 
-    public static <G, K> Map<G, Set<K>> groupSet(final Map<K, G> getter, Set<K> keys) {
-        return groupSet(new Group<G, K>() {
-            public G group(K key) {
-                return getter.get(key);
-            }
-        }, keys);
-    }
-
     public static <G, K> Map<G, List<K>> groupList(final Map<K, G> getter, List<K> keys) {
-        return groupList(key -> getter.get(key), keys);
-    }
-
-    public static <G, K> Map<G, Set<K>> groupSet(final Map<K, G> getter) {
-        return groupSet(getter, getter.keySet());
-    }
-
-    public static <G, K> Map<G, Set<K>> groupSet(final HMap<K, G> getter, Collection<K> keys) {
-        return groupSet(new Group<G, K>() {
-            public G group(K key) {
-                return getter.get(key);
-            }
-        }, keys);
+        return groupList(getter::get, keys);
     }
 
     public static <G, K> Map<G, List<K>> groupList(final OrderedMap<K, G> getter) {
         return groupList(getter, getter.keyList());
-    }
-
-    public static <G, K> SortedMap<G, Set<K>> groupSortedSet(Group<G, K> getter, Collection<K> keys, Comparator<? super G> comparator) { // вообще assert что set
-        SortedMap<G, Set<K>> result = new TreeMap<>(comparator);
-        for (K key : keys) {
-            G group = getter.group(key);
-            if (group != null) {
-                Set<K> groupSet = result.get(group);
-                if (groupSet == null) {
-                    groupSet = new HashSet<>();
-                    result.put(group, groupSet);
-                }
-                groupSet.add(key);
-            }
-        }
-        return result;
-    }
-
-    public static <G, K> SortedMap<G, Set<K>> groupSortedSet(final Map<K, G> getter, Comparator<? super G> comparator) {
-        return groupSortedSet(new Group<G, K>() {
-            public G group(K key) {
-                return getter.get(key);
-            }
-        }, getter.keySet(), comparator);
-    }
-
-    public static <G extends GlobalObject, K> SortedMap<G, Set<K>> groupSortedSet(final Map<K, G> getter) {
-        return groupSortedSet(getter, GlobalObject.comparator);
-    }
-
-    public static <K> Map<K, Integer> multiSet(Collection<K> col) {
-        Map<K, Integer> result = new HashMap<>();
-        for (K element : col) {
-            Integer quantity = result.get(element);
-            result.put(element, quantity == null ? 1 : quantity + 1);
-        }
-        return result;
-    }
-
-    public static <V> V addValue(Map<V, V> values, V value) {
-        V addValue = values.get(value); // смотрим может уже есть
-        if (addValue == null) { // если нету, находим рекурсивно первое свободное значение
-            addValue = BaseUtils.findDeadEnd(BaseUtils.reverse(values), value);
-            values.put(value, addValue);
-        }
-        return addValue;
-    }
-
-    public static <K, V> void putNotNull(K key, Map<K, V> from, Map<K, V> to) {
-        V value = from.get(key);
-        if (value != null) to.put(key, value);
     }
 
     public static class Paired<T> {
@@ -1593,13 +915,6 @@ public class BaseUtils {
         }
     }
 
-    public static <K, V> boolean hashContainsValue(Map<K, V> map, V value) {
-        for (Map.Entry<K, V> entry : map.entrySet())
-            if (hashEquals(entry.getValue(), value))
-                return true;
-        return false;
-    }
-
     public static <K> String toString(Collection<K> array, String separator) {
         String result = "";
         for (K element : array)
@@ -1611,34 +926,6 @@ public class BaseUtils {
         String result = "";
         for (K element : array)
             result = (result.length() == 0 ? "" : result + separator) + element;
-        return result;
-    }
-
-    public static <K, V> boolean containsAll(Map<K, V> map, Map<K, V> contains) {
-        for (Map.Entry<K, V> entry : contains.entrySet())
-            if (!entry.getValue().equals(map.get(entry.getKey())))
-                return false;
-        return true;
-    }
-
-    public static <K> Map<K, String> mapString(Collection<K> col) {
-        Map<K, String> result = new HashMap<>();
-        for (K element : col)
-            result.put(element, element.toString());
-        return result;
-    }
-
-    public static Integer[] toObjectArray(int[] a) {
-        Integer[] result = new Integer[a.length];
-        for (int i = 0; i < a.length; i++)
-            result[i] = a[i];
-        return result;
-    }
-
-    public static Integer[] toOneBasedArray(int[] a) {
-        Integer[] result = new Integer[a.length];
-        for (int i = 0; i < a.length; i++)
-            result[i] = a[i] + 1;
         return result;
     }
 
@@ -1668,8 +955,6 @@ public class BaseUtils {
 
     public final static ArrayInstancer<Object> objectInstancer = Object[]::new;
 
-    public final static ArrayInstancer<String> stringInstancer = String[]::new;
-
     public static <T> T[] add(T[] array1, T[] array2, ArrayInstancer<T> instancer) {
         T[] result = instancer.newArray(array1.length + array2.length);
         System.arraycopy(array1, 0, result, 0, array1.length);
@@ -1697,10 +982,6 @@ public class BaseUtils {
         }
     }
 
-    public static <T> T[] addElement(T[] array, T element, Class<T> elementClass) {
-        return addElement(array, element, new GenericTypeInstancer<>(elementClass));
-    }
-
     public static <T> T[] addElement(T element, T[] array, Class<T> elementClass) {
         return addElement(element, array, new GenericTypeInstancer<>(elementClass));
     }
@@ -1723,55 +1004,11 @@ public class BaseUtils {
         return result;
     }
 
-    public static int[] addInt(int[] array, int element) {
-        int newArr[] = new int[array.length + 1];
-
-        System.arraycopy(array, 0, newArr, 0, array.length);
-        newArr[array.length] = element;
-
-        return newArr;
-    }
-
-    public static <T> T[] removeElement(T[] array, T element, ArrayInstancer<T> instancer) {
-        if (array == null || array.length == 0) {
-            return array;
-        }
-
-        int ind = -1;
-        for (int i = 0; i < array.length; ++i) {
-            if (array[i] == element) {
-                ind = i;
-                break;
-            }
-        }
-
-        if (ind == -1) {
-            return array;
-        }
-
-        T[] result = instancer.newArray(array.length - 1);
-        System.arraycopy(array, 0, result, 0, ind);
-        System.arraycopy(array, ind + 1, result, ind, result.length - ind);
-
-        return result;
-    }
-
     public static <T> T[] genArray(T element, int length, ArrayInstancer<T> instancer) {
         T[] result = instancer.newArray(length);
         for (int i = 0; i < length; i++)
             result[i] = element;
         return result;
-    }
-
-    public static String[] genArray(String element, int length) {
-        return genArray(element, length, stringInstancer);
-    }
-
-    public static int[] genArray(int element, int length) {
-        int[] ints = new int[length];
-        for (int i = 0; i < length; i++)
-            ints[i] = element;
-        return ints;
     }
 
     public static <I, E extends I> List<E> immutableCast(List<I> list) {
@@ -1845,20 +1082,6 @@ public class BaseUtils {
         return col;
     }
 
-    public static int objectToInt(Integer value) {
-        if (value == null)
-            return -1;
-        else
-            return value;
-    }
-
-    public static Integer intToObject(int value) {
-        if (value == -1)
-            return null;
-        else
-            return value;
-    }
-
     public static String nullTrim(String string) {
         if (string == null)
             return "";
@@ -1886,29 +1109,10 @@ public class BaseUtils {
             return name.toString().trim();
     }
 
-    public static <K, V> Map<K, V> buildMap(Collection<K> col1, Collection<V> col2) {
-        assert col1.size() == col2.size();
-
-        Iterator<K> it1 = col1.iterator();
-        Iterator<V> it2 = col2.iterator();
-        Map<K, V> result = new HashMap<>();
-        while (it1.hasNext())
-            result.put(it1.next(), it2.next());
-        return result;
-    }
-
     @SafeVarargs
     public static <K> List<K> toList(K... elements) {
         List<K> list = new ArrayList<>();
         Collections.addAll(list, elements);
-        return list;
-    }
-
-    public static <K> List<K> toListNoNull(K... elements) {
-        List<K> list = new ArrayList<>();
-        for (K element : elements)
-            if (element != null)
-                list.add(element);
         return list;
     }
 
@@ -1965,13 +1169,6 @@ public class BaseUtils {
         else
             return string.substring(string.length() - length, string.length());
     }
-
-    public static String padl(String string, int length, char character) {
-        if (length > string.length())
-            return replicate(character, length - string.length()) + string;
-        else
-            return string.substring(string.length() - length, string.length());
-    }
     
     public static int countRepeatingChars(String string, char character, int index) {
         int count = 0;
@@ -2009,16 +1206,6 @@ public class BaseUtils {
             ins++;
         }
         return ins;
-    }
-
-    public static <T> int[] relativeIndexes(List<T> all, List<T> list) {
-        int result[] = new int[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            int index = all.indexOf(list.get(i));
-            assert index >= 0;
-            result[i] = index;
-        }
-        return result;
     }
 
     public static <K> List<K> copyTreeChildren(List children) {
@@ -2171,32 +1358,6 @@ public class BaseUtils {
             return string;
     }
 
-    public static String encode(int... values) {
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(baos);
-            for (int i = 0; i < values.length; i++)
-                dos.writeInt((values[i] * (27 * (i + 1))) ^ 248979893);
-            return Base64.encodeBase64URLSafeString(baos.toByteArray());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Integer[] decode(int number, String string) {
-
-        try {
-            Integer[] result = new Integer[number];
-            DataInputStream dis = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(string)));
-            for (int i = 0; i < number; i++)
-                result[i] = (dis.readInt() ^ 248979893) / (27 * (i + 1));
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(getString("exceptions.error.decoding.link", string), e);
-        }
-    }
-
     public static String[] monthsRussian = new String[]{"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"};
 
     // приходится складывать в baseUtils, потому что должна быть единая функция и для сервера и для клиента
@@ -2307,55 +1468,6 @@ public class BaseUtils {
             dayOfMonth = "“" + dayOfMonth + "”";
 
         return "" + monthsEnglish[date.getMonthValue() - 1] + " " + dayOfMonth + ", " + date.getYear();
-    }
-
-    public static String justInitials(String fullName, boolean lastNameFirst, boolean revert) {
-        String[] names = fullName.split(" ");
-        String initials = "", lastName = "";
-        if (lastNameFirst) {
-            lastName = names[0];
-            for (int i = 1; i < names.length; i++)
-                if (!names[i].isEmpty()) {
-                    if (!initials.isEmpty())
-                        initials += ' ';
-                    initials += names[i].charAt(0) + ".";
-                }
-            if (revert)
-                return initials + ' ' + lastName;
-            else
-                return lastName + ' ' + initials;
-        } else {
-            for (int i = 0; i < names.length - 1; i++)
-                if (!names[i].isEmpty()) {
-                    if (!initials.isEmpty())
-                        initials += " ";
-                    initials += names[i].charAt(0) + ".";
-                }
-            if (names.length > 0)
-                lastName = names[names.length - 1];
-            if (revert)
-                return lastName + ' ' + initials;
-            else
-                return initials + ' ' + lastName;
-        }
-    }
-
-    public static String[] feminineNumbers = new String[]{"ноль", "одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"};
-
-    public static String intToFeminine(int number) {
-        if ((number >= 0) && (number <= 10))
-            return feminineNumbers[number];
-        else return String.valueOf(number);
-    }
-
-    public static Date getFirstDateInMonth(int year, int month) {
-        return new GregorianCalendar(year, month - 1, 1, 0, 0, 0).getTime();
-    }
-
-    public static Date getLastDateInMonth(int year, int month) {
-        Calendar calendar = new GregorianCalendar(year, month - 1, 1, 0, 0, 0);
-        calendar.roll(Calendar.DAY_OF_MONTH, -1);
-        return calendar.getTime();
     }
 
     public static String getDatePattern() {
@@ -2517,18 +1629,6 @@ public class BaseUtils {
         return result;
     }
 
-    public static int[] toPrimitive(List<Integer> array) {
-        if (array == null) {
-            return null;
-        }
-        final int[] result = new int[array.size()];
-        int i = 0;
-        for (int a : array) {
-            result[i++] = a;
-        }
-        return result;
-    }
-
     public static int max(int a, int b) {
         return a > b ? a : b;
     }
@@ -2582,12 +1682,6 @@ public class BaseUtils {
         return consecutiveList(i, 1);
     }
 
-    public static <K> List<K> sort(Collection<K> col, Comparator<K> comparator) {
-        List<K> list = new ArrayList<>(col);
-        list.sort(comparator);
-        return list;
-    }
-
     public static <K> FunctionSet<K> merge(FunctionSet<K>... sets) {
         FunctionSet<K> result = sets[0];
         for (int i = 1; i < sets.length; i++)
@@ -2620,21 +1714,6 @@ public class BaseUtils {
 //        if(set1 instanceof ImSet && set2 instanceof ImSet)
 //            return ((ImSet<K>)set1).merge((ImSet<K>)set2);
         return new RemoveFunctionSet<>(set1, set2);
-    }
-
-    public static <K> boolean containsAll(FunctionSet<K> set1, ImSet<K> set2) {
-        for (K element : set2) {
-            if (!set1.contains(element))
-                return false;
-        }
-        return true;
-    }
-
-    public static <T> FunctionSet<T> universal(boolean empty) {
-        if (empty)
-            return SetFact.EMPTY();
-        else
-            return FullFunctionSet.instance();
     }
 
     public static <MK, K, V> void putUpdate(Map<MK, Map<K, V>> keyValues, MK key, Map<K, V> values, boolean update) {
@@ -2695,42 +1774,6 @@ public class BaseUtils {
 
     public static int compareInts(int a, int b) {
         return Integer.compare(a, b);
-    }
-
-    public static void runLater(final int delay, final Runnable runnable) {
-
-//        ExecutorService executorService = Executors.newScheduledThreadPool()CachedThreadPool(threadFactory);
-
-        new java.util.Timer(true).schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        runnable.run();
-                    }
-                },
-                delay
-        );
-
-//        Thread thread = new Thread("runLater-thread") {
-//            @Override
-//            public void run() {
-//                SystemUtils.sleep(delay);
-//                runnable.run();
-//            }
-//        };
-//        thread.setDaemon(true);
-//        thread.start();
-    }
-
-    public static <T> void addToOrderedList(List<T> orderedList, T element, int after, Comparator<T> compare) {
-        assert after <= orderedList.size();
-        while (true) {
-            if (after >= orderedList.size() || compare.compare(orderedList.get(after), element) > 0) {
-                orderedList.add(after, element);
-                break;
-            }
-            after++;
-        }
     }
 
     public static String bigDecimalToString(BigDecimal bd) {
@@ -2794,11 +1837,7 @@ public class BaseUtils {
     }
 
     public static <T> Iterable<T> mergeIterables(final Iterable<T> it1, final Iterable<T> it2) {
-        return new Iterable<T>() {
-            public Iterator<T> iterator() {
-                return mergeIterators(it1.iterator(), it2.iterator());
-            }
-        };
+        return () -> mergeIterators(it1.iterator(), it2.iterator());
     }
 
     public static <T> Iterator<T> mergeIterators(final Iterator<T> it1, final Iterator<T> it2) {
@@ -2826,15 +1865,6 @@ public class BaseUtils {
         };
     }
 
-    public static <T> Iterable<T> sort(Iterable<T> it, Comparator<T> comparator) {
-        List<T> list = new ArrayList<>();
-        for (T element : it) {
-            list.add(element);
-        }
-        list.sort(comparator);
-        return list;
-    }
-
     protected enum Check {
         FIRST, CLOSEST, COMMON
     }
@@ -2845,12 +1875,6 @@ public class BaseUtils {
 
     public interface ExChildrenInterface<T> extends ChildrenInterface<T> {
         ImSet<T> getAllChildren(T element); // оптимизация, чтобы кэширование включать
-    }
-
-    public static abstract class SChildrenInterface<T> implements ExChildrenInterface<T> {
-        public ImSet<T> getAllChildren(T element) {
-            return BaseUtils.getAllChildren(element, this);
-        }
     }
 
     public static <V> ImSet<V> getAllChildren(V vthis, ChildrenInterface<V> cint) {
@@ -2970,32 +1994,6 @@ public class BaseUtils {
     
     public static String defaultToString(Object o) {
         return o.getClass().getName() + "@" + Integer.toHexString(o.hashCode());
-    }
-
-    public static String removeTrailingSlash(String s) {
-        assert s.isEmpty() || s.endsWith("/");
-        if(!s.isEmpty())
-            return s.substring(0, s.length() - 1);
-        return s;
-    }
-    
-    public static List<String> split(String s, String f) {
-        List<String> result = new ArrayList<>();
-        int i = 0;
-        while (true) {
-            int j = s.indexOf(f, i);
-            if (j == -1) {
-                result.add(s.substring(i));
-                break;
-            } else {
-                if (j <= i)
-                    result.add("");
-                else
-                    result.add(s.substring(i, j));
-                i = j + f.length();
-            }
-        }
-        return result;
     }
 
     private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

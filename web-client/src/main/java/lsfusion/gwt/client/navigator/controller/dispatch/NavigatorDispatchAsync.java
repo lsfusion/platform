@@ -43,6 +43,11 @@ public class NavigatorDispatchAsync extends RemoteDispatchAsync {
     }
 
     @Override
+    protected boolean synchronizeRequests() {
+        return false;
+    }
+
+    @Override
     protected <A extends RequestAction<R>, R extends Result> long fillQueuedAction(A action) {
         NavigatorRequestAction navigatorRequestAction = (NavigatorRequestAction) action;
         if(action instanceof NavigatorRequestCountingAction)

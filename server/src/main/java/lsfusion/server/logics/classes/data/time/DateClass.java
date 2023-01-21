@@ -196,11 +196,6 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
     }
 
     @Override
-    public boolean useIndexedJoin() {
-        return true;
-    }
-
-    @Override
     public String getIntervalProperty() {
         return "interval[DATE,DATE]";
     }

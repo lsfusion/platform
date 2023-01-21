@@ -2,6 +2,7 @@ package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -14,7 +15,7 @@ import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.classes.ValueClass;
@@ -412,7 +413,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return new JoinDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.join}"), this, LM
         );
     }
@@ -431,9 +432,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if (super.isNotNull()) {
             return true;
         }
-        if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement) {
-            return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();    
-        }
+        if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement &&
+                ((implement.property.isValueFull(MapFact.EMPTY()) && implement.property.isValueUnique(MapFact.EMPTY(), false)) || implement.property.isNotNull()))
+            return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();
         return false;
     }
 

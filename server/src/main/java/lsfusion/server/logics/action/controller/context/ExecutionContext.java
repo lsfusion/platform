@@ -426,11 +426,14 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
             ((DataSession)getEnv()).close();
         }
     }
-    public NewSession<P> newSession() throws SQLException { // the same as override, bu 
-        return newSession(getSession().sql);
+    public NewSession<P> newSession() throws SQLException {
+        return newSession(null);
     }
-    public NewSession<P> newSession(SQLSession sql) throws SQLException { // the same as override, bu 
-        return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql), executorService, form, stack);
+    public NewSession<P> newSession(ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
+        return newSession(getSession().sql, fixedForms);
+    }
+    public NewSession<P> newSession(SQLSession sql, ImSet<FormEntity> fixedForms) throws SQLException { // the same as override, bu
+        return new NewSession<>(keys, pushedAsyncResult, getSession().createSession(sql, fixedForms), executorService, form, stack);
     }
 
     public ActionOrProperty getSecurityProperty() {
@@ -653,6 +656,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         assertNotUserInteractionInTransaction();
         if(pushedAsyncResult instanceof PushAsyncInput)
             return ((PushAsyncInput) pushedAsyncResult).value;
+        if(pushedAsyncResult instanceof PushExternalInput)
+            return new InputResult(ObjectValue.getValue(((PushExternalInput) pushedAsyncResult).value.apply(dataClass), dataClass), null);
 
         InputContext<T> inputContext = null;
         if(list != null)

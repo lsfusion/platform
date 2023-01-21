@@ -70,6 +70,7 @@ import org.apache.log4j.Logger;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.function.IntFunction;
 
 import static lsfusion.base.BaseUtils.hashEquals;
@@ -106,8 +107,8 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
     }
 
     @Override
-    public String toDebugString() {
-        return name + ": " + count + " - " + struct;
+    public String toDebugString(Map<String, String> sessionDebugInfo) {
+        return name + ": " + count + " - " + struct + " [" + sessionDebugInfo.get(name) + "]";
     }
 
     public SessionTable(String name, ImOrderSet<KeyField> keys, ImSet<PropertyField> properties, ClassWhere<KeyField> classes, ImMap<PropertyField, ClassWhere<Field>> propertyClasses, int count, TableStatKeys statKeys, ImMap<PropertyField, PropStat> statProps) {
@@ -707,7 +708,7 @@ public class SessionTable extends NamedTable implements ValuesContext<SessionTab
         assert !(session.inconsistent && inconsistent);
         assert checkClassesUpdate || !inconsistent;
 
-        if(session.inconsistent || !checkClassesUpdate || (!inconsistent && Settings.get().isDisableReadClasses()))
+        if(session.inconsistent || !checkClassesUpdate || (!inconsistent && count > Settings.get().getDisableAdjustClassesCount()))
             return this;
 
         if(baseClass==null)

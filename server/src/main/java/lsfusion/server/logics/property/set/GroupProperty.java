@@ -11,7 +11,7 @@ import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
@@ -192,7 +192,7 @@ abstract public class GroupProperty<I extends PropertyInterface> extends Complex
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return new GroupDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.group}." + getGroupType().name().toLowerCase()), this, LM
         );
     }

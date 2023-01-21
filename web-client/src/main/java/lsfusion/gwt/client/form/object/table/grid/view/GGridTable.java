@@ -187,38 +187,30 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
         if (currentSize > newSize) {
             if (modifyGroupObject) {
-                ArrayList<GridDataRecord> oldRecords = new ArrayList<>(rows);
-                for (int i = 0; i < oldRecords.size(); i++) {
-                    GridDataRecord record = oldRecords.get(i);
+                for (int i = rows.size() - 1; i >= 0; i--) {
+                    GridDataRecord record = rows.get(i);
                     if (!rowKeys.contains(record.getKey())) {
+                        // not so sure about this incDeleteRows, because it can be called during dispatching process (when canceling async changes), and not at the beggining of the event loop
                         tableBuilder.incDeleteRows(tableWidget.getSection(), i, i + 1);
-                        rows.remove(record);
+                        rows.remove(i);
                         incUpdateRowIndices(i, -1);
                     }
                 }
             } else {
                 rows.removeRange(newSize, currentSize);
-//                for (int i = currentSize - 1; i >= newSize; --i) {
-//                    rows.remove(i);
-//                }
             }
         } else if (currentSize < newSize) {
-            for (int i = currentSize; i < newSize; ++i) {
-                GGroupObjectValue rowKey = rowKeys.get(i);
-
-                GridDataRecord record = new GridDataRecord(i, rowKey);
-                record.setRowBackground(rowBackgroundValues.get(rowKey));
-                record.setRowForeground(rowForegroundValues.get(rowKey));
-
-                rows.add(record);
-            }
+            for (int i = currentSize; i < newSize; i++)
+                rows.add(new GridDataRecord(i));
         }
 
-        for (int i = 0; i < min(newSize, currentSize); ++i) {
+        for (int i = 0; i < newSize; i++) {
             GGroupObjectValue rowKey = rowKeys.get(i);
-
             GridDataRecord record = rows.get(i);
-            record.reinit(rowKey, rowBackgroundValues.get(rowKey), rowForegroundValues.get(rowKey));
+            record.setKey(rowKey);
+
+            record.setRowBackground(rowBackgroundValues.get(rowKey));
+            record.setRowForeground(rowForegroundValues.get(rowKey));
         }
     }
 

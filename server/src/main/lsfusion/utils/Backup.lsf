@@ -1,6 +1,6 @@
 MODULE Backup;
 
-REQUIRE System, Reflection, SchedulerDefaultData;
+REQUIRE System, Reflection, Scheduler, DefaultData;
 
 makeBackup '{backup.make.backup}' INTERNAL  'lsfusion.server.physics.admin.backup.action.BackupAction' () TOOLBAR;
 makeBackupAction '{backup.make.backup}'  { 
@@ -152,8 +152,8 @@ NAVIGATOR {
     }
 }
 
-loadDefaultScheduledTasks () + {     
-    loadDefaultScheduledTask ('{backup.backuping}', 2014_07_01_01:00, 86400, SchedulerStartType.afterStart);
-    loadDefaultScheduledTaskDetail ('{backup.backuping}', 1, 'Backup.makeBackup[]');
-    loadDefaultScheduledTaskDetail ('{backup.backuping}', 2, 'Backup.decimateBackups[]');        
+loadDefaultData () + {     
+    createScheduledTask ('{backup.backuping}',dateTimeToDateTime(currentDate(), 01:00), 86400, SchedulerStartType.afterStart);
+    createScheduledTaskDetail ('{backup.backuping}', 1, 'Backup.makeBackup[]');
+    createScheduledTaskDetail ('{backup.backuping}', 2, 'Backup.decimateBackups[]');        
 }

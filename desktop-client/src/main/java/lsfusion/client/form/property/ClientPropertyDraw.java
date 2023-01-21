@@ -396,11 +396,19 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public Object parsePaste(String s) {
-        if (externalChangeType == null) {
+        ClientType externalChangeType = this.externalChangeType;
+        if(externalChangeType == null)
+            externalChangeType = baseType;
+        return parsePaste(s, externalChangeType);
+    }
+    public Object parsePaste(String s, ClientType parseType) {
+        if(s == null)
+            return null;
+        if (parseType == null) {
             return null;
         }
         try {
-            return externalChangeType.parseString(s);
+            return parseType.parseString(s);
         } catch (ParseException pe) {
             return null;
         }
@@ -420,7 +428,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean isPanelCaptionLast() {
-        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof ClientLogicalClass && !panelCaptionVertical && !container.horizontal);
+        return panelCaptionLast != null ? panelCaptionLast : (baseType instanceof ClientLogicalClass && !panelCaptionVertical);
     }
 
     public FlexAlignment getPanelCaptionAlignment() {

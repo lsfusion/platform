@@ -46,6 +46,7 @@ public class ViewProxyUtil {
         setDebugPoint.set(debugPoint);
         try {
             BeanUtils.setProperty(viewProxy, propertyName, propertyValue);
+            BeanUtils.setProperty(viewProxy, "debugPoint", debugPoint.get());
         } catch (Exception e) {
             throw new RuntimeException("property can't be set: " + e.getMessage());
         } finally {

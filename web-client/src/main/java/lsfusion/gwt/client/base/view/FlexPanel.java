@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static lsfusion.gwt.client.base.resize.ResizeHandler.ANCHOR_WIDTH;
+
 public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesResize, HasMaxPreferredSize {
 
     protected static FlexPanelImpl impl = FlexPanelImpl.get();
@@ -281,7 +283,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     public void onBrowserEvent(Event event) {
         super.onBrowserEvent(event);
 
-        checkResizeEvent(event, getElement());
+        Element cursorElement = getElement();
+
+        ResizeHandler.dropCursor(cursorElement, event);
+
+        checkResizeEvent(event, cursorElement);
     }
 
     public void checkResizeEvent(NativeEvent event, Element cursorElement) {
@@ -490,7 +496,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
 
         public void propagateChildResizeEvent(NativeEvent event, Element cursorElement) {
-            int resizedChild = ResizeHandler.getResizedChild(!vertical, widgets, event);
+            int resizedChild = ResizeHandler.getResizedChild(!vertical, widgets, event, ANCHOR_WIDTH, null);
             if(resizedChild >= 0) {
                 Widget resizeWidget = widgets.get(resizedChild);
                 if (resizeWidget instanceof FlexPanel)
@@ -498,8 +504,24 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
         }
 
+        public boolean isResizeOnScroll(NativeEvent event) {
+            Result<Boolean> isOnScroll = new Result<>();
+            int resizedChild = ResizeHandler.getResizedChild(!vertical, widgets, event, 0, isOnScroll);
+            if(resizedChild >= 0) {
+                if(isOnScroll.result)
+                    return true;
+
+                Widget resizeWidget = widgets.get(resizedChild);
+                return resizeWidget instanceof FlexPanel && ((FlexPanel) resizeWidget).isResizeOnScroll(event);
+            }
+            return false;
+        }
         public int getAbsolutePosition(boolean left) {
             return ResizeHandler.getAbsolutePosition(widget.getElement(), vertical, left);
+        }
+
+        public int getScrollSize() {
+            return ResizeHandler.getScrollSize(widget.getElement(), vertical);
         }
 
         // actual resize widget methods
@@ -789,6 +811,16 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
 
             @Override
+            public boolean isResizeOnScroll(int index, NativeEvent event) {
+                return getChildLine(index).isResizeOnScroll(event);
+            }
+
+            @Override
+            public int getScrollSize(int index) {
+                return getChildLine(index).getScrollSize();
+            }
+
+            @Override
             public double resizeChild(int index, int delta) {
                 return resizeWidget(delta, lines, index, lazyParents.apply(false));
             }
@@ -860,6 +892,21 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 }
             }
         }
+    }
+
+    public boolean isResizeOnScroll(NativeEvent event) {
+        int oppositePosition = ResizeHandler.getEventPosition(vertical, false, event);
+        List<FlexLine> lines = getLines(oppositePosition);
+
+        Result<Boolean> isOnScroll = new Result<>();
+        int resizedChild = ResizeHandler.getResizedChild(vertical, event, lines, 0, isOnScroll);
+        if(resizedChild >= 0) {
+            if(isOnScroll.result)
+                return true;
+
+            return lines.get(resizedChild).isResizeOnScroll(event);
+        }
+        return false;
     }
 
     public double resizeWidget(double delta, List<FlexLine> lines, int lineNumber, List<ParentSameFlexPanel> parents) {

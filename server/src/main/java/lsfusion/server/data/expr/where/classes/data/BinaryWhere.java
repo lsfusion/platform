@@ -34,6 +34,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.where.DataWhere;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.classes.ClassExprWhere;
+import lsfusion.server.logics.classes.data.time.TimeSeriesClass;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
@@ -99,8 +100,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOpMap.get(0).compare(packOpMap.get(1), getCompare());
     }
 
-    public static boolean needIndexedJoin(BaseExpr expr, ImOrderSet<Expr> orderTop, BaseExpr valueExpr, Result<Boolean> resultIsOrderTop) {
-        if((valueExpr == null || valueExpr.isValue()) && expr.isIndexed()) {
+    public static boolean needIndexedJoin(BaseExpr expr, Compare compare, BaseExpr valueExpr, ImOrderSet<Expr> orderTop, Result<Boolean> resultIsOrderTop) {
+        if((valueExpr == null || valueExpr.isValue()) && expr.isIndexed(compare)) { // this indexed check is not that good here (at least for "greater" compares), see Property.getSelectStat comment
             boolean isOrderTop = orderTop.contains(expr);
             if(resultIsOrderTop != null)
                 resultIsOrderTop.set(isOrderTop);
@@ -113,21 +114,21 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             // доступ по индексированному полю, нужно для поиска интервалов в WhereJoins.getStatKeys() и соответствующего уменьшения статистики
             if(valueExpr == null)
                 return false;
-            else {
-                Type type = valueExpr.getSelfType();
-                return type != null && type.useIndexedJoin();
-            }
+            if(compare == Compare.CONTAINS || compare == Compare.MATCH)
+                return true;
+            return valueExpr.getSelfType() instanceof TimeSeriesClass;
         }
         return false;
     }
 
     public WhereJoin groupJoinsWheres(ImOrderSet<Expr> orderTop) {
-        assert !getCompare().equals(Compare.EQUALS); // перегружена реализация по идее
+        Compare compare = getCompare();
+        assert !compare.equals(Compare.EQUALS); // перегружена реализация по идее
         Result<Boolean> isOrderTop = new Result<>();
-        if(needIndexedJoin(operator2, orderTop, operator1, isOrderTop)) // для Like'ов тоже надо так как там может быть git индекс
-            return new ExprIndexedJoin(operator2, getCompare().reverse(), operator1, isOrderTop.result);
-        if(needIndexedJoin(operator1, orderTop, operator2, isOrderTop))
-            return new ExprIndexedJoin(operator1, getCompare(), operator2, isOrderTop.result);
+        if(needIndexedJoin(operator2, compare.reverse(), operator1, orderTop, isOrderTop)) // для Like'ов тоже надо так как там может быть git индекс
+            return new ExprIndexedJoin(operator2, compare.reverse(), operator1, isOrderTop.result);
+        if(needIndexedJoin(operator1, compare, operator2, orderTop, isOrderTop))
+            return new ExprIndexedJoin(operator1, compare, operator2, isOrderTop.result);
         return null;
     }
     public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(ImSet<K> keepStat, StatType statType, KeyStat keyStat, ImOrderSet<Expr> orderTop, GroupJoinsWheres.Type type) {

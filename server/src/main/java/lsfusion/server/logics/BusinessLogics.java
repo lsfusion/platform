@@ -19,10 +19,8 @@ import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.base.caches.CacheStats;
+import lsfusion.server.base.caches.*;
 import lsfusion.server.base.caches.CacheStats.CacheType;
-import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleAdapter;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -61,12 +59,11 @@ import lsfusion.server.logics.classes.data.utils.time.TimeLogicsModule;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
-import lsfusion.server.logics.classes.user.set.OrObjectClassSet;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
-import lsfusion.server.logics.classes.user.set.ResolveOrObjectClassSet;
 import lsfusion.server.logics.event.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.struct.group.AbstractNode;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
@@ -76,7 +73,6 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.caches.MapCacheAspect;
 import lsfusion.server.logics.property.cases.AbstractCase;
 import lsfusion.server.logics.property.cases.graph.Graph;
-import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.IsClassProperty;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
@@ -281,7 +277,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public void cleanCaches() {
         startLruCache = null;
         MapCacheAspect.cleanClassCaches();
-        Property.cleanPropCaches();
+        AbstractNode.cleanPropCaches();
+        cleanPropCaches();
 
         startLogger.info("Obsolete caches were successfully cleaned");
     }
@@ -442,41 +439,13 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     }
 
     public void initClassDataProps(final DBNamingPolicy namingPolicy) {
-        ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(new BaseUtils.Group<ImplementTable, ConcreteCustomClass>() {
-            public ImplementTable group(ConcreteCustomClass customClass) {
-                return LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", customClass), namingPolicy).table;
-            }
-        });
+        ImMap<ImplementTable, ImSet<ConcreteCustomClass>> groupTables = getConcreteCustomClasses().group(customClass ->
+                LM.tableFactory.getClassMapTable(MapFact.singletonOrder("key", customClass), namingPolicy).table);
 
-        for(int i=0,size=groupTables.size();i<size;i++) {
-            ImplementTable table = groupTables.getKey(i);
-            ImSet<ConcreteCustomClass> set = groupTables.getValue(i);
-
-            ObjectValueClassSet classSet = OrObjectClassSet.fromSetConcreteChildren(set);
-
-            CustomClass tableClass = (CustomClass) table.getMapFields().singleValue();
-            // помечаем full tables
-            assert tableClass.getUpSet().containsAll(classSet, false); // должны быть все классы по определению, исходя из логики раскладывания классов по таблицам
-            boolean isFull = classSet.containsAll(tableClass.getUpSet(), false);
-            if(isFull) // важно чтобы getInterfaceClasses дал тот же tableClass
-                classSet = tableClass.getUpSet();
-
-            ClassDataProperty dataProperty = new ClassDataProperty(LocalizedString.create(classSet.toString(), false), classSet);
-            LP<ClassPropertyInterface> lp = new LP<>(dataProperty);
-            LM.addProperty(null, new LP<>(dataProperty));
-            LM.makePropertyPublic(lp, PropertyCanonicalNameUtils.classDataPropPrefix + table.getName(), Collections.singletonList(ResolveOrObjectClassSet.fromSetConcreteChildren(set)));
-            // именно такая реализация, а не implementTable, из-за того что getInterfaceClasses может попасть не в "класс таблицы", а мимо и тогда нарушится assertion что должен попасть в ту же таблицу, это в принципе проблема getInterfaceClasses
-            dataProperty.markStored(table);
-            dataProperty.initStored(LM.tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
-
-            // помечаем dataProperty
-            for(ConcreteCustomClass customClass : set)
-                customClass.dataProperty = dataProperty;
-            if(isFull) // неважно implicit или нет
-                table.setFullField(dataProperty);
-        }
+        for(int i=0,size=groupTables.size();i<size;i++)
+            LM.markClassData(groupTables.getKey(i), groupTables.getValue(i), namingPolicy);
     }
-    
+
     // если добавлять CONSTRAINT SETCHANGED не забыть задание в графе запусков перетащить
     public void initClassAggrProps() {
         MOrderExclSet<Property> queue = SetFact.mOrderExclSet();
@@ -576,12 +545,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         LM.getRootGroup().finalizeAroundInit();
     }
 
-    public ImOrderSet<ActionOrProperty> getOrderActionOrProperties() {
-        return LM.getRootGroup().getActionOrProperties();
+    public void cleanPropCaches() {
+        LM.getRootGroup().cleanAllActionOrPropertiesCaches();
     }
 
-    public ImSet<ActionOrProperty> getActionOrProperties() {
-        return getOrderActionOrProperties().getSet();
+    // the problem is in the changeChildrenToSimple method, when some props are added to that groups during the runtime
+    // actually most of the getOrderActionOrProperties calls filter action / props immediately, so the caching can be more sophisticated
+    // but right now we just do pretty simple memoization with the manual update
+    public ImOrderSet<ActionOrProperty> getOrderActionOrProperties() {
+        return LM.getRootGroup().getActionOrProperties();
     }
 
     public ImOrderSet<Property> getOrderProperties() {
@@ -2173,7 +2145,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     private Scheduler.SchedulerTask getSynchronizeSourceTask(Scheduler scheduler) {
         SynchronizeSourcesWatcher sourcesWatcher = new SynchronizeSourcesWatcher();
-        return scheduler.createSystemTask(stack -> sourcesWatcher.watch("lsf"),
+        return scheduler.createSystemTask(stack -> sourcesWatcher.watch("lsf", ""),
                 true, null, false, "Synchronizing resources from sources to build. Only for debug");
     }
 

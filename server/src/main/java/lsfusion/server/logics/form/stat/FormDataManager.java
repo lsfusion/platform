@@ -3,12 +3,14 @@ package lsfusion.server.logics.form.stat;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
+import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.stat.print.PrintMessageData;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -33,7 +35,7 @@ public abstract class FormDataManager {
         return dataInterface.getFormEntity();
     }
 
-    public PrintMessageData getPrintMessageData(int selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
+    public PrintMessageData getPrintMessageData(SelectTop selectTop, boolean removeNullsAndDuplicates) throws SQLException, SQLHandledException {
 
         ExportResult sources = getExportData(selectTop);
 
@@ -71,7 +73,7 @@ public abstract class FormDataManager {
         return new PrintMessageData(message, titles, rows);
     }
 
-    public ExportResult getExportData(int selectTop) throws SQLException, SQLHandledException {
+    public ExportResult getExportData(SelectTop selectTop) throws SQLException, SQLHandledException {
         ExportStaticDataGenerator sourceGenerator = new ExportStaticDataGenerator(dataInterface);
         Pair<Map<GroupObjectEntity, StaticKeyData>, StaticPropertyData<PropertyDrawEntity>> data = sourceGenerator.generate(selectTop);
         return new ExportResult(data.first, data.second, sourceGenerator.hierarchy);
@@ -89,8 +91,9 @@ public abstract class FormDataManager {
 
         // filling titles
         List<String> titles = new ArrayList<>();
+        FormView formView = getFormEntity().getRichDesign();
         for(PropertyDrawEntity<?> property : tableProperties)
-            titles.add(ThreadLocalContext.localize(property.getCaption()));
+            titles.add(ThreadLocalContext.localize(formView.get(property).getCaption()));
 
         // filling data
         List<List<String>> rows = new ArrayList<>();
@@ -117,7 +120,7 @@ public abstract class FormDataManager {
     }
 
     public ExportResult getExportData() throws SQLException, SQLHandledException {
-        return getExportData(0);
+        return getExportData(SelectTop.NULL);
     }
 
     public static class ExportResult {

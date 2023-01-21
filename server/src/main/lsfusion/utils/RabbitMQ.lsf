@@ -1,0 +1,55 @@
+MODULE RabbitMQ;
+
+REQUIRE SystemEvents;
+
+publish 'Publish' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.PublishRabbitMQAction' (Channel, STRING);
+startConsumer 'Start' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StartConsumerRabbitMQAction' (Channel);
+stopConsumer 'Stop' INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumerRabbitMQAction' (Channel);
+//queue, message
+processConsumed ABSTRACT LIST (STRING, STRING);
+
+stopConsumers INTERNAL 'lsfusion.server.physics.dev.integration.external.to.net.rabbitmq.StopConsumersRabbitMQAction' ();
+
+CLASS Channel 'Channel';
+
+host 'Host' = DATA STRING (Channel);
+queue 'Queue name' = DATA STRING (Channel);
+user 'User' = DATA STRING (Channel);
+password 'Password' = DATA STRING (Channel) ECHO;
+isConsumer 'Consumer' = DATA BOOLEAN (Channel);
+local 'Local' = DATA BOOLEAN (Channel);
+started 'Started' = DATA BOOLEAN (Channel);
+
+stop(Channel c) {
+    stopConsumer(c);
+    started(c) <- NULL;
+    apply();
+}
+
+start(Channel c) {
+    startConsumer(c);
+    started(c) <- TRUE;
+    apply();
+}
+
+restartConsumers 'Restart all customers' () {
+    stopConsumers();
+    FOR host(Channel c) AND queue(c) AND isConsumer(c) DO {
+        startConsumer(c);
+    }
+}
+
+FORM RabbitMQ
+    OBJECTS c = Channel, s = STRING PANEL
+    PROPERTIES(c) local, isConsumer, host, queue, user, password, 
+        start GRID SHOWIF isConsumer(c) AND NOT started(c),
+        stop GRID SHOWIF isConsumer(c) AND started(c),
+        NEW, DELETE
+    PROPERTIES restartConsumers(), VALUE(s), publish(c, s)
+;
+
+NAVIGATOR {
+    system {
+        NEW RabbitMQ;
+    }
+}

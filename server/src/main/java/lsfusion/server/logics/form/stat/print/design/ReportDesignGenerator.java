@@ -318,6 +318,9 @@ public class ReportDesignGenerator {
             JRDesignTextField textField = ReportUtils.createTextField(style, dataExpr, toStretch);
             textField.setHorizontalTextAlign(reportField.alignment);
             textField.setBlankWhenNull(true);
+            if(reportField.markupHtml) {
+                textField.setMarkup(JRCommonText.MARKUP_HTML);
+            }
             setPattern(textField, reportField);
             setBackground(textField, reportField);
             setForeground(textField, reportField);

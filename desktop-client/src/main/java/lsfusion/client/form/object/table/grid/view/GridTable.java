@@ -7,6 +7,7 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
+import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
@@ -428,6 +429,8 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
         //quickSearch / quickFilter binding
         form.addKeySetBinding(getQuickSearchFilterBinding());
+
+        gridController.addFilterBindings(groupObject);
     }
 
     private ClientFormController.Binding getQuickSearchFilterBinding() {
@@ -959,7 +962,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
                             }
                         }
 
-                        Object newValue = sPasteValue == null ? null : property.parsePaste(sPasteValue);
+                        Object newValue = property.parsePaste(sPasteValue);
                         if (property.canUsePasteValueForRendering()) {
                             for (ClientGroupObjectValue key : keys) {
                                 Map<ClientGroupObjectValue, Object> propValues = values.get(property);
@@ -971,7 +974,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
 
                         PasteData pasteData = paste.get(property);
                         if (pasteData == null) {
-                            pasteData = new PasteData(newValue, keys, oldValues);
+                            pasteData = new PasteData(newValue, sPasteValue, keys, oldValues);
                             paste.put(property, pasteData);
                         } else {
                             pasteData.keys.addAll(keys);

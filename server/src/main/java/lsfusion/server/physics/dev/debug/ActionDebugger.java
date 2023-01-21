@@ -267,20 +267,20 @@ public class ActionDebugger implements DebuggerService {
         }
 
         Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.getModuleName());
-        if (delegatesHolderClass != null) {
-            try {
-                Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), DataSession.class, Property.class, PropertyChange.class);
-                method.invoke(delegatesHolderClass, dataSession, property, change);
-                return;
-            } catch (InvocationTargetException e) {
-                throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
-            } catch (Exception e) {
-                logger.warn("Error while delegating to ActionDebugger: ", e);
-                dataSession.changePropertyImpl(property, change);
-            }
+        if(delegatesHolderClass == null) {
+            dataSession.changePropertyImpl(property, change);
+            return;
         }
 
-        dataSession.changePropertyImpl(property, change);
+        try {
+            Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo), DataSession.class, Property.class, PropertyChange.class);
+            method.invoke(delegatesHolderClass, dataSession, property, change);
+        } catch (InvocationTargetException e) {
+            throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
+        } catch (Exception e) {
+            logger.warn("Error while delegating to ActionDebugger: ", e);
+            dataSession.changePropertyImpl(property, change);
+        }
     }
 
     public void delegate(ClassDebugInfo debugInfo) throws SQLException, SQLHandledException {
@@ -289,15 +289,16 @@ public class ActionDebugger implements DebuggerService {
         }
 
         Class<?> delegatesHolderClass = delegatesHolderClasses.get(debugInfo.getModuleName());
-        if (delegatesHolderClass != null) {
-            try {
-                Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo));
-                method.invoke(delegatesHolderClass);
-            } catch (InvocationTargetException e) {
-                throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
-            } catch (Exception e) {
-                logger.warn("Error while delegating to ActionDebugger: ", e);
-            }
+        if (delegatesHolderClass == null)
+            return;
+
+        try {
+            Method method = delegatesHolderClass.getMethod(getMethodName(debugInfo));
+            method.invoke(delegatesHolderClass);
+        } catch (InvocationTargetException e) {
+            throw ExceptionUtils.propagate(e.getCause(), SQLException.class, SQLHandledException.class);
+        } catch (Exception e) {
+            logger.warn("Error while delegating to ActionDebugger: ", e);
         }
     }
     

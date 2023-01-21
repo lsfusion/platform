@@ -26,7 +26,7 @@ currentHour = extractHour(currentTime());
 currentMinute = extractMinute(currentTime());
 currentSecond = extractSecond(currentTime());
 
-currentDate '{time.current.date}' = DATA DATE (); // actually it is a snapshot, but since it's okay to change it once a day, we'll make no difference between current and snapshot
+currentDate '{time.current.date}' = DATA DATE () PREREAD; // actually it is a snapshot, but since it's okay to change it once a day, we'll make no difference between current and snapshot
 currentDateTimeSnapshot '{logics.date.current.datetime.snapshot}' = DATA DATETIME ();
 currentZDateTimeSnapshot '{logics.date.current.datetime.snapshot}' = DATA ZDATETIME ();
 
@@ -74,6 +74,9 @@ subtractSeconds(DATETIME dateTimeFrom, DATETIME dateTimeTo) = [ FORMULA INTEGER 
 getMilliSeconds(ZDATETIME dateTime) = [ FORMULA LONG PG 'extract (\'epoch\' from ($1)) * 1000'](dateTime AS ZDATETIME);
 getSeconds(ZDATETIME dateTime) = getMilliSeconds(dateTime) / 1000;
 
+resultMilliseconds '{utils.result.milliseconds}' = DATA LOCAL LONG();
+toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classes.data.utils.time.ToMillisecondsAction' (DATETIME);
+
 sumDay(ZDATETIME dateTime, LONG days) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, $2, $1)'](dateTime AS ZDATETIME, days AS LONG);
 subtractDay(ZDATETIME dateTime, LONG days) = [ FORMULA ZDATETIME PG '(($1)-($2)*CAST(\'1 days\' AS INTERVAL))', MS 'DATEADD(dd, -($2), $1)'](dateTime AS ZDATETIME, days AS LONG);
 sumMinutes(ZDATETIME dateTime, LONG mins) = [ FORMULA ZDATETIME PG '(($1)+($2)*CAST(\'1 minutes\' AS INTERVAL))', MS 'DATEADD(mm, $2, $1)'](dateTime AS ZDATETIME, mins AS LONG);
@@ -111,7 +114,8 @@ to(INTERVAL[TIME] timeInterval) = [FORMULA TIME PG '(to_timestamp((SPLIT_PART($1
 interval(ZDATETIME zDateTimeFrom, ZDATETIME zDateTimeTo) = [FORMULA INTERVAL[ZDATETIME] PG '(EXTRACT (EPOCH FROM $1) * 1000  || \'.\' || EXTRACT (EPOCH FROM $2) * 1000)'](zDateTimeFrom AS ZDATETIME, zDateTimeTo AS ZDATETIME);
 from(INTERVAL[ZDATETIME] zDateTimeInterval) = [FORMULA ZDATETIME PG 'to_timestamp((trunc ($1::NUMERIC)) / 1000)'](zDateTimeInterval AS INTERVAL[ZDATETIME]);
 to(INTERVAL[ZDATETIME] zDateTimeInterval) = [FORMULA ZDATETIME PG 'to_timestamp((SPLIT_PART($1::TEXT, \'.\', 2)::NUMERIC) / 1000)'](zDateTimeInterval AS INTERVAL[ZDATETIME]);
-// --------------------------------- Месяца ------------------------ //
+
+// --------------------------------- Month ------------------------ //
 
 CLASS Month '{time.month}' {
     january '{time.month.january}',
@@ -157,8 +161,7 @@ FORM months '{time.form.months}'
     LIST Month OBJECT m
 ;
 
-// --------------------------------- Дни недели ------------------------ //
-
+// --------------------------------- Day of weeks ------------------------ //
 CLASS DOW '{time.dow}' {
     sunday '{time.dow.sunday}',
     monday '{time.dow.monday}',

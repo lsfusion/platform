@@ -62,6 +62,7 @@ import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectI
 import lsfusion.server.logics.form.interactive.listener.RemoteFormListener;
 import lsfusion.server.logics.form.interactive.property.Async;
 import lsfusion.server.logics.form.stat.FormDataManager;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.export.StaticExportData;
 import lsfusion.server.logics.form.stat.struct.export.plain.csv.ExportCSVAction;
@@ -84,7 +85,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.deserializeObject;
-import static lsfusion.interop.action.ServerResponse.CHANGE;
 
 // фасад для работы с клиентом
 public class RemoteForm<F extends FormInstance> extends RemoteRequestObject implements RemoteFormInterface {
@@ -124,9 +124,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
             int minSizeForExportToCSV = Settings.get().getMinSizeForReportExportToCSV();
             if(minSizeForExportToCSV >= 0 && reportGenerationData.reportSourceData.length > minSizeForExportToCSV) {
-                FormDataManager.ExportResult exportData = formReportManager.getExportData(0);
+                FormDataManager.ExportResult exportData = formReportManager.getExportData();
                 RawFileData file = new ExportCSVAction(null, formReportManager.getFormEntity(), ListFact.EMPTY(), ListFact.EMPTY(), SetFact.EMPTYORDER(), SetFact.EMPTY(),
-                        FormIntegrationType.CSV, null, 0, "UTF-8", false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
+                        FormIntegrationType.CSV, null, SelectTop.NULL, "UTF-8", false, ";", false, true).exportReport(new StaticExportData(exportData.keys, exportData.properties), exportData.hierarchy);
                 return new RawFileData(ArrayUtils.addAll(new byte[]{(byte) 0xef, (byte) 0xbb, (byte) 0xbf}, file.getBytes())); //add bom bytes
 
             } else {
@@ -409,7 +409,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         });
     }
 
-    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values) throws RemoteException {
+    public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
             List<PropertyDrawInstance> properties = new ArrayList<>();
             List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
@@ -429,23 +429,24 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
             
-            form.pasteExternalTable(properties, keys, values, stack);
+            form.pasteExternalTable(properties, keys, values, rawValues, stack);
         });
     }
 
-    public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> bkeys, final Map<Integer, byte[]> bvalues) throws RemoteException {
+    public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> bkeys, final Map<Integer, byte[]> bvalues, Map<Integer, String> rawValues) throws RemoteException {
         return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
-            Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Object>> keysValues
+            Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> keysValues
                     = new HashMap<>();
 
             if (logger.isDebugEnabled())
                 logger.debug("pasteMultiCellValue Action");
             
             for (Map.Entry<Integer, List<byte[]>> e : bkeys.entrySet()) {
-                PropertyDrawInstance propertyDraw = form.getPropertyDraw(e.getKey());
-                Object propValue = deserializeObject(bvalues.get(e.getKey()));
+                Integer propId = e.getKey();
+                PropertyDrawInstance propertyDraw = form.getPropertyDraw(propId);
+                Pair<Object, String> propValue = new Pair<>(deserializeObject(bvalues.get(propId)), rawValues.get(propId));
 
-                MOrderMap<ImMap<ObjectInstance, DataObject>, Object> propKeys = MapFact.mOrderMap();
+                MOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>> propKeys = MapFact.mOrderMap();
                 for (byte[] bkey : e.getValue()) {
                     
                     if(logger.isDebugEnabled())
@@ -474,7 +475,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     logger.debug(String.format("new order: %s", order.toString()));
                 }
 
-                propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys), Order.deserialize(modiType));
+                propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys, false), Order.deserialize(modiType));
             }
         });
     }
@@ -498,7 +499,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(propertyID);
                 if(propertyDraw != null) { //can be set by userPreferences but hidden by security policy
                     ImMap<ObjectInstance, ObjectValue> keys = deserializeKeysValues(columnKeys);
-                    PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys);
+                    PropertyObjectInstance property = propertyDraw.getDrawInstance().getRemappedPropertyObject(keys, false);
                     propertyDraw.toDraw.changeOrder(property, Order.ADD);
                     if(!order)
                         propertyDraw.toDraw.changeOrder(property, Order.DIR);
@@ -722,7 +723,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 byte[] pushAsyncResult = pushAsyncResults[j];
                 if(pushAsyncResult != null)
                     asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
-                
+
                 logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
                 form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack);
                 logger.info(String.format("executeEventAction ended: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
@@ -812,9 +813,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 // so if we see that thread was forced to be interrupted, but has not been interrupted yet, we do the sleep to "catch" it
                 if(asyncInterruptingThreads.remove(Thread.currentThread()) && !wasInterrupted) {
                     try {
-                        logger.info("getAsyncValues before sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
+                        logger.info("getAsyncValues before 1 sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
                         Thread.sleep(1000);
-                        logger.info("getAsyncValues after sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
+                        logger.info("getAsyncValues before 2 sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
+                        Thread.sleep(1000); // it seems that even if interrupt is done a tiny time before the first sleep, it's still not interrupted
+                        logger.info("getAsyncValues after 2 sleep: " + Thread.currentThread() + ", indices : (" + requestIndex + "," + lastReceivedRequestIndex + "," + asyncIndex + ")");
                     } catch (InterruptedException e) {
                     }
                 }
@@ -887,7 +890,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         // (for example there is difference in web and desktop client behaviour: DIALOG some change that requires a lot of time to update form, from which the call is made - then that form will have "gained focus" event, in web that call will be before continue, and in desktop after)
         // in that case sync call will get no data, and all the work async call will do the work (in upper example, in web there will be no busy dialog, and in desktop there will be oone)
         // however so far it doesn't seem to be a problem (to solve it we have to pass if the call is sync / async and delay getting remote changes only for async changes)
-        if (numberOfFormChangesRequests.get() > 1 || delayedGetRemoteChanges) {
+        if (getInvocationsCount() > 1 || delayedGetRemoteChanges) {
             return returnRemoteChangesResponse(requestIndex, pendingActions, delayedHideForm, stack);
         }
 
@@ -934,7 +937,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             if(message != null) // we'll proceed this message in popLogMessage
                 return;
         }
-        super.delayUserInteraction(action);
+        delayUserInteraction(action);
     }
 
     public Object[] requestUserInteraction(ClientAction... actions) {
@@ -971,7 +974,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     public JSONObject getFormChangesExternal(ExecutionStack stack) {
         try {
             FormChanges formChanges;
-            if(numberOfFormChangesRequests.get() > 1 || isDeactivated())
+            if(getInvocationsCount() > 1 || isDeactivated())
                 formChanges = FormChanges.EMPTY;
             else
                 formChanges = form.getChanges(stack);
@@ -1133,15 +1136,15 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
-        Function<AsyncEventExec, PushAsyncResult> asyncResult = null;
+        PushAsyncResult asyncResult = null;
         if(propertyDraw.isProperty()) {
-            asyncResult = asyncEventExec -> {
+            asyncResult = new PushExternalInput(type -> {
                 try {
-                    return asyncEventExec instanceof AsyncInput ? new PushAsyncInput(ObjectValue.getValue(((AsyncInput) asyncEventExec).changeType.parseJSON(value), ((AsyncInput) asyncEventExec).changeType)) : null;
+                    return type.parseJSON(value);
                 } catch (ParseException e) {
                     throw Throwables.propagate(e);
                 }
-            };
+            });
 
             // it's tricky here, unlike changeGroupObject, changeProperty is cancelable, i.e. its change may be canceled, but there will be no undo change in getChanges
             // so there are 2 ways store previous values on client (just like it is done now on desktop and web-client, which is not that easy task), or just force that property reread
@@ -1151,13 +1154,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             Pair<ObjectInstance, Boolean> newDelete;
             if(groupSID != null && (newDelete = getNewDeleteExternal(groupSID, propertySID)) != null) {
                 if(newDelete.second)
-                    asyncResult = asyncEventExec -> new PushAsyncAdd((DataObject) currentObjects.get(newDelete.first));
+                    asyncResult = new PushAsyncAdd((DataObject) currentObjects.get(newDelete.first));
 
                 // see comment above
                 newDelete.first.groupTo.forceUpdateKeys();
             }
         }
-        form.executeEventAction(propertyDraw, CHANGE, currentObjects, true, asyncResult, stack);
+        final PushAsyncResult fAsyncResult = asyncResult;
+        form.executeExternalEventAction(propertyDraw, currentObjects, asyncEventExec -> fAsyncResult, stack);
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???

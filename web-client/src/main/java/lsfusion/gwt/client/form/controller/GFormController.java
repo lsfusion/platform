@@ -92,7 +92,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.*;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.*;
@@ -116,7 +119,7 @@ public class GFormController implements EditManager {
     private final FormsController formsController;
     private final FormContainer formContainer;
 
-    private final GForm form;
+    public final GForm form;
     public final GFormLayout formLayout;
 
     private final boolean isDialog;
@@ -868,17 +871,24 @@ public class GFormController implements EditManager {
 
     public void pasteExternalTable(ArrayList<GPropertyDraw> propertyList, ArrayList<GGroupObjectValue> columnKeys, List<List<String>> table) {
         ArrayList<ArrayList<Object>> values = new ArrayList<>();
+        ArrayList<ArrayList<String>> rawValues = new ArrayList<>();
 
-        int propertyColumns = propertyList.size();
         for (List<String> sRow : table) {
             ArrayList<Object> valueRow = new ArrayList<>();
+            ArrayList<String> rawValueRow = new ArrayList<>();
 
-            for (int i = 0; i < propertyColumns; i++) {
+            for (int i = 0, propertyColumns = propertyList.size(); i < propertyColumns; i++) {
                 GPropertyDraw property = propertyList.get(i);
                 String sCell = i < sRow.size() ? sRow.get(i) : null;
-                valueRow.add(property.parsePaste(sCell, property.getExternalChangeType()));
+
+                GType externalType = property.getExternalChangeType();
+                if(externalType == null)
+                    externalType = property.baseType;
+                valueRow.add(property.parsePaste(sCell, externalType));
+                rawValueRow.add(sCell);
             }
             values.add(valueRow);
+            rawValues.add(rawValueRow);
         }
 
         final ArrayList<Integer> propertyIdList = new ArrayList<>();
@@ -886,14 +896,28 @@ public class GFormController implements EditManager {
             propertyIdList.add(propertyDraw.ID);
         }
 
-        syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values));
+        syncResponseDispatch(new PasteExternalTable(propertyIdList, columnKeys, values, rawValues));
     }
 
     public void pasteValue(ExecuteEditContext editContext, String sValue) {
         GPropertyDraw property = editContext.getProperty();
-        Serializable value = (Serializable) property.parsePaste(sValue, property.getExternalChangeType());
+        GType externalType = property.getExternalChangeType();
+        if(externalType != null) {
+            Serializable value = (Serializable) property.parsePaste(sValue, externalType);
 
-        changeProperty(editContext, value);
+            changeProperty(editContext, value);
+        } else {
+            ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
+            propertyList.add(property);
+            ArrayList<GGroupObjectValue> columnKeys = new ArrayList<>();
+            columnKeys.add(editContext.getColumnKey());
+            ArrayList<String> row = new ArrayList<>();
+            row.add(sValue);
+            List<List<String>> table = new ArrayList<>();
+            table.add(row);
+
+            pasteExternalTable(propertyList, columnKeys, table);
+        }
     }
 
     public void changePageSizeAfterUnlock(final GGroupObject groupObject, final int pageSize) {
@@ -1330,7 +1354,7 @@ public class GFormController implements EditManager {
 
     private long applyCurrentFilters() {
         ArrayList<GPropertyFilterDTO> filters = new ArrayList<>();
-        currentFilters.foreachValue(groupFilters -> groupFilters.stream().map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
+        currentFilters.foreachValue(groupFilters -> groupFilters.stream().filter(filter -> !filter.property.isAction()).map(GPropertyFilter::getFilterDTO).collect(Collectors.toCollection(() -> filters)));
         return asyncResponseDispatch(new SetUserFilters(filters));
     }
 

@@ -205,7 +205,9 @@ public class ScriptParser {
     }
 
     public LsfLogicsParser getCurrentParser() {
-        return getCurrentParserInfo().getParser();
+        if(parsers.size() > 0)
+            return getCurrentParserInfo().getParser();
+        return null;
     }
 
     public ParserInfo getCurrentParserInfo() {

@@ -58,6 +58,7 @@ public class GridSelectionController {
     }
 
     public void removeProperty(ClientPropertyDraw property, List<ClientGroupObjectValue> columnKeys) {
+        if (columnKeys == null) return;
         for (ClientGroupObjectValue columnKey : columnKeys) {
             Pair<ClientPropertyDraw, ClientGroupObjectValue> propertyColumn = new Pair<>(property, columnKey);
             if (nullEquals(firstColumn, lastColumn) && nullEquals(firstColumn, propertyColumn)) {
@@ -159,7 +160,8 @@ public class GridSelectionController {
 
             Map<ClientGroupObjectValue, Map<Pair<ClientPropertyDraw, ClientGroupObjectValue>, Object>> segment = new LinkedHashMap<>();
             for (int i = start; (directionDown && i <= currentRow) || (!directionDown && i >= currentRow); i = (directionDown ? i + 1 : i - 1)) {
-                segment.put(table.getRowKeys().get(i), KeyController.getRowData(table, i));
+                if (i >= 0 && i < table.getRowKeys().size())
+                    segment.put(table.getRowKeys().get(i), KeyController.getRowData(table, i));
             }
 
             temporaryValues = KeyController.mergeSelectionMaps(temporaryValues, segment);

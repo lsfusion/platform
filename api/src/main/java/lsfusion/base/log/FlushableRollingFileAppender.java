@@ -292,7 +292,8 @@ public final class FlushableRollingFileAppender extends FileAppender implements 
             }
         }
 
-        super.subAppend(event);
+        if (this.qw != null && this.layout != null)
+            super.subAppend(event);
     }
 
     /**

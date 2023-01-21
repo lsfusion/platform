@@ -3,6 +3,7 @@ package lsfusion.server.data.query;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
@@ -34,6 +35,7 @@ import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.key.ParamExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.where.classes.data.CompareWhere;
+import lsfusion.server.data.expr.where.pull.ExclNullPullWheres;
 import lsfusion.server.data.expr.where.pull.ExclPullWheres;
 import lsfusion.server.data.pack.Pack;
 import lsfusion.server.data.query.build.AbstractJoin;
@@ -62,6 +64,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 import java.util.function.Function;
@@ -356,7 +359,19 @@ public class Query<K,V> extends IQuery<K,V> {
     @Pack
     @StackMessage("{message.core.query.compile}")
     public CompiledQuery<K, V> compile(ImOrderMap<V, Boolean> orders, CompileOptions<V> options) {
-        return new CompiledQuery<>(this, options.syntax, orders, options.limit, options.subcontext, options.recursive, options.noInline, options.castTypes, options.needDebugInfo);
+        Result<Boolean> ordersSplit = new Result<>();
+        CompiledQuery<K, V> pessOrderTopQuery = compileOrderTop(orders, options, ordersSplit);
+        if(ordersSplit.result) {
+            CompiledQuery<K, V> optOrderTopQuery = compileOrderTop(orders, options, null);
+            if(optOrderTopQuery.sql.baseCost.lessEquals(pessOrderTopQuery.sql.baseCost)) // if we haven't reduced the cost - fallback to the query without splitting the orders
+                return optOrderTopQuery;
+        }
+
+        return pessOrderTopQuery;
+    }
+
+    private CompiledQuery<K, V> compileOrderTop(ImOrderMap<V, Boolean> orders, CompileOptions<V> options, Result<Boolean> ordersSplit) {
+        return new CompiledQuery<>(this, options.syntax, orders, ordersSplit, options.limit, options.subcontext, options.recursive, options.noInline, options.castTypes, options.needDebugInfo);
     }
 
     @IdentityLazy
@@ -369,10 +384,51 @@ public class Query<K,V> extends IQuery<K,V> {
         return CompiledQuery.getPackedCompileOrders(properties, where, orders);
     }
 
-    public ImCol<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive, ImOrderSet<Expr> orderTop) {
-        Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl = where.getPackWhereJoins(tryExclusive, getKeys(), orderTop);
+    private static class OrderWhereJoins {
+        public final Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl;
+        public final boolean split;
+
+        public OrderWhereJoins(Pair<ImCol<GroupJoinsWhere>, Boolean> whereJoinsExcl, boolean split) {
+            this.whereJoinsExcl = whereJoinsExcl;
+            this.split = split;
+        }
+    }
+
+    public ImCol<GroupJoinsWhere> getWhereJoins(boolean tryExclusive, Result<Boolean> isExclusive, ImOrderSet<Expr> orderTop, Result<Boolean> ordersSplit) {
+        // when we have LIMIT ORDER BY query, RDBMS can build plans where it runs over the index and exits almost immediately
+        // however if in expr there is a case (not base expr), RDBMS can't do that, so we're trying to avoid that
+        // we force where to be split into more smaller wheres (by forcing their exclusiveness)
+        // this optimization is important for GROUP LAST ORDER MATERIALIZED case (when everything is materialized and indexed and we have ORDER BY CASE WHEN t.date IS NOT NULL THEN t.date ELSE bigtable.date)
+
+        // maybe it makes sense to add some optimization to pull wheres only when there are exprs that are in some indexes, or some order "collapsing" if the complexity is too high
+        // however there is no such optimization for GROUP BY (where all case exprs are split to base exprs), so don't see why it should be done for the order
+
+        Pair<ImCol<GroupJoinsWhere>,Boolean> whereJoinsExcl;
+        if(ordersSplit == null || Settings.get().isNoOrderTopSplit()) {
+            whereJoinsExcl = getWhereJoins(where, tryExclusive, orderTop);
+            if(ordersSplit != null)
+                ordersSplit.set(false);
+        } else {
+            OrderWhereJoins orderWhereJoins = new ExclNullPullWheres<OrderWhereJoins, Integer, Where>() {
+                protected OrderWhereJoins proceedNullBase(Where data, ImMap<Integer, ? extends Expr> map) {
+                    return new OrderWhereJoins(getWhereJoins(data, tryExclusive, (ImOrderSet<Expr>) ListFact.fromIndexedMap(map).toOrderSet()), false);
+                }
+
+                protected OrderWhereJoins add(OrderWhereJoins op1, OrderWhereJoins op2) {
+                    return new OrderWhereJoins(new Pair<>(op1.whereJoinsExcl.first.mergeCol(op2.whereJoinsExcl.first), op1.whereJoinsExcl.second && op2.whereJoinsExcl.second), true);
+                }
+            }.proceed(where, orderTop.toIndexedMap());
+
+            whereJoinsExcl = orderWhereJoins.whereJoinsExcl;
+            ordersSplit.set(orderWhereJoins.split);
+        }
+
         isExclusive.set(whereJoinsExcl.second);
         return whereJoinsExcl.first;
+    }
+
+    private Pair<ImCol<GroupJoinsWhere>, Boolean> getWhereJoins(Where where, boolean tryExclusive, ImOrderSet<Expr> orderTop) {
+        return where.getPackWhereJoins(tryExclusive, getKeys(), orderTop);
     }
 
     public static <V> ImOrderMap<V,Boolean> reverseOrder(ImOrderMap<V,Boolean> orders) {

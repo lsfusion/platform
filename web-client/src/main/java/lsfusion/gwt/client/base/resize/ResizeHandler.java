@@ -6,6 +6,9 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -32,17 +35,30 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         this.initialMouse = getAbsoluteRight();
     }
 
+    public static <C> void dropCursor(Element cursorElement, NativeEvent event) {
+        String eventType = event.getType();
+        if ((MOUSEMOVE.equals(eventType) || MOUSEDOWN.equals(eventType)) && resizeHandler == null) {
+            cursorElement.getStyle().clearCursor();
+        }
+    }
+    public static <C> void setCursor(Element cursorElement, boolean isResizeOnScroll, Style.Cursor cursor) {
+        // there is a bug / feature in Chrome, that cursor over scroll is not default, but is inherited from the parent
+        // which is not we want in case of the components resize, because scroll events are handled first (and thus resize cursor doesn't make sense)
+        // to solve this we manually check if the mouse is over some scroll (however maybe such complicated mechanism is not need and we could've used something more simple)
+        if(!isResizeOnScroll)
+            cursorElement.getStyle().setCursor(cursor);
+    }
+
     // it's important that checkResize event should be called for cursorElement element (otherwise, cursor will be incorrect)
     // returns whether event was handled or not. used in window resizing, where both vertical and horizontal are handled at the same time 
     public static <C> boolean checkResizeEvent(ResizeHelper helper, Element cursorElement, Supplier<Integer> childIndexSupplier, NativeEvent event) {
         String eventType = event.getType();
         if ((MOUSEMOVE.equals(eventType) || MOUSEDOWN.equals(eventType)) && resizeHandler == null) {
-            ResizedChild resizedChild = getResizedChild(helper, event, childIndexSupplier);
-            Style cursorStyle = cursorElement.getStyle();
+            Result<Boolean> isOnScroll = new Result<>();
+            ResizedChild resizedChild = getResizedChild(helper, event, childIndexSupplier, isOnScroll);
             if (resizedChild != null && resizedChild.mainBorder && helper.isChildResizable(resizedChild.index)) {
-                cursorStyle.setProperty("cursor", (helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE).getCssName());
-//                    GwtClientUtils.setProperty(cursorStyle, "cursor", (helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE).getCssName(), "important");
-//                    cursorStyle.setProperty("cursor", (helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE).getCssName() + " !important");
+                setCursor(cursorElement, !resizedChild.outsideBorder && (isOnScroll.result || helper.isResizeOnScroll(resizedChild.index, event)),
+                        helper.isVertical() ? Style.Cursor.ROW_RESIZE : Style.Cursor.COL_RESIZE);
                 if (eventType.equals(MOUSEDOWN)) {
                     resizeHandler = new ResizeHandler(helper, resizedChild.index);
 
@@ -52,7 +68,6 @@ public class ResizeHandler implements Event.NativePreviewHandler {
                 }
                 return true;
             } else {
-                cursorStyle.clearProperty("cursor");
                 // this container can be not resizable, but the inner one can be resizable, however it will not get a mouse move event if the cursor is to the right
                 // so we push this event down to that container
                 // in theory we should check that event is trigger to the right of this child widget, but since this child widget can have paddings / margins, we'll just do some extra work
@@ -74,8 +89,16 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         return helper.getChildAbsolutePosition(index, left);
     }
 
+    private static int getScrollSize(ResizeHelper helper, int index) {
+        return helper.getScrollSize(index);
+    }
+
     public static int getAbsolutePosition(Element element, boolean vertical, boolean left) {
         return vertical ? (left ? element.getAbsoluteTop() : element.getAbsoluteBottom()) : (left ? element.getAbsoluteLeft() : element.getAbsoluteRight());
+    }
+
+    public static int getScrollSize(Element element, boolean vertical) {
+        return vertical ? GwtClientUtils.getScrollHeight(element) :  GwtClientUtils.getScrollWidth(element);
     }
 
     private static class ResizedChild {
@@ -90,7 +113,7 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         }
     }
 
-    private static ResizedChild getResizedChild(ResizeHelper helper, NativeEvent event, Supplier<Integer> childIndexSupplier) {
+    private static ResizedChild getResizedChild(ResizeHelper helper, NativeEvent event, Supplier<Integer> childIndexSupplier, Result<Boolean> isOnScroll) {
         int mouse = getEventPosition(helper, event);
 
 //        String attribute = helper.getElement().getAttribute("lsfusion-container");
@@ -104,6 +127,8 @@ public class ResizeHandler implements Event.NativePreviewHandler {
             if ((mouse > anchorRight && childIndex != helper.getChildCount() - 1) || (mouse < anchorLeft && childIndex > 0)) {
                 if (mouse < anchorLeft)
                     childIndex--;
+                if(isOnScroll != null)
+                    isOnScroll.set(false);
                 return new ResizedChild(childIndex, true, false); // outside border doesn't matter for that branch
             }
         } else {
@@ -111,6 +136,8 @@ public class ResizeHandler implements Event.NativePreviewHandler {
                 int right = getAbsolutePosition(helper, i, false);
                 boolean mainBorder = Math.abs(mouse - right) < ANCHOR_WIDTH;
                 if (mainBorder || right >= mouse) {
+                    if(isOnScroll != null)
+                        isOnScroll.set(right - mouse < getScrollSize(helper, i));
                     return new ResizedChild(i, mainBorder, right < mouse && i < size - 1);
                 }
             }
@@ -118,12 +145,33 @@ public class ResizeHandler implements Event.NativePreviewHandler {
         return null;
     }
 
-    public static int getResizedChild(boolean vertical, List<Widget> widgets, NativeEvent event) {
+    public static int getResizedChild(boolean vertical, List<Widget> widgets, NativeEvent event, int offset, Result<Boolean> isOnScroll) {
         int mouse = getEventPosition(vertical, true, event);
         for(int i=0,size=widgets.size();i<size;i++) {
-            Widget widget = widgets.get(i);
-            int right = getAbsolutePosition(widget.getElement(), vertical, false);
-            if (mouse - right < ANCHOR_WIDTH) {
+            Element element = widgets.get(i).getElement();
+            int left = getAbsolutePosition(element, vertical, true);
+            if(left - mouse > offset)
+                return -1;
+            int right = getAbsolutePosition(element, vertical, false);
+            if (mouse - right < offset) {
+                if(isOnScroll != null)
+                    isOnScroll.set(right - mouse < getScrollSize(element, vertical));
+                return i;
+            }
+        }
+        return -1;
+    }
+    public static int getResizedChild(boolean vertical, NativeEvent event, List<FlexPanel.FlexLine> lines, int offset, Result<Boolean> isOnScroll) {
+        int mouse = getEventPosition(vertical, true, event);
+        for(int i=0,size=lines.size();i<size;i++) {
+            FlexPanel.FlexLine flexLine = lines.get(i);
+            int left = flexLine.getAbsolutePosition(true);
+            if(left - mouse > offset)
+                return -1;
+            int right = flexLine.getAbsolutePosition(false);
+            if (mouse - right < offset) {
+                if(isOnScroll != null)
+                    isOnScroll.set(right - mouse < flexLine.getScrollSize());
                 return i;
             }
         }

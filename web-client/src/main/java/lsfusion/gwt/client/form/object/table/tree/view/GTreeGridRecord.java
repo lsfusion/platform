@@ -9,8 +9,9 @@ public abstract class GTreeGridRecord extends GridDataRecord {
     private GGroupObject group;
 
     public GTreeGridRecord(int rowIndex, GTreeContainerTableNode node, GTreeColumnValue treeValue) {
-        super(rowIndex, node.getKey());
+        super(rowIndex);
 
+        setKey(node.getKey());
         setTreeValue(treeValue);
 
         this.group = node.getGroup();

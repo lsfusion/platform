@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.formula.*;
 import lsfusion.server.data.where.WhereBuilder;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.PropertyChanges;
 import lsfusion.server.logics.property.CalcType;
 import lsfusion.server.logics.property.UnionProperty;
@@ -57,7 +57,7 @@ public class FormulaUnionProperty extends UnionProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return new ConcatenateUnionDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.concat.union}"), this, LM
         );
     }

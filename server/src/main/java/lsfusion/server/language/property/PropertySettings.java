@@ -10,7 +10,6 @@ public class PropertySettings extends ActionOrPropertySettings {
     public Boolean isComplex = null;
     public boolean isPreread = false;
     public Boolean isHint = null;
-    public boolean isLoggable = false;
     public BooleanDebug notNull = null;
     public BooleanDebug notNullResolve = null;
     public Event notNullEvent = null;

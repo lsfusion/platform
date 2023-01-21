@@ -166,7 +166,8 @@ public class GPanelController extends GPropertyController {
 
     @Override
     public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
-        return propertyControllers.get(property).setLoadingValueAt(fullCurrentKey, value);
+        GPropertyPanelController panelController = propertyControllers.get(property);
+        return panelController != null ? panelController.setLoadingValueAt(fullCurrentKey, value) : null;
     }
 
     @Override

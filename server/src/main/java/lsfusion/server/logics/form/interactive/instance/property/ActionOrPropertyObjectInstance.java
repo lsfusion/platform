@@ -1,21 +1,15 @@
 package lsfusion.server.logics.form.interactive.instance.property;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.mutability.TwinImmutableObject;
-import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.user.set.AndClassSet;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
@@ -41,7 +35,7 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         assert (mapObjects = mapping.filterFnValues(element -> element instanceof ObjectInstance)).toRevMap().size() == mapObjects.size();
     }
     
-    public abstract ActionOrPropertyObjectInstance<P, ?> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues);
+    public abstract ActionOrPropertyObjectInstance<P, ?> getRemappedPropertyObject(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues, boolean fullKey);
 
     // получает GRID в котором рисоваться
     public GroupObjectInstance getApplyObject() {
@@ -71,27 +65,16 @@ public abstract class ActionOrPropertyObjectInstance<P extends PropertyInterface
         return mapping.mapValues(PropertyObjectInterfaceInstance::getObjectValue);
     }
 
-    protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
-        return replaceEqualObjectInstances((ImMap<PropertyObjectInterfaceInstance, ? extends ObjectValue>) mapKeyValues);
-    }
-
-    private ImMap<P, PropertyObjectInterfaceInstance> replaceEqualObjectInstances(final ImMap<PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues) {
+    // in filter and orders columnKey is the COLUMNS objects, and for the execute event all the objects on the form
+    protected ImMap<P, PropertyObjectInterfaceInstance> remapSkippingEqualsObjectInstances(ImMap<? extends PropertyObjectInterfaceInstance, ? extends ObjectValue> mapKeyValues, boolean fullKey) {
         return mapping.mapValues(value -> {
-            ObjectValue mapValue = mapKeyValues.get(value);
-            if (mapValue != null) {
-                if (value instanceof ObjectInstance) {
-                    ObjectValue currentValue = value.getObjectValue();
-                    if (!BaseUtils.hashEquals(currentValue, mapValue)) {
-                        value = mapValue;
-                    }
-                } else {
-                    value = mapValue;
-                }
-            }
+            ObjectValue mapValue = ((ImMap<PropertyObjectInterfaceInstance, ? extends ObjectValue>) mapKeyValues).get(value);
+            // in theory the second check can lead to some unpredictable behaviour for COLUMNS (and other objects)
+            if (mapValue != null && !(fullKey && value instanceof ObjectInstance && BaseUtils.hashEquals(value.getObjectValue(), mapValue)))
+                value = mapValue;
             return value;
         });
     }
-    
 
     @Override
     public String toString() {

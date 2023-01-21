@@ -37,7 +37,7 @@ Note that IDEA remembers the downloaded/specified application server file in its
 ### Install Web Client
 
 - Install [Apache Tomcat](https://tomcat.apache.org/download-90.cgi) version 9.
-- Download [web-client](https://download.lsfusion.org/java/lsfusion-client-5.0-beta0.war) of lsFusion platform.
+- Download [web-client](https://download.lsfusion.org/java/lsfusion-client-5.0.war) of lsFusion platform.
 - Place the war file in Apache Tomcat webapps folder, for example, with the name lsfusion.war.
 - The web client will be available at http://localhost:8080/lsfusion.
 

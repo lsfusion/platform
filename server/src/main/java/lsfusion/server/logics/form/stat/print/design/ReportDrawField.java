@@ -32,6 +32,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public int preferredWidth;
     public Integer fixedCharWidth;
     public HorizontalTextAlignEnum alignment;
+    public boolean markupHtml;
 
     public int scale;
 

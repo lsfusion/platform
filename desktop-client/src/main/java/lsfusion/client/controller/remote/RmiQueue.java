@@ -57,13 +57,17 @@ public class RmiQueue implements DispatcherListener {
 
     private AtomicBoolean abandoned = new AtomicBoolean();
 
-    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, InterruptibleProvider<List<Object>> serverMessageListProvider, AsyncListener asyncListener) {
+    private boolean synchronizeRequests; // should be synchronized with the same method in RemoteRequestObject
+
+    public RmiQueue(TableManager tableManager, Provider<String> serverMessageProvider, InterruptibleProvider<List<Object>> serverMessageListProvider, AsyncListener asyncListener, boolean synchronizeRequests) {
         this.serverMessageProvider = serverMessageProvider;
         this.serverMessageListProvider = serverMessageListProvider;
         this.tableManager = tableManager;
         this.asyncListener = asyncListener;
 
         rmiExecutor = Executors.newCachedThreadPool(new DaemonThreadFactory("rmi-queue"));
+
+        this.synchronizeRequests = synchronizeRequests;
 
         ConnectionLostManager.registerRmiQueue(this);
     }
@@ -426,7 +430,8 @@ public class RmiQueue implements DispatcherListener {
         }
 
         //не обрабатываем результат (кроме с preProceeded), пока не закончится редактирование и не вызовется this.editingStopped()
-        if(tableManager.isEditing()) {
+        boolean isEditing = tableManager.isEditing();
+        if(isEditing || !synchronizeRequests) { // not sure that the last check is needed but just in case to guarantee the fallback behaviour
             rmiFutures.forEach(future -> {
                 if(future.isDone() && future.preProceeded != null && !future.preProceeded) {
                     try {
@@ -442,9 +447,10 @@ public class RmiQueue implements DispatcherListener {
                     }
                 }
             });
-        } else {
-            flushCompletedRequestsNow(false);
         }
+
+        if(!isEditing)
+            flushCompletedRequestsNow(false);
     }
 
     private void flushCompletedRequestsNow(boolean inSyncRequest) {
@@ -510,7 +516,7 @@ public class RmiQueue implements DispatcherListener {
 
     private <T> RmiFuture<T> createRmiFuture(final RmiRequest<T> request, boolean preProceed) {
         RequestCallable<T> requestCallable = new RequestCallable<>(request, abandoned);
-        RmiFuture<T> future = new RmiFuture<>(request, requestCallable, preProceed);
+        RmiFuture<T> future = new RmiFuture<>(request, requestCallable, preProceed || !synchronizeRequests);
         requestCallable.setFutureInterface(future);
         return future;
     }

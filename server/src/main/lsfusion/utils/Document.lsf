@@ -2,15 +2,12 @@ MODULE Document;
 
 REQUIRE System, Numerator, Authentication, Time, Utils;
 
-// Стандартные группы
+// Document groups
 GROUP documentHeader '{document.document.header}' : base;
 GROUP documentSum '{document.document.sum}': public;
 GROUP documentPrm '{document.document.prm}': public;
 
-// Макросы по созданию документов
-
 // ----- Tables ----- //
-
 META defineDocumentTables (object)
     TABLE object (###object);
     TABLE object##Detail (###object##Detail);
@@ -69,7 +66,6 @@ META defineDocumentInterfaceRelation (object)
     @defineDocumentInterfaceRelation(object, ###object##Detail);
 END
 
-// Итоги
 META defineDocumentHeaderCount (object, detailClass, caption)
     count##detailClass '{document.count.detail.of}'###caption (o) =
         GROUP SUM 1 BY object(detailClass d) MATERIALIZED IN documentSum;
@@ -235,7 +231,7 @@ META defineDocumentDataTimePrefix (object, prefix, caption)
     @defineDocumentDataTimePrefix (object, ###object##Detail, prefix, caption);
 END
 
-//-- Дата
+// Date
 META defineDocumentHeaderDatePrefix (objectClass, prefix, caption)
     prefix##Date '{document.date.of}'##caption = DATA DATE (objectClass) IN documentHeader;
 END
@@ -263,7 +259,7 @@ META defineDocumentInterfaceDatePrefix (object, prefix, caption)
     @defineDocumentInterfaceDetailDatePrefix(object, prefix, caption);
 END
 
-// Примечание
+// Note
 META defineDocumentHeaderNote (objectClass)
     note '{document.note}' = DATA ISTRING[500] (objectClass) CHARWIDTH 30 IN documentPrm MATERIALIZED;
 END
@@ -505,7 +501,7 @@ META defineDocumentInterfaceDetailIndex (object)
     @defineDocumentInterfaceDetailIndex(object, ###object##Detail);
 END
 
-// Action'ы
+// Actions
 META defineDocumentDetailActionsCustom (object, detailClass)
     delete##detailClass '{document.delete.detail.class.object}'(###object o)  { 
         //FOR object##detailClass (d) == o DO {
@@ -702,8 +698,6 @@ META defineDocumentInterface (object)
     @defineDocumentDetailActions(user###object);
 END
 
-// ------------------------------------- Дополнительные метакоды ------------------------------- //
-
 // -- Quantity
 META defineDocumentDetailQuantityCustomPrefix (detail, prefix, caption)
     prefix###quantity '{document.quantity.of}'###caption = DATA NUMERIC[16,5] (###detail) CHARWIDTH 7;
@@ -747,7 +741,7 @@ META defineDocumentInterfaceDetailQuantity (object)
     @defineDocumentInterfaceDetailQuantityPrefix(object, , );
 END
 
-// Итоги
+// Header total
 
 META defineDocumentHeaderQuantityCustomPrefix (object, detail, prefix, caption)
     prefix###quantity###detail '{document.quantity.total.of}'###caption (object) = GROUP SUM prefix###quantity(###detail idetail) BY object(idetail) IN documentSum CHARWIDTH 8 MATERIALIZED;
@@ -909,7 +903,7 @@ META deriveDocumentDetailSum(object, quantityProp)
     @deriveDocumentDetailSum(object, currency, quantityProp);
 END
 
-// Итоги
+// Header total
 META defineDocumentHeaderSumCustom (object, detail, caption)
     sum###detail '{document.sum.of}'###caption (object) = GROUP SUM sum(###detail idetail) BY object(idetail) CHARWIDTH 10 IN documentSum;
 END
@@ -1050,7 +1044,7 @@ META defineDocumentInterfaceProperty (object, prop, caption)
     @defineDocumentInterfaceDetailProperty (object, prop, caption);
 END
 
-// ------------------------- Основной - агрегированный документы ---------------------------------- //
+// ------------------------- Aggregations ---------------------------------- //
 
 META defineDocumentAggregationHeader(primObject, aggrObject, aggrProperty)
     aggrObject = AGGR ###aggrObject WHERE aggrProperty(###primObject primObject) MATERIALIZED INDEXED;

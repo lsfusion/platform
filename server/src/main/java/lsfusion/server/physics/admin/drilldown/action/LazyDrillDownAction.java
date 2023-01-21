@@ -15,11 +15,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LazyAction extends SystemExplicitAction {
+public class LazyDrillDownAction extends SystemExplicitAction {
     private final Property sourceProperty;
     private LA evaluatedProperty = null;
        
-    public LazyAction(LocalizedString caption, Property sourceProperty) {
+    public LazyDrillDownAction(LocalizedString caption, Property sourceProperty) {
         super(caption, new LP(sourceProperty).getInterfaceClasses(ClassType.drillDownPolicy));
         this.sourceProperty = sourceProperty;       
     }

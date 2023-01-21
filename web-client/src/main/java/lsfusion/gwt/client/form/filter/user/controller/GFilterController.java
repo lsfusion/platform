@@ -234,6 +234,9 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
                 removeConditionViewInner(filter);
             }
         }
+        if (conditionViews.isEmpty()) {
+            setControlsVisible(false);
+        }
         return changed;
     }
 

@@ -100,4 +100,24 @@ You can also use the method of installing the desktop client for development. To
 The latest versions that are currently under development (snapshots) can be downloaded directly from the maven repository [https://repo.lsfusion.org](https://repo.lsfusion.org/). For example, for the server, the full path is as follows: <https://repo.lsfusion.org/nexus/service/rest/repository/browse/public/lsfusion/platform/server/> (for server and desktop client you need to download jar files with the `-assembly` postfix)
 :::
 
+### Installing and running the application server and web client using Docker containers
+
+:::info
+To work with docker containers you need to have [Docker](https://docs.docker.com/get-docker/) and [Docker-compose](https://docs.docker.com/compose/) installed in your operating system.
+:::
+
+-   Download the file `docker-compose.yml` from [the central server](https://download.lsfusion.org/docker/) to a some folder (we will call this folder `$FUSION_DIR$`).
+    This file contains the settings for running the three containers:
+    - Postgres container
+    - Application server container
+    - Web client container
+-   If you need to make any changes to the startup process (e.g. postgres is already installed in the operating system, or if you need to use a different container version than the default one, or if you need to use some special environment variables), you should edit the docker-compose.yml file according to [Docker documentation](https://docs.docker.com/get-started/overview/).
+-   From within the `$FUSION_DIR$` folder, run the command `docker-compose up` from the console.
+-   When the download is complete and the containers are running, the web client will be accessible from the browser at `http://localhost:8080/`.
+-   After the first run, Docker will create subfolders in the `$FUSION_DIR$` folder:
+    - `docker-client-conf`
+    - `docker-db`
+    - `docker-server`
+-   In the `docker-server` folder, you need to place modules developed in lsFusion as files with the extension .lsf or folders containing such files. Other resource files (if any, e.g. report files, compiled Java files, images, .css, .js files, etc.) should also be placed there. Also in this folder there are server logs and `settings.properties` file.
+
   

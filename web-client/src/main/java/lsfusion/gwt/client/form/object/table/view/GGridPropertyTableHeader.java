@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.*;
+import lsfusion.gwt.client.base.resize.ResizeHelper;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.TooltipManager;
@@ -101,7 +103,11 @@ public class GGridPropertyTableHeader extends Header<String> {
             table.headerClicked(childIndex.get(), event.getCtrlKey(), event.getShiftKey());
         }
 
-        ResizeHandler.checkResizeEvent(table.resizeHelper, table.getTableHeadElement(), childIndex, event);
+        TableSectionElement cursorElement = table.getTableHeadElement();
+
+        ResizeHandler.dropCursor(cursorElement, event);
+
+        ResizeHandler.checkResizeEvent(table.resizeHelper, cursorElement, childIndex, event);
 
         TooltipManager.checkTooltipEvent(event, toolTipHelper);
     }

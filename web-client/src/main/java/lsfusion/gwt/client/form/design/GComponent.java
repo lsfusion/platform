@@ -27,6 +27,7 @@ public class GComponent implements Serializable {
     protected GFlexAlignment alignment;
     public boolean shrink;
     public boolean alignShrink;
+    public Boolean alignCaption;
 
     public int marginTop;
     public int marginBottom;
@@ -119,6 +120,10 @@ public class GComponent implements Serializable {
 
     public int getMargins(boolean vertical) {
         return vertical ? getVerticalMargin() : getHorizontalMargin();
+    }
+
+    public boolean isOverAlignCaption() {
+        return alignCaption != null ? alignCaption : isAlignCaption();
     }
 
     public boolean isAlignCaption() {

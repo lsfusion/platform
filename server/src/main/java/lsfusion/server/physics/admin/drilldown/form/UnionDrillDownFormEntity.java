@@ -4,7 +4,7 @@ import lsfusion.base.col.interfaces.immutable.ImCol;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -25,14 +25,12 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
     protected List<PropertyDrawEntity> operandProperties;
     protected PropertyDrawEntity implPropertyDraw;
 
-    public UnionDrillDownFormEntity(LocalizedString caption, UnionProperty property, LogicsModule LM) {
+    public UnionDrillDownFormEntity(LocalizedString caption, UnionProperty property, BaseLogicsModule LM) {
         super(caption, property, LM);
     }
 
     @Override
     protected void setupDrillDownForm() {
-        Version version = LM.getVersion();
-        
         operandProperties = new ArrayList<>();
 
         ImCol<PropertyInterfaceImplement<UnionProperty.Interface>> operands = property.getOperands();
@@ -46,16 +44,16 @@ public class UnionDrillDownFormEntity<I extends PropertyInterface, P extends Pro
                 ImRevMap<PropertyInterface, ObjectEntity> mapImplMapping = mapImplement.mapRevImplement(interfaceObjects).mapping;
 
                 //и добавляем само свойство на форму, если оно ещё не было добавлено при создании ObjectEntity
-                if (mapImplMapping.size() != 1 || !LM.getRecognizeGroup().hasChild(mapImplement.property)) {
+                if (mapImplMapping.size() != 1 || isNotRecognize(mapImplement)) {
                     if (mapImplement.property.isDrillFull()) {
                         operandProperties.add(
-                                addPropertyDraw(mapImplement.property, mapImplMapping, version)
+                                addPropertyDraw(mapImplement.property, mapImplMapping)
                         );
                     }
                 }
             }
         }
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
     }
 
     @Override

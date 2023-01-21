@@ -22,6 +22,8 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.*;
+import lsfusion.gwt.client.base.size.GSize;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.Widget;
@@ -38,6 +40,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.TableContainer;
+import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -355,6 +358,15 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         onGridBrowserEvent(target, event);
     }
 
+    public void onFocusBrowserEvent(Element target, Event event) {
+        // Ignore spurious events (such as onblur) while we refresh the table.
+        if (isResolvingState) {
+            return;
+        }
+
+        onGridBrowserEvent(target, event);
+    }
+
     public void onGridBrowserEvent(Element target, Event event) {
         // moved to GridContainerPanel
 //        String eventType = event.getType();
@@ -377,6 +389,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         Header footer = null;
         Element footerParent = null;
 
+        // debug
+        RowIndexHolder rowIndexHolder = null;
+
         TableSectionElement targetTableSection = null;
 
         if (target == getTableDataFocusElement() || GKeyStroke.isPasteFromClipboardEvent(event)) { // need this when focus is on grid and not cell itself, so we need to propagate key events there
@@ -397,8 +412,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     break;
                 }
 
-                if(row < 0)
+                if(row < 0) {
                     row = tableBuilder.getRowValueIndex(cur);
+                    rowIndexHolder = tableBuilder.getRowIndexHolder(cur);
+                }
                 if (column == null) {
                     column = tableBuilder.getColumn(cur);
                     if(column != null)
@@ -426,10 +443,20 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             if (footer != null)
                 footer.onBrowserEvent(footerParent, event);
         } else {
-            if (column != null)
-                onBrowserEvent(new Cell(row, getColumnIndex(column), column, (RowIndexHolder) getRowValue(row)), event, column, columnParent);
+            if (column != null) {
+                assert getRows().contains(rowIndexHolder);
+                RowIndexHolder rowValue;
+                try {
+                    rowValue = (RowIndexHolder) getRowValue(row);
+                } catch (IndexOutOfBoundsException e) {
+                    throw new RuntimeException("INCORRECT ROW " + row + " " + event.getType() + " " + (this instanceof GTreeTable) + " " + target + " " + (target == getTableDataFocusElement()) + " " + getGridInfo() + " " + (rowIndexHolder == null ? "null" : getRows().indexOf(rowIndexHolder)) + " " + getRows().size() + " " + RootPanel.getBodyElement().isOrHasChild(target));
+                }
+                onBrowserEvent(new Cell(row, getColumnIndex(column), column, rowValue), event, column, columnParent);
+            }
         }
     }
+
+    protected abstract String getGridInfo();
 
     public abstract <C> void onBrowserEvent(Cell cell, Event event, Column<T, C> column, TableCellElement parent);
 
@@ -851,7 +878,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     public Widget getWidget() {
         return tableWidget;
     }
-    
+
     protected final TableElement getTableElement() {
         return tableWidget.tableElement;
     }
@@ -1105,7 +1132,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                     //protect from too much sticky columns
                     GSize nextLeft = left.add(cellLeft);
                     // assert that nextLeft is Fixed PX, so the resize size is not null
-                    pendingState.stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.67 ? left : null);
+                    pendingState.stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.33 ? left : null);
                     left = nextLeft;
                 }
             }
@@ -1180,7 +1207,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     private void afterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
         if (pendingState.top != null) {
             tableContainer.setVerticalScrollPosition(pendingState.top);
-            
+
             updateScrolledState();
         }
     }
@@ -1621,7 +1648,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         protected TableSectionElement headerElement;
         protected final TableSectionElement bodyElement;
         protected TableSectionElement footerElement;
-        
+
         public TableWidget() {
             tableElement = Document.get().createTableElement();
 
@@ -1658,10 +1685,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         public TableSectionElement getSection() {
             return bodyElement;
         }
-        
+
         public NodeList<TableRowElement> getDataRows() {
             return bodyElement.getRows();
-        } 
+        }
     }
 
 

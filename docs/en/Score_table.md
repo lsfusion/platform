@@ -384,19 +384,4 @@ FORM MainFormSingle 'Score table'
 NAVIGATOR {
     NEW MainForm FIRST;
 }
-
-CLASS Event;
-date = DATA DATE (Event);
-date(Event e) <- currentDate() WHEN SET(e IS Event);
-title = DATA STRING (Event);
-title(Event e) <- 'Event' + e WHEN SET(e IS Event);
-
-FORM calendar
-    OBJECTS e=Event CUSTOM 'calendar'
-    PROPERTIES (e) date, title, NEW, EDIT, DELETE
-;
-
-NAVIGATOR {
-    NEW calendar;
-}
 ```

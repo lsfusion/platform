@@ -5,7 +5,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.NullableExprInterface;
 import lsfusion.server.data.expr.inner.InnerExpr;
 import lsfusion.server.data.expr.join.inner.InnerBaseJoin;
 import lsfusion.server.data.expr.join.where.WhereJoins;
@@ -13,7 +12,7 @@ import lsfusion.server.data.stat.*;
 
 public abstract class CalculateJoin<K> extends TwinImmutableObject implements InnerBaseJoin<K> {
 
-    public StatKeys<K> getStatKeys(final KeyStat keyStat, StatType type, boolean oldMech) {
+    public StatKeys<K> getStatKeys(final KeyStat keyStat, StatType type) {
         return getCalcStatKeys(keyStat);
     }
 

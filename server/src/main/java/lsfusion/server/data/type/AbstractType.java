@@ -85,10 +85,6 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
         return getBaseDotNetSize() + 1; // для boolean
     }
 
-    public boolean useIndexedJoin() {
-        return false;
-    }
-
     @Override
     public boolean isFlex() {
         return false;
@@ -215,6 +211,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
                 cellValue = formulaValue.formatAsString();
         }
         return parseNullableString(cellValue, true);
+    }
+
+    @Override
+    public T parsePaste(String value) throws ParseException {
+        return parseNullableString(value, false);
     }
 
     @Override

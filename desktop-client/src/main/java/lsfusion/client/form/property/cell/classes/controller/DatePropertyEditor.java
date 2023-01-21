@@ -9,7 +9,6 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.controller.ClientAbstractCellEditor;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 
@@ -68,9 +67,13 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         // передаем вниз нажатую клавишу, чтобы по нажатию кнопки она уже начинала вводить в объект
         if (condition == WHEN_FOCUSED) {
             return ((DatePropertyEditorComponent) dateEditor).publicProcessKeyBinding(ks, ke, condition, pressed);
-        } else if (ke.getKeyCode() == KeyEvent.VK_ENTER && tableEditor instanceof ClientAbstractCellEditor)  {
+        } else if (ke.getKeyCode() == KeyEvent.VK_ENTER && tableEditor != null /*&& tableEditor instanceof ClientAbstractCellEditor*/) {
+            // removed instanceof check as it prevents editing to be stopped in filters
             //stop editing and prevent executing 'forward-traversal' from SwingUtils.setupSingleCellTable (it will stop editing + go to next cell)
-            return tableEditor.stopCellEditing();
+            tableEditor.preCommit(true);
+            boolean stopped = tableEditor.stopCellEditing();
+            tableEditor.postCommit();
+            return stopped;
         } else {
             return super.processKeyBinding(ks, ke, condition, pressed);
         }

@@ -1,5 +1,8 @@
 package lsfusion.gwt.client.form.design;
 
+import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -9,9 +12,12 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
 public class GContainer extends GComponent {
     public String caption;
@@ -23,6 +29,10 @@ public class GContainer extends GComponent {
 
     public boolean horizontal;
     public boolean tabbed;
+
+    public String path;
+    public String creationPath;
+
     public GFlexAlignment childrenAlignment;
 
     public boolean grid;
@@ -173,7 +183,7 @@ public class GContainer extends GComponent {
         if (alignCaptions != null) {
             return alignCaptions;
         }
-        
+
         // align caption has a higher priority than wrap
         if(horizontal) // later maybe it makes sense to support align captions for horizontal containers, but with no-wrap it doesn't make much sense
             return false;
@@ -183,7 +193,7 @@ public class GContainer extends GComponent {
         boolean otherAligned = false;
         // only simple property draws
         for(GComponent child : children) {
-            if(child.isAlignCaption()) {
+            if(child.isOverAlignCaption()) {
                 if(otherAligned)
                     return true;
                 else
@@ -262,4 +272,22 @@ public class GContainer extends GComponent {
         }
     }
     public final GPropertyReader customDesignCaptionReader = new GCustomDesignCaptionReader();
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getCreationPath() {
+        return creationPath;
+    }
+
+    public String getTooltipText(String caption) {
+        return MainFrame.showDetailedInfo ?
+                GwtSharedUtils.stringFormat("<html><body>" +
+                        "<b>%s</b><br/>" +
+                        createTooltipHorizontalSeparator() +
+                        "<b>" + ClientMessages.Instance.get().tooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>" +
+                        "</body></html>", caption, getCreationPath()) :
+                GwtSharedUtils.stringFormat("<html><body><b>%s</b></body></html>", caption);
+    }
 }

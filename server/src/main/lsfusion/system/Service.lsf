@@ -802,7 +802,7 @@ getClientSettings() {
     getClientSettings(currentUser());
 }
 
-//Temporary. For migration. Сan be deleted later. Need to fill in fields for existing users
+//Temporary. For migration. Can be deleted later. Need to fill in fields for existing users
 migratedRanges = DATA BOOLEAN();
 onStarted() + {
     IF NOT migratedRanges() THEN {

@@ -28,7 +28,6 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import org.apache.log4j.Logger;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -46,8 +45,6 @@ import static lsfusion.base.EscapeUtils.escapeLineBreakHTML;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
 public class SendEmailAction extends SystemExplicitAction {
-    private final static Logger logger = ServerLoggers.mailLogger;
-
     private PropertyInterfaceImplement<ClassPropertyInterface> fromAddress;
     private PropertyInterfaceImplement<ClassPropertyInterface> subject;
 
@@ -128,17 +125,17 @@ public class SendEmailAction extends SystemExplicitAction {
                 String password = trimToEmpty((String) emailLM.passwordAccount.read(context, account));
 
                 if (emailLM.disableAccount.read(context, account) != null) {
-                    logger.error(localize("{mail.disabled}"));
+                    logErrorAndShowMessage(context, localize("{mail.disabled}"));
                     return;
                 }
 
                 if (smtpHost == null || fromAddress == null) {
-                    logError(context, localize("{mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent}"));
+                    logErrorAndShowMessage(context, localize("{mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent}"));
                     return;
                 }
 
                 if (recipients.isEmpty()) {
-                    logError(context, localize("{mail.recipient.not.specified}"));
+                    logErrorAndShowMessage(context, localize("{mail.recipient.not.specified}"));
                     return;
                 }
 
@@ -151,7 +148,7 @@ public class SendEmailAction extends SystemExplicitAction {
                 throw new RuntimeException(localize("{mail.failed.email.not.configured}"));
             }
         } catch (SQLException | SQLHandledException | MessagingException | IOException e) {
-            logError(context, localize("{mail.failed.to.send.mail}") + " : " + e);
+            logErrorAndShowMessage(context, localize("{mail.failed.to.send.mail}") + " : " + e);
         }
     }
 
@@ -264,8 +261,8 @@ public class SendEmailAction extends SystemExplicitAction {
         return new EmailSender.AttachmentFile(rawFile, name + "." + extension, extension);
     }
 
-    private void logError(ExecutionContext context, String errorMessage) {
-        logger.error(errorMessage);
+    private void logErrorAndShowMessage(ExecutionContext context, String errorMessage) {
+        ServerLoggers.mailLogger.error(errorMessage);
         context.delayUserInterfaction(new MessageClientAction(errorMessage, localize("{mail.sending}")));
     }
 }

@@ -115,6 +115,15 @@ public class ReportGenerator {
             ReportDataSource source = (ReportDataSource) params.get(rootID + ReportConstants.sourceSuffix);
             Map<String, Object> childParams = (Map<String, Object>) params.get(rootID + ReportConstants.paramsSuffix);
 
+            if(generationData.jasperReportsGovernorMaxPages > 0) {
+                report.setProperty("net.sf.jasperreports.governor.max.pages", String.valueOf(generationData.jasperReportsGovernorMaxPages));
+                report.setProperty("net.sf.jasperreports.governor.max.pages.enabled", "true");
+            }
+            if(generationData.jasperReportsGovernorTimeout > 0) {
+                report.setProperty("net.sf.jasperreports.governor.timeout", String.valueOf(generationData.jasperReportsGovernorTimeout));
+                report.setProperty("net.sf.jasperreports.governor.timeout.enabled", "true");
+            }
+
             print = JasperFillManager.fillReport(report, childParams, source);
         } finally {
             if (remoteLogics != null)
@@ -828,15 +837,6 @@ public class ReportGenerator {
         print.setProperty(XlsReportConfiguration.PROPERTY_DETECT_CELL_TYPE, "true");
         if(type == FormPrintType.XLSX) {
             print.setProperty(XlsReportConfiguration.PROPERTY_MAXIMUM_ROWS_PER_SHEET, "1048576");
-        }
-
-        if(generationData.jasperReportsGovernorMaxPages > 0) {
-            print.setProperty("net.sf.jasperreports.governor.max.pages", String.valueOf(generationData.jasperReportsGovernorMaxPages));
-            print.setProperty("net.sf.jasperreports.governor.max.pages.enabled", "true");
-        }
-        if(generationData.jasperReportsGovernorTimeout > 0) {
-            print.setProperty("net.sf.jasperreports.governor.timeout", String.valueOf(generationData.jasperReportsGovernorTimeout));
-            print.setProperty("net.sf.jasperreports.governor.timeout.enabled", "true");
         }
 
         JRAbstractExporter exporter = getExporter(type);

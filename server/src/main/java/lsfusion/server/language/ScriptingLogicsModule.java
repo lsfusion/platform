@@ -23,6 +23,7 @@ import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
 import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
@@ -88,7 +89,6 @@ import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseConta
 import lsfusion.server.logics.form.interactive.action.expand.ExpandCollapseType;
 import lsfusion.server.logics.form.interactive.action.focus.ActivateAction;
 import lsfusion.server.logics.form.interactive.action.focus.IsActiveFormAction;
-import lsfusion.server.logics.form.interactive.action.input.InputActionContextSelector;
 import lsfusion.server.logics.form.interactive.action.input.InputContextAction;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
@@ -99,6 +99,7 @@ import lsfusion.server.logics.form.interactive.dialogedit.ClassFormSelector;
 import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
 import lsfusion.server.logics.form.open.MappedForm;
 import lsfusion.server.logics.form.open.ObjectSelector;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
@@ -759,16 +760,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private List<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
-        List<FormEntity> forms = new ArrayList<>();
+    private ImSet<FormEntity> findForms(List<String> names) throws ScriptingErrorLog.SemanticErrorException {
+        MSet<FormEntity> forms = SetFact.mSet();
         for (String name : names) {
             forms.add(findForm(name));
         }
-        return forms;
+        return forms.immutable();
     }
 
     public Event createScriptedEvent(String name, BaseEvent base, List<String> formIds, List<ActionOrPropertyUsage> afterIds) throws ScriptingErrorLog.SemanticErrorException {
-        return new Event(name, base, formIds != null ? new SessionEnvEvent(SetFact.fromJavaSet(new HashSet<>(findForms(formIds)))) : SessionEnvEvent.ALWAYS, afterIds == null? null : findEventActionsOrPropsByUsages(afterIds));
+        return new Event(name, base, formIds != null ? new SessionEnvEvent(findForms(formIds)) : SessionEnvEvent.ALWAYS, afterIds == null? null : findEventActionsOrPropsByUsages(afterIds));
     }
 
     public MetaCodeFragment findMetaCodeFragment(String name, int paramCnt) throws ScriptingErrorLog.SemanticErrorException {
@@ -1259,7 +1260,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 //            if (Settings.get().isCheckClassWhere()) {
 //                checks.checkClassWhere((LP) property, name);
 //            }
-        makeLoggable(property, ps.isLoggable);
     }
 
     /** Проверяет нужно ли обернуть свойство в join.
@@ -1469,12 +1469,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         property.setRegexp(regexp);
         if (regexpMessage != null) {
             property.setRegexpMessage(regexpMessage);
-        }
-    }
-
-    public void makeLoggable(LP property, boolean isLoggable) {
-        if (isLoggable && property != null) {
-            property.makeLoggable(this, BL.systemEventsLM);
         }
     }
 
@@ -2230,8 +2224,9 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedNewSessionAProp(LAWithParams action, List<NamedPropertyUsage> migrateSessionProps, boolean migrateAllSessionProps,
-                                                   boolean isNested, boolean singleApply, boolean newSQL) throws ScriptingErrorLog.SemanticErrorException {
-        LA<?> sessionLA = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps));
+                                                   boolean isNested, boolean singleApply, boolean newSQL, List<String> formIds) throws ScriptingErrorLog.SemanticErrorException {
+        ImSet<FormEntity> fixedForms = formIds != null ? findForms(formIds) : null;
+        LA<?> sessionLA = addNewSessionAProp(null, action.getLP(), isNested, singleApply, newSQL, getMigrateProps(migrateSessionProps, migrateAllSessionProps), fixedForms);
         return new LAWithParams(sessionLA, action.usedParams);
     }
 
@@ -2362,7 +2357,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             ILEWithParams contextEntity = getContextListEntity(oldContext.size(), listProp, whereProp, actionImages, keyStrokes, quickAccesses, actions);
             usedParams = contextEntity.usedParams;
 
-            action = addInputAProp((DataClass) requestValueClass, tprop, oldValue != null, contextEntity.orderInterfaces, contextEntity.list, listScope, new InputActionContextSelector<>(contextEntity.where), contextEntity.contextActions, customEditorFunction, notNull);
+            action = addDataInputAProp((DataClass) requestValueClass, tprop, oldValue != null, oldValue != null ? oldValue.getLP().getActionOrProperty() : null, contextEntity.orderInterfaces, contextEntity.list, contextEntity.where, listScope, contextEntity.contextActions, customEditorFunction, notNull);
         }
         
         List<LPWithParams> mapping = new ArrayList<>();
@@ -2580,11 +2575,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         ImList<Type> paramTypes = getTypesForEvalAction(params, contextParams);
 
         return addScriptedJoinAProp(addAProp(new EvalAction(this, paramTypes, action)), BaseUtils.addList(property, params));
-    }
-
-    public LAWithParams addScriptedDrillDownAction(LPWithParams property) {
-        LA<?> res = addDrillDownAProp(property.getLP());
-        return new LAWithParams(res, property.usedParams);
     }
 
     public LAWithParams addScriptedChangePropertyAProp(List<TypedParameter> context, NamedPropertyUsage toPropertyUsage, List<LPWithParams> toPropertyMapping, LPWithParams fromProperty, LPWithParams whereProperty, List<TypedParameter> newContext) throws ScriptingErrorLog.SemanticErrorException {
@@ -3297,7 +3287,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getv(new ExtInt(value.getSourceString().length()));
     }
 
-    public Pair<LP, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
+    public Pair<LPWithParams, LPNotExpr> addConstantProp(ConstType type, Object value, int lineNumber, List<TypedParameter> context, boolean dynamic) throws RecognitionException {
         LP lp = null;
         switch (type) {
             case INT: lp = addUnsafeCProp(IntegerClass.instance, value); break;
@@ -3313,7 +3303,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 } else {
                     LocalizedString lstr = transformLocalizedStringLiteral((String) value);
                     lp = addUnsafeCProp(getStringConstClass(lstr), lstr);
-                    return Pair.create(lp, new LPLiteral(lstr));
+                    return Pair.create(new LPWithParams(lp), new LPLiteral(lstr));
                 }
             case LOGICAL: lp =  addUnsafeCProp(LogicalClass.instance, value); break;
             case TLOGICAL: lp =  addUnsafeCProp(LogicalClass.threeStateInstance, value); break;
@@ -3324,14 +3314,14 @@ public class ScriptingLogicsModule extends LogicsModule {
             case COLOR: lp =  addUnsafeCProp(ColorClass.instance, value); break;
             case NULL: lp =  baseLM.vnull; break;
         }
-        return Pair.create(lp, new LPLiteral(value));
+        return Pair.create(new LPWithParams(lp), new LPLiteral(value));
     }
 
-    protected LP addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+    protected LPWithParams addStringInlineProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
         String resourceName = transformToResourceName(source.substring(INLINE_PREFIX.length(), source.length() - 1));
         String code = parseStringInlineProp(resourceName);
         code = quote(escapeInlineContent(code));
-        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic).getLP();
+        return parser.runStringInterpolateCode(this, code, resourceName, lineNumber, context, dynamic);
     }
 
     private String parseStringInlineProp(String resourceName) throws ScriptingErrorLog.SemanticErrorException {
@@ -3342,14 +3332,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return result;
     }
 
-    protected LP<?> addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
+    protected LPWithParams addStringInterpolateProp(String source, int lineNumber, List<TypedParameter> context, boolean dynamic) throws ScriptingErrorLog.SemanticErrorException {
         String code = null;
         try {
             code = StringUtils.join(ScriptedStringUtils.parseStringInterpolateProp(source), " + ");
         } catch (TransformationError e) {
             errLog.emitSimpleError(parser, e.getMessage());
         }
-        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic).getLP();
+        return parser.runStringInterpolateCode(this, code, null, lineNumber, context, dynamic);
     }
 
     private LP addNumericConst(BigDecimal value) {
@@ -3943,7 +3933,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public <O extends ObjectSelector> LAWithParams addScriptedExportFAProp(MappedForm<O> mapped, List<FormActionProps> allObjectProps, FormIntegrationType exportType,
                                                                            LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty, boolean attr, Boolean hasHeader,
-                                                                           String separator, boolean noEscape, Integer selectTop, String charset, NamedPropertyUsage propUsage,
+                                                                           String separator, boolean noEscape, SelectTop selectTop, String charset, NamedPropertyUsage propUsage,
                                                                            OrderedMap<GroupObjectEntity, NamedPropertyUsage> propUsages, List<TypedParameter> objectsContext,
                                                                            List<LPWithParams> contextFilters, List<TypedParameter> params) throws ScriptingErrorLog.SemanticErrorException {
         if(exportType == null)
@@ -4055,7 +4045,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                 MetaCodeFragment.metaCodeCallString(name, metaCode, params), lineNumberBefore, lineNumberAfter, enabledMeta);
     }
 
-    private Pair<LP, LPNotExpr> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
+    private Pair<LPWithParams, LPNotExpr> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
         int pointPos = name.lastIndexOf('.');
         assert pointPos > 0;
 
@@ -4083,7 +4073,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             else
                 throw e;
         }
-        return new Pair<>(resultProp, isCompoundID ? new LPCompoundID(name, semanticError) : null);
+        return new Pair<>(new LPWithParams(resultProp), isCompoundID ? new LPCompoundID(name, semanticError) : null);
     }
 
     public Pair<LPWithParams, LPNotExpr> addSingleParameter(TypedParameter param, List<TypedParameter> context, boolean dynamic, boolean insideRecursion) throws ScriptingErrorLog.SemanticErrorException {
@@ -4800,13 +4790,6 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedLoggable(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
-        for (NamedPropertyUsage propUsage : propUsages) {
-            LP lp = findLPByPropertyUsage(propUsage);
-            lp.makeLoggable(this, BL.systemEventsLM);
-        }
-    }
-
     public void addScriptedWindow(WindowType type, String name, LocalizedString captionStr, NavigatorWindowOptions options) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateWindow(name);
 
@@ -4918,11 +4901,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public static class NavigatorElementOptions {
-        public NavigatorElement anchor;
-        public InsertType position;
+        public String imagePath;
+        ComplexLocation<NavigatorElement> location;
         public String windowName;
         public boolean parentWindow;
-        public String imagePath;
         public LPWithParams imageProperty;
         public LPWithParams headerProperty;
     }
@@ -5012,21 +4994,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         setNavigatorElementImage(element, options.imageProperty != null ? options.imageProperty.getLP().property : null, options.imagePath != null ? new AppImage(options.imagePath) : null);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
 
-        if (parent != null && (!isEditOperation || options.position != InsertType.IN)) {
-            moveElement(element, parent, options.position, options.anchor, isEditOperation);
-        }
+        ComplexLocation<NavigatorElement> location = options.location;
+        if (parent != null && !(isEditOperation && location == null))
+            addOrMoveElement(element, parent, location != null ? location : ComplexLocation.DEFAULT(), isEditOperation);
     }
 
-    private void moveElement(NavigatorElement element, NavigatorElement parentElement, InsertType pos, NavigatorElement anchorElement, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
+    private void addOrMoveElement(NavigatorElement element, NavigatorElement parentElement, ComplexLocation<NavigatorElement> location, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
-        checks.checkNavigatorElementMoveOperation(element, parentElement, anchorElement, isEditOperation, version);
+        checks.checkNavigatorElementMoveOperation(element, parentElement, location, isEditOperation, version);
 
-        switch (pos) {
-            case IN:    parentElement.add(element, version); break;
-            case BEFORE:parentElement.addBefore(element, anchorElement, version); break;
-            case AFTER: parentElement.addAfter(element, anchorElement, version); break;
-            case FIRST: parentElement.addFirst(element, version); break;
-        }
+        parentElement.addOrMove(element, location, version);
     }
 
     public void setNavigatorElementWindow(NavigatorElement element, String windowName, boolean parentWindow) throws ScriptingErrorLog.SemanticErrorException {

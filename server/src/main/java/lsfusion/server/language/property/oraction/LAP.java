@@ -141,10 +141,6 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setEchoSymbols(echoSymbols);
     }
 
-    public void setShouldBeLast(boolean shouldBeLast) {
-        getActionOrProperty().drawOptions.setShouldBeLast(shouldBeLast);
-    }
-
     public void setViewType(ClassViewType viewType) {
         getActionOrProperty().drawOptions.setViewType(viewType);
     }

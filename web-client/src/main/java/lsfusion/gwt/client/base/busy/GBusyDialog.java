@@ -130,8 +130,11 @@ public class GBusyDialog extends DialogModalWindow {
     public void updateBusyDialog(List messageList) {
         message.clear();
 
-        if (prevMessageList == null)
+        boolean firstUpdate = false;
+        if (prevMessageList == null) {
             prevMessageList = new ArrayList(messageList.size());
+            firstUpdate = true;
+        }
 
         boolean changed = false;
         boolean showTopProgressBar = true;

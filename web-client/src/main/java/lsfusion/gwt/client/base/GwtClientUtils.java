@@ -874,7 +874,15 @@ public class GwtClientUtils {
         return parseInt($wnd.getComputedStyle(element, null).columnGap) || 0; // can be 'normal' and others
     }-*/;
 
-    // without padding, getClient - with paddings, getOffset with paddings and borders, getFull wit paddings, borders and margins
+    public static int getScrollWidth(Element element) {
+        return element.getOffsetWidth() - element.getClientWidth() - getBorderWidth(element); // in theory borders should be excluded, but for now it doesn't matter
+    }
+
+    public static int getScrollHeight(Element element) {
+        return element.getOffsetHeight() - element.getClientHeight() - getBorderHeight(element); // in theory borders should be excluded, but for now it doesn't matter
+    }
+
+    // without padding, getClient - with paddings, getOffset with paddings and borders (+scrolls), getFull wit paddings, borders and margins
     public static native int getHeight(Element element) /*-{
         return parseInt($wnd.getComputedStyle(element, null).height);
     }-*/;
@@ -885,6 +893,16 @@ public class GwtClientUtils {
 
     public static native int getMarginTop(Element element) /*-{
         return parseInt($wnd.getComputedStyle(element, null).marginTop);
+    }-*/;
+
+    public static native int getBorderHeight(Element element) /*-{
+        var computedStyle = $wnd.getComputedStyle(element, null);
+        return parseInt(computedStyle.borderTop) + parseInt(computedStyle.borderBottom);
+    }-*/;
+
+    public static native int getBorderWidth(Element element) /*-{
+        var computedStyle = $wnd.getComputedStyle(element, null);
+        return parseInt(computedStyle.borderLeft) + parseInt(computedStyle.borderRight);
     }-*/;
 
     public static native int getAllMargins(Element element) /*-{

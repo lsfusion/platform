@@ -24,7 +24,6 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.version.GlobalVersion;
 import lsfusion.server.base.version.LastVersion;
-import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
@@ -83,6 +82,7 @@ import lsfusion.server.logics.form.open.interactive.FormInteractiveAction;
 import lsfusion.server.logics.form.open.stat.ExportAction;
 import lsfusion.server.logics.form.open.stat.ImportAction;
 import lsfusion.server.logics.form.open.stat.PrintAction;
+import lsfusion.server.logics.form.stat.SelectTop;
 import lsfusion.server.logics.form.stat.struct.FormIntegrationType;
 import lsfusion.server.logics.form.stat.struct.IntegrationFormEntity;
 import lsfusion.server.logics.form.stat.struct.export.hierarchy.json.ExportJSONAction;
@@ -98,6 +98,7 @@ import lsfusion.server.logics.form.stat.struct.imports.plain.csv.ImportCSVAction
 import lsfusion.server.logics.form.stat.struct.imports.plain.dbf.ImportDBFAction;
 import lsfusion.server.logics.form.stat.struct.imports.plain.table.ImportTableAction;
 import lsfusion.server.logics.form.stat.struct.imports.plain.xls.ImportXLSAction;
+import lsfusion.server.logics.form.struct.AutoFinalFormEntity;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterEntity;
@@ -126,14 +127,11 @@ import lsfusion.server.logics.property.data.StoredDataProperty;
 import lsfusion.server.logics.property.implement.PropertyImplement;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
-import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.logics.property.set.*;
 import lsfusion.server.logics.property.value.ValueProperty;
-import lsfusion.server.physics.admin.drilldown.action.LazyAction;
-import lsfusion.server.physics.admin.drilldown.form.DrillDownFormEntity;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
 import lsfusion.server.physics.dev.debug.ActionDebugger;
 import lsfusion.server.physics.dev.debug.ActionDelegationType;
@@ -177,6 +175,8 @@ public abstract class LogicsModule {
 
     public abstract void initMainLogic() throws RecognitionException;
 
+    public boolean mainLogicsInitialized;
+
     public abstract void initIndexes(DBManager dbManager) throws RecognitionException;
 
     public BaseLogicsModule baseLM;
@@ -192,12 +192,10 @@ public abstract class LogicsModule {
     protected final Map<String, ImplementTable> tables = new HashMap<>();
     protected final Map<Pair<String, Integer>, MetaCodeFragment> metaCodeFragments = new HashMap<>();
 
-    private final Set<FormEntity> unnamedForms = new HashSet<>();
+    protected Set<FormEntity> unnamedForms = new HashSet<>();
     private final Map<LP<?>, LocalPropertyData> locals = new HashMap<>();
 
-
-    protected final Map<LAP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
-    
+    protected Map<LAP<?, ?>, List<ResolveClassSet>> propClasses = new HashMap<>();
 
     protected Map<String, List<LogicsModule>> namespaceToModules = new LinkedHashMap<>();
     
@@ -268,6 +266,7 @@ public abstract class LogicsModule {
     }
     
     protected void addModuleLAP(LAP<?, ?> lap) {
+        assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
         String name = null;
         assert getNamespace().equals(lap.getActionOrProperty().getNamespace());
         if (lap instanceof LA) {
@@ -287,7 +286,6 @@ public abstract class LogicsModule {
         moduleMap.get(name).add(lap);
     }
 
-    @NFLazy
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
         lp.getActionOrProperty().setCanonicalName(getNamespace(), name, signature, lp.listInterfaces);
         propClasses.put(lp, signature);
@@ -462,21 +460,6 @@ public abstract class LogicsModule {
         return table;
     }
 
-    protected void markFull(ImplementTable table, ImList<ValueClass> listClasses, DBNamingPolicy namingPolicy) {
-        // создаем IS
-        PropertyRevImplement<?, Integer> mapProperty = IsClassProperty.getProperty(listClasses.toIndexedMap()); // тут конечно стремновато из кэша брать, так как остальные гарантируют создание
-        LP<?> lcp = addJProp(mapProperty.createLP(ListFact.consecutiveList(listClasses.size(), 0)), ListFact.consecutiveList(listClasses.size()).toArray(new Integer[listClasses.size()]));
-//        addProperty(null, lcp);
-
-        // делаем public, persistent
-        makePropertyPublic(lcp, PropertyCanonicalNameUtils.fullPropPrefix + table.getName(), listClasses.mapListValues(ValueClass::getResolveSet).toJavaList());
-        lcp.property.markStored(table);
-        lcp.property.initStored(baseLM.tableFactory, namingPolicy); // we need to initialize because we use calcClassValueWhere for init stored properties
-
-        // marking full
-        table.setFullField(lcp.property.field);
-    }
-
     //////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////
     /// Properties
@@ -578,7 +561,7 @@ public abstract class LogicsModule {
                                                           FormPrintType staticType, boolean server, boolean autoPrint, boolean syncType, Integer selectTop, LP targetProp, boolean removeNullsAndDuplicates,
                                                           ValueClass printer, ValueClass sheetName, ValueClass password) {
         return addAction(group, new LA<>(new PrintAction<>(caption, form, objectsToSet, nulls, orderContextInterfaces, contextFilters,
-                staticType, server, syncType, autoPrint, selectTop, targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
+                staticType, server, syncType, autoPrint, new SelectTop(selectTop), targetProp, baseLM.formPageCount, removeNullsAndDuplicates, printer, sheetName, password)));
     }
     protected <O extends ObjectSelector> LP addJSONFormProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters) {
@@ -588,7 +571,7 @@ public abstract class LogicsModule {
     }
     protected <O extends ObjectSelector> LA addEFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImList<O> objectsToSet, ImList<Boolean> nulls,
                                                        ImOrderSet<PropertyInterface> orderContextInterfaces, ImSet<ContextFilterSelector<PropertyInterface, O>> contextFilters,
-                                                       FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape, Integer selectTop, String charset,
+                                                       FormIntegrationType staticType, Boolean hasHeader, String separator, boolean noEscape, SelectTop selectTop, String charset,
                                                        LP singleExportFile, ImMap<GroupObjectEntity, LP> exportFiles, ValueClass sheetName, ValueClass root, ValueClass tag) {
         ExportAction<O> exportAction;
         switch(staticType) {
@@ -714,7 +697,7 @@ public abstract class LogicsModule {
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, aliases, literals, exprs, where, orders, false, version);
-        addAutoFormEntity(form);
+        addAutoFormEntityNotFinalized(form);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
@@ -744,7 +727,7 @@ public abstract class LogicsModule {
         }            
                 
         // creating action
-        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, selectTop, charset, singleExportFile, exportFiles, sheetName, root, tag);
+        return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, new SelectTop(selectTop), charset, singleExportFile, exportFiles, sheetName, root, tag);
     }
 
     protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<String> aliases, List<Boolean> literals, ImList<ValueClass> paramClasses, LP<?> whereLCP,
@@ -757,7 +740,7 @@ public abstract class LogicsModule {
 
         // creating form
         IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), aliases, literals, exprs, where, MapFact.EMPTYORDER(), attr, version);
-        addAutoFormEntity(form);
+        addAutoFormEntityNotFinalized(form);
         
         // create action
         return addImportFAProp(type, form, paramsCount, SetFact.singletonOrder(form.groupObject == null ? GroupObjectEntity.NULL : form.groupObject), sheetAll, separator, noHeader, noEscape, charset, hasRoot, hasWhere, null);
@@ -945,14 +928,20 @@ public abstract class LogicsModule {
     // ------------------- NEWSESSION ----------------- //
 
     public LA addNewSessionAProp(Group group,
-                                    LA la, boolean isNested, boolean singleApply, boolean newSQL,
-                                    FunctionSet<SessionDataProperty> migrateSessionProps) {
+                                 LA la, boolean isNested, boolean singleApply, boolean newSQL,
+                                 FunctionSet<SessionDataProperty> migrateSessionProps) {
+        return addNewSessionAProp(group, la, isNested, singleApply, newSQL, migrateSessionProps, null);
+    }
+
+    public LA addNewSessionAProp(Group group,
+                                 LA la, boolean isNested, boolean singleApply, boolean newSQL,
+                                 FunctionSet<SessionDataProperty> migrateSessionProps, ImSet<FormEntity> fixedForms) {
         ImOrderSet<PropertyInterface> listInterfaces = genInterfaces(la.listInterfaces.size());
         ActionMapImplement<?, PropertyInterface> actionImplement = mapActionListImplement(la, listInterfaces);
 
         NewSessionAction action = new NewSessionAction(
-                LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested);
-        
+                LocalizedString.NONAME, listInterfaces, actionImplement, singleApply, newSQL, migrateSessionProps, isNested, fixedForms);
+
         return addAction(group, new LA<>(action));
     }
 
@@ -986,6 +975,35 @@ public abstract class LogicsModule {
     }
 
     // ------------------- Input ----------------- //
+
+    public <T extends PropertyInterface, V extends PropertyInterface> LA<?> addDataInputAProp(DataClass valueClass, LP targetProp, boolean hasOldValue, Property<V> valueProperty,
+                                                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
+                                                                                              InputFilterEntity<?, T> contextFilter, FormSessionScope contextScope,
+                                                                                              ImList<InputContextAction<?, T>> contextActions, String customEditorFunction, boolean notNull) {
+        InputContextSelector<T> contextSelector = null;
+        if(contextList == null && contextFilter == null && valueProperty != null) {
+            if(Property.isDefaultWYSInput(valueClass) && !valueProperty.disableInputList) { // && // if string and not disabled
+                contextList = new InputListEntity<>(valueProperty, MapFact.EMPTYREV());
+
+                // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
+                contextSelector = new InputContextSelector<T>() {
+                    public Pair<InputFilterEntity<?, T>, ImOrderMap<InputOrderEntity<?, T>, Boolean>> getFilterAndOrders() {
+                        if (valueProperty.tooMuchSelectData(MapFact.EMPTY()))  // if cost-per-row * numberRows > max read count, won't read
+                            return null;
+                        return new Pair<>(null, MapFact.EMPTYORDER());
+                    }
+
+                    public <C extends PropertyInterface> InputContextSelector<C> map(ImRevMap<T, C> map) {
+                        return (InputContextSelector<C>) this;
+                    }
+                };
+            }
+        } else {
+            contextSelector = new InputActionContextSelector<>(contextFilter);
+        }
+
+        return addInputAProp(valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextScope, contextSelector, contextActions, customEditorFunction, notNull);
+    }
 
     public <T extends PropertyInterface> LA<?> addInputAProp(ValueClass valueClass, LP targetProp, boolean hasOldValue,
                                                              ImOrderSet<T> orderInterfaces, InputListEntity<?, T> contextList,
@@ -1577,7 +1595,7 @@ public abstract class LogicsModule {
         StoredDataProperty data = new StoredDataProperty(LocalizedString.create("{logics.log}" + " " + lp.property), where.getInterfaceClasses(ClassType.logPolicy), value.property.getValueClass(ClassType.logPolicy));
         LP log = addProperty(null, new LP<>(data));
 
-        log.setWhenChange(systemEventsLM, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
+        log.setWhenChange(this, Event.APPLY, BaseUtils.add(directLI(value), directLI(where)));
 
         makePropertyPublic(log, name, signature);
         markLoggableStored(log, namingPolicy);
@@ -1682,58 +1700,6 @@ public abstract class LogicsModule {
     @IdentityStrongLazy
     public LA<?> addAsyncUpdateAProp() {
         return addAction(null, new LA(new AsyncUpdateEditValueAction(LocalizedString.create("Async Update"))));
-    }
-
-    // ------------------- DRILLDOWN ----------------- //
-
-    public void setupDrillDownProperty(Property property, boolean isLightStart) {
-        if (property.supportsDrillDown()) {
-            LA<?> drillDownFormProperty = addLazyAProp(property); //isLightStart ? : addDDAProp(property);
-            Action formProperty = drillDownFormProperty.action;
-            property.setContextMenuAction(formProperty.getSID(), formProperty.caption);
-            property.setEventAction(formProperty.getSID(), formProperty.getImplement(property.getReflectionOrderInterfaces()));
-        }
-    }
-    
-    public LA addDrillDownAProp(LP<?> property) {
-        return addDDAProp(property);
-    }
-
-    public LA<?> addDDAProp(LP property) {
-        assert property.property.getReflectionOrderInterfaces().equals(property.listInterfaces);
-        if (property.property instanceof Property && property.property.supportsDrillDown())
-            return addDDAProp(property.property);
-        else 
-            throw new UnsupportedOperationException();
-    }
-
-    private String nameForDrillDownAction(Property property, List<ResolveClassSet> signature) {
-        assert property.isNamed();
-        PropertyCanonicalNameParser parser = new PropertyCanonicalNameParser(property.getCanonicalName(), baseLM.getClassFinder());
-        String name = PropertyCanonicalNameUtils.drillDownPrefix + parser.getNamespace() + "_" + property.getName();
-        signature.addAll(parser.getSignature());
-        return name;
-    }
-
-    public LA<?> addDDAProp(Property property) {
-        List<ResolveClassSet> signature = new ArrayList<>();
-        DrillDownFormEntity drillDownFormEntity = property.getDrillDownForm(this);
-        LA result = addMFAProp(baseLM.drillDownGroup, LocalizedString.create("{logics.property.drilldown.action}"), drillDownFormEntity, drillDownFormEntity.paramObjects, property.drillDownInNewSession());
-        if (property.isNamed()) {
-            String name = nameForDrillDownAction(property, signature);
-            makeActionPublic(result, name, signature);
-        }
-        return result;
-    }
-
-    public LA<?> addLazyAProp(Property property) {
-        LA result = addAProp(baseLM.drillDownGroup, new LazyAction(LocalizedString.create("{logics.property.drilldown.action}"), property));
-        if (property.isNamed()) {
-            List<ResolveClassSet> signature = new ArrayList<>();
-            String name = nameForDrillDownAction(property, signature);
-            makeActionPublic(result, name, signature);
-        }
-        return result;
     }
 
     public SessionDataProperty getAddedObjectProperty() {
@@ -1844,39 +1810,6 @@ public abstract class LogicsModule {
     // ---------------------- Add Form ---------------------- //
 
     // assumes 1 parameter - new, others - context
-    protected LA addNewEditAction2(CustomClass cls, LA setAction, LA doAction, int contextParams) {
-        int newIndex = contextParams + 1;
-        Object[] setEditWithParams = new Object[]{baseLM.getPolyEdit(), newIndex};
-        if(setAction != null) // adding setAction if any
-            setEditWithParams = directLI(addListAProp(BaseUtils.add(directLI(setAction), setEditWithParams)));
-
-        LA edit = addRequestAProp(null, true, LocalizedString.NONAME, // REQUEST
-                BaseUtils.add(BaseUtils.add(
-                                setEditWithParams, // edit(x);
-                                directLI(doAction)), // DO <<doAction>>
-                        new Object[]{addIfAProp(baseLM.sessionOwners, baseLM.getPolyDelete(), 1), newIndex}) // ELSE IF seekOwners THEN delete(x)
-        );
-
-        return addForAProp(LocalizedString.create("{logics.add}"), false, false, false, false, contextParams, cls, true, false, 0, false,
-                BaseUtils.add(getUParams(contextParams + 1), directLI(edit))); // context + addedInterface + action
-    }
-
-    public LA<?> addNewEditAction2(CustomClass cls, LP targetProp, int contextParams, FormSessionScope scope, Object... setProperty) {
-        Object[] externalParams = getUParams(contextParams + 1); // + new object
-        LA action = addNewEditAction2(cls,
-                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, setProperty)),
-                addSetPropertyAProp(null, LocalizedString.NONAME, contextParams + 1, false, BaseUtils.add(externalParams, new Object[] {targetProp, contextParams + 1})), // targetProp() <- new object
-                contextParams);
-
-        if(scope.isNewSession())
-            action = addNewSessionAProp(null, action, scope.isNestedSession(), false, false, getMigrateInputProps(ListFact.singleton(targetProp)));
-
-        return action;
-    }
-
-
-
-    // assumes 1 parameter - new, others - context
     protected LA addNewEditAction(CustomClass cls, LA setAction, LA doAction, int contextParams) {
         // NEW AUTOSET x=X DO {
         //      REQUEST
@@ -1961,7 +1894,6 @@ public abstract class LogicsModule {
     }
     
     private void setFormActions(LA result) {
-        result.setShouldBeLast(true);
         result.setViewType(ClassViewType.TOOLBAR);
     }
 
@@ -2107,7 +2039,7 @@ public abstract class LogicsModule {
         }
 
         Action<?> eventAction = createConstraintAction(property, properties, messageProperty, true, debugCaption);
-        
+
         addSimpleEvent(eventAction, resolveAction, event, debugPoint, debugCaption);
     }
 
@@ -2352,33 +2284,24 @@ public abstract class LogicsModule {
         assert !namedForms.containsKey(form.getName());
         namedForms.put(form.getName(), form);
     }
-    @NFLazy
-    public boolean addAutoFormEntityNotFinalized(AutoFormEntity form) {
+    public boolean addAutoFormEntity(AutoFormEntity form) {
         assert !form.isNamed();
+        assert !mainLogicsInitialized || this instanceof BaseLogicsModule;
         return unnamedForms.add(form);
     }
-    public void addAutoFormEntity(AutoFormEntity form) {
-        boolean added = addAutoFormEntityNotFinalized(form);
+    public void addAutoFormEntityNotFinalized(AutoFormEntity form) {
+        assert !formsFinalized;
+        addAutoFormEntity(form);
+    }
+    public void addAutoFormEntity(AutoFinalFormEntity form) {
+        boolean added = addAutoFormEntity((AutoFormEntity) form);
         if(formsFinalized && added) // last check is recursion guard
             form.finalizeAroundInit();
     }
     
-    @NFLazy
     private void addNavigatorElement(NavigatorElement element) {
         assert !navigatorElements.containsKey(element.getName());
         navigatorElements.put(element.getName(), element);
-    }
-
-    public void addFormActions(FormEntity form, ObjectEntity object, FormSessionScope scope) {
-        Version version = getVersion();
-        addFormAction(form, getAddFormAction(form, object, null), scope, version);
-        addFormAction(form, getEditFormAction(object, null), scope, version, object);
-        addFormAction(form, getDeleteAction(object), scope, version, object);
-    }
-
-    public void addFormAction(FormEntity form, LA formAction, FormSessionScope scope, Version version, ObjectEntity... objects) {
-        PropertyDrawEntity propertyDraw = form.addPropertyDraw(formAction, version, SetFact.toOrderExclSet(objects));
-        propertyDraw.defaultChangeEventScope = scope;
     }
 
     public LA getAddFormAction(FormEntity contextForm, ObjectEntity contextObject, CustomClass explicitClass) {
@@ -2491,6 +2414,10 @@ public abstract class LogicsModule {
         return baseLM.recognizeGroup;
     }
 
+    public boolean isRecognize(ActionOrProperty property) {
+        return getRecognizeGroup().hasChild(property);
+    }
+
     public static class LocalPropertyData {
         public String name;
         public List<ResolveClassSet> signature;
@@ -2563,7 +2490,4 @@ public abstract class LogicsModule {
     public ImplementTable resolveTable(String compoundName) throws ResolvingErrors.ResolvingError {
         return resolveManager.findTable(compoundName);
     }
-
-    public enum InsertType {IN, BEFORE, AFTER, FIRST}
 }
-

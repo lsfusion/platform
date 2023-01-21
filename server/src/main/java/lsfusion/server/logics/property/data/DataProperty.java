@@ -21,7 +21,7 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.change.*;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.ChangedProperty;
@@ -312,7 +312,7 @@ public abstract class DataProperty extends AbstractDataProperty {
     }
 
     @Override
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return new DataDrillDownFormEntity(LocalizedString.create("{logics.property.drilldown.form.data}"), this, LM
         );
     }

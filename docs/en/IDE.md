@@ -12,7 +12,7 @@ Select project type `lsFusion`. Make sure that the JDK is set and the link to th
 
 ![](images/IDE_project_type.png)
 
-Fill in the name of the project and the directory where the source files will be stored. Adjust the connection parameters for the database and application server when necessary. Click `Finish`.
+Fill in the name of the project and the directory where the source files will be stored. Adjust the connection parameters and passwords for the database and application server when necessary. Click `Create`.
 
 ![](images/IDE_project_name.png)
 

@@ -1,12 +1,12 @@
 package lsfusion.server.language.form.design;
 
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptParser;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.form.ScriptingFormEntity;
 import lsfusion.server.language.proxy.ViewProxyUtil;
-import lsfusion.server.logics.LogicsModule;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -65,7 +65,7 @@ public class ScriptingFormView {
         }
     }
 
-    public ContainerView createNewComponent(String sid, ComponentView parentComponent, LogicsModule.InsertType pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public ContainerView createNewComponent(String sid, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*") && parentComponent != null;
 
         if (getComponentBySID(sid, false, version) != null) {
@@ -73,31 +73,28 @@ public class ScriptingFormView {
         }
 
         ContainerView container = view.createContainer(null, sid, version);
-        
-        moveComponent(container, parentComponent, pos, anchorComponent, version);
+
+        addOrMoveComponent(container, parentComponent, location, version);
 
         return container;
     }
 
-    public void moveComponent(ComponentView component, ComponentView parentComponent, LogicsModule.InsertType pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void moveComponent(ComponentView component, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version) throws ScriptingErrorLog.SemanticErrorException {
+        addOrMoveComponent(component, parentComponent, location, version);
+    }
+
+    public void addOrMoveComponent(ComponentView component, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version) throws ScriptingErrorLog.SemanticErrorException {
         assert component != null && parentComponent != null;
+
+        if(location == null)
+            location = ComplexLocation.DEFAULT();
 
         if(parentComponent instanceof GridView) {
             parentComponent = ((GridView) parentComponent).getNFRecord(view);
         }
 
-        if (parentComponent instanceof ContainerView) {
-            moveComponentToContainer(component, (ContainerView) parentComponent, pos, anchorComponent, version);
-            return;
-        }
-        errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
-    }
-
-    public void moveComponentToContainer(ComponentView component, ContainerView parent, LogicsModule.InsertType pos, ComponentView anchorComponent, Version version) throws ScriptingErrorLog.SemanticErrorException {
-
-        if (anchorComponent != null && !parent.equals(anchorComponent.getNFContainer(version))) {
-            errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parent.getSID(), anchorComponent.getSID());
-        }
+        if (!(parentComponent instanceof ContainerView))
+            errLog.emitComponentMustBeAContainerError(parser, parentComponent.getSID());
 
         if (component instanceof PropertyDrawView && ((PropertyDrawView) component).entity.isNFList(view.entity, version)) {
             errLog.emitIllegalGridPropertyMoveError(parser, component.getSID());
@@ -105,25 +102,14 @@ public class ScriptingFormView {
 
         if (component instanceof ContainerView) {
             ContainerView container = (ContainerView) component;
-            if (container.isNFAncestorOf(parent, version)) {
-                errLog.emitIllegalMoveComponentToSubcomponentError(parser, container.getSID(), parent.getSID());
+            if (container.isNFAncestorOf(parentComponent, version)) {
+                errLog.emitIllegalMoveComponentToSubcomponentError(parser, container.getSID(), parentComponent.getSID());
             }
         }
 
-        switch (pos) {
-            case IN:
-                parent.add(component, version);
-                break;
-            case BEFORE:
-                parent.addBefore(component, anchorComponent, version);
-                break;
-            case AFTER:
-                parent.addAfter(component, anchorComponent, version);
-                break;
-            case FIRST:
-                parent.addFirst(component, version);
-                break;
-        }
+        ComponentView incorrectNeighbour = ((ContainerView) parentComponent).addOrMoveChecked(component, location, version);
+        if(incorrectNeighbour != null)
+            errLog.emitIllegalInsertBeforeAfterElementError(parser, component.getSID(), parentComponent.getSID(), incorrectNeighbour.getSID());
     }
 
     public void removeComponent(ComponentView component, Version version) throws ScriptingErrorLog.SemanticErrorException {

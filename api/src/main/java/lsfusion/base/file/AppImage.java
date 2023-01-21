@@ -28,7 +28,8 @@ public class AppImage implements Serializable {
         for (ColorTheme colorTheme : ColorTheme.values()) {
             Result<String> fullPath = new Result<>();
             boolean defaultTheme = colorTheme.isDefault();
-            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !defaultTheme, false, fullPath, "images");
+            // multipleUsages true, because one imagePath is often used a lot of times
+            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !defaultTheme, true, fullPath, "images");
             if(defaultTheme || themedImageFile != null) {
                 themedImageFile.getID(); // to calculate the cache
                 images.put(colorTheme, themedImageFile);

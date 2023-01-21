@@ -2,7 +2,7 @@ package lsfusion.server.physics.admin.drilldown.form;
 
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.logics.LogicsModule;
+import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -19,23 +19,21 @@ public class DataDrillDownFormEntity extends DrillDownFormEntity<ClassPropertyIn
     private PropertyDrawEntity wherePropertyDraw;
     private PropertyDrawEntity writeFromPropertyDraw;
 
-    public DataDrillDownFormEntity(LocalizedString caption, DataProperty property, LogicsModule LM) {
+    public DataDrillDownFormEntity(LocalizedString caption, DataProperty property, BaseLogicsModule LM) {
         super(caption, property, LM);
     }
 
     @Override
     protected void setupDrillDownForm() {
-        Version version = LM.getVersion();
-
-        implPropertyDraw = addPropertyDraw(property, interfaceObjects, version);
+        implPropertyDraw = addPropertyDraw(property, interfaceObjects);
 
         PropertyMapImplement<PropertyInterface, ClassPropertyInterface> where = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.where; //h
         ImRevMap<PropertyInterface, ClassPropertyInterface> whereMapping = where.mapping;
-        wherePropertyDraw = addPropertyDraw(where.property, whereMapping.join(interfaceObjects), version);
+        wherePropertyDraw = addPropertyDraw(where.property, whereMapping.join(interfaceObjects));
 
         PropertyMapImplement<PropertyInterface, ClassPropertyInterface> writeFrom = (PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) property.event.writeFrom; //g
         ImRevMap<PropertyInterface, ClassPropertyInterface> writeFromMapping = writeFrom.mapping;
-        writeFromPropertyDraw = addPropertyDraw(writeFrom.property, writeFromMapping.join(interfaceObjects), version);
+        writeFromPropertyDraw = addPropertyDraw(writeFrom.property, writeFromMapping.join(interfaceObjects));
     }
 
     @Override

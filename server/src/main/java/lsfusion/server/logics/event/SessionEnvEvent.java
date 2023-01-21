@@ -7,7 +7,6 @@ import lsfusion.base.col.interfaces.mutable.SimpleAddValue;
 import lsfusion.base.col.interfaces.mutable.SymmAddValue;
 import lsfusion.base.mutability.TwinImmutableObject;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 
 public class SessionEnvEvent extends TwinImmutableObject {
@@ -44,8 +43,8 @@ public class SessionEnvEvent extends TwinImmutableObject {
             return true;
         }
 
-        for(FormInstance form : element.getAllActiveForms())
-            if(forms.contains(form.entity))
+        for(FormEntity form : element.getAllActiveForms())
+            if(forms.contains(form))
                 return true;
         if(element.hasSessionEventActiveForms(forms))
             return true;

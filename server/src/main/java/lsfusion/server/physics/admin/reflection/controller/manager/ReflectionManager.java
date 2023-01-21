@@ -581,7 +581,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
                     }
                     
                     dataProperty.add(asList(actionOrProperty.getCanonicalName(), fieldSID, ThreadLocalContext.localize(actionOrProperty.caption),
-                            actionOrProperty instanceof Property && ((Property) actionOrProperty).userLoggable ? true : null,
+                            actionOrProperty instanceof Property && ((Property) actionOrProperty).isLoggable() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).isStored() ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).userNotNull ? true : null,
                             actionOrProperty instanceof Property && ((Property) actionOrProperty).disableInputList ? true : null,

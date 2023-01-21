@@ -1153,7 +1153,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         this.field = field;
     }
 
-    public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index) {
+    public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index, IndexType indexType) {
         assert isStored();
 
         ImList<Field> indexFields = index.mapListValues((PropertyObjectInterfaceImplement<String> indexField) -> {
@@ -1166,7 +1166,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return property.field;
             }
         });
-        mapTable.table.addIndex(indexFields.toOrderExclSet());
+        mapTable.table.addIndex(indexFields.toOrderExclSet(), indexType);
     }
 
     public AndClassSet getValueClassSet() {
@@ -1669,28 +1669,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
             // INPUT valueCLass
-            InputListEntity<?, PropertyInterface> inputList = null;
-            InputContextSelector<PropertyInterface> inputContextSelector = null;
-
-            // completion
-            if(isDefaultWYSInput(valueClass) && !Property.this.disableInputList) { // && // if string and not disabled
-                inputList = new InputListEntity<>(this, MapFact.EMPTYREV());
-                // we're doing this with a "selector", because at this point not stats is available (synchronizeDB has not been run yet)
-                inputContextSelector = new InputContextSelector<PropertyInterface>() {
-                    public Pair<InputFilterEntity<?, PropertyInterface>, ImOrderMap<InputOrderEntity<?, PropertyInterface>, Boolean>> getFilterAndOrders() {
-                        if(tooMuchSelectData(MapFact.EMPTY()))  // if cost-per-row * numberRows > max read count, won't read
-                            return null;
-                        return new Pair<>(null, MapFact.EMPTYORDER());
-                    }
-
-                    public <C extends PropertyInterface> InputContextSelector<C> map(ImRevMap<PropertyInterface, C> map) {
-                        return (InputContextSelector<C>) this;
-                    }
-                };
-            }
-
-            action = lm.addInputAProp((DataClass) valueClass, targetProp, false, SetFact.EMPTYORDER(),
-                    inputList, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), inputContextSelector, ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
+            action = lm.addDataInputAProp((DataClass) valueClass, targetProp, false, this, SetFact.EMPTYORDER(),
+                    null, null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
         }
 
         ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
@@ -1703,7 +1683,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return result;
     }
 
-    protected boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+    public boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return !getSelectCost(fixedExprs.keys()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
     }
 
@@ -2034,7 +2014,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return false;
     }
 
-    public DrillDownFormEntity getDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity getDrillDownForm(BaseLogicsModule LM) {
         DrillDownFormEntity drillDown = createDrillDownForm(LM);
         if (drillDown != null) {
             LM.addAutoFormEntity(drillDown);
@@ -2042,7 +2022,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return drillDown;
     }
 
-    public DrillDownFormEntity createDrillDownForm(LogicsModule LM) {
+    public DrillDownFormEntity createDrillDownForm(BaseLogicsModule LM) {
         return null;
     }
 
@@ -2188,17 +2168,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return ListFact.singleton(this);
     }
 
-    public boolean userLoggable;
-    private boolean loggable;
-
     public ActionMapImplement<?, T> logFormAction;
 
-    public void setLoggable(boolean loggable) {
-        this.loggable = loggable;
-    }
-
     public boolean isLoggable() {
-        return loggable;
+        return logFormAction != null;
     }
 
     public void setLogFormAction(ActionMapImplement<?, T> logFormAction) {
@@ -2291,17 +2264,21 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     private Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
-        return getSelectCostStat(fixedExprs).first;
+        // we can't use MATCH here, because there is a bug, that now MATCH, CONTAINS stats is not calculate properly if the expr is not indexed
+        // it's not clear how to fix this, because the table join cost is calculated based on stat, without knowing how this stat was obtained
+        // for INTERVAL it could be fixed by removing isIndexed check, but for MATCH, CONTAINS we need to know what type of index we should use (it may be solved with some virtual join probably)
+        // however here EQUALS is even semantically the right type to use
+        return getSelectCostStat(fixedExprs, Compare.EQUALS).first;
     }
 
     @IdentityStartLazy
     @StackMessage("{message.core.property.get.interface.class.stats}")
     @ThisMessage
-    private Pair<Stat, Cost> getSelectCostStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
+    private Pair<Stat, Cost> getSelectCostStat(ImMap<T, StaticParamNullableExpr> fixedExprs, Compare compare) {
         ImRevMap<T, KeyExpr> innerKeys = KeyExpr.getMapKeys(interfaces.removeIncl(fixedExprs.keys()));
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
-        Where where = getExpr(innerExprs).compare(getValueParamExpr(), Compare.MATCH); // we need MATCH when calculating the cost, in theory we might use EQUALS for the stat calculation, but using MATCH everywhere will use less caches
+        Where where = getExpr(innerExprs).compare(getValueParamExpr(), compare);
 
         innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
         StatKeys<KeyExpr> statRows = getStatRows(innerKeys, where);
@@ -2325,7 +2302,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     public Cost getSelectCost(ImSet<T> fixedInterfaces) {
-        return getSelectCostStat(getInterfaceParamExprs(fixedInterfaces)).second;
+        // the obtained stat will be incorrect here (see getSelectStat comment) but we don't need it anyway
+        return getSelectCostStat(getInterfaceParamExprs(fixedInterfaces), Compare.MATCH).second;
     }
 
     @IdentityInstanceLazy

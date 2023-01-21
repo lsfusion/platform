@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.comb.map.GlobalInteger;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.query.compile.FJData;
+import lsfusion.server.data.table.IndexType;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.physics.admin.SystemProperties;
 
@@ -46,8 +47,9 @@ public class KeyExpr extends ParamExpr {
     public void fillAndJoinWheres(MMap<FJData, Where> joins, Where andWhere) {
     }
 
-    public boolean isIndexed() {
-        return true;
+    @Override
+    protected IndexType getIndexType() {
+        return IndexType.DEFAULT;
     }
 
     private final static GlobalInteger keyClass = new GlobalInteger(39916801);

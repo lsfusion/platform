@@ -330,7 +330,7 @@ public class ProcessTemplateAction extends InternalAction {
     }
     
     private void setText(XWPFRun run, String newText) {
-        List<String> splitted = BaseUtils.split(newText,"\r");
+        List<String> splitted = split(newText,"\r");
         for (int j = 0; j < splitted.size(); j++) {
             if (j > 0) {
                 run.addBreak();
@@ -338,6 +338,25 @@ public class ProcessTemplateAction extends InternalAction {
             } else
                 run.setText(splitted.get(j), 0);
         }
+    }
+
+    private List<String> split(String s, String f) {
+        List<String> result = new ArrayList<>();
+        int i = 0;
+        while (true) {
+            int j = s.indexOf(f, i);
+            if (j == -1) {
+                result.add(s.substring(i));
+                break;
+            } else {
+                if (j <= i)
+                    result.add("");
+                else
+                    result.add(s.substring(i, j));
+                i = j + f.length();
+            }
+        }
+        return result;
     }
 
     private class TemplateEntry {

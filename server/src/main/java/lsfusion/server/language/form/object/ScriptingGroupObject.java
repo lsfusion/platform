@@ -3,8 +3,9 @@ package lsfusion.server.language.form.object;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.logics.LogicsModule;
+
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -33,8 +34,7 @@ public class ScriptingGroupObject {
     public boolean isSubReport;
     public PropertyObjectEntity subReportPath;
 
-    public GroupObjectEntity neighbourGroupObject;
-    public LogicsModule.InsertType insertType;
+    public ComplexLocation<GroupObjectEntity> location;
 
     public ScriptingLogicsModule.FormLPUsage background;
     public ScriptingLogicsModule.FormLPUsage foreground;
@@ -87,9 +87,8 @@ public class ScriptingGroupObject {
         this.updateType = updateType; 
     }
     
-    public void setNeighbourGroupObject(GroupObjectEntity neighbourGroupObject, LogicsModule.InsertType insertType) {
-        this.neighbourGroupObject = neighbourGroupObject;
-        this.insertType = insertType;
+    public void setLocation(ComplexLocation<GroupObjectEntity> location) {
+        this.location = location;
     }
 
     public void setBackground(ScriptingLogicsModule.FormLPUsage background) {

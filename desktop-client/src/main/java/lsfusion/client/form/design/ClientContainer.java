@@ -27,6 +27,9 @@ public class ClientContainer extends ClientComponent {
     public boolean horizontal;
     public boolean tabbed;
 
+    public String path = "";
+    public String creationPath = "";
+
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 
     public boolean grid;
@@ -89,6 +92,11 @@ public class ClientContainer extends ClientComponent {
 
         horizontal = pool.readBoolean(inStream);
         tabbed = pool.readBoolean(inStream);
+
+        if (pool.readBoolean(inStream)) {
+            path = pool.readString(inStream);
+            creationPath = pool.readString(inStream);
+        }
 
         childrenAlignment = pool.readObject(inStream);
         

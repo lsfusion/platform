@@ -2,11 +2,9 @@ MODULE Utils;
 
 REQUIRE System, Time;
 
-// --------------------------------------------- Стандартные группы --------------------------------- //
-
 GROUP print '{utils.group.print}' : public;
 
-// ---------------------------------- Чтение списка файлов по пути ---------------------------------- //
+// ---------------------------------- Files ---------------------------------- //
 fileName '{utils.file.name.integer}' = DATA LOCAL ISTRING[500] (INTEGER);
 fileIsDirectory '{utils.file.is.directory.integer}' = DATA LOCAL BOOLEAN (INTEGER);
 fileModifiedDateTime '{utils.file.modified.datetime.integer}' = DATA LOCAL DATETIME (INTEGER);
@@ -19,7 +17,7 @@ listFiles '{utils.list.files}' (ISTRING[500] path)  { listFiles(path, NULL, NULL
 listFilesClient '{utils.list.files.client}' (ISTRING[500] path, BOOLEAN recursive)  { listFiles(path, recursive, TRUE); }
 listFilesClient '{utils.list.files.client}' (ISTRING[500] path)  { listFiles(path, NULL, TRUE); }
 
-// ------------------------------ Проверка существования файла по пути ------------------------------ //
+// ------------------------------ File exists ------------------------------ //
 fileExists = DATA LOCAL BOOLEAN ();
 //path, isClient
 fileExists '{utils.file.exists}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.FileExistsAction' (ISTRING[500], BOOLEAN); 
@@ -59,7 +57,7 @@ logToFile (STRING[1000] file, FILE message) {
     logToFile(file, resultString());
 }
 
-// ----------------------------------- Работа с файловой системой ----------------------------------- //
+// ----------------------------------- File system ----------------------------------- //
 //path, isClient
 mkdir '{utils.mkdir}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.file.MkdirAction' (ISTRING[500], BOOLEAN);
 mkdir '{utils.mkdir}' (ISTRING[500] path)  { mkdir(path, NULL); }
@@ -100,7 +98,7 @@ readResourcePaths  INTERNAL  'lsfusion.server.physics.dev.integration.external.t
 
 resourceFile '{utils.resource.file}' = resource(); // deprecated
 
-// ---------------------------------- Выполнение cmd  ---------------------------------- //
+// ---------------------------------- Console  ---------------------------------- //
 cmd '{utils.cmd}' (TEXT command, TEXT directory, BOOLEAN isClient)  INTERNAL  'lsfusion.server.physics.admin.interpreter.action.RunCommandAction';
 cmd '{utils.cmd}' (TEXT command)  {cmd(command, NULL, NULL); }
 cmdClient '{utils.cmd.client}' (TEXT command)  {cmd(command, NULL, TRUE); }
@@ -125,13 +123,12 @@ columnsCount '{utils.excel.columns.count}' (EXCELFILE file)  { columnsCount(file
 pagesCountPdf '{utils.pdf.pages.count}' = DATA LOCAL INTEGER ();
 pagesCountPdf '{utils.pdf.pages.count}'  INTERNAL  'lsfusion.server.logics.classes.data.utils.pdf.PagesCountPdfAction' (PDFFILE);
 
-// ---------------------------------- Генерация паролей  ---------------------------------- //
-generatedPassword 'Сгенерированный пароль' = DATA LOCAL TEXT();
+// ---------------------------------- Generate password  ---------------------------------- //
+generatedPassword '{utils.generated.password}' = DATA LOCAL TEXT();
 //length, use at least one digit requirement, use both registers requirement
-generatePassword 'Сгенерировать пароль' INTERNAL 'lsfusion.server.physics.admin.backup.action.GeneratePasswordAction' (INTEGER, BOOLEAN, BOOLEAN);
+generatePassword '{utils.generate.password}' INTERNAL 'lsfusion.server.physics.admin.backup.action.GeneratePasswordAction' (INTEGER, BOOLEAN, BOOLEAN);
 
-// --------------------------------------------- Работа со строками --------------------------------- //
-
+// --------------------------------------------- String operations --------------------------------- //
 isWordInCSV = FORMULA NULL BOOLEAN PG 'CASE WHEN CAST($1 AS text)=ANY(string_to_array($2,\',\')) THEN 1 ELSE NULL END', MS 'CASE WHEN CHARINDEX(\' \' + CAST($1 AS nvarchar(max)) + \' \',\' \' + REPLACE($2,\',\',\' \') + \' \') > 0 THEN 1 ELSE NULL END';
 
 getWord (TEXT p1, TEXT p2, INTEGER p3) = FORMULA NULL TEXT '(string_to_array($1,$2))[($3)]';
@@ -141,7 +138,6 @@ istartsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) ILIKE (($2)||\'%\')) THEN
 startsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (($2)||\'%\')) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (($2)+\'%\')) THEN 1 ELSE NULL END';
 endsWith = FORMULA NULL BOOLEAN PG 'CASE WHEN (($1) LIKE (\'%\'||($2))) THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2))) THEN 1 ELSE NULL END';
 
-// todo : для MS SQL пофиксить формулу, чтобы правильно работало, если в подстроке есть %
 isISubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(lower($2) in lower($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END'; 
 isSubstring = FORMULA NULL BOOLEAN PG 'CASE WHEN position(($2) in ($1)) > 0 THEN 1 ELSE NULL END', MS 'CASE WHEN (($1) LIKE (\'%\'+($2)+\'%\')) THEN 1 ELSE NULL END';
 
@@ -154,6 +150,8 @@ regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FO
 
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 
+
+regexPatternMatch (TEXT str, STRING pattern) = FORMULA BOOLEAN PG '$1~$2';
 
 ltrim (TEXT p1) = FORMULA TEXT 'ltrim($1)';
 rtrim (TEXT p1) = FORMULA TEXT 'rtrim($1)';
@@ -209,8 +207,7 @@ generateUUID  INTERNAL 'lsfusion.server.logics.classes.data.utils.string.Generat
 escapeJSONValue (TEXT t) = replace(replace(replace(replace(replace(t, '\\', '\\\\'), '"', '\\"'), '\n', ''), '\r', ''), '\t', '');
 escapeXMLValue(TEXT t) = replace(replace(replace(replace(replace(t, '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;'), '\'', '&apos;');
 
-// --------------------------------------------- Работа с числами --------------------------------- //
-
+// --------------------------------------------- Numeric operations --------------------------------- //
 floor = FORMULA 'floor($1)';
 floor = FORMULA NULL 'floor(($1)/notZero($2))*($2)';
 ceil = FORMULA 'ceiling($1)';
@@ -245,12 +242,12 @@ toInteger (i) = FORMULA INTEGER PG 'convert_to_integer($1)', MS 'dbo.convert_to_
 toNumeric (i) = FORMULA NUMERIC[38,19] PG 'convert_to_numeric($1)', MS 'dbo.convert_to_integer($1)';
 toNumericNull (i) = FORMULA NUMERIC[38,19] PG 'convert_to_numeric_null($1)', MS 'dbo.convert_to_integer($1)';
 
-// ---------------------------------------Побитовые операции --------------------------------- //
+// --------------------------------------- Bit operations --------------------------------- //
 bitwiseAnd = FORMULA INTEGER '$1 & $2';
 bitwiseOr = FORMULA INTEGER '$1 | $2';
 bitwiseNot = FORMULA INTEGER '~ $1';
 
-// --------------------------------------------- Округления --------------------------------- //
+// --------------------------------------------- Round --------------------------------- //
 roundM1 (number) = round(number, -1);
 round0 (number) = round(number, 0);
 round1 (number) = round(number, 1);
@@ -260,9 +257,8 @@ round4 (number) = round(number, 4);
 round5 (number) = round(number, 5);
 round6 (number) = round(number, 6);
 
-// ---------------------------------- Работа с датами  ---------------------------------- //
-resultMilliseconds '{utils.result.milliseconds}' = DATA LOCAL LONG();
-toMilliseconds '{utils.to.milliseconds}' INTERNAL 'lsfusion.server.logics.classes.data.utils.time.ToMillisecondsAction' (DATETIME);
+// --------------------------------------------- COLOR --------------------------------- //
+colorToHexString(COLOR i) = FORMULA STRING  '\'#\'||substring(to_hex($1::integer),3)';
 
 // ---------------------------------- JSON functions  ---------------------------------- //
 
@@ -272,8 +268,7 @@ jsonArrayLength (TEXT j) = FORMULA INTEGER 'json_array_length(($1)::json)';
 jsonArrayElement (TEXT j, INTEGER i, STRING id) = FORMULA STRING '((($1)::json)->(($2)-1))->>($3)';
 merge(JSON a, JSON b) = FORMULA JSON 'jsonb_recursive_merge(($1)::jsonb,($2)::jsonb)';
 
-// -------------------------------------------- Свойства под файлы ---------------------------- //
-
+// -------------------------------------------- Files ---------------------------- //
 file = DATA LOCAL FILE ();
 wordFile = DATA LOCAL WORDFILE ();
 imageFile = DATA LOCAL IMAGEFILE ();
@@ -304,8 +299,7 @@ META defineHistorizableYesNo(property, defaultProperty, caption, object1, object
         object1, object1Identity, object2, object2Identity, object3, object3Identity, 7, group);
 END
 
-// --------------------------------------------- Диалоги --------------------------------- //
-
+// --------------------------------------------- Dialogs --------------------------------- //
 FORM dialogString '{utils.form.dialog.string}'
     OBJECTS s = STRING[200] PANEL
     PROPERTIES(s) objValue = VALUE
@@ -367,13 +361,13 @@ DESIGN dialogNumeric {
     }
 }
 
-// --------------------------------------------- Печать --------------------------------- //
+// --------------------------------------------- Print --------------------------------- //
 
 FORM printBlankPagePortrait;
 
 FORM printBlankPageLandscape;
 
-// --------------------------- Ссылки на файлы через FILELINK --------------------------- //
+// --------------------------- File links --------------------------- //
 
 META defineFileLink (caption, fileType, property, class1)
     fileLink caption (class1 param1) = fileType (webServerUrl() + '/readFile?sid=' + [ REFLECTION CANONICALNAME property[class1]]() + '&p=' + param1) IF property(param1); 
