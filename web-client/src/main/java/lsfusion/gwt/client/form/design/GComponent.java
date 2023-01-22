@@ -109,11 +109,14 @@ public class GComponent implements Serializable {
         return vertical ? getVerticalMargin() : getHorizontalMargin();
     }
 
-    public boolean isOverAlignCaption() {
-        return alignCaption != null ? alignCaption : isAlignCaption();
+    public boolean isAlignCaption() {
+        if(alignCaption != null)
+            return alignCaption;
+
+        return isDefautAlignCaption();
     }
 
-    public boolean isAlignCaption() {
+    public boolean isDefautAlignCaption() {
         return false;
     }
 

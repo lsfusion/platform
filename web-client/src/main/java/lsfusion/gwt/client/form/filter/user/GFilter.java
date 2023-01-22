@@ -16,7 +16,7 @@ public class GFilter extends GComponent {
         alignment = GFlexAlignment.START;
     }
 
-    public boolean isAlignCaption() {
+    public boolean isDefautAlignCaption() {
         return true;
     }
 }
