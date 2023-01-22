@@ -193,7 +193,7 @@ public class GContainer extends GComponent {
         boolean otherAligned = false;
         // only simple property draws
         for(GComponent child : children) {
-            if(child.isOverAlignCaption()) {
+            if(child.isAlignCaption()) {
                 if(otherAligned)
                     return true;
                 else

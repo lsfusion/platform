@@ -252,7 +252,7 @@ public class MainController {
         }
 
         model.addAttribute("sessionID", sessionId);
-        model.addAttribute("mainResources", serverSettings != null && mainResources != null ? saveResources(serverSettings, mainResources) : null);
+        model.addAttribute("mainResources", serverSettings != null && mainResources != null ? saveResources(serverSettings, mainResources, false) : null);
 
         return "main";
     }

@@ -822,7 +822,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     @Override
-    public boolean isAlignCaption() {
+    public boolean isDefautAlignCaption() {
         return caption != null && !hasColumnGroupObjects() && !isAction() && !panelCaptionVertical && !isBoolean();
     }
 }

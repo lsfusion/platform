@@ -90,7 +90,8 @@
     border: 0;
     padding: 0 0.25em;
     font-size: 1.25rem;
-    border-radius: 0.375em;
+    /* bootstrap uses more complex selectors, so we'll just use important   */
+    border-radius: 0.375em !important;
 }
 
 /* we don't want the toolbar to have transparent background, but we still want hover background (just like for the navigator) */

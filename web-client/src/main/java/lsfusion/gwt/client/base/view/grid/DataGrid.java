@@ -444,7 +444,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 footer.onBrowserEvent(footerParent, event);
         } else {
             if (column != null) {
-                assert getRows().contains(rowIndexHolder);
+                assert rowIndexHolder == null || getRows().contains(rowIndexHolder);
                 RowIndexHolder rowValue;
                 try {
                     rowValue = (RowIndexHolder) getRowValue(row);

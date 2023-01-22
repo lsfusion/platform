@@ -104,9 +104,14 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
     }
 
     private void onMouseEvent(DomEvent event) {
+        Element cursorElement = getElement();
+        NativeEvent nativeEvent = event.getNativeEvent();
+
+        ResizeHandler.dropCursor(cursorElement, nativeEvent);
+
         // skip second resize check, because it switches cursor back to default on horizontal resize pointing (without mousedown)
-        if (!checkResizeEvent(hResizeHelper, getElement(), null, event.getNativeEvent())) {
-            checkResizeEvent(vResizeHelper, getElement(), null, event.getNativeEvent());
+        if (!checkResizeEvent(hResizeHelper, cursorElement, null, nativeEvent)) {
+            checkResizeEvent(vResizeHelper, cursorElement, null, nativeEvent);
         }
     }
 
@@ -158,6 +163,16 @@ public class CustomSplitLayoutPanel extends DockLayoutPanel {
                     };
                     Scheduler.get().scheduleDeferred(layoutCommand);
                 }
+                return 0;
+            }
+
+            @Override
+            public boolean isResizeOnScroll(int index, NativeEvent event) {
+                return false;
+            }
+
+            @Override
+            public int getScrollSize(int index) {
                 return 0;
             }
 

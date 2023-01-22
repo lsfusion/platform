@@ -473,7 +473,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
-        if (numberOfFormChangesRequests.get() > 1) {
+        if (getInvocationsCount() > 1) {
             return returnRemoteChangesResponse(requestIndex, pendingActions);
         }
 
