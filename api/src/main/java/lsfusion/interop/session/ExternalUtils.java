@@ -189,18 +189,17 @@ public class ExternalUtils {
         return bodyUrl;
     }
 
-    public static ContentType getContentType(String extension, Charset charset) {
+    public static ContentType getContentType(String extension) {
         String mimeType = MIMETypeUtils.MIMETypeForFileExtension(extension);
-        if (charset == null) {
-            switch (extension) {
-                case "csv":
-                    charset = Charset.forName(defaultCSVCharset);
-                    break;
-                case "json":
-                case "xml":
-                    charset = Charset.forName(defaultXMLJSONCharset);
-                    break;
-            }
+        String charset = null;
+        switch (extension) {
+            case "csv":
+                charset = defaultCSVCharset;
+                break;
+            case "json":
+            case "xml":
+                charset = defaultXMLJSONCharset;
+                break;
         }
         return charset != null ? ContentType.create(mimeType, charset) : ContentType.create(mimeType);
     }
@@ -300,7 +299,7 @@ public class ExternalUtils {
                 if (value instanceof FileData) {
                     String fileName = bodyParamName.length < 2 || isEmpty(bodyParamName[1]) ? "filename" : bodyParamName[1];
                     String extension = ((FileData) value).getExtension();
-                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension, charset), fileName)).build();
+                    formBodyPart = FormBodyPartBuilder.create(bodyPartName, new ByteArrayBody(((FileData) value).getRawFile().getBytes(), getContentType(extension), fileName)).build();
                 } else {
                     formBodyPart = FormBodyPartBuilder.create(bodyPartName, new StringBody((String) value, ExternalUtils.TEXT_PLAIN)).build();
                 }
@@ -317,7 +316,7 @@ public class ExternalUtils {
             Object value = BaseUtils.single(results);
             if (value instanceof FileData) {
                 String extension = ((FileData) value).getExtension();
-                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension, charset)));
+                entity = new ByteArrayEntity(((FileData) value).getRawFile().getBytes(), nvl(forceContentType, getContentType(extension)));
                 if(singleFileExtension != null)
                     singleFileExtension.set(extension);
             } else {
