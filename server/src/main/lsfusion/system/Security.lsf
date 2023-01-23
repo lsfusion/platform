@@ -683,5 +683,5 @@ DESIGN findNavigator {
 }
 
 NAVIGATOR {
-    NEW findNavigator IMAGE 'search.png';
+    NEW findNavigator LAST IMAGE 'search.png';
 }
