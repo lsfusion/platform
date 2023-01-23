@@ -2022,7 +2022,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String request = eval ? (action ? "eval/action" : "eval") : "/exec?action=$" + (params.size()+1);
         return addScriptedExternalHTTPAction(false, ExternalHttpMethod.POST,
                 addScriptedJProp(getArithProp("+"), Arrays.asList(connectionString, new LPWithParams(addCProp(StringClass.text, LocalizedString.create(request, false))))),
-                null, null, null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
+                null, Collections.emptyList(), null, null, null, null, null, BaseUtils.add(params, actionLCP), context, toPropertyUsageList);
     }
 
     private ImList<LP> findLPsNoParamsByPropertyUsage(List<NamedPropertyUsage> propUsages) throws ScriptingErrorLog.SemanticErrorException {
