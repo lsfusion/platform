@@ -896,7 +896,7 @@ NAVIGATOR {
             NEW computers;
         }
     }
-    NEW FOLDER account '{navigator.account}' WINDOW toolbar IMAGE 'lock.png' {
+    NEW FOLDER account '{navigator.account}' LAST WINDOW toolbar IMAGE 'lock.png' {
         NEW ACTION reloginLoginUserAction '{navigator.account.relogin}' = reloginLoginUser[] IMAGE 'relogin.png';
         NEW editProfile IMAGE 'editProfile.png';
         NEW ACTION changePasswordAction '{navigator.account.change.password}' = changePassword[] IMAGE 'changePassword.png';
