@@ -40,7 +40,7 @@ chatIdAccount = GROUP AGGR Chat c BY account(c), id(c);
 name '{messenger.chat.name}' = DATA STRING (Chat) IN id;
 title '{messenger.chat.title}' = DATA STRING (Chat);
 newMessage '{messenger.chat.new.message}' = DATA LOCAL TEXT (Chat);
-newAttachment '{chat.attachment}' = DATA LOCAL NAMEDFILE(Chat);
+newAttachment '{chat.attachment}' = DATA LOCAL NESTED NAMEDFILE(Chat);
 
 sendMessageResult = DATA LOCAL STRING();
 sendMessage '{messenger.chat.send.message}' ABSTRACT CASE (Chat, STRING);
@@ -52,6 +52,7 @@ sendMessage '{messenger.chat.send.message}' (Chat chat) {
     IF sendMessageResult() THEN {
         MESSAGE sendMessageResult() NOWAIT;
     }
+    sendMessageResult() <- NULL;
     newMessage(chat) <- NULL;
     newAttachment(chat) <- NULL;
 }
@@ -66,16 +67,21 @@ synchronizeChatsAction '{messenger.account.synchronize}' (Account a) {
     APPLY;
 }
 
+openFile '{system.open.file}' (Message m) {
+    open(file(m));
+}
+
 FORM messengers '{messenger.messengers}' AUTOREFRESH 20
     OBJECTS a = Account
     PROPERTIES(a) READONLY name, captionMessenger, token 
     PROPERTIES(a) NEWSESSION synchronizeChatsAction TOOLBAR SHOWIF isSynchronize(messenger(a)), NEW, EDIT, DELETE 
     OBJECTS c = Chat
     PROPERTIES(c) READONLY id, captionChatType, name, title SHOWIF showTitle(messenger(a)), DELETE CHANGEABLE
-    PROPERTIES(c) PANEL newMessage, sendMessage
+    PROPERTIES(c) PANEL newMessage, sendMessage, newAttachment
     
     OBJECTS m = Message
     PROPERTIES(m) READONLY from, dateTime, message 
+    PROPERTIES(m) openFile READONLYIF NOT file(m)
     FILTERS chat(m) == c 
     ORDERS dateTime(m) DESC
 
@@ -102,6 +108,8 @@ DESIGN messengers {
     }
     NEW sendMessage {
         MOVE PROPERTY(sendMessage(c));
+        MOVE PROPERTY(newAttachment(c));
+        horizontal = TRUE;
     }
     MOVE TOOLBARBOX; 
 }

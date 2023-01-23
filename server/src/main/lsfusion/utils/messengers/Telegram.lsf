@@ -82,7 +82,7 @@ webHookTelegram(JSONFILE f) {
     APPLY;
 } @@noauth;
 
-sendMessageTelegramResult = DATA LOCAL STRING();
+sendMessageTelegramResult = DATA LOCAL NESTED STRING();
 
 processResult(Chat chat, JSONFILE result, STRING message, NAMEDFILE file) {
     sendMessageTelegramResult() <- NULL;
@@ -125,22 +125,6 @@ sendMessageTelegram(Chat chat, STRING message) {
     
     processResult(chat, result(), message, NULL);
     APPLY;
-}
-
-openFile '{system.open.file}' (Message m) {
-    open(file(m));
-}
-
-EXTEND FORM messengers
-    PROPERTIES(c) newAttachment PANEL
-    PROPERTIES (m) openFile SHOWIF isTelegram(a) READONLYIF NOT file(m);
-;
-
-DESIGN messengers {
-    sendMessage {
-        MOVE PROPERTY(newAttachment(c));
-        horizontal = TRUE;
-    }
 }
 
 sendFile(Chat chat, NAMEDFILE attachment) + WHEN isTelegram(account(chat)) AND attachment IS NAMEDFILE THEN {
