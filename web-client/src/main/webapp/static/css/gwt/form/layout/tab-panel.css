@@ -1,17 +1,23 @@
-.nav-tabs-vert {
+.tab-panel-horz > .nav-tabs {
     padding-left: var(--border-cont-horz-padding);
 }
 
-.nav.nav-tabs-vert {
-    margin-right: var(--border-cont-horz-padding);
+/*.tab-panel-horz > .nav.nav-tabs {*/
+/*    margin-right: var(--border-cont-horz-padding);*/
+/*}*/
+.tab-panel-horz > .tab-pane {
+    padding-left: var(--border-cont-horz-padding);
 }
 
-.nav-tabs-horz {
+.tab-panel-vert > .nav-tabs {
     padding-top: var(--border-cont-vert-padding);
 }
 
-.nav.nav-tabs-horz {
-    margin-bottom: var(--border-cont-vert-padding);
+/*.tab-panel-vert > .nav.nav-tabs {*/
+/*    margin-bottom: var(--border-cont-vert-padding);*/
+/*}*/
+.tab-panel-vert > .tab-pane {
+    padding-top: var(--border-cont-vert-padding);
 }
 
 /* cursors - now the captions are not <a> so we'll change the cursro explicitly */
@@ -50,29 +56,29 @@
 }
 
 /* ------------ Mobile Forms Tab Panel ------------ */
-.mobileFormsTabPanel > .nav-tabs-horz {
+.mobileFormsTabPanel.tab-panel-vert > .nav-tabs {
     padding-top: 0;
     padding-bottom: var(--border-cont-vert-padding);
 }
 
-.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper {
+.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .tabBarItemsWrapper {
     flex-wrap: nowrap !important;
     overflow-x: auto;
 
     scrollbar-width: none; /* hide scrollbars in Firefox */
 }
 
-.mobileFormsTabPanel > .nav-tabs-horz .tabBarItemsWrapper::-webkit-scrollbar {
+.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .tabBarItemsWrapper::-webkit-scrollbar {
     display: none; /* hide scrollbars in Safari and Chrome */
 }
 
-.mobileFormsTabPanel > .nav-tabs-horz .nav-item {
+.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .nav-item {
     border-top: none;
     border-bottom: 1px solid var(--panel-border-color);
     border-radius: var(--tab-border-radius-vert);
 }
 
-.mobileFormsTabPanel > .nav-tabs-horz .nav-item:hover {
+.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .nav-item:hover {
     border-bottom: 1px solid var(--component-hover-border-color);
 }
 

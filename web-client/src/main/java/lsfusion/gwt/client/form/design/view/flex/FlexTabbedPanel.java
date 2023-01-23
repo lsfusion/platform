@@ -33,6 +33,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         this.tabBar = tabBar;
 
         addStyleName("tab-panel");
+        addStyleName(vertical ? "tab-panel-vert" : "tab-panel-horz");
     }
 
     private void onBeforeTabSelected(Integer index) {
@@ -188,7 +189,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
 
     @Override
     public Border getOuterTopBorder() {
-        return Border.HAS_MARGIN; //.nav-tabs-horz has top padding
+        return Border.HAS_MARGIN; //.tab-panel-vert > .nav-tabs has top padding
     }
 
     @Override

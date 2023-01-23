@@ -38,6 +38,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     protected FlexPanel wrapBorderImpl(GComponent child) {
 //      this wrapping is necessary because:
 //          we want border around the container
+//          we want padding (not margin) to be "scrolled"
 //          updateContainersVisibility (automatical showing / hiding containers) uses setVisible, as well as TabbedDeckPanel (switching widgets), so they conflict with each other (however in current implementation only for base components)
         FlexPanel proxyPanel = new FlexPanel(!vertical);
         proxyPanel.addStyleName("tab-pane");

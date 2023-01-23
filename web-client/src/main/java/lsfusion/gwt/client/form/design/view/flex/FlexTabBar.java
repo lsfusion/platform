@@ -42,7 +42,7 @@ public class FlexTabBar extends Composite implements TabBar {
         addStyleName("nav");
         addStyleName("nav-tabs");
 
-        addStyleName("nav-tabs-" + (vertical ? "vert" : "horz"));
+//        addStyleName("nav-tabs-" + (vertical ? "vert" : "horz"));
         panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
         // first is to have an offset on the left, rest not sure what for
