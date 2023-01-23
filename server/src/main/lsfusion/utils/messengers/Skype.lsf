@@ -69,7 +69,7 @@ getAccessTokenSkype(Account a) {
     }
 }
 
-sendMessageSkypeResult = DATA LOCAL STRING();
+sendMessageSkypeResult = DATA LOCAL NESTED STRING();
 sendMessageSkype(Chat chat, STRING message) {
     sendMessageSkypeResult() <- NULL;
 
@@ -95,6 +95,10 @@ sendMessageSkype(Chat chat, STRING message) {
         from(botMessage) <- 'YOU';
     }
     APPLY;     
+}
+
+sendFile(Chat chat, NAMEDFILE attachment) + WHEN isSkype(account(chat)) AND attachment IS NAMEDFILE THEN {
+    sendMessageResult() <- '{messenger.send.file.warning}';
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isSkype(account(chat)) AND message IS STRING THEN {

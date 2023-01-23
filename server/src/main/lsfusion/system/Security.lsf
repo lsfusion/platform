@@ -681,5 +681,5 @@ DESIGN findNavigator {
 }
 
 NAVIGATOR {
-    NEW findNavigator HEADER NULL IMAGE 'search.png' WINDOW system PARENT;
+    NEW findNavigator HEADER NULL LAST IMAGE 'search.png' WINDOW system PARENT;
 }

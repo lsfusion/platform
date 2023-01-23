@@ -178,7 +178,7 @@ receiveMessages '{messenger.receive.messages}' (Chat chat) {
 EXTEND FORM messengers
     PROPERTIES receiveMessages(c) TOOLBAR DRAW m SHOWIF isSlack(a);
     
-sendMessageSlackResult = DATA LOCAL STRING();
+sendMessageSlackResult = DATA LOCAL NESTED STRING();
 sendMessageSlack(Chat chat, STRING message) {
     sendMessageSlackResult() <- NULL;
     
@@ -206,6 +206,10 @@ sendMessageSlack(Chat chat, STRING message) {
         }
     }  
     APPLY;
+}
+
+sendFile(Chat chat, NAMEDFILE attachment) + WHEN isSlack(account(chat)) AND attachment IS NAMEDFILE THEN {
+    sendMessageResult() <- '{messenger.send.file.warning}';
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isSlack(account(chat)) AND message IS STRING THEN {

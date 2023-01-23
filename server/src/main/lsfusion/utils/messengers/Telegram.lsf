@@ -82,27 +82,54 @@ webHookTelegram(JSONFILE f) {
     APPLY;
 } @@noauth;
 
-sendMessageTelegramResult = DATA LOCAL STRING();
-sendMessageTelegram(Chat chat, STRING message) {
+sendMessageTelegramResult = DATA LOCAL NESTED STRING();
+
+processResult(Chat chat, JSONFILE result, STRING message, NAMEDFILE file) {
     sendMessageTelegramResult() <- NULL;
-    LOCAL result = JSONFILE();
-    urlEncode(message);
-    EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
-    
     LOCAL ok = BOOLEAN();
     LOCAL description = STRING();
-    IMPORT FROM result() TO() ok, description;
+    IMPORT FROM result TO() ok, description;
     IF NOT ok() THEN {
         sendMessageTelegramResult() <- description();
     } ELSE {
         NEW botMessage = Message {
             chat(botMessage) <- chat;
+            file(botMessage) <- file;
             message(botMessage) <- message;
             dateTime(botMessage) <- currentDateTime();
             from(botMessage) <- 'YOU';
         }
     }
+}
+
+sendFileTelegram(Chat chat, NAMEDFILE attachment) {
+    LOCAL result = JSONFILE();
+
+    LOCAL headers = TEXT(STRING[100]);
+    headers('Content-Type') <- 'multipart/form-data; charset=UTF-8';
+    
+    LOCAL fileName = STRING();
+    fileName() <- CONCAT '', name(attachment), IF length(extension(attachment)) > 0 THEN '.' ELSE '', extension(attachment);
+
+    EXTERNAL HTTP POST 'https://api.telegram.org/bot' + token(account(chat)) + '/sendDocument?chat_id=' + id(chat)
+        BODYPARAMNAMES 'document;' + fileName() HEADERS headers PARAMS attachment TO result;
+
+    processResult(chat, result(), fileName(), attachment);
     APPLY;
+}
+
+sendMessageTelegram(Chat chat, STRING message) {
+    LOCAL result = JSONFILE();
+    urlEncode(message);
+    EXTERNAL HTTP GET 'https://api.telegram.org/bot' + token(account(chat)) + '/sendMessage?chat_id=' + id(chat) + '&text=' + urlEncoded() TO result;
+    
+    processResult(chat, result(), message, NULL);
+    APPLY;
+}
+
+sendFile(Chat chat, NAMEDFILE attachment) + WHEN isTelegram(account(chat)) AND attachment IS NAMEDFILE THEN {
+    sendFileTelegram(chat, attachment);
+    sendMessageResult() <- sendMessageTelegramResult();
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isTelegram(account(chat)) AND message IS STRING THEN {

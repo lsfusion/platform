@@ -450,7 +450,7 @@ WINDOW tree  TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 NAVIGATOR {
     NEW FOLDER root '{navigator.forms}' WINDOW root {
-        NEW FOLDER administration '{navigator.administration}' WINDOW toolbar IMAGE 'tools.png' {
+        NEW FOLDER administration '{navigator.administration}' LAST WINDOW toolbar IMAGE 'tools.png' {
             NEW FOLDER application '{navigator.application}' {
                 NEW options;
                 NEW integrationData;
