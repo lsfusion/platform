@@ -76,7 +76,7 @@ webHookViber(JSONFILE f) {
     APPLY;
 } @@noauth;
 
-sendMessageViberResult = DATA LOCAL STRING();
+sendMessageViberResult = DATA LOCAL NESTED STRING();
 sendMessageViber(Chat chat, STRING message) {
     sendMessageViberResult() <- NULL;
     LOCAL result = JSONFILE();
@@ -101,6 +101,10 @@ sendMessageViber(Chat chat, STRING message) {
         }
     }  
     APPLY;
+}
+
+sendFile(Chat chat, NAMEDFILE attachment) + WHEN isViber(account(chat)) AND attachment IS NAMEDFILE THEN {
+    sendMessageResult() <- '{messenger.send.file.warning}';
 }
 
 sendMessage(Chat chat, STRING message) + WHEN isViber(account(chat)) AND message IS STRING THEN {
