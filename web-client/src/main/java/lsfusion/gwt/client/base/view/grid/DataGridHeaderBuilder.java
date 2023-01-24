@@ -16,6 +16,8 @@
 package lsfusion.gwt.client.base.view.grid;
 
 import com.google.gwt.dom.client.*;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.size.GSize;
@@ -98,6 +100,16 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         Element arrowContainer = Document.get().createElement("div");
         arrowContainer.addClassName("arrow-container");
         arrowContainer.appendChild(button);
+
+        DOM.sinkEvents(arrowContainer, Event.MOUSEEVENTS);
+        DOM.setEventListener(arrowContainer, event -> {
+            if (DOM.eventGetType(event) == Event.ONMOUSEOVER)
+                arrowTH.addClassName("arrow-hovered");
+
+            if (DOM.eventGetType(event) == Event.ONMOUSEOUT)
+                arrowTH.removeClassName("arrow-hovered");
+        });
+
         arrowTH.appendChild(arrowContainer);
         parent.appendChild(arrowTH);
     }

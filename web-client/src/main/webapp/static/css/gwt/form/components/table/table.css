@@ -80,6 +80,6 @@
     top: 0; /*Does not do anything. It is needed for symmetry with ".bottom-arrow .arrow"*/
 }
 
-.table:not(.was-scrolled-recently.scrolled-down) .top-arrow, .table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow {
+.table:not(.was-scrolled-recently.scrolled-down) .top-arrow:not(.arrow-hovered), .table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow:not(.arrow-hovered) {
     display: none;
 }
