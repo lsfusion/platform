@@ -84,6 +84,7 @@ public class NavigatorController implements INavigatorController {
         //consider that if currentWindow == null, then it is a baseElement and it is always selected, but not drawn anywhere
         if (currentElement.window == null
                 || currentWindow == null
+                || currentWindow.isSystem()
                 || currentElement == views.get(window).getSelectedElement()
                 || currentElement.window == currentWindow) {
             for (ClientNavigatorElement element : currentElement.children) {

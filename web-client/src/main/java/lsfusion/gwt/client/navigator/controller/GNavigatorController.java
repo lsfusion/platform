@@ -75,6 +75,7 @@ public abstract class GNavigatorController implements GINavigatorController {
 
         if (currentElement.window == null
                 || currentWindow == null
+                || currentWindow.isSystem()
                 || currentElement == views.get(window).getSelectedElement()
                 || currentElement.window == currentWindow) {
             for (GNavigatorElement element : currentElement.children) {

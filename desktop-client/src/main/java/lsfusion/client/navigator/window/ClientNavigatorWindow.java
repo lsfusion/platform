@@ -40,4 +40,8 @@ public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
     public boolean isRoot() {
         return canonicalName.equals("System.root");
     }
+
+    public boolean isSystem() {
+        return canonicalName.equals("System.system");
+    }
 }
