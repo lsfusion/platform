@@ -7,6 +7,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.IsServerRestartingProperty;
 import lsfusion.server.physics.dev.property.IsDevProperty;
+import lsfusion.server.physics.dev.property.IsLightStartProperty;
 import lsfusion.server.physics.dev.property.InTestModeProperty;
 import lsfusion.server.physics.dev.property.ProjectLSFDirProperty;
 import org.antlr.runtime.RecognitionException;
@@ -37,6 +38,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     public LP transactTimeoutUser;
     public LP inDevMode;
+    public LP isLightStart;
 
     public LP inTestMode;
     public LP projectLSFDir;
@@ -52,6 +54,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
         inDevMode = addProperty(null, new LP<>(IsDevProperty.instance));
         makePropertyPublic(inDevMode, "inDevMode", new ArrayList<>());
+        isLightStart = addProperty(null, new LP<>(IsLightStartProperty.instance));
+        makePropertyPublic(isLightStart, "isLightStart", new ArrayList<>());
 
         inTestMode = addProperty(null, new LP<>(InTestModeProperty.instance));
         makePropertyPublic(inTestMode, "inTestMode", new ArrayList<>());
