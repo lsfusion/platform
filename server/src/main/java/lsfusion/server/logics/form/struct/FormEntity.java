@@ -139,6 +139,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public ImOrderSet<GroupObjectEntity> getGroupsList() {
         return groups.getOrderSet();
     }
+    public Iterable<GroupObjectEntity> getGroupsListIt() {
+        return groups.getListIt();
+    }
     public Iterable<GroupObjectEntity> getNFGroupsListIt(Version version) {
         return groups.getNFListIt(version);
     }
