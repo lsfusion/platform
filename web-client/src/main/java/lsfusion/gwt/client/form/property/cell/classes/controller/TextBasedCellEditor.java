@@ -408,6 +408,11 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                     super.hideSuggestions();
                 }
             };
+
+            String propertyName = property.propertyFormName;
+            if (propertyName != null)
+                suggestBox.getPopupElement().setAttribute("lsfusion-property", propertyName);
+
             return suggestBox.getElement();
         } else {
             return createTextInputElement();
