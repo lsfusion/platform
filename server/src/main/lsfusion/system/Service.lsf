@@ -413,6 +413,13 @@ DESIGN settings {
 }
 
 inDevMode = NATIVE BOOLEAN ();
+isLightStart = NATIVE BOOLEAN ();
+
+resetConnections() + {
+    connectionStatus(Connection c) <- ConnectionStatus.disconnectedConnection
+        WHERE (connectionStatus(c) = ConnectionStatus.connectedConnection OR connectionStatus(c) = ConnectionStatus.disconnectingConnection)
+        AND currentLaunch() != launch(c) AND ((NOT isLightStart()) OR connectTime(c) < subtractSeconds(currentDateTime(), 60));
+}
 
 getServerSettings() ABSTRACT CASE @@noauth;
 

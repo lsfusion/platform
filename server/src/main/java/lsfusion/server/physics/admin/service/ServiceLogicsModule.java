@@ -7,6 +7,7 @@ import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.property.IsServerRestartingProperty;
 import lsfusion.server.physics.dev.property.IsDevProperty;
+import lsfusion.server.physics.dev.property.IsLightStartProperty;
 import org.antlr.runtime.RecognitionException;
 
 import java.io.IOException;
@@ -52,6 +53,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     public LP transactTimeoutUser;
     public LP inDevMode;
+    public LP isLightStart;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Service.lsf");
@@ -64,6 +66,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
         inDevMode = addProperty(null, new LP<>(IsDevProperty.instance));
         makePropertyPublic(inDevMode, "inDevMode", new ArrayList<>());
+        isLightStart = addProperty(null, new LP<>(IsLightStartProperty.instance));
+        makePropertyPublic(isLightStart, "isLightStart", new ArrayList<>());
         super.initMainLogic();
         // Управление сервером базы данных
         checkAggregationsAction = findAction("checkAggregationsAction[]");

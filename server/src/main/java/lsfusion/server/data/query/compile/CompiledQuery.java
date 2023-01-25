@@ -1907,6 +1907,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         mMapValues.exclAdd(SQLSession.connectionParam, env.getSQLConnection());
         mMapValues.exclAdd(SQLSession.isServerRestartingParam, env.getIsServerRestarting());
         mMapValues.exclAdd(SQLSession.isDevParam, SystemProperties.inDevMode ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
+        mMapValues.exclAdd(SQLSession.isLightStartParam, SystemProperties.lightStart ? new TypeObject(true, LogicalClass.instance) : NullValue.instance.getParse(LogicalClass.instance));
     }
 
     private String fillSelect(final ImRevMap<String, String> params, Result<ImMap<K, String>> fillKeySelect, Result<ImMap<V, String>> fillPropertySelect, Result<ImCol<String>> fillWhereSelect, Result<ImMap<String, SQLQuery>> fillSubQueries, MStaticExecuteEnvironment fillEnv, DebugInfoWriter debugInfoWriter) {
