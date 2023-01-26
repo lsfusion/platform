@@ -59,6 +59,7 @@ public class MainFrame implements EntryPoint {
 
     public static boolean mobile;
     private static GMobileNavigatorView mobileNavigatorView = null;
+    public static int mobileAdjustment;
 
     // settings    
     public static boolean devMode;
@@ -531,6 +532,7 @@ public class MainFrame implements EntryPoint {
         Integer screenWidth = Window.getClientWidth();
         Integer screenHeight = Window.getClientHeight();
         mobile = Math.min(screenHeight, screenWidth) <= StyleDefaults.maxMobileWidthHeight;
+        mobileAdjustment = mobile ? 1 : 0;
 
         logicsDispatchAsync = new LogicsDispatchAsync(Window.Location.getParameter("host"), portString != null ? Integer.valueOf(portString) : null,
                 Window.Location.getParameter("exportName"));

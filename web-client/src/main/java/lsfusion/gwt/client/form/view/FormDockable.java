@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -12,6 +13,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
+import lsfusion.gwt.client.view.MainFrame;
 
 public final class FormDockable extends FormContainer {
     private String canonicalName;
@@ -35,6 +37,10 @@ public final class FormDockable extends FormContainer {
         this.canonicalName = canonicalName;
 
         contentWidget = new ContentWidget();
+
+        Element widgetElement = contentWidget.getElement();
+        contentWidget.sinkEvents(Event.ONSCROLL);
+        contentWidget.addHandler(event -> contentWidget.getParent().setStyleName("content-scrolled", widgetElement.getScrollTop() > MainFrame.mobileAdjustment), ScrollEvent.getType());
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
