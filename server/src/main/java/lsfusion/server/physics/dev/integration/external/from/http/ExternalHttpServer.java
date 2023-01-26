@@ -191,6 +191,7 @@ public class ExternalHttpServer extends MonitorServer {
         private void sendResponse(HttpExchange request, byte[] response, Integer statusHttp, boolean error) throws IOException {
             request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
             statusHttp = nvl(statusHttp, error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK);
+            request.getResponseHeaders().add("Access-Control-Allow-Origin","*");
             ServerLoggers.httpServerLogger.info(request.getRequestURI() + " response: " + statusHttp);
             request.sendResponseHeaders(statusHttp, response.length);
             OutputStream os = request.getResponseBody();
