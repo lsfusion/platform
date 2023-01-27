@@ -2,14 +2,19 @@ package lsfusion.gwt.server.convert;
 
 import lsfusion.client.form.property.async.ClientAsyncCloseForm;
 import lsfusion.client.form.property.async.ClientAsyncOpenForm;
-import lsfusion.client.navigator.*;
+import lsfusion.client.navigator.ClientNavigatorAction;
+import lsfusion.client.navigator.ClientNavigatorChanges;
+import lsfusion.client.navigator.ClientNavigatorElement;
+import lsfusion.client.navigator.ClientNavigatorFolder;
 import lsfusion.client.navigator.tree.window.ClientTreeNavigatorWindow;
 import lsfusion.client.navigator.window.*;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
-import lsfusion.gwt.client.navigator.*;
 import lsfusion.gwt.client.action.GAction;
 import lsfusion.gwt.client.form.property.async.GAsyncCloseForm;
 import lsfusion.gwt.client.form.property.async.GAsyncOpenForm;
+import lsfusion.gwt.client.navigator.GNavigatorAction;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ContainerWindowFormType;
@@ -83,6 +88,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.height = clientWindow.height;
         window.visible = clientWindow.visible;
         window.elementClass = clientWindow.elementClass;
+        window.autoSize = clientWindow.autoSize;
         return window;
     }
 

@@ -13,12 +13,15 @@ public abstract class GNavigatorWindow extends GAbstractWindow {
     public boolean drawScrollBars;
 
     public abstract GNavigatorView createView(GINavigatorController navigatorController);
-
     public boolean isRoot() {
         return canonicalName.equals("System.root");
     }
 
     public boolean isSystem() {
         return canonicalName.equals("System.system");
+    }
+
+    public boolean isVertical() {
+        return false;
     }
 }

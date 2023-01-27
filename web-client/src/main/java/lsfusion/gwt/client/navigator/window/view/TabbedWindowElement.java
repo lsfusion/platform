@@ -29,6 +29,16 @@ public class TabbedWindowElement extends WindowElement {
     }
 
     @Override
+    public boolean isAutoSize() {
+        for (WindowElement child : children) {
+            if (child.isAutoSize()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public void addElement(WindowElement element) {
         if (!children.contains(element)) {
             children.add(element);

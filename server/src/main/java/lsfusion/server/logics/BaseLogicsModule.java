@@ -694,12 +694,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         baseWindows.logo = (ToolBarNavigatorWindow) findWindow("logo");
         baseWindows.logo.elementClass = "navbar-expand bg-dark navbar-dark d-flex align-items-stretch";
+        baseWindows.logo.autoSize = true;
 
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
         baseWindows.root.elementClass = "navbar-expand bg-dark navbar-dark d-flex align-items-stretch";
+        baseWindows.root.autoSize = true;
 
         baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
         baseWindows.system.elementClass = "navbar-expand bg-dark navbar-dark d-flex align-items-stretch";
+        baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
         baseWindows.toolbar.elementClass += " navbar-text";

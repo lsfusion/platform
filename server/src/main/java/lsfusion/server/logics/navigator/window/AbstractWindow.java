@@ -27,6 +27,8 @@ public class AbstractWindow {
     public boolean visible = true;
     
     public String elementClass = "bg-white";
+    
+    public boolean autoSize; 
 
     public AbstractWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
         this(canonicalName, caption);
@@ -67,6 +69,7 @@ public class AbstractWindow {
         if (elementClass != null) {
             outStream.writeUTF(elementClass);
         }
+        outStream.writeBoolean(autoSize);
     }
 
     public void setDockPosition(int x, int y, int width, int height) {

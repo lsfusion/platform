@@ -59,11 +59,7 @@ public abstract class GNavigatorController implements GINavigatorController {
         }
         updateVisibility(visibleElements);
 
-        for (GNavigatorWindow window : views.keySet()) {
-            if (!window.initialSizeSet) {
-                setInitialSize(window, views.get(window).getWidth(), views.get(window).getHeight());
-            }
-        }
+        autoSizeWindows();
     }
 
     private void dfsAddElements(GNavigatorElement currentElement, GNavigatorWindow currentWindow, Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result) {

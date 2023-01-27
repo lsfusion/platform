@@ -13,7 +13,7 @@ public interface GINavigatorController {
 
     void updateVisibility(Map<GAbstractWindow, Boolean> visibleWindows);
 
-    void setInitialSize(GAbstractWindow window, int width, int height);
+    void autoSizeWindows();
 
     void resetSelectedElements(GNavigatorElement newSelectedElement);
 }

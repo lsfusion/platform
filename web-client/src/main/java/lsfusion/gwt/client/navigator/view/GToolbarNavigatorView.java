@@ -1,7 +1,10 @@
 package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
+import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
@@ -16,7 +19,7 @@ import java.util.Set;
 public class GToolbarNavigatorView extends GNavigatorView {
     private final Panel main;
 
-    private final Panel panel;
+    private final ResizableComplexPanel panel;
     private final boolean verticalTextAlign;
 
     public GToolbarNavigatorView(GToolbarNavigatorWindow window, GINavigatorController navigatorController) {
@@ -142,12 +145,45 @@ public class GToolbarNavigatorView extends GNavigatorView {
 
     @Override
     public int getHeight() {
-        return panel.getOffsetHeight();
+        return panel.getElement().getScrollHeight();
     }
 
     @Override
     public int getWidth() {
-        return panel.getOffsetWidth();
+        return panel.getElement().getScrollWidth();
+    }
+
+    @Override
+    public int getAutoSize(boolean vertical) {
+        if (vertical != window.isVertical()) {
+            // as panel is stretched to the window size, the size returned for panel is the size of the window.
+            int result = getChildrenMaxSize(vertical, panel);
+
+            result += getScrollbarSizeIfNeeded(window.isVertical(), panel);
+            return result;
+        }
+        return super.getAutoSize(vertical);
+    }
+    
+    // if size provided by window is larger than total size (on main axis) of toolbar, a scrollbar is expected to appear
+    // add scrollbar width to the cross-axis size
+    // maybe should be adjusted after redraw as current window sizes are considered - after update no scrollbar may appear
+    public static int getScrollbarSizeIfNeeded(boolean vertical, Widget widget) {
+        int childrenTotalSize = vertical ? widget.getElement().getScrollHeight() : widget.getElement().getScrollWidth();
+        int parentSize = vertical ? widget.getOffsetHeight() : widget.getOffsetWidth();
+        if (childrenTotalSize > parentSize) {
+            return AbstractNativeScrollbar.getNativeScrollbarHeight();
+        }
+        return 0;            
+    }
+
+    public static int getChildrenMaxSize(boolean vertical, ComplexPanel panel) {
+        int size = 0;
+        for (int i = 0; i < panel.getWidgetCount(); i++) {
+            Widget child = panel.getWidget(i);
+            size = Math.max(size, vertical ? child.getOffsetHeight() : child.getOffsetWidth());
+        }
+        return size;
     }
 
     @Override
