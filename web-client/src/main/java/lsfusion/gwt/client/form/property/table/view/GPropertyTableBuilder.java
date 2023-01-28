@@ -41,7 +41,12 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
         }
 
         // we need to set the size to the "render" element to avoid problems with padding
-        FlexPanel.setGridHeight(element, property.getValueHeight(font, false, true));
+        GSize valueHeight = property.getValueHeight(font, false, true);
+        if(valueHeight != null) // this way we can avoid prop-size-value cell-div conflict (see the css file) in most cases
+            element.addClassName("prop-size-value");
+        element.addClassName("prop-value");
+
+        FlexPanel.setGridHeight(element, valueHeight);
 
         return element;
     }
@@ -60,6 +65,8 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
             return true;
         }
 
+        element.removeClassName("prop-class-value");
+        element.removeClassName("prop-value");
         FlexPanel.setGridHeight(element, (GSize)null);
 
         return false;

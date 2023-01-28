@@ -710,6 +710,15 @@ protected Double getUserFlex(int i) {
             Element renderElement = GPropertyTableBuilder.getRenderSizedElement(cellElement, property);
             form.update(property, renderElement, getUpdateContext(cell, renderElement, property, this));
         }
+//
+//        @Override
+//        public Element getSizedDom(Cell cell, TableCellElement cellElement) {
+//            GPropertyDraw property = getProperty(cell);
+//            if (property == null) // in tree there can be no property in groups other than last
+//                return super.getSizedDom(cell, cellElement);
+//
+//            return GPropertyTableBuilder.getRenderSizedElement(cellElement, property);
+//        }
     }
 
     protected static boolean incrementalUpdate = true;

@@ -42,6 +42,7 @@ import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
+import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -1517,7 +1518,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             TableCellElement colElement = tableWidget.colRowElement.getCells().getItem(colRowInd++);
 //            TableColElement colElement = tableWidget.colGroupElement.getChild(i).cast();
 
-            FlexPanel.setGridWidth(colElement, getColumnWidth(i).getString());
+//            Column<T, ?> column = getColumn(i);
+//            Cell cell = new Cell(-1, i, column, null); // the same as in buildColumnRow
+//            Element sizeElement = SimpleTextBasedCellRenderer.getSizeElement(column.getSizedDom(cell, colElement));
+            Element sizeElement = colElement; // the problem is that table-loyout fixed doesn't care about the cell content, so it's not possible to do the sizing for the inner div / input components
+
+            FlexPanel.setGridWidth(sizeElement, getColumnWidth(i).getString());
+            sizeElement.addClassName("prop-size-value");
 
             if(isColumnFlex(i)) {
                 double columnFlexPerc = getColumnFlexPerc(i);
@@ -1653,6 +1660,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName("table");
+            tableElement.addClassName("lsf-table");
 
             headerElement = tableElement.createTHead();
             headerElement.setClassName("dataGridHeader");

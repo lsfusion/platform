@@ -93,14 +93,10 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
     public  static boolean isToolbarContainer(Element element) {
         return element.getPropertyBoolean(toolbarContainerProp);
     }
-    public static InputElement getSizeInputElement(Element element) {
-        if(isToolbarContainer(element))
-            return getInputElement(element);
-        return null;
-    }
+
     public static Element getSizeElement(Element element) {
-        InputElement sizeElement = getSizeInputElement(element);
-        if(sizeElement != null)
+        InputElement sizeElement;
+        if(isToolbarContainer(element) && (sizeElement = getInputElement(element)) != null)
             return sizeElement;
         return element;
     }
