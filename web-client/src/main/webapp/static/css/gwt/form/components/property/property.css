@@ -12,9 +12,9 @@
 }
 
 .prop-input {
-    background-color:transparent;
+    /*background-color:transparent;*/
     /*var(--component-background-color);*/
-    color: var(--text-color);
+    /*color: var(--text-color);*/
 }
 
 .text-based-prop:not(.prop-input) {

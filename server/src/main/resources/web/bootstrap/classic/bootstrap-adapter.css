@@ -108,7 +108,7 @@
 /*    line-height: inherit;*/
 /*}*/
 
-.table .property-toolbar-item.background-inherit:hover {
+.property-toolbar-item:hover {
     background-color: var(--component-hover-background-color);
 }
 
