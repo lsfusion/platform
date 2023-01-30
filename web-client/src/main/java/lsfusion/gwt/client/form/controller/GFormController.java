@@ -1681,26 +1681,13 @@ public class GFormController implements EditManager {
             return;
         }
 
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            if (treeController.focusFirstWidget(reason)) {
-                treeController.scrollToTop();
-                return;
-            }
+        Element nextFocusElement = GPanelController.getNextFocusElement(getWidget().getElement(), true);
+        if(nextFocusElement != null) {
+            FocusUtils.focus(nextFocusElement, reason);
+        } else {
+            //focus form container if no one element is focusable
+            FocusUtils.focus(formContainer.getFocusedElement(), reason);
         }
-
-        for (GGridController controller : controllers.values()) { // в конце controllers лежит нулевой groupObject. его-то и следует оставить напоследок
-            if (controller.focusFirstWidget(reason)) {
-                controller.scrollToTop();
-                return;
-            }
-        }
-
-        if(panelController.focusFirstWidget(reason)) {
-           return;
-        }
-
-        //focus form container if no one element is focusable
-        FocusUtils.focus(formContainer.getFocusedElement(), reason);
     }
 
     private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
