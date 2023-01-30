@@ -3,7 +3,6 @@ package lsfusion.gwt.client.base.view;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
@@ -187,6 +186,52 @@ public class FlexPanelImpl {
         }
         throw new IllegalStateException("Unknown alignment");
     }
+    public void dropFlexAlignment(GFlexAlignment alignment, Element child) {
+        switch (alignment) {
+            case START:
+                child.removeClassName("flex-start");
+                return;
+            case CENTER:
+                child.removeClassName("flex-center");
+                return;
+            case END:
+                child.removeClassName("flex-end");
+                return;
+            case STRETCH:
+                child.removeClassName("flex-stretch");
+                return;
+        }
+        throw new IllegalStateException("Unknown alignment");
+    }
+    public void dropGridAlignment(GFlexAlignment alignment, Element child, boolean vertical) {
+        switch (alignment) {
+            case START:
+                if(vertical)
+                    child.removeClassName("grid-horz-start");
+                else
+                    child.removeClassName("grid-vert-start");
+                return;
+            case CENTER:
+                if(vertical)
+                    child.removeClassName("grid-horz-center");
+                else
+                    child.removeClassName("grid-vert-center");
+                return;
+            case END:
+                if(vertical)
+                    child.removeClassName("grid-horz-end");
+                else
+                    child.removeClassName("grid-vert-end");
+                return;
+            case STRETCH:
+                if(vertical)
+                    child.removeClassName("grid-horz-stretch");
+                else
+                    child.removeClassName("grid-vert-stretch");
+                return;
+        }
+        throw new IllegalStateException("Unknown alignment");
+    }
 
 //    public void setVisible(DivElement parent, boolean visible, boolean grid) {
 //        parent.getStyle().setProperty("display", visible ? getDisplayValue(grid) : "none");
@@ -196,7 +241,7 @@ public class FlexPanelImpl {
         FlexPanel.WidgetLayoutData layoutData = new FlexPanel.WidgetLayoutData(new FlexPanel.FlexLayoutData(flex, flexBasis, shrink), new FlexPanel.AlignmentLayoutData(alignment));
 
         updateFlex(layoutData.flex, child, vertical, grid);
-        updateAlignment(layoutData.aligment, child, vertical, grid);
+        setAlignment(layoutData.aligment, child, vertical, grid);
 
         DOM.insertChild(parent.<com.google.gwt.user.client.Element>cast(), child.<com.google.gwt.user.client.Element>cast(), beforeIndex);
 
@@ -348,12 +393,20 @@ public class FlexPanelImpl {
     public void updateFlex(FlexPanel.FlexLayoutData layoutData, Element child, boolean vertical, boolean grid) {
         setFlex(child, layoutData.getFlex(), layoutData.getFlexBasis(), layoutData.gridLine, vertical, grid, layoutData.shrink);
     }
-    public void updateAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
+    // unlike flex we have to do it with the set / drop operations, since we are using css classes
+    public void setAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
         GFlexAlignment alignment = layoutData.alignment;
         if(grid)
             setGridAlignment(alignment, child, vertical);
         else
             setFlexAlignment(alignment, child);
+    }
+    public void dropAlignment(FlexPanel.AlignmentLayoutData layoutData, Element child, boolean vertical, boolean grid) {
+        GFlexAlignment alignment = layoutData.alignment;
+        if(grid)
+            dropGridAlignment(alignment, child, vertical);
+        else
+            dropFlexAlignment(alignment, child);
     }
 
     public void setFlexBasis(FlexPanel.FlexLayoutData layoutData, Element child, GSize flexBasis, boolean vertical, boolean grid) {

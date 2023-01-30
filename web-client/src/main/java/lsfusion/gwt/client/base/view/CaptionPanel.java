@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
@@ -25,6 +26,17 @@ public class CaptionPanel extends FlexPanel {
 
     private boolean waitingForElement;
 
+    public static class Header extends SimpleWidget {
+
+        public Header(String tagName) {
+            super(tagName);
+        }
+
+        // header css classes should correspond header classes
+        public final static GFlexAlignment HORZ = GFlexAlignment.START;
+        public final static GFlexAlignment VERT = GFlexAlignment.CENTER;
+    }
+
     public CaptionPanel(String caption, boolean border) {
         super(true);
 
@@ -32,10 +44,7 @@ public class CaptionPanel extends FlexPanel {
 
 //        headerButton = new UnFocusableImageButton();
 //        headerButton.setEnabled(false);
-        if(MainFrame.useBootstrap)
-            header = new SimpleWidget("h6");
-        else
-            header = new DivWidget();
+        header = new Header(MainFrame.useBootstrap ? "h6" : DivElement.TAG);
         header.addStyleName("text-secondary");
 //        header.addStyleName("fw-semibold");
         header.addStyleName("fw-normal");
