@@ -255,7 +255,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         scheduledTaskDetailQuery.and(BL.schedulerLM.scheduledTaskScheduledTaskDetail.getExpr(modifier, scheduledTaskDetailExpr).compare(scheduledTaskObject, Compare.EQUALS));
 
         TreeMap<Integer, ScheduledTaskDetail> propertySIDMap = new TreeMap<>();
-        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session);
+        ImOrderMap<ImMap<Object, Object>, ImMap<Object, Object>> propertyResult = scheduledTaskDetailQuery.execute(session, MapFact.singletonOrder("order", false));
         int defaultOrder = propertyResult.size() + 100;
         for (ImMap<Object, Object> propertyValues : propertyResult.valueIt()) {
             String canonicalName = (String) propertyValues.get("canonicalNameAction");
@@ -273,6 +273,10 @@ public class Scheduler extends MonitorServer implements InitializingBean {
                 if (orderProperty == null) {
                     orderProperty = defaultOrder;
                     defaultOrder++;
+                } else {
+                    while(propertySIDMap.containsKey(orderProperty)) {
+                        orderProperty++;
+                    }
                 }
                 LA LA = script == null ? BL.findAction(canonicalName.trim()) : BL.schedulerLM.evalScript;
                 if(LA != null)
