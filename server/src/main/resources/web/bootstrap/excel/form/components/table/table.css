@@ -4,6 +4,10 @@
     font-weight: normal;
 }
 
+.dataGridCell {
+    background-color: var(--bs-table-bg);
+}
+
 .dataGridFooterCell {
     padding: 0 0.125rem;
     font-weight: normal;
