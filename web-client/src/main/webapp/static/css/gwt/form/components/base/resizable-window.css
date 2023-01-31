@@ -1,0 +1,42 @@
+.modal-form {
+    z-index: 1000;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-dialog.modal-resizable {
+    margin: 0;
+}
+
+.modal-dialog.modal-fit-content {
+    max-width: none;
+    width: fit-content;
+}
+
+.modal-content {
+    overflow: hidden;
+}
+
+.modal-title {
+    margin: 0;
+}
+
+.modal-body {
+    display: flex;
+}
+
+.modal-footer {
+    padding: 0.25em;
+}
+
+.modal-footer > * {
+    margin: 0.125rem;
+}

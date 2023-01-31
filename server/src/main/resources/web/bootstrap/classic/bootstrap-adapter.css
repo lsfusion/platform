@@ -182,3 +182,50 @@
     z-index: 1;
     box-shadow: 0 0.1rem 0.5rem 0 rgb(0 0 0 / 15%);
 }
+
+
+/*----- resizable-window -----*/
+@media (min-width: 576px) {
+    .modal-dialog {
+        --bs-modal-width: 500px;
+    }
+}
+
+.modal-dialog {
+    --bs-modal-margin: 1.75rem auto 1.75rem auto;
+}
+
+.modal-dialog-centered {
+    --bs-modal-margin: 1.75rem;
+}
+
+.modal-backdrop {
+    --bs-backdrop-bg: black;
+}
+
+.modal-backdrop.show {
+    --bs-backdrop-opacity: 0.3;
+}
+
+.modal-header {
+    --bs-modal-header-padding: 0.5em;
+    --bs-modal-header-border-width: 1px;
+    --bs-modal-header-border-color: var(--dialog-outer-border-color);
+}
+
+.modal-content {
+    --bs-modal-border-width: 1px;
+    --bs-modal-border-color: var(--dialog-outer-border-color);
+    --bs-modal-border-radius: var(--dialog-border-radius);
+    --bs-modal-bg: var(--background-color);
+}
+
+.modal-body {
+    --bs-modal-padding: 0.5em;
+}
+
+.modal-footer {
+    --bs-modal-footer-border-width: 1px;
+    --bs-modal-footer-border-color: var(--dialog-outer-border-color);
+}
+/*----- end of resizable-window -----*/
