@@ -14,7 +14,7 @@ import java.util.Set;
 import static lsfusion.gwt.client.navigator.view.GToolbarNavigatorView.getChildrenMaxSize;
 import static lsfusion.gwt.client.navigator.view.GToolbarNavigatorView.getScrollbarSizeIfNeeded;
 
-public class GPanelNavigatorView extends GNavigatorView {
+public class GPanelNavigatorView extends GNavigatorView<GPanelNavigatorWindow> {
     private CellPanel panel;
 
     public GPanelNavigatorView(GPanelNavigatorWindow window, GINavigatorController navigatorController) {

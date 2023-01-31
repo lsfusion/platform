@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Tree;
@@ -16,7 +15,7 @@ import java.util.Set;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.stopPropagation;
 
-public class GTreeNavigatorView extends GNavigatorView {
+public class GTreeNavigatorView extends GNavigatorView<GTreeNavigatorWindow> {
     private NavigatorTree tree;
     private List<GNavigatorElement> openElements = new ArrayList<>();
 

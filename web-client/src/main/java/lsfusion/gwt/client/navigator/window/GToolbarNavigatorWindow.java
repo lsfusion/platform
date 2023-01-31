@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator.window;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.view.GToolbarNavigatorView;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public static final float TOP_ALIGNMENT = 0.0f;
@@ -45,5 +46,9 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
 
     public boolean hasVerticalTextPosition() {
         return verticalTextPosition == BOTTOM;
+    }
+
+    public boolean allButtonsActive() {
+        return MainFrame.useBootstrap && !isSystem() && !isRoot();
     }
 }

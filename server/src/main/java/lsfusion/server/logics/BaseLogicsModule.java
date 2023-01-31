@@ -705,7 +705,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
-        baseWindows.toolbar.elementClass += " navbar-text";
 
         baseWindows.tree = (NavigatorWindow) findWindow("tree");
 

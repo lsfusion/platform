@@ -10,13 +10,12 @@ import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 
 import java.util.Set;
 
-public class GToolbarNavigatorView extends GNavigatorView {
+public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindow> {
     private final Panel main;
 
     private final ResizableComplexPanel panel;
@@ -108,15 +107,13 @@ public class GToolbarNavigatorView extends GNavigatorView {
         };
         TooltipManager.registerWidget(button, tooltipHelper);
 
-        if(element instanceof GNavigatorFolder) {
-            if (element.equals(selected)) {
-                button.addStyleName("active");
-            }
+        if (window.allButtonsActive() || (element.isFolder() && element.equals(selected))) {
+            button.addStyleName("active");
+        }
 
-            if (window.isRoot() && firstFolder) {
-                firstFolder = false;
-                click(element, null);
-            }
+        if (element.isFolder() && window.isRoot() && firstFolder) {
+            firstFolder = false;
+            click(element, null);
         }
 
         panel.add(button);

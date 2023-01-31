@@ -8,18 +8,18 @@ import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
 import java.util.Set;
 
-public abstract class GNavigatorView {
-    protected GNavigatorWindow window;
+public abstract class GNavigatorView<T extends GNavigatorWindow> {
+    protected T window;
     protected Widget component;
     protected GINavigatorController navigatorController;
     protected GNavigatorElement selected;
 
-    public GNavigatorView(GNavigatorWindow window, GINavigatorController navigatorController) {
+    public GNavigatorView(T window, GINavigatorController navigatorController) {
         this.window = window;
         this.navigatorController = navigatorController;
     }
 
-    public GNavigatorView(GNavigatorWindow window, Widget component, GINavigatorController navigatorController) {
+    public GNavigatorView(T window, Widget component, GINavigatorController navigatorController) {
         this(window, navigatorController);
         setComponent(component);
     }
