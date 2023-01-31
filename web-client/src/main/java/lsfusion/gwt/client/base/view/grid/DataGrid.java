@@ -22,10 +22,9 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.size.GSize;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -42,7 +41,6 @@ import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
-import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -168,11 +166,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private void updateScrolledState() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
+        int horizontalScrollPosition = tableContainer.getHorizontalScrollPosition();
         //The mobile version does not set the "scrolled-up" class correctly when scrolling to the bottom of the table due to size rounding.
         // This is solved by adding one pixel to the calculation
         int adjustment = MainFrame.mobile ? 1 : 0;
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
+        
+        tableWidget.setStyleName("scrolled-right", horizontalScrollPosition > adjustment);
 
         tableWidget.setStyleName("was-scrolled-recently", true);
         if (recentlyScrolledTimer.isRunning())

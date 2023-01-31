@@ -162,11 +162,12 @@
     padding: 0;
 }
 /* only partly fixes vertical borders */
-.table.table-bordered .dataGridStickyHeader,
-.table.table-bordered .dataGridStickyCell,
-.table.table-bordered .dataGridStickyFooter {
+.table.table-bordered.scrolled-right .dataGridStickyHeader,
+.table.table-bordered.scrolled-right .dataGridStickyCell,
+.table.table-bordered.scrolled-right .dataGridStickyFooter {
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
     border-right: none;
+    border-left: none;
 }
 /* --- --- */
 
