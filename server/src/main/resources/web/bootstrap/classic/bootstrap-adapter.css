@@ -178,7 +178,7 @@
     }
 }
 
-.content-scrolled > .bottom-shadow {
+.forms-container.scroll-down > .nav.nav-tabs {
     z-index: 1;
     box-shadow: 0 0.1rem 0.5rem 0 rgb(0 0 0 / 15%);
 }

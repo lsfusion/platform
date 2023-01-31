@@ -37,10 +37,8 @@ public final class FormDockable extends FormContainer {
         this.canonicalName = canonicalName;
 
         contentWidget = new ContentWidget();
-
-        Element widgetElement = contentWidget.getElement();
         contentWidget.sinkEvents(Event.ONSCROLL);
-        contentWidget.addHandler(event -> contentWidget.getParent().setStyleName("content-scrolled", widgetElement.getScrollTop() > MainFrame.mobileAdjustment), ScrollEvent.getType());
+        contentWidget.addHandler(event -> FlexPanel.setContentScrolled(contentWidget), ScrollEvent.getType());
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);

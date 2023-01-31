@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.object.table.TableContainer;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1393,5 +1394,9 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     protected void insert(Widget child, Element container, int beforeIndex, boolean domInsert) {
         assert false;
         super.insert(child, container, beforeIndex, domInsert);
+    }
+
+    public static void setContentScrolled(Widget widget) {
+        widget.getParent().setStyleName("scroll-down", widget.getElement().getScrollTop() > MainFrame.mobileAdjustment);
     }
 }

@@ -23,7 +23,7 @@ public class FlexTabBar extends Composite implements TabBar {
 
     private int selectedTab = -1;
 
-    public FlexTabBar(Widget extraTabWidget, boolean vertical, boolean bottomShadow) {
+    public FlexTabBar(Widget extraTabWidget, boolean vertical) {
         panel = new FlexPanel(vertical);
         
         panel.getElement().addClassName("tabBarItemsWrapper");
@@ -38,8 +38,6 @@ public class FlexTabBar extends Composite implements TabBar {
         }
 
         sinkEvents(Event.ONMOUSEDOWN);
-        if (bottomShadow)
-            addStyleName("bottom-shadow");
 
         addStyleName("nav");
         addStyleName("nav-tabs");

@@ -13,24 +13,24 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     protected TabBar tabBar;
 
     public FlexTabbedPanel() {
-        this(false, null);
+        this(null);
     }
-    public FlexTabbedPanel(boolean bottomShadow, Widget extraTabWidget) {
-        this(extraTabWidget, true, bottomShadow);
+    public FlexTabbedPanel(Widget extraTabWidget) {
+        this(extraTabWidget, true);
     }
     public FlexTabbedPanel(boolean vertical) {
-        this(null, vertical, false);
+        this(null, vertical);
     }
-    private FlexTabbedPanel(Widget extraTabWidget, boolean vertical, boolean bottomShadow) {
+    private FlexTabbedPanel(Widget extraTabWidget, boolean vertical) {
         super(vertical);
 
-        FlexTabBar tabBar = new FlexTabBar(extraTabWidget, !vertical, bottomShadow);
+        FlexTabBar tabBar = new FlexTabBar(extraTabWidget, !vertical);
         add(tabBar, GFlexAlignment.STRETCH);
         tabBar.setBeforeSelectionHandler(this::onBeforeTabSelected);
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
         this.tabBar = tabBar;
 
-        addStyleName("tab-panel");
+        addStyleName("tab-panel forms-container");
         addStyleName(vertical ? "tab-panel-vert" : "tab-panel-horz");
     }
 
@@ -183,6 +183,9 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
             if (oldWidget != null)
                 oldWidget.setVisible(false);
         }
+
+        if (newWidget != null)
+            FlexPanel.setContentScrolled(newWidget);
     }
 
     @Override
