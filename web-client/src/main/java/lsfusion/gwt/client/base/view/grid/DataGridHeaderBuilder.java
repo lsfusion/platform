@@ -81,7 +81,6 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
             updateHeaderImpl(headerRow);
         }
     }
-    private Element arrowTH;
 
     private void initArrow(Element parent, boolean bottom) {
         Element button = Document.get().createElement("button");
@@ -100,26 +99,8 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         arrowContainer.addClassName("arrow-container");
         arrowContainer.appendChild(button);
 
-        setTransitionEndListener(arrowTH);
-
         arrowTH.appendChild(arrowContainer);
         parent.appendChild(arrowTH);
-        this.arrowTH = arrowTH;
-    }
-
-    private static native void setTransitionEndListener(Element element) /*-{
-        element.addEventListener('click', function () {
-            element.classList.add('hidden');
-        });
-
-        element.addEventListener('transitionend', function (e) {
-            if (e.propertyName === 'opacity')
-                element.classList.add('hidden');
-        });
-    }-*/;
-
-    public void showArrow() {
-        arrowTH.removeClassName("hidden");
     }
 
     public TableRowElement getHeaderRow() {

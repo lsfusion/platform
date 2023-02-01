@@ -174,13 +174,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         tableWidget.setStyleName("scrolled-down", scrolledDown);
         tableWidget.setStyleName("scrolled-up", scrolledUp);
 
-        if (showArrows) {
-            if (scrolledDown)
-                headerBuilder.showArrow();
-            if (scrolledUp)
-                footerBuilder.showArrow();
-        }
-
         tableWidget.setStyleName("was-scrolled-recently", true);
         if (recentlyScrolledTimer.isRunning())
             recentlyScrolledTimer.cancel();
