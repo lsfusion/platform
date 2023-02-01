@@ -32,7 +32,7 @@
 .verticalStretchSeparator {
     border-left: 1px solid var(--panel-border-color);
     margin: 0.1875rem 0;
-    padding: 0 0.125rem;
+    padding: 0;
     align-self: stretch;
 }
 

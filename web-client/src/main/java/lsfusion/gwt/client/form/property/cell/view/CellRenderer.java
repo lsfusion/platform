@@ -458,6 +458,8 @@ public abstract class CellRenderer<T> {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
                 toolbarElement.addClassName("property-toolbar");
+                // we need background-inherit for hover components because of transition (toolbar gets all the width immediately which leads to some annoying blinking)
+//                toolbarElement.addClassName("background-inherit");
                 element.appendChild(toolbarElement);
 
                 GwtClientUtils.setupEdgeStretchParent(toolbarElement, true, start);
