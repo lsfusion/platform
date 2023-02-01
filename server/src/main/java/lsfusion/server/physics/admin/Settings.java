@@ -2731,16 +2731,19 @@ public class Settings implements Cloneable {
         this.minSizeForReportExportToCSV = minSizeForReportExportToCSV;
     }
 
-    private boolean useInputTagForTextBasedInPanel = true;
+    // 0 - use in excel and bootstrap theme
+    // 1 - use only in bootstrap theme
+    // 2 - never use
+    private int useInputTagForTextBasedInPanel = 1;
     private boolean useInputTagForBoolean = true;
     private boolean noToolbarForInputTagInPanel = false;
     private boolean noToolbarForBoolean = true;
 
-    public boolean isUseInputTagForTextBasedInPanel() {
+    public int getUseInputTagForTextBasedInPanel() {
         return useInputTagForTextBasedInPanel;
     }
 
-    public void setUseInputTagForTextBasedInPanel(boolean useInputTagForTextBasedInPanel) {
+    public void setUseInputTagForTextBasedInPanel(int useInputTagForTextBasedInPanel) {
         this.useInputTagForTextBasedInPanel = useInputTagForTextBasedInPanel;
     }
 

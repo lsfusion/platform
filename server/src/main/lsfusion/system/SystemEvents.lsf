@@ -28,10 +28,14 @@ NAVIGATOR {
     NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo();
 }
 
-useBootstrap = DATA BOOLEAN(CustomUser);
-bootstrapImage = IF useBootstrap(currentUser()) THEN 'excel.png' ELSE 'bootstrap.png';
-toggleBootstrap 'Toggle bootstrap' () {
-    useBootstrap(currentUser()) <- NOT useBootstrap(currentUser());
+userUseBootstrap = DATA TBOOLEAN (CustomUser);
+serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
+useBootstrap '{system.events.use.bootstrap}' (CustomUser u) = IF userUseBootstrap(u) THEN userUseBootstrap(u) == TTRUE ELSE serverUseBootstrap();
+useBootstrap = useBootstrap(currentUser());
+
+bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
+toggleBootstrap () {
+    userUseBootstrap(currentUser()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
     APPLY;
     INTERNAL CLIENT 'reload';
 }
@@ -50,8 +54,6 @@ NAVIGATOR {
     NEW toggleColorTheme WINDOW system PARENT FIRST HEADER NULL IMAGE colorThemeImage();
     NEW toggleBootstrap WINDOW system PARENT AFTER toggleColorTheme HEADER NULL IMAGE bootstrapImage();
 }
-
-useBootstrap = useBootstrap(currentUser());
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.css' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 2;

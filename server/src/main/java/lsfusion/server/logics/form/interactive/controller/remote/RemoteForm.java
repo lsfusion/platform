@@ -143,7 +143,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign, form.BL)).serializeObject(new DataOutputStream(outStream), richDesign);
+            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign, form.BL, form.isUseBootstrap())).serializeObject(new DataOutputStream(outStream), richDesign);
             //            richDesign.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
             throw new RuntimeException(e);

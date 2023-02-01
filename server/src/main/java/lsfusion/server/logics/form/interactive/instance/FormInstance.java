@@ -2234,6 +2234,11 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         ServerLoggers.assertLog(classListener == null || !classListener.isDeactivated(), "NAVIGATOR DEACTIVATED " + BaseUtils.nullToString(classListener));
     }
 
+    public boolean isUseBootstrap() {
+        CustomClassListener classListener = getClassListener();
+        return classListener != null && classListener.isUseBootstrap();
+    }
+
     @StackMessage("{message.getting.visible.properties}")
     private Set<PropertyDrawInstance> readShowIfs(ChangedData changedProps, MFormChanges result) throws SQLException, SQLHandledException {
 

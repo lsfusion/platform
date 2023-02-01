@@ -11,10 +11,14 @@ public class ServerContext {
     public final FormView view;
     public final SecurityPolicy securityPolicy;
 
-    public ServerContext(SecurityPolicy securityPolicy, FormView view, BusinessLogics BL) {
+    public final boolean useBootstrap;
+
+    public ServerContext(SecurityPolicy securityPolicy, FormView view, BusinessLogics BL, boolean useBootstrap) {
         this.BL = BL;
         this.securityPolicy = securityPolicy;
         this.entity = view.entity;
         this.view = view;
+
+        this.useBootstrap = useBootstrap;
     }
 }

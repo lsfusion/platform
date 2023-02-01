@@ -1,6 +1,6 @@
 MODULE Service;
 
-REQUIRE System, Security;
+REQUIRE System, Security, SystemEvents;
 
 NAMESPACE Service;
 
@@ -676,11 +676,11 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
 EXTEND FORM settings
-    PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, serverUseBootstrap READONLY
 
     OBJECTS uc = CustomUser
     PROPERTIES(uc) READONLY name, login, userRoles
-    PROPERTIES(uc) fontSize, colorThemeName,
+    PROPERTIES(uc) fontSize, userUseBootstrap, colorThemeName,
                    selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
 ;
 
@@ -688,6 +688,7 @@ DESIGN settings {
     tabs {
         NEW colorsPane {
             caption = '{service.form.settings.caption.design}';
+            MOVE PROPERTY (serverUseBootstrap());
             NEW colorsHeaderPane {
                 type = CONTAINERH;
                 NEW defaultColors {

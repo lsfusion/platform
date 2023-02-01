@@ -907,5 +907,6 @@
         <property name="twoDigitYearStart" value="${user.twoDigitYearStart:#{null}}"/>
         <property name="dateFormat" value="${user.dateFormat:#{null}}"/>
         <property name="timeFormat" value="${user.timeFormat:#{null}}"/>
+        <property name="useBootstrap" value="${user.bootstrap:#{true}}"/>
     </bean>
 </beans>

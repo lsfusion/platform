@@ -8,5 +8,7 @@ public interface CustomClassListener {
     Long getObject(CustomClass cls);
     void objectChanged(ConcreteCustomClass cls, long objectID);
     
-    boolean isDeactivated(); // потом надо будет переделать на отдельный интерфейс
+    boolean isDeactivated(); // temporary - later some separate interface should be used
+
+    boolean isUseBootstrap(); // temporary - later some separate interface should be used
 }

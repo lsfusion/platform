@@ -1725,8 +1725,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private void setLogicsParams(DataSession session) throws SQLException, SQLHandledException {
         String logicsCaption = businessLogics.logicsCaption;
         String topModule = businessLogics.topModule;
+        boolean useBootstrap = businessLogics.useBootstrap;
         LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
+        systemEventsLM.serverUseBootstrap.change(useBootstrap ? true : null, session);
         apply(session);
     }
 

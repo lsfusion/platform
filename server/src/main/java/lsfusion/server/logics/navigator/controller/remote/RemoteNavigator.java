@@ -92,6 +92,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     private String currentForm;
 
+    private boolean useBootstrap;
+
     private DataObject connection;
 
     public SecurityPolicy securityPolicy;
@@ -127,6 +129,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, stack, session);
 
+        useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, user) != null;
         localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
     }
@@ -178,6 +181,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         //забиваем на синхронизацию, потому что для времени использования совсем неактуально
         //пусть потоки меняют как хотят
         lastUsedTime = System.currentTimeMillis();
+    }
+
+    public boolean isUseBootstrap() {
+        return useBootstrap;
     }
 
     public long getLastUsedTime() {

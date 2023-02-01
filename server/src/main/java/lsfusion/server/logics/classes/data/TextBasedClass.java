@@ -10,7 +10,10 @@ public abstract class TextBasedClass<T> extends DataClass<T> {
     }
 
     @Override
-    public boolean useInputTag(boolean isPanel) {
-        return isPanel && Settings.get().isUseInputTagForTextBasedInPanel();
+    public boolean useInputTag(boolean isPanel, boolean useBootstrap) {
+        if(!isPanel)
+            return false;
+
+        return Settings.get().getUseInputTagForTextBasedInPanel() <= (useBootstrap ? 1 : 0);
     }
 }
