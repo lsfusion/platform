@@ -30,7 +30,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
         this.tabBar = tabBar;
 
-        addStyleName("tab-panel forms-container");
+        addStyleName("tab-panel");
         addStyleName(vertical ? "tab-panel-vert" : "tab-panel-horz");
     }
 
@@ -183,9 +183,6 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
             if (oldWidget != null)
                 oldWidget.setVisible(false);
         }
-
-        if (newWidget != null)
-            FlexPanel.setContentScrolled(newWidget);
     }
 
     @Override

@@ -151,6 +151,8 @@ public abstract class FormsController {
             }
         });
 
+        tabsPanel.addStyleName("forms-container");
+
         initEditModeTimer();
     }
 
