@@ -158,13 +158,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             calcLeftNeighbourRightBorder(true);
             checkSelectedRowVisible();
 
-            updateScrolledState(true);
+            updateScrolledState();
         };
     }
 
     protected abstract void scrollToEnd(boolean toEnd);
 
-    private void updateScrolledState(boolean showArrows) {
+    private void updateScrolledState() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
         //The mobile version does not set the "scrolled-up" class correctly when scrolling to the bottom of the table due to size rounding.
         // This is solved by adding one pixel to the calculation
@@ -1195,7 +1195,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         if (pendingState.top != null) {
             tableContainer.setVerticalScrollPosition(pendingState.top);
 
-            updateScrolledState(false);
+            updateScrolledState();
         }
     }
 
