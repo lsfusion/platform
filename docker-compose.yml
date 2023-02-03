@@ -5,8 +5,6 @@ services:
     image: postgres:12.4
     volumes:
       - ./docker-db:/var/lib/postgresql/data # host/path:container/path
-    ports:
-      - 5432:5432
     network_mode: host
     environment:
       POSTGRES_PASSWORD: 11111
@@ -18,8 +16,6 @@ services:
       - db
     volumes:
       - ./docker-server:/lsfusion # host/path:container/path
-    ports:
-      - 7652:7652
     network_mode: host
 # use default credentials if dont define environment variables or modifying settings.properties in ./docker-server/conf
 # available variables names: DB_SERVER, DB_PASSWORD, DB_USER, DB_NAME, JAVA_OPTS
@@ -40,8 +36,6 @@ services:
       - server
     volumes:
       - ./docker-client-conf:/usr/local/tomcat/conf/Catalina # host/path:container/path
-    ports:
-      - 8080:8080
     network_mode: host
 # use default credentials if dont define environment variables or modifying ROOT.xml in ./docker-client/Catalina/localhost.
 # available variables names: SERVER_HOST, SERVER_PORT, JAVA_OPTS

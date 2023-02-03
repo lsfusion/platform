@@ -194,8 +194,8 @@ public class ScriptingLogicsModule extends LogicsModule {
     protected final ScriptingErrorLog errLog;
     protected ScriptParser parser;
     protected ScriptingLogicsModuleChecks checks;
-    private List<String> warningList = new ArrayList<>();
-    private Map<Property, String> alwaysNullProperties = new HashMap<>();
+    private final List<String> warningList = new ArrayList<>();
+    private final Map<Property<?>, String> alwaysNullProperties = new HashMap<>();
 
     private String lastOptimizedJPropSID = null;
 

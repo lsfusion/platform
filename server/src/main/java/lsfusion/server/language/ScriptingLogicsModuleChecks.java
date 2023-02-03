@@ -68,13 +68,13 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkProperty(LP lp, String name) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkProperty(LP<?> lp, String name) throws ScriptingErrorLog.SemanticErrorException {
         if (lp == null) {
             errLog.emitPropertyNotFoundError(parser, name);
         }
     }
 
-    public void checkAction(LA lp, String name, List<ResolveClassSet> signature, boolean orPropertyMessage) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAction(LA<?> lp, String name, List<ResolveClassSet> signature, boolean orPropertyMessage) throws ScriptingErrorLog.SemanticErrorException {
         if (lp == null) {
             if(orPropertyMessage)
                 errLog.emitPropertyOrActionNotFoundError(parser, PropertyCanonicalNameUtils.createName(null, name, signature));
@@ -125,13 +125,13 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkParamCount(LAP mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkParamCount(LAP<?, ?> mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp.getActionOrProperty().interfaces.size() != paramCount) {
             errLog.emitParamCountError(parser, mainProp, paramCount);
         }
     }
 
-    public void checkPropertyValue(LP<?> property, Map<Property, String> alwaysNullProperties) {
+    public void checkPropertyValue(LP<?> property, Map<Property<?>, String> alwaysNullProperties) {
         if (!property.property.checkAlwaysNull(false) && !alwaysNullProperties.containsKey(property.property)) {
             String path = parser.getCurrentScriptPath(LM.getName(), parser.getCurrentParserLineNumber(), "\n\t\t\t");
             String location = path + ":" + (parser.getCurrentParser().input.LT(1).getCharPositionInLine() + 1);
@@ -191,12 +191,12 @@ public class ScriptingLogicsModuleChecks {
         LP<?> lp1 = properties.get(0).getLP();
         if(lp1 == null)
             return;
-        Property prop1 = lp1.property;
+        Property<?> prop1 = lp1.property;
         for (int i = 1; i < properties.size(); i++) {
             LP<?> lp2 = properties.get(i).getLP();
             if(lp2 == null)
                 return;
-            Property prop2 = lp2.property;
+            Property<?> prop2 = lp2.property;
             if (prop1.getType() != null && prop2.getType() != null && prop1.getType().getCompatible(prop2.getType()) == null) {
                 errLog.emitIncompatibleTypesError(parser, errMsgPropType);
             }
@@ -287,7 +287,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkNamedParams(LAP property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkNamedParams(LAP<?, ?> property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
         int interfaceCnt = property.getActionOrProperty().interfaces.size();
         if (interfaceCnt != namedParams.size() && !namedParams.isEmpty()) {
             errLog.emitNamedParamsError(parser, namedParams, interfaceCnt);
@@ -376,7 +376,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkSessionProperty(LP lp) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkSessionProperty(LP<?> lp) throws ScriptingErrorLog.SemanticErrorException {
         if (!(lp.property instanceof SessionDataProperty)) {
             errLog.emitNotSessionOrLocalPropertyError(parser, lp.getCreationScript());
         }
@@ -418,14 +418,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkIndexNecessaryProperty(List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
-        boolean hasProperty = false;
-        for (LPWithParams lp : lps) {
-            if (lp.getLP() != null) {
-                hasProperty = true;
-                break;
-            }
-        }
-        if (!hasProperty) {
+        if (lps.stream().allMatch(lp -> lp.getLP() == null)) {
             errLog.emitIndexWithoutPropertyError(parser);
         }
     }
@@ -468,7 +461,7 @@ public class ScriptingLogicsModuleChecks {
 
     public void checkConcatenate(List<LPWithParams> params) throws ScriptingErrorLog.SemanticErrorException {
         for(LPWithParams param : params) {
-            Type propType = param.getLP().property.getType();
+            Type<?> propType = param.getLP().property.getType();
             if (!(propType instanceof JSONClass)) {
                 errLog.emitConcatError(parser);
             }
@@ -476,7 +469,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkDeconcatenateIndex(LPWithParams property, int index) throws ScriptingErrorLog.SemanticErrorException {
-        Type propType = property.getLP().property.getType();
+        Type<?> propType = property.getLP().property.getType();
         if (propType instanceof ConcatenateType) {
             int concatParts = ((ConcatenateType) propType).getPartsCount();
             if (index <= 0 || index > concatParts) {
@@ -493,7 +486,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkPartitionUngroupConsistence(LP ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkPartitionUngroupConsistence(LP<?> ungroupProp, int groupPropCnt) throws ScriptingErrorLog.SemanticErrorException {
         if (ungroupProp != null && ungroupProp.property.interfaces.size() != groupPropCnt) {
             errLog.emitUngroupParamsCntPartitionError(parser, groupPropCnt);
         }
@@ -521,13 +514,13 @@ public class ScriptingLogicsModuleChecks {
 //        }
 //    }
 
-    public void checkAbstractProperty(LP property, String propName) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAbstractProperty(LP<?> property, String propName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(property.property instanceof CaseUnionProperty && ((CaseUnionProperty)property.property).isAbstract())) {
             errLog.emitNotAbstractPropertyError(parser, propName);
         }
     }
 
-    public void checkAbstractAction(LA action, String actionName) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkAbstractAction(LA<?> action, String actionName) throws ScriptingErrorLog.SemanticErrorException {
         if (!(action.action instanceof ListCaseAction && ((ListCaseAction)action.action).isAbstract())) {
             errLog.emitNotAbstractActionError(parser, actionName);
         }
@@ -539,7 +532,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkEventNoParameters(LA la) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkEventNoParameters(LA<?> la) throws ScriptingErrorLog.SemanticErrorException {
         if (la.action.interfaces.size() > 0) {
             errLog.emitEventNoParametersError(parser);
         }
@@ -576,7 +569,7 @@ public class ScriptingLogicsModuleChecks {
         }
     }
 
-    public void checkImplementIsNotMain(LAP mainProp, LAP implProp) throws ScriptingErrorLog.SemanticErrorException {
+    public void checkImplementIsNotMain(LAP<?, ?> mainProp, LAP<?, ?> implProp) throws ScriptingErrorLog.SemanticErrorException {
         if (mainProp == implProp) {
             errLog.emitRecursiveImplementError(parser);
         }

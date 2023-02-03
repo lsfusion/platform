@@ -212,6 +212,7 @@ FORM scheduledTask '{scheduler.form.scheduled.tasks}'
                     timeout, script PANEL
     PROPERTIES (td) NEW[UserScheduledTaskDetail], DELETE GRID
     PROPERTIES (td) READONLY SHOWIF allTasks() nameScheduledTask, startTime, period
+    ORDERS order(td)
     
     PROPERTIES allTasksTd = allTasks() DRAW td 
     FILTERS scheduledTask(td) = t OR allTasks()

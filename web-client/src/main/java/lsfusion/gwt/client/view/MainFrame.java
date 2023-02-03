@@ -136,7 +136,8 @@ public class MainFrame implements EntryPoint {
     private static boolean ignoreException(Throwable exception) {
         String message = exception.getMessage();
         //ace.js has unusual behaviour, and for unknown reasons periodically gives an Uncaught NetworkError about not being able to load a worker which is already loaded
-        if(message != null && message.contains("ace") && message.contains("Uncaught NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope'"))
+        //in gwt 2.10.0 we receive this error as 'null' (for unknown reasons real message is lost in Impl.java
+        if(message != null && message.equals("null"))
             return true;
 
         /*

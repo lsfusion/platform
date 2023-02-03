@@ -406,7 +406,7 @@ END
 META defineDocumentAbstractHeaderClosed (objectClass)
     isClosed '{documents.is.closed}' = ABSTRACT BOOLEAN(objectClass) MATERIALIZED;
     isOpened '{documents.is.opened}' (objectClass o) = o IS objectClass AND NOT isClosed(o) MATERIALIZED;
-    INDEX isOpened(objectClass o), o;
+    INDEX isOpened(objectClass o);
     close '{documents.close}' (o)  ABSTRACT LIST ( objectClass);
 END
 

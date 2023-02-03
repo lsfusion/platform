@@ -785,6 +785,12 @@ public class GwtClientUtils {
             prefs[column] += flexWidth * restFlex / totalFlex;
             restFlex = 0.0;
         }
+
+        if(equals(totalFlex, 0.0)) {
+            assert equals(restFlex + shrinkedFlex, 0.0);
+            return 0.0;
+        }
+
         return (restFlex + shrinkedFlex) * flexWidth / totalFlex;
     }
 

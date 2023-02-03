@@ -226,11 +226,11 @@ public class ScriptingErrorLog {
     }
 
     public void emitFormulaParamIndexError(ScriptParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
-        String errText = "wrong parameter index $" + String.valueOf(paramIndex);
+        String errText = "wrong parameter index $" + paramIndex;
         if (paramIndex < 1) {
             errText += ", first parameter is $1";
         } else {
-            errText += ", last parameter is $" + String.valueOf(paramCount);
+            errText += ", last parameter is $" + paramCount;
         }
         emitSimpleError(parser, errText);
     }
@@ -283,7 +283,7 @@ public class ScriptingErrorLog {
         emitSimpleError(parser, format("static object '%s' not found (class '%s' is abstract)", objectName, className));
     }
 
-    public void emitParamCountError(ScriptParser parser, LAP property, int paramCount) throws SemanticErrorException {
+    public void emitParamCountError(ScriptParser parser, LAP<?, ?> property, int paramCount) throws SemanticErrorException {
         int interfacesCount = property.getActionOrProperty().interfaces.size();
         emitParamCountError(parser, interfacesCount, paramCount);
     }
@@ -332,7 +332,7 @@ public class ScriptingErrorLog {
 
     public void emitNamedParamsError(ScriptParser parser, List<String> paramNames, int actualParameters) throws SemanticErrorException {
         emitSimpleError(parser, format("number of actual property parameters (%d) differs from number of named parameters (%d: %s)",
-                actualParameters, paramNames.size(), paramNames.toString()));
+                actualParameters, paramNames.size(), paramNames));
     }
 
     public void emitFormulaReturnClassError(ScriptParser parser, String className) throws SemanticErrorException {
