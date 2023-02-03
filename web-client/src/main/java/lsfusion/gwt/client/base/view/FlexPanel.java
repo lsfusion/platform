@@ -16,7 +16,6 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static lsfusion.gwt.client.base.resize.ResizeHandler.ANCHOR_WIDTH;
@@ -92,15 +91,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             visible = nVisible;
             super.setVisible(nVisible);
 //            impl.setVisible(parentElement, visible, isGrid());
-
-            if (visibilityChangeHandler != null)
-                visibilityChangeHandler.accept(nVisible);
         }
-    }
-
-    private Consumer<Boolean> visibilityChangeHandler = null;
-    private void addVisibilityChangeHandler(Consumer<Boolean> visibilityChangeHandler) {
-        this.visibilityChangeHandler = visibilityChangeHandler;
     }
 
     @Override
@@ -288,6 +279,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 ((RequiresResize) child).onResize();
             }
         }
+
+        onResizeHandlers.forEach(Runnable::run);
+    }
+
+    private List<Runnable> onResizeHandlers = new ArrayList<>();
+    private boolean addOnResizeHandler(Runnable onResizeHandler) {
+        return onResizeHandlers.add(onResizeHandler);
+    }
+
+    private boolean removeVisibilityChangeHandler(Runnable onResizeHandler) {
+        return onResizeHandlers.remove(onResizeHandler);
     }
 
     @Override
@@ -1412,11 +1414,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public static void registerContentScrolledEvent(FlexPanel widget) {
         widget.sinkEvents(Event.ONSCROLL);
-        widget.addVisibilityChangeHandler((isVisible) -> {
-            if (isVisible)
-                setContentScrolled(widget);
-        });
-
         widget.addHandler(event -> setContentScrolled(widget), ScrollEvent.getType());
+        widget.addOnResizeHandler(() -> setContentScrolled(widget));
     }
 }
