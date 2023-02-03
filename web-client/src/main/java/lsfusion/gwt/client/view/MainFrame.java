@@ -44,6 +44,7 @@ import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.navigator.view.GMobileNavigatorView;
+import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -279,6 +280,11 @@ public class MainFrame implements EntryPoint {
                 }
                 return view;
             }
+
+            @Override
+            public GNavigatorView getNavigatorView(GNavigatorWindow window) {
+                return navigatorControllerLink.link.getNavigatorView(window);
+            }
         };
 
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
@@ -311,6 +317,7 @@ public class MainFrame implements EntryPoint {
                         windowsController.storeWindowsSizes();
                     }
                     windowsController.storeEditMode();
+                    windowsController.storeBootstrapStyle();
                 } finally {
                     clean();
                 }
@@ -330,8 +337,8 @@ public class MainFrame implements EntryPoint {
             }
 
             @Override
-            public void setInitialSize(GAbstractWindow window, int width, int height) {
-                windowsController.setInitialSize(window, width, height);
+            public void autoSizeWindows() {
+                windowsController.autoSizeWindows();
             }
         };
         navigatorControllerLink.link = navigatorController;

@@ -68,7 +68,7 @@ public abstract class CellRenderer<T> {
     public void render(Element element, RenderContext renderContext) {
         boolean renderedAlignment = renderContent(element, renderContext);
 
-        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value");
+//        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value");
 
         if(!renderedAlignment) {
             assert !GwtClientUtils.isTDorTH(element) && !SimpleTextBasedCellRenderer.isToolbarContainer(element);
@@ -182,7 +182,7 @@ public abstract class CellRenderer<T> {
 
         boolean renderedAlignment = clearRenderContent(element, renderContext);
 
-        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value");
+//        SimpleTextBasedCellRenderer.getSizeElement(element).removeClassName("prop-value");
 
         if (!renderedAlignment)
             clearRenderFlexAlignment(property, element);

@@ -261,6 +261,8 @@ apiVersion = DATA INTEGER();
 revisionVersion = DATA INTEGER();
 synchronizeVersions ()  INTERNAL  'lsfusion.server.logics.action.SynchronizeVersionsAction' ();    
 
+resetConnections() ABSTRACT();
+
 onStarted() + { 
     writeDefaultCredentials();
     synchronizeVersions();
@@ -271,9 +273,7 @@ onStarted() + {
         currentLaunch() <- launch;
     }
 
-    connectionStatus(Connection c) <- ConnectionStatus.disconnectedConnection 
-        WHERE (connectionStatus(c) = ConnectionStatus.connectedConnection OR connectionStatus(c) = ConnectionStatus.disconnectingConnection)
-              AND currentLaunch() != launch(c);
+    resetConnections();
 }
 
 reconnect '{system.events.reconnect.custom.user}' (CustomUser user)  { 

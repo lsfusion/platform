@@ -7,6 +7,7 @@ import lsfusion.gwt.client.navigator.view.GPanelNavigatorView;
 public class GPanelNavigatorWindow extends GNavigatorWindow {
     public int orientation;
 
+    @Override
     public boolean isVertical() {
         return orientation == 1;
     }

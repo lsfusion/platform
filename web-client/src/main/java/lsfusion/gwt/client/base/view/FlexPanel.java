@@ -1012,8 +1012,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         if(!layoutData.baseAlignment.equals(GFlexAlignment.STRETCH)) {
             GFlexAlignment newAlignment = set ? GFlexAlignment.STRETCH : layoutData.baseAlignment;
             if(!newAlignment.equals(layoutData.alignment)) {
+                Element stretchElement = line.getStretchElement();
+                impl.dropAlignment(layoutData, stretchElement, vertical, grid);
                 layoutData.alignment = newAlignment;
-                impl.updateAlignment(layoutData, line.getStretchElement(), vertical, grid);
+                impl.setAlignment(layoutData, stretchElement, vertical, grid);
             }
         }
     }
@@ -1167,8 +1169,18 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
             boolean collapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
             return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, flexPanel.getOuterTopBorder(), flexPanel.getOuterRestBorder(), !collapsed, collapsed, wrap ? flexPanel : null);
-        } else
-            return new PanelParams(widget instanceof TableContainer && ((TableContainer) widget).getTableComponent() instanceof DataGrid ? Border.HAS : Border.NO, Border.NO, Border.NO, Border.NO, false, InnerAlignment.DIFF, InnerAlignment.DIFF, false, false);
+        } else { // lead components semantics
+            Border top = widget instanceof TableContainer && ((TableContainer) widget).getTableComponent() instanceof DataGrid ? Border.HAS : Border.NO;
+            InnerAlignment horzAlignment = InnerAlignment.DIFF;
+            InnerAlignment vertAlignment = InnerAlignment.DIFF;
+
+            if(widget instanceof CaptionPanel.Header) { // need this to auto stretch this headers
+                horzAlignment = new InnerFlexAlignment(CaptionPanel.Header.HORZ);
+                vertAlignment = new InnerFlexAlignment(CaptionPanel.Header.VERT);
+            }
+
+            return new PanelParams(top, Border.NO, Border.NO, Border.NO, false, horzAlignment, vertAlignment, false, false);
+        }
     }
 
     private static PanelParams updatePanels(boolean grid, boolean vertical, GFlexAlignment flexAlignment, List<? extends FlexStretchLine> lines, Border forceTopBorder, Border restBorders, boolean forceBottomBorder, boolean forceVertCollapsed, FlexPanel wrapPanel) {

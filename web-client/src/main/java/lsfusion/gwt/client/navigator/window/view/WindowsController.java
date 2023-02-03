@@ -4,7 +4,10 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
+import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -25,7 +28,10 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
 
         setDefaultVisible();
 
-        restoreWindowsSizes();
+        // don't restore windows sizes on style change as we need to auto adjust sizes   
+        if (restoreBootstrapStyle() == MainFrame.useBootstrap) {
+            restoreWindowsSizes();
+        }
 
         RootLayoutPanel.get().add(rootView);
     }
@@ -164,7 +170,8 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     
     public void resetLayout() {
         setDefaultVisible();
-        rootElement.resetDefaultSizes();
+        rootElement.resetWindowSize();
+        autoSizeWindows();
     }
 
     private void setDefaultVisible() {
@@ -176,13 +183,11 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         }
     }
 
-    public void setInitialSize(GAbstractWindow window, int width, int height) {
-        WindowElement windowElement = windowElementsMapping.get(window);
-        if (windowElement != null && windowElement.getView().isAttached()) {
-            if (width != 0 && height != 0) {
-                windowElement.changeInitialSize(width, height);
-                window.initialSizeSet = true;
-            }
+    public void autoSizeWindows() {
+        // we have to wait until windows are really visible and filled
+        // as setting calculated or auto sizes are in one method and auto sizing needs windows to be drawn
+        if (rootElement.getView().getOffsetWidth() > 0) {
+            rootElement.autoSizeWindows();
         }
     }
 
@@ -193,6 +198,7 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);
+    public abstract GNavigatorView getNavigatorView(GNavigatorWindow window);
 
     public void storeWindowsSizes() {
         Storage storage = Storage.getLocalStorageIfSupported();
@@ -226,6 +232,18 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
             }
         }
         return 0;
+    }
+
+    public void storeBootstrapStyle() {
+        Storage storage = Storage.getLocalStorageIfSupported();
+        if (storage != null) {
+            storage.setItem("bootstrapStyle", String.valueOf(MainFrame.useBootstrap));
+        }
+    }
+
+    public boolean restoreBootstrapStyle() {
+        Storage storage = Storage.getLocalStorageIfSupported();
+        return storage != null && Boolean.parseBoolean(storage.getItem("bootstrapStyle"));
     }
 
     private class WindowNode {

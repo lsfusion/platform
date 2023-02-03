@@ -1,10 +1,9 @@
 package lsfusion.gwt.client.navigator.window;
 
-import com.google.gwt.user.client.ui.HasAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.view.GToolbarNavigatorView;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public static final float TOP_ALIGNMENT = 0.0f;
@@ -31,6 +30,7 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public float alignmentY;
     public float alignmentX;
 
+    @Override
     public boolean isVertical() {
         return type == 1;
     }
@@ -46,5 +46,9 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
 
     public boolean hasVerticalTextPosition() {
         return verticalTextPosition == BOTTOM;
+    }
+
+    public boolean allButtonsActive() {
+        return MainFrame.useBootstrap && !isSystem() && !isRoot();
     }
 }

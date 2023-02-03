@@ -36,5 +36,9 @@ public abstract class Column<T, C> implements HasNativeSID {
 
   public abstract void updateDom(Cell cell, TableCellElement cellElement);
 
+//  public Element getSizedDom(Cell cell, TableCellElement cellElement) {
+//      return cellElement;
+//  }
+//
   public abstract boolean isCustomRenderer();
 }

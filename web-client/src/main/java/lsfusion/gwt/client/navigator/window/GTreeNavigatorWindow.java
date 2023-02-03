@@ -9,4 +9,9 @@ public class GTreeNavigatorWindow extends GNavigatorWindow {
     public GNavigatorView createView(GINavigatorController navigatorController) {
         return new GTreeNavigatorView(this, navigatorController);
     }
+
+    @Override
+    public boolean isVertical() {
+        return true;
+    }
 }

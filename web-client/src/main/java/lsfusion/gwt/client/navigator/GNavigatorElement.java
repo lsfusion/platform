@@ -62,4 +62,8 @@ public abstract class GNavigatorElement implements Serializable {
                         ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a></html>",
                         caption, canonicalName, creationPath) : caption;
     }
+    
+    public boolean isFolder() {
+        return false;
+    }
 }

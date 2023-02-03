@@ -21,6 +21,9 @@ public abstract class WindowElement {
     public double pixelWidth;
     public double pixelHeight;
     public boolean sizeStored = false;
+    public boolean initialSizeSet = false;
+    
+    public boolean autoSize;
 
     public WindowElement(WindowsController main, int x, int y, int width, int height) {
         this.main = main;
@@ -57,11 +60,11 @@ public abstract class WindowElement {
         return getView();
     }
 
-    protected void setChildSize(WindowElement child) {}
     public abstract void addElement(WindowElement window);
     public abstract String getCaption();
     public abstract Widget getView();
-    
+    public abstract boolean isAutoSize();
+
     public abstract String getSID();
 
     protected String getSID(Collection<WindowElement> windows) {
@@ -85,6 +88,10 @@ public abstract class WindowElement {
     public String getStorageSizeKey() {
         return GwtClientUtils.getLogicsName() + "_" + getSID() + "_size";
     }
+
+    public int getAutoSize(boolean vertical) {
+        return vertical ? getView().getOffsetHeight() : getView().getOffsetWidth();
+    }
     
     protected double getPixelHeight() {
         return pixelHeight;
@@ -93,26 +100,17 @@ public abstract class WindowElement {
     protected double getPixelWidth() {
         return pixelWidth;
     }
-    
-    public double getInitialWidth() {
-        return initialWidth;
-    }
-    
-    public double getInitialHeight() {
-        return initialHeight;
-    } 
 
-    public void changeInitialSize(int width, int height) {
-        if (!sizeStored) {
-            if (width > pixelWidth) {
-                pixelWidth = width;
-            }
-            if (height > pixelHeight) {
-                pixelHeight = height;
-            }
-        }
-        if (parent != null) {
-            parent.setChildSize(this);
+    public void resetWindowSize() {
+        sizeStored = false;
+        initialSizeSet = false;
+    }
+
+    public void changePixelSize(boolean vertical, int size) {
+        if (vertical) {
+            pixelHeight = size;
+        } else {
+            pixelWidth = size;
         }
     }
 }

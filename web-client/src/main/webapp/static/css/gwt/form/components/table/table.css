@@ -1,17 +1,27 @@
-.table {
+/* it's better to do not use table to avoid breaking layout in other bootstrap components*/
+.lsf-table {
     table-layout: fixed; /* we want predictable (not dependant from the content) manual column sizes  */
     width: 100%; /* it's odd but without this table-layout is switched to auto */
     height: fit-content; /* it's even more odd - without this height : 100% in tds won't work */
 }
 
 .cell-div {
-    /* it's tricky here, this cell-div used for property rendering and in particular property "sizing"
-     "sizing" needs box-sizing to be content-box to ignore paddings, but it's no good for width 100%, so we have to
-     set it to fill-available to have 100% with the respect of paddings (for this class explicit width is not set, for now, while colgroup widths are used)*/
     width: 100%;
+    height: 100%;
+}
+
+/* in grid non-column row prop-size-value can be set when there is an explicit-height*/
+.prop-size-value.cell-div {
+    /* it's tricky here
+     cell-div wants 100% and border-box, but prop-size-value wants content-box*/
+    /* so we use the hack with fill-available which respects paddings, and actual width is set in colgroup */
     width: -webkit-fill-available;
     width: -moz-available;
-    min-height: 100%; /* we want to stretch div in the cell even if the explicit height is set */
+
+    /* we want to stretch div in the cell even if the explicit height is set */
+    /* however there is a problem: prop-size-value sets box-sizing to content-box, and 100% starts ignoring paddings, so the content can overflow the container element */
+    /* it's not really clear how to fix this, the above hack doesn't work. but it's a really rare case (explicit height, wrapped renderer, it has paddings and it's not the largest component) so we'll ignore it for now */
+    min-height: 100%;
 }
 
 /* ----- GGridPropertyTable ----- */

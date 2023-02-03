@@ -104,11 +104,11 @@
     background-color: var(--component-hover-background-color);
 }
 
-.fa, .fa-brands, .fa-classic, .fa-regular, .fa-sharp, .fa-solid, .fab, .far, .fas {
-    line-height: inherit;
-}
+/*.fa, .fa-brands, .fa-classic, .fa-regular, .fa-sharp, .fa-solid, .fab, .far, .fas {*/
+/*    line-height: inherit;*/
+/*}*/
 
-.table .property-toolbar-item.background-inherit:hover {
+.property-toolbar-item:hover {
     background-color: var(--component-hover-background-color);
 }
 
@@ -162,11 +162,12 @@
     padding: 0;
 }
 /* only partly fixes vertical borders */
-.table.table-bordered .dataGridStickyHeader,
-.table.table-bordered .dataGridStickyCell,
-.table.table-bordered .dataGridStickyFooter {
+.table.table-bordered.scrolled-right .dataGridStickyHeader,
+.table.table-bordered.scrolled-right .dataGridStickyCell,
+.table.table-bordered.scrolled-right .dataGridStickyFooter {
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
     border-right: none;
+    border-left: none;
 }
 /* --- --- */
 

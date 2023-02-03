@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator.window.view;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -229,6 +230,16 @@ public class SplitWindowElement extends WindowElement {
     public Widget getView() {
         return splitPanel;
     }
+
+    @Override
+    public boolean isAutoSize() {
+        for (WindowElement child : children.keySet()) {
+            if (child.isAutoSize()) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     public boolean isChildVisible(WindowElement child) {
         return children.get(child);
@@ -298,16 +309,6 @@ public class SplitWindowElement extends WindowElement {
         }
     }
     
-    @Override
-    protected void setChildSize(WindowElement child) {
-        if (isChildVisible(child)) {
-            Widget childView = child.getView();
-            if (splitPanel.getWidgetDirection(childView) != CENTER) {
-                splitPanel.setWidgetSize(childView, getChildSize(child));
-            }
-        }
-    }
-    
     private double getChildSize(WindowElement child) { // not CENTER
         DockLayoutPanel.Direction direction = windowDirections.get(child);
         if (direction == NORTH || direction == SOUTH) {
@@ -365,21 +366,59 @@ public class SplitWindowElement extends WindowElement {
         }
     }
     
-    public void resetDefaultSizes() {
+    public void resetWindowSize() {
+        super.resetWindowSize();
         for (WindowElement windowElement : children.keySet()) {
-            if (children.get(windowElement)) {
-                Widget windowView = windowElement.getView();
-                DockLayoutPanel.Direction direction = splitPanel.getWidgetDirection(windowView);
-                if (direction == NORTH || direction == SOUTH) {
-                    splitPanel.setWidgetSize(windowView, windowElement.getInitialHeight());
-                } else if (direction != CENTER) {
-                    splitPanel.setWidgetSize(windowView, windowElement.getInitialWidth());
+            windowElement.resetWindowSize();
+        }
+    }
+
+    public void autoSizeWindows() {
+        for (WindowElement child : children.keySet()) {
+            if (children.get(child)) { // visible
+                if (!child.initialSizeSet && !child.sizeStored) {
+                    Widget windowView = child.getView();
+                    DockLayoutPanel.Direction direction = splitPanel.getWidgetDirection(windowView);
+                    Boolean vertical = null;
+                    if (direction == NORTH || direction == SOUTH) {
+                        vertical = true;
+                    } else if (direction != CENTER) {
+                        vertical = false;
+                    }
+                    if (vertical != null) { // not CENTER
+                        int size;
+                        if (child.isAutoSize()) {
+                            size = child.getAutoSize(vertical);
+                            if (size > 0 && !MainFrame.useBootstrap) {
+                                size += 1; // for border
+                            }
+                        } else {
+                            // calculated according to layout
+                            size = (int) (vertical ? child.initialHeight : child.initialWidth);
+                        }
+                        if (size > 0) { // skip setting initial size if window doesn't have size yet
+                            child.changePixelSize(vertical, size);
+                            splitPanel.setWidgetSize(windowView, size);
+                            child.initialSizeSet = true;
+                        }
+                    }
                 }
 
-                if (windowElement instanceof SplitWindowElement) {
-                    ((SplitWindowElement) windowElement).resetDefaultSizes();
+                if (child instanceof SplitWindowElement) {
+                    ((SplitWindowElement) child).autoSizeWindows();
                 }
             }
         }
+    }
+
+    public int getAutoSize(boolean vertical) {
+        // maximum of auto-sized children in one row
+        int size = 0;
+        for (WindowElement child : children.keySet()) {
+            if (children.get(child) && child.isAutoSize()) {
+                size = Math.max(size, child.getAutoSize(vertical));
+            }
+        }
+        return size;
     }
 }

@@ -24,14 +24,15 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.size.GSize;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -45,7 +46,6 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
-import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -187,11 +187,14 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private void updateScrolledState() {
         int verticalScrollPosition = tableContainer.getVerticalScrollPosition();
+        int horizontalScrollPosition = tableContainer.getHorizontalScrollPosition();
         //The mobile version does not set the "scrolled-up" class correctly when scrolling to the bottom of the table due to size rounding.
         // This is solved by adding one pixel to the calculation
         int adjustment = MainFrame.mobileAdjustment;
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
+
+        tableWidget.setStyleName("scrolled-right", horizontalScrollPosition > adjustment);
     }
 
     private static Set<String> browserKeyEvents;
@@ -1517,7 +1520,13 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             TableCellElement colElement = tableWidget.colRowElement.getCells().getItem(colRowInd++);
 //            TableColElement colElement = tableWidget.colGroupElement.getChild(i).cast();
 
-            FlexPanel.setGridWidth(colElement, getColumnWidth(i).getString());
+//            Column<T, ?> column = getColumn(i);
+//            Cell cell = new Cell(-1, i, column, null); // the same as in buildColumnRow
+//            Element sizeElement = SimpleTextBasedCellRenderer.getSizeElement(column.getSizedDom(cell, colElement));
+            Element sizeElement = colElement; // the problem is that table-loyout fixed doesn't care about the cell content, so it's not possible to do the sizing for the inner div / input components
+
+            FlexPanel.setGridWidth(sizeElement, getColumnWidth(i).getString());
+            sizeElement.addClassName("prop-size-value");
 
             if(isColumnFlex(i)) {
                 double columnFlexPerc = getColumnFlexPerc(i);
@@ -1653,6 +1662,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName("table");
+            tableElement.addClassName("lsf-table");
 
             headerElement = tableElement.createTHead();
             headerElement.setClassName("dataGridHeader");

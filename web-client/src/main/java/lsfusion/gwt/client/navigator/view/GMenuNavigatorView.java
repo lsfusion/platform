@@ -7,7 +7,7 @@ import lsfusion.gwt.client.navigator.window.GMenuNavigatorWindow;
 
 import java.util.Set;
 
-public class GMenuNavigatorView extends GNavigatorView {
+public class GMenuNavigatorView extends GNavigatorView<GMenuNavigatorWindow> {
     public GMenuNavigatorView(GMenuNavigatorWindow window, GINavigatorController navigatorController) {
         super(window, new Label(window.caption), navigatorController);
     }

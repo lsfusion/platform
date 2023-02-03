@@ -26,7 +26,7 @@ public class FormGroupHierarchyCreator {
     private boolean addDependencies(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, Set<GroupObjectEntity> groupsSet) {
         boolean changed = false;
         GroupObjectEntity prev = null, cur = null;
-        for (GroupObjectEntity group : getFormGroupsIt()) {
+        for (GroupObjectEntity group : form.getGroupsListIt()) { // probably groups from the upper method should / could be used
             if (groupsSet.contains(group)) {
                 prev = cur;
                 cur = group;
@@ -36,26 +36,6 @@ public class FormGroupHierarchyCreator {
             }
         }
         return changed;
-    }
-
-    // temporary
-    private boolean checkDependencies(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, Set<GroupObjectEntity> groupsSet) {
-        boolean changed = false;
-        GroupObjectEntity prev = null, cur = null;
-        for (GroupObjectEntity group : getFormGroupsIt()) {
-            if (groupsSet.contains(group)) {
-                prev = cur;
-                cur = group;
-            }
-            if (prev != null) {
-                changed = !graph.get(cur).contains(prev) || changed;
-            }
-        }
-        return changed;
-    }
-
-    private Iterable<GroupObjectEntity> getFormGroupsIt() {
-        return form.getGroupsIt();
     }
 
     public static Set<GroupObjectEntity> getGroupsByObjects(ImSet<ObjectEntity> objects, ImOrderSet<GroupObjectEntity> groups) {
