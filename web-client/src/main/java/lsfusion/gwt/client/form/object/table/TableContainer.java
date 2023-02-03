@@ -3,9 +3,11 @@ package lsfusion.gwt.client.form.object.table;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.ScrollEvent;
-import com.google.gwt.event.dom.client.ScrollHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.event.dom.client.TouchMoveEvent;
+import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
@@ -81,13 +83,15 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         return getScrollableElement().getScrollHeight();
     }
 
-    public HandlerRegistration addScrollHandler(ScrollHandler handler) {
+    private <H extends EventHandler> void addHandler(H handler, DomEvent.Type<H> type, int event) {
         /*
          * Sink the event on the scrollable element, which may not be the root
          * element.
          */
-        sinkEvents(Event.ONSCROLL);
-        return addHandler(handler, ScrollEvent.getType());
+        if (handler != null) {
+            sinkEvents(event);
+            addHandler(handler, type);
+        }
     }
 
     public TableComponent getTableComponent() {
@@ -97,10 +101,10 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
     public void changeTableComponent(TableComponent tableComponent, boolean boxed) {
         this.tableComponent = tableComponent;
         setSizedWidget(tableComponent.getWidget(), autoSize);
-        ScrollHandler scrollHandler = tableComponent.getScrollHandler();
-        if (scrollHandler != null) {
-            addScrollHandler(scrollHandler);
-        }
+
+        addHandler(tableComponent.getScrollHandler(), ScrollEvent.getType(), Event.ONSCROLL);
+        addHandler(tableComponent.getMouseWheelScrollHandler(), MouseWheelEvent.getType(), Event.ONMOUSEWHEEL);
+        addHandler(tableComponent.getTouchMoveHandler(), TouchMoveEvent.getType(), Event.ONTOUCHMOVE);
 
         if(boxed)
             addStyleName("tableContainerBoxed");

@@ -20,7 +20,9 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
+import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.size.GSize;
@@ -153,6 +155,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         }
     };
 
+    @Override
     public ScrollHandler getScrollHandler() {
         return event -> {
             calcLeftNeighbourRightBorder(true);
@@ -160,6 +163,24 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
             updateScrolledState();
         };
+    }
+
+    @Override
+    public MouseWheelHandler getMouseWheelScrollHandler() {
+        return event -> onHumanInputEvent();
+    }
+
+    @Override
+    public TouchMoveHandler getTouchMoveHandler() {
+        return event -> onHumanInputEvent();
+    }
+
+    private void onHumanInputEvent() {
+        tableWidget.setStyleName("was-scrolled-recently", true);
+        if (recentlyScrolledTimer.isRunning())
+            recentlyScrolledTimer.cancel();
+
+        recentlyScrolledTimer.schedule(1000);
     }
 
     protected abstract void scrollToEnd(boolean toEnd);
@@ -173,12 +194,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         boolean scrolledUp = verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment;
         tableWidget.setStyleName("scrolled-down", scrolledDown);
         tableWidget.setStyleName("scrolled-up", scrolledUp);
-
-        tableWidget.setStyleName("was-scrolled-recently", true);
-        if (recentlyScrolledTimer.isRunning())
-            recentlyScrolledTimer.cancel();
-
-        recentlyScrolledTimer.schedule(1000);
     }
 
     private static Set<String> browserKeyEvents;
