@@ -538,17 +538,17 @@
 
             <!-- GWT-related libraries -->
             <dependency>
-                <groupId>com.google.gwt</groupId>
+                <groupId>org.gwtproject</groupId>
                 <artifactId>gwt-servlet</artifactId>
                 <version>${gwt.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.google.gwt</groupId>
+                <groupId>org.gwtproject</groupId>
                 <artifactId>gwt-user</artifactId>
                 <version>${gwt.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.google.gwt</groupId>
+                <groupId>org.gwtproject</groupId>
                 <artifactId>gwt-dev</artifactId>
                 <version>${gwt.version}</version>
             </dependency>
@@ -710,12 +710,12 @@
                     </executions>
                     <dependencies>
                         <dependency>
-                            <groupId>com.google.gwt</groupId>
+                            <groupId>org.gwtproject</groupId>
                             <artifactId>gwt-user</artifactId>
                             <version>${gwt.version}</version>
                         </dependency>
                         <dependency>
-                            <groupId>com.google.gwt</groupId>
+                            <groupId>org.gwtproject</groupId>
                             <artifactId>gwt-codeserver</artifactId>
                             <version>${gwt.version}</version>
                         </dependency>
