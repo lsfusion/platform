@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.*;
+import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -11,6 +12,7 @@ import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.object.table.TableContainer;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -277,6 +279,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 ((RequiresResize) child).onResize();
             }
         }
+
+        onResizeHandlers.forEach(Runnable::run);
+    }
+
+    private List<Runnable> onResizeHandlers = new ArrayList<>();
+    private boolean addOnResizeHandler(Runnable onResizeHandler) {
+        return onResizeHandlers.add(onResizeHandler);
+    }
+
+    private boolean removeVisibilityChangeHandler(Runnable onResizeHandler) {
+        return onResizeHandlers.remove(onResizeHandler);
     }
 
     @Override
@@ -1405,5 +1418,15 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     protected void insert(Widget child, Element container, int beforeIndex, boolean domInsert) {
         assert false;
         super.insert(child, container, beforeIndex, domInsert);
+    }
+
+    private static void setContentScrolled(Widget widget) {
+        widget.getParent().setStyleName("scroll-down", widget.getElement().getScrollTop() > MainFrame.mobileAdjustment);
+    }
+
+    public static void registerContentScrolledEvent(FlexPanel widget) {
+        widget.sinkEvents(Event.ONSCROLL);
+        widget.addHandler(event -> setContentScrolled(widget), ScrollEvent.getType());
+        widget.addOnResizeHandler(() -> setContentScrolled(widget));
     }
 }

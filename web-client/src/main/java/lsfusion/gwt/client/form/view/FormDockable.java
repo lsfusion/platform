@@ -35,6 +35,7 @@ public final class FormDockable extends FormContainer {
         this.canonicalName = canonicalName;
 
         contentWidget = new ContentWidget();
+        FlexPanel.registerContentScrolledEvent(contentWidget);
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);

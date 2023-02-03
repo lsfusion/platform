@@ -20,12 +20,15 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
+import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
@@ -43,7 +46,6 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
-import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -70,10 +72,10 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     private final ArrayList<Column<T, ?>> columns = new ArrayList<>();
 
-    private HeaderBuilder<T> footerBuilder;
+    private final DefaultHeaderBuilder<T> footerBuilder;
     private final List<Header<?>> footers = new ArrayList<>();
 
-    private HeaderBuilder<T> headerBuilder;
+    private final DefaultHeaderBuilder<T> headerBuilder;
     private final List<Header<?>> headers = new ArrayList<>();
 
     // pending dom updates
@@ -153,6 +155,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         }
     };
 
+    @Override
     public ScrollHandler getScrollHandler() {
         return event -> {
             calcLeftNeighbourRightBorder(true);
@@ -162,6 +165,24 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         };
     }
 
+    @Override
+    public MouseWheelHandler getMouseWheelScrollHandler() {
+        return event -> onHumanInputEvent();
+    }
+
+    @Override
+    public TouchMoveHandler getTouchMoveHandler() {
+        return event -> onHumanInputEvent();
+    }
+
+    private void onHumanInputEvent() {
+        tableWidget.setStyleName("was-scrolled-recently", true);
+        if (recentlyScrolledTimer.isRunning())
+            recentlyScrolledTimer.cancel();
+
+        recentlyScrolledTimer.schedule(1000);
+    }
+
     protected abstract void scrollToEnd(boolean toEnd);
 
     private void updateScrolledState() {
@@ -169,17 +190,11 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int horizontalScrollPosition = tableContainer.getHorizontalScrollPosition();
         //The mobile version does not set the "scrolled-up" class correctly when scrolling to the bottom of the table due to size rounding.
         // This is solved by adding one pixel to the calculation
-        int adjustment = MainFrame.mobile ? 1 : 0;
+        int adjustment = MainFrame.mobileAdjustment;
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
-        
+
         tableWidget.setStyleName("scrolled-right", horizontalScrollPosition > adjustment);
-
-        tableWidget.setStyleName("was-scrolled-recently", true);
-        if (recentlyScrolledTimer.isRunning())
-            recentlyScrolledTimer.cancel();
-
-        recentlyScrolledTimer.schedule(1500);
     }
 
     private static Set<String> browserKeyEvents;
@@ -661,20 +676,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
      */
     public Header<?> getFooter(int index) {
         return footers.get(index);
-    }
-
-    /**
-     * Get the {@link HeaderBuilder} used to generate the footer section.
-     */
-    public HeaderBuilder<T> getFooterBuilder() {
-        return footerBuilder;
-    }
-
-    /**
-     * Get the {@link HeaderBuilder} used to generate the header section.
-     */
-    public HeaderBuilder<T> getHeaderBuilder() {
-        return headerBuilder;
     }
 
     /**

@@ -129,7 +129,7 @@ public abstract class FormsController {
             toolbarView.addComponent(mobileMenuButton);
         }
 
-        tabsPanel = new FlexTabbedPanel(null, toolbarView);
+        tabsPanel = new FlexTabbedPanel(toolbarView);
         if (MainFrame.mobile) {
             tabsPanel.getElement().addClassName("mobileFormsTabPanel");
             tabsPanel.getElement().getStyle().setProperty("flexDirection", "column-reverse");
@@ -150,6 +150,8 @@ public abstract class FormsController {
                 isAdding = false;
             }
         });
+
+        tabsPanel.addStyleName("forms-container");
 
         initEditModeTimer();
     }

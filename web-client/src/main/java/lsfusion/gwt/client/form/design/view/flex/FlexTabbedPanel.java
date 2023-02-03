@@ -13,20 +13,18 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     protected TabBar tabBar;
 
     public FlexTabbedPanel() {
-        this(null, null);
+        this(null);
     }
-    public FlexTabbedPanel(String tabBarClass, Widget extraTabWidget) {
-        this(tabBarClass, extraTabWidget, true);
+    public FlexTabbedPanel(Widget extraTabWidget) {
+        this(extraTabWidget, true);
     }
     public FlexTabbedPanel(boolean vertical) {
-        this(null, null, vertical);
+        this(null, vertical);
     }
-    private FlexTabbedPanel(String tabBarClass, Widget extraTabWidget, boolean vertical) {
+    private FlexTabbedPanel(Widget extraTabWidget, boolean vertical) {
         super(vertical);
 
         FlexTabBar tabBar = new FlexTabBar(extraTabWidget, !vertical);
-        if (tabBarClass != null)
-            tabBar.addStyleName(tabBarClass);
         add(tabBar, GFlexAlignment.STRETCH);
         tabBar.setBeforeSelectionHandler(this::onBeforeTabSelected);
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);

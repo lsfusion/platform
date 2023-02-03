@@ -98,6 +98,7 @@ public abstract class DataGridHeaderBuilder<T> implements HeaderBuilder<T> {
         Element arrowContainer = Document.get().createElement("div");
         arrowContainer.addClassName("arrow-container");
         arrowContainer.appendChild(button);
+
         arrowTH.appendChild(arrowContainer);
         parent.appendChild(arrowTH);
     }

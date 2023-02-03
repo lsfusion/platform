@@ -176,7 +176,6 @@
                 "static/css/gwt/form/components/base/popup-menu.css",
                 "static/css/gwt/form/components/base/progress-bar.css",
                 "static/css/gwt/form/components/base/resizable-window.css",
-
                 "static/css/gwt/form/components/property/property.css",
                 "static/css/gwt/form/components/property/property-toolbar.css",
 
