@@ -65,7 +65,7 @@ where `blankPadded`, `caseInsensitive` and `length` are in turn determined as:
 
     IF p1.integerPart >= p2.integerPart AND p1.precision >= p2.precision
         result = p1 
-    ELSE IF p1.integerPart >= p2.integerPart AND p1.precision >= p2.precision
+    ELSE IF p1.integerPart <= p2.integerPart AND p1.precision <= p2.precision
         result = p2 
     ELSE IF p1.integerPart > p2.integerPart  
         result = NUMERIC[p1.integerPart+p2.precision, p2.precision]
