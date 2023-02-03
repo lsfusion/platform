@@ -1,14 +1,4 @@
-.modal-form {
-    z-index: 1000;
-
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-}
-
-.modal.show {
+.modal-form > .show {
     display: block;
 }
 
@@ -19,14 +9,4 @@
 .modal-dialog.modal-fit-content {
     max-width: none;
     width: fit-content;
-}
-
-.modal-backdrop.show {
-    opacity: 0.3;
-}
-
-.modal-content {
-    border: 1px solid var(--dialog-outer-border-color);
-    background-color: var(--background-color);
-    overflow: hidden;
 }

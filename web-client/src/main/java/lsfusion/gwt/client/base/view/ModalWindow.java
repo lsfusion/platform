@@ -75,7 +75,7 @@ public class ModalWindow extends ResizableComplexPanel {
         header.getElement().appendChild(title);
 
         content = new ResizableComplexPanel();
-        content.setStyleName("modal-content");
+        content.setStyleName("modal-content bg-light");
         dialog.setWidget(content);
         content.add(header);
 
