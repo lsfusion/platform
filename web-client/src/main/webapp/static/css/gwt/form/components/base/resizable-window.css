@@ -21,10 +21,6 @@
     width: fit-content;
 }
 
-.modal-dialog-centered {
-    min-height: calc(100% - 1.75rem * 2);
-}
-
 .modal-backdrop.show {
     opacity: 0.3;
 }
@@ -33,20 +29,4 @@
     border: 1px solid var(--dialog-outer-border-color);
     background-color: var(--background-color);
     overflow: hidden;
-}
-
-.modal-title {
-    margin: 0;
-}
-
-.modal-body {
-    display: flex;
-}
-
-.modal-footer {
-    padding: 0.25em;
-}
-
-.modal-footer > * {
-    margin: 0.125rem;
 }

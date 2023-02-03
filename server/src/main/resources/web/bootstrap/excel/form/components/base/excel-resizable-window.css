@@ -28,6 +28,7 @@
 
 .modal-dialog-centered {
     display: flex;
+    min-height: calc(100% - 1.75rem * 2);
     align-items: center;
 }
 
@@ -60,6 +61,7 @@
 .modal-body {
     flex: 1 1 auto;
     padding: 0.5em;
+    display: flex;
 }
 
 .modal-footer {
@@ -68,5 +70,14 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
+    padding: 0.25em;
     border-top: 1px solid var(--dialog-outer-border-color);
+}
+
+.modal-footer > * {
+    margin: 0.125rem;
+}
+
+.modal-title {
+    margin: 0;
 }
