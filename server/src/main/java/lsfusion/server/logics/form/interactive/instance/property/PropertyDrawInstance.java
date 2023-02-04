@@ -284,6 +284,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             return property;
         }
 
+        public PropertyDrawExtraType getType() {
+            return type;
+        }
+
         @Override
         public byte getTypeID() {
             return type.getPropertyReadType();

@@ -55,7 +55,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 229;
+        return 230;
     }
 
     public static String getPlatformVersion() {
@@ -322,6 +322,10 @@ public class BaseUtils {
             return new StringWithFiles(prefixes, names, files);
         }
 
+        if (objectType == 16) {
+            return IOUtils.readImageIcon(inStream);
+        }
+
         throw new IOException();
     }
 
@@ -470,6 +474,12 @@ public class BaseUtils {
                 outStream.writeInt(obj.length);
                 outStream.write(obj);
             }
+            return;
+        }
+
+        if (object instanceof AppImage) {
+            outStream.writeByte(16);
+            IOUtils.writeImageIcon(outStream, (AppImage) object);
             return;
         }
 
@@ -1348,6 +1358,9 @@ public class BaseUtils {
 
     public static String getFileName(String name, String extension) {
         return (extension != null && !extension.isEmpty() ? (name + "." + extension) : name).replaceAll("[/\\\\]", ""); //remove / and \
+    }
+    public static String addExtension(String name, String extension) {
+        return extension != null && !extension.isEmpty() ? (name + "." + extension) : name;
     }
 
     public static String firstWord(String string, String separator) {

@@ -25,23 +25,18 @@ public class ClientNavigatorChanges {
         for (int i = 0; i < count; i++) {
             byte type = inStream.readByte();
             ClientPropertyNavigator propertyNavigator;
-            Object value;
+            String canonicalName = deserializeString(inStream);
             switch (type) {
                 case 0:
-                    String canonicalName = deserializeString(inStream);
                     propertyNavigator = new ClientCaptionElementNavigator(canonicalName);
-                    value = deserializeObject(inStream);
                     break;
                 case 1:
-                    canonicalName = deserializeString(inStream);
                     propertyNavigator = new ClientImageElementNavigator(canonicalName);
-                    boolean staticImage = inStream.readBoolean();
-                    value = staticImage ? IOUtils.readImageIcon(inStream) : deserializeObject(inStream);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");
             }
-            properties.put(propertyNavigator, value);
+            properties.put(propertyNavigator, deserializeObject(inStream));
         }
     }
 }

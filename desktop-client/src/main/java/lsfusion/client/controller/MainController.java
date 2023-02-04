@@ -448,7 +448,7 @@ public class MainController {
     private static final String DEFAULT_ICON_PATH = "logo/";
     public static List<Image> getMainIcons(ServerSettings serverSettings) {
         Set<Image> images = new LinkedHashSet<>();
-        RawFileData logicsMainIcon = serverSettings != null ? serverSettings.logicsIcon : null;
+        RawFileData logicsMainIcon = serverSettings != null && serverSettings.logicsIcon != null ? serverSettings.logicsIcon.getRawFile() : null;
         if(logicsMainIcon != null) {
             ImageIcon resource = logicsMainIcon.getImageIcon();
             if(resource.getImageLoadStatus() == MediaTracker.COMPLETE) {
@@ -465,7 +465,7 @@ public class MainController {
     }
 
     public static ImageIcon getLogo(ServerSettings serverSettings) {
-        RawFileData logicsMainLogo = serverSettings != null ? serverSettings.logicsLogo : null;
+        RawFileData logicsMainLogo = serverSettings != null && serverSettings.logicsLogo != null ? serverSettings.logicsLogo.getRawFile() : null;
         return logicsMainLogo != null ? logicsMainLogo.getImageIcon() : getImageIcon(DEFAULT_ICON_PATH + "logo.png");
     }
 

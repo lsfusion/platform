@@ -1,7 +1,5 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.file.AppImage;
-import lsfusion.base.file.RawFileData;
 import lsfusion.client.navigator.ClientCaptionElementNavigator;
 import lsfusion.client.navigator.ClientImageElementNavigator;
 import lsfusion.client.navigator.ClientNavigatorChanges;
@@ -10,10 +8,9 @@ import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.navigator.GCaptionElementNavigator;
 import lsfusion.gwt.client.navigator.GImageElementNavigator;
 import lsfusion.gwt.client.navigator.GPropertyNavigator;
-import lsfusion.gwt.server.FileUtils;
-import lsfusion.interop.logics.ServerSettings;
+import lsfusion.gwt.server.MainDispatchServlet;
 
-import javax.servlet.ServletContext;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -32,24 +29,14 @@ public class ClientNavigatorChangesToGwtConverter extends ObjectConverter {
 
     @Cached
     @Converter(from = ClientNavigatorChanges.class)
-    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges, ServletContext servletContext, ServerSettings settings) {
+    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges, MainDispatchServlet servlet, String sessionID) throws IOException {
         GNavigatorChangesDTO navigatorChanges = new GNavigatorChangesDTO();
         navigatorChanges.properties = new GPropertyNavigator[clientChanges.properties.size()];
         navigatorChanges.values = new Serializable[clientChanges.properties.size()];
         int i = 0;
         for (Map.Entry<ClientPropertyNavigator, Object> entry : clientChanges.properties.entrySet()) {
             navigatorChanges.properties[i] = convertOrCast(entry.getKey());
-
-            Serializable value;
-            if(entry.getValue() instanceof AppImage) { //static image
-                value = FileUtils.createImageFile(servletContext, settings, (AppImage) entry.getValue(), false);
-            } else if (entry.getValue() instanceof RawFileData) { //dynamic image
-                value = FileUtils.saveApplicationFile((RawFileData) entry.getValue());
-            } else {
-                value = (Serializable) entry.getValue();
-            }
-
-            navigatorChanges.values[i] = value;
+            navigatorChanges.values[i] = ClientFormChangesToGwtConverter.convertFileValue(entry.getValue(), null, servlet, sessionID);
             i++;
         }
         return navigatorChanges;

@@ -24,9 +24,5 @@ public abstract class PropertyNavigator {
         outStream.writeByte(getTypeID());
     }
 
-    public void serializeValue(DataOutputStream outStream, Object value) throws IOException {
-        serializeObject(outStream, value);
-    }
-
     public abstract byte getTypeID();
 }

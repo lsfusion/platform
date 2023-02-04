@@ -9,6 +9,7 @@ import com.sksamuel.scrimage.nio.StreamingGifWriter;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.EConsumer;
@@ -16,7 +17,6 @@ import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.view.GColorTheme;
-import lsfusion.http.provider.form.FormSessionObject;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.print.ReportGenerationData;
@@ -34,10 +34,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
 import java.io.*;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class FileUtils {
@@ -120,8 +122,11 @@ public class FileUtils {
         return APP_STATIC_FOLDER_SUBPATH + "/" + settings.logicsName;
     }
 
-    public static AppStaticImage createImageFile(ServletContext servletContext, ServerSettings settings, AppImage imageHolder, boolean canBeDisabled) {
+    public static AppStaticImage createImageFile(MainDispatchServlet servlet, String sessionID, AppImage imageHolder, boolean canBeDisabled) throws IOException {
         if (imageHolder != null) {
+            ServletContext servletContext = servlet.getServletContext();
+            ServerSettings settings = servlet.getNavigatorProvider().getServerSettings(sessionID);
+
             AppStaticImage imageDescription = new AppStaticImage(imageHolder.fontClasses);
             RawFileData defaultImageFile = imageHolder.getImage(ColorTheme.DEFAULT);
             for (GColorTheme gColorTheme : GColorTheme.values()) {
@@ -191,15 +196,17 @@ public class FileUtils {
     }
 
     private final static boolean useDownloadForAppResources = true;
-    public static String saveWebFile(String fileName, RawFileData fileData, ServerSettings settings, boolean noAuth) {
+    // static image (app) with the fullpath (with the extension inside)
+    public static String saveWebFile(String fullPath, RawFileData fileData, ServerSettings settings, boolean noAuth) {
         // we don't know if it was the first start, so we don't want to override, since it is called too often (however this may lead to the "incorrect server cache")
         // UPD: server settings is cached, so we want to always override file (which can change after app server update)
         return saveDownloadFile(useDownloadForAppResources, settings.inDevMode ? DownloadStoreType.DEV : DownloadStoreType.STATIC,
-                (noAuth ? NOAUTH_FOLDER_PREFIX + "/" : "") + getStaticPath(settings), fileName, null, fileData, fileData.getID());
+                (noAuth ? NOAUTH_FOLDER_PREFIX + "/" : "") + getStaticPath(settings), fullPath, null, fileData, fileData.getID());
     }
 
-    private static String saveImageFile(EConsumer<OutputStream, IOException> file, String ID, boolean override, String imagesFolder, String imagePath, Result<String> rUrl) {
-        return saveDownloadFile(useDownloadForAppResources, override, DownloadStoreType.STATIC, imagesFolder, imagePath, null, rUrl, file, ID);
+    // static image (app or web-client) with the fullpath (with the extension inside)
+    private static String saveImageFile(EConsumer<OutputStream, IOException> file, String ID, boolean override, String imagesFolder, String fullPath, Result<String> rUrl) {
+        return saveDownloadFile(useDownloadForAppResources, override, DownloadStoreType.STATIC, imagesFolder, fullPath, null, rUrl, file, ID);
     }
 
     private static BufferedImage getBufferedImage(Image img, boolean gray) {
@@ -335,8 +342,8 @@ public class FileUtils {
         DEV // need not to be cached but stored
     }
 
-    private static String saveDownloadFile(boolean useDownload, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, RawFileData fileData, String ID) {
-        return saveDownloadFile(useDownload, false, storeType, innerPath, fileName, rCloser, null, fileData::write, ID);
+    private static String saveDownloadFile(boolean useDownload, DownloadStoreType storeType, String innerPath, String fullPath, Result<Runnable> rCloser, RawFileData fileData, String ID) {
+        return saveDownloadFile(useDownload, false, storeType, innerPath, fullPath, rCloser, null, fileData::write, ID);
     }
 
     private static String saveDownloadFile(boolean useDownload, boolean override, DownloadStoreType storeType, String innerPath, String fileName, Result<Runnable> rCloser, Result<String> rUrl, EConsumer<OutputStream, IOException> consumer, String ID) {
@@ -394,51 +401,62 @@ public class FileUtils {
         return url + "?" + urlParams;
     }
 
-    public static String saveApplicationFile(RawFileData fileData) { // for login page, logo and icon images
-        String fileName = fileData.getID();
-        return saveDataFile(fileName, true, true, null, fileData);
+    public static String saveApplicationFile(FileData fileData) { // for login page, logo and icon images
+        return saveStaticDataFile(fileData, null, true, null);
     }
 
-    public static String saveActionFile(RawFileData fileData) { // with single usage (action scoped), so will be deleted just right after downloaded
-        if(fileData != null) {
-            String fileName = BaseUtils.randomString(15);
-            return saveDataFile(fileName, false, false, null, fileData);
-        }
-        return null;
+    public static String saveActionFile(RawFileData fileData, String extension, String displayName) { // with single usage (action scoped), so will be deleted just right after downloaded
+        return saveDataFile(false, false, null, new FileData(fileData, extension), displayName);
     }
 
-    public static String saveFormFile(RawFileData fileData, FormSessionObject<?> sessionObject) { // multiple usages (form scoped), so should be deleted just right after form is closed
-        String fileName = fileData.getID();
-        Pair<String, Runnable> savedFile = sessionObject.savedTempFiles.get(fileName);
-        if (savedFile == null) {
-            Result<Runnable> rCloser = new Result<>();
-            savedFile = new Pair<>(saveDataFile(fileName, true, false, rCloser, fileData), rCloser.result);
-            sessionObject.savedTempFiles.put(fileName, savedFile);
-        }
-        return savedFile.first;
+    private static String saveStaticDataFile(FileData fileData, String displayName, boolean noAuth, Map<String, Pair<String, Runnable>> cacheMap) {
+        return saveDataFile(true, noAuth, cacheMap, fileData, displayName);
     }
 
-    private static String saveDataFile(String fileName, boolean isStatic, boolean noAuth, Result<Runnable> rCloser, RawFileData fileData) {
+    public static String saveFormFile(FileData fileData, String displayName, Map<String, Pair<String, Runnable>> cacheMap) { // multiple usages (form scoped), so should be deleted just right after form is closed
+        return saveStaticDataFile(fileData, displayName, false, cacheMap);
+    }
+
+    private static String saveDataFile(boolean isStatic, boolean noAuth, Map<String, Pair<String, Runnable>> cacheMap, FileData fileData, String displayName) {
         // we don't want to override file, since it's name is based on base64Hash or random
         assert !(noAuth && !isStatic); // noAuth => isStatic
-        return saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, fileData, null);
+
+        RawFileData rawFile = fileData.getRawFile();
+        String fileID = isStatic ? rawFile.getID() : BaseUtils.randomString(15);
+        if(displayName != null)
+            fileID = fileID + "/" + displayName;
+        String fileName = BaseUtils.addExtension(fileID, fileData.getExtension());
+
+        Function<Result<Runnable>, String> saveData = (rCloser) ->  saveDownloadFile(true, isStatic ? DownloadStoreType.STATIC : DownloadStoreType.TEMP, noAuth ? NOAUTH_FOLDER_PREFIX : "", fileName, rCloser, rawFile, null);
+
+        if(cacheMap != null) {
+            Pair<String, Runnable> savedFile = cacheMap.get(fileName);
+            if (savedFile == null) {
+                Result<Runnable> rCloser = new Result<>();
+                savedFile = new Pair<>(saveData.apply(rCloser), rCloser.result);
+                cacheMap.put(fileName, savedFile);
+            }
+            return savedFile.first;
+        }
+
+        return saveData.apply(null);
     }
 
-    public static Pair<String, String> exportReport(FormPrintType type, RawFileData report) {
+    public static String exportReport(FormPrintType type, RawFileData report) {
         try {
-            return new Pair<>(FileUtils.saveActionFile(report), type.getExtension());
+            return FileUtils.saveActionFile(report, type.getExtension(), "lsfReport");
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public static Pair<String, String> exportReport(FormPrintType type, ReportGenerationData reportData, RemoteLogicsInterface remoteLogics) {
+    public static String exportReport(FormPrintType type, ReportGenerationData reportData, RemoteLogicsInterface remoteLogics) {
         return exportReport(type, ReportGenerator.exportToFileByteArray(reportData, type, remoteLogics));
     }
 
-    public static Pair<String, String> exportFile(RawFileData file) {
+    public static String exportFile(RawFileData file) {
         try {
-            return new Pair<>(FileUtils.saveActionFile(file), "csv");
+            return FileUtils.saveActionFile(file, "csv", "lsfReport");
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

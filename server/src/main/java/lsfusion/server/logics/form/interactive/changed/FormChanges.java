@@ -1,11 +1,10 @@
 package lsfusion.server.logics.form.interactive.changed;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
-import lsfusion.base.ApiResourceBundle;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.Result;
-import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
@@ -14,15 +13,19 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.base.file.FileData;
+import lsfusion.base.file.NamedFileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.StringWithFiles;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.classes.data.file.ImageClass;
+import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -34,12 +37,12 @@ import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstan
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.util.List;
 
 import static lsfusion.base.BaseUtils.inlineFileSeparator;
 import static lsfusion.base.BaseUtils.serializeObject;
@@ -186,27 +189,7 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
-                    String[] parts = ((String) value).split(inlineFileSeparator);
-
-                    int length = parts.length / 2;
-                    String[] prefixes = new String[length + 1];
-                    String[] names = new String[length];
-                    RawFileData[] files = new RawFileData[length];
-                    for (int k = 0; k < length + 1; k++) {
-                        prefixes[k] = parts[k * 2];
-                        if (k * 2 + 1 < parts.length) {
-                            String name = parts[k * 2 + 1];
-                            Result<String> fullPath = new Result<>();
-                            files[k] = ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null);
-                            names[k] = fullPath.result;
-                        }
-                    }
-
-                    value = new StringWithFiles(prefixes, names, files);
-                }
-
-                BaseUtils.serializeObject(outStream, value);
+                BaseUtils.serializeObject(outStream, convertFileValue(getImageClass(propertyReadInstance), value));
             }
         }
 
@@ -242,6 +225,60 @@ public class FormChanges {
         }
 
         outStream.writeBoolean(needConfirm);
+    }
+
+    public static class NeedFileData {
+        public final Type type;
+
+        public NeedFileData(Type type) {
+            this.type = type;
+        }
+    }
+    public static Object convertFileValue(Supplier<NeedFileData> fnNeedFileData, Object value) {
+        if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
+            NeedFileData needFileData = fnNeedFileData.get();
+            if(needFileData != null) {
+                if(value instanceof RawFileData && needFileData.type instanceof StaticFormatFileClass)
+                    value = new FileData((RawFileData) value, ((StaticFormatFileClass) needFileData.type).getExtension());
+                return value;
+            }
+
+            return true;
+        }
+
+        if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
+            String[] parts = ((String) value).split(inlineFileSeparator);
+
+            int length = parts.length / 2;
+            String[] prefixes = new String[length + 1];
+            String[] names = new String[length];
+            RawFileData[] files = new RawFileData[length];
+            for (int k = 0; k < length + 1; k++) {
+                prefixes[k] = parts[k * 2];
+                if (k * 2 + 1 < parts.length) {
+                    String name = parts[k * 2 + 1];
+                    Result<String> fullPath = new Result<>();
+                    files[k] = ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null);
+                    names[k] = fullPath.result;
+                }
+            }
+
+            return new StringWithFiles(prefixes, names, files);
+        }
+
+        return value;
+    }
+
+    private static Supplier<NeedFileData> getImageClass(PropertyReaderInstance reader) {
+        return () -> {
+            Type readerType;
+            if ((reader instanceof PropertyDrawInstance && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
+                return new NeedFileData(readerType);
+            } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
+                return new NeedFileData(reader.getPropertyObjectInstance().getType());
+            }
+            return null;
+        };
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {

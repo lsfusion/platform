@@ -1,9 +1,10 @@
 package lsfusion.server.logics.navigator.changed;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.file.AppImage;
-import lsfusion.base.file.IOUtils;
+import lsfusion.server.logics.form.interactive.changed.FormChanges;
+import lsfusion.server.logics.navigator.ImageElementNavigator;
 import lsfusion.server.logics.navigator.PropertyNavigator;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +38,18 @@ public class NavigatorChanges {
             Object value = properties.getValue(i);
 
             propertyNavigator.serialize(outStream);
-            propertyNavigator.serializeValue(outStream, value);
+
+            serializeObject(outStream, FormChanges.convertFileValue(getImageClass(propertyNavigator), value));
         }
     }
+
+    private static Supplier<FormChanges.NeedFileData> getImageClass(PropertyNavigator reader) {
+        return () -> {
+            if (reader instanceof ImageElementNavigator) {
+                return new FormChanges.NeedFileData(reader.getProperty().getType());
+            }
+            return null;
+        };
+    }
+
 }

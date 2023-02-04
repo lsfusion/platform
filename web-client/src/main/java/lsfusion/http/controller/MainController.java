@@ -260,9 +260,9 @@ public class MainController {
     private Map<String, String> saveResources(ServerSettings serverSettings, List<Pair<String, RawFileData>> resources, boolean noAuth) {
         Map<String, String> versionedResources = new LinkedHashMap<>();
         for (Pair<String, RawFileData> resource : resources) {
-            String fileName = resource.first;
-            String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
-            versionedResources.put(extension.equals("html") ? new String(resource.second.getBytes()) : FileUtils.saveWebFile(fileName, resource.second, serverSettings, noAuth), extension);
+            String fullPath = resource.first;
+            String extension = BaseUtils.getFileExtension(fullPath);
+            versionedResources.put(extension.equals("html") ? new String(resource.second.getBytes()) : FileUtils.saveWebFile(fullPath, resource.second, serverSettings, noAuth), extension);
         }
         return versionedResources;
     }
@@ -309,7 +309,7 @@ public class MainController {
         return serverSettings != null && serverSettings.lsfParams != null ? serverSettings.lsfParams : null;
     }
 
-    private String getFileUrl(RawFileData file) {
+    private String getFileUrl(FileData file) {
         assert file != null;
         return FileUtils.saveApplicationFile(file);
     }

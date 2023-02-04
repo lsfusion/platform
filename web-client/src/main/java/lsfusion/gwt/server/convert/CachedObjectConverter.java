@@ -3,9 +3,11 @@ package lsfusion.gwt.server.convert;
 import lsfusion.base.file.AppImage;
 import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.server.FileUtils;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.ServletContext;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -16,15 +18,15 @@ import java.util.HashMap;
 public class CachedObjectConverter extends ObjectConverter {
     private final HashMap cache = new HashMap();
 
-    private final ServletContext servletContext;
-    private final ServerSettings settings;
-    protected CachedObjectConverter(ServletContext servletContext, ServerSettings settings) {
-        this.servletContext = servletContext;
-        this.settings = settings;
+    protected final MainDispatchServlet servlet;
+    protected final String sessionID;
+    protected CachedObjectConverter(MainDispatchServlet servlet, String sessionID) {
+        this.servlet = servlet;
+        this.sessionID = sessionID;
     }
 
-    protected AppStaticImage createImage(AppImage imageHolder, boolean canBeDisabled) {
-        return FileUtils.createImageFile(servletContext, settings, imageHolder, canBeDisabled);
+    protected AppStaticImage createImage(AppImage imageHolder, boolean canBeDisabled) throws IOException {
+        return FileUtils.createImageFile(servlet, sessionID, imageHolder, canBeDisabled);
     }
 
     @Override

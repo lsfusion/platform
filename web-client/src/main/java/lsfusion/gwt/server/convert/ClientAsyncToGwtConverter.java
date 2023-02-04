@@ -9,6 +9,7 @@ import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GModalityWindowFormType;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.event.BindingMode;
@@ -18,6 +19,7 @@ import javax.servlet.ServletContext;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class ClientAsyncToGwtConverter extends CachedObjectConverter {
@@ -25,8 +27,8 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
     private final ClientTypeToGwtConverter typeConverter = ClientTypeToGwtConverter.getInstance();
     private final ClientFormChangesToGwtConverter valuesConverter = ClientFormChangesToGwtConverter.getInstance();
 
-    public ClientAsyncToGwtConverter(ServletContext servletContext, ServerSettings settings) {
-        super(servletContext, settings);
+    public ClientAsyncToGwtConverter(MainDispatchServlet servlet, String sessionID) {
+        super(servlet, sessionID);
     }
 
     @Cached
@@ -41,7 +43,7 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientInputListAction.class)
-    public GInputListAction convertInputListAction(ClientInputListAction clientInputListAction) {
+    public GInputListAction convertInputListAction(ClientInputListAction clientInputListAction) throws IOException {
         ArrayList<GQuickAccess> quickAccessList = new ArrayList<>();
         for(int i = 0; i < clientInputListAction.quickAccessList.size(); i++) {
             quickAccessList.add(convertOrCast(clientInputListAction.quickAccessList.get(i)));

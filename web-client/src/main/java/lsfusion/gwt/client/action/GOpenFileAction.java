@@ -1,17 +1,13 @@
 package lsfusion.gwt.client.action;
 
 public class GOpenFileAction extends GExecuteAction {
-    public String fileName;
-    public String displayName;
-    public String extension;
+    public String fileUrl;
 
     @SuppressWarnings("UnusedDeclaration")
     public GOpenFileAction() {}
 
-    public GOpenFileAction(String fileName, String displayName, String extension) {
-        this.fileName = fileName;
-        this.displayName = displayName;
-        this.extension = extension;
+    public GOpenFileAction(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
     @Override

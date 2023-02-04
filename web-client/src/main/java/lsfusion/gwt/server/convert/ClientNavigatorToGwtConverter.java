@@ -16,12 +16,14 @@ import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.window.*;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.logics.ServerSettings;
 
 import javax.servlet.ServletContext;
+import java.io.IOException;
 import java.util.ArrayList;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -29,15 +31,15 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
     private final ClientNavigatorChangesToGwtConverter navigatorConverter = ClientNavigatorChangesToGwtConverter.getInstance();
 
-    public ClientNavigatorToGwtConverter(ServletContext servletContext, ServerSettings settings) {
-        super(servletContext, settings);
+    public ClientNavigatorToGwtConverter(MainDispatchServlet servlet, String sessionID) {
+        super(servlet, sessionID);
     }
 
     public GAction convertAction(ClientAction clientAction, Object... context) {
         return convertOrNull(clientAction, context);
     }
 
-    public <E extends GNavigatorElement> E initNavigatorElement(ClientNavigatorElement clientElement, E element) {
+    public <E extends GNavigatorElement> E initNavigatorElement(ClientNavigatorElement clientElement, E element) throws IOException {
         cacheInstance(clientElement, element);
 
         element.canonicalName = clientElement.getCanonicalName();
@@ -64,13 +66,13 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientNavigatorAction.class)
-    public GNavigatorAction convertNavigatorAction(ClientNavigatorAction clientAction) {
+    public GNavigatorAction convertNavigatorAction(ClientNavigatorAction clientAction) throws IOException {
         return initNavigatorElement(clientAction, new GNavigatorAction());
     }
 
     @Cached
     @Converter(from = ClientNavigatorFolder.class)
-    public GNavigatorFolder convertNavigatorFolder(ClientNavigatorFolder clientFolder) {
+    public GNavigatorFolder convertNavigatorFolder(ClientNavigatorFolder clientFolder) throws IOException {
         return initNavigatorElement(clientFolder, new GNavigatorFolder());
     }
     
@@ -149,8 +151,8 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientNavigatorChanges.class)
-    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges, ServletContext servletContext, ServerSettings settings) {
-        return navigatorConverter.convertOrCast(clientChanges, servletContext, settings);
+    public GNavigatorChangesDTO convertNavigatorChanges(ClientNavigatorChanges clientChanges) {
+        return navigatorConverter.convertOrCast(clientChanges, servlet, sessionID);
     }
 
     @Converter(from = ModalityWindowFormType.class)

@@ -14,10 +14,6 @@ public class ImageCellRenderer extends FileBasedCellRenderer {
 
     @Override
     protected Element createImage(Object value) {
-        String extension = ((GImageType) property.baseType).extension;
-//        if (value instanceof String)
-        return GwtClientUtils.createAppDownloadImage(value, extension);
-//        else
-//            return GwtClientUtils.createStaticImage(ICON_EMPTY);
+        return GwtClientUtils.createAppDownloadImage(value);
     }
 }

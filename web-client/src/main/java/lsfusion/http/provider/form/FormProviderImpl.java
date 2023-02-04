@@ -56,7 +56,7 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
 
         ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(formDesign)));
 
-        GForm gForm = new ClientComponentToGwtConverter(servletContext, navigatorProvider.getServerSettings(sessionID)).convertOrCast(clientForm);
+        GForm gForm = new ClientComponentToGwtConverter(servlet, sessionID).convertOrCast(clientForm);
 
         Set<Integer> inputObjects = remoteForm.getInputGroupObjects();
         gForm.inputGroupObjects = new HashSet<>();
@@ -87,8 +87,8 @@ public class FormProviderImpl implements FormProvider, InitializingBean, Disposa
     }
 
     @Override
-    public String getWebFile(String sessionID, String fileName, RawFileData fileData) throws SessionInvalidatedException {
-        return FileUtils.saveWebFile(fileName, fileData, navigatorProvider.getServerSettings(sessionID), false);
+    public String getWebFile(String sessionID, String fullPath, RawFileData fileData) throws SessionInvalidatedException {
+        return FileUtils.saveWebFile(fullPath, fileData, navigatorProvider.getServerSettings(sessionID), false);
     }
 
     public void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID) {

@@ -11,7 +11,7 @@ import java.io.IOException;
 public interface FormProvider {
 
     GForm createForm(MainDispatchServlet servlet, String canonicalName, String formSID, RemoteFormInterface remoteForm, Object[] immutableMethods, byte[] firstChanges, String sessionID) throws IOException;
-    String getWebFile(String navigatorID, String fileName, RawFileData fileData) throws SessionInvalidatedException;
+    String getWebFile(String navigatorID, String fullPath, RawFileData fileData) throws SessionInvalidatedException;
     void createFormExternal(String formID, RemoteFormInterface remoteForm, String navigatorID);
 
     FormSessionObject getFormSessionObject(String formSessionID) throws SessionInvalidatedException;

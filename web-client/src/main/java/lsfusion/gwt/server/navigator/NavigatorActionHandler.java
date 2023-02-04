@@ -30,17 +30,12 @@ public abstract class NavigatorActionHandler<A extends NavigatorAction<R>, R ext
         servlet.getFormProvider().removeFormSessionObjects(sessionID);
         getNavigatorProvider().removeNavigatorSessionObject(sessionID);
     }
-    protected ServerSettings getServerSettings(String sessionID) throws SessionInvalidatedException {
-        return getNavigatorProvider().getServerSettings(sessionID);
-    }
 
     // shortcut's
     protected NavigatorSessionObject getNavigatorSessionObject(A action) throws SessionInvalidatedException {
         return getNavigatorSessionObject(action.sessionID);
     }
-    protected ServerSettings getServerSettings(A action) throws SessionInvalidatedException {
-        return getServerSettings(action.sessionID);
-    }
+
     protected RemoteNavigatorInterface getRemoteNavigator(A action) throws SessionInvalidatedException {
         return getNavigatorSessionObject(action).remoteNavigator;
     }

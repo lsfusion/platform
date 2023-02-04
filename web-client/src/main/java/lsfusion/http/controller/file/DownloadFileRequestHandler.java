@@ -36,13 +36,9 @@ public class DownloadFileRequestHandler implements HttpRequestHandler {
             throw new UnsupportedOperationException("Path info : " + pathInfo);
         String fileName = pathInfo.substring(prefix.length());
 
-        String extension = request.getParameter("extension");
-        if(extension == null)
-            extension = BaseUtils.getFileExtension(fileName);
+        String extension = BaseUtils.getFileExtension(fileName);
 
-        String displayName = request.getParameter("displayName");
-        if(displayName == null)
-            displayName = BaseUtils.getFileName(fileName);
+        String displayName = BaseUtils.getFileName(fileName);
 
         String version = request.getParameter("version");
         if(version != null)

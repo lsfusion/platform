@@ -1,6 +1,7 @@
 package lsfusion.interop.logics;
 
 import lsfusion.base.Pair;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 
 import java.util.List;
@@ -9,8 +10,8 @@ import java.util.Map;
 public class ServerSettings {
     public String logicsName;
     public String displayName;
-    public RawFileData logicsLogo;
-    public RawFileData logicsIcon;
+    public FileData logicsLogo;
+    public FileData logicsIcon;
     public String platformVersion;
     public Integer apiVersion;
     public boolean inDevMode;
@@ -21,7 +22,7 @@ public class ServerSettings {
     public Map<String, String> lsfParams;
     public List<Pair<String, RawFileData>> loginResources;
 
-    public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
+    public ServerSettings(String logicsName, String displayName, FileData logicsLogo, FileData logicsIcon, String platformVersion, Integer apiVersion,
                           boolean inDevMode, int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, boolean disableRegistration, Map<String, String> lsfParams,
                           List<Pair<String, RawFileData>> loginResources) {
         this.logicsName = logicsName;

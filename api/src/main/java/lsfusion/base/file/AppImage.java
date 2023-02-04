@@ -18,7 +18,6 @@ public class AppImage implements Serializable {
     private Map<ColorTheme, String> imagePathes;
     private Map<ColorTheme, RawFileData> images;
 
-    public String imagePath;
     public String fontClasses;
 
     public AppImage(String imagePath) {

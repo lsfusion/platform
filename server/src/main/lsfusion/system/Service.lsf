@@ -439,7 +439,7 @@ getServerSettings() + WHEN TRUE THEN {
     EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
     
     generateJnlpUrls();
-    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
+    EXPORT FROM logicsName(), displayName(), FILE(logicsLogo()), FILE(logicsIcon()), platformVersion(), apiVersion(), inDevMode(),
                 sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
                 jnlpUrls=exportText(), 
                 disableRegistration=disableRole('selfRegister'),

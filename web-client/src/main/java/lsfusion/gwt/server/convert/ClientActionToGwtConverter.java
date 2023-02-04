@@ -1,5 +1,6 @@
 package lsfusion.gwt.server.convert;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.ResourceUtils;
 import lsfusion.base.file.RawFileData;
@@ -154,7 +155,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
     public GProcessNavigatorChangesAction convertAction(ProcessNavigatorChangesClientAction action, FormSessionObject form, MainDispatchServlet servlet) throws IOException {
         ClientNavigatorChanges changes = new ClientNavigatorChanges(action.navigatorChanges);
 
-        GNavigatorChangesDTO navigatorChanges = navigatorConverter.convertOrCast(changes, servlet.getServletContext(), servlet.getNavigatorProvider().getServerSettings(form.navigatorID));
+        GNavigatorChangesDTO navigatorChanges = navigatorConverter.convertOrCast(changes, servlet, form.navigatorID);
 
         return new GProcessNavigatorChangesAction(navigatorChanges);
     }
@@ -164,8 +165,8 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         boolean autoPrint = action.autoPrint;
         RawFileData rawFileData = ReportGenerator.exportToFileByteArray(action.generationData, action.printType, servlet.getNavigatorProvider().getRemoteLogics());
 
-        Pair<String, String> report = FileUtils.exportReport(action.printType, rawFileData);
-        return new GReportAction(report.first, report.second, autoPrint, autoPrint && action.printType != FormPrintType.HTML ? rawFileData.getLength() / 15 : null);
+        String report = FileUtils.exportReport(action.printType, rawFileData);
+        return new GReportAction(report, autoPrint, autoPrint && action.printType != FormPrintType.HTML ? rawFileData.getLength() / 15 : null);
     }
 
     @Converter(from = RequestUserInputClientAction.class)
@@ -176,7 +177,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         Object value = deserializeServerValue(action.oldValue);
 
-        ClientAsyncToGwtConverter asyncConverter = new ClientAsyncToGwtConverter(servlet.getServletContext(), servlet.getNavigatorProvider().getServerSettings(formSessionObject.navigatorID));
+        ClientAsyncToGwtConverter asyncConverter = new ClientAsyncToGwtConverter(servlet, formSessionObject.navigatorID);
 
         GInputList inputList = asyncConverter.convertOrCast(ClientAsyncSerializer.deserializeInputList(action.inputList));
 
@@ -214,12 +215,12 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = OpenFileClientAction.class)
     public GOpenFileAction convertAction(OpenFileClientAction action) {
-        return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.name, action.extension);
+        return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, action.name));
     }
 
     @Converter(from = WriteClientAction.class)
     public GOpenFileAction convertAction(WriteClientAction action) {
-        return new GOpenFileAction(FileUtils.saveActionFile(action.file), action.path, action.extension);
+        return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)));
     }
 
     @Converter(from = HttpClientAction.class)
@@ -244,7 +245,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = BeepClientAction.class)
     public GBeepAction convertAction(BeepClientAction action) {
-        return new GBeepAction(FileUtils.saveActionFile(action.file));
+        return new GBeepAction(FileUtils.saveActionFile(action.file, "wav", "beep"));
     }
 
     @Converter(from = ActivateFormClientAction.class)

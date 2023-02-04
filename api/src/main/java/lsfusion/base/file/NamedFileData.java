@@ -31,7 +31,11 @@ public class NamedFileData extends TwinImmutableObject<NamedFileData> implements
     public RawFileData getRawFile() {
         return fileData.getRawFile();
     }
-    
+
+    public FileData getFileData() {
+        return fileData;
+    }
+
     public int getLength() {
         return name.getBytes().length + 1 + fileData.getLength();
     }

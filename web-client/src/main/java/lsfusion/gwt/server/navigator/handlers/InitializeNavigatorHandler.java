@@ -44,7 +44,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
     @Override
     public InitializeNavigatorResult executeEx(InitializeNavigator action, ExecutionContext context) throws RemoteException, AppServerNotAvailableDispatchException {
         RemoteNavigatorInterface remoteNavigator = getRemoteNavigator(action);
-        NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, getServerSettings(action));
+        NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, action.sessionID);
         GClientSettings gClientSettings = getClientSettings(remoteNavigator, servlet);
 
         servlet.getNavigatorProvider().updateNavigatorClientSettings(action.screenSize, action.mobile);
@@ -52,8 +52,8 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         return new InitializeNavigatorResult(gClientSettings, navigatorInfo);
     }
 
-    private static NavigatorInfo getNavigatorInfo(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, ServerSettings serverSettings) throws RemoteException {
-        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(servlet.getServletContext(), serverSettings);
+    private static NavigatorInfo getNavigatorInfo(RemoteNavigatorInterface remoteNavigator, MainDispatchServlet servlet, String sessionID) throws RemoteException {
+        ClientNavigatorToGwtConverter converter = new ClientNavigatorToGwtConverter(servlet, sessionID);
 
         NavigatorData navigatorData;
         byte[] navigatorTree = remoteNavigator.getNavigatorTree();
@@ -78,7 +78,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.forms));
 
         //put in navigator info navigator data first changes
-        GNavigatorChangesDTO navigatorChanges = converter.convertOrCast(navigatorData.navigatorChanges, servlet.getServletContext(), serverSettings);
+        GNavigatorChangesDTO navigatorChanges = converter.convertOrCast(navigatorData.navigatorChanges);
 
         return new NavigatorInfo(root, navigatorWindows, navigatorChanges, windows);
     }

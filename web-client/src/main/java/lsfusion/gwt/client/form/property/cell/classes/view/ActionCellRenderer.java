@@ -48,7 +48,7 @@ public class ActionCellRenderer extends CellRenderer {
         if(hasImage(renderContext)) { // optimization;
             Element img;
             if(property.hasDynamicImage()) // app download image
-                img = GwtClientUtils.createAppDownloadImage(null, null);
+                img = GwtClientUtils.createAppDownloadImage(null);
             else if(property.hasStaticImage()) // app static image
                 img = property.appStaticImage.createImage();
             else // static image
@@ -135,7 +135,7 @@ public class ActionCellRenderer extends CellRenderer {
 
             StaticImage overrideImage = updateContext.isLoading() && property.isLoadingReplaceImage() ? StaticImage.LOADING_IMAGE_PATH : null;
             if(property.hasDynamicImage()) // app download image
-                GwtClientUtils.setAppDownloadImageSrc(imageElement, updateContext.getImage(), null, overrideImage);
+                GwtClientUtils.setAppDownloadImageSrc(imageElement, updateContext.getImage(), overrideImage);
             else if(property.hasStaticImage()) // app static image
                 property.appStaticImage.setImageSrc(imageElement, enabled, overrideImage);
             else // static image

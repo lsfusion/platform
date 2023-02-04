@@ -48,8 +48,8 @@ public class LogicsSessionObject {
 
             String logicsName = trimToNull(json.optString("logicsName"));
             String displayName = trimToNull(json.optString("displayName"));
-            RawFileData logicsLogo = getRawFileData(trimToNull(json.optString("logicsLogo")));
-            RawFileData logicsIcon = getRawFileData(trimToNull(json.optString("logicsIcon")));
+            FileData logicsLogo = getFileData(trimToNull(json.optString("logicsLogo")));
+            FileData logicsIcon = getFileData(trimToNull(json.optString("logicsIcon")));
             String platformVersion = trimToNull(json.optString("platformVersion"));
             Integer apiVersion = json.optInt("apiVersion");
             boolean inDevMode = json.optBoolean("inDevMode");
@@ -85,8 +85,8 @@ public class LogicsSessionObject {
         return resultFiles;
     }
 
-    private RawFileData getRawFileData(String base64) {
-        return base64 != null ? new RawFileData(Base64Decoder.decode(base64)) : null;
+    private FileData getFileData(String base64) {
+        return base64 != null ? new FileData(Base64Decoder.decode(base64)) : null;
     }
 
     public static ClientSettings getClientSettings(SessionInfo sessionInfo, RemoteNavigatorInterface remoteNavigator) throws RemoteException {

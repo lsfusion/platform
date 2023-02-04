@@ -2,7 +2,6 @@ package lsfusion.gwt.client.action;
 
 public class GReportAction extends GExecuteAction {
     public String reportFileName;
-    public String reportExtension;
     public boolean autoPrint;
     public Integer autoPrintTimeout;
 
@@ -10,9 +9,8 @@ public class GReportAction extends GExecuteAction {
     @SuppressWarnings("UnusedDeclaration")
     public GReportAction() {}
 
-    public GReportAction(String reportFileName, String reportExtension, boolean autoPrint, Integer autoPrintTimeout) {
+    public GReportAction(String reportFileName, boolean autoPrint, Integer autoPrintTimeout) {
         this.reportFileName = reportFileName;
-        this.reportExtension = reportExtension;
         this.autoPrint = autoPrint;
         this.autoPrintTimeout = autoPrintTimeout;
     }

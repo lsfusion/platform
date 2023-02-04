@@ -17,15 +17,4 @@ public class ImageElementNavigator extends ElementNavigator {
     public byte getTypeID() {
         return 1;
     }
-
-    @Override
-    public void serializeValue(DataOutputStream outStream, Object value) throws IOException {
-        boolean staticImage = value instanceof AppImage;
-        outStream.writeBoolean(staticImage);
-        if (staticImage) {
-            IOUtils.writeImageIcon(outStream, (AppImage) value);
-        } else {
-            super.serializeValue(outStream, value);
-        }
-    }
 }

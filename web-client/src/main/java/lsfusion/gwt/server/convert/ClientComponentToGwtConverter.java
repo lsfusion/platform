@@ -42,6 +42,7 @@ import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
+import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.FontInfo;
 import lsfusion.interop.form.event.*;
@@ -54,6 +55,7 @@ import javax.servlet.ServletContext;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.*;
 
 import static lsfusion.gwt.server.convert.StaticConverters.convertColor;
@@ -65,10 +67,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     private final ClientAsyncToGwtConverter asyncConverter;
     private GForm form;
 
-    public ClientComponentToGwtConverter(ServletContext servletContext, ServerSettings settings) {
-        super(servletContext, settings);
+    public ClientComponentToGwtConverter(MainDispatchServlet servlet, String sessionID) {
+        super(servlet, sessionID);
 
-        asyncConverter = new ClientAsyncToGwtConverter(servletContext, settings);
+        asyncConverter = new ClientAsyncToGwtConverter(servlet, sessionID);
     }
 
     private <T extends GComponent> T initGwtComponent(ClientComponent clientComponent, T component) {
@@ -246,7 +248,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientPropertyDraw.class)
-    public GPropertyDraw convertPropertyDraw(ClientPropertyDraw clientPropertyDraw) {
+    public GPropertyDraw convertPropertyDraw(ClientPropertyDraw clientPropertyDraw) throws IOException {
         GPropertyDraw propertyDraw = initGwtComponent(clientPropertyDraw, new GPropertyDraw());
 
         propertyDraw.ID = clientPropertyDraw.ID;

@@ -233,7 +233,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        GwtClientUtils.downloadFile(action.reportFileName, "lsfReport", action.reportExtension, action.autoPrint, action.autoPrintTimeout);
+        GwtClientUtils.downloadFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout);
     }
 
     @Override
@@ -313,7 +313,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GOpenFileAction action) {
-        GwtClientUtils.downloadFile(action.fileName, action.displayName, action.extension, false, null);
+        GwtClientUtils.downloadFile(action.fileUrl, false, null);
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл
@@ -325,7 +325,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
     @Override
     public void execute(final GBeepAction action) {
         if(action.filePath != null) {
-            String fileUrl = GwtClientUtils.getAppDownloadURL(action.filePath, null, "wav");
+            String fileUrl = GwtClientUtils.getAppDownloadURL(action.filePath);
             Audio beep = Audio.createIfSupported();
             if (beep != null) {
                 beep.setSrc(fileUrl);

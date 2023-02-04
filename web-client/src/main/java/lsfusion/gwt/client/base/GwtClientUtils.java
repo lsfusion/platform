@@ -62,9 +62,9 @@ public class GwtClientUtils {
         MainFrame.cleanRemote(() -> Window.open(GwtClientUtils.getLogoutUrl(), "_self", null), connectionLost);
     }
 
-    public static void downloadFile(String name, String displayName, String extension, boolean autoPrint, Integer autoPrintTimeout) {
+    public static void downloadFile(String name, boolean autoPrint, Integer autoPrintTimeout) {
         if (name != null) {
-            JavaScriptObject window = openWindow(getAppDownloadURL(name, displayName, extension));
+            JavaScriptObject window = openWindow(getAppDownloadURL(name));
             if (autoPrint)
                 print(window, autoPrintTimeout);
         }
@@ -87,15 +87,6 @@ public class GwtClientUtils {
         }
     }-*/;
 
-    private static String getDownloadParams(String displayName, String extension) {
-        String params = "";
-        if(displayName != null)
-            params = params + "&displayName=" + displayName;
-        if(extension != null)
-            params = params + "&extension=" + extension;
-        return params;
-    }
-
     private static String getURL(String url) {
         return url == null ? null : getWebAppBaseURL() + url;
     }
@@ -116,9 +107,9 @@ public class GwtClientUtils {
         return getURL(filePath);
     }
     // FileUtils.APP_DOWNLOAD_FOLDER_PATH
-    public static String getAppDownloadURL(String url, String displayName, String extension) {
+    public static String getAppDownloadURL(String url) {
         assert url != null;
-        return getURL(url + getDownloadParams(displayName, extension));
+        return getURL(url);
     }
 
     // FileUtils.APP_UPLOAD_FOLDER_PATH
@@ -131,16 +122,16 @@ public class GwtClientUtils {
         imageElement.setSrc(url);
         return imageElement;
     }
-    public static Element createAppDownloadImage(Object value, String extension) {
+    public static Element createAppDownloadImage(Object value) {
         Element imageElement = Document.get().createImageElement();
-        setAppDownloadImageSrc(imageElement, value, extension, null);
+        setAppDownloadImageSrc(imageElement, value, null);
         return imageElement;
     }
-    public static void setAppDownloadImageSrc(Element element, Object value, String extension, BaseStaticImage overrideImage) {
+    public static void setAppDownloadImageSrc(Element element, Object value, BaseStaticImage overrideImage) {
         if(overrideImage != null)
             setBaseStaticImageSrc(false, element, overrideImage, true);
         else
-            ((ImageElement)element).setSrc(value instanceof String ? getAppDownloadURL((String) value, null, extension) : "");
+            ((ImageElement)element).setSrc(value instanceof String ? getAppDownloadURL((String) value) : "");
     }
     private static boolean useStaticImageIcon(BaseStaticImage image) {
         return useBootstrap && image.getFontClasses() != null;

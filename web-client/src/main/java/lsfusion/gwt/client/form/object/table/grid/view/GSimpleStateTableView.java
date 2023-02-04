@@ -10,7 +10,6 @@ import lsfusion.gwt.client.base.GAsync;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.view.ColorUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.classes.GType;
@@ -32,7 +31,6 @@ import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.Column;
-import lsfusion.gwt.client.view.StyleDefaults;
 import lsfusion.interop.action.ServerResponse;
 
 import java.io.Serializable;
@@ -169,7 +167,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(type instanceof GIntegralType)
             return fromDouble(((Number)value).doubleValue());
         if(type instanceof GImageType)
-            return fromString(GwtClientUtils.getAppDownloadURL((String) value, null, ((GImageType)type).extension));
+            return fromString(GwtClientUtils.getAppDownloadURL((String) value));
         if(type instanceof GJSONType)
             return GwtClientUtils.jsonParse((String)value);
 

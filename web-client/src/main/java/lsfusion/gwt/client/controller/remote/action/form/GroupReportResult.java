@@ -5,13 +5,11 @@ import net.customware.gwt.dispatch.shared.Result;
 public class GroupReportResult implements Result {
     
     public String filename;
-    public String extension;
 
     public GroupReportResult() {
     }
 
-    public GroupReportResult(String filename, String extension) {
+    public GroupReportResult(String filename) {
         this.filename = filename;
-        this.extension = extension;
     }
 }

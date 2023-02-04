@@ -28,14 +28,14 @@ public class GroupReportHandler extends FormActionHandler<GroupReport, GroupRepo
 
         FormPrintType printType = FormPrintType.XLSX;
         Object reportData = form.remoteForm.getGroupReportData(action.requestIndex, action.lastReceivedRequestIndex, action.groupObjectID, printType, converter.convertFormUserPreferences(action.preferences));
-        Pair<String, String> report;
+        String report;
         if(reportData instanceof RawFileData) {
             report = FileUtils.exportFile((RawFileData) reportData);
         } else {
             //assert reportData instanceof ReportGenerationData
             report = FileUtils.exportReport(printType, (ReportGenerationData) reportData, servlet.getNavigatorProvider().getRemoteLogics());
         }
-        return new GroupReportResult(report.first, report.second);
+        return new GroupReportResult(report);
     }
 
 

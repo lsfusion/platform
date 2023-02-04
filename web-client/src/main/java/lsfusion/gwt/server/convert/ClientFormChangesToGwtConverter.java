@@ -1,10 +1,6 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.NamedFileData;
-import lsfusion.base.file.RawFileData;
-import lsfusion.base.file.StringWithFiles;
-import lsfusion.client.classes.data.ClientImageClass;
+import lsfusion.base.file.*;
 import lsfusion.client.form.ClientFormChanges;
 import lsfusion.client.form.design.ClientComponent;
 import lsfusion.client.form.design.ClientContainer;
@@ -24,7 +20,6 @@ import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
 import lsfusion.gwt.client.form.property.cell.classes.*;
 import lsfusion.gwt.server.FileUtils;
 import lsfusion.gwt.server.MainDispatchServlet;
-import lsfusion.http.provider.SessionInvalidatedException;
 import lsfusion.http.provider.form.FormSessionObject;
 
 import java.awt.*;
@@ -132,12 +127,8 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             for (Map.Entry<ClientGroupObjectValue, Object> clientValues : values.entrySet()) {
                 GGroupObjectValue groupObjectValue = convertOrCast(clientValues.getKey());
 
-                Object propValue = convertOrCast(clientValues.getValue());
-                if (propValue instanceof NamedFileData || propValue instanceof FileData || propValue instanceof RawFileData || propValue instanceof StringWithFiles) {
-                    propValue = convertFileValue(reader, propValue, sessionObject, servlet);
-                }
                 propValueKeys[j] = groupObjectValue;
-                propValueValues[j] = (Serializable) propValue;
+                propValueValues[j] = convertFileValue(convertOrCast(clientValues.getValue()), sessionObject, servlet, sessionObject.navigatorID);
                 j++;
             }
 
@@ -191,20 +182,36 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
         return dto;
     }
 
-    private Object convertFileValue(ClientPropertyReader reader, Object value, FormSessionObject sessionObject, MainDispatchServlet servlet) throws SessionInvalidatedException {
-        if ((reader instanceof ClientPropertyDraw && ((ClientPropertyDraw) reader).baseType instanceof ClientImageClass)
-                || reader instanceof ClientPropertyDraw.ImageReader) {
-            return FileUtils.saveFormFile((RawFileData) value, sessionObject);
-        } else if (value instanceof StringWithFiles) {
+    public static Serializable convertFileValue(Object value, FormSessionObject sessionObject, MainDispatchServlet servlet, String sessionID) throws IOException {
+        if (value instanceof FileData || value instanceof NamedFileData || value instanceof RawFileData) {
+            String displayName = null;
+            FileData fileData;
+            if(value instanceof NamedFileData) {
+                displayName = ((NamedFileData) value).getName();
+                fileData = ((NamedFileData) value).getFileData();
+            } else if(value instanceof FileData) {
+                fileData = (FileData) value;
+            } else { // it's a really rare case see FormChanges.convertFileValue - when there is no static file class, but still we get rawFileData
+                fileData = new FileData((RawFileData) value, "");
+            }
+
+            return FileUtils.saveFormFile(fileData, displayName, sessionObject != null ? sessionObject.savedTempFiles : null);
+        }
+
+        if (value instanceof StringWithFiles) {
             StringWithFiles stringWithFiles = (StringWithFiles) value;
             String[] urls = new String[stringWithFiles.names.length];
             for (int k = 0; k < stringWithFiles.names.length; k++) {
-                urls[k] = servlet.getFormProvider().getWebFile(sessionObject.navigatorID, stringWithFiles.names[k], stringWithFiles.files[k]);
+                urls[k] = servlet.getFormProvider().getWebFile(sessionID, stringWithFiles.names[k], stringWithFiles.files[k]);
             }
             return new GStringWithFiles(stringWithFiles.prefixes, urls);
-        } else {
-            return value == null ? null : true;
         }
+
+        if(value instanceof AppImage) { //static image
+            return FileUtils.createImageFile(servlet, sessionID, (AppImage) value, false);
+        }
+
+        return (Serializable) value;
     }
 
     @Converter(from = Color.class)
