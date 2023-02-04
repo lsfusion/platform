@@ -4033,7 +4033,7 @@ contextActions[List<TypedParameter> context] returns [List<String> actionImages 
 	(',' nextAct = contextAction[context] { $actionImages.add($nextAct.actionImage); $keyPresses.add($nextAct.keyPress); $quickAccesses.add($nextAct.quickAccess); $actions.add($nextAct.action); })*
 	;
 
-contextAction[List<TypedParameter> context] returns [String actionImage, String keyPress, List<QuickAccess> quickAccess = new ArrayList<>(), LAWithParams action]
+contextAction[List<TypedParameter> context] returns [String actionImage, String keyPress = "", List<QuickAccess> quickAccess = new ArrayList<>(), LAWithParams action]
 	:
 	image=stringLiteral { $actionImage = $image.val; } ('KEYPRESS' kp=stringLiteral { $keyPress = $kp.val; })?
 	          ('TOOLBAR' (quickAccess { $quickAccess.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*)? actDB=listActionDefinitionBody[context, true] { $action = $actDB.action; }
