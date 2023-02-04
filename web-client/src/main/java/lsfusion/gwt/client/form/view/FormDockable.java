@@ -35,7 +35,6 @@ public final class FormDockable extends FormContainer {
         this.canonicalName = canonicalName;
 
         contentWidget = new ContentWidget();
-        FlexPanel.registerContentScrolledEvent(contentWidget);
 
         tabWidget = new TabWidget(caption);
         tabWidget.setBlocked(false);
@@ -84,7 +83,7 @@ public final class FormDockable extends FormContainer {
         return tabWidget;
     }
 
-    public Widget getContentWidget() {
+    public FlexPanel getContentWidget() {
         return contentWidget;
     }
 

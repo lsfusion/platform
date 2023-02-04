@@ -16,6 +16,11 @@
     margin: 0;
     border: none;
     box-shadow: none;
+
+    /* for example text-area.form-control sets the minimum height */
+    /* and when there is minimum height the content overflow it's parent, which leads to unpredictable scrolls (for example if textarea is removed, and new text is set, there can be some scroll left after that. It's not crucial but nevertheless not that pretty)*/
+    min-height: 0;
+    min-width: 0;
 }
 
 .comp-shrink-horz {

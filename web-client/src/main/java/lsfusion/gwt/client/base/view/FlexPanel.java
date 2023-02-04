@@ -1420,13 +1420,20 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         super.insert(child, container, beforeIndex, domInsert);
     }
 
-    private static void setContentScrolled(Widget widget) {
-        widget.getParent().setStyleName("scroll-down", widget.getElement().getScrollTop() > MainFrame.mobileAdjustment);
+    private static void setContentScrolled(Widget container, Widget widget) {
+        container.setStyleName("scroll-down", widget.getElement().getScrollTop() > MainFrame.mobileAdjustment);
     }
 
-    public static void registerContentScrolledEvent(FlexPanel widget) {
+    public static void makeShadowOnScroll(Widget container, Widget header, FlexPanel widget) {
+        container.addStyleName("scroll-shadow-container");
+        header.addStyleName("scroll-shadow-header");
+
+        registerContentScrolledEvent(container, widget);
+    }
+
+    private static void registerContentScrolledEvent(Widget container, FlexPanel widget) {
         widget.sinkEvents(Event.ONSCROLL);
-        widget.addHandler(event -> setContentScrolled(widget), ScrollEvent.getType());
-        widget.addOnResizeHandler(() -> setContentScrolled(widget));
+        widget.addHandler(event -> setContentScrolled(container, widget), ScrollEvent.getType());
+        widget.addOnResizeHandler(() -> setContentScrolled(container, widget));
     }
 }

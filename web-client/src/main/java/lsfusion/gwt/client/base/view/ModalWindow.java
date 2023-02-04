@@ -82,7 +82,8 @@ public class ModalWindow extends ResizableComplexPanel {
         body = new SizedFlexPanel(true);
         body.addStyleName("modal-body");
         content.add(body);
-        FlexPanel.registerContentScrolledEvent(body);
+
+        FlexPanel.makeShadowOnScroll(content, header, body);
 
         GwtClientUtils.draggable(dialog.getElement(), ".modal-header");
         if (resizable)

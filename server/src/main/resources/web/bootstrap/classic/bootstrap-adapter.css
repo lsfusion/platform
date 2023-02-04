@@ -179,7 +179,7 @@
     }
 }
 
-.forms-container.scroll-down > .nav.nav-tabs, .modal-content.scroll-down > .modal-header {
+.scroll-shadow-container.scroll-down > .scroll-shadow-header {
     z-index: 1;
     box-shadow: 0 0.1rem 0.5rem 0 rgb(0 0 0 / 15%);
 }

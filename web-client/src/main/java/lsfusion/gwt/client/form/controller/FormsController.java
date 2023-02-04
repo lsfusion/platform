@@ -515,7 +515,11 @@ public abstract class FormsController {
             formFocusOrder.add(null);
         }
 
-        tabsPanel.addTab(dockable.getContentWidget(), index, dockable.getTabWidget());
+        FlexPanel contentWidget = dockable.getContentWidget();
+        tabsPanel.addTab(contentWidget, index, dockable.getTabWidget());
+
+        FlexPanel.makeShadowOnScroll(tabsPanel, tabsPanel.getTabBar(), contentWidget);
+
         assert !isAdding;
         isAdding = true;
         selectTab(dockable);

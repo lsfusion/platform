@@ -148,6 +148,10 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         return tabBar.getSelectedTab();
     }
 
+    public Widget getTabBar() {
+        return tabBar.asWidget();
+    }
+
     public void selectTab(int index) {
         tabBar.selectTab(index);
     }
