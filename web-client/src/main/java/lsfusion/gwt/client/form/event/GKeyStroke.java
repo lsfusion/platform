@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 
 import java.io.Serializable;
+import java.util.function.BooleanSupplier;
 
 import static com.google.gwt.dom.client.BrowserEvents.*;
 import static com.google.gwt.event.dom.client.KeyCodes.*;
@@ -185,9 +186,9 @@ public class GKeyStroke implements Serializable {
         return ((isCharAddKeyEvent(event) && (editEventFilter == null || editEventFilter.accept(event))) || isCharDeleteKeyEvent(event));
     }
 
-    public static boolean isInputKeyEvent(Event event) {
+    public static boolean isInputKeyEvent(Event event, BooleanSupplier isMultiLine) {
         return isCharModifyKeyEvent(event, null) ||
-                isCharNavigateHorzKeyEvent(event) || isPasteFromClipboardEvent(event);
+                isCharNavigateHorzKeyEvent(event) || (isCharNavigateVertKeyEvent(event) && isMultiLine.getAsBoolean()) || isPasteFromClipboardEvent(event);
     }
 
     public static boolean isDropEvent(Event event) {
@@ -199,6 +200,14 @@ public class GKeyStroke implements Serializable {
         if (KEYDOWN.equals(event.getType())) {
             int keyCode = event.getKeyCode();
             return keyCode == KEY_LEFT || keyCode == KEY_RIGHT || keyCode == KEY_END || keyCode == KEY_HOME;
+        }
+        return false;
+    }
+
+    public static boolean isCharNavigateVertKeyEvent(NativeEvent event) {
+        if (KEYDOWN.equals(event.getType())) {
+            int keyCode = event.getKeyCode();
+            return keyCode == KEY_UP || keyCode == KEY_DOWN;
         }
         return false;
     }

@@ -188,7 +188,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }
 
         Event event = handler.event;
-        if (GKeyStroke.isInputKeyEvent(event) || GMouseStroke.isEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
+        if (GKeyStroke.isInputKeyEvent(event, this::isMultiLine) || GMouseStroke.isEvent(event) || GMouseStroke.isContextMenuEvent(event)) {
             boolean isCorrect = true;
 
             String stringToAdd = null;

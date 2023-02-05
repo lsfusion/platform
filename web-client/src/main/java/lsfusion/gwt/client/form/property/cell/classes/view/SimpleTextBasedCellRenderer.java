@@ -68,9 +68,11 @@ public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRender
 
     public static InputElement getInputEventTarget(Element parent, Event event) {
         InputElement inputElement = getInputElement(parent);
-        if(inputElement == event.getEventTarget().cast())
-            return inputElement;
-        return null;
+        return inputElement == event.getEventTarget().cast() ? inputElement : null;
+    }
+
+    public static boolean isMultiLineInput(Element parent) {
+        return TextAreaElement.is(getInputElement(parent));
     }
 
     public static InputElement getInputElement(Element parent) {
