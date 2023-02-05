@@ -149,12 +149,12 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends ActionO
         return objectsOuterMapping.mapValues(o -> o.entity.getParamExpr()).addExcl(property.getInterfaceParamExprs(rNotObjectsOuterMapping.result.keys()));
     }
 
-    public InputValueList<?> getInputValueList(GroupObjectInstance toDraw, Result<ImRevMap<P, ObjectInstance>> innerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter) {
+    public InputValueList<?> getInputValueList(GroupObjectInstance toDraw, Result<ImRevMap<P, ObjectInstance>> innerMapping, Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, boolean useFilters) {
         // splitting to grid and not grid objects
         SFunctionSet<PropertyObjectInterfaceInstance> gridObjects = value -> (value instanceof ObjectInstance && toDraw.objects.contains((ObjectInstance) value));
         ImMap<P, PropertyObjectInterfaceInstance> outerMapping = mapping.filterFnValues(new NotFunctionSet<>(gridObjects));
 
-        InputListEntity<?, P> inputList = property.getInputList(getParamExprs(property, outerMapping), innerMapping != null);
+        InputListEntity<?, P> inputList = property.getInputList(getParamExprs(property, outerMapping), innerMapping != null || useFilters);
         if(inputList == null)
             return null;
 

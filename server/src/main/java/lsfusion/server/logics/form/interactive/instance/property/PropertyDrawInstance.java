@@ -79,7 +79,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         boolean needObjects = actionSID.equals(ServerResponse.OBJECTS);
         boolean strictValues = actionSID.equals(ServerResponse.STRICTVALUES);
         if(needObjects || strictValues || actionSID.equals(ServerResponse.VALUES)) { // filter or custom view
-            boolean useFilters = needObjects || Settings.get().isUseGroupFiltersInAsyncFilterCompletion();
+            int useFilters = needObjects ? 2 : Settings.get().getUseGroupFiltersInAsyncFilterCompletion();
 
             Result<ImRevMap<X, ObjectInstance>> rMapObjects = needObjects ? new Result<>() : null;
 
@@ -102,17 +102,17 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return new AsyncValueList<>(list, mapObjects, newSession, asyncMode);
     }
 
-    private <X extends PropertyInterface> InputValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, boolean useFilters) {
+    private <X extends PropertyInterface> InputValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, int useFilters) {
         // actually that all X can be different
         PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) this.drawProperty;
 
         InputValueList<X> list;
-        if(useFilters)
-            valueProperty = FilterInstance.ifCached(valueProperty, toDraw.getFilters(GroupObjectInstance.DynamicFilters.NOVIEW, false));
+        if(useFilters > 0)
+            valueProperty = FilterInstance.ifCached(valueProperty, toDraw.getFilters(GroupObjectInstance.NOVIEWUSERFILTER(this), false));
 
-        list = (InputValueList<X>) valueProperty.getInputValueList(toDraw, rMapObjects, valuesGetter); // when
-        if(list == null && !useFilters) // trying to use filters
-            return getInputValueList(valuesGetter, rMapObjects, true);
+        list = (InputValueList<X>) valueProperty.getInputValueList(toDraw, rMapObjects, valuesGetter, useFilters == 2);
+        if(list == null && useFilters <= 0) // trying to use filters
+            return getInputValueList(valuesGetter, rMapObjects, 1);
 
         return list;
     }
