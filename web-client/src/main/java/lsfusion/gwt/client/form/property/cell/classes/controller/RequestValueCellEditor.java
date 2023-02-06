@@ -11,4 +11,6 @@ public interface RequestValueCellEditor extends RequestCellEditor {
     void commitValue(Element parent, Object value);
 
     void setDeferredCommitOnBlur(boolean deferredCommitOnBlur);
+
+    void setCancelTheSameValueOnBlur(Object oldValue);
 }

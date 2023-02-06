@@ -74,7 +74,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
 
     // FACTORY
 
-    public static CellEditor create(EditManager editManager, GPropertyDraw property, GType type, String customEditorFunction) {
+    public static CustomCellEditor create(EditManager editManager, GPropertyDraw property, GType type, String customEditorFunction) {
         JavaScriptObject customEditor = getCustomFunction(customEditorFunction);
 
         String functionName = "Input";

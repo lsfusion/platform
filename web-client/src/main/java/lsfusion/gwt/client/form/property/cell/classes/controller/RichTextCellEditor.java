@@ -4,19 +4,15 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
-import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 
-public class RichTextCellEditor implements RequestEmbeddedCellEditor, KeepCellEditor {
+public class RichTextCellEditor extends ARequestValueCellEditor implements RequestEmbeddedCellEditor, KeepCellEditor {
 
-    private final EditManager editManager;
     private String oldValue;
 
     public RichTextCellEditor(EditManager editManager) {
-        this.editManager = editManager;
+        super(editManager);
     }
 
     @Override
@@ -90,13 +86,8 @@ public class RichTextCellEditor implements RequestEmbeddedCellEditor, KeepCellEd
     }
 
     @Override
-    public void commit(Element parent, CommitReason commitReason) {
-        editManager.commitEditing(new GUserInputResult(getEditorValue(parent)), commitReason);
-    }
-
-    @Override
-    public void cancel(Element parent, CancelReason cancelReason) {
-        editManager.cancelEditing(cancelReason);
+    public Object getValue(Element parent, Integer contextAction) {
+        return getEditorValue(parent);
     }
 
     @Override

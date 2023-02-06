@@ -72,6 +72,7 @@ import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestCellEditor;
+import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.*;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -2102,7 +2103,7 @@ public class GFormController implements EditManager {
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
         GPropertyDraw property = editContext.getProperty();
 
-        CellEditor cellEditor;
+        RequestValueCellEditor cellEditor;
         boolean hasCustomEditor = customChangeFunction != null && !customChangeFunction.equals("DEFAULT");
         if (hasCustomEditor) // see LsfLogics.g propertyCustomView rule
             cellEditor = CustomReplaceCellEditor.create(this, property, type, customChangeFunction);
@@ -2110,6 +2111,9 @@ public class GFormController implements EditManager {
             cellEditor = type.createCellEditor(this, property, inputList);
 
         if (cellEditor != null) {
+            if(editContext.canUseChangeValueForRendering(type))
+                cellEditor.setCancelTheSameValueOnBlur(editContext.getValue());
+
             if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors
                 oldValue = editContext.getValue();
                 if(oldValue == null)

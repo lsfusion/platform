@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
@@ -54,14 +55,28 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         validateAndCommit(parent, null, cancelIfInvalid, commitReason);
     }
 
+    private boolean cancelTheSameValueOnBlur;
+    private Object cancelTheSameValueOnBlurOldValue;
+    @Override
+    public void setCancelTheSameValueOnBlur(Object oldValue) {
+        cancelTheSameValueOnBlur = true;
+        cancelTheSameValueOnBlurOldValue = oldValue;
+    }
+
     public void validateAndCommit(Element parent, Integer contextAction, boolean cancelIfInvalid, CommitReason commitReason) {
-        SmartScheduler.getInstance().scheduleDeferred(commitReason.isBlurred() && isDeferredCommitOnBlur(), () -> {
+        boolean blurred = commitReason.isBlurred();
+        SmartScheduler.getInstance().scheduleDeferred(blurred && isDeferredCommitOnBlur(), () -> {
             if (editManager.isThisCellEditing(this)) {
                 Object value = getValue(parent, contextAction);
-                if (value == null || !value.equals(RequestValueCellEditor.invalid))
-                    commitFinish(parent, value, contextAction, commitReason);
-                else if (cancelIfInvalid)
-                    cancel(parent);
+                if (value != null && value.equals(RequestValueCellEditor.invalid)) {
+                    if (cancelIfInvalid)
+                        cancel(parent);
+                } else {
+                    if (blurred && cancelTheSameValueOnBlur && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
+                        cancel(parent);
+                    } else
+                        commitFinish(parent, value, contextAction, commitReason);
+                }
             }
         });
     }
