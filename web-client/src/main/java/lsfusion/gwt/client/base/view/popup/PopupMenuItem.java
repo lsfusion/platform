@@ -2,9 +2,14 @@ package lsfusion.gwt.client.base.view.popup;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.HRElement;
 import com.google.gwt.dom.client.LIElement;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.view.MainFrame;
 
 public class PopupMenuItem extends SimplePanel {
     private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
@@ -20,9 +25,12 @@ public class PopupMenuItem extends SimplePanel {
     public PopupMenuItem(PopupMenuItemValue itemValue, Scheduler.ScheduledCommand command, String text, boolean interactive) {
         this(createLIElement(text, interactive), itemValue, command, interactive);
     }
+    public PopupMenuItem() {
+        this(createLIElement(), null, null, false);
+    }
 
     //bottom panel
-    public PopupMenuItem(PopupMenuItemValue itemValue, Scheduler.ScheduledCommand command, FlexPanel panel, boolean interactive) {
+    public PopupMenuItem(PopupMenuItemValue itemValue, Scheduler.ScheduledCommand command, Widget panel, boolean interactive) {
         this(createLIElement(panel, interactive), itemValue, command, interactive);
     }
 
@@ -60,10 +68,24 @@ public class PopupMenuItem extends SimplePanel {
         return element;
     }
 
-    private static LIElement createLIElement(FlexPanel panel, boolean interactive) {
+    private static LIElement createLIElement(Widget panel, boolean interactive) {
         LIElement element = Document.get().createLIElement();
         element.appendChild(panel.getElement());
         element.addClassName(interactive ? "dropdown-item" : "dropdown-item-text");
+        return element;
+    }
+
+    private static LIElement createLIElement() {
+        LIElement element = Document.get().createLIElement();
+
+        Element hrElement;
+        if(MainFrame.useBootstrap) {
+            hrElement = Document.get().createHRElement();
+        } else
+            hrElement = GwtClientUtils.createHorizontalSeparator().getElement();
+        hrElement.addClassName("dropdown-divider");
+        element.appendChild(hrElement);
+
         return element;
     }
 }

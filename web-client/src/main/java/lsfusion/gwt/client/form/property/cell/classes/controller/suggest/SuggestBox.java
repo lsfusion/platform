@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.FocusUtils;
@@ -37,7 +38,7 @@ public abstract class SuggestBox {
     private String currentText;
     private final PopupMenuPanel suggestionPopup;
     private final InputElement inputElement;
-    private FlexPanel bottomPanel;
+    private ArrayList<Widget> bottomPanels;
     private final boolean strict;
 
     protected SuggestPopupButton refreshButton;
@@ -49,7 +50,7 @@ public abstract class SuggestBox {
     
     private final Callback callback = new Callback() {
         public void onSuggestionsReady(Request request, Response response) {
-            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanel, popupMenuCallback);
+            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanels, popupMenuCallback);
         }
     };
 
@@ -68,10 +69,16 @@ public abstract class SuggestBox {
             callback.onMenuItemSelected(suggestion);
         };
 
-        this.bottomPanel = createBottomPanel(parent);
+        this.bottomPanels = new ArrayList<>();
+        bottomPanels.add(createButtonsPanel(parent));
+
+        Widget infoPanel = createInfoPanel(parent);
+        if(infoPanel != null)
+            bottomPanels.add(infoPanel);
     }
 
-    protected abstract FlexPanel createBottomPanel(Element parent);
+    protected abstract Widget createButtonsPanel(Element parent);
+    protected abstract Widget createInfoPanel(Element parent);
 
     protected boolean isLoading;
     public void updateDecoration(boolean isLoading) {
@@ -97,7 +104,7 @@ public abstract class SuggestBox {
         suggestionPopup.clearSelectedItem();
     }
 
-    protected void showSuggestions(final Element suggestElement, boolean initial, Collection<? extends PopupMenuItemValue> suggestions, boolean isAutoSelectEnabled, FlexPanel bottomPanel, final PopupMenuCallback callback) {
+    protected void showSuggestions(final Element suggestElement, boolean initial, Collection<? extends PopupMenuItemValue> suggestions, boolean isAutoSelectEnabled, ArrayList<Widget> bottomPanels, final PopupMenuCallback callback) {
         suggestionPopup.clearItems();
 
         if (suggestions.isEmpty()) {
@@ -109,7 +116,8 @@ public abstract class SuggestBox {
             suggestionPopup.addItem(suggestion, callback);
         }
 
-        suggestionPopup.addBottomPanelItem(bottomPanel);
+        for(Widget bottomPanel : bottomPanels)
+            suggestionPopup.addBottomPanelItem(bottomPanel);
 
         if (isAutoSelectEnabled && suggestions.size() > 0) {
             suggestionPopup.selectFirstItem();
@@ -139,10 +147,6 @@ public abstract class SuggestBox {
 
     public void hideSuggestions() {
         suggestionPopup.hide();
-    }
-
-    public void setBottomPanel(FlexPanel bottomPanel) {
-        this.bottomPanel = bottomPanel;
     }
 
     public boolean isSuggestionListShowing() {

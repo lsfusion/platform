@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.util.ArrayList;
@@ -374,9 +375,10 @@ public class PopupMenuPanel extends ComplexPanel {
         addItem(new PopupMenuItem(null, null, text, false));
     }
 
-    public void addBottomPanelItem(FlexPanel bottomPanel) {
+    public void addBottomPanelItem(Widget bottomPanel) {
+        addItem(new PopupMenuItem()); // separator
         bottomPanel.removeFromParent();
-        add(bottomPanel, getElement());
+        add(bottomPanel, getElement()); // need this to register bottompanel widget (otherwise events won't work)
         addItem(new PopupMenuItem(null, null, bottomPanel, false));
     }
 
@@ -496,11 +498,13 @@ public class PopupMenuPanel extends ComplexPanel {
     public void selectItem(PopupMenuItem item) {
         if (item != selectedItem) {
             if (selectedItem != null) {
-                selectedItem.setSelectionStyle(false);
+                selectedItem.removeStyleName("dropdown-item-selected");
+                selectedItem.removeStyleName("active");
             }
 
             if (item != null) {
-                item.setSelectionStyle(true);
+                item.addStyleName("dropdown-item-selected");
+                item.addStyleName("active");
             }
 
             selectedItem = item;

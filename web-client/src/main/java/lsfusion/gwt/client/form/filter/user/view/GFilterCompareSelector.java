@@ -46,7 +46,7 @@ public abstract class GFilterCompareSelector extends GFilterOptionSelector<GComp
         });
         
         bottomPanel = new FlexPanel(true);
-        bottomPanel.add(GwtClientUtils.createHorizontalSeparator());
+//        bottomPanel.add(GwtClientUtils.createHorizontalSeparator());
         bottomPanel.add(negationCB);
         bottomPanel.add(allowNullCB);
 

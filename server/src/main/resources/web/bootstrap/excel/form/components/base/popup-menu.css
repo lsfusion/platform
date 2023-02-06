@@ -1,0 +1,22 @@
+.dropdown-menu {
+    background: var(--component-background-color);
+    border: 1px solid var(--component-border-color);
+
+    padding: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+
+    z-index: 2000;
+}
+
+.dropdown-item-selected {
+    background: var(--selection-color) !important;
+}
+
+.dropdown-divider {
+    /*border-color: var(--component-border-color);*/
+    margin: var(--border-comp-horz-padding) 0;
+}
+
+.dropdown-menu-tip {
+    /*border-top:1px solid var(--component-border-color);*/
+    color: var(--disabled-text-color);
+}

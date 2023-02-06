@@ -10,6 +10,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.impl.TextBoxImpl;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.*;
@@ -455,14 +456,14 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         }, element, parent, completionType.isAnyStrict(), suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
 
             @Override
-            protected FlexPanel createBottomPanel(Element parent) {
-                FlexPanel bottomPanel = new FlexPanel(true);
-                bottomPanel.setWidth("100%");
-                bottomPanel.getElement().addClassName("dropdown-menu-bottom-panel");
-                // block mouse down events to prevent focus issues
-                bottomPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
+            protected Widget createButtonsPanel(Element parent) {
+//                FlexPanel bottomPanel = new FlexPanel(true);
 
                 FlexPanel buttonsPanel = new FlexPanel();
+                buttonsPanel.getElement().addClassName("dropdown-menu-button-panel");
+
+                // block mouse down events to prevent focus issues
+                buttonsPanel.addDomHandler(GwtClientUtils::stopPropagation, MouseDownEvent.getType());
 
                 buttonsPanel.add(refreshButton = new SuggestPopupButton(StaticImage.REFRESH_IMAGE_PATH) {
                     @Override
@@ -497,14 +498,17 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     }
                 }
 
-                bottomPanel.add(buttonsPanel);
+                return buttonsPanel;
+            }
 
+            protected Widget createInfoPanel(Element parent) {
                 if (compare != null && compare.escapeSeparator()) {
                     HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
                     tip.getElement().addClassName("dropdown-menu-tip");
-                    bottomPanel.add(tip);
+                    tip.getElement().addClassName("text-secondary");
+                    return tip;
                 }
-                return bottomPanel;
+                return null;
             }
 
             @Override
