@@ -349,21 +349,23 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
                 suggestBox.updateDecoration(true);
 
-                //disable selection while loading
-                suggestBox.clearSelectedItem();
+                //disable selection while loading (delayed)
+                Result<Boolean> resultReceived = new Result<>(false);
 
-                if (emptyQuery) { // to show empty popup immediately
-                    // add timer to avoid blinking when empty popup is followed by non-empty one
-                    new Timer() {
-                        @Override
-                        public void run() {
-                            if (isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
-                                callback.onSuggestionsReady(request, new SuggestBox.Response(new ArrayList<>(), true));
-                                setMinWidth(element, suggestBox, false);
-                            }
+                // add timer to avoid blinking:
+                // popup, when empty popup is followed by non-empty one
+                // active row, when there are results updated
+                new Timer() {
+                    @Override
+                    public void run() {
+                        if (emptyQuery && isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
+                            callback.onSuggestionsReady(request, new SuggestBox.Response(new ArrayList<>(), true));
+                            setMinWidth(element, suggestBox, false);
                         }
-                    }.schedule(100);
-                }
+                        if(!resultReceived.result)
+                            suggestBox.clearSelectedItem();
+                    }
+                }.schedule(100);
 
                 assert delayTimer == null;
                 // we're sending a request, so we want to delay all others for at least 100ms
@@ -381,12 +383,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     public void onFailure(Throwable caught) {
                         if (isThisCellEditor()) //  && suggestBox.isSuggestionListShowing()
                             cancelAndFlushDelayed(execTimer);
+                        resultReceived.set(true);
                     }
 
-                        @Override
-                        public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
-                            if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
-                                suggestBox.setAutoSelectEnabled((completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainFrame.matchSearchSeparator))) && !emptyQuery);
+                    @Override
+                    public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
+                        if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
+                            suggestBox.setAutoSelectEnabled((completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainFrame.matchSearchSeparator))) && !emptyQuery);
 
                             boolean succeededEmpty = false;
                             if(result.first != null) {
@@ -423,6 +426,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                             }
 
                             cancelAndFlushDelayed(execTimer);
+                            resultReceived.set(true);
                         }
                     }
                 });
