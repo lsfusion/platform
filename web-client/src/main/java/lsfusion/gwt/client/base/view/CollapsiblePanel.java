@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.base.view;
 
+import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
@@ -27,6 +28,28 @@ public class CollapsiblePanel extends CaptionPanel implements ColorThemeChangeLi
         legendWrapper.add(collapseImage, 0, GFlexAlignment.CENTER);
 
         MainFrame.addColorThemeChangeListener(this);
+
+        TooltipManager.registerWidget(legendWrapper, new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                return container.getTooltipText(container.caption);
+            }
+
+            @Override
+            public String getPath() {
+                return container.getPath();
+            }
+
+            @Override
+            public String getCreationPath() {
+                return container.getCreationPath();
+            }
+
+            @Override
+            public boolean stillShowTooltip() {
+                return true;
+            }
+        });
     }
 
     public void setCollapsed(boolean collapsed) {

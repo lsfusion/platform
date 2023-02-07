@@ -74,16 +74,16 @@ public class ScriptingFormView {
 
         ContainerView container = view.createContainer(null, sid, version);
 
-        addOrMoveComponent(container, parentComponent, location, version);
+        addOrMoveComponent(container, parentComponent, location, version, null);
 
         return container;
     }
 
-    public void moveComponent(ComponentView component, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version) throws ScriptingErrorLog.SemanticErrorException {
-        addOrMoveComponent(component, parentComponent, location, version);
+    public void moveComponent(ComponentView component, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        addOrMoveComponent(component, parentComponent, location, version, debugPoint);
     }
 
-    public void addOrMoveComponent(ComponentView component, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public void addOrMoveComponent(ComponentView component, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         assert component != null && parentComponent != null;
 
         if(location == null)
@@ -101,6 +101,9 @@ public class ScriptingFormView {
         }
 
         if (component instanceof ContainerView) {
+            if (debugPoint != null)
+                ViewProxyUtil.setDebugPoint(component, debugPoint);
+
             ContainerView container = (ContainerView) component;
             if (container.isNFAncestorOf(parentComponent, version)) {
                 errLog.emitIllegalMoveComponentToSubcomponentError(parser, container.getSID(), parentComponent.getSID());

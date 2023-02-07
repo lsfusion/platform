@@ -46,7 +46,7 @@ public class ViewProxyUtil {
         setDebugPoint.set(debugPoint);
         try {
             BeanUtils.setProperty(viewProxy, propertyName, propertyValue);
-            BeanUtils.setProperty(viewProxy, "debugPoint", debugPoint.get());
+            setDebugPoint(viewProxy, debugPoint);
         } catch (Exception e) {
             throw new RuntimeException("property can't be set: " + e.getMessage());
         } finally {
@@ -54,7 +54,19 @@ public class ViewProxyUtil {
         }
     }
 
-    public static ViewProxy getViewProxy(Object target) {
+    private static void setDebugPoint(ViewProxy propertyReceiver, Supplier<DebugInfo.DebugPoint> debugPoint) {
+        try {
+            BeanUtils.setProperty(propertyReceiver, "debugPoint", debugPoint.get());
+        } catch (Exception e) {
+            throw new RuntimeException("debugPoint can't be set: " + e.getMessage());
+        }
+    }
+
+    public static void setDebugPoint(Object propertyReceiver, Supplier<DebugInfo.DebugPoint> debugPoint) {
+        setDebugPoint(getViewProxy(propertyReceiver), debugPoint);
+    }
+
+    private static ViewProxy getViewProxy(Object target) {
         if (target == null) {
             return null;
         }

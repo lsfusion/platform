@@ -4972,7 +4972,7 @@ moveComponentStatement[ComponentView parentComponent]
 	:	'MOVE' insSelector=componentSelector { insComp = $insSelector.component; } (insPosition=componentRelativePosition)?
 		{
 			if (inMainParseState()) {
-				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.location, self.getVersion());
+				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.location, self.getVersion(), () -> getCurrentDebugPoint());
 			}
 		}
 		componentStatementBody[insComp]
