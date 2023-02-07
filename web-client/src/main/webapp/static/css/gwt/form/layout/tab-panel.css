@@ -16,9 +16,9 @@
 /*.tab-panel-vert > .nav.nav-tabs {*/
 /*    margin-bottom: var(--border-cont-vert-padding);*/
 /*}*/
-.tab-panel-vert > .tab-pane {
-    padding-top: var(--border-cont-vert-padding);
-}
+/*.tab-panel-vert > .tab-pane {*/
+/*    padding-top: var(--border-cont-vert-padding);*/
+/*}*/
 
 /* cursors - now the captions are not <a> so we'll change the cursro explicitly */
 

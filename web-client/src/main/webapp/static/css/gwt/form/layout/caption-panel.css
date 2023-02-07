@@ -54,16 +54,10 @@
 
 /* it's assumed that container is already padded with caption / selection*/
 .form-shrink-padded-container .form {
-    padding-bottom: var(--border-cont-vert-padding);
-
-    padding-left: var(--border-cont-horz-padding);
-    padding-right: var(--border-cont-horz-padding);
+    padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
 }
 
 /* modal-body uses padding which is not what we want since we want it to have the scroll respecting form paddings (see above) */
 .form-shrink-padded-container.modal-body {
-    padding-bottom: 0;
-
-    padding-left: 0;
-    padding-right: 0;
+    padding: 0;
 }

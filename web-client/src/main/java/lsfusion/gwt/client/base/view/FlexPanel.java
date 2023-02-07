@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabBar;
 import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -1171,6 +1172,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, flexPanel.getOuterTopBorder(), flexPanel.getOuterRestBorder(), !collapsed, collapsed, wrap ? flexPanel : null);
         } else { // lead components semantics
             Border top = widget instanceof TableContainer && ((TableContainer) widget).getTableComponent() instanceof DataGrid ? Border.HAS : Border.NO;
+            Border bottom = widget instanceof CaptionPanel.Header ? Border.HAS_MARGIN : (widget instanceof FlexTabBar ? Border.HAS : Border.NO);
             InnerAlignment horzAlignment = InnerAlignment.DIFF;
             InnerAlignment vertAlignment = InnerAlignment.DIFF;
 
@@ -1179,7 +1181,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 vertAlignment = new InnerFlexAlignment(CaptionPanel.Header.VERT);
             }
 
-            return new PanelParams(top, Border.NO, Border.NO, Border.NO, false, horzAlignment, vertAlignment, false, false);
+            return new PanelParams(top, bottom, Border.NO, Border.NO, false, horzAlignment, vertAlignment, false, false);
         }
     }
 
