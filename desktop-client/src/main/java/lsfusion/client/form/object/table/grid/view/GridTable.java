@@ -792,7 +792,7 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
     }
 
     private Pair<ClientPropertyDraw, ClientGroupObjectValue> getMinColumnKey(ClientPropertyDraw property) {
-        return Pair.create(property, columnKeys.containsKey(property) ? columnKeys.get(property).get(0) : ClientGroupObjectValue.EMPTY);
+        return Pair.create(property, columnKeys.containsKey(property) && !columnKeys.get(property).isEmpty() ? columnKeys.get(property).get(0) : ClientGroupObjectValue.EMPTY);
     }
 
     private void setCurrentObject(ClientGroupObjectValue value) {
