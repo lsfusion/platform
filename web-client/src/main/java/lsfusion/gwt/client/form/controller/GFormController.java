@@ -517,10 +517,10 @@ public class GFormController implements EditManager {
                             }
                         });
 
-                        if(formScheduler.fixed) {
-                            scheduleFormScheduler(formScheduler);
-                        }
-
+//                        if(formScheduler.fixed) {
+//                            scheduleFormScheduler(formScheduler);
+//                        }
+                        return formScheduler.fixed;
                     } else {
                         return true;
                     }
