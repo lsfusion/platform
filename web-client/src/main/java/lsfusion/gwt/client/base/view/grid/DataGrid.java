@@ -1710,7 +1710,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName("table");
-            tableElement.addClassName("table-bordered");
             tableElement.addClassName("lsf-table");
 
             headerElement = tableElement.createTHead();
