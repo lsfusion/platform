@@ -204,6 +204,18 @@ public abstract class AbstractDataGridBuilder<T> {
 
     protected abstract void updateRowStickyLeftImpl(TableRowElement rowElement, List<Integer> stickyColumns, List<GSize> stickyLefts);
 
+    public void updateStickedState(TableSectionElement tbodyElement, List<Integer> stickyColumns, int lastSticked) {
+        int rowCount = tbodyElement.getChildCount();
+        if (rowCount > 0) {
+            NodeList<TableRowElement> rows = tbodyElement.getRows();
+            for (int i = 0; i < rowCount; ++i) {
+                updateStickedStateImpl(rows.getItem(i), stickyColumns, lastSticked);
+            }
+        }
+    }
+    
+    protected abstract void updateStickedStateImpl(TableRowElement rowElement, List<Integer> stickyColumns, int lastSticked);
+
     protected final <C> void renderCell(TableCellElement td, Cell cell, Column<T, C> column) {
         td.setPropertyObject(COLUMN_ATTRIBUTE, column);
         column.renderDom(cell, td);

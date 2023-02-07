@@ -173,4 +173,9 @@ public class DefaultHeaderBuilder<T> extends DataGridHeaderBuilder<T> {
     protected void updateHeaderStickyLeftImpl(TableRowElement tr, List<Integer> stickyColumns, List<GSize> stickyLefts) {
         GPropertyTableBuilder.updateStickyLeft(tr, stickyColumns, stickyLefts, true);
     }
+
+    @Override
+    protected void updateStickedState(TableRowElement tr, List<Integer> stickyColumns, int lastSticked) {
+        GPropertyTableBuilder.updateStickyCellsClasses(tr, stickyColumns, lastSticked);
+    }
 }

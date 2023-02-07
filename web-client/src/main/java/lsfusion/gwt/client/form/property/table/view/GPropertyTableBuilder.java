@@ -4,7 +4,10 @@ import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.grid.*;
+import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
+import lsfusion.gwt.client.base.view.grid.Column;
+import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.table.grid.view.GPivot;
@@ -215,6 +218,23 @@ public abstract class GPropertyTableBuilder<T> extends AbstractDataGridBuilder<T
                 //if (!header) {
                     cell.addClassName("dataGridStickyOverflow");
                 //}
+            }
+        }
+    }
+
+    @Override
+    public void updateStickedStateImpl(TableRowElement tr, List<Integer> stickyColumns, int lastSticked) {
+        updateStickyCellsClasses(tr, stickyColumns, lastSticked);
+    }
+    
+    public static void updateStickyCellsClasses(TableRowElement tr, List<Integer> stickyColumns, int lastSticked) {
+        for (int i = 0; i < stickyColumns.size(); i++) {
+            Integer stickyColumn = stickyColumns.get(i);
+            TableCellElement cell = tr.getCells().getItem(stickyColumn);
+            if (i <= lastSticked) {
+                cell.addClassName("sticked");
+            } else {
+                cell.removeClassName("sticked");
             }
         }
     }

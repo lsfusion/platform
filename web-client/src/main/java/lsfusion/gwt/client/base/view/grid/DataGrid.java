@@ -28,7 +28,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.view.MainFrame;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
@@ -46,6 +45,7 @@ import lsfusion.gwt.client.form.object.table.tree.view.GTreeTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -125,6 +125,9 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     protected final boolean noHeaders;
     protected final boolean noFooters;
     private final boolean noScrollers;
+    
+    private int latestHorizontalScrollPosition = 0;
+    private int latestLastStickedColumn = -1;
 
     public DataGrid(TableContainer tableContainer, boolean noHeaders, boolean noFooters) {
         this.tableContainer = tableContainer;
@@ -194,7 +197,48 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         tableWidget.setStyleName("scrolled-down", verticalScrollPosition > adjustment);
         tableWidget.setStyleName("scrolled-up", verticalScrollPosition < tableContainer.getScrollHeight() - tableContainer.getClientHeight() - adjustment);
 
-        tableWidget.setStyleName("scrolled-right", horizontalScrollPosition > adjustment);
+        if (horizontalScrollPosition != latestHorizontalScrollPosition) {
+            updateStickyColumnsState(horizontalScrollPosition);
+
+            latestHorizontalScrollPosition = horizontalScrollPosition;
+        }
+    }
+    
+    private void updateStickyColumnsState(int horizontalScrollPosition) {
+        List<Integer> stickyColumns = getStickyColumns();
+        int lastSticked = -1;
+
+        // used header as there might be no body rows and header is always present
+        NodeList<TableCellElement> trCells = headerBuilder.getHeaderRow().getCells();
+        List<GSize> stickyLefts = getStickyLefts();
+        for (int i = stickyColumns.size() - 1; i >= 0; i--) {
+            Integer stickyColumn = stickyColumns.get(i);
+            
+            TableCellElement cell = trCells.getItem(stickyColumn);
+            GSize left = stickyLefts.get(i);
+            if (left != null) {
+                Integer intLeft = left.getIntResizeSize();
+                if (intLeft != null) {
+                    int offsetLeft = cell.getOffsetLeft();
+                    // actually it is == but may differ for 1px (for now is being observed in Firefox, where no borders in header are seen)
+                    if (horizontalScrollPosition + intLeft >= offsetLeft) {
+                        lastSticked = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (lastSticked != latestLastStickedColumn) {
+            if (!noHeaders)
+                headerBuilder.updateStickedState(stickyColumns, lastSticked);
+            if (!noFooters)
+                footerBuilder.updateStickedState(stickyColumns, lastSticked);
+
+            tableBuilder.updateStickedState(tableWidget.getSection(), stickyColumns, lastSticked);
+            
+            latestLastStickedColumn = lastSticked;
+        }
     }
 
     private static Set<String> browserKeyEvents;
@@ -1086,9 +1130,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     private void preAfterUpdateDOMScrollHorizontal(SetPendingScrollState pendingState) {
-
-        NodeList<TableRowElement> rows = tableWidget.getDataRows();
-
         if(!noScrollers) {
             boolean hasVerticalScroll = GwtClientUtils.hasVerticalScroll(tableContainer.getElement()); // probably getFullWidth should be used
             if (this.hasVerticalScroll == null || !this.hasVerticalScroll.equals(hasVerticalScroll))
@@ -1103,7 +1144,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         int scrollLeft = currentScrollLeft;
         int colToShow;
         if (selectedColumnChanged && (colToShow = getSelectedColumn()) >=0 && getRowCount() > 0) {
-            NodeList<TableCellElement> cells = rows.getItem(0).getCells();
+            NodeList<TableCellElement> cells = tableWidget.getDataRows().getItem(0).getCells();
             TableCellElement td = cells.getItem(colToShow);
 
             int columnLeft = td.getOffsetLeft() - getPrevStickyCellsOffsetWidth(cells, colToShow);
@@ -1124,24 +1165,29 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         //calculate left for sticky properties
         if (columnsChanged || headersChanged || dataChanged || widthsChanged || onResizeChanged) {
-            GSize left = GSize.ZERO;
-            TableRowElement tr = rows.getItem(0);
-            if(tr != null) {
-                pendingState.stickyLefts = new ArrayList<>();
-                List<Integer> stickyColumns = getStickyColumns();
-                for (int i = 0; i < stickyColumns.size(); i++) {
-                    Element cell = tr.getCells().getItem(stickyColumns.get(i));
-                    GSize cellLeft = GwtClientUtils.getOffsetWidth(cell);
-                    //protect from too much sticky columns
-                    GSize nextLeft = left.add(cellLeft);
-                    // assert that nextLeft is Fixed PX, so the resize size is not null
-                    pendingState.stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.33 ? left : null);
-                    left = nextLeft;
-                }
-            }
+            pendingState.stickyLefts = getStickyLefts();
         }
 
 //        updateScrollHorizontal(pendingState);
+    }
+    
+    private List<GSize> getStickyLefts() {
+        List<GSize> stickyLefts = new ArrayList<>();
+        
+        TableRowElement tr = headerBuilder.getHeaderRow(); // used header as there might be no body rows and header is always present
+        GSize left = GSize.ZERO;
+        List<Integer> stickyColumns = getStickyColumns();
+        double viewportWidth = getViewportWidth();
+        for (int i = 0; i < stickyColumns.size(); i++) {
+            Element cell = tr.getCells().getItem(stickyColumns.get(i));
+            GSize cellLeft = GwtClientUtils.getOffsetWidth(cell);
+            //protect from too much sticky columns
+            GSize nextLeft = left.add(cellLeft);
+            // assert that nextLeft is Fixed PX, so the resize size is not null
+            stickyLefts.add(nextLeft.getResizeSize() <= viewportWidth * 0.33 ? left : null);
+            left = nextLeft;
+        }
+        return stickyLefts;
     }
 
     private void preAfterUpdateDOMScrollVertical(SetPendingScrollState pendingState) {
@@ -1223,6 +1269,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
         if (pendingState.left != null) {
             tableContainer.setHorizontalScrollPosition(pendingState.left);
+
+            updateScrolledState();
         }
 
         //set left neighbour right border for focused cell
@@ -1662,6 +1710,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
             tableElement = Document.get().createTableElement();
 
             tableElement.addClassName("table");
+            tableElement.addClassName("table-bordered");
             tableElement.addClassName("lsf-table");
 
             headerElement = tableElement.createTHead();
