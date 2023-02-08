@@ -46,6 +46,9 @@ public class GFormLayout extends ResizableComplexPanel {
         Widget view = getMainView();
         setPercentMain(view);
 
+        // this is shrinked container and needs scrolling / padding
+        FlexPanel.registerContentScrolledEvent(view);
+
         add(attachContainer);
 
         addStyleName("form");

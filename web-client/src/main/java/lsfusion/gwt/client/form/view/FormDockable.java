@@ -102,7 +102,7 @@ public final class FormDockable extends FormContainer {
             initBlockedMask();
 
             // this is shrinked container and needs padding
-            addStyleName("form-shrink-padded-container");
+//            addStyleName("form-shrink-padded-container");
         }
 
         public Widget getContent() {
@@ -116,7 +116,7 @@ public final class FormDockable extends FormContainer {
 
             content = widget;
             // we want content to have it's content size minimum but 100%
-            addFillNoShrink(content);
+            addFillShrinkSized(content);
         }
 
         private void initBlockedMask() {

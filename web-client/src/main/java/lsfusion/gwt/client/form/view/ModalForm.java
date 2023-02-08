@@ -44,11 +44,14 @@ public class ModalForm extends FormContainer {
         };
 
         window.setCaption(caption);
+        window.makeShadowOnScroll();
 
         contentWidget = window;
 
+        window.addStyleName("lsf-modal-form");
+
         // this is form container, that is shrinked and needs padding
-        contentWidget.getBody().addStyleName("form-shrink-padded-container");
+//        contentWidget.getBody().addStyleName("form-shrink-padded-container");
     }
 
     protected void initPreferredSize() {

@@ -1422,20 +1422,33 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         super.insert(child, container, beforeIndex, domInsert);
     }
 
-    private static void setContentScrolled(Widget container, Widget widget) {
-        container.setStyleName("scroll-down", widget.getElement().getScrollTop() > MainFrame.mobileAdjustment);
+    private static final String SCROLL_SHADOW_CONTAINER = "__scroll_shadow_container";
+    private static void setContentScrolled(Widget widget) {
+        Element container = GwtClientUtils.getParentWithAttribute(widget.getElement(), SCROLL_SHADOW_CONTAINER);
+        if(container != null) { // just in case
+            if(widget.getElement().getScrollTop() > MainFrame.mobileAdjustment)
+                container.addClassName("scroll-down");
+            else
+                container.removeClassName("scroll-down");
+        }
     }
 
-    public static void makeShadowOnScroll(Widget container, Widget header, FlexPanel widget) {
+    public static void makeShadowOnScroll(Widget container, Widget header, FlexPanel contentWidget) {
         container.addStyleName("scroll-shadow-container");
+        container.getElement().setAttribute(SCROLL_SHADOW_CONTAINER, "true");
         header.addStyleName("scroll-shadow-header");
 
-        registerContentScrolledEvent(container, widget);
+        /* for example modal-body uses padding which is not what we want since we want it to have the scroll respecting form paddings,
+        * so we set paddings in form-shrink-padded-container, and remove here   */
+        contentWidget.addStyleName("remove-all-p");
     }
 
-    private static void registerContentScrolledEvent(Widget container, FlexPanel widget) {
+    public static void registerContentScrolledEvent(Widget widget) {
+        widget.addStyleName("form-shrink-padded-container");
+
         widget.sinkEvents(Event.ONSCROLL);
-        widget.addHandler(event -> setContentScrolled(container, widget), ScrollEvent.getType());
-        widget.addOnResizeHandler(() -> setContentScrolled(container, widget));
+        widget.addHandler(event -> setContentScrolled(widget), ScrollEvent.getType());
+        if(widget instanceof FlexPanel)
+            ((FlexPanel)widget).addOnResizeHandler(() -> setContentScrolled(widget));
     }
 }

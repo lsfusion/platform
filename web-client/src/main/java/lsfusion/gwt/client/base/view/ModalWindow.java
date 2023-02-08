@@ -83,11 +83,13 @@ public class ModalWindow extends ResizableComplexPanel {
         body.addStyleName("modal-body");
         content.add(body);
 
-        FlexPanel.makeShadowOnScroll(content, header, body);
-
         GwtClientUtils.draggable(dialog.getElement(), ".modal-header");
         if (resizable)
             GwtClientUtils.resizable(content.getElement(), "e, s, se");
+    }
+
+    public void makeShadowOnScroll() {
+        FlexPanel.makeShadowOnScroll(content, header, body);
     }
 
     public void show() {
@@ -132,7 +134,7 @@ public class ModalWindow extends ResizableComplexPanel {
             body.removeSized(bodyWidget);
 
         bodyWidget = widget;
-        body.addFillNoShrink(bodyWidget); // we want bodywidget to overglow in the both direction to have a scroll in the body element (see form-shrink-tabbed-container)
+        body.addFillShrinkSized(bodyWidget); // we want bodywidget to overglow in the both direction to have a scroll in the body element (see form-shrink-tabbed-container)
 //        widget.getElement().getStyle().setProperty("flex", "1 1 auto");
 //        GwtClientUtils.setupPercentParent(widget.getElement());
     }
