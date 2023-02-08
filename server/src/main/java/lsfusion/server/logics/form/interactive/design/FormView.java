@@ -3,15 +3,24 @@ package lsfusion.server.logics.form.interactive.design;
 import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
-import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImOrderMap;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.form.design.FontInfo;
-import lsfusion.interop.form.event.*;
+import lsfusion.interop.form.event.FormEvent;
+import lsfusion.interop.form.event.FormScheduler;
+import lsfusion.interop.form.event.KeyInputEvent;
+import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.server.base.caches.IdentityLazy;
-import lsfusion.server.base.version.*;
+import lsfusion.server.base.version.ComplexLocation;
+import lsfusion.server.base.version.NFFact;
+import lsfusion.server.base.version.SIDHandler;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.base.version.interfaces.NFOrderMap;
 import lsfusion.server.base.version.interfaces.NFOrderSet;
@@ -575,7 +584,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     @IdentityLazy
     public boolean hasHeaders(GroupObjectEntity entity) {
         for (PropertyDrawView property : getProperties(entity))
-            if (!property.entity.ignoreHasHeaders && property.getDrawCaption() != null)
+            if (property.entity.isList(FormView.this.entity) && !property.entity.ignoreHasHeaders && property.getDrawCaption() != null)
                 return true;
         return false;
     }

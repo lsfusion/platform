@@ -1160,7 +1160,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @IdentityLazy
     public boolean hasFooters(GroupObjectEntity entity) {
         for (PropertyDrawEntity property : getProperties(entity)) {
-            if (property.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null)
+            if (property.isList(this) && property.getPropertyExtra(PropertyDrawExtraType.FOOTER) != null)
                 return true;
         }
         return false;
