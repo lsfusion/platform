@@ -16,8 +16,8 @@ import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
-import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
@@ -620,8 +620,12 @@ public class PropertyDrawView extends BaseComponentView {
         if(defaultCompare != null)
             return defaultCompare;
 
-        if(isProperty())
-            return getType().getDefaultCompare();
+        if(isProperty()) {
+            Type type = getType();
+            if (type != null) {
+                return type.getDefaultCompare();
+            }
+        }
 
         return null;
     }
