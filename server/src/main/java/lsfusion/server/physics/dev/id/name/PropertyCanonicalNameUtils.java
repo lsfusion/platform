@@ -1,7 +1,9 @@
 package lsfusion.server.physics.dev.id.name;
 
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.file.StaticFormatFileClass;
 import lsfusion.server.logics.classes.data.integral.NumericClass;
+import lsfusion.server.logics.classes.data.link.StaticFormatLinkClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 
 import java.util.Arrays;
@@ -13,6 +15,8 @@ public final class PropertyCanonicalNameUtils {
     
     static public final String commonStringClassName = "STRING";
     static public final String commonNumericClassName = "NUMERIC";
+    static public final String commonRawFileClassName = "RAWFILE";
+    static public final String commonRawLinkClassName = "RAWLINK";
 
     static public final String UNKNOWNCLASS = "?";
 
@@ -65,6 +69,10 @@ public final class PropertyCanonicalNameUtils {
                 builder.append(commonStringClassName);
             } else if (cs instanceof NumericClass) {
                 builder.append(commonNumericClassName);
+            } else if (cs instanceof StaticFormatFileClass && !cs.getCanonicalName().equals("FILE")) {
+                builder.append(commonRawFileClassName);
+            } else if (cs instanceof StaticFormatLinkClass && !cs.getCanonicalName().equals("LINK")) {
+                builder.append(commonRawLinkClassName);
             } else if (cs != null) {
                 builder.append(cs.getCanonicalName());
             } else {
