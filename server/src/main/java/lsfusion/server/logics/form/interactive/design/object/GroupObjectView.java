@@ -20,6 +20,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyGroupCont
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.DataInputStream;
@@ -61,9 +62,15 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return null;
     }
 
+    private DebugInfo.DebugPoint debugPoint;
+    public DebugInfo.DebugPoint getDebugPoint() {
+        return debugPoint;
+    }
+
     public GroupObjectView(IDGenerator idGen, GroupObjectEntity entity) {
         this.idGen = idGen;
         this.entity = entity;
+        this.debugPoint = entity.getDebugPoint();
 
         for (ObjectEntity object : this.entity.getObjects())
             add(new ObjectView(idGen, object, this));

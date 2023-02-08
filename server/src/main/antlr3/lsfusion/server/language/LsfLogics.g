@@ -4959,7 +4959,7 @@ newComponentStatement[ComponentView parentComponent]
 	:	'NEW' cid=ID (insPosition=componentRelativePosition)?
 		{
 			if (inMainParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.location, self.getVersion());
+				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.location, self.getVersion(), getCurrentDebugPoint());
 			}
 		}
 		componentStatementBody[newComp]
@@ -4972,7 +4972,7 @@ moveComponentStatement[ComponentView parentComponent]
 	:	'MOVE' insSelector=componentSelector { insComp = $insSelector.component; } (insPosition=componentRelativePosition)?
 		{
 			if (inMainParseState()) {
-				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.location, self.getVersion(), () -> getCurrentDebugPoint());
+				$designStatement::design.moveComponent(insComp, parentComponent, $insPosition.location, self.getVersion());
 			}
 		}
 		componentStatementBody[insComp]

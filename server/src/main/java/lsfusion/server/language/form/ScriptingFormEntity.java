@@ -165,6 +165,7 @@ public class ScriptingFormEntity {
             groupObj.setIntegrationSID(integrationSID);
 
         groupObj.setIntegrationKey(groupObject.integrationKey);
+        groupObj.setDebugPoint(debugPoint);
         addGroupObjectEntity(groupName, groupObj, location, version);
 
         if(groupObject.isSubReport)

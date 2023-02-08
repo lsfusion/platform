@@ -35,6 +35,7 @@ import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.object.TreeGroupEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import javax.swing.*;
@@ -388,8 +389,11 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public ContainerView createContainer(LocalizedString caption, String sID, Version version) {
-        ContainerView container = new ContainerView(idGenerator.idShift());
-        
+        return createContainer(caption, sID, version, null);
+    }
+
+    public ContainerView createContainer(LocalizedString caption, String sID, Version version, DebugInfo.DebugPoint debugPoint) {
+        ContainerView container = new ContainerView(idGenerator.idShift(), debugPoint);
         // Не используем здесь setCaption и setDescription из-за того, что они принимают на вход String.
         // Изменить тип, принимаемый set методами не можем, потому что этот интерфейс используется и на клиенте, где
         // LocalizedString отсутствует.

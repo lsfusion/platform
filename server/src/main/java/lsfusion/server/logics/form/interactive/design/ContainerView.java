@@ -114,13 +114,22 @@ public class ContainerView extends ComponentView {
     }
 
     public ContainerView(int ID) {
-        this(ID, false);
+        this(ID, false, null);
+    }
+
+    public ContainerView(int ID, DebugInfo.DebugPoint debugPoint) {
+        this(ID, false, debugPoint);
+    }
+
+    public ContainerView(int ID, boolean main) {
+        this(ID, main, null);
     }
 
     public boolean main;
-    public ContainerView(int ID, boolean main) {
+    public ContainerView(int ID, boolean main, DebugInfo.DebugPoint debugPoint) {
         super(ID);
         this.main = main;
+        this.debugPoint = debugPoint;
     }
 
     public void setCaption(LocalizedString caption) {
