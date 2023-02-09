@@ -393,7 +393,8 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public ContainerView createContainer(LocalizedString caption, String sID, Version version, DebugInfo.DebugPoint debugPoint) {
-        ContainerView container = new ContainerView(idGenerator.idShift(), debugPoint);
+        ContainerView container = new ContainerView(idGenerator.idShift());
+        container.setDebugPoint(debugPoint);
         // Не используем здесь setCaption и setDescription из-за того, что они принимают на вход String.
         // Изменить тип, принимаемый set методами не можем, потому что этот интерфейс используется и на клиенте, где
         // LocalizedString отсутствует.
