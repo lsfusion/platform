@@ -15,6 +15,7 @@ import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
 import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.view.MainFrame;
 
 import static com.google.gwt.dom.client.Style.Overflow.AUTO;
 
@@ -33,8 +34,13 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
 
         this.form = form;
 
-        getElement().getStyle().setOutlineStyle(Style.OutlineStyle.NONE);
-        getElement().getStyle().setOverflow(AUTO);
+        Style style = getElement().getStyle();
+        style.setOutlineStyle(Style.OutlineStyle.NONE);
+        style.setOverflow(AUTO);
+        
+        if (MainFrame.useBootstrap) {
+            style.setProperty("borderBottom", "1px solid var(--bs-border-color)");
+        }
 
         DataGrid.initSinkFocusEvents(this);
     }

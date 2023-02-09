@@ -115,7 +115,7 @@
 
 /* --- workaround for disappearing sticky cell borders when scrolling --- */
 .scrolled-down:not(.table-borderless) .dataGridHeaderRow,
-.scrolled-up:not(.table-borderless) .dataGridFooterRow,
+/*.scrolled-up:not(.table-borderless) .dataGridFooterRow,*/ /* switched to permanent bottom border in tableContainer */
 .table:not(.table-borderless) .dataGridFooter:not(.empty-footer) .dataGridFooterRow {
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
 }
