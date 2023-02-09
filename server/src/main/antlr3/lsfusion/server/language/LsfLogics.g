@@ -4959,7 +4959,7 @@ newComponentStatement[ComponentView parentComponent]
 	:	'NEW' cid=ID (insPosition=componentRelativePosition)?
 		{
 			if (inMainParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.location, self.getVersion());
+				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.location, self.getVersion(), getCurrentDebugPoint());
 			}
 		}
 		componentStatementBody[newComp]

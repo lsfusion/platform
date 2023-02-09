@@ -61,6 +61,7 @@ public class TreeGroupContainerSet {
         String sid = treeGroup.getPropertyGroupContainerSID();
 
         set.boxContainer = factory.createContainer();
+        set.boxContainer.setDebugPoint(treeGroup.entity.getDebugPoint()); //set debugPoint to containers that have a caption
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setCaption(LocalizedString.create("{form.layout.tree}"));
         

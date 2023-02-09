@@ -100,7 +100,7 @@ public class ScriptingFormEntity {
 
     private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
-        groupObj.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
+        groupObj.setDebugPoint(debugPoint); //also sets and scriptIndex inside
 
         for (int j = 0; j < groupObject.objects.size(); j++) {
             String className = groupObject.classes.get(j);
@@ -184,6 +184,7 @@ public class ScriptingFormEntity {
         checkNeighbour(location);
 
         TreeGroupEntity treeGroup = new TreeGroupEntity(form.genID());
+        treeGroup.setDebugPoint(debugPoint);
         List<GroupObjectEntity> groups = addScriptingGroupObjects(groupObjects, treeGroup, location, version, debugPoint);
         for (ScriptingGroupObject groupObject : groupObjects) {
             int groupIndex = groupObjects.indexOf(groupObject);

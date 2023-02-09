@@ -47,6 +47,7 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.implement.PropertyRevImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.sql.SQLException;
@@ -65,6 +66,8 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public boolean isSubReport;
     public PropertyObjectEntity<?> reportPathProp;
+
+    private DebugInfo.DebugPoint debugPoint;
     
     public UpdateType updateType;
     
@@ -81,6 +84,15 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public void setIntegrationKey(boolean integrationKey) {
         this.integrationKey = integrationKey;
+    }
+
+    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
+        this.debugPoint = debugPoint;
+        this.scriptIndex = Pair.create(debugPoint.line, debugPoint.offset);
+    }
+
+    public DebugInfo.DebugPoint getDebugPoint() {
+        return debugPoint;
     }
 
     private static class UpStaticParamsProcessor extends GroupObjectInstance.FilterProcessor {
@@ -270,10 +282,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public Pair<Integer, Integer> getScriptIndex() {
         return scriptIndex;
-    }
-
-    public void setScriptIndex(Pair<Integer, Integer> scriptIndex) {
-        this.scriptIndex = scriptIndex;
     }
 
     public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground) {
