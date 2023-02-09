@@ -22,8 +22,6 @@ public class ViewProxyUtil {
 
     private static final SoftHashMap<Object, ViewProxy> viewProxies = new SoftHashMap<>();
 
-    public static final ThreadLocal<Supplier<DebugInfo.DebugPoint>> setDebugPoint = new ThreadLocal<>();
-
     /**
      * not thread-safe
      */
@@ -43,13 +41,10 @@ public class ViewProxyUtil {
             throw new RuntimeException("property doesn't exist");
         }
 
-        setDebugPoint.set(debugPoint); //todo для чего это?
         try {
             BeanUtils.setProperty(viewProxy, propertyName, propertyValue);
         } catch (Exception e) {
             throw new RuntimeException("property can't be set: " + e.getMessage());
-        } finally {
-            setDebugPoint.set(null);
         }
     }
 

@@ -88,6 +88,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
         this.debugPoint = debugPoint;
+        this.scriptIndex = Pair.create(debugPoint.line, debugPoint.offset);
     }
 
     public DebugInfo.DebugPoint getDebugPoint() {
@@ -281,10 +282,6 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public Pair<Integer, Integer> getScriptIndex() {
         return scriptIndex;
-    }
-
-    public void setScriptIndex(Pair<Integer, Integer> scriptIndex) {
-        this.scriptIndex = scriptIndex;
     }
 
     public void setPropertyBackground(PropertyObjectEntity<?> propertyBackground) {

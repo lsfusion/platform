@@ -76,9 +76,8 @@ public class GroupObjectContainerSet {
         GroupObjectContainerSet set = new GroupObjectContainerSet();
         String sid = group.getPropertyGroupContainerSID();
 
-        //todo ???
         set.boxContainer = factory.createContainer(); // контейнер всей группы
-        set.boxContainer.setDebugPoint(group.getDebugPoint());
+        set.boxContainer.setDebugPoint(group.entity.getDebugPoint()); //set debugPoint to containers that have a caption
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setCaption(group.getCaption());
         
