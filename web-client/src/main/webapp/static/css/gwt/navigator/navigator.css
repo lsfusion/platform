@@ -1,3 +1,7 @@
+:root {
+    --nav-link-font-size: 1.5rem;
+}
+
 .navbar-nav {
     display: flex;
 }
@@ -22,7 +26,7 @@
 }
 
 .nav-link-vert > i {
-    font-size: 1.5rem;
+    font-size: var(--nav-link-font-size);
 }
 
 .nav-link.nav-link-horz-1 {
