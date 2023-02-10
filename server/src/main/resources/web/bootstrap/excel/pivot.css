@@ -1,0 +1,24 @@
+
+.pivotTable {
+    /*border: 1px solid var(--panel-border-color);*/
+    /*border-radius: var(--panel-border-radius);*/
+    /*-webkit-border-radius: var(--panel-border-radius);*/
+    /*-moz-border-radius: var(--panel-border-radius);*/
+
+    background: var(--background-color);
+}
+
+.pivotTable:focus {
+    /*border: 1px solid var(--focus-color);*/
+}
+
+.pivotTable-noSettings {
+    border: none;
+}
+
+.pvtRendererBody {
+    border: 1px solid var(--component-border-color);
+    border-radius: var(--table-border-radius);
+    -webkit-border-radius: var(--table-border-radius);
+    -moz-border-radius: var(--table-border-radius);
+}

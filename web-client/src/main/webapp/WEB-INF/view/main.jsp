@@ -76,7 +76,7 @@
                 "static/js/external/jquery.ui.touch-punch.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js
 
                 //pivot table
-                "static/css/pivot.css",
+                "static/css/gwt/pivot.css",
                 //<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pivottable/2.23.0/pivot.min.css">
                 "static/js/pivot.js",
                 "static/js/pivot.ru.js",

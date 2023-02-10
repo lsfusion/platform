@@ -1,23 +1,10 @@
 .js-plotly-plot {
     width: 100%;
     height: 100%;
-}
 
-.pivotTable {
-    /*border: 1px solid var(--panel-border-color);*/
-    /*border-radius: var(--panel-border-radius);*/
-    /*-webkit-border-radius: var(--panel-border-radius);*/
-    /*-moz-border-radius: var(--panel-border-radius);*/
-
-    background: var(--background-color);
-}
-
-.pivotTable:focus {
-    /*border: 1px solid var(--focus-color);*/
-}
-
-.pivotTable-noSettings {
-    border: none;
+    /* for the svg-container inside absolute width / height is set and it seems that this sizes are not that precise (a little bit lager than the container sizes), so the scroll appears,
+       to avoid this we just clip it */
+    overflow: hidden;
 }
 
 .pvtUiWrapperDiv {
@@ -416,12 +403,8 @@ reproduces in chrome 80, in firefox 73 (latest) and chrome 70 (2018-10-16) width
 }
 
 .pvtRendererBody {
-    border: 1px solid var(--component-border-color);
-    border-radius: var(--table-border-radius);
     position : relative;
     flex : 1;
-    -webkit-border-radius: var(--table-border-radius);
-    -moz-border-radius: var(--table-border-radius);
 }
 .pvtRendererFooter {
     flex : 0 1 auto;

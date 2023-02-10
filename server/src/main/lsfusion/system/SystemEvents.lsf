@@ -78,6 +78,7 @@ onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'property.css' THEN
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'button.css' THEN 17;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'filter.css' THEN 18;
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'toolbar.css' THEN 19;
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'pivot.css' THEN 20;
 
 onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 19; //for bootstrap and excell themes
 
