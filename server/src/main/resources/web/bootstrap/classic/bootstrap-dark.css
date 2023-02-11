@@ -1,0 +1,10 @@
+/* theming everything that bootstrap doesn't theme in the current version somewhy */
+
+[data-bs-theme=dark] .table-active {
+    --bs-table-accent-bg: rgba(255, 255, 255, 0.1);
+}
+
+/*focused cell, same as table-active (which is used for the table-active), but opacity 0.3 instead of 0.1*/
+[data-bs-theme=dark] .focused-cell {
+    --bs-table-accent-bg: rgba(255, 255, 255, 0.3);
+}

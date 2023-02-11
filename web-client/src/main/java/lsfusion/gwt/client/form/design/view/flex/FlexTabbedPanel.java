@@ -112,7 +112,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
 
     public void insertTab(Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
         tabWidget.addStyleName("nav-link");
-        tabWidget.addStyleName("link-dark");
+        tabWidget.addStyleName("link-secondary");
 
         tabBar.insertTab(tabWidget, beforeIndex);
 

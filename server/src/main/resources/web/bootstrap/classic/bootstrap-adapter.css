@@ -16,6 +16,8 @@
 
     /* should correspond to $table-border-width bootstrap scss variable */
     --table-outline-width: 1px;
+
+    --link-color: var(--bs-link-color);
 }
 
 .caption-panel-header {
@@ -63,7 +65,7 @@
     font: var(--fa-font-solid);
 }
 
-/*focused cell, same as table-active, but opacity 0.3 instead of 0.1*/
+/*focused cell, same as table-active (which is used for the table-active), but opacity 0.3 instead of 0.1*/
 .focused-cell {
     --bs-table-accent-bg: rgba(0, 0, 0, 0.3);
 }
@@ -76,8 +78,8 @@
 /* need this since we're using form-control not only for input fields, but for other divs with dynamic content and we want this form-control elements have the same behaviour as the regular form-control inputs */
 /* it could be solved another way buy removing form-control and prop-value from the parent element (and not setting remove-all-pmb), but we don't usually do this */
 .form-control:focus-within {
-    color: #212529;
-    background-color: #fff;
+    color: var(--bs-body-color);
+    background-color: var(--bs-form-control-bg);
     border-color: #86b7fe;
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
@@ -181,5 +183,5 @@
 
 .scroll-shadow-container.scroll-down > .scroll-shadow-header {
     z-index: 1;
-    box-shadow: 0 0.1rem 0.5rem 0 rgb(0 0 0 / 15%);
+    box-shadow: 0 0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
 }
