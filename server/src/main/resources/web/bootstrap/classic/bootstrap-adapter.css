@@ -17,6 +17,12 @@
     /* should correspond to $table-border-width bootstrap scss variable */
     --table-outline-width: 1px;
 
+    --text-color: var(--bs-body-color);
+    --background-color: var(--bs-body-bg);
+    --component-background-color: var(--bs-form-control-bg);
+    --grid-separator-border-color: var(--bs-table-border-color);
+    --component-border-color: var(--panel-border-color);
+
     --link-color: var(--bs-link-color);
 }
 

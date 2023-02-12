@@ -26,6 +26,8 @@ callWithJQuery ($, Plotly) ->
         return computedStyle.getPropertyValue(propertyName)
     
     getPaperBGColor = () ->
+        # return transparent doesn't work, because for modebar-group background rgba(0, 0, 0, 0.5) is set which looks odd
+        # however later should be fixed somehow
         if CSSProps.paper_bgcolor == null
             CSSProps.paper_bgcolor = getCSSPropertyValue('--background-color')
         return CSSProps.paper_bgcolor
@@ -36,6 +38,7 @@ callWithJQuery ($, Plotly) ->
         return CSSProps.plot_bgcolor
 
     getFontColor = () ->
+        # return null doesn't work, it still uses some fill / fill-opacity
         if CSSProps.font_color == null
             CSSProps.font_color = getCSSPropertyValue('--text-color')
         return CSSProps.font_color

@@ -33,7 +33,7 @@ public class ServerColorUtils {
     
     public static Color getDefaultThemePanelBackground(ServletContext servletContext) {
         if (defaultThemePanelBackground == null) {
-            defaultThemePanelBackground = readCssColor(servletContext, DEFAULT, "--background-color");
+            defaultThemePanelBackground = readCssColor(servletContext, DEFAULT, "--excel-background-color");
         }
         return defaultThemePanelBackground; 
     }
@@ -42,7 +42,7 @@ public class ServerColorUtils {
         if (panelBackgrounds.containsKey(theme)) {
             return panelBackgrounds.get(theme);
         } else {
-            Color panelBackground = readCssColor(servletContext, theme, "--background-color");
+            Color panelBackground = readCssColor(servletContext, theme, "--excel-background-color");
             panelBackgrounds.put(theme, panelBackground);
             return panelBackground;
         }
@@ -52,7 +52,7 @@ public class ServerColorUtils {
         if (componentForegrounds.containsKey(theme)) {
             return componentForegrounds.get(theme);
         } else {
-            Color componentForeground = readCssColor(servletContext, theme, "--text-color");
+            Color componentForeground = readCssColor(servletContext, theme, "--excel-text-color");
             componentForegrounds.put(theme, componentForeground);
             return componentForeground;
         }
