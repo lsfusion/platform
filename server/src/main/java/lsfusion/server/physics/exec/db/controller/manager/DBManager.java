@@ -2077,7 +2077,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 droppedModules += moduleName + ", ";
             }
         if (denyDropModules && !droppedModules.isEmpty())
-            throw new RuntimeException("Dropped modules: " + droppedModules.substring(0, droppedModules.length() - 2));
+            throw new RuntimeException("Dropped modules: " + droppedModules.substring(0, droppedModules.length() - 2) + "\nTry using 'db.denyDropModules = false' in lsfusion.properties");
     }
 
     private synchronized void runMigrationScript() {
