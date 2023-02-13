@@ -379,7 +379,7 @@ groupStatement
 }
 @after {
 	if (inMainParseState() && !isNative) {
-		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent);
+		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent, getCurrentDebugPoint(true));
 	}
 }
 	:	'GROUP' ('NATIVE' { isNative = true; })?
@@ -546,7 +546,7 @@ formTreeGroupObjectList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint(true));
 	}
 }
 	:	'TREE'

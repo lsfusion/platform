@@ -273,7 +273,7 @@ public class TooltipManager {
     private static String getPathHTML(String projectLSFDir, String declaration, String relativePath) {
         String result = "";
 
-        if (declaration != null) {
+        if (declaration != null && !declaration.isEmpty()) {
             //use "**" instead "="
             String command = "--line**" + Integer.parseInt(declaration.substring(declaration.lastIndexOf("(") + 1, declaration.lastIndexOf(":"))) +
                     "&path**" + projectLSFDir + relativePath;
