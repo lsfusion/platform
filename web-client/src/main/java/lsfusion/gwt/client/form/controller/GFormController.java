@@ -1863,7 +1863,7 @@ public class GFormController implements EditManager {
     public void checkCommitEditing() {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         if(requestCellEditor != null)
-            requestCellEditor.commit(getEditElement(), CommitReason.FORCED);
+            requestCellEditor.commit(getEditElement(), CommitReason.FORCED_BLURRED);
     }
 
     private boolean bindPreview(GBindingEnv binding, boolean isMouse, boolean preview) {

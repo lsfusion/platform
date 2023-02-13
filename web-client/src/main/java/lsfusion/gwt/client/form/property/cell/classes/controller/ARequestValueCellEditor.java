@@ -72,7 +72,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
                     if (cancelIfInvalid)
                         cancel(parent);
                 } else {
-                    if (blurred && cancelTheSameValueOnBlur && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
+                    if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
                         cancel(parent);
                     } else
                         commitFinish(parent, value, contextAction, commitReason);

@@ -204,7 +204,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         } else {
             Integer inputActionIndex = property.getInputActionIndex(event, true);
             if(inputActionIndex != null) {
-                validateAndCommit(parent, inputActionIndex, true, CommitReason.SUGGEST);
+                validateAndCommit(parent, inputActionIndex, true, CommitReason.FORCED);
                 return;
             }
         }
@@ -457,7 +457,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
-        }, element, parent, completionType.isAnyStrict(), suggestion -> validateAndCommit(parent, true, CommitReason.SUGGEST)) {
+        }, element, parent, completionType.isAnyStrict(), suggestion -> validateAndCommit(parent, true, CommitReason.FORCED)) {
 
             @Override
             protected Widget createButtonsPanel(Element parent) {
@@ -483,7 +483,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     SuggestPopupButton actionButton = new SuggestPopupButton(action.action) {
                         @Override
                         public ClickHandler getClickHandler() {
-                            return event -> validateAndCommit(parent, action.index, true, CommitReason.SUGGEST);
+                            return event -> validateAndCommit(parent, action.index, true, CommitReason.FORCED);
                         }
                     };
                     buttonsPanel.add(actionButton);
