@@ -128,11 +128,11 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void addScriptedGroup(String groupName, LocalizedString captionStr, String integrationSID, String parentName) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGroup(String groupName, LocalizedString captionStr, String integrationSID, String parentName, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         if (parentName != null && !isNewGroup(parentName)) {
             emitEvalError("group parents from another module");    
         }
-        super.addScriptedGroup(groupName, captionStr, integrationSID, parentName);
+        super.addScriptedGroup(groupName, captionStr, integrationSID, parentName, debugPoint);
     }
 
     public List<LazyProperty> lazyProps = new ArrayList<>();

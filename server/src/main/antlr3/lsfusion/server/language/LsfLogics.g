@@ -379,7 +379,7 @@ groupStatement
 }
 @after {
 	if (inMainParseState() && !isNative) {
-		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent);
+		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent, getCurrentDebugPoint(true));
 	}
 }
 	:	'GROUP' ('NATIVE' { isNative = true; })?
@@ -529,7 +529,7 @@ formGroupObjectsList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint(true));
 	}
 }
 	:	'OBJECTS'
@@ -546,7 +546,7 @@ formTreeGroupObjectList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint(true));
 	}
 }
 	:	'TREE'
@@ -4866,7 +4866,7 @@ navigatorElementDescription returns [NavigatorElement element]
 }
 @after {
 	if (inMainParseState()) {
- 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
+ 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(true), $pu.propUsage, $formName.sid, isAction);
  	}	
 }
 	:	'FOLDER' name=ID (caption=localizedStringLiteral)? 
