@@ -27,8 +27,8 @@ public class ClientContainer extends ClientComponent {
     public boolean horizontal;
     public boolean tabbed;
 
-    public String path = "";
-    public String creationPath = "";
+    public String path;
+    public String creationPath;
 
     public FlexAlignment childrenAlignment = FlexAlignment.START;
 

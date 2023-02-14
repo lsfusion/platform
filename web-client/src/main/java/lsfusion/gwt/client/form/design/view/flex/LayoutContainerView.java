@@ -42,7 +42,7 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
                 border = false;
 
             if (childContainer.collapsible)
-                return new CollapsiblePanel(caption, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
+                return new CollapsiblePanel(childContainer, border, collapsed -> formController.setContainerCollapsed(container, collapsed));
             else if (caption != null || border)
                 return new CaptionPanel(caption, border);
         }

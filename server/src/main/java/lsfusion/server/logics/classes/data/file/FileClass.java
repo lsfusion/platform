@@ -64,8 +64,14 @@ public abstract class FileClass<T> extends DataClass<T> {
 
     protected abstract String getFileSID();
 
+    @Override
     public String getSID() {
         return getFileSID() + (multiple ? "_Multiple" : "") + (storeName ? "_StoreName" : "");
+    }
+
+    @Override
+    public String getCanonicalName() {
+        return getFileSID();
     }
 
     @Override

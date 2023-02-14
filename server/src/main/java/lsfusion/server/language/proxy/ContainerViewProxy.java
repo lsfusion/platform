@@ -5,7 +5,6 @@ import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
-import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
@@ -41,10 +40,6 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
     
     public void setType(ContainerType type) {
         target.setType(type);
-    }
-
-    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
-        target.setDebugPoint(debugPoint);
     }
 
     public void setHorizontal(boolean horizontal) {

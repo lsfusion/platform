@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MOrderExclSet;
 import lsfusion.base.identity.IdentityObject;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 
 public class TreeGroupEntity extends IdentityObject {
     public boolean plainTreeMode = false;
@@ -15,6 +16,16 @@ public class TreeGroupEntity extends IdentityObject {
 
     public TreeGroupEntity(int ID) {
         this.ID = ID;
+    }
+
+    private DebugInfo.DebugPoint debugPoint;
+
+    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
+        this.debugPoint = debugPoint;
+    }
+
+    public DebugInfo.DebugPoint getDebugPoint() {
+        return debugPoint;
     }
 
     private Object groups = SetFact.mOrderExclSet();

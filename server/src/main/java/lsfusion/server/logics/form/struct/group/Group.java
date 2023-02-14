@@ -20,6 +20,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.ValueClassWrapper;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyClassImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 
@@ -30,6 +31,8 @@ public class Group extends AbstractNode {
     public final LocalizedString caption;
 
     private NFOrderSet<AbstractNode> children = NFFact.orderSet(true);
+
+    private DebugInfo.DebugPoint debugPoint;
 
     public Group(String canonicalName, LocalizedString caption) {
         this.canonicalName = canonicalName;
@@ -224,4 +227,11 @@ public class Group extends AbstractNode {
         return canonicalName != null;
     }
 
+    public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
+        this.debugPoint = debugPoint;
+    }
+
+    public DebugInfo.DebugPoint getDebugPoint() {
+        return debugPoint;
+    }
 }

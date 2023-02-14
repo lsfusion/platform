@@ -105,8 +105,14 @@ public abstract class LinkClass extends DataClass<String> {
 
     protected abstract String getFileSID();
 
+    @Override
     public String getSID() {
         return getFileSID() + (multiple ? "_Multiple" : "");
+    }
+
+    @Override
+    public String getCanonicalName() {
+        return getFileSID();
     }
 
     @Override
