@@ -282,7 +282,7 @@ public class GContainer extends GComponent {
                 GwtSharedUtils.stringFormat("<html><body>" +
                         "<b>%s</b><br/>" +
                         createTooltipHorizontalSeparator() +
-                        (getCreationPath().isEmpty() ? "" : (
+                        (getCreationPath() == null ? "" : (
                         "<b>" + ClientMessages.Instance.get().tooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>")) +
                         "</body></html>", caption, getCreationPath()) :
                 GwtSharedUtils.stringFormat("<html><body><b>%s</b></body></html>", caption);

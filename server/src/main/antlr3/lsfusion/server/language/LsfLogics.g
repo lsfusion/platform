@@ -529,7 +529,7 @@ formGroupObjectsList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint(true));
 	}
 }
 	:	'OBJECTS'
@@ -4866,7 +4866,7 @@ navigatorElementDescription returns [NavigatorElement element]
 }
 @after {
 	if (inMainParseState()) {
- 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
+ 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(true), $pu.propUsage, $formName.sid, isAction);
  	}	
 }
 	:	'FOLDER' name=ID (caption=localizedStringLiteral)? 
