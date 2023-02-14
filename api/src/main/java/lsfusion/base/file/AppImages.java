@@ -62,7 +62,7 @@ public class AppImages {
         AppImages.predefinedFontClasses.exclAdd("retail.png", "fa-solid fa-bag-shopping");
         AppImages.predefinedFontClasses.exclAdd("projectManagement.png", "fa-solid fa-diagram-project");
 
-        AppImages.predefinedFontClasses.exclAdd("logo.png", "lsf-font lsf-large lsf-logo-horizontal");
+        AppImages.predefinedFontClasses.exclAdd("logo.png", "lsfi lsfi-large lsfi-logo-horizontal");
     }
 
     public static final AppImage FORMTOP = new AppImage("formTop.png");
