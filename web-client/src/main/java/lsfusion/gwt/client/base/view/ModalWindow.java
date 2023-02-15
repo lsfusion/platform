@@ -75,7 +75,8 @@ public class ModalWindow extends ResizableComplexPanel {
         header.getElement().appendChild(title);
 
         content = new ResizableComplexPanel();
-        content.setStyleName("modal-content bg-light");
+        content.setStyleName("modal-content");
+        content.addStyleName("bg-body-tertiary");  // it makes sense to be equal to the class for the forms-container in the BaseLogicsModule.initNavigators
         dialog.setWidget(content);
         content.add(header);
 

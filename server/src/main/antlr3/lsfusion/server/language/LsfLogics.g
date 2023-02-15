@@ -379,7 +379,7 @@ groupStatement
 }
 @after {
 	if (inMainParseState() && !isNative) {
-		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent);
+		self.addScriptedGroup($groupNameCaption.name, $groupNameCaption.caption, $extID.val, parent, getCurrentDebugPoint(true));
 	}
 }
 	:	'GROUP' ('NATIVE' { isNative = true; })?
@@ -529,7 +529,7 @@ formGroupObjectsList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingGroupObjects(groups, self.getVersion(), getCurrentDebugPoint(true));
 	}
 }
 	:	'OBJECTS'
@@ -546,7 +546,7 @@ formTreeGroupObjectList
 }
 @after {
 	if (inMainParseState()) {
-		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint());
+		$formStatement::form.addScriptingTreeGroupObject(treeSID, $opts.location, groups, properties, propertyMappings, self.getVersion(), getCurrentDebugPoint(true));
 	}
 }
 	:	'TREE'
@@ -4033,7 +4033,7 @@ contextActions[List<TypedParameter> context] returns [List<String> actionImages 
 	(',' nextAct = contextAction[context] { $actionImages.add($nextAct.actionImage); $keyPresses.add($nextAct.keyPress); $quickAccesses.add($nextAct.quickAccess); $actions.add($nextAct.action); })*
 	;
 
-contextAction[List<TypedParameter> context] returns [String actionImage, String keyPress, List<QuickAccess> quickAccess = new ArrayList<>(), LAWithParams action]
+contextAction[List<TypedParameter> context] returns [String actionImage, String keyPress = "", List<QuickAccess> quickAccess = new ArrayList<>(), LAWithParams action]
 	:
 	image=stringLiteral { $actionImage = $image.val; } ('KEYPRESS' kp=stringLiteral { $keyPress = $kp.val; })?
 	          ('TOOLBAR' (quickAccess { $quickAccess.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*)? actDB=listActionDefinitionBody[context, true] { $action = $actDB.action; }
@@ -4865,7 +4865,7 @@ navigatorElementDescription returns [NavigatorElement element]
 }
 @after {
 	if (inMainParseState()) {
- 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(), $pu.propUsage, $formName.sid, isAction);
+ 		$element = self.createScriptedNavigatorElement($name.text, $caption.val, getCurrentDebugPoint(true), $pu.propUsage, $formName.sid, isAction);
  	}	
 }
 	:	'FOLDER' name=ID (caption=localizedStringLiteral)?
@@ -4967,7 +4967,7 @@ newComponentStatement[ComponentView parentComponent]
 	:	'NEW' cid=ID (insPosition=componentRelativePosition)?
 		{
 			if (inMainParseState()) {
-				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.location, self.getVersion());
+				newComp = $designStatement::design.createNewComponent($cid.text, parentComponent, $insPosition.location, self.getVersion(), getCurrentDebugPoint());
 			}
 		}
 		componentStatementBody[newComp]

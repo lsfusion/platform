@@ -514,10 +514,10 @@ public class GFormController implements EditManager {
                             }
                         });
 
-                        if(formScheduler.fixed) {
-                            scheduleFormScheduler(formScheduler);
-                        }
-
+//                        if(formScheduler.fixed) {
+//                            scheduleFormScheduler(formScheduler);
+//                        }
+                        return formScheduler.fixed;
                     } else {
                         return true;
                     }
@@ -1863,7 +1863,7 @@ public class GFormController implements EditManager {
     public void checkCommitEditing() {
         RequestCellEditor requestCellEditor = getRequestCellEditor();
         if(requestCellEditor != null)
-            requestCellEditor.commit(getEditElement(), CommitReason.FORCED);
+            requestCellEditor.commit(getEditElement(), CommitReason.FORCED_BLURRED);
     }
 
     private boolean bindPreview(GBindingEnv binding, boolean isMouse, boolean preview) {

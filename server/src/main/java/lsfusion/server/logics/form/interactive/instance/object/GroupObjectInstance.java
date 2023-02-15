@@ -65,9 +65,7 @@ import lsfusion.server.logics.form.interactive.changed.MFormChanges;
 import lsfusion.server.logics.form.interactive.changed.ReallyChanged;
 import lsfusion.server.logics.form.interactive.instance.FormEnvironment;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.AndFilterInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
-import lsfusion.server.logics.form.interactive.instance.filter.OrFilterInstance;
+import lsfusion.server.logics.form.interactive.instance.filter.*;
 import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -248,16 +246,41 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public ImSet<FilterInstance> getDynamicFilters(DynamicFilters dynamicFilters) {
-        ImSet<FilterInstance> result = SetFact.fromJavaSet(regularFilters);
-        if(dynamicFilters != DynamicFilters.NOUSER)
-            result = result.merge(combineUserFilters(userFilters));
-        if(dynamicFilters != DynamicFilters.NOVIEW)
-            result = result.merge(SetFact.fromJavaSet(viewFilters));
-        return result;
+        return SetFact.fromJavaSet(regularFilters).
+                merge(combineUserFilters(dynamicFilters.filterUserFilters(ListFact.fromJavaList(userFilters)))).
+                merge(dynamicFilters.filterViewFilters(SetFact.fromJavaSet(viewFilters)));
     }
 
-    public enum DynamicFilters {
-        ALL, NOUSER, NOVIEW
+    public interface DynamicFilters {
+
+        ImList<FilterInstance> filterUserFilters(ImList<FilterInstance> userFilters);
+        ImSet<FilterInstance> filterViewFilters(ImSet<FilterInstance> viewFilters);
+
+        DynamicFilters ALL = new DynamicFilters() {
+            @Override
+            public ImList<FilterInstance> filterUserFilters(ImList<FilterInstance> userFilters) {
+                return userFilters;
+            }
+
+            @Override
+            public ImSet<FilterInstance> filterViewFilters(ImSet<FilterInstance> viewFilters) {
+                return viewFilters;
+            }
+        };
+    }
+
+    public static DynamicFilters NOVIEWUSERFILTER(PropertyDrawInstance userProperty) {
+        return new DynamicFilters() {
+            @Override
+            public ImList<FilterInstance> filterUserFilters(ImList<FilterInstance> userFilters) {
+                return userFilters.filterList(element -> !(element instanceof CompareFilterInstance && ((CompareFilterInstance<?>) element).hasProperty(userProperty.getValueProperty())));
+            }
+
+            @Override
+            public ImSet<FilterInstance> filterViewFilters(ImSet<FilterInstance> viewFilters) {
+                return SetFact.EMPTY();
+            }
+        };
     }
 
     public ImSet<FilterInstance> getFilters() {
@@ -288,7 +311,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         updated |= UPDATED_FILTER;
     }
 
-    private ImSet<FilterInstance> combineUserFilters(List<FilterInstance> userFilters) {
+    private ImSet<FilterInstance> combineUserFilters(ImList<FilterInstance> userFilters) {
+        if(userFilters.isEmpty()) // optimization
+            return SetFact.EMPTY();
+
         FilterInstance comboFilter = null;
         List<List<FilterInstance>> organizedFilters = new ArrayList<>();
         List<FilterInstance> orFilters = new ArrayList<>();
@@ -326,7 +352,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         if(comboFilter != null)
             return SetFact.singleton(comboFilter);
 
-        return ListFact.fromJavaList(userFilters).toOrderSet().getSet();
+        return userFilters.toOrderSet().getSet();
     }
 
     // вообще все фильтры

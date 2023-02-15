@@ -71,17 +71,19 @@ public final class ClassCanonicalNameUtils {
         return sid + UpClassSetNameRBracket;
     }
 
-    private static final DataClass defaultStringClassObj = StringClass.text;
-    private static final DataClass defaultNumericClassObj = NumericClass.get(5, 2);
-    private static final DataClass defaultZDateTimeClassObj = ZDateTimeClass.instance;
-    private static final DataClass defaultDateTimeClassObj = DateTimeClass.instance;
-    private static final DataClass defaultTimeClassObj = TimeClass.instance;
+    private static final DataClass<?> defaultStringClassObj = StringClass.text;
+    private static final DataClass<?> defaultNumericClassObj = NumericClass.defaultNumeric;
+    private static final DataClass<?> defaultRawFileClassObj = CustomStaticFormatFileClass.get();
+    private static final DataClass<?> defaultRawLinkClassObj = CustomStaticFormatLinkClass.get();
+    private static final DataClass<?> defaultZDateTimeClassObj = ZDateTimeClass.instance;
+    private static final DataClass<?> defaultDateTimeClassObj = DateTimeClass.instance;
+    private static final DataClass<?> defaultTimeClassObj = TimeClass.instance;
 
-    public static DataClass getCanonicalNameDataClass(String name) {
+    public static DataClass<?> getCanonicalNameDataClass(String name) {
         return canonicalDataClassNames.get(name); 
     }
     
-    private static Map<String, DataClass> canonicalDataClassNames = new HashMap<String, DataClass>() {{
+    private static final Map<String, DataClass<?>> canonicalDataClassNames = new HashMap<String, DataClass<?>>() {{
         put("INTEGER", IntegerClass.instance);
         put("DOUBLE", DoubleClass.instance);
         put("LONG", LongClass.instance);
@@ -95,40 +97,18 @@ public final class ClassCanonicalNameUtils {
         put("TIMEINTERVAL", TimeIntervalClass.instance);
         put("TIME", defaultTimeClassObj);
         put("YEAR", YearClass.instance);
-        put("WORDFILE", WordClass.get());
-        put("IMAGEFILE", ImageClass.get());
-        put("PDFFILE", PDFClass.get());
-        put("DBFFILE", DBFClass.get());
-        put("RAWFILE", CustomStaticFormatFileClass.get());
         put("FILE", DynamicFormatFileClass.get());
-        put("EXCELFILE", ExcelClass.get());
-        put("TEXTFILE", TXTClass.get());
-        put("CSVFILE", CSVClass.get());
-        put("HTMLFILE", HTMLClass.get());
-        put("JSONFILE", JSONFileClass.get());
-        put("XMLFILE", XMLClass.get());
-        put("TABLEFILE", TableClass.get());
         put("NAMEDFILE", NamedFileClass.instance);
-        put("WORDLINK", WordLinkClass.get(false));
-        put("IMAGELINK", ImageLinkClass.get(false));
-        put("PDFLINK", PDFLinkClass.get(false));
-        put("DBFLINK", DBFLinkClass.get(false));
-        put("RAWLINK", CustomStaticFormatLinkClass.get());
         put("LINK", DynamicFormatLinkClass.get(false));
-        put("EXCELLINK", ExcelLinkClass.get(false));
-        put("TEXTLINK", TXTLinkClass.get(false));
-        put("CSVLINK", CSVLinkClass.get(false));
-        put("HTMLLINK", HTMLLinkClass.get(false));
-        put("JSONLINK", JSONLinkClass.get(false));
-        put("XMLLINK", XMLLinkClass.get(false));
-        put("TABLELINK", TableLinkClass.get(false));
         put("COLOR", ColorClass.instance);
         put("JSON", JSONClass.instance);
+        put("RAWLINK", defaultRawLinkClassObj);
+        put("RAWFILE", defaultRawFileClassObj);
         put("STRING", defaultStringClassObj);
         put("NUMERIC", defaultNumericClassObj);
     }};
 
-    public static DataClass getScriptedDataClass(String name) {
+    public static DataClass<?> getScriptedDataClass(String name) {
         assert !name.contains(" ");
         if (scriptedSimpleDataClassNames.containsKey(name)) {
             return scriptedSimpleDataClassNames.get(name);
@@ -167,7 +147,7 @@ public final class ClassCanonicalNameUtils {
         return null;
     }
     
-    private static Map<String, DataClass> scriptedSimpleDataClassNames = new HashMap<String, DataClass>() {{
+    private static final Map<String, DataClass<?>> scriptedSimpleDataClassNames = new HashMap<String, DataClass<?>>() {{
         put("INTEGER", IntegerClass.instance);
         put("DOUBLE", DoubleClass.instance);
         put("LONG", LongClass.instance);

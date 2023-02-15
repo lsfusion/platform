@@ -26,7 +26,7 @@ public class AbstractWindow {
 
     public boolean visible = true;
     
-    public String elementClass = "bg-white";
+    public String elementClass;
     
     public boolean autoSize; 
 

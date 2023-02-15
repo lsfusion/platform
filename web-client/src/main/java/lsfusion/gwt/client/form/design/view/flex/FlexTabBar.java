@@ -226,8 +226,10 @@ public class FlexTabBar extends Composite implements TabBar {
         if(index >= 0) {
             Widget widget = ((ClickDelegatePanel) panel.getWidget(index + 1)).getFocusablePanel().getWidget();
             if (selected) {
+                widget.removeStyleName("link-secondary");
                 widget.addStyleName("active");
             } else {
+                widget.addStyleName("link-secondary");
                 widget.removeStyleName("active");
             }
         }

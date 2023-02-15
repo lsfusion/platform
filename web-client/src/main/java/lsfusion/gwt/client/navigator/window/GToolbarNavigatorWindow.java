@@ -49,6 +49,6 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
     }
 
     public boolean allButtonsActive() {
-        return MainFrame.useBootstrap && !isSystem() && !isRoot();
+        return false; //return MainFrame.useBootstrap && !isSystem() && !isRoot() && !isLogo();
     }
 }

@@ -403,7 +403,10 @@ public class MainFrame implements EntryPoint {
             colorTheme = newColorTheme;
 
             Element cssLink = Document.get().getElementById("themeCss");
-            cssLink.setAttribute("href", versionedColorThemesCss.get(colorTheme.getSid()));
+            String colorThemeSid = colorTheme.getSid();
+            cssLink.setAttribute("href", versionedColorThemesCss.get(colorThemeSid));
+
+            Document.get().getDocumentElement().setAttribute("data-bs-theme", colorThemeSid);
 
             StyleDefaults.reset();
 

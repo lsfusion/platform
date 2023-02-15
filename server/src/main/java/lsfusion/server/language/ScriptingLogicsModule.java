@@ -805,12 +805,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    public void addScriptedGroup(String groupName, LocalizedString captionStr, String integrationSID, String parentName) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedGroup(String groupName, LocalizedString captionStr, String integrationSID, String parentName, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateGroup(groupName);
         LocalizedString caption = (captionStr == null ? LocalizedString.create(groupName) : captionStr);
         Group parentGroup = (parentName == null ? null : findGroup(parentName));
         Group group = addAbstractGroup(groupName, caption, parentGroup);
         group.setIntegrationSID(integrationSID);
+        group.setDebugPoint(debugPoint);
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, LocalizedString caption, DebugInfo.DebugPoint point, String icon,

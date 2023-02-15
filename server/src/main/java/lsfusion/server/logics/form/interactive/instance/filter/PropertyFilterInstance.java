@@ -18,6 +18,7 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.object.CustomObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
+import lsfusion.server.logics.form.interactive.instance.property.ActionOrPropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInterfaceInstance;
@@ -115,5 +116,9 @@ public abstract class PropertyFilterInstance<P extends PropertyInterface> extend
 
     protected void fillObjects(MSet<ObjectInstance> objects) {
         property.fillObjects(objects);
+    }
+
+    public boolean hasProperty(ActionOrPropertyObjectInstance valueProperty) {
+        return property.equals(valueProperty);
     }
 }

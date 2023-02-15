@@ -13,20 +13,18 @@ import java.util.List;
 
 public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
 
-    private String filterDescription;
-    private ImSet<String> filterExtensions;
+    private final String filterDescription;
+    private final ImSet<String> filterExtensions;
 
     protected String getFileSID() {
-        if(filterExtensions.isEmpty())
-            return "RAWLINK";
-        return "LINK";
+        return isRawLink() ? "RAWLINK" : "LINK";
     }
 
     public static CustomStaticFormatLinkClass get(boolean multiple, String description, String extensions) {
         return get(multiple, description, SetFact.toExclSet(extensions.split(" ")));
     }
 
-    private static List<CustomStaticFormatLinkClass> instances = new ArrayList<>();
+    private static final List<CustomStaticFormatLinkClass> instances = new ArrayList<>();
 
     public static CustomStaticFormatLinkClass get() { // RAWLINK
         return get(false);
@@ -61,7 +59,15 @@ public class CustomStaticFormatLinkClass extends StaticFormatLinkClass {
 
     @Override
     public String getSID() {
-        return super.getSID() + "_filterDescription=" + filterDescription + "_" + Arrays.toString(filterExtensions.toArray(new String[filterExtensions.size()])) + "]";
+        if (isRawLink()) {
+            return super.getSID();
+        } else {
+            return super.getSID() + "_filterDescription=" + filterDescription + "_" + Arrays.toString(filterExtensions.toArray(new String[filterExtensions.size()]));
+        }
+    }
+
+    private boolean isRawLink() {
+        return filterExtensions.isEmpty() || filterExtensions.size() == 1 && filterExtensions.get(0).isEmpty();
     }
 
     @Override

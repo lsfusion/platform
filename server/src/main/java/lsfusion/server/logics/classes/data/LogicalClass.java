@@ -127,7 +127,7 @@ public class LogicalClass extends DataClass<Boolean> {
     }
 
     public void writeParam(PreparedStatement statement, int num, Object value, SQLSyntax syntax) throws SQLException {
-        assert (Boolean)value;
+        assert threeState || (Boolean)value;
         statement.setByte(num, (byte) (threeState ? ((Boolean) value ? 1 : 0) : 1));
     }
 

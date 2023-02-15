@@ -3,15 +3,10 @@
     --selection-color: #2C4751;
     --selection-color-rgba: rgba(113, 113, 187, 0.5);
     --scrollbar-color: #585C5E;
-    --text-color: #bbbbbb; /* also hardcoded in StyleDefaults.java */
     --disabled-text-color: #6b6b6b;
-    --background-color: #3C3F41; /* also hardcoded in StyleDefaults.java */
-    --component-background-color: #45494A; /* also hardcoded in StyleDefaults.java */
     --split-border-color: var(--component-border-color);
     --dialog-border-color: var(--scrollbar-color);
-    --component-border-color: #646464;
     --panel-border-color: #515151;
-    --grid-separator-border-color: #5E6364; /* also hardcoded in StyleDefaults.java */
     --dialog-outer-border-color: #696969;
     --mobile-navigator-arrow-color: var(--dialog-outer-border-color);
     --progress-background-color: var(--scrollbar-color);
@@ -40,5 +35,11 @@
 
     --option-selected-hover-color: #19282e;
 
-    --link-color: #000000;
+    --excel-text-color: #bbbbbb; /* also hardcoded in StyleDefaults.java */
+    --excel-background-color: #3C3F41; /* also hardcoded in StyleDefaults.java */
+    --excel-component-background-color: #45494A; /* also hardcoded in StyleDefaults.java */
+    --excel-grid-separator-border-color: #5E6364; /* also hardcoded in StyleDefaults.java */
+    --excel-component-border-color: #646464;
+
+    --excel-link-color: #000000;
 }

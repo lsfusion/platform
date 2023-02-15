@@ -65,14 +65,14 @@ public class ScriptingFormView {
         }
     }
 
-    public ContainerView createNewComponent(String sid, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version) throws ScriptingErrorLog.SemanticErrorException {
+    public ContainerView createNewComponent(String sid, ComponentView parentComponent, ComplexLocation<ComponentView> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         assert sid != null && sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*") && parentComponent != null;
 
         if (getComponentBySID(sid, false, version) != null) {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        ContainerView container = view.createContainer(null, sid, version);
+        ContainerView container = view.createContainer(null, sid, version, debugPoint);
 
         addOrMoveComponent(container, parentComponent, location, version);
 
