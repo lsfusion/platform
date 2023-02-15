@@ -1,6 +1,9 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.dom.client.*;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.LIElement;
+import com.google.gwt.dom.client.UListElement;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import lsfusion.gwt.client.ClientMessages;
@@ -12,11 +15,11 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.HashMap;
 import java.util.Map;
 
-public class GMobileNavigatorView implements ColorThemeChangeListener {
+public class ExcelMobileNavigatorView implements MobileNavigatorView, ColorThemeChangeListener {
     private GINavigatorController navigatorController;
     private Map<GNavigatorElement, Element> icons = new HashMap<>();
 
-    public GMobileNavigatorView(GNavigatorElement root, GINavigatorController navigatorController) {
+    public ExcelMobileNavigatorView(GNavigatorElement root, GINavigatorController navigatorController) {
         this.navigatorController = navigatorController;
 
         Element menuElement = createNavigatorMenu(root);
@@ -91,10 +94,12 @@ public class GMobileNavigatorView implements ColorThemeChangeListener {
         drawer = menu.offcanvas();
     }-*/;
 
+    @Override
     public native void openNavigatorMenu() /*-{
         drawer.open();
     }-*/;
 
+    @Override
     public native void closeNavigatorMenu() /*-{
         drawer.close();
     }-*/;

@@ -60,6 +60,7 @@ NAVIGATOR {
 }
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.css' THEN 1;
+onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.js' THEN 1;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-background-inherit.css' THEN 2;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-adapter.css' THEN 3;
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap-dark.css' THEN 4;

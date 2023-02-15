@@ -43,8 +43,10 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
-import lsfusion.gwt.client.navigator.view.GMobileNavigatorView;
+import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
+import lsfusion.gwt.client.navigator.view.ExcelMobileNavigatorView;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
+import lsfusion.gwt.client.navigator.view.MobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -59,7 +61,7 @@ public class MainFrame implements EntryPoint {
     public static NavigatorDispatchAsync navigatorDispatchAsync;
 
     public static boolean mobile;
-    private static GMobileNavigatorView mobileNavigatorView = null;
+    private static MobileNavigatorView mobileNavigatorView = null;
     public static int mobileAdjustment;
 
     // settings    
@@ -486,7 +488,11 @@ public class MainFrame implements EntryPoint {
         this.navigatorController = navigatorController;
 
         if (mobile) {
-            mobileNavigatorView = new GMobileNavigatorView(result.root, navigatorController);
+            if (useBootstrap) {
+                mobileNavigatorView = new BSMobileNavigatorView(result.root, navigatorController);
+            } else {
+                mobileNavigatorView = new ExcelMobileNavigatorView(result.root, navigatorController);
+            }
             RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
         } else {
             navigatorController.initializeNavigatorViews(result.navigatorWindows);
@@ -531,7 +537,9 @@ public class MainFrame implements EntryPoint {
             navigatorChangesDTO.properties[i].update(root, navigatorChangesDTO.values[i]);
         }
 
-        navigatorController.update();
+        if (!mobile) {
+            navigatorController.update();
+        }
     }
 
     private native String getSessionId() /*-{

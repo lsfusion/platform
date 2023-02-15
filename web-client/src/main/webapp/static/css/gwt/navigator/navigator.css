@@ -35,6 +35,13 @@
 .nav-link.nav-link-horz-2 {
     margin-left: 2rem;
 }
+.nav-link.nav-link-horz-3 {
+    margin-left: 3rem;
+}
+
+.nav-link-horz .btn-image-img {
+    height: 1rem;
+}
 
 .panelNavigatorView {
     display: block;
