@@ -698,6 +698,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         baseWindows.logo = (ToolBarNavigatorWindow) findWindow("logo");
         baseWindows.logo.elementClass = navBarCss;
+        baseWindows.logo.elementClass += " navbar-large";
         baseWindows.logo.autoSize = true;
 
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
