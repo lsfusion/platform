@@ -71,6 +71,7 @@
                 "static/noauth/css/fontAwesome/css/brands.min.css",
                 "static/noauth/css/fontAwesome/css/solid.min.css",
                 "static/noauth/css/fontAwesome/css/regular.min.css",
+                "static/noauth/css/lsfFonts/lsf-icons.css",
 
                 //optional: mobile support with jqueryui-touch-punch
                 "static/js/external/jquery.ui.touch-punch.min.js", //https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js

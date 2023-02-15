@@ -12,20 +12,24 @@ onWebClientLoad ABSTRACT LIST ();
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
 onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 
-defaultLogo() = DATA IMAGEFILE ();
-onStarted() + {
-    IF NOT defaultLogo() THEN {
-        readResource('/images/logo.png');
-        defaultLogo() <- IMAGEFILE(resourceFile());
-    }
-}
+//todo logo() logic temporarily commented to use lsf-font .css class and AppImages.java
 
-logo() = OVERRIDE logicsLogo(), defaultLogo();
+//defaultLogo() = DATA IMAGEFILE ();
+//onStarted() + {
+//    IF NOT defaultLogo() THEN {
+//        readResource('/images/logo.png');
+//        defaultLogo() <- IMAGEFILE(resourceFile());
+//    }
+//}
+
+
+//logo() = OVERRIDE logicsLogo(), defaultLogo();
 
 logoAction() {}
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo();
+//    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo();
+    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE 'logo.png';
 }
 
 userUseBootstrap = DATA TBOOLEAN (CustomUser);

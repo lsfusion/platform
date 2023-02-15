@@ -25,6 +25,10 @@
     font-size: 1.5rem;
 }
 
+.navbar-large .nav-link-vert > i {
+    font-size: 4rem
+}
+
 .nav-link.nav-link-horz-1 {
     margin-left: 1rem;
 }
