@@ -3,10 +3,15 @@ package lsfusion.gwt.client.form.controller;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
-import com.google.gwt.event.dom.client.*;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.ContextMenuEvent;
+import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.*;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.RemoteDispatchAsync;
@@ -39,6 +44,7 @@ import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.form.view.ModalForm;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
+import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GShowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
@@ -126,6 +132,8 @@ public abstract class FormsController {
                     return event -> MainFrame.openNavigatorMenu();
                 }
             };
+            mobileMenuButton.getElement().setAttribute("data-bs-toggle", "offcanvas");
+            mobileMenuButton.getElement().setAttribute("data-bs-target", "#" + BSMobileNavigatorView.OFFCANVAS_ID);
             toolbarView.addComponent(mobileMenuButton);
         }
 

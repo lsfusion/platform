@@ -59,14 +59,21 @@
     margin-right: var(--border-label-horz-padding);
 }
 
+.nav-folder::after {
+    align-self: center;
+    margin-left: var(--border-label-horz-padding);
+}
+
 .caption-panel-header.collapsible.collapsed::before,
-.card-header.collapsible.collapsed::before {
+.card-header.collapsible.collapsed::before,
+.nav-folder.collapsed::after {
     content: "\f107";
     font: var(--fa-font-solid);
 }
 
 .caption-panel-header.collapsible:not(.collapsed)::before,
-.card-header.collapsible:not(.collapsed)::before {
+.card-header.collapsible:not(.collapsed)::before,
+.nav-folder:not(.collapsed)::after {
     content: "\f106";
     font: var(--fa-font-solid);
 }
