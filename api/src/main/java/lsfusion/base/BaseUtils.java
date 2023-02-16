@@ -2060,4 +2060,8 @@ public class BaseUtils {
     public static <T> java.util.function.Predicate<T> or(java.util.function.Predicate<T> a, java.util.function.Predicate<T> b) {
         return value -> a.test(value) || b.test(value);
     }
+
+    public static boolean endsWithIgnoreCase(String s, String suffix) {
+        return s != null && suffix != null && s.toLowerCase().endsWith(suffix.toLowerCase());
+    }
 }

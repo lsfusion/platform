@@ -1,5 +1,7 @@
 package lsfusion.interop.action;
 
+import lsfusion.base.BaseUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -26,11 +28,11 @@ public class ClientWebAction extends ExecuteClientAction {
     }
 
     public boolean isFont() {
-       return isFile && (resourceName.endsWith(".ttf") || resourceName.endsWith(".otf"));
+        return isFile && (BaseUtils.endsWithIgnoreCase(resourceName, ".ttf") || BaseUtils.endsWithIgnoreCase(resourceName, ".otf"));
     }
 
     public boolean isLibrary() {
-        return isFile && (resourceName.endsWith(".dll") || resourceName.endsWith(".so"));
+        return isFile && (BaseUtils.endsWithIgnoreCase(resourceName, ".dll") || BaseUtils.endsWithIgnoreCase(resourceName, ".so"));
     }
 
     @Override
