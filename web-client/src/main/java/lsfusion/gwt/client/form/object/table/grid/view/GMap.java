@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder.COLUMN_ATTRIBUTE;
-import static lsfusion.gwt.client.view.StyleDefaults.getDefaultComponentBackground;
 
 public class GMap extends GSimpleStateTableView<JavaScriptObject> implements RequiresResize {
     // No need to support color themes here as we apply svg filters to the icon anyway.
@@ -147,7 +147,7 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
             boolean refreshMarkers = false;
 
             if(oldGroupMarker == null || !(GwtClientUtils.nullEquals(groupMarker.color, oldGroupMarker.color))) {
-                updateColor(marker, groupMarker.color, groupMarker.color != null ? groupMarker.color : getDefaultComponentBackground());
+                updateColor(marker, groupMarker.color, groupMarker.color != null ? groupMarker.color : StyleDefaults.getComponentBackground());
                 refreshMarkers = true;
             }
 

@@ -58,8 +58,8 @@ public class ColorUtils {
     public static String getThemedColor(int baseRed, int baseGreen, int baseBlue) {
         if (!colorTheme.isDefault()) {
             int baseBackgroundColor = toRGB(StyleDefaults.getDefaultComponentBackground());
-            int newBackgroundColor = toRGB(StyleDefaults.getComponentBackground(colorTheme));
-            int customLimitColor = toRGB(StyleDefaults.getTextColor(colorTheme));
+            int newBackgroundColor = toRGB(StyleDefaults.getComponentBackground());
+            int customLimitColor = toRGB(StyleDefaults.getTextColor());
 
             float[] hsb = RGBtoHSB(
                     max(min(getRed(baseBackgroundColor) - baseRed + getRed(newBackgroundColor), getRed(customLimitColor)), 0),
