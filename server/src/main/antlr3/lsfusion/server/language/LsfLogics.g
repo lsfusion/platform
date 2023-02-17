@@ -4025,7 +4025,7 @@ contextActions[List<TypedParameter> context] returns [List<String> actionImages 
 contextAction[List<TypedParameter> context] returns [String actionImage, String keyPress = "", List<QuickAccess> quickAccess = new ArrayList<>(), LAWithParams action]
 	:
 	image=stringLiteral { $actionImage = $image.val; } ('KEYPRESS' kp=stringLiteral { $keyPress = $kp.val; })?
-	          ('TOOLBAR' (quickAccess { $quickAccess.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*)? actDB=listActionDefinitionBody[context, true] { $action = $actDB.action; }
+	          ('TOOLBAR' (quickAccess { $quickAccess.add(new QuickAccess($quickAccess.mode, $quickAccess.hover)); })*)? actDB=listActionDefinitionBody[context, false] { $action = $actDB.action; }
 	;
 
 quickAccess returns [QuickAccessMode mode, Boolean hover = false]
