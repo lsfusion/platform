@@ -82,8 +82,10 @@ public class MainController {
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
-        model.addAttribute("loginResources",
-                serverSettings != null && serverSettings.loginResources != null ? saveResources(serverSettings, serverSettings.loginResources, true) : null);
+        model.addAttribute("loginResourcesBeforeSystem",
+                serverSettings != null && serverSettings.loginResourcesBeforeSystem != null ? saveResources(serverSettings, serverSettings.loginResourcesBeforeSystem, true) : null);
+        model.addAttribute("loginResourcesAfterSystem",
+                serverSettings != null && serverSettings.loginResourcesAfterSystem != null ? saveResources(serverSettings, serverSettings.loginResourcesAfterSystem, true) : null);
 
         try {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
@@ -226,8 +228,10 @@ public class MainController {
         addStandardModelAttributes(model, request);
         model.addAttribute("logicsName", getLogicsName(serverSettings));
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
-        model.addAttribute("mainResources",
-                serverSettings != null && serverSettings.mainResources != null ? saveResources(serverSettings, serverSettings.mainResources, false) : null);
+        model.addAttribute("mainResourcesBeforeSystem",
+                serverSettings != null && serverSettings.mainResourcesBeforeSystem != null ? saveResources(serverSettings, serverSettings.mainResourcesBeforeSystem, false) : null);
+        model.addAttribute("mainResourcesAfterSystem",
+                serverSettings != null && serverSettings.mainResourcesAfterSystem != null ? saveResources(serverSettings, serverSettings.mainResourcesAfterSystem, false) : null);
 
         String sessionId;
         try {

@@ -55,7 +55,7 @@
             }
         </style>
 
-        <lsf:writeResources resources="${mainResources}"/>
+        <lsf:writeResources resources="${mainResourcesBeforeSystem}"/>
 
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
                 //need jquery for pivot table
@@ -174,6 +174,7 @@
         ));%>
 
         <lsf:writeResources resources="${versionedResources}"/>
+        <lsf:writeResources resources="${mainResourcesAfterSystem}"/>
 
         <c:forEach items="${lsfParams}" var="lsfParam">
             <script>
