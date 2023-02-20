@@ -1,5 +1,7 @@
 package lsfusion.client.form.property.async;
 
+import lsfusion.base.file.AppImage;
+import lsfusion.base.file.IOUtils;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.object.ClientGroupObjectValue;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -16,6 +18,7 @@ import java.io.IOException;
 public class ClientAsyncOpenForm extends ClientAsyncExec {
     public String canonicalName;
     public String caption;
+    public AppImage appImage;
     public boolean forbidDuplicate;
     public boolean modal;
     public WindowFormType type;
@@ -29,6 +32,7 @@ public class ClientAsyncOpenForm extends ClientAsyncExec {
 
         this.canonicalName = SerializationUtil.readString(inStream);
         this.caption = SerializationUtil.readString(inStream);
+        appImage = IOUtils.readImageIcon(inStream);
         this.forbidDuplicate = inStream.readBoolean();
         this.modal = inStream.readBoolean();
         this.type = WindowFormType.deserialize(inStream);

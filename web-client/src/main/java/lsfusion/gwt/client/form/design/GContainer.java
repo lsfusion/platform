@@ -1,10 +1,11 @@
 package lsfusion.gwt.client.form.design;
 
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
@@ -19,11 +20,24 @@ import java.util.List;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
-public class GContainer extends GComponent {
+public class GContainer extends GComponent implements HasNativeSID {
     public String caption;
+    public BaseImage image;
+
+    @Override
+    public String getNativeSID() {
+        return sID;
+    }
+
     public boolean collapsible;
 
     public boolean border;
+
+    public boolean hasBorder() {
+        if(!MainFrame.useBootstrap)
+            return false;
+        return border;
+    }
 
     public boolean main;
 
@@ -229,7 +243,6 @@ public class GContainer extends GComponent {
     }
 
     private class GCaptionReader implements GPropertyReader {
-        private String sID;
 
         public GCaptionReader() {
         }
@@ -241,6 +254,7 @@ public class GContainer extends GComponent {
             controller.setContainerCaption(GContainer.this, value != null ? value.toString() : null);
         }
 
+        private String sID;
         @Override
         public String getNativeSID() {
             if(sID == null) {
@@ -251,10 +265,33 @@ public class GContainer extends GComponent {
     }
     public final GPropertyReader captionReader = new GCaptionReader();
 
-    private class GCustomDesignCaptionReader implements GPropertyReader {
+    private class GImageReader implements GPropertyReader {
+
+        public GImageReader() {
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+            assert values.firstKey().isEmpty();
+            Object value = values.firstValue();
+            controller.setContainerImage(GContainer.this, value);
+        }
+
+        private String sID;
+        @Override
+        public String getNativeSID() {
+            if(sID == null) {
+                sID = "_CONTAINER_" + "IMAGE" +  "_" + GContainer.this.sID;
+            }
+            return sID;
+        }
+    }
+    public final GPropertyReader imageReader = new GImageReader();
+
+    private class GCustomDesignReader implements GPropertyReader {
         private String sID;
 
-        public GCustomDesignCaptionReader() {
+        public GCustomDesignReader() {
         }
 
         @Override
@@ -271,7 +308,7 @@ public class GContainer extends GComponent {
             return sID;
         }
     }
-    public final GPropertyReader customDesignCaptionReader = new GCustomDesignCaptionReader();
+    public final GPropertyReader customDesignReader = new GCustomDesignReader();
 
     public String getPath() {
         return path;
@@ -281,14 +318,15 @@ public class GContainer extends GComponent {
         return creationPath;
     }
 
-    public String getTooltipText(String caption) {
+    public String getTooltip() {
         return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><body>" +
                         "<b>%s</b><br/>" +
                         createTooltipHorizontalSeparator() +
+                        (sID != null ? "<b>sID:</b> %s<br/>" : "") +
                         (getCreationPath() == null ? "" : (
                         "<b>" + ClientMessages.Instance.get().tooltipPath() + ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a>")) +
-                        "</body></html>", caption, getCreationPath()) :
+                        "</body></html>", caption, sID, getCreationPath()) :
                 GwtSharedUtils.stringFormat("<html><body><b>%s</b></body></html>", caption);
     }
 }

@@ -14,18 +14,20 @@
     padding-left: 0.5rem;
 }
 
-.nav-link.nav-link-vert {
-    display: inline-grid;
-    justify-items: center;
-    align-self: center;
-    text-align: center;
-}
+/*.nav-link.nav-link-vert {*/
+/*    display: inline-grid;*/
+/*    justify-items: center;*/
+/*    align-self: center;*/
+/*    text-align: center;*/
+/*}*/
+/*.nav-link-vert > i {*/
+/*    font-size: 1.5rem;*/
+/*}*/
 
-.nav-link-vert > i {
+.navbar-large-icon .nav-link > i {
     font-size: 1.5rem;
 }
-
-.navbar-large .nav-link-vert > i {
+.navbar-xlarge-icon .nav-link > i {
     font-size: 4rem
 }
 
@@ -39,9 +41,9 @@
     margin-left: 3rem;
 }
 
-.nav-link-horz .btn-image-img {
-    height: 1rem;
-}
+/*.nav-link-horz .btn-image-img {*/
+/*    height: 1rem;*/
+/*}*/
 
 .panelNavigatorView {
     display: block;

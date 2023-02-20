@@ -146,10 +146,6 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.design.foreground = foreground;
     }
 
-    public void setImagePath(LocalizedString imagePath) {
-        target.design.setImage(new AppImage(imagePath.getSourceString()));
-    }
-
     public void setShowIf(PropertyObjectEntity<?> showIf) {
         target.setShowIf(showIf);
     }

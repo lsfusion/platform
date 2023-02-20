@@ -193,7 +193,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
             if (e instanceof NavigatorAction == actions){
                 List<Object> row = new ArrayList<>();
                 row.add(e.getCanonicalName());
-                row.add(ThreadLocalContext.localize(e.caption));
+                row.add(e.getCaption());
                 if(actions) {
                     FormEntity form = ((NavigatorAction) e).getForm();
                     row.add(form != null ? form.getCanonicalName() : null);
@@ -284,7 +284,7 @@ public class ReflectionManager extends LogicsManager implements InitializingBean
         
         List<List<Object>> formsData = new ArrayList<>();
         for (FormEntity form : businessLogics.getFormEntities()) {
-            formsData.add(asList(form.getCanonicalName(), ThreadLocalContext.localize(form.getCaption())));
+            formsData.add(asList(form.getCanonicalName(), form.getLocalizedCaption()));
         }
         formsData.add(asList("_NOFORM", ThreadLocalContext.localize(reflectionLM.noForm.getObjectCaption("instance"))));
 

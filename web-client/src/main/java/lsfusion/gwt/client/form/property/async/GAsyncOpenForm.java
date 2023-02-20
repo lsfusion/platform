@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.async;
 
 import com.google.gwt.user.client.Event;
+import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -15,6 +16,7 @@ import java.util.function.Consumer;
 public class GAsyncOpenForm extends GAsyncExec {
     public String canonicalName;
     public String caption;
+    public AppStaticImage appImage;
     public boolean forbidDuplicate;
     public boolean modal;
     public GWindowFormType type;
@@ -23,9 +25,10 @@ public class GAsyncOpenForm extends GAsyncExec {
     public GAsyncOpenForm() {
     }
 
-    public GAsyncOpenForm(String canonicalName, String caption, boolean forbidDuplicate, boolean modal, GWindowFormType type) {
+    public GAsyncOpenForm(String canonicalName, String caption, AppStaticImage appImage, boolean forbidDuplicate, boolean modal, GWindowFormType type) {
         this.canonicalName = canonicalName;
         this.caption = caption;
+        this.appImage = appImage;
         this.forbidDuplicate = forbidDuplicate;
         this.modal = modal;
         this.type = type;

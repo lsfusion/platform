@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.view;
 
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
@@ -42,12 +43,22 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
 
     public abstract void refresh(Set<GNavigatorElement> newElements);
 
-    public abstract GNavigatorElement getSelectedElement();
+    public GNavigatorElement getSelectedElement() {
+        return selected;
+    }
 
     public abstract int getHeight();
 
     public abstract int getWidth();
 
     public void resetSelectedElement(GNavigatorElement newSelectedElement) {
+    }
+
+    protected void selectElement(GNavigatorElement element, NativeEvent event) {
+        navigatorController.resetSelectedElements(element);
+        selected = element;
+
+        navigatorController.update();
+        navigatorController.openElement(element, event);
     }
 }

@@ -9,13 +9,17 @@ public class ComponentWidget {
 
     public SizedWidget widget;
 
+    public ComponentWidget(Widget widget, Widget caption) {
+        this(new SizedWidget(widget), caption != null ? new CaptionWidget(caption) : null);
+    }
+
     public ComponentWidget(SizedWidget widget, CaptionWidget caption) {
         this.caption = caption;
         this.widget = widget;
     }
 
     public ComponentWidget(Widget widget) {
-        this(new SizedWidget(widget), null);
+        this(widget, null);
     }
 
     public Widget getWidget() {

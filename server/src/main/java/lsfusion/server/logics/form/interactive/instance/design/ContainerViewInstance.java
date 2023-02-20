@@ -15,12 +15,18 @@ public class ContainerViewInstance extends CellInstance<ContainerView> {
         propertyCaption = extras.get(ContainerViewExtraType.CAPTION);
         captionReader = new ExtraReaderInstance(ContainerViewExtraType.CAPTION, propertyCaption);
 
+        propertyImage = extras.get(ContainerViewExtraType.IMAGE);
+        imageReader = new ExtraReaderInstance(ContainerViewExtraType.IMAGE, propertyImage);
+
         propertyCustomDesign = extras.get(ContainerViewExtraType.CUSTOM);
         customDesignReader = new ExtraReaderInstance(ContainerViewExtraType.CUSTOM, propertyCustomDesign);
     }
 
     public final PropertyObjectInstance<?> propertyCaption;
     public final ExtraReaderInstance captionReader;
+
+    public final PropertyObjectInstance<?> propertyImage;
+    public final ExtraReaderInstance imageReader;
 
     public final PropertyObjectInstance<?> propertyCustomDesign;
     public final ExtraReaderInstance customDesignReader;

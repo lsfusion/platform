@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.DialogBox;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.view.MainFrame;
@@ -9,8 +9,10 @@ import lsfusion.gwt.client.view.MainFrame;
 // twin of a PopupDialogPanel
 public class DialogModalWindow extends ModalWindow {
 
-    public DialogModalWindow(boolean resizable, ModalWindowSize size) {
+    public DialogModalWindow(String caption, boolean resizable, ModalWindowSize size) {
         super(resizable, size);
+
+        BaseImage.initImageText(getTitleWidget(), caption, null, false);
     }
 
     private Element focusedElement;

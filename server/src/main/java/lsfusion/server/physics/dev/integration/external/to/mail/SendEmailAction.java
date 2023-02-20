@@ -62,7 +62,7 @@ public class SendEmailAction extends SystemExplicitAction {
 
     public static void setDrawOptions(ExplicitAction action) {
         action.drawOptions.setAskConfirm(true);
-        action.drawOptions.setImage(AppImages.EMAIL);
+        action.image = AppImages.EMAIL;
     }
 
     public SendEmailAction(LocalizedString caption, ValueClass[] classes, boolean syncType) {

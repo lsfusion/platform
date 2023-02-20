@@ -10,7 +10,10 @@ public abstract class GElementNavigator extends GPropertyNavigator {
         this.canonicalName = canonicalName;
     }
 
-    public abstract void update(GNavigatorElement root, Object value);
+    public void update(GNavigatorElement root, Object value) {
+        updateElement(findNavigatorElementByCanonicalName(root), value);
+    }
+    public abstract void updateElement(GNavigatorElement root, Object value);
 
     protected GNavigatorElement findNavigatorElementByCanonicalName(GNavigatorElement root) {
         for(GNavigatorElement child : root.children) {

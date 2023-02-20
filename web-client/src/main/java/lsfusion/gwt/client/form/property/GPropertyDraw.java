@@ -58,7 +58,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String nativeSID;
     public String sID;
     public String namespace;
+
     public String caption;
+    public AppStaticImage appImage;
+
     public String canonicalName;
     public String propertyFormName;
     public String integrationSID;
@@ -265,7 +268,6 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
 
     public GEditBindingMap editBindingMap;
 
-    public AppStaticImage appStaticImage;
     public boolean hasDynamicImage;
     public Boolean focusable;
     public boolean checkEquals;
@@ -284,7 +286,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean hasStaticImage() {
-        return appStaticImage != null;
+        return appImage != null;
     }
     public boolean hasDynamicImage() { // when it's an action and has dynamic image
         return isAction() && hasDynamicImage;
@@ -644,7 +646,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public ImageDescription getImage() {
-        return appStaticImage != null ? appStaticImage.getImage() : null;
+        return appImage != null ? appImage.getImage() : null;
     }
 
     @Override

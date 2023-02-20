@@ -2,12 +2,9 @@ package lsfusion.gwt.client.form.design.view.flex;
 
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import com.google.gwt.user.client.ui.impl.FocusImpl;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 
@@ -15,9 +12,6 @@ import java.util.function.Consumer;
 
 /** based on from com.google.gwt.user.client.ui.TabBar */
 public class FlexTabBar extends Composite implements TabBar {
-
-    public interface Tab extends HasAllKeyHandlers, HasClickHandlers {
-    }
 
     private final FlexPanel panel;
 
@@ -80,11 +74,10 @@ public class FlexTabBar extends Composite implements TabBar {
         return panel.getWidgetCount() - 2;
     }
 
-    public void insertTab(Widget widget, int beforeIndex) {
+    public void insertTab(Widget widget, Widget extraTabWidget, int beforeIndex) {
         checkInsertBeforeTabIndex(beforeIndex);
 
-        ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
-        delWidget.addStyleName("nav-item");
+        Item delWidget = new Item(widget, extraTabWidget);
 //        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
 //        final Style delWidgetStyle = delWidget.getElement().getStyle();
 //        delWidgetStyle.setDisplay(Style.Display.FLEX);
@@ -138,57 +131,20 @@ public class FlexTabBar extends Composite implements TabBar {
      * @param enabled true to enable, false to disable
      */
     public void setTabEnabled(int index, boolean enabled) {
-        assert (index >= 0) && (index < getTabCount()) : "Tab index out of bounds";
-
-        // Style the wrapper
-        ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
+        Item delPanel = getTabItem(index);
         delPanel.setEnabled(enabled);
         setStyleName(delPanel.getElement(), "nav-item-disabled", !enabled);
     }
 
-    /**
-     * Sets a tab's contents via HTML.
-     * <p/>
-     * Use care when setting an object's HTML; it is an easy way to expose
-     * script-based security problems. Consider using
-     * {@link #setTabText(int, String)} or {@link #setTabHTML(int, SafeHtml)}
-     * whenever possible.
-     * @param index the index of the tab whose HTML is to be set
-     * @param html  the tab new HTML
-     */
-    public void setTabHTML(int index, String html) {
-        assert (index >= 0) && (index < getTabCount()) : "Tab index out of bounds";
-
-        ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
-        SimplePanel focusablePanel = delPanel.getFocusablePanel();
-        focusablePanel.setWidget(new HTML(html, false));
+    public Widget getTabWidget(int index) {
+        return getTabItem(index).getWidget();
     }
 
-    /**
-     * Sets a tab's contents via safe html.
-     * @param index the index of the tab whose HTML is to be set
-     * @param html  the tab new HTML
-     */
-    public void setTabHTML(int index, SafeHtml html) {
-        setTabHTML(index, html.asString());
-    }
-
-    /**
-     * Sets a tab's text contents.
-     * @param index the index of the tab whose text is to be set
-     * @param text  the object's new text
-     */
-    public void setTabText(int index, String text) {
+    private Item getTabItem(int index) {
         assert (index >= 0) && (index < getTabCount()) : "Tab index out of bounds";
 
-        ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
-        SimplePanel focusablePanel = delPanel.getFocusablePanel();
-
-        ((Label)focusablePanel.getWidget()).setText(text);
-        // It is not safe to check if the current widget is an instanceof Label and
-        // reuse it here because HTML is an instanceof Label. Leaving an HTML would
-        // throw off the results of getTabHTML(int).
-//        focusablePanel.setWidget(new Label(text, false));
+        Item item = (Item) panel.getWidget(index + 1);
+        return item;
     }
 
     private void checkInsertBeforeTabIndex(int beforeIndex) {
@@ -224,7 +180,7 @@ public class FlexTabBar extends Composite implements TabBar {
     private void updateSelectionStyle(boolean selected) {
         int index = selectedTab;
         if(index >= 0) {
-            Widget widget = ((ClickDelegatePanel) panel.getWidget(index + 1)).getFocusablePanel().getWidget();
+            Widget widget = getTabItem(index);
             if (selected) {
                 widget.removeStyleName("link-secondary");
                 widget.addStyleName("active");
@@ -235,55 +191,36 @@ public class FlexTabBar extends Composite implements TabBar {
         }
     }
 
-    /**
-     * <code>ClickDelegatePanel</code> decorates any widget with the minimal
-     * amount of machinery to receive clicks for delegation to the parent.
-     * {@link SourcesClickEvents} is not implemented due to the fact that only a
-     * single observer is needed.
-     */
-    private class ClickDelegatePanel extends Composite implements Tab {
-        private SimplePanel focusablePanel;
+    private class Item extends Composite {
+        private Widget widget;
         private boolean enabled = true;
 
-        ClickDelegatePanel(Widget child) {
-            focusablePanel = new FocusablePanel();
-            focusablePanel.setWidget(child);
+        public Item(Widget widget, Widget extraWidget) {
+            this.widget = widget;
 
-            initWidget(focusablePanel);
+            if(extraWidget != null) {
+                FlexPanel panel = new FlexPanel();
+                panel.addFillShrink(widget);
+                panel.add(extraWidget, GFlexAlignment.CENTER);
+
+                initWidget(panel);
+            } else
+                initWidget(widget);
+
+            addStyleName("nav-item");
+
+            addStyleName("nav-link");
+            addStyleName("link-secondary");
 
             sinkEvents(Event.ONMOUSEDOWN | Event.ONKEYDOWN);
         }
 
-        @Override
-        public HandlerRegistration addClickHandler(ClickHandler handler) {
-            return addHandler(handler, ClickEvent.getType());
-        }
-
-        @Override
-        public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-            return addHandler(handler, KeyDownEvent.getType());
-        }
-
-        @Override
-        public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
-            return addDomHandler(handler, KeyPressEvent.getType());
-        }
-
-        @Override
-        public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
-            return addDomHandler(handler, KeyUpEvent.getType());
-        }
-
-        public SimplePanel getFocusablePanel() {
-            return focusablePanel;
+        public Widget getWidget() {
+            return widget;
         }
 
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
-        }
-
-        public boolean isEnabled() {
-            return enabled;
         }
 
         @Override
@@ -305,12 +242,6 @@ public class FlexTabBar extends Composite implements TabBar {
                     break;
             }
             super.onBrowserEvent(event);
-        }
-    }
-
-    private static class FocusablePanel extends SimplePanel {
-        public FocusablePanel() {
-            super(FocusImpl.getFocusImplForPanel().createFocusable());
         }
     }
 }

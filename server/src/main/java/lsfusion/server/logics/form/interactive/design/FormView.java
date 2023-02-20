@@ -8,6 +8,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MOrderExclMap;
+import lsfusion.base.file.AppImage;
 import lsfusion.base.identity.DefaultIDGenerator;
 import lsfusion.base.identity.IDGenerator;
 import lsfusion.base.identity.IdentityObject;
@@ -202,6 +203,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             PropertyDrawEntity property = properties.first.get(i);
             PropertyDrawView view = addPropertyDrawBase(property, ComplexLocation.LAST(properties.second.get(i)), version);
             view.caption = property.initCaption;
+            view.image = property.initImage;
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.getNFRegularFilterGroupsListIt(version)) {
@@ -621,6 +623,10 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public void setCaption(LocalizedString caption) {
         this.mainContainer.setCaption(caption);
+    }
+
+    public void setImage(AppImage image) {
+        this.mainContainer.image = image;
     }
 
     public void setChangeKey(PropertyDrawView property, KeyStroke keyStroke) {

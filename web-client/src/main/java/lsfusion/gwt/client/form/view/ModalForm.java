@@ -31,7 +31,7 @@ public class ModalForm extends FormContainer {
         return contentWidget.getElement();
     }
 
-    public ModalForm(FormsController formsController, String caption, boolean async, Event editEvent) {
+    public ModalForm(FormsController formsController, boolean async, Event editEvent) {
         super(formsController, async, editEvent);
 
         ResizableModalWindow window = new ResizableModalWindow() {
@@ -43,7 +43,6 @@ public class ModalForm extends FormContainer {
             }
         };
 
-        window.setCaption(caption);
         window.makeShadowOnScroll();
 
         contentWidget = window;
@@ -112,8 +111,8 @@ public class ModalForm extends FormContainer {
             prevForm.onFocus(false);
     }
 
-    public void setCaption(String caption, String tooltip) {
-        contentWidget.setCaption(caption);
-        contentWidget.setTooltip(tooltip);
+    @Override
+    public Widget getCaptionWidget() {
+        return contentWidget.getTitleWidget();
     }
 }

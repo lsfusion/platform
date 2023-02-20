@@ -1,6 +1,7 @@
 package lsfusion.client.form.design;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.file.AppImage;
 import lsfusion.client.form.controller.remote.serialization.ClientSerializationPool;
 import lsfusion.client.form.object.ClientGroupObject;
 import lsfusion.client.form.object.ClientGroupObjectValue;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class ClientContainer extends ClientComponent {
 
     public String caption;
+    public AppImage image;
     public boolean collapsible;
 
     public boolean border;
@@ -85,7 +87,8 @@ public class ClientContainer extends ClientComponent {
         children = pool.deserializeList(inStream);
 
         caption = pool.readString(inStream);
-        
+        image = pool.readObject(inStream);
+
         collapsible = inStream.readBoolean();
 
         border = inStream.readBoolean();
@@ -254,6 +257,26 @@ public class ClientContainer extends ClientComponent {
 
         public byte getType() {
             return PropertyReadType.CONTAINER_CAPTION;
+        }
+    };
+
+    public final ClientPropertyReader imageReader = new ClientPropertyReader() {
+        public ClientGroupObject getGroupObject() {
+            return null;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+            assert BaseUtils.singleKey(readKeys).isEmpty();
+            Object containerCaption = BaseUtils.singleValue(readKeys);
+//            controller.getFormController().setContainerImage(ClientContainer.this, containerCaption != null ? containerCaption.toString() : null);
+        }
+
+        public int getID() {
+            return ClientContainer.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CONTAINER_IMAGE;
         }
     };
 

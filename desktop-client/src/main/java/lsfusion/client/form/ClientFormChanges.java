@@ -159,6 +159,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).lastReaders.get(inStream.readInt());
             case PropertyReadType.CONTAINER_CAPTION:
                 return clientForm.findContainerByID(inStream.readInt()).captionReader;
+            case PropertyReadType.CONTAINER_IMAGE:
+                return clientForm.findContainerByID(inStream.readInt()).imageReader;
             case PropertyReadType.IMAGE:
                 return clientForm.getProperty(inStream.readInt()).imageReader;
             case PropertyReadType.CUSTOM:

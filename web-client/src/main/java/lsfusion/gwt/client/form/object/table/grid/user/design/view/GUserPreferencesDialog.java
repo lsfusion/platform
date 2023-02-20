@@ -48,9 +48,7 @@ public abstract class GUserPreferencesDialog extends DialogModalWindow {
     private TextBox columnPatternBox;
 
     public GUserPreferencesDialog(GGridTable grid, GGridController groupController, GPanelController panelController, boolean canBeSaved) {
-        super(true, ModalWindowSize.LARGE);
-
-        setCaption(messages.formGridPreferences());
+        super(messages.formGridPreferences(), true, ModalWindowSize.LARGE);
 
         this.groupController = groupController;
 

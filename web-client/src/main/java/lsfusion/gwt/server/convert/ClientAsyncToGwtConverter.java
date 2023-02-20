@@ -135,8 +135,8 @@ public class ClientAsyncToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientAsyncOpenForm.class)
-    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
-        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, convertOrCast(asyncOpenForm.type));
+    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) throws IOException {
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, createImage(asyncOpenForm.appImage, false), asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, convertOrCast(asyncOpenForm.type));
     }
 
     @Cached

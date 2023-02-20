@@ -95,7 +95,8 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity formEntity, Version version) {
         super(formEntity, version);
 
-        setCaption(entity.getCaption());
+        setCaption(entity.getInitCaption());
+        setImage(entity.getInitImage());
         canonicalName = entity.getSID();
         creationPath = entity.getCreationPath();
         path = entity.getPath();

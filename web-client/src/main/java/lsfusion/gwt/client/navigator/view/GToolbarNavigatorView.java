@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Panel;
@@ -82,7 +81,7 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
         // debug info
         button.getElement().setAttribute("lsfusion-container", element.canonicalName);
 
-        button.addClickHandler(event -> click(element, event.getNativeEvent()));
+        button.addClickHandler(event -> selectElement(element, event.getNativeEvent()));
 
         TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
             @Override
@@ -113,7 +112,7 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
 
         if (element.isFolder() && window.isRoot() && firstFolder) {
             firstFolder = false;
-            click(element, null);
+            selectElement(element, null);
         }
 
         panel.add(button);
@@ -126,18 +125,6 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
                 addElement(childEl, newElements, step + 1);
             }
         }
-    }
-
-    public void click(GNavigatorElement element, NativeEvent event) {
-        navigatorController.resetSelectedElements(element);
-        selected = element;
-        navigatorController.update();
-        navigatorController.openElement(element, event);
-    }
-
-    @Override
-    public GNavigatorElement getSelectedElement() {
-        return selected;
     }
 
     @Override

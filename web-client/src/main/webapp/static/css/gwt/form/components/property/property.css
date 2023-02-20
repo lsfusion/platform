@@ -29,26 +29,45 @@
     display: flex;
 }
 
-.prop-flex-horz-start {
+/* 2 and 3 selectors are needed for action cell renderers, to respect that alignments */
+.prop-flex-horz-start,
+.prop-flex-horz-start.wrap-text-not-empty.wrap-img-horz,
+.prop-flex-vert-start.wrap-text-not-empty.wrap-img-vert
+{
     justify-content: flex-start;
 }
-.prop-flex-horz-center {
+.prop-flex-horz-center,
+.prop-flex-horz-center.wrap-text-not-empty.wrap-img-horz,
+.prop-flex-vert-center.wrap-text-not-empty.wrap-img-vert
+{
     justify-content: center;
 }
-.prop-flex-horz-end {
+.prop-flex-horz-end,
+.prop-flex-horz-end.wrap-text-not-empty.wrap-img-horz,
+.prop-flex-vert-end.wrap-text-not-empty.wrap-img-vert
+{
     justify-content: flex-end;
 }
-.prop-flex-vert-start {
+.prop-flex-vert-start,
+.prop-flex-vert-start.wrap-text-not-empty.wrap-img-vert,
+.prop-flex-horz-start.wrap-text-not-empty.wrap-img-horz
+{
     align-items: flex-start;
 }
-.prop-flex-vert-center {
+.prop-flex-vert-center,
+.prop-flex-vert-center.wrap-text-not-empty.wrap-img-vert,
+.prop-flex-horz-center.wrap-text-not-empty.wrap-img-horz
+{
     align-items: center;
 }
-.prop-flex-vert-end {
+.prop-flex-vert-end,
+.prop-flex-vert-end.wrap-text-not-empty.wrap-img-vert,
+.prop-flex-horz-end.wrap-text-not-empty.wrap-img-horz
+{
     align-items: flex-end;
 }
 .prop-flex-vert-stretch {
-    justify-content: stretch;
+    align-items: stretch;
 }
 
 .prop-text-horz-start {

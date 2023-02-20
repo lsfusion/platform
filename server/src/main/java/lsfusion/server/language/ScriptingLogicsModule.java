@@ -172,6 +172,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.*;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -4935,14 +4936,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkNavigatorElementName(name);
         checks.checkDuplicateNavigatorElement(name);
 
-        if (caption == null) {
-            caption = createDefaultNavigatorElementCaption(action, form);
-            if (caption == null) {
-                caption = LocalizedString.create(name);
-            }
-        }
-
-        return createNavigatorElement(elementCanonicalName(name), caption, point, action, form);
+        return createNavigatorElement(name, caption, point, action, form);
     }
 
     private String createDefaultNavigatorElementName(LA<?> action, FormEntity form) {
@@ -4954,25 +4948,44 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private LocalizedString createDefaultNavigatorElementCaption(LA<?> action, FormEntity form) {
-        if (action != null) {
-            return action.action.caption;
-        } else if (form != null) {
-            return form.getCaption();
-        }
-        return null;
-    }
+    private NavigatorElement createNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point, LA<?> action, FormEntity form) {
+        String canonicalName = elementCanonicalName(name);
 
-    private NavigatorElement createNavigatorElement(String canonicalName, LocalizedString caption, DebugInfo.DebugPoint point, LA<?> action, FormEntity form) {
+        Supplier<LocalizedString> defaultCaption;
+        Supplier<AppImage> defaultImage;
         NavigatorElement newElement;
         if (form != null) {
-            newElement = addNavigatorForm(form, canonicalName, caption);
+            newElement = createNavigatorForm(form, canonicalName);
+            defaultCaption = form::getCaption;
+            defaultImage = form::getImage;
         } else if (action != null) {
-            newElement = addNavigatorAction(action, canonicalName, caption);
+            newElement = createNavigatorAction(action, canonicalName);
+            defaultCaption = () -> action.action.caption;
+            defaultImage = () -> action.action.image;
         } else {
-            newElement = addNavigatorFolder(canonicalName, caption);
+            newElement = createNavigatorFolder(canonicalName);
+            defaultCaption = () -> null;
+            defaultImage = () -> null;
         }
+
+        newElement.caption = () -> {
+            LocalizedString aCaption = caption;
+            if(aCaption == null)
+                aCaption = defaultCaption.get();
+            if(aCaption == null)
+                aCaption = LocalizedString.create(name);
+            return aCaption;
+        };
+        newElement.image = () -> {
+            AppImage image = defaultImage.get();
+            if(image == null)
+                image = newElement.getDefaultIcon(baseLM.root.equals(newElement.getParent()));
+            return image;
+        };
+
         newElement.setDebugPoint(point);
+        addNavigatorElement(newElement);
+
         return newElement;
     }
 
@@ -4988,7 +5001,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setupNavigatorElement(NavigatorElement element, LocalizedString caption, NavigatorElement parentElement, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         if (caption != null) {
-            element.caption = caption;
+            element.caption = () -> caption;
         }
 
         applyNavigatorElementOptions(element, parentElement, options, isEditOperation);
@@ -5028,7 +5041,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void setNavigatorElementImage(NavigatorElement element, Property imageProperty, AppImage image) {
         if(imageProperty != null)
-            element.setImageProperty(imageProperty);
+            element.setPropertyImage(imageProperty);
         if (image != null)
             element.setImage(image);
     }

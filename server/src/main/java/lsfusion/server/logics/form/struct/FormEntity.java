@@ -10,6 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
@@ -41,7 +42,6 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
 import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
 import lsfusion.server.logics.form.interactive.action.lifecycle.FormToolbarAction;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -112,11 +112,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     private int ID;
     
     private String canonicalName;
-    private LocalizedString caption;
-    private DebugInfo.DebugPoint debugPoint; 
+    private LocalizedString initCaption;
+    private AppImage initImage;
+    private DebugInfo.DebugPoint debugPoint;
 
-    private String defaultImagePath;
-    
     public NFMapList<Object, ActionObjectEntity<?>> eventActions = NFFact.mapList();
     public ImMap<Object, ImList<ActionObjectEntity<?>>> getEventActions() {
         return eventActions.getOrderMap();
@@ -264,12 +263,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public FormEntity(String canonicalName, DebugInfo.DebugPoint debugPoint, LocalizedString caption, String imagePath, Version version) {
         this.ID = BaseLogicsModule.generateStaticNewID();
-        this.caption = caption;
+
+        this.initCaption = caption;
+        this.initImage = imagePath != null ? new AppImage(imagePath) : null;
+
         this.canonicalName = canonicalName;
         this.debugPoint = debugPoint;
-        
-        this.defaultImagePath = imagePath;
-        
+
         logger.debug("Initializing form " + ThreadLocalContext.localize(caption) + "...");
 
         initDefaultElements(version);
@@ -1256,10 +1256,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         this.integrationSID = integrationSID;
     }
 
-    public LocalizedString getCaption() {
-        return caption;
-    }
-
     public String getCreationPath() {
         return debugPoint != null ? debugPoint.toString() : null;
     }
@@ -1286,10 +1282,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public boolean needsToBeSynchronized() {
         return isNamed();
-    }
-
-    public String getDefaultImagePath() {
-        return defaultImagePath;
     }
 
     // сохраняет нижние компоненты
@@ -1419,8 +1411,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return mContainers.immutable();
     }
 
-    public String getAsyncCaption() {
-        return ThreadLocalContext.localize(getRichDesign().mainContainer.caption);
+    public LocalizedString getInitCaption() {
+        return initCaption;
+    }
+    public AppImage getInitImage() {
+        return initImage;
+    }
+
+    public LocalizedString getCaption() {
+        return getRichDesign().mainContainer.caption;
+    }
+
+    public AppImage getImage() {
+        return getRichDesign().mainContainer.image;
+    }
+
+    public String getLocalizedCaption() {
+        return ThreadLocalContext.localize(getCaption());
     }
 
     public void setEditType(PropertyEditType editType) {
@@ -1544,8 +1551,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     @Override
     public String toString() {
         String result = getSID();
+        String caption = getLocalizedCaption();
         if (caption != null) {
-            result += " '" + ThreadLocalContext.localize(caption) + "'";
+            result += " '" + caption + "'";
         }
         if (debugPoint != null) {
             result += " [" + debugPoint + "]";

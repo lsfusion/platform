@@ -49,9 +49,7 @@ import lsfusion.interop.form.event.*;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
-import lsfusion.interop.logics.ServerSettings;
 
-import javax.servlet.ServletContext;
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -136,10 +134,11 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientContainer.class)
-    public GContainer convertContainer(ClientContainer clientContainer) {
+    public GContainer convertContainer(ClientContainer clientContainer) throws IOException {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
         container.caption = clientContainer.caption;
+        container.image = createImage(clientContainer.image, false);
         container.collapsible = clientContainer.collapsible;
         container.border = clientContainer.border;
         container.horizontal = clientContainer.horizontal;
@@ -312,7 +311,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.editBindingMap = convertOrCast(clientPropertyDraw.editBindingMap);
 
         boolean canIconBeDisabled = clientPropertyDraw.baseType instanceof ClientActionClass || clientPropertyDraw.baseType instanceof ClientFileClass;
-        propertyDraw.appStaticImage = createImage(clientPropertyDraw.design.getImage(), canIconBeDisabled);
+        propertyDraw.appImage = createImage(clientPropertyDraw.image, canIconBeDisabled);
 
         propertyDraw.editType = convertOrCast(clientPropertyDraw.editType);
 

@@ -11,10 +11,7 @@ public class GCaptionElementNavigator extends GElementNavigator {
     }
 
     @Override
-    public void update(GNavigatorElement root, Object value) {
-        GNavigatorElement result = findNavigatorElementByCanonicalName(root);
-        if(result != null) {
-            result.caption = (String) value;
-        }
+    public void updateElement(GNavigatorElement result, Object value) {
+        result.caption = (String) value;
     }
 }

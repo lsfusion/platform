@@ -18,11 +18,6 @@ public class GMenuNavigatorView extends GNavigatorView<GMenuNavigatorWindow> {
     }
 
     @Override
-    public GNavigatorElement getSelectedElement() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public int getHeight() {
         return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }

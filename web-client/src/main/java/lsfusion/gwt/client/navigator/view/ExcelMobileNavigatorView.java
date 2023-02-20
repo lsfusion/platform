@@ -46,8 +46,8 @@ public class ExcelMobileNavigatorView implements MobileNavigatorView, ColorTheme
         LIElement liElement = Document.get().createLIElement();
 
         Element iconImageElement = null;
-        if (navigatorElement.appImage != null) {
-            iconImageElement = navigatorElement.appImage.createImage();
+        if (navigatorElement.image != null) {
+            iconImageElement = navigatorElement.image.createImage();
             icons.put(navigatorElement, iconImageElement);
         }
 
@@ -106,7 +106,7 @@ public class ExcelMobileNavigatorView implements MobileNavigatorView, ColorTheme
 
     @Override
     public void colorThemeChanged() {
-        for (Map.Entry<GNavigatorElement, Element> icon : icons.entrySet())
-            icon.getKey().appImage.setImageSrc(icon.getValue());
+//        for (Map.Entry<GNavigatorElement, Element> icon : icons.entrySet())
+//            icon.getKey().image.setImageSrc(icon.getValue());
     }
 }

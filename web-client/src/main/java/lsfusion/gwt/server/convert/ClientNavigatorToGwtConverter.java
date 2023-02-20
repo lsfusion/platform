@@ -20,9 +20,7 @@ import lsfusion.gwt.server.MainDispatchServlet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.form.ContainerWindowFormType;
 import lsfusion.interop.form.ModalityWindowFormType;
-import lsfusion.interop.logics.ServerSettings;
 
-import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -48,7 +46,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         element.path = clientElement.path;
         element.children = new ArrayList<>();
 
-        element.appImage = createImage(clientElement.appImage, false);
+        element.image = createImage(clientElement.appImage, false);
 
         element.asyncExec = convertOrCast(clientElement.asyncExec);
 
@@ -173,9 +171,9 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
 
     @Cached
     @Converter(from = ClientAsyncOpenForm.class)
-    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) {
+    public GAsyncOpenForm convertOpenForm(ClientAsyncOpenForm asyncOpenForm) throws IOException {
         GWindowFormType type = convertOrCast(asyncOpenForm.type);
-        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, type);
+        return new GAsyncOpenForm(asyncOpenForm.canonicalName, asyncOpenForm.caption, createImage(asyncOpenForm.appImage, false), asyncOpenForm.forbidDuplicate, asyncOpenForm.modal, type);
     }
 
     @Cached

@@ -20,9 +20,7 @@ public class ErrorDialog extends DialogModalWindow {
     private FlexTabbedPanel stacks = null;
 
     public ErrorDialog(String caption, String messageHTML, String javaStack, String lsfStack) {
-        super(false, ModalWindowSize.EXTRA_LARGE);
-
-        setCaption(caption);
+        super(caption, false, ModalWindowSize.EXTRA_LARGE);
 
         ResizableComplexPanel body = new ResizableComplexPanel();
 

@@ -174,9 +174,7 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
         private Timer timer;
 
         public LoadingBox(Runnable cancelAction) {
-            super(false, ModalWindowSize.FIT_CONTENT);
-
-            setCaption(messages.loading());
+            super(messages.loading(), false, ModalWindowSize.FIT_CONTENT);
 
             progressPane = new SimplePanel();
             progressPane.setStyleName("dialog-loading-progress");

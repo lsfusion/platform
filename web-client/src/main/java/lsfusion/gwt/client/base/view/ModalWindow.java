@@ -1,12 +1,12 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.HeadingElement;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 
 public class ModalWindow extends ResizableComplexPanel {
 
@@ -20,7 +20,7 @@ public class ModalWindow extends ResizableComplexPanel {
 
     private final SizedFlexPanel body;
 
-    private final HeadingElement title;
+    private final Widget title;
 
     protected final DivWidget modalBackDrop;
 
@@ -70,9 +70,9 @@ public class ModalWindow extends ResizableComplexPanel {
         header = new ResizableComplexPanel();
         header.setStyleName("modal-header");
 
-        title = Document.get().createHElement(5);
-        title.setClassName("modal-title");
-        header.getElement().appendChild(title);
+        title = GFormLayout.createModalWindowCaptionWidget();
+        title.setStyleName("modal-title");
+        header.add(title);
 
         content = new ResizableComplexPanel();
         content.setStyleName("modal-content");
@@ -125,8 +125,8 @@ public class ModalWindow extends ResizableComplexPanel {
         RootPanel.get().remove(this);
     }
 
-    public void setCaption(String caption) {
-        title.setInnerText(caption);
+    public Widget getTitleWidget() {
+        return title;
     }
 
     private Widget bodyWidget;

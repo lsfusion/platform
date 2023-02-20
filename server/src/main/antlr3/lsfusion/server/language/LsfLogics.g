@@ -847,7 +847,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
-		|	'IMAGE' propObj=formPropertyObject { $options.setImage($propObj.property); }
+		|	'IMAGE' propObj=formPropertyObject { $options.setImage(BaseUtils.nvl($propObj.literal, $propObj.property)); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
@@ -972,8 +972,8 @@ formMappedPropertiesList returns [List<String> aliases, List<LocalizedString> ca
 		)*
 	;
 
-formPropertyObject returns [PropertyObjectEntity property = null]
-	:   fd = designOrFormPropertyObject[null] { $property = $fd.property; }	
+formPropertyObject returns [PropertyObjectEntity property = null, Object literal]
+	:   fd = designOrFormPropertyObject[null] { $property = $fd.property; $literal = $fd.literal; }
 	;
 
 designPropertyObject returns [PropertyObjectEntity property = null, Object literal]

@@ -1172,13 +1172,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, flexPanel.getOuterTopBorder(), flexPanel.getOuterRestBorder(), !collapsed, collapsed, wrap ? flexPanel : null);
         } else { // lead components semantics
             Border top = widget instanceof TableContainer && ((TableContainer) widget).getTableComponent() instanceof DataGrid ? Border.HAS : Border.NO;
-            Border bottom = widget instanceof CaptionPanel.Header ? Border.HAS_MARGIN : (widget instanceof FlexTabBar ? Border.HAS : Border.NO);
+            Border bottom = widget instanceof CaptionPanelHeader ? Border.HAS_MARGIN : (widget instanceof FlexTabBar ? Border.HAS : Border.NO);
             InnerAlignment horzAlignment = InnerAlignment.DIFF;
             InnerAlignment vertAlignment = InnerAlignment.DIFF;
 
-            if(widget instanceof CaptionPanel.Header) { // need this to auto stretch this headers
-                horzAlignment = new InnerFlexAlignment(CaptionPanel.Header.HORZ);
-                vertAlignment = new InnerFlexAlignment(CaptionPanel.Header.VERT);
+            if(widget instanceof CaptionPanelHeader) { // need this to auto stretch this headers
+                horzAlignment = new InnerFlexAlignment(CaptionPanelHeader.HORZ);
+                vertAlignment = new InnerFlexAlignment(CaptionPanelHeader.VERT);
             }
 
             return new PanelParams(top, bottom, Border.NO, Border.NO, false, horzAlignment, vertAlignment, false, false);

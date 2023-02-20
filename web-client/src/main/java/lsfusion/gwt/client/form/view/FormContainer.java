@@ -6,9 +6,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.GForm;
-import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.result.NumberResult;
 import lsfusion.gwt.client.base.view.StaticImageWidget;
 import lsfusion.gwt.client.controller.remote.action.PriorityErrorHandlingCallback;
@@ -32,7 +30,6 @@ public abstract class FormContainer {
 
     protected GFormController form;
 
-    public GAsyncFormController asyncFormController;
     public boolean async;
 
     private boolean asyncHidden;
@@ -130,11 +127,6 @@ public abstract class FormContainer {
 
                 hiddenHandler.accept(asyncFormController, editFormCloseReason);
             }
-
-            @Override
-            public void setFormCaption(String caption, String tooltip) {
-                setCaption(caption, tooltip);
-            }
         };
 
         if(isAsyncHidden())
@@ -149,7 +141,7 @@ public abstract class FormContainer {
         this.formId = formId;
     }
 
-    protected abstract void setCaption(String caption, String tooltip);
+    public abstract Widget getCaptionWidget();
 
     public GFormController getForm() {
         return form;

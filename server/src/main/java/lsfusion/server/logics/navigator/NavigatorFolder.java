@@ -6,12 +6,12 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorFolder extends NavigatorElement {
-    public NavigatorFolder(String canonicalName, LocalizedString caption) {
-        super(canonicalName, caption);
+    public NavigatorFolder(String canonicalName) {
+        super(canonicalName);
     }
 
     @Override
-    protected AppImage getDefaultIcon(boolean top) {
+    public AppImage getDefaultIcon(boolean top) {
         return top ? AppImages.OPENTOP : AppImages.OPEN;
     }
 

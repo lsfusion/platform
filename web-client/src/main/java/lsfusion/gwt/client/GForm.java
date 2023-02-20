@@ -9,7 +9,6 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferenc
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GAsyncEventExec;
-import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.io.Serializable;
@@ -159,10 +158,6 @@ public class GForm implements Serializable {
         return result;
     }
 
-    public String getCaption() {
-        return mainContainer.caption;
-    }
-
     public String getCreationPath() {
         return creationPath;
     }
@@ -171,7 +166,8 @@ public class GForm implements Serializable {
         return path;
     }
 
-    public String getTooltip(String caption) {
+    public String getTooltip() {
+        String caption = mainContainer.caption;
         return MainFrame.showDetailedInfo ?
                 GwtSharedUtils.stringFormat("<html><body>" +
                         "<b>%s</b><br/>" +

@@ -2,6 +2,7 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -30,6 +31,7 @@ public class ContainerView extends ComponentView {
     public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
 
     public LocalizedString caption;
+    public AppImage image;
     private Boolean collapsible;
 
     public boolean border;
@@ -101,11 +103,14 @@ public class ContainerView extends ComponentView {
 
     // extras
     public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyImage;
     public PropertyObjectEntity<?> propertyCustomDesign;
     public PropertyObjectEntity<?> getExtra(ContainerViewExtraType type) {
         switch (type) {
             case CAPTION:
                 return propertyCaption;
+            case IMAGE:
+                return propertyImage;
             case CUSTOM:
                 return propertyCustomDesign;
         }
@@ -377,7 +382,7 @@ public class ContainerView extends ComponentView {
     }
 
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
-        if(showIf != null || propertyCaption != null || propertyCustomDesign != null)
+        if(showIf != null || propertyCaption != null || propertyImage != null || propertyCustomDesign != null)
             mComponents.exclAdd(this);
 
         for (ComponentView child : getChildrenIt()) {
@@ -429,6 +434,7 @@ public class ContainerView extends ComponentView {
         pool.serializeCollection(outStream, getChildrenList());
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
+        pool.writeObject(outStream, image);
 
         outStream.writeBoolean(isCollapsible());
 

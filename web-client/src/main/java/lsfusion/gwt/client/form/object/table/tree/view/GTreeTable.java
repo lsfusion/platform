@@ -14,7 +14,6 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.ColorUtils;
-import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.base.view.grid.Column;
@@ -263,7 +262,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             img.addClassName("branch-image");
         }
 
-        StaticImage.TREE_EMPTY.setImageSrc(img, (StaticImage.TREE_PASSBY.equals(indentIcon) ? null : indentIcon));
+        (StaticImage.TREE_PASSBY.equals(indentIcon) ? StaticImage.TREE_EMPTY : indentIcon).updateImageSrc(img);
     }
 
     private static void changeDots(DivElement element, boolean dotTop, boolean dotBottom) {
@@ -783,10 +782,8 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                             foreground = propForegrounds.get(key);
                         objectRecord.setForeground(property, foreground == null ? property.foreground : foreground);
 
-                        if (property.hasDynamicImage()) {
-                            NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(property);
-                            objectRecord.setImage(property, actionImages == null ? null : actionImages.get(key));
-                        }
+                        NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(property);
+                        objectRecord.setImage(property, actionImages == null ? null : actionImages.get(key));
                     }
                 }
             }

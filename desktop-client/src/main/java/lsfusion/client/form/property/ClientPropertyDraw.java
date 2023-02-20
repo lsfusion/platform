@@ -1,6 +1,7 @@
 package lsfusion.client.form.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.file.AppImage;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.SwingDefaults;
@@ -97,6 +98,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientClass[] interfacesTypes;
 
     public String caption;
+    public AppImage image;
     public String regexp;
     public String regexpMessage;
     public Long maxValue;
@@ -281,7 +283,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             height = SwingDefaults.getValueHeight();
         }
         
-        ImageIcon image = ClientImages.getImage(design.getImage());
+        ImageIcon image = ClientImages.getImage(this.image);
         if (image != null) // предпочитаемую высоту берем исходя из размера иконки
             height = Math.max(image.getIconHeight() + insetsHeight, height);
         return height;
@@ -537,6 +539,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         boxed = inStream.readBoolean();
 
         caption = pool.readString(inStream);
+        image = pool.readObject(inStream);
+
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
         maxValue = pool.readLong(inStream);

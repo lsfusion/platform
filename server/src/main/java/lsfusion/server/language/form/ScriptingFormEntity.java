@@ -9,6 +9,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
@@ -350,6 +351,8 @@ public class ScriptingFormEntity {
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
 
+            AppImage appImage = propertyOptions.getAppImage();
+
             FormSessionScope scope = propertyOptions.getFormSessionScope();
             boolean isFormObjectAction = false;
 
@@ -453,10 +456,13 @@ public class ScriptingFormEntity {
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
             PropertyDrawView view = form.addPropertyDrawView(propertyDraw, location, version);
-            if(view != null)
+            if(view != null) {
                 view.caption = caption;
-            else
+                view.image = appImage;
+            } else {
                 propertyDraw.initCaption = caption;
+                propertyDraw.initImage = appImage;
+            }
 
             // has to be later than applyPropertyOptions (because it uses getPropertyExtra)
             checkNeighbour((PropertyDrawEntity<?>) propertyDraw, location, propertyOptions.getNeighbourPropertyText(), version);
@@ -551,9 +557,8 @@ public class ScriptingFormEntity {
         }
 
         PropertyObjectEntity imageProperty = options.getImage();
-        if (imageProperty != null && ((PropertyObjectEntity<?>) imageProperty).property.getType().equals(ImageClass.get())) {
+        if (imageProperty != null) {
             property.setPropertyExtra(imageProperty, PropertyDrawExtraType.IMAGE);
-            property.hasDynamicImage = true;
         }
 
         property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF);

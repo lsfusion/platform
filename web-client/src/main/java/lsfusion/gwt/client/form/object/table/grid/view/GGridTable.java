@@ -430,11 +430,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
-
-                    boolean dynamicImage = property.hasDynamicImage();
-                    NativeHashMap<GGroupObjectValue, Object> actionImages = null;
-                    if(dynamicImage)
-                        actionImages = cellImages.get(property);
+                    NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(property);
 
                     for (GGroupObjectValue columnKey : columnKeys.get(property)) {
                         NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
@@ -452,8 +448,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             record.setBackground(column.columnSID, background == null ? property.background : background);
                             Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
                             record.setForeground(column.columnSID, foreground == null ? property.foreground : foreground);
-                            if(dynamicImage) // optimization + ensure that cell is rendered with ActionCellRenderer
-                                record.setImage(column.columnSID, actionImages == null ? null : actionImages.get(fullKey));
+                            record.setImage(column.columnSID, actionImages == null ? null : actionImages.get(fullKey));
                         }
                     }
                 });

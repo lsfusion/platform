@@ -47,6 +47,7 @@ public abstract class GNavigatorController implements GINavigatorController {
             result.put(wind, new LinkedHashSet<GNavigatorElement>());
         }
 
+        // looking for "active" (selected) elements
         dfsAddElements(root, null, result);
 
         Map<GAbstractWindow, Boolean> visibleElements = new HashMap<>();

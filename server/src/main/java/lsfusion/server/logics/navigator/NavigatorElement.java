@@ -26,6 +26,7 @@ import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static lsfusion.base.col.MapFact.mergeOrderMapsExcl;
 import static lsfusion.base.col.MapFact.singletonOrder;
@@ -39,18 +40,19 @@ public abstract class NavigatorElement {
         element.setParent(this, version);
     }
 
-    protected abstract AppImage getDefaultIcon(boolean top);
+    public abstract AppImage getDefaultIcon(boolean top);
 
     public NavigatorWindow window = null;
     public boolean parentWindow;
 
     private final int ID;
 
-    public Property imageProperty;
-    private AppImage image;
-
+    // need supplier to have relevant form captions
     public Property headerProperty;
-    public LocalizedString caption;
+    public Supplier<LocalizedString> caption;
+
+    public Property propertyImage;
+    public Supplier<AppImage> image;
 
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
@@ -58,11 +60,18 @@ public abstract class NavigatorElement {
     private NFProperty<NavigatorElement> parent = NFFact.property();
     private NFComplexOrderSet<NavigatorElement> children = NFFact.complexOrderSet();
 
-    protected NavigatorElement(String canonicalName, LocalizedString caption) {
+    protected NavigatorElement(String canonicalName) {
         assert canonicalName != null;
         this.canonicalName = canonicalName;
         this.ID = BaseLogicsModule.generateStaticNewID();
-        this.caption = caption;
+    }
+
+    public LocalizedString getCaption() {
+        return caption.get();
+    }
+
+    public AppImage getImage() {
+        return image.get();
     }
 
     public int getID() {
@@ -194,12 +203,12 @@ public abstract class NavigatorElement {
 
     public abstract AsyncExec getAsyncExec();
 
-    public void setImageProperty(Property imageProperty) {
-        this.imageProperty = imageProperty;
+    public void setPropertyImage(Property imageProperty) {
+        this.propertyImage = imageProperty;
     }
 
     public void setImage(AppImage image) {
-        this.image = image;
+        this.image = () -> image;
     }
 
     public void setHeaderProperty(Property headerProperty) {
@@ -209,16 +218,14 @@ public abstract class NavigatorElement {
     public void finalizeAroundInit(BaseLogicsModule LM) {
         parent.finalizeChanges();
         children.finalizeChanges();
-
-        if(image == null)
-            setImage(getDefaultIcon(LM.root.equals(getParent())));
     }
 
     @Override
     public String toString() {
         String result = getCanonicalName();
+        String caption = ThreadLocalContext.localize(getCaption());
         if (caption != null) {
-            result += " '" + ThreadLocalContext.localize(caption) + "'";
+            result += " '" + caption + "'";
         }
         if (debugPoint != null) {
             result += " [" + debugPoint + "]"; 
@@ -241,7 +248,7 @@ public abstract class NavigatorElement {
         SerializationUtil.writeString(outStream, getCreationPath());
         SerializationUtil.writeString(outStream, getPath());
 
-        outStream.writeUTF(ThreadLocalContext.localize(caption));
+        outStream.writeUTF(ThreadLocalContext.localize(getCaption()));
         outStream.writeBoolean(hasChildren());
         if (window == null) {
             outStream.writeInt(WindowType.NULL_VIEW);
@@ -250,7 +257,7 @@ public abstract class NavigatorElement {
             outStream.writeBoolean(parentWindow);
         }
 
-        IOUtils.writeImageIcon(outStream, image);
+        IOUtils.writeImageIcon(outStream, getImage());
 
         AsyncSerializer.serializeEventExec(getAsyncExec(), outStream);
     }

@@ -110,6 +110,7 @@ public abstract class EditingForm extends FormContainer {
     }
 
     @Override
-    protected void setCaption(String caption, String tooltip) {
+    public Widget getCaptionWidget() {
+        return null;
     }
 }

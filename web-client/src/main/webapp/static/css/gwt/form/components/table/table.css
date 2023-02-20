@@ -36,16 +36,26 @@
 
 .wrap-text-not-empty {
 }
-.wrap-text-not-empty > .wrap-img-horz-margins {
-    /*overflow: hidden;*/
-    /*margin: 0.0625rem 0.125rem;*/
+.wrap-text-not-empty.wrap-img-horz > .wrap-text-img {
     margin-right: 0.25rem;
 }
 
-.wrap-text-not-empty > .wrap-img-vert-margins {
-    /*overflow: hidden;*/
-    /*margin: 0.0625rem 0.125rem;*/
+.wrap-text-not-empty.wrap-img-vert > .wrap-text-img {
     margin-bottom: 0.25rem;
+}
+.wrap-text-not-empty.wrap-img-vert {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    flex-direction: column;
+}
+.wrap-text-not-empty.wrap-img-horz {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    flex-direction: row;
 }
 
 .dataGridRow {

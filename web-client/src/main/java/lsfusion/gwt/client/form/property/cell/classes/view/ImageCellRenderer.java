@@ -1,8 +1,8 @@
 package lsfusion.gwt.client.form.property.cell.classes.view;
 
-import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.classes.data.GImageType;
+import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.view.FileBasedCellRenderer;
 
@@ -13,7 +13,7 @@ public class ImageCellRenderer extends FileBasedCellRenderer {
     }
 
     @Override
-    protected Element createImage(Object value) {
-        return GwtClientUtils.createAppDownloadImage(value);
+    protected BaseImage getBaseImage(Object value) {
+        return (AppBaseImage) value; // was converted in convertFileValue
     }
 }

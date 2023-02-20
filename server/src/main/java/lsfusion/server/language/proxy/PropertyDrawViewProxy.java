@@ -1,5 +1,6 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -10,6 +11,8 @@ import lsfusion.server.logics.classes.data.time.DateClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
 import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
+import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.oraction.ActionOrPropertyUtils;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -149,10 +152,24 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelColumnVertical = panelColumnVertical;
     }
 
-    public void setCaption(LocalizedString caption) {
-        target.caption = caption;
+    public void setCaption(Object caption) {
+        if(caption instanceof LocalizedString)
+            target.caption = (LocalizedString) caption;
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) caption, PropertyDrawExtraType.CAPTION);
     }
-    
+
+    public void setImagePath(LocalizedString image) {
+        setImage(image);
+    }
+
+    public void setImage(Object image) {
+        if(image instanceof LocalizedString)
+            target.image = new AppImage(((LocalizedString) image).getSourceString());
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE);
+    }
+
     public void setValueAlignment(FlexAlignment valueAlignment) {
         target.valueAlignment = valueAlignment;
     }

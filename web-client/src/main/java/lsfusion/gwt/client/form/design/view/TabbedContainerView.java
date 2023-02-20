@@ -1,9 +1,10 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -35,7 +36,7 @@ public class TabbedContainerView extends GAbstractContainerView {
     }
 
     @Override
-    protected FlexPanel wrapBorderImpl(GComponent child) {
+    protected FlexPanel wrapBorderImpl(int index) {
 //      this wrapping is necessary because:
 //          we want border around the container
 //          we want padding (not margin) to be "scrolled"
@@ -67,10 +68,11 @@ public class TabbedContainerView extends GAbstractContainerView {
         }
     }
 
-    public void updateCaption(GContainer container) {
+    private LabelWidget getTabLabel(GContainer container) {
         int index = getTabIndex(container);
         if(index >= 0)
-            panel.setTabCaption(index, container.caption);
+            return (LabelWidget) panel.getTabWidget(index);
+        return null;
     }
 
     protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {
@@ -114,34 +116,7 @@ public class TabbedContainerView extends GAbstractContainerView {
                     visibleChildren.add(index, child);
                     final int fi = i;
 
-                    String tabTitle = getTabTitle(child);
-                    Label tabWidget = new Label(tabTitle, false);
-                    panel.insertTab(tabWidget, index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
-
-                    if (child instanceof GContainer) {
-                        GContainer gContainer = (GContainer) child;
-                        TooltipManager.registerWidget(tabWidget, new TooltipManager.TooltipHelper() {
-                            @Override
-                            public String getTooltip() {
-                                return gContainer.getTooltipText(tabTitle);
-                            }
-
-                            @Override
-                            public String getPath() {
-                                return gContainer.getPath();
-                            }
-
-                            @Override
-                            public String getCreationPath() {
-                                return gContainer.getCreationPath();
-                            }
-
-                            @Override
-                            public boolean stillShowTooltip() {
-                                return true;
-                            }
-                        });
-                    }
+                    panel.insertTab(childrenCaptions.get(i).widget.widget, null, index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
@@ -157,19 +132,6 @@ public class TabbedContainerView extends GAbstractContainerView {
         if (panel.getSelectedTab() == -1 && panel.getTabCount() != 0) {
             panel.selectTab(0);
         }
-    }
-
-    protected static String getTabTitle(GComponent child) {
-        String tabCaption = null;
-        if (child instanceof GContainer) {
-            tabCaption = ((GContainer) child).caption;
-        } else if (child instanceof GFormComponent) {
-            tabCaption = ((GFormComponent) child).caption;
-        }
-        if (tabCaption == null) {
-            tabCaption = "";
-        }
-        return tabCaption;
     }
 
     public boolean isTabVisible(GComponent component) {

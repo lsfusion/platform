@@ -10,6 +10,11 @@ public enum ContainerViewExtraType {
         public byte getContainerReadType() {
             return PropertyReadType.CONTAINER_CAPTION;
         }
+    }, IMAGE {
+        @Override
+        public byte getContainerReadType() {
+            return PropertyReadType.CONTAINER_IMAGE;
+        }
     }, CUSTOM {
         @Override
         public byte getContainerReadType() {

@@ -1,12 +1,11 @@
 package lsfusion.gwt.client.form;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GContainer;
 import lsfusion.gwt.client.form.design.GFormComponent;
+import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.design.view.TabbedContainerView;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
@@ -16,49 +15,37 @@ import lsfusion.gwt.client.navigator.window.GContainerWindowFormType;
 import lsfusion.gwt.client.navigator.window.GWindowFormType;
 import lsfusion.gwt.client.view.MainFrame;
 
-public class ContainerForm extends FormContainer {
-    private final String caption;
+public class ContainerForm extends WidgetForm {
     private final GFormController formController;
-    private final Integer inContainerId;
 
-    public ContainerForm(FormsController formsController, String caption, boolean async, Event editEvent, GFormController formController, Integer inContainerId) {
-        super(formsController, async, editEvent);
-        this.caption = caption;
+    private final GContainerWindowFormType windowType;
+
+    public ContainerForm(FormsController formsController, boolean async, Event editEvent, GFormController formController, GContainerWindowFormType windowType) {
+        super(formsController, async, editEvent, GFormLayout.createContainerCaptionWidget(getInContainer(formController, windowType), true));
+
         this.formController = formController;
-        this.inContainerId = inContainerId;
+        this.windowType = windowType;
     }
 
-    private Widget widget;
+    @Override
+    protected void onMaskClick() {
+    }
 
     @Override
-    protected void setContent(Widget widget) {
-        setFormContent(widget);
-        this.widget = widget;
+    public GWindowFormType getWindowType() {
+        return windowType;
     }
 
     private GContainer inContainer;
     private GFormComponent innerComponent;
-
-    protected void setFormContent(Widget widget) {
-        innerComponent = new GFormComponent(caption);
-
-        inContainer = formController.getForm().findContainerByID(inContainerId);
-        inContainer.add(innerComponent);
-
-        formController.putContainerForm(this);
-
-        GFormLayout layout = formController.getFormLayout();
-        layout.addBaseComponent(innerComponent, widget, null);
-        layout.update(-1);
-        if(inContainer.tabbed)
-            ((TabbedContainerView)layout.getContainerView(inContainer)).activateTab(innerComponent);
-    }
 
     @Override
     public void hide(EndReason editFormCloseReason) {
         FormContainer formContainer = MainFrame.getCurrentForm();
         if(formContainer != null) {
             GFormController formController = formContainer.getForm();
+            assert formController.equals(this.formController); // ?? to remove later
+
             formController.removeContainerForm(this);
 
             GFormLayout layout = formController.getFormLayout();
@@ -73,24 +60,27 @@ public class ContainerForm extends FormContainer {
         }
     }
 
-    @Override
-    protected void setCaption(String caption, String tooltip) {
-    }
-
-    @Override
-    public GWindowFormType getWindowType() {
-        return new GContainerWindowFormType(inContainerId);
+    private static GContainer getInContainer(GFormController formController, GContainerWindowFormType windowType) {
+        return formController.getForm().findContainerByID(windowType.getInContainerId());
     }
 
     @Override
     public void show(GAsyncFormController asyncFormController) {
+        innerComponent = new GFormComponent();
+
+        inContainer = getInContainer(formController, windowType);
+        inContainer.add(innerComponent);
+
+        formController.addContainerForm(this);
+
+        GFormLayout layout = formController.getFormLayout();
+        layout.addBaseComponent(innerComponent, new ComponentWidget(contentWidget, captionWidget), null);
+        layout.update(-1);
+        if(inContainer.tabbed)
+            ((TabbedContainerView)layout.getContainerView(inContainer)).activateTab(innerComponent);
+
         if (!async)
             onSyncFocus(true);
-    }
-
-    @Override
-    public Element getFocusedElement() {
-        return widget.getElement();
     }
 }
 

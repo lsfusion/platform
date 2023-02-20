@@ -1,8 +1,5 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
-
 public class StaticImage extends BaseStaticImage {
 
     private static final boolean useFA = false;
@@ -22,16 +19,9 @@ public class StaticImage extends BaseStaticImage {
     }
 
     @Override
-    public Element createImage() {
-        return GwtClientUtils.createStaticImage(this);
-    }
-
-    public void setImageSrc(Element element, BaseStaticImage overrideImage) {
-        GwtClientUtils.setStaticImageSrc(element, this, overrideImage);
-    }
-
-    public void setImageElementSrc(ImageElement imageElement, boolean enabled) {
-        GwtClientUtils.setThemeImage(path, imageElement::setSrc);
+    public String getImageElementSrc(boolean enabled) {
+        assert path != null;
+        return GwtClientUtils.getThemeImage(path);
     }
 
     public final static StaticImage RESET = new StaticImage("fa-solid fa-xmark", "reset.png");

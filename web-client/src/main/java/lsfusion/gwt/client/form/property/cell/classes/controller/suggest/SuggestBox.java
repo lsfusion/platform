@@ -11,7 +11,6 @@ import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.popup.PopupMenuCallback;
 import lsfusion.gwt.client.base.view.popup.PopupMenuItemValue;
 import lsfusion.gwt.client.base.view.popup.PopupMenuPanel;
@@ -83,7 +82,7 @@ public abstract class SuggestBox {
     protected boolean isLoading;
     public void updateDecoration(boolean isLoading) {
         if (this.isLoading != isLoading) {
-            refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : null);
+            refreshButton.changeImage(isLoading ? StaticImage.LOADING_IMAGE_PATH : StaticImage.REFRESH_IMAGE_PATH);
             this.isLoading = isLoading;
         }
     }

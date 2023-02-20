@@ -90,7 +90,7 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
     }
 
     public void setImage(AppImage image) {
-        getActionOrProperty().drawOptions.setImage(image);
+        getActionOrProperty().image = image;
     }
 
     public void setDefaultCompare(String defaultCompare) {

@@ -78,6 +78,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption; // assert not null
 
+    public AppImage image;
+
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
         if (caption != null) {
@@ -567,9 +569,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         private String eventID;
 
         // для всех
-        private AppImage image;
-
-        // для всех
         private Compare defaultCompare;
 
         // для всех
@@ -624,9 +623,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
                 propertyView.setCaptionWidth(captionWidth);
             if(propertyView.captionHeight == null)
                 propertyView.setCaptionHeight(captionHeight);
-            if (propertyView.design.getImage() == null && image != null) {
-                propertyView.design.setImage(image);
-            }
             if (propertyView.changeKey == null)
                 propertyView.changeKey = changeKey != null ? new KeyInputEvent(changeKey, keyBindingsModes) : null;
             if (propertyView.changeKeyPriority == null)
@@ -660,10 +656,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         public void inheritDrawOptions(DrawOptions options) {
             if(charWidth == 0)
                 setCharWidth(options.charWidth);
-
-            if (image == null) {
-                setImage(options.image);
-            }
 
             if(defaultCompare == null)
                 setDefaultCompare(options.defaultCompare);
@@ -717,10 +709,6 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         public void setFlexCharWidth(int charWidth, Boolean flex) {
             setCharWidth(charWidth);
             setValueFlex(flex);
-        }
-
-        public void setImage(AppImage image) {
-            this.image = image;
         }
 
         public Compare getDefaultCompare() {

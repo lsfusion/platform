@@ -4,6 +4,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -106,6 +107,7 @@ public class PropertyDrawView extends BaseComponentView {
     public FlexAlignment valueAlignment;
 
     public LocalizedString caption;
+    public AppImage image;
     public boolean clearText;
     public boolean notSelectAll;
     public String toolTip;
@@ -162,7 +164,7 @@ public class PropertyDrawView extends BaseComponentView {
             return valueHeight;
 
         if(isAutoSize(form)) {
-            if(!isProperty() && !entity.hasDynamicImage) // we want vertical size for action to be equal to text fields
+            if(!isProperty() && !entity.hasDynamicImage()) // we want vertical size for action to be equal to text fields
                 return -2;
         }
 
@@ -248,6 +250,12 @@ public class PropertyDrawView extends BaseComponentView {
         return caption != null
                 ? caption
                 : entity.getCaption();
+    }
+
+    public AppImage getImage() {
+        return image != null
+                ? image
+                : entity.getImage();
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
@@ -369,6 +377,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(isBoxed(pool.context.entity));
 
         pool.writeString(outStream, getDrawCaption());
+        pool.writeObject(outStream, getImage());
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);
@@ -450,7 +459,7 @@ public class PropertyDrawView extends BaseComponentView {
             pool.writeString(outStream, getAskConfirmMessage());
         outStream.writeBoolean(hasEditObjectAction(pool.context));
         outStream.writeBoolean(hasChangeAction(pool.context));
-        outStream.writeBoolean(entity.hasDynamicImage);
+        outStream.writeBoolean(entity.hasDynamicImage());
 
         outStream.writeBoolean(entity.getDrawProperty().property.disableInputList);
 

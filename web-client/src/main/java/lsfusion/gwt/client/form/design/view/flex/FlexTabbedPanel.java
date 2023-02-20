@@ -95,26 +95,16 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     }
 
     public void addTab(Widget w, Integer index, String tabText) {
-        addTab(w, index, createTab(tabText, false));
+        addTab(w, index, createTab(tabText, false), null);
     }
 
-    public void addTab(Widget w, Integer index, Widget tabWidget) {
+    public void addTab(Widget w, Integer index, Widget tabWidget, Widget extraTabWidget) {
         w.addStyleName("tab-pane");
-        insertTab(tabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFillShrink(w, beforeIndex));
+        insertTab(tabWidget, extraTabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFillShrink(w, beforeIndex));
     }
 
-    public void insertTab(String tabText, int beforeIndex, AddToDeck addToDeck) {
-        Label tab = createTab(tabText, false);
-//        tab.addStyleName("text-secondary");
-//        tab.addStyleName("fw-semibold");
-        insertTab(tab, beforeIndex, addToDeck);
-    }
-
-    public void insertTab(Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
-        tabWidget.addStyleName("nav-link");
-        tabWidget.addStyleName("link-secondary");
-
-        tabBar.insertTab(tabWidget, beforeIndex);
+    public void insertTab(Widget tabWidget, Widget extraTabWidget, int beforeIndex, AddToDeck addToDeck) {
+        tabBar.insertTab(tabWidget, extraTabWidget, beforeIndex);
 
         int tabIndex = getTabIndex(beforeIndex);
         addToDeck.add(this, tabIndex);
@@ -156,8 +146,8 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
         tabBar.selectTab(index);
     }
 
-    public void setTabCaption(int index, String caption) {
-        tabBar.setTabText(index, caption);
+    public Widget getTabWidget(int index) {
+        return tabBar.getTabWidget(index);
     }
 
     @SuppressWarnings("UnusedDeclaration")

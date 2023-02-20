@@ -5,10 +5,9 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.focus.DefaultFocusReceiver;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -27,7 +26,8 @@ public class GFormLayout extends ResizableComplexPanel {
 
     private final GContainer mainContainer;
 
-    private final Map<GContainer, GAbstractContainerView> containerViews = new HashMap<>();
+    private final NativeSIDMap<GContainer, GAbstractContainerView> containerViews = new NativeSIDMap<>();
+    private final NativeSIDMap<GContainer, Widget> containerCaptions = new NativeSIDMap<>();
     private final Map<GComponent, Widget> baseComponentViews = new HashMap<>();
 
     private final ArrayList<GComponent> defaultComponents = new ArrayList<>();
@@ -54,6 +54,31 @@ public class GFormLayout extends ResizableComplexPanel {
         addStyleName("form");
 
         DataGrid.initSinkMouseEvents(this);
+    }
+
+    public void addTooltip(Widget header, GContainer container) {
+        boolean isMain = container.main;
+        TooltipManager.registerWidget(header, new TooltipManager.TooltipHelper() {
+            @Override
+            public String getTooltip() {
+                return isMain ? form.form.getTooltip() : container.getTooltip();
+            }
+
+            @Override
+            public String getPath() {
+                return isMain ? form.form.getPath() : container.getPath();
+            }
+
+            @Override
+            public String getCreationPath() {
+                return isMain ? form.form.getCreationPath() : container.getCreationPath();
+            }
+
+            @Override
+            public boolean stillShowTooltip() {
+                return true;
+            }
+        });
     }
 
     public FormsController getFormsController() {
@@ -93,13 +118,62 @@ public class GFormLayout extends ResizableComplexPanel {
         }
     }
 
+
+    public static Widget createContainerCaptionWidget(GContainer parentContainer, boolean hasBorder) {
+        if (parentContainer != null && parentContainer.tabbed) {
+            return createTabCaptionWidget();
+        } else {
+            if (hasBorder)
+                return new CaptionPanelHeader();
+        }
+        return null;
+    }
+
+    public static Widget createTabCaptionWidget() {
+        return createLabelCaptionWidget();
+    }
+
+    public static Widget createLabelCaptionWidget() {
+        return new LabelWidget();
+    }
+
+    public static Widget createModalWindowCaptionWidget() {
+        return new SimpleWidget("h5");
+    }
+
     // creating containers (all other components are created when creating controllers)
     private void addContainers(GContainer container) {
         GAbstractContainerView containerView = createContainerView(form, container);
 
         containerViews.put(container, containerView);
+
+        Widget captionWidget;
+        boolean alreadyInitialized = false;
+        if(container.main) {
+            Pair<Widget, Boolean> formCaptionWidgetAsync = form.getCaptionWidget();
+
+            captionWidget = formCaptionWidgetAsync.first;
+            alreadyInitialized = formCaptionWidgetAsync.second;
+        } else
+            captionWidget = createContainerCaptionWidget(container.container,
+                    container.caption != null || container.hasBorder() || container.collapsible);
+
+        if (captionWidget != null) {
+            addTooltip(captionWidget, container);
+
+            String caption = container.caption;
+            BaseImage image = container.image;
+            if(alreadyInitialized) {
+                BaseImage.updateText(captionWidget, caption);
+                BaseImage.updateImage(image, captionWidget, false);
+            } else
+                BaseImage.initImageText(captionWidget, caption, image, false);
+
+            containerCaptions.put(container, captionWidget);
+        }
+
         Widget viewWidget = containerView.getView();
-        add(container, new ComponentWidget(viewWidget), null);
+        add(container, new ComponentWidget(viewWidget, captionWidget), null);
 
         // debug info
         viewWidget.getElement().setAttribute("lsfusion-container-type", container.getContainerType());
@@ -183,6 +257,10 @@ public class GFormLayout extends ResizableComplexPanel {
 
     public GAbstractContainerView getContainerView(GContainer container) {
         return containerViews.get(container);
+    }
+
+    public Widget getContainerCaption(GContainer container) {
+        return containerCaptions.get(container);
     }
 
     public void update(int requestIndex) {

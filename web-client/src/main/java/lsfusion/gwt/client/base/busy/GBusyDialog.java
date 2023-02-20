@@ -42,9 +42,7 @@ public class GBusyDialog extends DialogModalWindow {
     private int latestWindowWidth;
 
     public GBusyDialog() {
-        super(false, inDevMode() ? ModalWindowSize.EXTRA_LARGE : ModalWindowSize.LARGE);
-
-        setCaption(messages.busyDialogLoading());
+        super(messages.busyDialogLoading(), false, inDevMode() ? ModalWindowSize.EXTRA_LARGE : ModalWindowSize.LARGE);
 
         content = new ResizableComplexPanel();
         content.addStyleName("dialog-busy-content");

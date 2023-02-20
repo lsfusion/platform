@@ -39,7 +39,7 @@
     margin-bottom: 0;
 }
 
-.caption-panel-header:not(.empty-caption)::before {
+.caption-panel-header.wrap-text-not-empty::before {
     margin-right: var(--border-label-horz-padding);
 }
 
@@ -55,7 +55,7 @@
     margin-bottom: var(--border-width);
 }
 
-.caption-panel-header:not(.empty-caption)::after {
+.caption-panel-header.wrap-text-not-empty::after {
     margin-left: var(--border-label-horz-padding);
 }
 

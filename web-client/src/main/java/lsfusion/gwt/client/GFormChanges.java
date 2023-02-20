@@ -141,8 +141,10 @@ public class GFormChanges {
                 return form.getProperty(readerId).lastReaders.get(index);
             case GPropertyReadType.CONTAINER_CAPTION:
                 return form.findContainerByID(readerId).captionReader;
+            case GPropertyReadType.CONTAINER_IMAGE:
+                return form.findContainerByID(readerId).imageReader;
             case GPropertyReadType.CUSTOM:
-                return form.findContainerByID(readerId).customDesignCaptionReader;
+                return form.findContainerByID(readerId).customDesignReader;
             case GPropertyReadType.COMPONENT_SHOWIF:
                 return form.findComponentByID(readerId).showIfReader;
             case GPropertyReadType.CUSTOM_OPTIONS:
@@ -169,5 +171,6 @@ public class GFormChanges {
         public final static byte CUSTOM = 12;
         public final static byte COMPONENT_SHOWIF = 13;
         public final static byte CUSTOM_OPTIONS = 14;
+        public final static byte CONTAINER_IMAGE = 15;
     }
 }

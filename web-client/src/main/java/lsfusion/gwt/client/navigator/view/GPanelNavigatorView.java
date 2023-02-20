@@ -44,7 +44,7 @@ public class GPanelNavigatorView extends GNavigatorView<GPanelNavigatorWindow> {
             }
         }
 
-        CaptionPanel titledPanel = new CaptionPanel(element.caption, insidePanel);
+        CaptionPanel titledPanel = new CaptionPanel(element.caption, element.image, insidePanel);
         titledPanel.setSize("100%", "100%");
         container.add(titledPanel);
     }
@@ -53,20 +53,8 @@ public class GPanelNavigatorView extends GNavigatorView<GPanelNavigatorWindow> {
         FormButton button = new NavigatorImageButton(element, false);
         button.addStyleName("panelNavigatorView");
 
-        button.addMouseDownHandler(new MouseDownHandler() {
-            @Override
-            public void onMouseDown(MouseDownEvent event) {
-                selected = element;
-                navigatorController.update();
-                navigatorController.openElement(element, event.getNativeEvent());
-            }
-        });
+        button.addMouseDownHandler(event -> selectElement(element, event.getNativeEvent()));
         return button;
-    }
-
-    @Override
-    public GNavigatorElement getSelectedElement() {
-        return selected;
     }
 
     @Override

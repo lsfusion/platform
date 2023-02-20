@@ -157,7 +157,7 @@ public class GFormController implements EditManager {
 
     private Set<ContainerForm> containerForms = new HashSet<>();
 
-    public void putContainerForm(ContainerForm containerForm) {
+    public void addContainerForm(ContainerForm containerForm) {
         containerForms.add(containerForm);
     }
 
@@ -180,8 +180,6 @@ public class GFormController implements EditManager {
             formLayout.getElement().setAttribute("lsfusion-form", form.sID);
 
         this.editEvent = editEvent;
-
-        updateFormCaption();
 
         initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
@@ -384,6 +382,9 @@ public class GFormController implements EditManager {
         panelController = new GPanelController(this);
     }
 
+    public Pair<Widget, Boolean> getCaptionWidget() {
+        return new Pair<>(formContainer.getCaptionWidget(), formContainer.async);
+    }
     private void initializeParams() {
         hasColumnGroupObjects = false;
         for (GPropertyDraw property : getPropertyDraws()) {
@@ -1571,15 +1572,6 @@ public class GFormController implements EditManager {
 //        dispatcher = null; // so far there are no null checks (for example, like in desktop-client), so changePageSize can be called after (apparently close will suppress it)
     }
 
-    public void updateFormCaption() {
-        String caption = form.getCaption();
-        setFormCaption(caption, form.getTooltip(caption));
-    }
-
-    public void setFormCaption(String caption, String tooltip) {
-        throw new UnsupportedOperationException();
-    }
-
     // need this because hideForm can be called twice, which will lead to several continueDispatching (and nullpointer, because currentResponse == null)
     private boolean formHidden;
     public void hideForm(GAsyncFormController asyncFormController, int closeDelay, EndReason editFormCloseReason) {
@@ -1638,12 +1630,28 @@ public class GFormController implements EditManager {
     public void setContainerCaption(GContainer container, String caption) {
         container.caption = caption;
 
-        // update captions (actually we could've set them directly to the containers, but tabbed pane physically adds / removes that views, so the check if there is a tab is required there)
-        GFormLayout layout = formLayout;
-        if(container.main)
-            updateFormCaption();
-        else
-            layout.getContainerView(container.container).updateCaption(container);
+        updateCaption(container);
+    }
+
+    public void setContainerImage(GContainer container, Object value) {
+        container.image = (AppBaseImage) value; // was converted in convertFileValue
+
+        updateImage(container);
+    }
+
+    private Widget getCaptionWidget(GContainer container) {
+        return formLayout.getContainerCaption(container);
+    }
+
+    public void updateCaption(GContainer container) {
+        Widget captionWidget = getCaptionWidget(container);
+        if(captionWidget != null)
+            BaseImage.updateText(captionWidget, container.caption);
+    }
+    public void updateImage(GContainer container) {
+        Widget captionWidget = getCaptionWidget(container);
+        if(captionWidget != null)
+            BaseImage.updateImage(container.image, captionWidget, false);
     }
 
     public void setContainerCustomDesign(GContainer container, String customDesign) {

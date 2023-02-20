@@ -1,11 +1,10 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
 
-import java.io.Serializable;
+import static lsfusion.gwt.client.view.MainFrame.useBootstrap;
 
-public abstract class BaseStaticImage implements Serializable {
+public abstract class BaseStaticImage implements BaseImage {
 
     protected String fontClasses;
 
@@ -16,15 +15,12 @@ public abstract class BaseStaticImage implements Serializable {
         this.fontClasses = fontClasses;
     }
 
-    public abstract Element createImage();
-
-    public void setImageSrc(Element element) {
-        setImageSrc(element, null);
+    @Override
+    public boolean useIcon() {
+        return useBootstrap && getFontClasses() != null;
     }
-    public abstract void setImageSrc(Element element, BaseStaticImage overrideImage);
 
     public String getFontClasses() {
         return fontClasses;
     }
-    public abstract void setImageElementSrc(ImageElement imageElement, boolean enabled);
 }

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.design.view;
 
-import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -20,17 +19,12 @@ public abstract class GAbstractContainerView {
     protected final List<GComponent> children = new ArrayList<>();
     protected final List<SizedWidget> childrenViews = new ArrayList<>();
 
-    protected final boolean alignCaptions;
-    protected List<CaptionWidget> childrenCaptions;
+    protected List<CaptionWidget> childrenCaptions = new ArrayList<>();
 
     protected GAbstractContainerView(GContainer container) {
         this.container = container;
 
         vertical = container.isVertical();
-
-        alignCaptions = container.isAlignCaptions();
-        if(alignCaptions)
-            childrenCaptions = new ArrayList<>();
     }
 
     public void add(GComponent child, final ComponentWidget view) {
@@ -53,15 +47,13 @@ public abstract class GAbstractContainerView {
         }
 
         children.add(index, child);
-        childrenViews.add(index, view.widget.override(wrapAndOverflowView(child, widget, fixFlexBasis)));
-
-        if(alignCaptions)
-            childrenCaptions.add(index, view.caption);
+        childrenCaptions.add(index, view.caption);
+        childrenViews.add(index, view.widget.override(wrapAndOverflowView(index, widget, fixFlexBasis)));
 
         addImpl(index);
     }
 
-    private Widget wrapAndOverflowView(GComponent child, Widget view, boolean fixFlexBasis) {
+    private Widget wrapAndOverflowView(int index, Widget view, boolean fixFlexBasis) {
         // border should be used by linear container (just like tab does)
 
         // stretch means flex : 1, with basis either 0 (default in css - 1 1 0), either auto (1 0 auto, what we want to get if we want to "push scroll" to the upper container)
@@ -110,6 +102,7 @@ public abstract class GAbstractContainerView {
         // else
         //      overflow: auto
 
+        GComponent child = children.get(index);
         boolean shrink = child.isShrink();
         boolean alignShrink = child.isAlignShrink();
 
@@ -125,7 +118,7 @@ public abstract class GAbstractContainerView {
 
         // plus it's important to have auto for the view and not the flexcaptionPanel (since we don't want it to be scrolled), so there is one option left, with the same direction and 0 (or auto basis)
 
-        FlexPanel wrapPanel = wrapBorderImpl(child);
+        FlexPanel wrapPanel = wrapBorderImpl(index);
 
         if(wrapPanel != null) {
             // 1 1 auto
@@ -144,10 +137,8 @@ public abstract class GAbstractContainerView {
 
         removeImpl(index, child);
 
-        if(alignCaptions)
-            childrenCaptions.remove(index);
-
         children.remove(index);
+        childrenCaptions.remove(index);
         childrenViews.remove(index);
     }
 
@@ -162,8 +153,6 @@ public abstract class GAbstractContainerView {
     public GComponent getChild(int index) {
         return children.get(index);
     }
-
-    public abstract void updateCaption(GContainer container);
 
     public Widget getChildView(GComponent child) {
         int index = children.indexOf(child);
@@ -195,7 +184,7 @@ public abstract class GAbstractContainerView {
     }
 
     protected abstract void addImpl(int index);
-    protected abstract FlexPanel wrapBorderImpl(GComponent child);
+    protected abstract FlexPanel wrapBorderImpl(int index);
     protected abstract void removeImpl(int index, GComponent child);
     public abstract Widget getView();
 }

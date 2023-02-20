@@ -512,8 +512,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     private ImSet<PropertyNavigator> getPropertyNavigators() {
         MExclSet<PropertyNavigator> mResult = SetFact.mExclSet();
         for(NavigatorElement navigatorElement : getNavigatorTreeObjects().keyIt()) {
-            if(navigatorElement.imageProperty != null)
-                mResult.exclAdd(new ImageElementNavigator(navigatorElement.imageProperty, navigatorElement.getCanonicalName()));
+            if(navigatorElement.propertyImage != null)
+                mResult.exclAdd(new ImageElementNavigator(navigatorElement.propertyImage, navigatorElement.getCanonicalName()));
             if(navigatorElement.headerProperty != null)
                 mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement.getCanonicalName()));
         }

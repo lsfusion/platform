@@ -2,7 +2,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.LabelWidget;
@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
+import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -17,7 +18,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     private SizedWidget sizedView;
 
-    private LabelWidget label;
+    private Widget label;
 
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey);
@@ -45,7 +46,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if(property.caption == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
 
-        label = new LabelWidget();
+        label = GFormLayout.createLabelCaptionWidget();
         label.addStyleName("panel-label");
         if(!(property.isTagInput() || property.valueElementClass != null))
             label.addStyleName("text-secondary");
@@ -108,7 +109,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return;
         }
 
-        GwtClientUtils.setInnerContent(label.getElement(), text);
+        BaseImage.setInnerContent(label.getElement(), text);
 
         boolean notEmptyText = text != null && !text.isEmpty();
         if(this.notEmptyText != notEmptyText) {

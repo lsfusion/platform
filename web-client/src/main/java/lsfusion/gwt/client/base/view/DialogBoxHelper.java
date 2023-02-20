@@ -95,11 +95,10 @@ public class DialogBoxHelper {
         }
 
         private MessageBox(String caption, Widget contents, int timeout, final CloseCallback closeCallback, final OptionType activeOption, OptionType... options) {
-            super(false, ModalWindowSize.FIT_CONTENT);
+            super(caption, false, ModalWindowSize.FIT_CONTENT);
 
             this.closeCallback = closeCallback;
 
-            setCaption(caption);
             setBodyWidget(contents);
 
             createButtonsPanel(activeOption, options);

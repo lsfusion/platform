@@ -13,6 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
+import lsfusion.base.file.AppImage;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
@@ -101,7 +102,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private Pair<Integer, Integer> scriptIndex;
     
-    public LocalizedString initCaption = null; // чисто техническая особенность реализации
+    public LocalizedString initCaption = null;
+    public AppImage initImage = null;
 
     public boolean ignoreHasHeaders = false; // hack for property count property
     
@@ -126,7 +128,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             ((MMap<PropertyDrawExtraType, PropertyObjectEntity<?>>) propertyExtras).add(type, property);
     }
 
-    public boolean hasDynamicImage;
+    public boolean hasDynamicImage() {
+        return getPropertyExtra(IMAGE) != null;
+    }
 
     public Group group;
     
@@ -612,6 +616,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public LocalizedString getCaption() {
         return getInheritedProperty().caption;
+    }
+    public AppImage getImage() {
+        return getInheritedProperty().image;
     }
 
     public boolean isNotNull() {

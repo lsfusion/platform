@@ -77,16 +77,8 @@ public class GTreeNavigatorView extends GNavigatorView<GTreeNavigatorWindow> {
 
     private void doubleClicked(Event event) {
         TreeNavigatorItem selectedItem = (TreeNavigatorItem) tree.getSelectedItem();
-        if (selectedItem != null) {
-            selected = selectedItem.element;
-            navigatorController.update();
-            navigatorController.openElement(selected, event);
-        }
-    }
-
-    @Override
-    public GNavigatorElement getSelectedElement() {
-        return selected;
+        if (selectedItem != null)
+            selectElement(selectedItem.element, event);
     }
 
     @Override

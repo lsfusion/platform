@@ -3,6 +3,7 @@ package lsfusion.server.language.form;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
@@ -36,6 +37,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
     private PropertyObjectEntity image;
+    private AppImage appImage;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
@@ -160,6 +162,21 @@ public class FormPropertyOptions {
 
     public PropertyObjectEntity getImage() {
         return image;
+    }
+
+    public AppImage getAppImage() {
+        return appImage;
+    }
+
+    public void setImage(Object image) {
+        if(image instanceof LocalizedString)
+            setAppImage(new AppImage(((LocalizedString) image).getSourceString()));
+        else
+            setImage((PropertyObjectEntity) image);
+    }
+
+    public void setAppImage(AppImage image) {
+        this.appImage = image;
     }
 
     public void setImage(PropertyObjectEntity image) {
@@ -446,6 +463,7 @@ public class FormPropertyOptions {
         merged.setBackground(nvl(overrides.getBackground(), background));
         merged.setForeground(nvl(overrides.getForeground(), foreground));
         merged.setImage(nvl(overrides.getImage(), image));
+        merged.setAppImage(nvl(overrides.getAppImage(), appImage));
         merged.setHeader(nvl(overrides.getHeader(), header));
         merged.setFooter(nvl(overrides.getFooter(), footer));
         merged.setViewType(nvl(overrides.getViewType(), viewType));

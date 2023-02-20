@@ -32,7 +32,9 @@ import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
+import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -275,6 +277,8 @@ public class FormChanges {
             if ((reader instanceof PropertyDrawInstance && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
                 return new NeedFileData(readerType);
             } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
+                return new NeedFileData(reader.getPropertyObjectInstance().getType());
+            } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
                 return new NeedFileData(reader.getPropertyObjectInstance().getType());
             }
             return null;

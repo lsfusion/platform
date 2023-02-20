@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
-import lsfusion.gwt.client.base.BaseStaticImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -12,64 +9,27 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
 
     private boolean focusable = true;
 
-    protected Element imageElement;
+    private boolean vertical;
 
-    protected BaseStaticImage baseImage;
-    protected BaseStaticImage overrideImage;
-    protected String fileImage;
-
-    public ImageButton(String caption, BaseStaticImage baseImage, String fileImage, boolean vertical, Element element) {
+    public ImageButton(String caption, BaseImage image, boolean vertical, Element element) {
         super(element);
 
         addStyleName("btn-image");
         addStyleName("btn-outline-secondary");
 
-        this.baseImage = baseImage; // need to do it before setText for the updateStyle call
-        this.fileImage = fileImage;
+        this.vertical = vertical;
 
-        setText(caption);
+        BaseImage.initImageText(this, caption, image, vertical);
 
-        if(baseImage != null) {
-            // we want useBootstrap to be initialized (to know what kind of image should be used)
-            initImage(baseImage, vertical);
-        }
-
-//        setFocusable(false);
-    }
-
-    private void initImage(BaseStaticImage baseImage, boolean vertical) {
-        if(fileImage != null) {
-            imageElement = GwtClientUtils.createAppDownloadImage(null);
-            updateImageSrc();
-        } else {
-            imageElement = baseImage.createImage();
-        }
-
-        imageElement.addClassName("btn-image-img");
-        getElement().insertFirst(imageElement);
-
-        if (vertical)
-            imageElement.addClassName("wrap-img-vert-margins");
-        else
-            imageElement.addClassName("wrap-img-horz-margins");
+//        imgElement.addClassName("btn-image-img"); ???
 
         MainFrame.addColorThemeChangeListener(this);
     }
 
-    @Override
-    public void setText(String text) {
-        super.setText(text);
-        updateStyle(text);
-    }
+    protected abstract BaseImage getImage();
 
-    private void updateStyle(String text) {
-        if(baseImage != null) { // optimization
-            if (text != null && !text.isEmpty()) {
-                addStyleName("wrap-text-not-empty");
-            } else {
-                removeStyleName("wrap-text-not-empty");
-            }
-        }
+    protected void updateImage() {
+        BaseImage.updateImage(getImage(), this, vertical);
     }
 
     // call before attach
@@ -85,20 +45,8 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
         }
     }
 
-    public void changeImage(StaticImage overrideImage) {
-        this.overrideImage = overrideImage;
-        updateImageSrc();
-    }
-
     @Override
     public void colorThemeChanged() {
-        updateImageSrc();
-    }
-
-    private void updateImageSrc() {
-        if (fileImage != null)
-            ((ImageElement) imageElement).setSrc(fileImage);
-        else
-            baseImage.setImageSrc(imageElement, overrideImage);
+        updateImage();
     }
 }

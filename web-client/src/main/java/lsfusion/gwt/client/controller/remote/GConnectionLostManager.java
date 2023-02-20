@@ -137,11 +137,9 @@ public class GConnectionLostManager {
         private boolean fatal;
 
         public GBlockDialog(boolean fatal, boolean showReconnect) {
-            super(false, ModalWindowSize.FIT_CONTENT);
+            super(messages.rmiConnectionLost(), false, ModalWindowSize.FIT_CONTENT);
 
             this.fatal = fatal;
-
-            setCaption(messages.rmiConnectionLost());
 
             ResizableComplexPanel content = new ResizableComplexPanel();
             content.setStyleName("dialog-block-content");

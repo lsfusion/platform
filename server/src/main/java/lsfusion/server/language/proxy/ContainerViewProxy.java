@@ -1,5 +1,6 @@
 package lsfusion.server.language.proxy;
 
+import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
@@ -23,6 +24,19 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
                 target.caption = LocalizedString.NONAME;
             }
             target.propertyCaption = (PropertyObjectEntity<?>) caption;
+        }
+    }
+
+    public void setImage(Object image) {
+        if(image instanceof LocalizedString)
+            target.image = new AppImage(((LocalizedString) image).getSourceString());
+        else {
+            // we want to keep base name for example for form name prediction in async form opening
+//            if (target.caption == null) {
+                // it's important for web-client to know that caption may appear as container caption is implemented as wrapper panel
+//                target.caption = LocalizedString.NONAME;
+//            }
+            target.propertyImage = (PropertyObjectEntity<?>) image;
         }
     }
     

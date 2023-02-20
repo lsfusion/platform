@@ -2,34 +2,13 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.Dimension;
-import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.TooltipManager;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.view.ModalForm;
 
 public class ResizableModalWindow extends ModalWindow {
 
-    private String tooltip;
-
-    public void setTooltip(String tooltip) {
-        this.tooltip = tooltip;
-    }
-
     public ResizableModalWindow() {
         super(true, ModalWindowSize.FIT_CONTENT);
-
-        TooltipManager.registerWidget(header, new TooltipManager.TooltipHelper() {
-            @Override
-            public String getTooltip() {
-                return tooltip;
-            }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return header.isAttached() && header.isVisible();
-            }
-        });
     }
 
     //This scheme is necessary when one modal window is started before the second one, but is displayed later due to delays.

@@ -16,17 +16,7 @@ public class ComponentDesign extends ContextObject implements Serializable {
     public Color background;
     public Color foreground;
 
-    private AppImage image;
-
     public ComponentDesign() {
-    }
-
-    public void setImage(AppImage imageHolder) {
-        this.image = imageHolder;
-    }
-
-    public AppImage getImage() {
-        return image;
     }
 
     public void installFont(JComponent comp) {

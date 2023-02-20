@@ -3,6 +3,8 @@ package lsfusion.gwt.client.form.property.cell.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.ui.HasAutoHorizontalAlignment;
 import com.google.gwt.user.client.ui.Label;
+import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
@@ -14,7 +16,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
 
     @Override
     public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
-        element.setInnerText(null);
+        element.setInnerText(null); // remove all
 
         Element img = null;
         if (value == null && property.isEditableNotNull()) {
@@ -24,7 +26,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
             element.removeClassName("requiredValueString");
             element.setTitle("");
 
-            img = createImage(value);
+            img = (value != null ? getBaseImage(value) : StaticImage.EMPTY).createImage();
 
             Style imgStyle = img.getStyle();
             imgStyle.setVerticalAlign(Style.VerticalAlign.MIDDLE);
@@ -77,7 +79,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
         element.addClassName("requiredValueString");
     }
 
-    protected abstract Element createImage(Object value);
+    protected abstract BaseImage getBaseImage(Object value);
 
     protected FileBasedCellRenderer(GPropertyDraw property) {
         super(property);

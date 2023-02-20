@@ -109,7 +109,6 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
-import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
@@ -2215,27 +2214,20 @@ public abstract class LogicsModule {
         return addAFProp(nots);
     }
 
-    protected NavigatorElement addNavigatorFolder(String canonicalName, LocalizedString caption) {
-        NavigatorElement elem = new NavigatorFolder(canonicalName, caption);
-        addNavigatorElement(elem);
-        return elem;
+    protected NavigatorElement createNavigatorFolder(String canonicalName) {
+        return new NavigatorFolder(canonicalName);
     }
 
-    protected NavigatorAction addNavigatorAction(LA<?> property, String canonicalName, LocalizedString caption) {
-        NavigatorAction navigatorAction = new NavigatorAction(property.action, canonicalName, caption, null);
-        addNavigatorElement(navigatorAction);
-        return navigatorAction;
+    protected NavigatorAction createNavigatorAction(LA<?> property, String canonicalName) {
+        return new NavigatorAction(property.action, canonicalName, null);
     }
 
     protected LA<?> getNavigatorAction(FormEntity form) {
         return baseLM.getFormNavigatorAction(form);
     }
 
-    protected NavigatorElement addNavigatorForm(FormEntity form, String canonicalName, LocalizedString caption) {
-        NavigatorAction navigatorForm = new NavigatorAction(getNavigatorAction(form).action, canonicalName, caption, form);
-
-        addNavigatorElement(navigatorForm);
-        return navigatorForm;
+    protected NavigatorElement createNavigatorForm(FormEntity form, String canonicalName) {
+        return new NavigatorAction(getNavigatorAction(form).action, canonicalName, form);
     }
     
     public Collection<NavigatorElement> getNavigatorElements() {
@@ -2299,7 +2291,7 @@ public abstract class LogicsModule {
             form.finalizeAroundInit();
     }
     
-    private void addNavigatorElement(NavigatorElement element) {
+    protected void addNavigatorElement(NavigatorElement element) {
         assert !navigatorElements.containsKey(element.getName());
         navigatorElements.put(element.getName(), element);
     }

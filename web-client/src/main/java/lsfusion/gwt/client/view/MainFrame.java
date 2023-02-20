@@ -529,7 +529,7 @@ public class MainFrame implements EntryPoint {
     }
 
     public static void applyNavigatorChanges(GNavigatorElement root, GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController) {
-        if (navigatorChangesDTO == null) {
+        if (navigatorChangesDTO.properties.length == 0) { // optimization
             return;
         }
 
@@ -537,6 +537,7 @@ public class MainFrame implements EntryPoint {
             navigatorChangesDTO.properties[i].update(root, navigatorChangesDTO.values[i]);
         }
 
+        // here we do not do incremental update, but global "refresh" (as we use the same mechanism for selected mechanism)
         if (!mobile) {
             navigatorController.update();
         }
