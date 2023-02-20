@@ -52,7 +52,6 @@ import java.util.*;
 import static java.lang.Integer.decode;
 import static lsfusion.gwt.client.base.GwtSharedUtils.nullEmpty;
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 import static lsfusion.gwt.client.view.StyleDefaults.*;
 
 public class GPivot extends GStateTableView implements ColorThemeChangeListener, RenderContext {
@@ -1058,7 +1057,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
         String cellBackground = null;
 
         if (totalRowLevels == 0 && (rowLevel == 0 || columnLevel == 0)) {
-            cellBackground = getComponentBackground(colorTheme);
+            cellBackground = getComponentBackground();
         } else {
             int depth = 0;
             if (rowLevel >= 0 && rowLevel < totalRowLevels) {
@@ -1091,7 +1090,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 td.setAttribute(CELL_COLUMN_LEVEL_ATTRIBUTE_KEY, String.valueOf(columnLevel));
             }
         }
-        setTableToExcelColorAttributes(td, rgbToArgb(cellBackground != null ? cellBackground : getComponentBackground(colorTheme)));
+        setTableToExcelColorAttributes(td, rgbToArgb(cellBackground != null ? cellBackground : getComponentBackground()));
     }
 
     public void renderRowAttrCell(Element th, JavaScriptObject value, JsArrayMixed rowKeyValues, String attrName, Boolean isExpanded, Boolean isArrow, JsArrayBoolean isLastChildList) {
@@ -1320,9 +1319,9 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
 
     private void setTableToExcelColorAttributes(Element element, String backgroundColor) {
         element.setAttribute("data-b-a-s", "thin"); //border
-        element.setAttribute("data-b-a-c", rgbToArgb(getGridSeparatorBorderColor(colorTheme))); //border color
-        element.setAttribute("data-f-color", rgbToArgb(getTextColor(colorTheme))); //font color
-        element.setAttribute("data-fill-color", backgroundColor != null ? backgroundColor : rgbToArgb(getPanelBackground(colorTheme)));
+        element.setAttribute("data-b-a-c", rgbToArgb(getGridSeparatorBorderColor())); //border color
+        element.setAttribute("data-f-color", rgbToArgb(getTextColor())); //font color
+        element.setAttribute("data-fill-color", backgroundColor != null ? backgroundColor : rgbToArgb(getPanelBackground()));
     }
 
     private void updateTableToExcelAttributes(Element rootDiv) {

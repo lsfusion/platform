@@ -1,11 +1,14 @@
 package lsfusion.gwt.client.view;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.RootPanel;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static lsfusion.gwt.client.base.view.ColorUtils.*;
-import static lsfusion.gwt.client.view.MainFrame.colorTheme;
 
 public class StyleDefaults {
     public static int maxMobileWidthHeight = 570;
@@ -38,6 +41,8 @@ public class StyleDefaults {
     public static void reset() {
         componentBackgroundRGB = null;
         pivotGroupLevelDarkenStepRGB = null;
+
+        propertyValues.clear();
 
         init();
     }
@@ -84,7 +89,7 @@ public class StyleDefaults {
 
     public static int[] getComponentBackgroundRGB() {
         if (componentBackgroundRGB == null) {
-            int cbRGB = toRGB(getComponentBackground(colorTheme));
+            int cbRGB = toRGB(getComponentBackground());
             componentBackgroundRGB = new int[]{getRed(cbRGB), getGreen(cbRGB), getBlue(cbRGB)};
         }
         return componentBackgroundRGB;
@@ -92,7 +97,7 @@ public class StyleDefaults {
     
     public static int[] getPivotGroupLevelDarkenStepRGB() {
         if (pivotGroupLevelDarkenStepRGB == null) {
-            int pbRGB = toRGB(getPanelBackground(colorTheme));
+            int pbRGB = toRGB(getPanelBackground());
             int[] panelRGB = new int[]{getRed(pbRGB), getGreen(pbRGB), getBlue(pbRGB)};
             int[] componentRGB = getComponentBackgroundRGB();
             
@@ -107,45 +112,39 @@ public class StyleDefaults {
         return pivotGroupLevelDarkenStepRGB;
     }
 
-    // the following are copy-pasted colors from <color_theme>.css. need to be updated synchronously.
-    // maybe getComputedStyle(document.documentElement).getPropertyValue() should be used instead where possible
+    // We assume that the colours are initially set by the developers in the light theme, and we need white as the base colour for the calculation.
     public static String getDefaultComponentBackground() {
         return "#FFFFFF";
     }
 
-    public static String getComponentBackground(GColorTheme theme) {
-        switch (theme) {
-            case DARK:
-                return "#45494A";
-            default:
-                return getDefaultComponentBackground();
+    private static final Map<String, String> propertyValues = new HashMap<>();
+    private static String getCachedPropertyValue(String property) {
+        String propertyValue = propertyValues.get(property);
+        if (propertyValue == null) {
+            propertyValue = getPropertyValue(Document.get().getDocumentElement(), property);
+            propertyValues.put(property, propertyValue.trim()); //trim because getPropertyValue() returns a value with a random space at beginning or end of value and then ColorUtils.toRGB returns invalid value
         }
-    }
-    
-    public static String getPanelBackground(GColorTheme theme) {
-        switch (theme) {
-            case DARK:
-                return "#3C3F41";
-            default:
-                return "#F2F2F2";
-        }
+        return propertyValue;
     }
 
-    public static String getTextColor(GColorTheme theme) {
-        switch (theme) {
-            case DARK:
-                return "#bbbbbb";
-            default:
-                return "#000000";
-        }
+    //pass the element because otherwise there is no access to the valid .js-document element
+    private static native String getPropertyValue(Element element, String property) /*-{
+        return getComputedStyle(element).getPropertyValue(property);
+    }-*/;
+
+    public static String getComponentBackground() {
+        return getCachedPropertyValue("--component-background-color");
     }
 
-    public static String getGridSeparatorBorderColor(GColorTheme theme) {
-        switch (theme) {
-            case DARK:
-                return "#5E6364";
-            default:
-                return "#E6E6E6";
-        }
+    public static String getPanelBackground() {
+        return getCachedPropertyValue("--background-color");
+    }
+
+    public static String getTextColor() {
+        return getCachedPropertyValue("--text-color");
+    }
+
+    public static String getGridSeparatorBorderColor() {
+        return getCachedPropertyValue("--grid-separator-border-color");
     }
 }
