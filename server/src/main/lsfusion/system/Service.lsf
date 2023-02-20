@@ -439,10 +439,10 @@ getServerSettings() + WHEN TRUE THEN {
         jnlpUrls=exportText(),
         disableRegistration=disableRole('selfRegister'),
         lsfParams= (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
-        loginResourcesBeforeSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) AND loginLoadedResourcesOrder(s) < 0 ORDER loginLoadedResourcesOrder(s)),
-        loginResourcesAfterSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) AND loginLoadedResourcesOrder(s) >= 0 ORDER loginLoadedResourcesOrder(s)),
-        mainResourcesBeforeSystem =(JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) AND webClientLoadedResourcesOrder(s) < 0 ORDER webClientLoadedResourcesOrder(s)),
-        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) AND webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s));
+        loginResourcesBeforeSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) < 0 ORDER loginLoadedResourcesOrder(s)),
+        loginResourcesAfterSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) >= 0 ORDER loginLoadedResourcesOrder(s)),
+        mainResourcesBeforeSystem =(JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) < 0 ORDER webClientLoadedResourcesOrder(s)),
+        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s));
 };
 
 // logging for user
