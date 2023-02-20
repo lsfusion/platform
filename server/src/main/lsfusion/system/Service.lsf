@@ -417,9 +417,6 @@ inDevMode = NATIVE BOOLEAN ();
 getServerSettings() ABSTRACT CASE @@noauth;
 
 getServerSettings() + WHEN TRUE THEN {
-    LOCAL jsonLsfParams = JSON ();
-    EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;
-    
     LOCAL loginLoadedResources = RAWFILE(STRING);
     LOCAL loginLoadedResourcesOrder = INTEGER(STRING);
     FOR onLoginLoad(STRING s) ORDER onLoginLoad(s) DO {
@@ -427,8 +424,6 @@ getServerSettings() + WHEN TRUE THEN {
         loginLoadedResources(resourcePath()) <- RAWFILE (resource());
         loginLoadedResourcesOrder(resourcePath()) <- onLoginLoad(s); 
     }
-    LOCAL loginResources = JSON ();
-    EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
      
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
@@ -437,17 +432,17 @@ getServerSettings() + WHEN TRUE THEN {
         webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
         webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
     }
-    LOCAL mainResources = JSON ();
-    EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
     
     generateJnlpUrls();
-    EXPORT FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
-                sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
-                jnlpUrls=exportText(), 
-                disableRegistration=disableRole('selfRegister'),
-                lsfParams=jsonLsfParams(),
-                loginResources = loginResources(),
-                mainResources = mainResources();
+    EXPORT JSON FROM logicsName(), displayName(), logicsLogo(), logicsIcon(), platformVersion(), apiVersion(), inDevMode(),
+        sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
+        jnlpUrls=exportText(),
+        disableRegistration=disableRole('selfRegister'),
+        lsfParams= (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
+        loginResourcesBeforeSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) < 0 ORDER loginLoadedResourcesOrder(s)),
+        loginResourcesAfterSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) >= 0 ORDER loginLoadedResourcesOrder(s)),
+        mainResourcesBeforeSystem =(JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) < 0 ORDER webClientLoadedResourcesOrder(s)),
+        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s));
 };
 
 // logging for user

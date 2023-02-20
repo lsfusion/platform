@@ -19,12 +19,15 @@ public class ServerSettings {
     public String jnlpUrls;
     public boolean disableRegistration;
     public Map<String, String> lsfParams;
-    public List<Pair<String, RawFileData>> loginResources;
-    public List<Pair<String, RawFileData>> mainResources;
+    public List<Pair<String, RawFileData>> loginResourcesBeforeSystem;
+    public List<Pair<String, RawFileData>> loginResourcesAfterSystem;
+    public List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
+    public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
 
     public ServerSettings(String logicsName, String displayName, RawFileData logicsLogo, RawFileData logicsIcon, String platformVersion, Integer apiVersion,
                           boolean inDevMode, int sessionConfigTimeout, boolean anonymousUI, String jnlpUrls, boolean disableRegistration, Map<String, String> lsfParams,
-                          List<Pair<String, RawFileData>> loginResources, List<Pair<String, RawFileData>> mainResources) {
+                          List<Pair<String, RawFileData>> loginResourcesBeforeSystem, List<Pair<String, RawFileData>> loginResourcesAfterSystem,
+                          List<Pair<String, RawFileData>> mainResourcesBeforeSystem, List<Pair<String, RawFileData>> mainResourcesAfterSystem) {
         this.logicsName = logicsName;
         this.displayName = displayName;
         this.logicsLogo = logicsLogo;
@@ -37,7 +40,9 @@ public class ServerSettings {
         this.jnlpUrls = jnlpUrls;
         this.disableRegistration = disableRegistration;
         this.lsfParams = lsfParams;
-        this.loginResources = loginResources;
-        this.mainResources = mainResources;
+        this.loginResourcesBeforeSystem = loginResourcesBeforeSystem;
+        this.loginResourcesAfterSystem = loginResourcesAfterSystem;
+        this.mainResourcesBeforeSystem = mainResourcesBeforeSystem;
+        this.mainResourcesAfterSystem = mainResourcesAfterSystem;
     }
 }
