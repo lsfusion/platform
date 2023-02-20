@@ -74,22 +74,29 @@ public class FlexTabBar extends Composite implements TabBar {
         return panel.getWidgetCount() - 2;
     }
 
-    public void insertTab(Widget widget, Widget extraTabWidget, int beforeIndex) {
+    public void insertTab(Widget widget, int beforeIndex) {
         checkInsertBeforeTabIndex(beforeIndex);
 
-        Item delWidget = new Item(widget, extraTabWidget);
-//        delWidget.setHeight(StyleDefaults.VALUE_HEIGHT_STRING);
-//        final Style delWidgetStyle = delWidget.getElement().getStyle();
-//        delWidgetStyle.setDisplay(Style.Display.FLEX);
-//        delWidgetStyle.setProperty("alignItems", "center");
+        Item delWidget;
+        // it's tricky here. Since we want to keep DOM simple (and save extra element) we're using Composite
+        // but if the Composite is removed, we can't create it once again so we use the Composite created previous time
+        // the other solution is to add event handlers to the widget somehow (but the current solution is also not that bad)
+        if(widget.getParent() instanceof Item)
+            delWidget = (Item) widget.getParent();
+        else {
+            delWidget = new Item(widget);
+
+            delWidget.addStyleName("nav-item");
+
+            delWidget.addStyleName("nav-link");
+            delWidget.addStyleName("link-secondary");
+        }
 
         if(beforeIndex <= selectedTab)
             selectedTab++;
 
         panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH);
         delWidget.getElement().scrollIntoView();
-
-//        setStyleName(DOM.getParent(delWidget.getElement()), STYLENAME_DEFAULT + "-wrapper", true);
     }
 
     public void removeTab(int index) {
@@ -99,7 +106,8 @@ public class FlexTabBar extends Composite implements TabBar {
             selectedTab = -1;
         else if(index < selectedTab)
             selectedTab--;
-        panel.remove(index + 1);
+
+        panel.remove(getTabItem(index));
     }
 
     /**
@@ -125,26 +133,10 @@ public class FlexTabBar extends Composite implements TabBar {
         selectionHandler.accept(index);
     }
 
-    /**
-     * Enable or disable a tab. When disabled, users cannot select the tab.
-     * @param index   the index of the tab to enable or disable
-     * @param enabled true to enable, false to disable
-     */
-    public void setTabEnabled(int index, boolean enabled) {
-        Item delPanel = getTabItem(index);
-        delPanel.setEnabled(enabled);
-        setStyleName(delPanel.getElement(), "nav-item-disabled", !enabled);
-    }
-
-    public Widget getTabWidget(int index) {
-        return getTabItem(index).getWidget();
-    }
-
     private Item getTabItem(int index) {
         assert (index >= 0) && (index < getTabCount()) : "Tab index out of bounds";
 
-        Item item = (Item) panel.getWidget(index + 1);
-        return item;
+        return (Item) panel.getWidget(index + 1);
     }
 
     private void checkInsertBeforeTabIndex(int beforeIndex) {
@@ -192,43 +184,14 @@ public class FlexTabBar extends Composite implements TabBar {
     }
 
     private class Item extends Composite {
-        private Widget widget;
-        private boolean enabled = true;
-
-        public Item(Widget widget, Widget extraWidget) {
-            this.widget = widget;
-
-            if(extraWidget != null) {
-                FlexPanel panel = new FlexPanel();
-                panel.addFillShrink(widget);
-                panel.add(extraWidget, GFlexAlignment.CENTER);
-
-                initWidget(panel);
-            } else
-                initWidget(widget);
-
-            addStyleName("nav-item");
-
-            addStyleName("nav-link");
-            addStyleName("link-secondary");
+        public Item(Widget widget) {
+            initWidget(widget);
 
             sinkEvents(Event.ONMOUSEDOWN | Event.ONKEYDOWN);
         }
 
-        public Widget getWidget() {
-            return widget;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
         @Override
         public void onBrowserEvent(Event event) {
-            if (!enabled) {
-                return;
-            }
-
             // No need for call to super.
             switch (DOM.eventGetType(event)) {
                 case Event.ONMOUSEDOWN:

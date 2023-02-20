@@ -6,10 +6,8 @@ public interface TabBar {
     Widget asWidget();
 
     void removeTab(int idx);
-    void insertTab(Widget tabWidget, Widget extraTabWidget, int beforeIndex);
+    void insertTab(Widget tabWidget, int beforeIndex);
 
     int getSelectedTab();
     void selectTab(int index);
-
-    Widget getTabWidget(int index);
 }

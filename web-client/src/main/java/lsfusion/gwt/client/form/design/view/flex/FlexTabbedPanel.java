@@ -95,16 +95,16 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     }
 
     public void addTab(Widget w, Integer index, String tabText) {
-        addTab(w, index, createTab(tabText, false), null);
+        addTab(w, index, createTab(tabText, false));
     }
 
-    public void addTab(Widget w, Integer index, Widget tabWidget, Widget extraTabWidget) {
+    public void addTab(Widget w, Integer index, Widget tabWidget) {
         w.addStyleName("tab-pane");
-        insertTab(tabWidget, extraTabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFillShrink(w, beforeIndex));
+        insertTab(tabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFillShrink(w, beforeIndex));
     }
 
-    public void insertTab(Widget tabWidget, Widget extraTabWidget, int beforeIndex, AddToDeck addToDeck) {
-        tabBar.insertTab(tabWidget, extraTabWidget, beforeIndex);
+    public void insertTab(Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
+        tabBar.insertTab(tabWidget, beforeIndex);
 
         int tabIndex = getTabIndex(beforeIndex);
         addToDeck.add(this, tabIndex);
@@ -144,10 +144,6 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
 
     public void selectTab(int index) {
         tabBar.selectTab(index);
-    }
-
-    public Widget getTabWidget(int index) {
-        return tabBar.getTabWidget(index);
     }
 
     @SuppressWarnings("UnusedDeclaration")

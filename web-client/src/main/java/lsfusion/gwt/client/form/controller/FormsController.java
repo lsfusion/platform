@@ -15,6 +15,7 @@ import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.WindowHiddenHandler;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
@@ -507,7 +508,12 @@ public abstract class FormsController {
         }
 
         FlexPanel contentWidget = dockable.getContentWidget();
-        tabsPanel.addTab(contentWidget, index, dockable.getTabWidget(), dockable.getCloseButton());
+
+        FlexPanel header = new FlexPanel();
+        header.addFillShrink(dockable.getTabWidget());
+        header.add(dockable.getCloseButton(), GFlexAlignment.CENTER);
+
+        tabsPanel.addTab(contentWidget, index, header);
 
         FlexPanel.makeShadowOnScroll(tabsPanel, tabsPanel.getTabBar(), contentWidget);
 

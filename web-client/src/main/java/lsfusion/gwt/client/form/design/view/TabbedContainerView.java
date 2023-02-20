@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -68,13 +65,6 @@ public class TabbedContainerView extends GAbstractContainerView {
         }
     }
 
-    private LabelWidget getTabLabel(GContainer container) {
-        int index = getTabIndex(container);
-        if(index >= 0)
-            return (LabelWidget) panel.getTabWidget(index);
-        return null;
-    }
-
     protected void onTabSelected(int selectedIndex, GFormController formController, GContainer container) {
         if (selectedIndex >= 0) {
             GComponent selectedChild = visibleChildren.get(selectedIndex);
@@ -116,7 +106,7 @@ public class TabbedContainerView extends GAbstractContainerView {
                     visibleChildren.add(index, child);
                     final int fi = i;
 
-                    panel.insertTab(childrenCaptions.get(i).widget.widget, null, index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
+                    panel.insertTab(childrenCaptions.get(i).widget.widget, index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);
