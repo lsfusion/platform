@@ -69,7 +69,9 @@ public class LogicsSessionObject {
     private Map<String, String> getMapFromJSONArray(JSONArray jsonArray) {
         Map<String, String> map = new LinkedHashMap<>();
         for (int i = 0; i < jsonArray.length(); i++) {
-            map.put(jsonArray.optJSONObject(i).optString("key"), jsonArray.optJSONObject(i).optString("value"));
+            JSONObject jsonObject = jsonArray.optJSONObject(i);
+            if (jsonObject != null)
+                map.put(jsonObject.optString("key"), jsonObject.optString("value"));
         }
         return map;
     }
