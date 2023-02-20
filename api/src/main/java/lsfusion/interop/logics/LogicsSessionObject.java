@@ -54,11 +54,14 @@ public class LogicsSessionObject {
             boolean disableRegistration = json.optBoolean("disableRegistration");
             Map<String, String> lsfParams = getMapFromJSONArray(json.optJSONArray("lsfParams"));
 
-            List<Pair<String, RawFileData>> loginResources = getFileData(getMapFromJSONArray(json.optJSONArray("loginResources")));
-            List<Pair<String, RawFileData>> mainResources = getFileData(getMapFromJSONArray(json.optJSONArray("mainResources")));
+            List<Pair<String, RawFileData>> loginResourcesBeforeSystem = getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesBeforeSystem")));
+            List<Pair<String, RawFileData>> loginResourcesAfterSystem = getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesAfterSystem")));
+            List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesBeforeSystem")));
+            List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesAfterSystem")));
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResources, mainResources);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResourcesBeforeSystem, loginResourcesAfterSystem,
+                    mainResourcesBeforeSystem, mainResourcesAfterSystem);
         }
         return serverSettings;
     }
