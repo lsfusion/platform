@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,12 +53,12 @@ public class LogicsSessionObject {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
 
             boolean disableRegistration = json.optBoolean("disableRegistration");
-            Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSONArray(json.optJSONArray("lsfParams")) : null;
+            Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSONArray(json.opt("lsfParams")) : null;
 
-            List<Pair<String, RawFileData>> loginResourcesBeforeSystem = json.has("loginResourcesBeforeSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesBeforeSystem"))) : null;
-            List<Pair<String, RawFileData>> loginResourcesAfterSystem = json.has("loginResourcesAfterSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesAfterSystem"))) : null;
-            List<Pair<String, RawFileData>> mainResourcesBeforeSystem = json.has("mainResourcesBeforeSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesBeforeSystem"))) : null;
-            List<Pair<String, RawFileData>> mainResourcesAfterSystem = json.has("mainResourcesAfterSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesAfterSystem"))) : null;
+            List<Pair<String, RawFileData>> loginResourcesBeforeSystem = json.has("loginResourcesBeforeSystem") ? getFileData(getMapFromJSONArray(json.opt("loginResourcesBeforeSystem"))) : null;
+            List<Pair<String, RawFileData>> loginResourcesAfterSystem = json.has("loginResourcesAfterSystem") ? getFileData(getMapFromJSONArray(json.opt("loginResourcesAfterSystem"))) : null;
+            List<Pair<String, RawFileData>> mainResourcesBeforeSystem = json.has("mainResourcesBeforeSystem") ? getFileData(getMapFromJSONArray(json.opt("mainResourcesBeforeSystem"))) : null;
+            List<Pair<String, RawFileData>> mainResourcesAfterSystem = json.has("mainResourcesAfterSystem") ? getFileData(getMapFromJSONArray(json.opt("mainResourcesAfterSystem"))) : null;
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
                     sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResourcesBeforeSystem, loginResourcesAfterSystem,
@@ -66,7 +67,16 @@ public class LogicsSessionObject {
         return serverSettings;
     }
 
-    private Map<String, String> getMapFromJSONArray(JSONArray jsonArray) {
+    // Expect that only JSONObject and JSONArray will be passed as param
+    private Map<String, String> getMapFromJSONArray(Object json) {
+        // If JSON contains only one object, it is JSONObject, if multiple objects - JSONArray.
+        // If we call the optJSONArray() on JSONObject, we get null, same with optJSONObject.
+        if (json instanceof JSONObject) {
+            JSONObject jsonObject = (JSONObject) json;
+            return Collections.singletonMap(jsonObject.optString("key"), jsonObject.optString("value"));
+        }
+
+        JSONArray jsonArray = (JSONArray) json;
         Map<String, String> map = new LinkedHashMap<>();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.optJSONObject(i);
