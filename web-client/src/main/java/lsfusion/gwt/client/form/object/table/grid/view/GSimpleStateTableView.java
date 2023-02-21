@@ -191,7 +191,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 if(checkShowIf(i, columnKey))
                     continue;
 
-                String columnName = property.integrationSID + (columnKey.isEmpty() ? "" : "_" + c);
+                String columnName = getColumnSID(property, c, columnKey);
                 columnMap.put(columnName, new Column(property, columnKey));
                 columns.push(fromString(columnName));
             }
@@ -313,7 +313,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         if(column == null)
             return null;
 
-        return column.property.getCaption();
+        GPropertyDraw columnProperty = column.property;
+        int propertyIndex = properties.indexOf(columnProperty);
+        return GGridTable.getPropertyCaption(captions.get(propertyIndex), columnProperty, column.columnKey);
     }
 
     protected boolean isReadOnly(String property, GGroupObjectValue object) {

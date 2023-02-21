@@ -419,9 +419,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             NativeHashMap<GGroupObjectValue, Object> propertyCaptions = captions.get(i);
             List<GGroupObjectValue> columns = columnKeys.get(i);
             for (GGroupObjectValue column : columns)
-                result.add(GGridPropertyTable.getFilterColumn(propertyCaptions, property, column));
+                result.add(GGridPropertyTable.getFilterColumn(property, column, GGridPropertyTable.getPropertyCaption(propertyCaptions, property, column)));
         }
         return result;
+    }
+
+    protected static String getColumnSID(GPropertyDraw property, int c, GGroupObjectValue columnKey) {
+        return property.integrationSID + (columnKey.isEmpty() ? "" : "_" + c);
     }
 
     @Override

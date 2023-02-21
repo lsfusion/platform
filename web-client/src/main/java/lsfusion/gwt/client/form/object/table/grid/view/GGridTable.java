@@ -430,7 +430,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
-                    NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(property);
+                    NativeHashMap<GGroupObjectValue, Object> actionImages = property.isAction() ? cellImages.get(property) : null;
 
                     for (GGroupObjectValue columnKey : columnKeys.get(property)) {
                         NativeHashMap<GGroupObjectValue, GridColumn> propertyColumns = columnsMap.get(property);
@@ -475,7 +475,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, null, null, column.isSticky());
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, null, null, null, column.isSticky());
         GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, column.isSticky());
 
         insertColumn(index, column, header, footer);
@@ -642,9 +642,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updateCellImages(propertyDraw, values);
-        updatedProperties.put(propertyDraw, TRUE);
-        dataUpdated = true;
+        super.updateImageValues(propertyDraw, values);
+        if(propertyDraw.isAction()) {
+            updatedProperties.put(propertyDraw, TRUE);
+            dataUpdated = true;
+        } else {
+            captionsUpdated = true;
+        }
     }
 
     @Override

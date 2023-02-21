@@ -13,10 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.file.FileData;
-import lsfusion.base.file.NamedFileData;
-import lsfusion.base.file.RawFileData;
-import lsfusion.base.file.StringWithFiles;
+import lsfusion.base.file.*;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
@@ -183,6 +180,8 @@ public class FormChanges {
             if(propertyReadInstance instanceof PropertyDrawInstance.LastReaderInstance)
                 outStream.writeInt(((PropertyDrawInstance.LastReaderInstance) propertyReadInstance).index);
 
+            NeedImage needImage = getNeedImage(propertyReadInstance);
+
             outStream.writeInt(rows.size());
             for (int j=0,sizeJ=rows.size();j<sizeJ;j++) {
                 ImMap<ObjectInstance, DataObject> objectValues = rows.getKey(j);
@@ -191,7 +190,7 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                BaseUtils.serializeObject(outStream, convertFileValue(getImageClass(propertyReadInstance), value));
+                BaseUtils.serializeObject(outStream, convertFileValue(needImage, value));
             }
         }
 
@@ -229,23 +228,26 @@ public class FormChanges {
         outStream.writeBoolean(needConfirm);
     }
 
-    public static class NeedFileData {
+    public static class NeedImage {
         public final Type type;
 
-        public NeedFileData(Type type) {
+        public NeedImage(Type type) {
             this.type = type;
         }
     }
-    public static Object convertFileValue(Supplier<NeedFileData> fnNeedFileData, Object value) {
+    public static Object convertFileValue(NeedImage needImage, Object value) {
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
-            NeedFileData needFileData = fnNeedFileData.get();
-            if(needFileData != null) {
-                if(value instanceof RawFileData && needFileData.type instanceof StaticFormatFileClass)
-                    value = new FileData((RawFileData) value, ((StaticFormatFileClass) needFileData.type).getExtension());
+            if(needImage != null) {
+                if(value instanceof RawFileData && needImage.type instanceof StaticFormatFileClass)
+                    value = new FileData((RawFileData) value, ((StaticFormatFileClass) needImage.type).getExtension());
                 return value;
             }
 
             return true;
+        }
+
+        if(value instanceof String && needImage != null) {
+            return new AppImage((String)value);
         }
 
         if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
@@ -271,18 +273,16 @@ public class FormChanges {
         return value;
     }
 
-    private static Supplier<NeedFileData> getImageClass(PropertyReaderInstance reader) {
-        return () -> {
-            Type readerType;
-            if ((reader instanceof PropertyDrawInstance && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
-                return new NeedFileData(readerType);
-            } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
-                return new NeedFileData(reader.getPropertyObjectInstance().getType());
-            } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
-                return new NeedFileData(reader.getPropertyObjectInstance().getType());
-            }
-            return null;
-        };
+    private static NeedImage getNeedImage(PropertyReaderInstance reader) {
+        Type readerType;
+        if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty() && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
+            return new NeedImage(readerType);
+        } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
+            return new NeedImage(reader.getPropertyObjectInstance().getType());
+        } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
+            return new NeedImage(reader.getPropertyObjectInstance().getType());
+        }
+        return null;
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {

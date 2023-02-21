@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
@@ -42,11 +43,21 @@ public class PropertyPanelRenderer extends PanelRenderer {
             panelElement.addClassName("property-has-change");
     }
 
+    @Override
+    public void update(Object value, boolean loading, Object image, Object background, Object foreground, boolean readOnly) {
+        // we don't need image in value
+        super.update(value, loading, null, background, foreground, readOnly);
+
+        if(property.hasDynamicImage())
+            BaseImage.updateImage((AppBaseImage)image, label, property.panelCaptionVertical);
+    }
+
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
         if(property.caption == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
 
         label = GFormLayout.createLabelCaptionWidget();
+        BaseImage.initImageText(label, null, property.appImage, property.panelCaptionVertical);
         label.addStyleName("panel-label");
         if(!(property.isTagInput() || property.valueElementClass != null))
             label.addStyleName("text-secondary");
@@ -102,22 +113,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
         return label != null ? label : super.getTooltipWidget();
     }
 
-    private boolean notEmptyText;
     protected void setLabelText(String text) {
         if(label == null) {
             assert text == null || text.isEmpty();
             return;
         }
 
-        BaseImage.setInnerContent(label.getElement(), text);
-
-        boolean notEmptyText = text != null && !text.isEmpty();
-        if(this.notEmptyText != notEmptyText) {
-            if(notEmptyText)
-                label.addStyleName("panel-not-empty-label");
-            else
-                label.removeStyleName("panel-not-empty-label");
-            this.notEmptyText = notEmptyText;
-        }
+        BaseImage.updateText(label, text);
     }
 }

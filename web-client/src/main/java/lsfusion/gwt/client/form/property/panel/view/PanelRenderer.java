@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 import java.util.ArrayList;
@@ -33,14 +32,14 @@ public abstract class PanelRenderer {
     }
 
     protected void finalizeInit() {
-        setCaption(GGridPropertyTable.getPropertyCaption(property));
+        setCaption(property.caption);
 
         Widget label = getTooltipWidget();
         TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
             public String getTooltip() {
                 if(value.isEditing)
                     return null;
-                return tooltip;
+                return property.getTooltip(caption);
             }
 
             public boolean stillShowTooltip() {
@@ -75,13 +74,10 @@ public abstract class PanelRenderer {
     }
 
     private String caption;
-    private String tooltip;
     public void setCaption(String caption) {
         if (!GwtSharedUtils.nullEquals(this.caption, caption)) {
             this.caption = caption;
             setLabelText(property.getPanelCaption(caption));
-
-            tooltip = property.getTooltipText(caption);
         }
     }
 

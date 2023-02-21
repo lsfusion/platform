@@ -166,7 +166,7 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
                 if(checkShowIf(baseOrder, columnKey))
                     continue;
 
-                String caption = GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey);
+                String caption = property.getNotEmptyCaption(GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey));
 
                 columnMap.put(caption, new Column(property, columnKey));
 
@@ -211,14 +211,14 @@ public class GPivot extends GStateTableView implements ColorThemeChangeListener,
     private JavaScriptObject getPropertyCaptionsMap() {
         JavaScriptObject result = JavaScriptObject.createObject();
 
-        for (GPropertyDraw property : properties) {
-            int baseOrder = properties.indexOf(property);
-            NativeHashMap<GGroupObjectValue, Object> propCaptions = captions.get(baseOrder);
+        for (int j = 0, propertiesSize = properties.size(); j < propertiesSize; j++) {
+            GPropertyDraw property = properties.get(j);
+            NativeHashMap<GGroupObjectValue, Object> propCaptions = captions.get(j);
+            List<GGroupObjectValue> get = columnKeys.get(j);
 
-            for (GGroupObjectValue columnKey : columnKeys.get(baseOrder)) {
-                if(propCaptions != null) {
-                    jsPut(result, property.integrationSID, property.getDynamicCaption(propCaptions.get(columnKey)));
-                }
+            for (int i = 0, size = get.size(); i < size; i++) {
+                GGroupObjectValue columnKey = get.get(i);
+                jsPut(result, getColumnSID(property, i, columnKey), GGridPropertyTable.getPropertyCaption(propCaptions, property, columnKey));
             }
         }
         return result;

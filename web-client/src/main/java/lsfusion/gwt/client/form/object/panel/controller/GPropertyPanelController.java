@@ -162,9 +162,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
                 foreground == null ? property.foreground : foreground,
                 readOnly != null && readOnly.get(columnKey) != null);
 
-        if (captions != null) {
-            renderer.setCaption(GGridPropertyTable.getPropertyCaption(captions, property, columnKey));
-        }
+        if (captions != null)
+            renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
     }
 
     public boolean focus(FocusUtils.Reason reason) {

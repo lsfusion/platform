@@ -78,7 +78,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, false);
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, false);
         addColumn(column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();
@@ -161,8 +161,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
 
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
-                String propertyCaption = getPropertyCaption(property);
-                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, property.getTooltipText(propertyCaption), gridColumn.isSticky());
+                String propertyCaption = property.caption;
+                AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
+                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, propertyImage, property.getTooltip(propertyCaption), gridColumn.isSticky());
                 GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky());
 
                 insertColumn(index, gridColumn, header, footer);
@@ -566,9 +567,12 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
     }
 
     @Override
-    public void updateCellImages(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
-        super.updateCellImages(propertyDraw, values);
-        dataUpdated = true;
+    public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        super.updateImageValues(propertyDraw, values);
+        if(propertyDraw.isAction())
+            dataUpdated = true;
+        else
+            captionsUpdated = true;
     }
 
     @Override
@@ -782,7 +786,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
                             foreground = propForegrounds.get(key);
                         objectRecord.setForeground(property, foreground == null ? property.foreground : foreground);
 
-                        NativeHashMap<GGroupObjectValue, Object> actionImages = cellImages.get(property);
+                        NativeHashMap<GGroupObjectValue, Object> actionImages = property.isAction() ? cellImages.get(property) : null;
                         objectRecord.setImage(property, actionImages == null ? null : actionImages.get(key));
                     }
                 }

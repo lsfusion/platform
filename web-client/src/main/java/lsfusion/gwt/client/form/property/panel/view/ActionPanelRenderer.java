@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class ActionPanelRenderer extends PanelRenderer {

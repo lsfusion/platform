@@ -3,10 +3,7 @@ package lsfusion.gwt.client.form.object.table.view;
 import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
-import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
@@ -83,16 +80,21 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellImages = new NativeSIDMap<>();
 
-    public static String getPropertyCaption(GPropertyDraw property) {
-        return getPropertyCaption(null, property, null);
+    public static String getDynamicCaption(Object caption) {
+        return caption != null ? caption.toString().trim() : null;
     }
+
     public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
-        String caption;
         if (propCaptions != null)
-            caption = property.getDynamicCaption(propCaptions.get(columnKey));
-        else
-            caption = property.getCaption();
-        return caption;
+            return getDynamicCaption(propCaptions.get(columnKey));
+
+        return property.caption;
+    }
+    public static AppBaseImage getPropertyImage(NativeHashMap<GGroupObjectValue, Object> propImages, GPropertyDraw property, GGroupObjectValue columnKey) {
+        if (propImages != null)
+            return (AppBaseImage) propImages.get(columnKey); // was converted in convertFileValue
+
+        return property.appImage;
     }
 
     protected GGridPropertyTableHeader getGridHeader(int i) {
@@ -283,7 +285,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         cellForegroundValues.put(propertyDraw, values);
     }
 
-    public void updateCellImages(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         cellImages.put(propertyDraw, values);
     }
 
@@ -530,11 +532,13 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
+        AppBaseImage columnImage = !property.isAction() ? getPropertyImage(property, columnKey) : null;
         GGridPropertyTableHeader header = getGridHeader(index);
         if(header != null) {
             header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
+            header.setImage(columnImage);
             header.setPaths(property.path, property.creationPath, property.formPath);
-            header.setToolTip(property.getTooltipText(columnCaption));
+            header.setToolTip(property.getTooltip(columnCaption));
             header.setHeaderHeight(property.getHeaderCaptionHeight(this));
         } else
             assert columnCaption == null || columnCaption.isEmpty();
@@ -576,18 +580,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return new Pair<>(GGroupObjectValue.getFullKey(propertyRowKey, propertyColumnKey), oldValue);
     }
 
-    public Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
-        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyFilterCaption(property, getPropertyCaption(property, columnKey)));
-    }
-    public static Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
-        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), getPropertyFilterCaption(property, getPropertyCaption(propCaptions, property, columnKey)));
-    }
 
-    private static String getPropertyFilterCaption(GPropertyDraw property, String propertyCaption) {
-        if (GwtSharedUtils.isRedundantString(propertyCaption)) {
-            propertyCaption = property.propertyFormName; // to see something in user filters
-        }
-        return propertyCaption;
+    public static Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(GPropertyDraw property, GGroupObjectValue columnKey, String propertyCaption) {
+        return new Pair<>(new lsfusion.gwt.client.form.view.Column(property, columnKey), property.getNotEmptyCaption(propertyCaption));
+    }
+    public Pair<lsfusion.gwt.client.form.view.Column, String> getFilterColumn(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return getFilterColumn(property, columnKey, getPropertyCaption(property, columnKey));
     }
 
     protected String getPropertyCaption(GPropertyDraw property, GGroupObjectValue columnKey) {
@@ -596,6 +594,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             return userCaption;
 
         return getPropertyCaption(propertyCaptions.get(property), property, columnKey);
+    }
+
+    protected AppBaseImage getPropertyImage(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return getPropertyImage(cellImages.get(property), property, columnKey);
     }
 
     protected Object getPropertyFooter(GPropertyDraw property, GGroupObjectValue columnKey) {

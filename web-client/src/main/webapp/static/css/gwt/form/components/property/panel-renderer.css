@@ -2,7 +2,7 @@
 .propertyContainerPanel {
 }
 
-.panel-not-empty-label {
+.panel-label.wrap-text-not-empty {
     margin-left: var(--border-label-horz-padding);
     margin-right: var(--border-label-horz-padding);
 }

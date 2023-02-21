@@ -146,7 +146,7 @@ public class GTreeGroupController extends GAbstractTableController {
 
     @Override
     public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
-        tree.updateCellImages(formController.getProperty(reader.propertyID), values);
+        tree.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override

@@ -115,15 +115,6 @@ public interface BaseImage extends Serializable {
         }
     }
 
-    // to remove later
-    static void setInnerContent(Element element, String value) {
-        value = value == null ? "" : value;
-        if (EscapeUtils.isContainHtmlTag(value))
-            element.setInnerHTML(value);
-        else
-            element.setInnerText(value);
-    }
-
     // updating element with text
     static void updateImage(BaseImage image, Widget widget, boolean vertical) {
         updateImage(image, widget.getElement(), vertical);

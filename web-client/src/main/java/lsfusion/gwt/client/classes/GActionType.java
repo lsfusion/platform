@@ -10,7 +10,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.cell.classes.view.ActionCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -71,7 +70,8 @@ public class GActionType extends GDataType {
 
     @Override
     public String getDefaultWidthString(GPropertyDraw propertyDraw) {
-        return propertyDraw.getPanelCaption(GGridPropertyTable.getPropertyCaption(propertyDraw));
+        String panelCaption = propertyDraw.getPanelCaption(propertyDraw.caption);
+        return panelCaption != null ? panelCaption : "";
     }
 
     @Override

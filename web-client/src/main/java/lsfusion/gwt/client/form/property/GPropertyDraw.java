@@ -286,10 +286,11 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean hasStaticImage() {
+        assert isAction();
         return appImage != null;
     }
     public boolean hasDynamicImage() { // when it's an action and has dynamic image
-        return isAction() && hasDynamicImage;
+        return hasDynamicImage;
     }
 
     public ArrayList<GInputBindingEvent> bindingEvents = new ArrayList<>();
@@ -549,30 +550,24 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return type != null && baseType.getClass() == type.getClass() && !(baseType instanceof GJSONType);
     }
 
-    public String getDynamicCaption(Object caption) {
-        return caption == null ? "" : caption.toString().trim();
-    }
-
-    public String getCaption() {
-        return caption == null ? "" : caption;
-    }
-
     public String getPanelCaption(String caption) {
+        if(caption == null)
+            return null;
+
         if(showChangeKey && hasKeyBinding())
             caption += " (" + getKeyBindingText() + ")";
         return caption;
     }
 
-    public String getNotEmptyCaption() {
-        if (caption == null || caption.trim().length() == 0) {
-            return getMessages().propertyEmptyCaption();
-        } else {
-            return caption;
+    public String getNotEmptyCaption(String caption) {
+        if (GwtSharedUtils.isRedundantString(caption)) {
+            caption = propertyFormName;
+//            return getMessages().propertyEmptyCaption();
         }
+        return caption;
     }
-
-    public String getFilterCaption() {
-        return getNotEmptyCaption() + " (" + (groupObject != null ? groupObject.getCaption() : "") + ")";
+    public String getNotEmptyCaption() {
+        return getNotEmptyCaption(caption);
     }
 
     private static ClientMessages getMessages() {
@@ -614,7 +609,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return keyStroke != null ? ("<b>" + getMessages().propertyTooltipHotkey() + ":</b> " + keyStroke) : null;
     }
 
-    public String getTooltipText(String caption) {
+    public String getTooltip(String caption) {
         String propCaption = GwtSharedUtils.nullTrim(!GwtSharedUtils.isRedundantString(toolTip) ? toolTip : caption);
         String keyBindingText = hasKeyBinding() ? GwtSharedUtils.stringFormat(getChangeKeyToolTipFormat(), getKeyBindingText()) : "";
 
@@ -646,6 +641,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public ImageDescription getImage() {
+        assert isAction();
         return appImage != null ? appImage.getImage() : null;
     }
 

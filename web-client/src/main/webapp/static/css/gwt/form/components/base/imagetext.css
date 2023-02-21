@@ -1,0 +1,24 @@
+
+.wrap-text-not-empty {
+}
+.wrap-text-not-empty.wrap-img-horz > .wrap-text-img {
+    margin-right: 0.375rem;
+}
+
+.wrap-text-not-empty.wrap-img-vert > .wrap-text-img {
+    margin-bottom: 0.25rem;
+}
+.wrap-text-not-empty.wrap-img-vert {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    flex-direction: column;
+}
+.wrap-text-not-empty.wrap-img-horz {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    flex-direction: row;
+}

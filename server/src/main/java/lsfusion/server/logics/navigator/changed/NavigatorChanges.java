@@ -1,6 +1,5 @@
 package lsfusion.server.logics.navigator.changed;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
@@ -39,17 +38,14 @@ public class NavigatorChanges {
 
             propertyNavigator.serialize(outStream);
 
-            serializeObject(outStream, FormChanges.convertFileValue(getImageClass(propertyNavigator), value));
+            serializeObject(outStream, FormChanges.convertFileValue(getNeedImage(propertyNavigator), value));
         }
     }
 
-    private static Supplier<FormChanges.NeedFileData> getImageClass(PropertyNavigator reader) {
-        return () -> {
-            if (reader instanceof ImageElementNavigator) {
-                return new FormChanges.NeedFileData(reader.getProperty().getType());
-            }
-            return null;
-        };
+    private static FormChanges.NeedImage getNeedImage(PropertyNavigator reader) {
+        if (reader instanceof ImageElementNavigator) {
+            return new FormChanges.NeedImage(reader.getProperty().getType());
+        }
+        return null;
     }
-
 }

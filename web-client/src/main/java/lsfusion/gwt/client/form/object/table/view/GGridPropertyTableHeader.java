@@ -1,11 +1,8 @@
 package lsfusion.gwt.client.form.object.table.view;
 
 import com.google.gwt.dom.client.*;
-import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.StaticImage;
-import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
@@ -21,11 +18,13 @@ public class GGridPropertyTableHeader extends Header<String> {
     private final GGridPropertyTable table;
 
     private String renderedCaption;
+    private AppBaseImage renderedImage;
     private Boolean renderedSortDir;
 
     private Element renderedCaptionElement;
 
     private String caption;
+    private AppBaseImage image;
     private String toolTip;
     private String path;
     private String creationPath;
@@ -39,8 +38,9 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private boolean sticky;
 
-    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String toolTip, boolean sticky) {
+    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, AppBaseImage image, String toolTip, boolean sticky) {
         this.caption = caption;
+        this.image = image;
         this.table = table;
         this.toolTip = toolTip;
         this.sticky = sticky;
@@ -85,6 +85,10 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.hasChangeAction = hasChangeAction;
     }
 
+    public void setImage(AppBaseImage image) {
+        this.image = image;
+    }
+
     public void setToolTip(String toolTip) {
         this.toolTip = toolTip;
     }
@@ -115,9 +119,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderAndUpdateDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
-        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, false);
+        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, image, false);
         renderedSortDir = sortDir;
         renderedCaption = caption;
+        renderedImage = image;
 
         if(sticky) {
             th.addClassName("dataGridStickyHeader");
@@ -130,10 +135,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);
 
     public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
-        return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, true);
+        return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, null, true);
     }
 
-    public static Element renderTD(Element th, GSize height, Boolean sortDir, String caption, boolean tableToExcel) {
+    public static Element renderTD(Element th, GSize height, Boolean sortDir, String caption, AppBaseImage image, boolean tableToExcel) {
 //        if(height != null)
 //            GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);
 
@@ -153,7 +158,9 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         th.addClassName("dataGridHeaderCell-caption"); // wrap normal to have multi-line headers
 
+        BaseImage.initImageText(th);
         renderCaption(th, caption);
+        renderImage(th, image);
 
         return th;
     }
@@ -188,7 +195,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     private static void renderCaption(Element captionElement, String caption) {
-        BaseImage.setInnerContent(captionElement, caption);
+        BaseImage.updateText(captionElement, caption);
+    }
+    private static void renderImage(Element captionElement, AppBaseImage image) {
+        BaseImage.updateImage(image, captionElement, false);
     }
 
     @Override
@@ -198,9 +208,15 @@ public class GGridPropertyTableHeader extends Header<String> {
         if (!nullEquals(sortDir, renderedSortDir)) {
             GwtClientUtils.removeAllChildren(th);
             renderAndUpdateDom(th);
-        } else if (!nullEquals(this.caption, renderedCaption)) {
-            renderCaption(renderedCaptionElement, caption);
-            renderedCaption = caption;
+        } else {
+            if (!nullEquals(this.caption, renderedCaption)) {
+                renderCaption(renderedCaptionElement, caption);
+                renderedCaption = caption;
+            }
+            if (!nullEquals(this.image, renderedImage)) {
+                renderImage(renderedCaptionElement, image);
+                renderedImage = image;
+            }
         }
     }
 

@@ -1,0 +1,40 @@
+.arrow-th {
+    position: sticky;
+    right: 0;
+    padding: 0 !important;
+    cursor: pointer;
+}
+
+.arrow-th.top-arrow {
+    vertical-align: bottom;
+}
+
+.arrow-th.bottom-arrow {
+    vertical-align: top;
+}
+
+.arrow {
+    position: absolute;
+    right: 0;
+    margin: var(--border-padding);
+}
+
+.arrow-container {
+    position:relative;
+    left: 0;
+}
+
+.bottom-arrow .arrow {
+    bottom: 0;
+}
+
+.top-arrow .arrow {
+    top: 0; /*Does not do anything. It is needed for symmetry with ".bottom-arrow .arrow"*/
+}
+
+.table:not(.was-scrolled-recently.scrolled-down) .top-arrow:not(:hover) .arrow-container, .table:not(.was-scrolled-recently.scrolled-up) .bottom-arrow:not(:hover) .arrow-container,
+.table:not(.scrolled-down) .top-arrow .arrow-container, .table:not(.scrolled-up) .bottom-arrow .arrow-container {
+    opacity: 0;
+    left: -5000px;
+    transition: opacity 0.5s linear, left 0s linear 0.6s;
+}
