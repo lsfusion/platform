@@ -52,12 +52,12 @@ public class LogicsSessionObject {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
 
             boolean disableRegistration = json.optBoolean("disableRegistration");
-            Map<String, String> lsfParams = getMapFromJSONArray(json.optJSONArray("lsfParams"));
+            Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSONArray(json.optJSONArray("lsfParams")) : null;
 
-            List<Pair<String, RawFileData>> loginResourcesBeforeSystem = getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesBeforeSystem")));
-            List<Pair<String, RawFileData>> loginResourcesAfterSystem = getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesAfterSystem")));
-            List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesBeforeSystem")));
-            List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesAfterSystem")));
+            List<Pair<String, RawFileData>> loginResourcesBeforeSystem = json.has("loginResourcesBeforeSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesBeforeSystem"))) : null;
+            List<Pair<String, RawFileData>> loginResourcesAfterSystem = json.has("loginResourcesAfterSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("loginResourcesAfterSystem"))) : null;
+            List<Pair<String, RawFileData>> mainResourcesBeforeSystem = json.has("mainResourcesBeforeSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesBeforeSystem"))) : null;
+            List<Pair<String, RawFileData>> mainResourcesAfterSystem = json.has("mainResourcesAfterSystem") ? getFileData(getMapFromJSONArray(json.optJSONArray("mainResourcesAfterSystem"))) : null;
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
                     sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResourcesBeforeSystem, loginResourcesAfterSystem,
