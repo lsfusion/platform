@@ -525,13 +525,14 @@ META defineLog (object, caption, container)
 END
 META defineLog (object, dateProp)
     clearApplicationLog () + { 
-	NEWSESSION {
-	        IF countDaysClear##object() THEN {
-	            DELETE object d WHERE d IS object AND dateProp(d)<= subtract(currentDate(), countDaysClear##object());
-	        }
-	        apply();
+    	NEWSESSION {
+            APPLY {
+                IF countDaysClear##object() THEN {
+                    DELETE object d WHERE d IS object AND dateProp(d) <= subtract(currentDate(), countDaysClear##object());
+                }
+            }
 	    }
-}   
+    }   
 END
 META defineLog (object, caption, container, dateProp)
     @defineLog (object, caption, container);
