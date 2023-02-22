@@ -338,11 +338,6 @@ public class MainFrame implements EntryPoint {
             public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {
                 windowsController.updateVisibility(windows);
             }
-
-            @Override
-            public void autoSizeWindows() {
-                windowsController.autoSizeWindows();
-            }
         };
         navigatorControllerLink.link = navigatorController;
 

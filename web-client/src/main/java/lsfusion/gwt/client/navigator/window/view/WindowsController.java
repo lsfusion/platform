@@ -11,18 +11,17 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
-public abstract class WindowsController extends CustomSplitLayoutPanel {
+public abstract class WindowsController {
     private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
-    private SplitWindowElement rootElement;
+    private FlexWindowElement rootElement;
 
     public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
         WindowNode rootNode = new WindowNode(0, 0, 100, 100);
 
-        initializeNodes(allWindows, rootNode);
+        initializeNodes(allWindows, rootNode, formsWindow);
 
-        rootElement = (SplitWindowElement) fillWindowChildren(rootNode);
-        rootElement.addElement(new SimpleWindowElement(this, formsWindow, -1, -1, -1, -1));
+        rootElement = (FlexWindowElement) fillWindowChildren(rootNode);
 
         Widget rootView = rootElement.initializeView();
 
@@ -36,7 +35,7 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         RootLayoutPanel.get().add(rootView);
     }
 
-    private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode) {
+    private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode, GAbstractWindow formsWindow) {
         List<WindowNode> nodes = new ArrayList<>();
 
         // все окна с одинаковыми координатами складываем в табы
@@ -115,6 +114,11 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         for (WindowNode childNode : new ArrayList<>(rootNode.children)) {
             createTabsIfNecessary(childNode);
         }
+
+        rootNode.isFlex = true;
+        rootNode.vertical = true;
+        fillWithChildren(rootNode, rootNode.children, rootNode.x, rootNode.y, rootNode.width, rootNode.height);
+        deepestFlexWindow.addChild(new WindowNode(formsWindow));
     }
 
     private void createTabsIfNecessary(WindowNode node) {
@@ -136,6 +140,191 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         }
     }
 
+    // ported from former split/dock layout logics
+    WindowNode deepestFlexWindow;
+    private void fillWithChildren(WindowNode parent, List<WindowNode> leftToPut, int rectX, int rectY, int rectWidth, int rectHeight) {
+        if (leftToPut.isEmpty()) {
+            return;
+        }
+
+        List<WindowNode> windowsLeft = new ArrayList<>(leftToPut);
+        for (WindowNode window : leftToPut) {
+            if (windowsLeft.size() == 1) {
+                WindowNode lastWindow = windowsLeft.get(0);
+                lastWindow.parent.removeChild(lastWindow);
+                lastWindow.setParent(parent);
+                return;
+            }
+
+            boolean attached = false;
+            if (windowsLeft.contains(window)) {
+                if (window.height == rectHeight) {
+                    attached = attachHorizontally(window, rectX, rectWidth);
+                    if (attached) {
+                        parent = addToParentNode(parent, window, false, rectX, rectY, rectWidth, rectHeight);
+
+                        rectWidth -= window.width;
+                        if (window.x == rectX) {
+                            rectX += window.width;
+                        }
+                    }
+                } else if (window.width == rectWidth) {
+                    attached = attachVertically(window, rectY, rectHeight);
+                    if (attached) {
+                        parent = addToParentNode(parent, window, true, rectX, rectY, rectWidth, rectHeight);
+                        
+                        rectHeight -= window.height;
+                        if (window.y == rectY) {
+                            rectY += window.height;
+                        }
+                    }
+                }
+                if (attached) {
+                    windowsLeft.remove(window);
+                }
+            }
+        }
+
+        if (windowsLeft.size() < leftToPut.size()) {
+            // какое-то окно нашло своё место - делаем ещё круг
+            fillWithChildren(parent, windowsLeft, rectX, rectY, rectWidth, rectHeight);
+        } else {
+            // иначе пробуем сложить часть окон в гор.или верт. сплит
+            WindowNode split = putInSplit(windowsLeft, rectX, rectY, rectWidth, rectHeight);
+            if (split != null) {
+                split.setParent(parent);
+
+                for (WindowNode splitChild : split.children) {
+                    windowsLeft.remove(splitChild);
+                }
+
+                if (split.x == rectX && split.width == rectWidth) {
+                    boolean attached = attachVertically(split, rectY, rectHeight);
+                    if (attached) {
+                        parent = addToParentNode(parent, split, true, rectX, rectY, rectWidth, rectHeight);
+                            
+                        rectHeight -= split.height;
+                        if (split.y == rectY) {
+                            rectY += split.height;
+                        }
+                    }
+                } else if (split.y == rectY && split.height == rectHeight) {
+                    boolean attached = attachHorizontally(split, rectX, rectWidth);
+                    if (attached) {
+                        parent = addToParentNode(parent, split, false, rectX, rectY, rectWidth, rectHeight);
+
+                        rectWidth -= split.width;
+                        if (split.x == rectX) {
+                            rectX += split.width;
+                        }
+                    }
+                }
+
+                // если нашёлся такой набор окон, снова пробуем найти место для одного окна
+                fillWithChildren(parent, windowsLeft, rectX, rectY, rectWidth, rectHeight);
+            }
+        }
+    }
+
+    private WindowNode addToParentNode(WindowNode parent, WindowNode window, boolean vertical, int rectX, int rectY, int rectWidth, int rectHeight) {
+        // create new panel if direction changes
+        if (parent.vertical != vertical) {
+            WindowNode newParent = new WindowNode(rectX, rectY, rectWidth, rectHeight);
+            newParent.isFlex = true;
+            newParent.vertical = vertical;
+            newParent.setParent(parent);
+            parent = newParent;
+            deepestFlexWindow = parent;
+        }
+        window.parent.removeChild(window);
+        window.setParent(parent);
+        return parent;
+    }
+
+    private WindowNode putInSplit(List<WindowNode> windows, int rectX, int rectY, int rectWidth, int rectHeight) {
+        WindowNode flexWindow = null;
+        List<WindowNode> splitChildren = null;
+
+        // vertical
+        for (int i = 0; i < windows.size() - 1; i++) {
+            WindowNode first = windows.get(i);
+            List<WindowNode> inOneLine = new ArrayList<>(Arrays.asList(first));
+            for (int j = i + 1; j < windows.size(); j++) {
+                WindowNode second = windows.get(j);
+                if (first.x == second.x && first.width == second.width && first.y != second.y) {
+                    inOneLine.add(second);
+                }
+            }
+            if (inOneLine.size() > 1) {
+                List<WindowNode> winds = findLineFilling(inOneLine, true, rectHeight);
+                if (winds != null) {
+                    WindowNode firstWindow = winds.get(0);
+                    // дополнительно проверим, что ряд окон прижат к одному из краёв
+                    if (firstWindow.x == rectX || firstWindow.x + firstWindow.width == rectX + rectWidth) {
+                        flexWindow = new WindowNode(firstWindow.x, rectY, firstWindow.width, rectHeight);
+                        flexWindow.isFlex = true;
+                        flexWindow.vertical = true;
+                        splitChildren = winds;
+                    }
+                }
+            }
+        }
+        // horizontal
+        if (flexWindow == null) {
+            for (int i = 0; i < windows.size() - 1; i++) {
+                WindowNode first = windows.get(i);
+                List<WindowNode> inOneLine = new ArrayList<>(Arrays.asList(first));
+                for (int j = i + 1; j < windows.size(); j++) {
+                    WindowNode second = windows.get(j);
+                    if (first.y == second.y && first.height == second.height && first.x != second.x) {
+                        inOneLine.add(second);
+                    }
+                }
+                if (inOneLine.size() > 1) {
+                    List<WindowNode> winds = findLineFilling(inOneLine, false, rectWidth);
+                    if (winds != null) {
+                        WindowNode firstWindow = winds.get(0);
+                        if (firstWindow.y == rectY || firstWindow.y + firstWindow.height == rectY + rectHeight) {
+                            flexWindow = new WindowNode(rectX, firstWindow.y, rectWidth, firstWindow.height);
+                            flexWindow.isFlex = true;
+                            flexWindow.vertical = false;
+                            splitChildren = winds;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (splitChildren != null) {
+            for (WindowNode window : splitChildren) {
+                window.parent.removeChild(window);
+                window.setParent(flexWindow);
+            }
+        }
+
+        return flexWindow;
+    }
+
+    private List<WindowNode> findLineFilling(List<WindowNode> windows, boolean vertical, int dimension) {
+        // здесь подразумевается, что все найденные окна одной ширины/высоты, расположены в один ряд без наложений и пробелов
+        int sum = 0;
+        List<WindowNode> result = new ArrayList<>();
+
+        for (WindowNode window : windows) {
+            sum += vertical ? window.height : window.width;
+            result.add(window);
+        }
+        return sum == dimension ? result : null;
+    }
+
+    private boolean attachHorizontally(WindowNode window, int rectX, int rectWidth) {
+        return window.x == rectX || window.x + window.width == rectX + rectWidth;
+    }
+
+    private boolean attachVertically(WindowNode window, int rectY, int rectHeight) {
+        return window.y == rectY || window.y + window.height == rectY + rectHeight;
+    }
+
     private WindowElement fillWindowChildren(WindowNode node) {
         WindowElement nodeElement = createElementForNode(node);
         for (WindowNode child : node.children) {
@@ -151,7 +340,8 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         } else if (node.children.isEmpty()) {
             return new SimpleWindowElement(this, node.window, node.x, node.y, node.width, node.height);
         } else {
-            return new SplitWindowElement(this, node.x, node.y, node.width, node.height);
+            assert node.isFlex;
+            return new FlexWindowElement(node.vertical, this, node.x, node.y, node.width, node.height);
         }
     }
 
@@ -171,7 +361,6 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     public void resetLayout() {
         setDefaultVisible();
         rootElement.resetWindowSize();
-        autoSizeWindows();
     }
 
     private void setDefaultVisible() {
@@ -180,14 +369,6 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
             if (windowElement != null) {
                 windowElement.setVisible(window.visible);
             }
-        }
-    }
-
-    public void autoSizeWindows() {
-        // we have to wait until windows are really visible and filled
-        // as setting calculated or auto sizes are in one method and auto sizing needs windows to be drawn
-        if (rootElement.getView().getOffsetWidth() > 0) {
-            rootElement.autoSizeWindows();
         }
     }
 
@@ -252,6 +433,8 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         private List<WindowNode> children = new ArrayList<>();
 
         public boolean isTabbed = false;
+        public boolean isFlex = false;
+        public boolean vertical = true;
 
         private int x;
         private int y;

@@ -34,8 +34,8 @@ public class SimpleWindowElement extends WindowElement {
     }
 
     @Override
-    public boolean isAutoSize() {
-        return window.autoSize;
+    public boolean isAutoSize(boolean vertical) {
+        return window.isAutoSize(vertical);
     }
 
     @Override

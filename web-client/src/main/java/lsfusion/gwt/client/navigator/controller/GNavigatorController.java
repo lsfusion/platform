@@ -59,8 +59,6 @@ public abstract class GNavigatorController implements GINavigatorController {
             }
         }
         updateVisibility(visibleElements);
-
-        autoSizeWindows();
     }
 
     private void dfsAddElements(GNavigatorElement currentElement, GNavigatorWindow currentWindow, Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result) {

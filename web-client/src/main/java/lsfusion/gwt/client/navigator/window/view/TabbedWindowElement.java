@@ -29,9 +29,9 @@ public class TabbedWindowElement extends WindowElement {
     }
 
     @Override
-    public boolean isAutoSize() {
+    public boolean isAutoSize(boolean vertical) {
         for (WindowElement child : children) {
-            if (child.isAutoSize()) {
+            if (child.isAutoSize(vertical)) {
                 return true;
             }
         }

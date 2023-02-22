@@ -63,7 +63,7 @@ public abstract class WindowElement {
     public abstract void addElement(WindowElement window);
     public abstract String getCaption();
     public abstract Widget getView();
-    public abstract boolean isAutoSize();
+    public abstract boolean isAutoSize(boolean vertical);
 
     public abstract String getSID();
 
