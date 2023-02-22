@@ -425,9 +425,6 @@ resetConnections() + {
 getServerSettings() ABSTRACT CASE @@noauth;
 
 getServerSettings() + WHEN TRUE THEN {
-    LOCAL jsonLsfParams = JSON ();
-    EXPORT FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s) TO jsonLsfParams;
-    
     LOCAL loginLoadedResources = RAWFILE(STRING);
     LOCAL loginLoadedResourcesOrder = INTEGER(STRING);
     FOR onLoginLoad(STRING s) ORDER onLoginLoad(s) DO {
@@ -435,16 +432,15 @@ getServerSettings() + WHEN TRUE THEN {
         loginLoadedResources(resourcePath()) <- RAWFILE (resource());
         loginLoadedResourcesOrder(resourcePath()) <- onLoginLoad(s); 
     }
-    LOCAL loginResources = JSON ();
-    EXPORT FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResources(s) ORDER loginLoadedResourcesOrder(s) TO loginResources;
     
     generateJnlpUrls();
-    EXPORT FROM logicsName(), displayName(), FILE(logicsLogo()), FILE(logicsIcon()), platformVersion(), apiVersion(), inDevMode(),
-                sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
-                jnlpUrls=exportText(), 
-                disableRegistration=disableRole('selfRegister'),
-                lsfParams=jsonLsfParams(),
-                loginResources = loginResources();
+    EXPORT JSON FROM logicsName(), displayName(), FILE(logicsLogo()), FILE(logicsIcon()), platformVersion(), apiVersion(), inDevMode(),
+    sessionConfigTimeout=INTEGER(valueSetting('sessionConfigTimeout')), anonymousUI=(valueSetting('enableUI')='2'),
+    jnlpUrls=exportText(),
+    disableRegistration=disableRole('selfRegister'),
+    lsfParams= (JSON FROM key = STRING s, value = lsfParams(s) WHERE lsfParams(s)),
+    loginResourcesBeforeSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) < 0 ORDER loginLoadedResourcesOrder(s)),
+    loginResourcesAfterSystem = (JSON FROM key = STRING s, value = loginLoadedResources(s) WHERE loginLoadedResourcesOrder(s) >= 0 ORDER loginLoadedResourcesOrder(s));
 };
 
 // logging for user
@@ -758,7 +754,6 @@ projectLSFDir = NATIVE STRING();
 
 getClientSettings(User user) ABSTRACT CASE;
 getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
-    LOCAL mainResources = JSON();
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
     FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
@@ -766,20 +761,16 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
         webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
     }
-    EXPORT FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResources(s) ORDER webClientLoadedResourcesOrder(s) TO mainResources;
-
-    LOCAL forbidDuplicateForms = BOOLEAN();
-    forbidDuplicateForms() <- OVERRIDE dataForbidDuplicateForms(user), abstractForbidDuplicateForms(user), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(user, ur);
     
     LOCAL colorThemeStaticName = STRING();
     colorThemeStaticName() <- staticName(colorTheme(user));
     
-    EXPORT FROM
+    EXPORT JSON FROM
         currentUserName = (OVERRIDE currentUserName(), '(без имени)'),
         fontSize = fontSize(user),
         useBusyDialog = (valueSettingBoolean('busyDialog') OR inTestMode() OR useBusyDialogCustom(user)),
         useRequestTimeout = (valueSettingBoolean('useRequestTimeout') OR useRequestTimeout(user)),
-        forbidDuplicateForms = forbidDuplicateForms(),
+        forbidDuplicateForms = (OVERRIDE dataForbidDuplicateForms(user), abstractForbidDuplicateForms(user), GROUP MAX forbidDuplicateForms(UserRole ur) IF has(user, ur)),
         showDetailedInfo = (GROUP MAX showDetailedInfo(UserRole ur) IF has(user, ur)),
         devMode = inDevMode() OR (devMode(user)),
         projectLSFDir = projectLSFDir(),
@@ -792,7 +783,8 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         tableGridColor = overrideTableGridColor(),
         dateTimePickerRanges = JSON FROM range = getWord(staticName(DateTimePickerRanges r), '.', 2) WHERE isDateTimeRangeSelected(r, user),
         intervalPickerRanges = JSON FROM range = getWord(staticName(DateTimeIntervalPickerRanges ir), '.', 2) WHERE isIntervalRangeSelected(ir, user),
-        mainResources = mainResources(),
+        mainResourcesBeforeSystem =(JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) < 0 ORDER webClientLoadedResourcesOrder(s)),
+        mainResourcesAfterSystem = (JSON FROM key = STRING s, value = webClientLoadedResources(s) WHERE webClientLoadedResourcesOrder(s) >= 0 ORDER webClientLoadedResourcesOrder(s)),
         language = language(user),
         country = country(user),
         timeZone = timeZone(user),

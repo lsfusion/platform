@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -60,29 +61,43 @@ public class LogicsSessionObject {
                 jnlpUrls = jnlpUrls.replaceAll("\\{contextPath}", contextPath);
 
             boolean disableRegistration = json.optBoolean("disableRegistration");
-            Map<String, String> lsfParams = getMapFromJSONArray(json.optJSONArray("lsfParams"));
-            List<Pair<String, RawFileData>> loginResources = getFileData(json.optJSONArray("loginResources"));
+            Map<String, String> lsfParams = json.has("lsfParams") ? getMapFromJSON(json.opt("lsfParams")) : null;
+
+            List<Pair<String, RawFileData>> loginResourcesBeforeSystem = getFileData(json, "loginResourcesBeforeSystem");
+            List<Pair<String, RawFileData>> loginResourcesAfterSystem = getFileData(json, "loginResourcesAfterSystem");
 
             serverSettings = new ServerSettings(logicsName, displayName, logicsLogo, logicsIcon, platformVersion, apiVersion, inDevMode,
-                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResources);
+                    sessionConfigTimeout, anonymousUI, jnlpUrls, disableRegistration, lsfParams, loginResourcesBeforeSystem, loginResourcesAfterSystem);
         }
         return serverSettings;
     }
 
-    private static Map<String, String> getMapFromJSONArray(JSONArray jsonArray) {
+    // Expect that only JSONObject and JSONArray will be passed as param
+    private static Map<String, String> getMapFromJSON(Object json) {
+        // If JSON contains only one object, it is JSONObject, if multiple objects - JSONArray.
+        // If we call the optJSONArray() on JSONObject, we get null, same with optJSONObject.
+        if (json instanceof JSONObject) {
+            JSONObject jsonObject = (JSONObject) json;
+            return Collections.singletonMap(jsonObject.optString("key"), jsonObject.optString("value"));
+        }
+
+        JSONArray jsonArray = (JSONArray) json;
         Map<String, String> map = new LinkedHashMap<>();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.optJSONObject(i);
-            map.put(jsonObject.optString("key"), jsonObject.optString("value"));
+            if (jsonObject != null)
+                map.put(jsonObject.optString("key"), jsonObject.optString("value"));
         }
         return map;
     }
 
-    public static List<Pair<String, RawFileData>> getFileData(JSONArray jsonArray) {
-        Map<String, String> files = getMapFromJSONArray(jsonArray);
-        List<Pair<String, RawFileData>> resultFiles = new LinkedList<>();
-        files.forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, new RawFileData(new String(Base64.decodeBase64(file)).getBytes()))));
-        return resultFiles;
+    private static List<Pair<String, RawFileData>> getFileData(JSONObject json, String field) {
+        if (json.has(field)) {
+            List<Pair<String, RawFileData>> resultFiles = new LinkedList<>();
+            getMapFromJSON(json.opt(field)).forEach((fileName, file) -> resultFiles.add(Pair.create(fileName, new RawFileData(new String(Base64.decodeBase64(file)).getBytes()))));
+            return resultFiles;
+        }
+        return null;
     }
 
     private FileData getFileData(String base64) {
@@ -120,7 +135,8 @@ public class LogicsSessionObject {
         fillRanges(json.optJSONArray("dateTimePickerRanges"), preDefinedDateRangesNames);
         fillRanges(json.optJSONArray("intervalPickerRanges"), preDefinedDateRangesNames);
 
-        List<Pair<String, RawFileData>> mainResourcesData = getFileData(json.getJSONArray("mainResources"));
+        List<Pair<String, RawFileData>> mainResourcesBeforeSystem = getFileData(json,"mainResourcesBeforeSystem");
+        List<Pair<String, RawFileData>> mainResourcesAfterSystem = getFileData(json,"mainResourcesAfterSystem");
 
         String language = json.optString("language");
         String country = json.optString("country");
@@ -141,7 +157,7 @@ public class LogicsSessionObject {
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
-                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, mainResourcesData);
+                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, mainResourcesBeforeSystem, mainResourcesAfterSystem);
     }
 
     private static void fillRanges(JSONArray rangesJson, List<String> ranges) {

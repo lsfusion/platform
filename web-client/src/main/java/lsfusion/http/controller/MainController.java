@@ -86,8 +86,10 @@ public class MainController {
         model.addAttribute("logicsIcon", getLogicsIcon(serverSettings));
         model.addAttribute("registrationPage", getDirectUrl("/registration", null, null, request));
         model.addAttribute("forgotPasswordPage", getDirectUrl("/forgot-password", null, null, request));
-        model.addAttribute("loginResources",
-                serverSettings != null && serverSettings.loginResources != null ? saveResources(serverSettings, serverSettings.loginResources, true) : null);
+        model.addAttribute("loginResourcesBeforeSystem",
+                serverSettings != null && serverSettings.loginResourcesBeforeSystem != null ? saveResources(serverSettings, serverSettings.loginResourcesBeforeSystem, true) : null);
+        model.addAttribute("loginResourcesAfterSystem",
+                serverSettings != null && serverSettings.loginResourcesAfterSystem != null ? saveResources(serverSettings, serverSettings.loginResourcesAfterSystem, true) : null);
 
         try {
             clientRegistrationRepository.iterator().forEachRemaining(registration -> oauth2AuthenticationUrls.put(registration.getRegistrationId(),
@@ -232,7 +234,8 @@ public class MainController {
         model.addAttribute("lsfParams", getLsfParams(serverSettings));
 
         String sessionId;
-        List<Pair<String, RawFileData>> mainResources;
+        List<Pair<String, RawFileData>> mainResourcesBeforeSystem;
+        List<Pair<String, RawFileData>> mainResourcesAfterSystem;
         try {
             sessionId = logicsProvider.runRequest(request, (sessionObject, retry) -> {
                 try {
@@ -242,7 +245,9 @@ public class MainController {
                     throw e;
                 }
             }).get();
-            mainResources = getClientSettings(sessionId, request).mainResources;
+            ClientSettings clientSettings = getClientSettings(sessionId, request);
+            mainResourcesBeforeSystem = clientSettings.mainResourcesBeforeSystem;
+            mainResourcesAfterSystem = clientSettings.mainResourcesAfterSystem;
         } catch (AuthenticationException authenticationException) {
             return getRedirectUrl("/logout", null, request);
         } catch (Throwable e) {
@@ -252,7 +257,8 @@ public class MainController {
         }
 
         model.addAttribute("sessionID", sessionId);
-        model.addAttribute("mainResources", serverSettings != null && mainResources != null ? saveResources(serverSettings, mainResources, false) : null);
+        model.addAttribute("mainResourcesBeforeSystem", serverSettings != null && mainResourcesBeforeSystem != null ? saveResources(serverSettings, mainResourcesBeforeSystem, false) : null);
+        model.addAttribute("mainResourcesAfterSystem", serverSettings != null && mainResourcesAfterSystem != null ? saveResources(serverSettings, mainResourcesAfterSystem, false) : null);
 
         return "main";
     }

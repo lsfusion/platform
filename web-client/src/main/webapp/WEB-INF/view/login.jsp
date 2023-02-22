@@ -14,7 +14,7 @@
         <link rel="stylesheet" media="only screen and (min-device-width: 601px)" href="static/noauth/css/login.css"/>
         <link rel="stylesheet" media="only screen and (max-device-width: 600px)" href="static/noauth/css/mobile_login.css"/>
 
-        <lsf:writeResources resources="${loginResources}"/>
+        <lsf:writeResources resources="${loginResourcesBeforeSystem}"/>
         <% pageContext.setAttribute("versionedResources", ServerUtils.getVersionedResources(config.getServletContext(),
 
                 "static/noauth/css/fontAwesome/css/fontawesome.min.css",
@@ -23,6 +23,7 @@
 
                 )); %>
         <lsf:writeResources resources="${versionedResources}"/>
+        <lsf:writeResources resources="${loginResourcesAfterSystem}"/>
 
     </head>
     <body onload="document.loginForm.username.focus();">
