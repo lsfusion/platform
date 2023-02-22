@@ -33,7 +33,7 @@ public class StaticImage extends BaseStaticImage {
     public final static StaticImage MINIMIZE = new StaticImage("fa-solid fa-compress", "minimize.png");
     public final static StaticImage MAXIMIZE = new StaticImage("fa-solid fa-expand", "maximize.png");
 
-    public final static StaticImage EXPANDTREECURRENT = new StaticImage("bi bi-chevron-down", "expandTreeCurrent.png");
+    public final static StaticImage EXPANDTREECURRENT = new StaticImage("bi-chevron-double-down", "expandTreeCurrent.png");
     public final static StaticImage COLLAPSETREECURRENT = new StaticImage("bi bi-chevron-up", "collapseTreeCurrent.png");
     public final static StaticImage EXPANDTREE = new StaticImage("bi bi-chevron-bar-expand", "expandTree.png");
     public final static StaticImage COLLAPSETREE = new StaticImage("bi bi-chevron-double-up", "collapseTree.png");
