@@ -322,6 +322,11 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
+    public boolean supportsDeadLockPriority() {
+        return false;
+    }
+
+    @Override
     public String getVolatileStats(boolean on) {
         return "SET enable_nestloop=" + (on ? "off" : "on");
     }
@@ -436,6 +441,7 @@ public class PostgreSQLSyntax extends DefaultSQLSyntax {
 
     @Override
     public String getDeadlockPriority(Long priority) {
+        assert false; // actually this approach doesn't work
         return "SET LOCAL deadlock_timeout to " + (priority != null ? ("'" + Math.round(BaseUtils.pow(2.0, priority) * 1000.0) + "ms'") : "DEFAULT");
     }
 
