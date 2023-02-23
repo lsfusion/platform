@@ -161,7 +161,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         Map<Integer, SQLThreadInfo> sessionMap = new HashMap<>();
         for (SQLSession sqlSession : sqlSessionMap.keySet()) {
             SQLDebugInfo sqlDebugInfo = sqlDebugInfoMap.get(sqlSession.getActiveThread());
-            String debugInfo = sqlDebugInfo == null ? null : sqlDebugInfo.getDebugInfoForProcessMonitor();
+            String debugInfo = sqlDebugInfo == null ? null : sqlDebugInfo.toString(sqlSession);
 
             ExConnection connection = sqlSession.getDebugConnection();
             if (connection != null)
@@ -963,7 +963,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     }
 
     private final Map<String, WeakReference<TableOwner>> sessionTablesMap = MapFact.mAddRemoveMap(); // все использования assertLock
-    private final Map<String, String> sessionDebugInfo = MapFact.mAddRemoveMap(); // все использования assertLock
+    public final Map<String, String> sessionDebugInfo = MapFact.mAddRemoveMap(); // все использования assertLock
     private final Map<String, Long> lastReturnedStamp = MapFact.mAddRemoveMap(); // все использования assertLock
 
     private int totalSessionTablesCount; // lockRead
@@ -1620,10 +1620,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
                 }
                 double ttime = BaseUtils.nullAdd(rtime, ptime);
                 if (noAnalyze || thr == 0 || ttime >= thr) {
-                    String statementInfo = statement.toString() + " timeout : " + getQueryTimeout() + " actual time : " + actualTime + '\n' +
-                                            ExecutionStackAspect.getStackString();
+                    String statementInfo = statement.toString() + " timeout : " + getQueryTimeout() + " actual time : " + actualTime +
+                                    '\n' + "LSF stack:" + BaseUtils.tab('\n' + ExecutionStackAspect.getStackString());
+                    statementInfo += '\n' + "Params debug info: " + BaseUtils.tab('\n' + SQLDebugInfo.getSqlDebugInfo(this));
                     if (Settings.get().isExplainJavaStack())
-                        statementInfo += '\n' + ExceptionUtils.getStackTrace();
+                        statementInfo += '\n' + "Java stack: " + BaseUtils.tab('\n' + ExceptionUtils.getStackTrace());
                     explainLogger.info(statementInfo);
 
                     for (String outRow : out)

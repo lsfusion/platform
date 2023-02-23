@@ -339,6 +339,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
             }
         }
 
+        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
+            return null;
+
         if(addObject != null) {
             MSet<SessionDataProperty> mLocals = SetFact.mSet();
             PropertyMapImplement<?, I> result = PropertyFact.createForDataProp(getExtendClasses(), addClass, mLocals);
@@ -347,10 +350,6 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                     PropertyFact.createForAction(innerInterfaces, context, PropertyFact.<I>createCompare(
                             addObject, result, Compare.EQUALS), MapFact.<PropertyInterfaceImplement<I>, Boolean>singletonOrder(addObject, false), false, action, elseAction, null, null, false, false, allNoInline ? noInline.addExcl(addObject) : noInline, forceInline)), mLocals.immutable());
         }
-
-        // проталкиваем for'ы
-        if (action.hasFlow(ChangeFlowType.BREAK, ChangeFlowType.RETURN, ChangeFlowType.APPLY, ChangeFlowType.CANCEL, ChangeFlowType.SYNC))
-            return null;
 
         ImList<ActionMapImplement<?, I>> list = action.getList();
 

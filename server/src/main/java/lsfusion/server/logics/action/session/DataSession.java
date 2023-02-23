@@ -1950,12 +1950,14 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
                     SQLConflictException conflict = (SQLConflictException) t;
                     Integer attempts = attemptCountMap.get(conflict.getDescription(true));
                     if(attempts != null) {
-                        if(conflict.updateConflict) { // update conflicts
-                            if (attempts >= settings.getConflictSleepThreshold()) {
+                        boolean updateConflict = conflict.updateConflict;
+                        if(updateConflict || !sql.syntax.supportsDeadLockPriority()) { // update conflicts or dead-locks (if their priority is not supported)
+                            if (attempts >= (updateConflict ? settings.getConflictSleepThreshold() : settings.getDeadLockThreshold())) {
                                 long sleep = (long) (Math.pow(settings.getConflictSleepTimeDegree(), attempts + Math.random()) * 1000);
-                                ServerLoggers.sqlConflictLogger.info(String.format("Sleep started after conflict updates : %s (sleep %s)", attempts, sleep));
+                                String conflictName = updateConflict ? "conflict updates" : "dead-locks";
+                                ServerLoggers.sqlConflictLogger.info(String.format("Sleep started after " + conflictName + " : %s (sleep %s)", attempts, sleep));
                                 ThreadUtils.sleep(sleep);
-                                ServerLoggers.sqlConflictLogger.info("Sleep ended after conflict updates : " + attempts);
+                                ServerLoggers.sqlConflictLogger.info("Sleep ended after " + conflictName + " : " + attempts);
                             }
                         } else { // dead locks
                             if(attempts >= settings.getDeadLockThreshold()) {

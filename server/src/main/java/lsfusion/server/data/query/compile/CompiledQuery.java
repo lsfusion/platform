@@ -261,7 +261,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         return mResult.immutableOrder();
     }
 
-    public CompiledQuery(final Query<K, V> query, SQLSyntax syntax, ImOrderMap<V, Boolean> orders, LimitOptions limit, SubQueryContext subcontext, boolean noExclusive, boolean noInline, ImMap<V, Type> exCastTypes, boolean needDebugInfo) {
+    public CompiledQuery(final Query<K, V> query, SQLSyntax syntax, ImOrderMap<V, Boolean> orders, Result<Boolean> ordersSplit, LimitOptions limit, SubQueryContext subcontext, boolean noExclusive, boolean noInline, ImMap<V, Type> exCastTypes, boolean needDebugInfo) {
 
         Result<ImOrderSet<K>> resultKeyOrder = new Result<>(); Result<ImOrderSet<V>> resultPropertyOrder = new Result<>();
 
@@ -291,7 +291,7 @@ public class CompiledQuery<K,V> extends ImmutableObject {
         noExclusive = noExclusive || Settings.get().isNoExclusiveCompile();
         Result<Boolean> unionAll = new Result<>();
         ImCol<GroupJoinsWhere> queryJoins = query.getWhereJoins(!useFJ && !noExclusive, unionAll,
-                                limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapList(query.properties).toOrderSet() : SetFact.EMPTYORDER());
+                                limit.hasLimit() && syntax.orderTopProblem() ? orders.keyOrderSet().mapList(query.properties).toOrderSet() : SetFact.EMPTYORDER(), ordersSplit);
         boolean union = !useFJ && queryJoins.size() >= 2 && (unionAll.result || !Settings.get().isUseFJInsteadOfUnion());
         if (union) { // сложный UNION запрос
             ImMap<V, Type> castTypes = BaseUtils.immutableCast(

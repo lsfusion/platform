@@ -38,6 +38,7 @@ import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.math.BigInteger;
+import java.util.Map;
 
 
 public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value {
@@ -76,7 +77,7 @@ public class ValueExpr extends AbstractValueExpr<ConcreteClass> implements Value
     }
 
     @Override
-    public String toDebugString() {
+    public String toDebugString(Map<String, String> sessionDebugInfo) {
         return toString();
     }
 
