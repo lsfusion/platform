@@ -15,12 +15,16 @@ public class AppImage implements Serializable {
     public AppImage() {
     }
 
+    public static final String INPUT_NEW = "new";
+    public static final String INPUT_DIALOG = "dialog";
+    public static final String INPUT_ID = "reset";
+
     private Map<ColorTheme, String> imagePathes;
     private Map<ColorTheme, RawFileData> images;
 
     public String fontClasses;
 
-    public AppImage(String imagePath) {
+    public AppImage(String imagePath, String fontClasses) {
         Map<ColorTheme, String> imagePathes = new HashMap<>();
         Map<ColorTheme, RawFileData> images = new HashMap<>();
 
@@ -39,7 +43,7 @@ public class AppImage implements Serializable {
         this.imagePathes = imagePathes;
         this.images = images;
 
-        this.fontClasses = AppImages.predefinedFontClasses.get(BaseUtils.getFileNameAndExtension(imagePath));
+        this.fontClasses = fontClasses;
     }
 
     public transient Object desktopClientImages;

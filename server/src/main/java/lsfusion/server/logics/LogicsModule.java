@@ -11,7 +11,8 @@ import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.file.AppImages;
+import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppImages;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -149,6 +150,7 @@ import lsfusion.server.physics.exec.db.table.ImplementTable;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.*;
@@ -1078,7 +1080,7 @@ public abstract class LogicsModule {
             // the order will / have to be the same as in formAction itself
             return addInputAProp((CustomClass)objectClass, inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
-                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>(AppImages.DIALOG, "dialog", "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>(AppImages.DIALOG, AppImage.INPUT_DIALOG, "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));
@@ -1798,12 +1800,15 @@ public abstract class LogicsModule {
         return result;
     }
 
-    protected void setDeleteActionOptions(LA property) {
-        setFormActions(property);
+    protected void setDeleteActionOptions(LA la) {
+        Action action = la.getActionOrProperty();
 
-        property.setImage(AppImages.DELETE);
-        property.setChangeKey(KeyStrokes.getDeleteActionKeyStroke());
-        property.setShowChangeKey(false);
+        setFormActions(action);
+
+        action.setImage(AppImages.DELETE);
+        KeyStroke changeKey = KeyStrokes.getDeleteActionKeyStroke();
+        action.drawOptions.setChangeKey(changeKey);
+        action.drawOptions.setShowChangeKey(false);
     }
 
     // ---------------------- Add Form ---------------------- //
@@ -1862,23 +1867,25 @@ public abstract class LogicsModule {
         return result;
     }
 
-    protected void setAddActionOptions(LA property, final ObjectEntity objectEntity) {
+    protected void setAddActionOptions(LA la, final ObjectEntity objectEntity) {
+        Action action = la.getActionOrProperty();
 
-        setFormActions(property);
+        setFormActions(action);
 
-        property.setImage(AppImages.ADD);
-        property.setChangeKey(KeyStrokes.getAddActionKeyStroke());
-        property.setShowChangeKey(false);
+        action.setImage(AppImages.ADD);
+        KeyStroke changeKey = KeyStrokes.getAddActionKeyStroke();
+        action.drawOptions.setChangeKey(changeKey);
+        action.drawOptions.setShowChangeKey(false);
 
         if(objectEntity != null) {
-            property.addProcessor(new ActionOrProperty.DefaultProcessor() {
-                public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
-                    if(entity.toDraw == null)
-                        entity.toDraw = objectEntity.groupTo;
-                }
-                public void proceedDefaultDesign(PropertyDrawView propertyView) {
-                }
-            });
+            action.drawOptions.addProcessor(new ActionOrProperty.DefaultProcessor() {
+                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+                        if(entity.toDraw == null)
+                            entity.toDraw = objectEntity.groupTo;
+                    }
+                    public void proceedDefaultDesign(PropertyDrawView propertyView) {
+                    }
+                });
         }
     }
 
@@ -1892,21 +1899,24 @@ public abstract class LogicsModule {
         return result;
     }
     
-    private void setFormActions(LA result) {
-        result.setViewType(ClassViewType.TOOLBAR);
+    private void setFormActions(Action action) {
+        action.drawOptions.setViewType(ClassViewType.TOOLBAR);
     }
 
-    private void setEditActionOptions(LA result) {
-        setFormActions(result);
-        
-        result.setImage(AppImages.EDIT);
+    private void setEditActionOptions(LA la) {
+        Action action = la.getActionOrProperty();
+
+        setFormActions(action);
+
+        action.setImage(AppImages.EDIT);
         Map<String, BindingMode> bindingModes = new HashMap<>();
         bindingModes.put("preview", BindingMode.ONLY);
         bindingModes.put("group", BindingMode.ONLY);
         bindingModes.put("editing", BindingMode.NO);
-        result.setChangeKey(KeyStrokes.getEditActionKeyStroke(), bindingModes);
-        result.setShowChangeKey(false);
-        result.setChangeMouse(MouseInputEvent.DBLCLK, bindingModes);
+        KeyStroke changeKey = KeyStrokes.getEditActionKeyStroke();
+        action.drawOptions.setChangeKey(changeKey, bindingModes);
+        action.drawOptions.setShowChangeKey(false);
+        action.drawOptions.setChangeMouse(MouseInputEvent.DBLCLK, bindingModes);
     }
 
     public LA addProp(Action prop) {

@@ -11,7 +11,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.interfaces.mutable.add.MAddMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImRevValueMap;
-import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
+import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
@@ -881,7 +881,7 @@ public class PropertyFact {
     public static <X extends PropertyInterface, T extends PropertyInterface> void setResetAsync(Action<X> action, AsyncMapChange<T, X> asyncResetExec) {
         action.setForceAsyncEventExec(asyncExec -> {
             if(asyncExec instanceof AsyncMapInput) {
-                asyncExec = ((AsyncMapInput<X>) asyncExec).override("reset", asyncResetExec);
+                asyncExec = ((AsyncMapInput<X>) asyncExec).override(AppImage.INPUT_ID, asyncResetExec);
             }
             return asyncExec;
         });

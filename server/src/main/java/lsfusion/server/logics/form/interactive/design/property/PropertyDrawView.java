@@ -11,6 +11,7 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.AppImages;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
@@ -39,6 +40,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
@@ -136,7 +138,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public String getIntegrationSID() {
-        return entity.integrationSID;
+        return entity.getIntegrationSID();
     }
 
     public Type getType() {
@@ -252,10 +254,23 @@ public class PropertyDrawView extends BaseComponentView {
                 : entity.getCaption();
     }
 
+    public void setImage(String image) {
+        this.image = AppImages.createPropertyImage(image, this);
+    }
+
     public AppImage getImage() {
-        return image != null
-                ? image
-                : entity.getImage();
+        if(image != null)
+            return image;
+
+        AppImage image = entity.getImage();
+        if(image != null)
+            return image;
+
+        return getDefaultImage();
+    }
+
+    private AppImage getDefaultImage() {
+        return AppImages.createDefaultImage(Settings.get().getDefaultPropertyImageRankingThreshold(), entity.getValueActionOrProperty().property.getName(), () -> Settings.get().isDefaultPropertyImage() ? AppImages.createPropertyImage(AppImages.ACTION, PropertyDrawView.this) : null);
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)

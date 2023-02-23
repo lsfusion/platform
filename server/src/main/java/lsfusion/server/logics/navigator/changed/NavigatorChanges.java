@@ -2,8 +2,10 @@ package lsfusion.server.logics.navigator.changed;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.base.AppImages;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.navigator.ImageElementNavigator;
+import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.PropertyNavigator;
 
 import java.io.ByteArrayOutputStream;
@@ -44,7 +46,8 @@ public class NavigatorChanges {
 
     private static FormChanges.NeedImage getNeedImage(PropertyNavigator reader) {
         if (reader instanceof ImageElementNavigator) {
-            return new FormChanges.NeedImage(reader.getProperty().getType());
+            NavigatorElement element = ((ImageElementNavigator) reader).getElement();
+            return new FormChanges.NeedImage(reader.getProperty().getType(), imagePath -> AppImages.createNavigatorImage(imagePath, element));
         }
         return null;
     }

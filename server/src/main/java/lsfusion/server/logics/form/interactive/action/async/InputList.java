@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
+import lsfusion.base.file.AppImage;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import org.apache.commons.lang3.ArrayUtils;
@@ -19,7 +20,7 @@ public class InputList implements Serializable {
     public InputList filter(SecurityPolicy policy, ActionOrProperty securityProperty) {
         if (policy != null) {
             for (int i = 0; i < actions.length; i++) {
-                if (actions[i].id.equals("new")) {
+                if (actions[i].id.equals(AppImage.INPUT_NEW)) {
                     if (!policy.checkPropertyEditObjectsPermission(securityProperty)) {
                         return new InputList(ArrayUtils.remove(actions, i), strict);
                     }

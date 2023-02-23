@@ -7,6 +7,8 @@ import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
+import lsfusion.server.base.AppImages;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -18,6 +20,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -40,7 +43,7 @@ public abstract class NavigatorElement {
         element.setParent(this, version);
     }
 
-    public abstract AppImage getDefaultIcon(boolean top);
+    public abstract String getDefaultIcon();
 
     public NavigatorWindow window = null;
     public boolean parentWindow;
@@ -66,12 +69,27 @@ public abstract class NavigatorElement {
         this.ID = BaseLogicsModule.generateStaticNewID();
     }
 
+    public boolean isParentRoot() {
+        NavigatorElement parent = getParent();
+        return parent == null || parent.getParent() == null;
+    }
+
     public LocalizedString getCaption() {
-        return caption.get();
+        return caption.get(); // can not be null, see createNavigatorElement (forms and actions always have name)
+//        return LocalizedString.create(CanonicalNameUtils.getName(getCanonicalName()));
     }
 
     public AppImage getImage() {
-        return image.get();
+        AppImage image = this.image.get();
+        if(image != null)
+            return image;
+
+        return getDefaultImage();
+    }
+
+    @IdentityLazy
+    private AppImage getDefaultImage() {
+        return AppImages.createDefaultImage(Settings.get().getDefaultNavigatorImageRankingThreshold(), getName(), () -> Settings.get().isDefaultNavigatorImage() ? AppImages.createNavigatorImage(getDefaultIcon(), NavigatorElement.this) : null);
     }
 
     public int getID() {
@@ -207,7 +225,8 @@ public abstract class NavigatorElement {
         this.propertyImage = imageProperty;
     }
 
-    public void setImage(AppImage image) {
+    public void setImage(String imagePath) {
+        AppImage image = AppImages.createNavigatorImage(imagePath, this);
         this.image = () -> image;
     }
 

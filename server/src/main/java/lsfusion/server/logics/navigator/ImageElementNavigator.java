@@ -9,8 +9,8 @@ import java.io.IOException;
 
 public class ImageElementNavigator extends ElementNavigator {
 
-    public ImageElementNavigator(Property property, String canonicalName) {
-        super(property, canonicalName);
+    public ImageElementNavigator(Property property, NavigatorElement element) {
+        super(property, element);
     }
 
     @Override

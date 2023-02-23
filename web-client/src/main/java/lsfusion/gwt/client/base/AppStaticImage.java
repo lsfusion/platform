@@ -1,15 +1,15 @@
 package lsfusion.gwt.client.base;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.ImageElement;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.io.Serializable;
 import java.util.HashMap;
 
 public class AppStaticImage extends BaseStaticImage implements AppBaseImage {
     private HashMap<GColorTheme, ImageDescription> images = new HashMap<>();
+
+    public static final String INPUT_DIALOG = "dialog";
+    public static final String INPUT_RESET = "reset";
 
     public AppStaticImage() {
     }

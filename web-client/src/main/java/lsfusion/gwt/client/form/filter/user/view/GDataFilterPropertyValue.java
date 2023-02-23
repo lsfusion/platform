@@ -1,10 +1,7 @@
 package lsfusion.gwt.client.form.filter.user.view;
 
 import com.google.gwt.dom.client.Element;
-import lsfusion.gwt.client.base.BaseStaticImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.Result;
-import lsfusion.gwt.client.base.StaticImage;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -151,7 +148,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void changeInputList(GCompare compare) {
-        inputList = new GInputList(new GInputListAction[]{new GInputListAction(StaticImage.RESET, "reset", null, null, null, null, 0)},
+        inputList = new GInputList(new GInputListAction[]{new GInputListAction(StaticImage.RESET, AppStaticImage.INPUT_RESET, null, null, null, null, 0)},
                 compare == GCompare.EQUALS || compare == GCompare.NOT_EQUALS ? GCompletionType.SEMI_STRICT :
                 GCompletionType.NON_STRICT,
                 compare);

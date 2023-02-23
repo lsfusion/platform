@@ -5,6 +5,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
+import lsfusion.server.base.AppImages;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -17,6 +18,7 @@ import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -32,6 +34,32 @@ public class ContainerView extends ComponentView {
 
     public LocalizedString caption;
     public AppImage image;
+
+    public void setImage(String imagePath, FormView formView) {
+        image = AppImages.createContainerImage(imagePath, this, formView);
+    }
+
+    public AppImage getImage(FormView formView) {
+        if(image != null)
+            return image;
+
+        return getDefaultImage(main ? formView : null);
+    }
+
+    private AppImage getDefaultImage(FormView formView) {
+        float rankingThreshold;
+        String name;
+        if(main) {
+            rankingThreshold = Settings.get().getDefaultFormImageRankingThreshold();
+            name = formView.entity.getName();
+        } else {
+            rankingThreshold = Settings.get().getDefaultContainerImageRankingThreshold();
+            name = getSID();
+        }
+        return AppImages.createDefaultImage(rankingThreshold, name, () -> (main ? Settings.get().isDefaultFormImage() : Settings.get().isDefaultContainerImage()) ?
+                AppImages.createContainerImage(AppImages.FORM, ContainerView.this, formView) : null);
+    }
+
     private Boolean collapsible;
 
     public boolean border;
@@ -434,7 +462,7 @@ public class ContainerView extends ComponentView {
         pool.serializeCollection(outStream, getChildrenList());
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
-        pool.writeObject(outStream, image);
+        pool.writeObject(outStream, getImage(pool.context.view));
 
         outStream.writeBoolean(isCollapsible());
 

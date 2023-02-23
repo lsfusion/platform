@@ -165,7 +165,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setImage(Object image) {
         if(image instanceof LocalizedString)
-            target.image = new AppImage(((LocalizedString) image).getSourceString());
+            target.setImage(((LocalizedString) image).getSourceString());
         else
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE);
     }

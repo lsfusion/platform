@@ -22,6 +22,7 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
+import lsfusion.server.base.AppImages;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
@@ -79,6 +80,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public LocalizedString caption; // assert not null
 
     public AppImage image;
+    public void setImage(AppImage image) {
+        this.image = image;
+    }
+    public void setImage(String imagePath) {
+        setImage(AppImages.createPropertyImage(imagePath, this));
+    }
 
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());

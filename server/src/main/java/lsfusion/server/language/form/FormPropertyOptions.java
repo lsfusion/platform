@@ -37,7 +37,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
     private PropertyObjectEntity image;
-    private AppImage appImage;
+    private String appImage;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
@@ -164,18 +164,18 @@ public class FormPropertyOptions {
         return image;
     }
 
-    public AppImage getAppImage() {
+    public String getAppImage() {
         return appImage;
     }
 
     public void setImage(Object image) {
         if(image instanceof LocalizedString)
-            setAppImage(new AppImage(((LocalizedString) image).getSourceString()));
+            setAppImage((((LocalizedString) image).getSourceString()));
         else
             setImage((PropertyObjectEntity) image);
     }
 
-    public void setAppImage(AppImage image) {
+    public void setAppImage(String image) {
         this.appImage = image;
     }
 

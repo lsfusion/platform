@@ -13,6 +13,7 @@ import lsfusion.base.file.AppImage;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.form.property.PropertyEditType;
+import lsfusion.server.base.AppImages;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
@@ -347,11 +348,8 @@ public class ScriptingFormEntity {
         for (int i = reverseList ? properties.size() - 1 : 0; (reverseList ? i >= 0 : i < properties.size()); i = reverseList ? i - 1 : i + 1) {
             ScriptingLogicsModule.AbstractFormActionOrPropertyUsage pDrawUsage = properties.get(i);
             String alias = aliases.get(i);
-            LocalizedString caption = captions.get(i);
 
             FormPropertyOptions propertyOptions = commonOptions.overrideWith(options.get(i));
-
-            AppImage appImage = propertyOptions.getAppImage();
 
             FormSessionScope scope = propertyOptions.getFormSessionScope();
             boolean isFormObjectAction = false;
@@ -456,9 +454,12 @@ public class ScriptingFormEntity {
 
             // Добавляем PropertyDrawView в FormView, если он уже был создан
             PropertyDrawView view = form.addPropertyDrawView(propertyDraw, location, version);
+
+            LocalizedString caption = captions.get(i);
+            String appImage = propertyOptions.getAppImage();
             if(view != null) {
                 view.caption = caption;
-                view.image = appImage;
+                view.setImage(appImage);
             } else {
                 propertyDraw.initCaption = caption;
                 propertyDraw.initImage = appImage;

@@ -9,16 +9,20 @@ import static lsfusion.base.BaseUtils.serializeString;
 
 public abstract class ElementNavigator extends PropertyNavigator {
 
-    private final String canonicalName;
+    private final NavigatorElement element;
 
-    public ElementNavigator(Property property, String canonicalName) {
+    public ElementNavigator(Property property, NavigatorElement element) {
         super(property);
-        this.canonicalName = canonicalName;
+        this.element = element;
+    }
+
+    public NavigatorElement getElement() {
+        return element;
     }
 
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
         super.serialize(outStream);
-        serializeString(outStream, canonicalName);
+        serializeString(outStream, element.getCanonicalName());
     }
 }

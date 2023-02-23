@@ -4,7 +4,7 @@ import lsfusion.base.EscapeUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.file.AppImages;
+import lsfusion.server.base.AppImages;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.MessageClientAction;
@@ -62,7 +62,7 @@ public class SendEmailAction extends SystemExplicitAction {
 
     public static void setDrawOptions(ExplicitAction action) {
         action.drawOptions.setAskConfirm(true);
-        action.image = AppImages.EMAIL;
+        action.setImage(AppImages.EMAIL);
     }
 
     public SendEmailAction(LocalizedString caption, ValueClass[] classes, boolean syncType) {

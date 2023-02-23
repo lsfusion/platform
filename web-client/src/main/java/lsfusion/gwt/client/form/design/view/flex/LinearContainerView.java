@@ -159,7 +159,7 @@ public class LinearContainerView extends LayoutContainerView {
             span = span * 2;
 
             CaptionWidget captionPanel = childrenCaptions.get(index);
-            if(captionPanel != null) {
+            if(children.get(index).isAlignCaption() && captionPanel != null) {
                 SizedWidget captionSizedWidget = captionPanel.widget;
                 Widget captionWidget = captionSizedWidget.widget;
 

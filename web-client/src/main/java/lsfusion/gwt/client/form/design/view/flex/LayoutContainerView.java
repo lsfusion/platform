@@ -41,8 +41,8 @@ public abstract class LayoutContainerView extends GAbstractContainerView {
 
     protected FlexPanel wrapBorderImpl(int index) {
         CaptionWidget childCaption;
-        if(!alignCaptions && (childCaption = childrenCaptions.get(index)) != null) {
-            GComponent child = children.get(index);
+        GComponent child = children.get(index);
+        if(!(alignCaptions && child.isAlignCaption()) && (childCaption = childrenCaptions.get(index)) != null) {
             Widget childCaptionWidget = childCaption.widget.widget;
 
             boolean border = child instanceof GContainer && ((GContainer) child).hasBorder();

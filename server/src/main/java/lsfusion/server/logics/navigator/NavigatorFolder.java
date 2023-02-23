@@ -1,9 +1,7 @@
 package lsfusion.server.logics.navigator;
 
-import lsfusion.base.file.AppImage;
-import lsfusion.base.file.AppImages;
+import lsfusion.server.base.AppImages;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorFolder extends NavigatorElement {
     public NavigatorFolder(String canonicalName) {
@@ -11,8 +9,8 @@ public class NavigatorFolder extends NavigatorElement {
     }
 
     @Override
-    public AppImage getDefaultIcon(boolean top) {
-        return top ? AppImages.OPENTOP : AppImages.OPEN;
+    public String getDefaultIcon() {
+        return isParentRoot() ? AppImages.OPENTOP : AppImages.OPEN;
     }
 
     @Override

@@ -3011,4 +3011,80 @@ public class Settings implements Cloneable {
     public void setUseTextAsFilterSeparator(boolean useTextAsFilterSeparator) {
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
     }
+
+    private float defaultNavigatorImageRankingThreshold = 0.1f;
+    private boolean defaultNavigatorImage = true;
+
+    private float defaultFormImageRankingThreshold = 0.4f;
+    private boolean defaultFormImage = true;
+
+    private float defaultContainerImageRankingThreshold = 0.6f;
+    private boolean defaultContainerImage = false;
+
+    private float defaultPropertyImageRankingThreshold = 0.8f;
+    private boolean defaultPropertyImage = false;
+
+    public float getDefaultNavigatorImageRankingThreshold() {
+        return defaultNavigatorImageRankingThreshold;
+    }
+
+    public void setDefaultNavigatorImageRankingThreshold(float defaultNavigatorImageRankingThreshold) {
+        this.defaultNavigatorImageRankingThreshold = defaultNavigatorImageRankingThreshold;
+    }
+
+    public boolean isDefaultNavigatorImage() {
+        return defaultNavigatorImage;
+    }
+
+    public void setDefaultNavigatorImage(boolean defaultNavigatorImage) {
+        this.defaultNavigatorImage = defaultNavigatorImage;
+    }
+
+    public float getDefaultFormImageRankingThreshold() {
+        return defaultFormImageRankingThreshold;
+    }
+
+    public void setDefaultFormImageRankingThreshold(float defaultFormImageRankingThreshold) {
+        this.defaultFormImageRankingThreshold = defaultFormImageRankingThreshold;
+    }
+
+    public boolean isDefaultFormImage() {
+        return defaultFormImage;
+    }
+
+    public void setDefaultFormImage(boolean defaultFormImage) {
+        this.defaultFormImage = defaultFormImage;
+    }
+
+    public float getDefaultContainerImageRankingThreshold() {
+        return defaultContainerImageRankingThreshold;
+    }
+
+    public void setDefaultContainerImageRankingThreshold(float defaultContainerImageRankingThreshold) {
+        this.defaultContainerImageRankingThreshold = defaultContainerImageRankingThreshold;
+    }
+
+    public boolean isDefaultContainerImage() {
+        return defaultContainerImage;
+    }
+
+    public void setDefaultContainerImage(boolean defaultContainerImage) {
+        this.defaultContainerImage = defaultContainerImage;
+    }
+
+    public float getDefaultPropertyImageRankingThreshold() {
+        return defaultPropertyImageRankingThreshold;
+    }
+
+    public void setDefaultPropertyImageRankingThreshold(float defaultPropertyImageRankingThreshold) {
+        this.defaultPropertyImageRankingThreshold = defaultPropertyImageRankingThreshold;
+    }
+
+    public boolean isDefaultPropertyImage() {
+        return defaultPropertyImage;
+    }
+
+    public void setDefaultPropertyImage(boolean defaultPropertyImage) {
+        this.defaultPropertyImage = defaultPropertyImage;
+    }
 }

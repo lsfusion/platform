@@ -472,7 +472,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             for (int i = 0; i < actions.length; i++) {
                 GInputListAction action = actions[i];
                 //addDialogInputAProp from server
-                if (action.id != null && action.id.equals("dialog")) {
+                if (action.id != null && action.id.equals(AppStaticImage.INPUT_DIALOG)) {
                     return action.index;
                 }
             }

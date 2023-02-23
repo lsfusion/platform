@@ -2747,6 +2747,7 @@ semiActionOrPropertyOption[LAP property, String propertyName, LocalizedString ca
 	|	changeMouseSetting [property]
 	|	stickySetting [property]
 	|	syncSetting [property]
+	|   imageSetting [property]
 	|   '@@' ann = ID { ps.annotation = $ann.text; }
     ;
 
@@ -2769,7 +2770,6 @@ semiPropertyOption[LP property, String propertyName, LocalizedString caption, Pr
 
 semiActionOption[LA action, String actionName, LocalizedString caption, ActionSettings ps, List<TypedParameter> context]
     :	semiActionOrPropertyOption[action, actionName, caption, ps, context]
-    |   imageSetting [action]
 	|	shortcutSetting [action, caption != null ? caption : LocalizedString.create(actionName)]
 	|	asonEventActionSetting [action]
 	|	confirmSetting [action]

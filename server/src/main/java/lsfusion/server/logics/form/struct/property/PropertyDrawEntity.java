@@ -103,7 +103,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     private Pair<Integer, Integer> scriptIndex;
     
     public LocalizedString initCaption = null;
-    public AppImage initImage = null;
+    public String initImage = null;
 
     public boolean ignoreHasHeaders = false; // hack for property count property
     
