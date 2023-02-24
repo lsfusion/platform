@@ -6,11 +6,13 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FlexWindowElement extends WindowElement {
     private final boolean vertical;
     public List<WindowElement> children = new ArrayList<>();
     private HashMap<WindowElement, Double> flexes = new HashMap<>();
+    private HashMap<WindowElement, GSize> prefs = new HashMap<>();
     private Set<WindowElement> visibleChildren = new HashSet<>();
     private FlexPanel panel;
     
@@ -23,7 +25,11 @@ public class FlexWindowElement extends WindowElement {
                 super.onResize();
                 for (WindowElement child : visibleChildren) {
                     Object layoutData = child.getView().getLayoutData();
-                    flexes.put(child, ((WidgetLayoutData) layoutData).flex.flex);
+                    if (!child.isAutoSize(FlexWindowElement.this.vertical)) {
+                        flexes.put(child, ((WidgetLayoutData) layoutData).flex.flex);
+                    } else {
+                        prefs.put(child, ((WidgetLayoutData) layoutData).flex.flexBasis);
+                    }
                 }
             }
         };
@@ -34,6 +40,7 @@ public class FlexWindowElement extends WindowElement {
         if (!children.contains(element)) {
             children.add(element);
             visibleChildren.add(element);
+            element.getView().addStyleName(vertical ? "split-vert" : "split-horz");
         }
         element.parent = this;
     }
@@ -47,7 +54,6 @@ public class FlexWindowElement extends WindowElement {
     @Override
     public void setWindowVisible(WindowElement window) {
         if (!visibleChildren.contains(window)) {
-            flexes.clear();
             visibleChildren.add(window);
             redraw(false);
         }
@@ -56,37 +62,59 @@ public class FlexWindowElement extends WindowElement {
     @Override
     public void setWindowInvisible(WindowElement window) {
         if (visibleChildren.contains(window)) {
-            flexes.clear();
             visibleChildren.remove(window);
             redraw(false);
         }
     }
     
     private void redraw(boolean initial) {
-        panel.clear();
-        List<WindowElement> toSort = new ArrayList<>();
+        List<WindowElement> orderedChildren = visibleChildren.stream().sorted((o1, o2) -> vertical ? o1.y - o2.y : o1.x - o2.x).collect(Collectors.toList());
+        
         int totalSize = 0;
-        for (WindowElement windowElement : visibleChildren) {
-            toSort.add(windowElement);
-            if (!windowElement.isAutoSize(vertical)) {
-                totalSize += vertical ? windowElement.height : windowElement.width;
+        for (WindowElement child : orderedChildren) {
+            if (!child.isAutoSize(vertical)) {
+                totalSize += vertical ? child.height : child.width;
             }
         }
-        toSort.sort((o1, o2) -> vertical ? o1.y - o2.y : o1.x - o2.x);
         
-        for (WindowElement windowElement : toSort) {
-            Double flex = flexes.get(windowElement);
-            boolean autoSize = windowElement.isAutoSize(vertical);
+        // count actual flexes taking into account that some windows may change their visibility in runtime
+        double totalFlex = 0d;
+        Map<WindowElement, Double> currentFlexes = new HashMap<>();
+        for (WindowElement child : orderedChildren) {
+            Double flex = flexes.get(child);
             if (flex == null) {
-                if (!autoSize) {
-                    flex = (double) (vertical ? windowElement.height : windowElement.width) / totalSize;
+                if (!child.isAutoSize(vertical)) {
+                    flex = (double) (vertical ? child.height : child.width) / totalSize;
                 } else {
                     flex = 0d;
                 }
             } 
-            GSize basis = autoSize ? null : GSize.ZERO;
-            panel.add(initial ? windowElement.initializeView() : windowElement.getView(), GFlexAlignment.STRETCH, flex, false, basis);
-//            flexes.put(windowElement, flex);
+            totalFlex += flex;
+            currentFlexes.put(child, flex);
+        }
+
+        panel.clear();
+        for (WindowElement child : orderedChildren) {
+            GSize basis = child.isAutoSize(vertical) ? prefs.get(child) : GSize.ZERO;
+            Widget windowView = initial ? child.initializeView() : child.getView();
+            
+            panel.add(windowView, GFlexAlignment.STRETCH, currentFlexes.get(child) / totalFlex, false, basis);
+            
+            boolean lastInLine = orderedChildren.indexOf(child) == orderedChildren.size() - 1;
+            windowView.setStyleName("last-in-line", lastInLine);
+        }
+    }
+
+    @Override
+    public void resetWindowSize() {
+        flexes.clear();
+        prefs.clear();
+        redraw(false);
+        
+        for (WindowElement child : children) {
+            if (child instanceof FlexWindowElement) {
+                child.resetWindowSize();
+            }
         }
     }
 
