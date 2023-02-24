@@ -26,6 +26,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.view.GUserPreferen
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCalculateSumButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuantityButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GListViewButton;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
@@ -121,38 +122,23 @@ public class GGridController extends GAbstractTableController {
         }
     }
 
+    private void updateViewButtons(GListViewType viewType) {
+        viewButtons.forEach(button -> {
+            boolean isCurrentViewType = button.getListViewType().equals(viewType);
+            button.showBackground(isCurrentViewType);
+            button.setEnabled(!isCurrentViewType);
+        });
+    }
+
     private GGridUserPreferences[] userPreferences;
     private void setGridTableView() {
-        changeTableView(new GGridTable(formController, this, userPreferences));
-        gridTableButton.showBackground(true);
-        pivotTableButton.showBackground(false);
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
+        changeTableView(new GGridTable(formController, this, userPreferences), GListViewType.GRID);
     }
     private void setPivotTableView() {
-        changeTableView(new GPivot(formController, this, getSelectedProperty()));
-        pivotTableButton.showBackground(true);
-        gridTableButton.showBackground(false);
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
+        changeTableView(new GPivot(formController, this, getSelectedProperty()), GListViewType.PIVOT);
     }
     private void setMapTableView() {
-        changeTableView(new GMap(formController, this));
-        mapTableButton.showBackground(true);
-        gridTableButton.showBackground(false);
-        pivotTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
+        changeTableView(new GMap(formController, this), GListViewType.MAP);
     }
 
     private String getCalendarDateType() {
@@ -167,25 +153,11 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void setCalendarTableView() {
-        changeTableView(new GCalendar(formController, this, getCalendarDateType()));
-        calendarTableButton.showBackground(true);
-        pivotTableButton.showBackground(false);
-        gridTableButton.showBackground(false);
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (customViewButton != null)
-            customViewButton.showBackground(false);
+        changeTableView(new GCalendar(formController, this, getCalendarDateType()), GListViewType.CALENDAR);
     }
 
     private void setCustomTableView() {
-        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction));
-        if(mapTableButton != null)
-            mapTableButton.showBackground(false);
-        if (calendarTableButton != null)
-            calendarTableButton.showBackground(false);
-        gridTableButton.showBackground(false);
-        pivotTableButton.showBackground(false);
-        customViewButton.showBackground(true);
+        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction), GListViewType.CUSTOM);
     }
 
     private boolean manual;
@@ -199,7 +171,7 @@ public class GGridController extends GAbstractTableController {
         manualUpdateTableButton.showBackground(manual);
     }
 
-    private void changeTableView(GTableView table) {
+    private void changeTableView(GTableView table, GListViewType viewType) {
         assert isList();
 
         if (this.table != null)
@@ -209,77 +181,93 @@ public class GGridController extends GAbstractTableController {
         table.onRender(formController.popEditEvent());
         this.table = table;
         updateSettingsButton();
+        updateViewButtons(viewType);
     }
 
-    private GToolbarButton gridTableButton;
-    private GToolbarButton pivotTableButton;
-    private GToolbarButton customViewButton;
     private GToolbarButton settingsButton;
     private GCountQuantityButton quantityButton;
     private GCalculateSumButton sumButton;
     private GToolbarButton manualUpdateTableButton;
     private GToolbarButton forceUpdateTableButton;
-
-    private GToolbarButton mapTableButton;
-    private GToolbarButton calendarTableButton;
+    private final List<GListViewButton> viewButtons = new ArrayList<>();
 
     protected void configureToolbar() {
         assert isList();
 
-        gridTableButton = new GToolbarButton("grid.png", messages.formGridTableView()) {
+        GListViewButton gridTableButton = new GListViewButton("grid.png", messages.formGridTableView()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> {
-                    changeMode(() -> setGridTableView(), GListViewType.GRID, false);
-                };
+                return event -> changeMode(() -> setGridTableView(), GListViewType.GRID, false);
+            }
+
+            @Override
+            public GListViewType getListViewType() {
+                return GListViewType.GRID;
             }
         };
         addToToolbar(gridTableButton);
+        viewButtons.add(gridTableButton);
 
-        pivotTableButton = new GToolbarButton("pivot.png", messages.formGridPivotView()) {
+        GListViewButton pivotTableButton = new GListViewButton("pivot.png", messages.formGridPivotView()) {
             @Override
             public ClickHandler getClickHandler() {
-                return event -> {
-                    changeMode(() -> setPivotTableView(), GListViewType.PIVOT, true); // we need to make a call to get columns to init default config
-                };
+                return event -> changeMode(() -> setPivotTableView(), GListViewType.PIVOT, true); // we need to make a call to get columns to init default config
+            }
+
+            @Override
+            public GListViewType getListViewType() {
+                return GListViewType.PIVOT;
             }
         };
         addToToolbar(pivotTableButton);
+        viewButtons.add(pivotTableButton);
 
         if (groupObject.customRenderFunction != null){
-            customViewButton = new GToolbarButton("custom_view.png", messages.formGridCustomView()) {
+            GListViewButton customViewButton = new GListViewButton("custom_view.png", messages.formGridCustomView()) {
                 @Override
                 public ClickHandler getClickHandler() {
-                    return event -> {
-                        changeMode(() -> setCustomTableView(), GListViewType.CUSTOM, false);
-                    };
+                    return event -> changeMode(() -> setCustomTableView(), GListViewType.CUSTOM, false);
+                }
+
+                @Override
+                public GListViewType getListViewType() {
+                    return GListViewType.CUSTOM;
                 }
             };
             addToToolbar(customViewButton);
+            viewButtons.add(customViewButton);
         }
 
         if(groupObject.isMap) {
-            mapTableButton = new GToolbarButton("map.png", messages.formGridMapView()) {
+            GListViewButton mapTableButton = new GListViewButton("map.png", messages.formGridMapView()) {
                 @Override
                 public ClickHandler getClickHandler() {
-                    return event -> {
-                        changeMode(() -> setMapTableView(), GListViewType.MAP, false);
-                    };
+                    return event -> changeMode(() -> setMapTableView(), GListViewType.MAP, false);
+                }
+
+                @Override
+                public GListViewType getListViewType() {
+                    return GListViewType.MAP;
                 }
             };
             addToToolbar(mapTableButton);
+            viewButtons.add(mapTableButton);
         }
 
         if(getCalendarDateType() != null) {
-            calendarTableButton = new GToolbarButton("calendar_view.png", messages.formGridCalendarView()) {
+            GListViewButton calendarTableButton = new GListViewButton("calendar_view.png", messages.formGridCalendarView()) {
                 @Override
                 public ClickHandler getClickHandler() {
-                    return event -> {
-                        changeMode(() -> setCalendarTableView(), GListViewType.CALENDAR, false);
-                    };
+                    return event -> changeMode(() -> setCalendarTableView(), GListViewType.CALENDAR, false);
+                }
+
+                @Override
+                public GListViewType getListViewType() {
+                    return GListViewType.CALENDAR;
                 }
             };
             addToToolbar(calendarTableButton);
+            viewButtons.add(calendarTableButton);
         }
 
         addToolbarSeparator();
