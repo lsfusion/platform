@@ -2,9 +2,9 @@
 @font-face {
   font-family: 'lsfi';
   src:
-          url('fonts/lsfi.ttf?d63go1') format('truetype'),
-          url('fonts/lsfi.woff?d63go1') format('woff'),
-          url('fonts/lsfi.svg?d63go1#lsfi') format('svg');
+          url('fonts/lsfi.ttf?mpgc4c') format('truetype'),
+          url('fonts/lsfi.woff?mpgc4c') format('woff'),
+          url('fonts/lsfi.svg?mpgc4c#lsfi') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -25,11 +25,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.lsfi-logo-vertical:before {
-  content: "\e901";
-}
 .lsfi-logo-horizontal:before {
   content: "\e900";
+}
+.lsfi-logo-vertical:before {
+  content: "\e901";
 }
 
 /* ################################### ------------------------ ################################### */
