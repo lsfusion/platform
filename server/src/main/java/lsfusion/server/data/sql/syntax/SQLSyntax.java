@@ -201,6 +201,8 @@ public interface SQLSyntax {
     boolean supportsNoCount();
     String getVolatileStats(boolean on);
 
+    boolean supportsDeadLockPriority();
+
     String getChangeColumnType();
 
     String getStringCFunc();
