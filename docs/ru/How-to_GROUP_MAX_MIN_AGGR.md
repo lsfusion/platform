@@ -60,7 +60,7 @@ price 'Цена' = DATA NUMERIC[10,2] (Book);
 ### Решение
 
 ```lsf
-minPrice 'Максимальный номер' (Category c) = GROUP MIN price(Book b) BY category(b);
+minPrice 'Минимальная цена' (Category c) = GROUP MIN price(Book b) BY category(b);
 ```
 
 ## Пример 4
