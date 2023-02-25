@@ -2210,6 +2210,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             long started = System.currentTimeMillis();
             executingStatement = new ExecutingStatement(statement);
 
+            String checkStatementSubstring = Settings.get().getCheckStatementSubstring();
+            if(checkStatementSubstring != null && !checkStatementSubstring.isEmpty() && statement.toString().contains(checkStatementSubstring))
+                ServerLoggers.handledLog("FOUND STATEMENT : " + statement);
+
             try {
                 try {
                     this.executingStatement = executingStatement;
