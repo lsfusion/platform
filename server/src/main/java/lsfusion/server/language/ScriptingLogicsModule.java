@@ -3,7 +3,7 @@ package lsfusion.server.language;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -11,7 +11,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
@@ -22,7 +22,6 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
-import lsfusion.server.base.AppImages;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
@@ -4956,7 +4955,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String canonicalName = elementCanonicalName(name);
 
         Supplier<LocalizedString> defaultCaption;
-        Supplier<AppImage> defaultImage;
+        Supplier<AppServerImage> defaultImage;
         NavigatorElement newElement;
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);

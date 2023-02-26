@@ -3,11 +3,9 @@ package lsfusion.server.logics.navigator;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.file.IOUtils;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
-import lsfusion.server.base.AppImages;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
@@ -55,7 +53,7 @@ public abstract class NavigatorElement {
     public Supplier<LocalizedString> caption;
 
     public Property propertyImage;
-    public Supplier<AppImage> image;
+    public Supplier<AppServerImage> image;
 
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
@@ -79,8 +77,8 @@ public abstract class NavigatorElement {
 //        return LocalizedString.create(CanonicalNameUtils.getName(getCanonicalName()));
     }
 
-    public AppImage getImage() {
-        AppImage image = this.image.get();
+    public AppServerImage getImage() {
+        AppServerImage image = this.image.get();
         if(image != null)
             return image;
 
@@ -88,8 +86,8 @@ public abstract class NavigatorElement {
     }
 
     @IdentityLazy
-    private AppImage getDefaultImage() {
-        return AppImages.createDefaultImage(Settings.get().getDefaultNavigatorImageRankingThreshold(), getName(), () -> Settings.get().isDefaultNavigatorImage() ? AppImages.createNavigatorImage(getDefaultIcon(), NavigatorElement.this) : null);
+    private AppServerImage getDefaultImage() {
+        return AppServerImage.createDefaultImage(Settings.get().getDefaultNavigatorImageRankingThreshold(), getName(), () -> Settings.get().isDefaultNavigatorImage() ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this) : null);
     }
 
     public int getID() {
@@ -226,7 +224,7 @@ public abstract class NavigatorElement {
     }
 
     public void setImage(String imagePath) {
-        AppImage image = AppImages.createNavigatorImage(imagePath, this);
+        AppServerImage image = AppServerImage.createNavigatorImage(imagePath, this);
         this.image = () -> image;
     }
 
@@ -276,7 +274,7 @@ public abstract class NavigatorElement {
             outStream.writeBoolean(parentWindow);
         }
 
-        IOUtils.writeImageIcon(outStream, getImage());
+        AppServerImage.serialize(getImage(), outStream);
 
         AsyncSerializer.serializeEventExec(getAsyncExec(), outStream);
     }

@@ -539,7 +539,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         boxed = inStream.readBoolean();
 
         caption = pool.readString(inStream);
-        image = pool.readObject(inStream);
+        image = pool.readImageIcon(inStream);
 
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);

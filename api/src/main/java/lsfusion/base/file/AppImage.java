@@ -1,12 +1,9 @@
 package lsfusion.base.file;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ResourceUtils;
-import lsfusion.base.Result;
 import lsfusion.interop.base.view.ColorTheme;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 public class AppImage implements Serializable {
@@ -17,33 +14,18 @@ public class AppImage implements Serializable {
 
     public static final String INPUT_NEW = "new";
     public static final String INPUT_DIALOG = "dialog";
-    public static final String INPUT_ID = "reset";
+    public static final String INPUT_RESET = "reset";
 
     private Map<ColorTheme, String> imagePathes;
     private Map<ColorTheme, RawFileData> images;
 
     public String fontClasses;
 
-    public AppImage(String imagePath, String fontClasses) {
-        Map<ColorTheme, String> imagePathes = new HashMap<>();
-        Map<ColorTheme, RawFileData> images = new HashMap<>();
-
-        for (ColorTheme colorTheme : ColorTheme.values()) {
-            Result<String> fullPath = new Result<>();
-            boolean defaultTheme = colorTheme.isDefault();
-            // multipleUsages true, because one imagePath is often used a lot of times
-            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !defaultTheme, true, fullPath, "images");
-            if(defaultTheme || themedImageFile != null) {
-                themedImageFile.getID(); // to calculate the cache
-                images.put(colorTheme, themedImageFile);
-                imagePathes.put(colorTheme, fullPath.result);
-            }
-        }
+    public AppImage(String fontClasses, Map<ColorTheme, String> imagePathes, Map<ColorTheme, RawFileData> images) {
+        this.fontClasses = fontClasses;
 
         this.imagePathes = imagePathes;
         this.images = images;
-
-        this.fontClasses = fontClasses;
     }
 
     public transient Object desktopClientImages;

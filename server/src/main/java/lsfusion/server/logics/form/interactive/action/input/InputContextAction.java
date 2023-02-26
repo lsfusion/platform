@@ -5,9 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.event.BindingMode;
-import lsfusion.server.base.AppImages;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.Action;
@@ -23,7 +22,7 @@ import java.util.Map;
 
 public class InputContextAction<P extends PropertyInterface, V extends PropertyInterface> {
 
-    public final AppImage image;
+    public final AppServerImage image;
     public final String id;
     public final String keyStroke;
     public final Map<String, BindingMode> bindingModesMap;
@@ -35,9 +34,9 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
     public final ImRevMap<P, V> mapValues; // external context
 
     public InputContextAction(String image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
-        this(AppImages.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, action, mapValues);
+        this(AppServerImage.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, action, mapValues);
     }
-    public InputContextAction(AppImage image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
+    public InputContextAction(AppServerImage image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
         this.image = image;
         this.id = id;
         this.keyStroke = keyStroke;

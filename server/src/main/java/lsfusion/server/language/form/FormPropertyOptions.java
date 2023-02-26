@@ -3,7 +3,6 @@ package lsfusion.server.language.form;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;

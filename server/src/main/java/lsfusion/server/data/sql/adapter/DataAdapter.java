@@ -1,7 +1,7 @@
 package lsfusion.server.data.sql.adapter;
 
 import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;

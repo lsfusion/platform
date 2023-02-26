@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
@@ -1424,7 +1424,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getRichDesign().mainContainer.caption;
     }
 
-    public AppImage getImage() {
+    public AppServerImage getImage() {
         FormView formView = getRichDesign();
         return formView.mainContainer.getImage(formView);
     }

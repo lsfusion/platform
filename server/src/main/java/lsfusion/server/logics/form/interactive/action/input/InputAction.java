@@ -4,6 +4,7 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;

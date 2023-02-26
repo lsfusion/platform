@@ -2,19 +2,21 @@ package lsfusion.base;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.file.RawFileData;
+import lsfusion.interop.action.ClientWebAction;
 import lsfusion.interop.form.remote.serialization.BinarySerializable;
 import org.apache.commons.io.FileUtils;
 
+import java.awt.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.TimeZone;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.prefs.Preferences;
 
 public class SystemUtils {
@@ -547,32 +549,6 @@ public class SystemUtils {
                 "Total Memory: " + totalMemory + " MB\n" +
                 "Max Memory: " + maxMemory + " MB";
     }
-    
-    public static String getRevision(boolean inDevMode) {
-        if (!inDevMode) {
-            try {
-                String[] paths = ResourceUtils.getClassPathElements();
-                for (String path : paths) {
-                    if (!BaseUtils.isRedundantString(path) && path.toLowerCase().endsWith(".jar")) {
-                        File file = new File(path);
-                        if (file.exists()) {
-                            JarFile jarFile = new JarFile(file);
-                            Manifest manifest = jarFile.getManifest();
-                            if (manifest != null) {
-                                String revisionString = manifest.getMainAttributes().getValue("SCM-Version");
-                                Integer revision = BaseUtils.parseInt(revisionString);
-                                if (revision != null && revision > 0) {
-                                    return revisionString;
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (IOException ignore) {
-            }
-        }
-        return null;
-    }
 
     public static boolean isPortAvailable(int port) {
         Socket socket = null;
@@ -653,5 +629,42 @@ public class SystemUtils {
     public static <K extends BinarySerializable> void write(DataOutputStream stream, ImList<K> list) throws IOException {
         for(K element : list)
             element.write(stream);
+    }
+
+    public static String registerFont(ClientWebAction action) {
+        try {
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
+            ge.registerFont(font);
+            return font.getFamily();
+        } catch (FontFormatException | IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    public static void registerLibrary(ClientWebAction action) {
+        try {
+            byte[] serverBytes = ((RawFileData) action.resource).getBytes();
+            File clientFile = getUserFile(action.resourceName);
+
+            if (!clientFile.exists() || !Arrays.equals(serverBytes, FileUtils.readFileToByteArray(clientFile))) {
+                writeUserFile(action.resourceName, serverBytes);
+            }
+
+            String libraryPath = clientFile.getParentFile().getAbsolutePath();
+            setLibraryPath(libraryPath, "jna.library.path");
+            setLibraryPath(libraryPath, "java.library.path");
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private static void setLibraryPath(String path, String property) {
+        String libraryPath = System.getProperty(property);
+        if (libraryPath == null) {
+            System.setProperty(property, path);
+        } else if (!libraryPath.contains(path)) {
+            System.setProperty(property, path + ";" + libraryPath);
+        }
     }
 }

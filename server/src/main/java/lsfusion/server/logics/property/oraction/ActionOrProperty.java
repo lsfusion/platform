@@ -10,11 +10,8 @@ import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.base.col.lru.LRUSVSMap;
-import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.comb.ListPermutations;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -22,7 +19,6 @@ import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.PivotOptions;
-import lsfusion.server.base.AppImages;
 import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFLazy;
@@ -79,12 +75,12 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption; // assert not null
 
-    public AppImage image;
-    public void setImage(AppImage image) {
+    public AppServerImage image;
+    public void setImage(AppServerImage image) {
         this.image = image;
     }
     public void setImage(String imagePath) {
-        setImage(AppImages.createPropertyImage(imagePath, this));
+        setImage(AppServerImage.createPropertyImage(imagePath, this));
     }
 
     public LocalizedString localizedToString() {

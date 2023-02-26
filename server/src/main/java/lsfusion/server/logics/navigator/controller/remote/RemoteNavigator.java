@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;

@@ -1,8 +1,7 @@
 package lsfusion.gwt.server.convert;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
+import lsfusion.base.SystemUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.file.WriteClientAction;
 import lsfusion.client.classes.ClientObjectClass;
@@ -298,7 +297,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             if(action.isFont()) {
                 String fontFamily = fontFamilyMap.get(action.resourceName);
                 if(fontFamily == null) {
-                    fontFamily = ResourceUtils.registerFont(action);
+                    fontFamily = SystemUtils.registerFont(action);
                     fontFamilyMap.put(action.resourceName, fontFamily);
                 }
                 originalResourceName = fontFamily;

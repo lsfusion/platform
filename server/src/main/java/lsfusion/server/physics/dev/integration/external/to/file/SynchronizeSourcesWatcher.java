@@ -1,7 +1,7 @@
 package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.ResourceUtils;
+import lsfusion.server.base.ResourceUtils;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;

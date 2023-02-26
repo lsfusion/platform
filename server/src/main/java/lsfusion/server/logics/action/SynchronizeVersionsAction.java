@@ -11,7 +11,7 @@ import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
 import java.sql.SQLException;
 
-import static lsfusion.base.SystemUtils.getRevision;
+import static lsfusion.server.base.ResourceUtils.getRevision;
 
 public class SynchronizeVersionsAction extends InternalAction {
 

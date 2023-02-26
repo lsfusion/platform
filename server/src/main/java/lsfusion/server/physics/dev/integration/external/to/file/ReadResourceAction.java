@@ -2,7 +2,7 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ResourceUtils;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;

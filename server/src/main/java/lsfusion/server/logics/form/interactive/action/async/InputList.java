@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.action.async;
 
 import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import org.apache.commons.lang3.ArrayUtils;

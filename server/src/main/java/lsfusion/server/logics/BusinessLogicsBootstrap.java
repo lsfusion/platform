@@ -1,13 +1,11 @@
 package lsfusion.server.logics;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.remote.RMIUtils;
 import lsfusion.server.base.controller.thread.ThreadUtils;
-import lsfusion.server.data.expr.BaseExpr;
-import lsfusion.server.data.expr.where.classes.data.EqualsWhere;
-import lsfusion.server.data.where.Where;
 import lsfusion.server.physics.admin.SystemProperties;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import org.apache.log4j.Logger;
@@ -64,7 +62,7 @@ public class BusinessLogicsBootstrap {
                     }
                 }
 
-                String revision = SystemUtils.getRevision(SystemProperties.inDevMode);
+                String revision = ResourceUtils.getRevision(SystemProperties.inDevMode);
                 logger.info("Current version: " + BaseUtils.getPlatformVersion() + " (" + BaseUtils.getApiVersion() + ")" + (revision != null ? (" " + revision) : ""));
                 logger.info("Server has successfully started in " + (System.currentTimeMillis() - startTime) + " ms.");
             } catch (Throwable e) {

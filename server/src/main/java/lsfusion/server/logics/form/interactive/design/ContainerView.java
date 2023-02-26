@@ -2,10 +2,9 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
-import lsfusion.server.base.AppImages;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -33,20 +32,20 @@ public class ContainerView extends ComponentView {
     public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
 
     public LocalizedString caption;
-    public AppImage image;
+    public AppServerImage image;
 
     public void setImage(String imagePath, FormView formView) {
-        image = AppImages.createContainerImage(imagePath, this, formView);
+        image = AppServerImage.createContainerImage(imagePath, this, formView);
     }
 
-    public AppImage getImage(FormView formView) {
+    public AppServerImage getImage(FormView formView) {
         if(image != null)
             return image;
 
         return getDefaultImage(main ? formView : null);
     }
 
-    private AppImage getDefaultImage(FormView formView) {
+    private AppServerImage getDefaultImage(FormView formView) {
         float rankingThreshold;
         String name;
         if(main) {
@@ -56,8 +55,8 @@ public class ContainerView extends ComponentView {
             rankingThreshold = Settings.get().getDefaultContainerImageRankingThreshold();
             name = getSID();
         }
-        return AppImages.createDefaultImage(rankingThreshold, name, () -> (main ? Settings.get().isDefaultFormImage() : Settings.get().isDefaultContainerImage()) ?
-                AppImages.createContainerImage(AppImages.FORM, ContainerView.this, formView) : null);
+        return AppServerImage.createDefaultImage(rankingThreshold, name, () -> (main ? Settings.get().isDefaultFormImage() : Settings.get().isDefaultContainerImage()) ?
+                AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView) : null);
     }
 
     private Boolean collapsible;
@@ -462,7 +461,7 @@ public class ContainerView extends ComponentView {
         pool.serializeCollection(outStream, getChildrenList());
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
-        pool.writeObject(outStream, getImage(pool.context.view));
+        AppServerImage.serialize(getImage(pool.context.view), outStream, pool);
 
         outStream.writeBoolean(isCollapsible());
 

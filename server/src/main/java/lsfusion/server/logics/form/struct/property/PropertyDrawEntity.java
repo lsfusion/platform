@@ -13,7 +13,7 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
@@ -617,7 +617,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public LocalizedString getCaption() {
         return getInheritedProperty().caption;
     }
-    public AppImage getImage() {
+    public AppServerImage getImage() {
         return getInheritedProperty().image;
     }
 

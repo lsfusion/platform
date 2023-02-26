@@ -881,7 +881,7 @@ public class PropertyFact {
     public static <X extends PropertyInterface, T extends PropertyInterface> void setResetAsync(Action<X> action, AsyncMapChange<T, X> asyncResetExec) {
         action.setForceAsyncEventExec(asyncExec -> {
             if(asyncExec instanceof AsyncMapInput) {
-                asyncExec = ((AsyncMapInput<X>) asyncExec).override(AppImage.INPUT_ID, asyncResetExec);
+                asyncExec = ((AsyncMapInput<X>) asyncExec).override(AppImage.INPUT_RESET, asyncResetExec);
             }
             return asyncExec;
         });

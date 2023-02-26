@@ -2,6 +2,7 @@ package lsfusion.client.form.property.async;
 
 import lsfusion.base.BaseUtils;
 import lsfusion.base.file.AppImage;
+import lsfusion.base.file.IOUtils;
 import lsfusion.client.form.property.cell.classes.controller.suggest.CompletionType;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
@@ -40,7 +41,7 @@ public class ClientAsyncSerializer {
         int actionsLength = inStream.readByte();
         ClientInputListAction[] actions = new ClientInputListAction[actionsLength];
         for (int i = 0; i < actionsLength; i++) {
-            AppImage action = BaseUtils.readObject(inStream);
+            AppImage action = IOUtils.readImageIcon(inStream);
             String id = inStream.readUTF();
             ClientAsyncEventExec asyncExec = deserializeEventExec(inStream);
             KeyStroke keyStroke = KeyStroke.getKeyStroke(SerializationUtil.readString(inStream));

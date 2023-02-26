@@ -12,7 +12,7 @@ import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.file.AppImage;
-import lsfusion.server.base.AppImages;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.form.ModalityWindowFormType;
 import lsfusion.interop.form.WindowFormType;
@@ -1080,7 +1080,7 @@ public abstract class LogicsModule {
             // the order will / have to be the same as in formAction itself
             return addInputAProp((CustomClass)objectClass, inputProp, false, listInterfaces,
                     // getting inputList entity with all filters
-                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>(AppImages.DIALOG, AppImage.INPUT_DIALOG, "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
+                    mappedList.result, scope, inputSelector, ListFact.toList(new InputContextAction<>(AppServerImage.DIALOG, AppImage.INPUT_DIALOG, "F8", null, null, QuickAccess.DEFAULT, formImplement.action, formImplement.mapping)), customChangeFunction, notNull); // // adding dialog action (no string parameter, but extra parameters)
         }
 
         resultAction = new LA<>(formImplement.action, listInterfaces.mapOrder(formImplement.mapping.reverse()));
@@ -1805,7 +1805,7 @@ public abstract class LogicsModule {
 
         setFormActions(action);
 
-        action.setImage(AppImages.DELETE);
+        action.setImage(AppServerImage.DELETE);
         KeyStroke changeKey = KeyStrokes.getDeleteActionKeyStroke();
         action.drawOptions.setChangeKey(changeKey);
         action.drawOptions.setShowChangeKey(false);
@@ -1872,7 +1872,7 @@ public abstract class LogicsModule {
 
         setFormActions(action);
 
-        action.setImage(AppImages.ADD);
+        action.setImage(AppServerImage.ADD);
         KeyStroke changeKey = KeyStrokes.getAddActionKeyStroke();
         action.drawOptions.setChangeKey(changeKey);
         action.drawOptions.setShowChangeKey(false);
@@ -1908,7 +1908,7 @@ public abstract class LogicsModule {
 
         setFormActions(action);
 
-        action.setImage(AppImages.EDIT);
+        action.setImage(AppServerImage.EDIT);
         Map<String, BindingMode> bindingModes = new HashMap<>();
         bindingModes.put("preview", BindingMode.ONLY);
         bindingModes.put("group", BindingMode.ONLY);
