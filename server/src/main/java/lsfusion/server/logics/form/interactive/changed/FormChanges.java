@@ -241,6 +241,9 @@ public class FormChanges {
         }
     }
     public static Object convertFileValue(NeedImage needImage, Object value) throws IOException {
+        if(value instanceof FileData && needImage != null && ((FileData)value).getExtension().equals("resourceImage"))
+            value = new String(((FileData) value).getRawFile().getBytes());
+
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
             if(needImage != null) {
                 if(value instanceof RawFileData && needImage.type instanceof StaticFormatFileClass)

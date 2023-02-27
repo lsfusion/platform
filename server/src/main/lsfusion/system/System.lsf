@@ -288,6 +288,10 @@ getExtension = getFileExtension(FILE(file)); //backward compatibility
 file(FILE file, STRING newExtension) = file(RAWFILE(file), newExtension);
 namedFile(NAMEDFILE file, STRING newName, STRING newExtension) = namedFile(RAWFILE(file), newName, newExtension);
 
+// converter to the file value, that would be converted to the resource image when this file showing on a form (using IMAGE clauses / image attributes)s
+// for example IF condition(a) THEN resourceImage('fa-solid fa-star') ELSE file(a)
+resourceImage(STRING resourcePath) = file(TEXTFILE(resourcePath), 'resourceImage');
+
 loadLibrary '{system.load.library}' (path)   { 
     INTERNAL CLIENT path;
 }
