@@ -47,7 +47,8 @@ public interface BaseImage extends Serializable {
                 GwtClientUtils.removeClassNames(element, prevFontClasses);
 
             // it seems that enabled is not needed, since it is handled with the text color
-            GwtClientUtils.addClassNames(element, fontClasses);
+            if(!fontClasses.isEmpty())
+                GwtClientUtils.addClassNames(element, fontClasses);
 
             element.setPropertyString(GwtClientUtils.FONT_CLASSES_ATTRIBUTE, fontClasses);
         } else {

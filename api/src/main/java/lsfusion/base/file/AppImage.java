@@ -16,34 +16,36 @@ public class AppImage implements Serializable {
     public static final String INPUT_DIALOG = "dialog";
     public static final String INPUT_RESET = "reset";
 
-    private Map<ColorTheme, String> imagePathes;
+    private String imagePath;
     private Map<ColorTheme, RawFileData> images;
 
     public String fontClasses;
 
-    public AppImage(String fontClasses, Map<ColorTheme, String> imagePathes, Map<ColorTheme, RawFileData> images) {
+    public AppImage(String fontClasses, String imagePath, Map<ColorTheme, RawFileData> images) {
         this.fontClasses = fontClasses;
 
-        this.imagePathes = imagePathes;
+        this.imagePath = imagePath;
         this.images = images;
     }
 
     public transient Object desktopClientImages;
 
     public RawFileData getImage(ColorTheme colorTheme) {
+        if(images == null)
+            return null;
+
         return images.get(colorTheme);
     }
 
-    public String getImagePath(ColorTheme colorTheme) {
-        return imagePathes.get(colorTheme);
+    public String getImagePath() {
+        return imagePath;
     }
     
-    public boolean isGif(ColorTheme colorTheme) {
-        return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
+    public static boolean isGif(String imagePath) {
+        return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(imagePath));
     }
 
-    public boolean isNonThemed(ColorTheme colorTheme) {
-        String extension = BaseUtils.getFileExtension(getImagePath(colorTheme));
+    public static boolean isNonThemed(String extension) {
         return "svg".equalsIgnoreCase(extension) || "bmp".equalsIgnoreCase(extension) || "webp".equalsIgnoreCase(extension);
     }
 

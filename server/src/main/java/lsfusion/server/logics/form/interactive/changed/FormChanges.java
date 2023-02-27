@@ -240,7 +240,7 @@ public class FormChanges {
             this.imageSupplier = imageSupplier;
         }
     }
-    public static Object convertFileValue(NeedImage needImage, Object value) {
+    public static Object convertFileValue(NeedImage needImage, Object value) throws IOException {
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
             if(needImage != null) {
                 if(value instanceof RawFileData && needImage.type instanceof StaticFormatFileClass)

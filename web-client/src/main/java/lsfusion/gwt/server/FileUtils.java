@@ -15,6 +15,7 @@ import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.EConsumer;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.gwt.client.base.AppStaticImage;
+import lsfusion.gwt.client.base.ImageDescription;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.interop.base.view.ColorTheme;
@@ -34,6 +35,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.RenderedImage;
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -127,63 +129,67 @@ public class FileUtils {
             ServletContext servletContext = servlet.getServletContext();
             ServerSettings settings = servlet.getNavigatorProvider().getServerSettings(sessionID);
 
-            AppStaticImage imageDescription = new AppStaticImage(imageHolder.fontClasses);
+            HashMap<GColorTheme, ImageDescription> images = null;
             RawFileData defaultImageFile = imageHolder.getImage(ColorTheme.DEFAULT);
-            for (GColorTheme gColorTheme : GColorTheme.values()) {
-                ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
-                RawFileData imageFile = imageHolder.getImage(colorTheme);
-
-                int width = 0;
-                int height = 0;
-                String enabledImageUrl = null;
-                String disabledImageUrl = null;
-
-                if(defaultImageFile != null) { //ignore not found images
+            if(defaultImageFile != null) {
+                images = new HashMap<>();
+                String defaultImagePath = imageHolder.getImagePath();
+                String extension = BaseUtils.getFileExtension(defaultImagePath);
+                for (GColorTheme gColorTheme : GColorTheme.values()) {
+                    ColorTheme colorTheme = ColorTheme.get(gColorTheme.getSid());
+                    RawFileData imageFile = imageHolder.getImage(colorTheme);
 
                     RawFileData rawFile;
                     ImageIcon defaultImageIcon;
                     Supplier<ImageIcon> unanimatedImageIcon;
+                    String ID;
                     if (imageFile == null) {
                         rawFile = defaultImageFile;
                         defaultImageIcon = defaultImageFile.getImageIcon();
+                        ID = colorTheme.getID(defaultImageFile.getID());
                         unanimatedImageIcon = () -> ClientColorUtils.createFilteredImageIcon(defaultImageIcon, ServerColorUtils.getDefaultThemePanelBackground(servletContext), ServerColorUtils.getPanelBackground(servletContext, colorTheme), ServerColorUtils.getComponentForeground(servletContext, colorTheme));
                     } else {
                         rawFile = imageFile;
                         defaultImageIcon = imageFile.getImageIcon();
                         unanimatedImageIcon = () -> defaultImageIcon;
+                        ID = imageFile.getID();
                     }
 
-                    String imagePath = colorTheme.getImagePath(imageHolder.getImagePath(ColorTheme.DEFAULT));
-                    String ID = colorTheme.getID(defaultImageFile.getID());
-
-                    if (imageHolder.isNonThemed(ColorTheme.DEFAULT)) {
+                    int width;
+                    int height;
+                    boolean nonThemed = AppImage.isNonThemed(extension);
+                    if(nonThemed) {
                         width = 16;
                         height = 16;
-                        enabledImageUrl = saveImageFile(imagePath, fos -> IOUtils.copy(rawFile.getInputStream(), fos), ID, settings, false);
-                        disabledImageUrl = enabledImageUrl;
                     } else {
                         width = defaultImageIcon.getIconWidth();
                         height = defaultImageIcon.getIconHeight();
-                        if(width > 0 && height > 0) { //ignore broken images
-                            if (imageHolder.isGif(colorTheme)) {
-                                enabledImageUrl = saveImageFile(imagePath, getGifIconSaver(rawFile.getBytes(), imageFile == null, servletContext, colorTheme), ID, settings, false);
-                                disabledImageUrl = enabledImageUrl;
-                            } else {
-                                enabledImageUrl = saveImageFile(imagePath, unanimatedImageIcon, ID, settings, false);
-                                disabledImageUrl = canBeDisabled ? saveImageFile(imagePath, unanimatedImageIcon, ID, settings, true) : null;
-                            }
-                        }
+                        if(!(width > 0 && height > 0)) // ignore broken images
+                            nonThemed = true;
                     }
+
+                    String disabledImageUrl = null;
+                    EConsumer<OutputStream, IOException> iconSaver;
+                    String imagePath = colorTheme.getImagePath(defaultImagePath);
+                    if (nonThemed)
+                        iconSaver = fos -> IOUtils.copy(rawFile.getInputStream(), fos);
+                    else if (AppImage.isGif(extension))
+                        iconSaver = getGifIconSaver(rawFile.getBytes(), imageFile == null, servletContext, colorTheme);
+                    else {
+                        iconSaver = getIconSaver(unanimatedImageIcon, BaseUtils.getFileExtension(imagePath), false);
+                        if(canBeDisabled)
+                            disabledImageUrl = saveImageFile(imagePath, getIconSaver(unanimatedImageIcon, BaseUtils.getFileExtension(imagePath), true), ID, settings, true);
+                    }
+                    String imageUrl = saveImageFile(imagePath, iconSaver, ID, settings, false);
+                    if(canBeDisabled && disabledImageUrl == null)
+                        disabledImageUrl = imageUrl;
+
+                    images.put(gColorTheme, new ImageDescription(imageUrl, disabledImageUrl, width, height));
                 }
-                imageDescription.addImage(gColorTheme, enabledImageUrl, disabledImageUrl, width, height);
             }
-            return imageDescription;
+            return new AppStaticImage(imageHolder.fontClasses, images);
         }
         return null;
-    }
-
-    public static String saveImageFile(String imagePath, Supplier<ImageIcon> imageIcon, String ID, ServerSettings settings, boolean disabled) {
-        return saveImageFile(imagePath, getIconSaver(imageIcon, BaseUtils.getFileExtension(imagePath), disabled), ID, settings, disabled);
     }
 
     public static String saveImageFile(String imagePath, EConsumer<OutputStream, IOException> iconSaver, String ID, ServerSettings settings, boolean disabled) {

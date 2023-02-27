@@ -21,6 +21,7 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 
 import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -108,13 +109,25 @@ public class AppServerImage {
             return null;
 
         AppServerImage result = cachedImages.get(imagePath);
-        if(result == null) {
-            result = new AppServerImage(imagePath, predefinedFontClasses.get(BaseUtils.getFileNameAndExtension(imagePath)));
+        if(result == null) { // caching here is needed to cache getAppImage
+            result = calculateImage(imagePath);
 
             cachedImages.put(imagePath, result);
         }
 
         return result;
+    }
+
+    private static AppServerImage calculateImage(String imagePath) {
+        if(imagePath.contains(";")) {
+            String[] split = imagePath.split(";");
+            return new AppServerImage(split[0], split[1]);
+        } else {
+            if(imagePath.contains("/") || imagePath.contains(".")) // it's a path
+                return new AppServerImage(imagePath, null);
+            else // it's an icon
+                return new AppServerImage(null, imagePath);
+        }
     }
 
     // should be cached because it is used in default images
@@ -185,30 +198,42 @@ public class AppServerImage {
     }
 
     @ManualLazy
-    public AppImage getAppImage() {
+    public AppImage getAppImage() throws IOException {
         if(appImage == null) {
-            Map<ColorTheme, String> imagePathes = new HashMap<>();
-            Map<ColorTheme, RawFileData> images = new HashMap<>();
+            String imagePath = this.imagePath;
+            String fontClasses = this.fontClasses;
 
-            for (ColorTheme colorTheme : ColorTheme.values()) {
-                Result<String> fullPath = new Result<>();
-                boolean defaultTheme = colorTheme.isDefault();
-                // multipleUsages true, because one imagePath is often used a lot of times
-                RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !defaultTheme, true, fullPath, "images");
-                if (defaultTheme || themedImageFile != null) {
-                    themedImageFile.getID(); // to calculate the cache
-                    images.put(colorTheme, themedImageFile);
-                    imagePathes.put(colorTheme, fullPath.result);
+            Map<ColorTheme, RawFileData> images = null;
+            String fullImagePath = null;
+            if(imagePath != null) {
+                images = new HashMap<>();
+
+                for (ColorTheme colorTheme : ColorTheme.values()) {
+                    Result<String> fullPath = new Result<>();
+                    boolean defaultTheme = colorTheme.isDefault();
+                    // multipleUsages true, because one imagePath is often used a lot of times
+                    RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !defaultTheme, true, fullPath, "images");
+                    if (defaultTheme || themedImageFile != null) {
+                        if(themedImageFile == null)
+                            throw new FileNotFoundException(imagePath);
+                        themedImageFile.getID(); // to calculate the cache
+                        images.put(colorTheme, themedImageFile);
+                    }
+                    if (defaultTheme)
+                        fullImagePath = fullPath.result;
                 }
             }
 
-            appImage = new AppImage(fontClasses, imagePathes, images);
+            if(fontClasses == null)
+                fontClasses = predefinedFontClasses.get(BaseUtils.getFileNameAndExtension(imagePath));
+
+            appImage = new AppImage(fontClasses, fullImagePath, images);
         }
 
         return appImage;
     }
 
-    public static AppImage getAppImage(AppServerImage appImage) {
+    public static AppImage getAppImage(AppServerImage appImage) throws IOException {
         return appImage != null ? appImage.getAppImage() : null;
     }
 

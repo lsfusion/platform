@@ -42,9 +42,9 @@ public class GActionType extends GDataType {
         if(needNotNull) {
             GSize result = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultWidth(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
 
-            ImageDescription image = propertyDraw.getImage();
-            if (image != null)
-                result = result.add(image.getWidth());
+            GSize imageWidth = propertyDraw.getImageWidth(font);
+            if (imageWidth != null)
+                result = result.add(imageWidth);
 
             return result.add(GSize.CONST(30)); // paddings in btn
         }
@@ -57,9 +57,8 @@ public class GActionType extends GDataType {
         if(needNotNull) {
             GSize height = globalCaptionIsDrawn ? GSize.ZERO : super.getDefaultHeight(font, propertyDraw, needNotNull, globalCaptionIsDrawn);
 
-            final ImageDescription image = propertyDraw.getImage();
-            GSize imageHeight;
-            if (image != null && (imageHeight = image.getHeight()) != null)
+            final GSize imageHeight = propertyDraw.getImageHeight(font);
+            if (imageHeight != null)
                 height = height.max(imageHeight);
 
             return height;
