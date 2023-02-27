@@ -22,6 +22,7 @@ grammar LsfLogics;
     import lsfusion.interop.form.property.PropertyGroupType;
     import lsfusion.interop.form.print.FormPrintType;
     import lsfusion.server.base.version.Version;
+    import lsfusion.server.base.AppServerImage;
     import lsfusion.server.data.expr.formula.SQLSyntaxType;
     import lsfusion.server.data.expr.query.PartitionType;
     import lsfusion.server.data.table.IndexType;
@@ -507,7 +508,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	('IMAGE' img=stringLiteral { image = $img.val; })
+		(	('IMAGE' (img=stringLiteral)? { image = BaseUtils.nvl($img.val, AppServerImage.AUTO); })
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
 		|	('LOCALASYNC' { localAsync = true; })
 		)*
@@ -847,14 +848,14 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
-		|	'IMAGE' propObj=formPropertyObject { $options.setImage(BaseUtils.nvl($propObj.literal, $propObj.property)); }
+		|	'IMAGE' (propObj=formPropertyObject)? { $options.setImage($propObj.literal, $propObj.property); }
 		|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
 		|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
 		|	viewType=propertyClassViewType { $options.setViewType($viewType.type); }
 		|	customView=propertyCustomView { $options.setCustomRenderFunction($customView.customRenderFunction); $options.setCustomEditorFunction($customView.customEditorFunction); }
-		|	pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
-		|	pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
-		|	pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
+		|	'PIVOT' pgt=propertyGroupType { $options.setAggrFunc($pgt.type); }
+		|	'PIVOT' pla=propertyLastAggr { $options.setLastAggr($pla.properties, $pla.desc); }
+		|	'PIVOT' pf=propertyFormula { $options.setFormula($pf.formula, $pf.operands); }
 		|	'DRAW' toDraw=formGroupObjectEntity { $options.setToDraw($toDraw.groupObject); }
 		|   pl=formPropertyDrawRelativePosition { $options.setLocation($pl.location, $pl.propText); }
 		|	'QUICKFILTER' pdraw=formPropertyDraw { $options.setQuickFilterPropertyDraw($pdraw.property); }
@@ -2909,10 +2910,10 @@ charWidthSetting [LAP property]
 imageSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setImage(property, $path.val);
+		self.setImage(property, BaseUtils.nvl($path.val, AppServerImage.AUTO));
 	}
 }
-	:	'IMAGE' path = stringLiteral
+	:	'IMAGE' (path=stringLiteral)?
 	;
 
 defaultCompareSetting [LAP property]
@@ -4880,13 +4881,14 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	:	
 	(	('WINDOW' wid=compoundID { $options.windowName = $wid.sid; } ('PARENT' { $options.parentWindow = true; })? )
 	|	pos=navigatorElementRelativePosition { $options.location = $pos.location; }
-	|	'IMAGE' image=propertyExpressionOrLiteral[null] {
+	|	'IMAGE' (image=propertyExpressionOrLiteral[null])? {
 	        if (inMainParseState()) {
 	            if($image.literal != null && $image.literal.value instanceof LocalizedString) {
 	                $options.imagePath = ((LocalizedString) $image.literal.value).toString();
-	            } else {
+	            } else if($image.property != null) {
 	                $options.imageProperty = $image.property;
-	            }
+	            } else
+	                $options.imagePath = AppServerImage.AUTO;
 	        }
 	    }
 	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }

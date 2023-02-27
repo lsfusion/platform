@@ -6,6 +6,7 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.version.ComplexLocation;
 
 import lsfusion.server.logics.action.Action;
@@ -167,11 +168,13 @@ public class FormPropertyOptions {
         return appImage;
     }
 
-    public void setImage(Object image) {
-        if(image instanceof LocalizedString)
-            setAppImage((((LocalizedString) image).getSourceString()));
+    public void setImage(Object literal, PropertyObjectEntity property) {
+        if(literal instanceof LocalizedString)
+            setAppImage((((LocalizedString) literal).getSourceString()));
+        else if(property != null)
+            setImage(property);
         else
-            setImage((PropertyObjectEntity) image);
+            setAppImage(AppServerImage.AUTO);
     }
 
     public void setAppImage(String image) {

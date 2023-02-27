@@ -159,7 +159,7 @@ public class AppServerImage {
         return defaultImage.get();
     }
     
-    private static final String AUTO = "auto";
+    public static final String AUTO = "auto";
     private static final boolean AUTO_ICON = true;
 
     public static final String ADD = "add.png"; // also is used in the input action
