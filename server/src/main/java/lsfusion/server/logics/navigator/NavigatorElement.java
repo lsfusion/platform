@@ -85,9 +85,12 @@ public abstract class NavigatorElement {
         return getDefaultImage();
     }
 
-    @IdentityLazy
+    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon) {
+        return AppServerImage.createDefaultImage(rankingThreshold, getName(), () -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this) : null);
+    }
+
     private AppServerImage getDefaultImage() {
-        return AppServerImage.createDefaultImage(Settings.get().getDefaultNavigatorImageRankingThreshold(), getName(), () -> Settings.get().isDefaultNavigatorImage() ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this) : null);
+        return getDefaultImage(Settings.get().getDefaultNavigatorImageRankingThreshold(), Settings.get().isDefaultNavigatorImage());
     }
 
     public int getID() {

@@ -19,6 +19,7 @@ import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
+import lsfusion.server.physics.admin.Settings;
 
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -157,6 +158,9 @@ public class AppServerImage {
 
         return defaultImage.get();
     }
+    
+    private static final String AUTO = "auto";
+    private static final boolean AUTO_ICON = true;
 
     public static final String ADD = "add.png"; // also is used in the input action
     public static final String EDIT =  "edit.png";
@@ -164,6 +168,9 @@ public class AppServerImage {
     public static final String EMAIL = "email.png";
 
     public static AppServerImage createPropertyImage(String imagePath, ActionOrProperty property) {
+        if(AUTO.equals(imagePath))
+            return property.getDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON);
+            
         return createImage(imagePath);
     }
 
@@ -176,6 +183,9 @@ public class AppServerImage {
     }
 
     public static AppServerImage createContainerImage(String imagePath, ContainerView container, FormView formView) {
+        if(AUTO.equals(imagePath))
+            return container.getDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON, formView);
+
         return createImage(imagePath);
     }
 
@@ -187,6 +197,9 @@ public class AppServerImage {
     public static final String OPEN = "open.png";
 
     public static AppServerImage createNavigatorImage(String imagePath, NavigatorElement navigator) {
+        if(AUTO.equals(imagePath))
+            return navigator.getDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON);
+
         return createImage(imagePath);
     }
 

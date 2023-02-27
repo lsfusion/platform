@@ -45,18 +45,14 @@ public class ContainerView extends ComponentView {
         return getDefaultImage(main ? formView : null);
     }
 
-    private AppServerImage getDefaultImage(FormView formView) {
-        float rankingThreshold;
-        String name;
-        if(main) {
-            rankingThreshold = Settings.get().getDefaultFormImageRankingThreshold();
-            name = formView.entity.getName();
-        } else {
-            rankingThreshold = Settings.get().getDefaultContainerImageRankingThreshold();
-            name = getSID();
-        }
-        return AppServerImage.createDefaultImage(rankingThreshold, name, () -> (main ? Settings.get().isDefaultFormImage() : Settings.get().isDefaultContainerImage()) ?
+    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon, FormView formView) {
+        return AppServerImage.createDefaultImage(rankingThreshold, main ? formView.entity.getName() : getSID(), () -> useDefaultIcon ?
                 AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView) : null);
+    }
+
+    private AppServerImage getDefaultImage(FormView formView) {
+        return getDefaultImage(main ? Settings.get().getDefaultFormImageRankingThreshold() : Settings.get().getDefaultContainerImageRankingThreshold(),
+                 main ? Settings.get().isDefaultFormImage() : Settings.get().isDefaultContainerImage(), formView);
     }
 
     private Boolean collapsible;
