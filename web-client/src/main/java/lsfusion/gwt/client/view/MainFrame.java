@@ -45,7 +45,6 @@ import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatc
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.view.ExcelMobileNavigatorView;
-import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.view.MobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
@@ -283,11 +282,6 @@ public class MainFrame implements EntryPoint {
                 }
                 return view;
             }
-
-            @Override
-            public GNavigatorView getNavigatorView(GNavigatorWindow window) {
-                return navigatorControllerLink.link.getNavigatorView(window);
-            }
         };
 
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
@@ -320,7 +314,6 @@ public class MainFrame implements EntryPoint {
                         windowsController.storeWindowsSizes();
                     }
                     windowsController.storeEditMode();
-                    windowsController.storeBootstrapStyle();
                 } finally {
                     clean();
                 }

@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.storage.client.Storage;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 
@@ -11,22 +10,15 @@ import java.util.List;
 
 public abstract class WindowElement {
     protected WindowElement parent;
-    protected WindowsController main;
+    protected WindowsController controller;
 
     public int x;
     public int y;
     public int width;
     public int height;
 
-    public double pixelWidth;
-    public double pixelHeight;
-    public boolean sizeStored = false;
-    public boolean initialSizeSet = false;
-    
-    public boolean autoSize;
-
-    public WindowElement(WindowsController main, int x, int y, int width, int height) {
-        this.main = main;
+    public WindowElement(WindowsController controller, int x, int y, int width, int height) {
+        this.controller = controller;
         this.x = x;
         this.y = y;
         this.width = width;
@@ -49,14 +41,8 @@ public abstract class WindowElement {
     public void setWindowVisible(WindowElement window) {}
     public void setWindowInvisible(WindowElement window) {}
     
-    protected double initialWidth;
-    protected double initialHeight;
     
     public Widget initializeView() {
-        pixelWidth = Window.getClientWidth() / 100 * width;
-        pixelHeight = Window.getClientHeight() / 100 * height;
-        initialWidth = pixelWidth;
-        initialHeight = pixelHeight;
         return getView();
     }
 
@@ -85,32 +71,7 @@ public abstract class WindowElement {
         return sid.toString();
     }
     
-    public String getStorageSizeKey() {
-        return GwtClientUtils.getLogicsName() + "_" + getSID() + "_size";
-    }
-
-    public int getAutoSize(boolean vertical) {
-        return vertical ? getView().getOffsetHeight() : getView().getOffsetWidth();
-    }
-    
-    protected double getPixelHeight() {
-        return pixelHeight;
-    }
-
-    protected double getPixelWidth() {
-        return pixelWidth;
-    }
-
-    public void resetWindowSize() {
-        sizeStored = false;
-        initialSizeSet = false;
-    }
-
-    public void changePixelSize(boolean vertical, int size) {
-        if (vertical) {
-            pixelHeight = size;
-        } else {
-            pixelWidth = size;
-        }
+    public String getStorageSizeKey(boolean flex) {
+        return GwtClientUtils.getLogicsName() + "_" + getSID() + "_" + (flex ? "flex" : "basis");
     }
 }

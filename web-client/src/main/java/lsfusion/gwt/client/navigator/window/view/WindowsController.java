@@ -4,10 +4,7 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
-import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
-import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -27,10 +24,7 @@ public abstract class WindowsController {
 
         setDefaultVisible();
 
-        // don't restore windows sizes on style change as we need to auto adjust sizes   
-        if (restoreBootstrapStyle() == MainFrame.useBootstrap) {
-            restoreWindowsSizes();
-        }
+        restoreWindowsSizes();
 
         RootLayoutPanel.get().add(rootView);
     }
@@ -379,14 +373,11 @@ public abstract class WindowsController {
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);
-    public abstract GNavigatorView getNavigatorView(GNavigatorWindow window);
 
     public void storeWindowsSizes() {
         Storage storage = Storage.getLocalStorageIfSupported();
-        if (storage != null) {
-            if (rootElement != null) {
-                rootElement.storeWindowsSizes(storage);
-            }
+        if (storage != null && rootElement != null) {
+            rootElement.storeWindowsSizes(storage);
         }
     }
     
@@ -413,18 +404,6 @@ public abstract class WindowsController {
             }
         }
         return 0;
-    }
-
-    public void storeBootstrapStyle() {
-        Storage storage = Storage.getLocalStorageIfSupported();
-        if (storage != null) {
-            storage.setItem("bootstrapStyle", String.valueOf(MainFrame.useBootstrap));
-        }
-    }
-
-    public boolean restoreBootstrapStyle() {
-        Storage storage = Storage.getLocalStorageIfSupported();
-        return storage != null && Boolean.parseBoolean(storage.getItem("bootstrapStyle"));
     }
 
     private class WindowNode {

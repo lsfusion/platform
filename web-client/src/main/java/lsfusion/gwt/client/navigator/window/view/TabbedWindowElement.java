@@ -20,8 +20,8 @@ public class TabbedWindowElement extends WindowElement {
         }
     };
 
-    public TabbedWindowElement(WindowsController main, int x, int y, int width, int height) {
-        super(main, x, y, width, height);
+    public TabbedWindowElement(WindowsController controller, int x, int y, int width, int height) {
+        super(controller, x, y, width, height);
     }
 
     public Widget getView() {

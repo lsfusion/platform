@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.navigator.window.view;
 
+import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
@@ -16,8 +17,8 @@ public class FlexWindowElement extends WindowElement {
     private Set<WindowElement> visibleChildren = new HashSet<>();
     private FlexPanel panel;
     
-    public FlexWindowElement(boolean vertical, WindowsController main, int x, int y, int width, int height) {
-        super(main, x, y, width, height);
+    public FlexWindowElement(boolean vertical, WindowsController controller, int x, int y, int width, int height) {
+        super(controller, x, y, width, height);
         this.vertical = vertical;
         panel = new FlexPanel(vertical, GFlexAlignment.STRETCH) {
             @Override
@@ -105,7 +106,6 @@ public class FlexWindowElement extends WindowElement {
         }
     }
 
-    @Override
     public void resetWindowSize() {
         flexes.clear();
         prefs.clear();
@@ -113,7 +113,7 @@ public class FlexWindowElement extends WindowElement {
         
         for (WindowElement child : children) {
             if (child instanceof FlexWindowElement) {
-                child.resetWindowSize();
+                ((FlexWindowElement) child).resetWindowSize();
             }
         }
     }
@@ -165,5 +165,43 @@ public class FlexWindowElement extends WindowElement {
     @Override
     public String getSID() {
         return getSID(children);
+    }
+
+    @Override
+    public void storeWindowsSizes(Storage storage) {
+        for (WindowElement child : children) {
+            boolean autoSize = child.isAutoSize(vertical);
+            String storageSizeKey = child.getStorageSizeKey(!autoSize);
+            FlexPanel.FlexLayoutData flexLayoutData = ((FlexPanel.WidgetLayoutData) child.getView().getLayoutData()).flex;
+            if (autoSize) {
+                if (flexLayoutData.flexBasis != null) {
+                    storage.setItem(storageSizeKey, flexLayoutData.flexBasis.getResizeSize().toString());
+                }
+            } else {
+                storage.setItem(storageSizeKey, String.valueOf(flexLayoutData.flex));
+            }
+            
+            child.storeWindowsSizes(storage);
+        }
+    }
+    
+    @Override
+    public void restoreWindowsSizes(Storage storage) {
+        for (WindowElement child : children) {
+            boolean autoSize = child.isAutoSize(vertical);
+            String storageSizeKey = child.getStorageSizeKey(!autoSize);
+            String sizeString = storage.getItem(storageSizeKey);
+            Double storedSize = sizeString != null && !sizeString.equals("null") ? Double.valueOf(sizeString) : null; // it seems that somewhy sizeString can be null
+            if (storedSize != null) {
+                if (autoSize) {
+                    // doesn't allow to resize back to null
+//                    prefs.put(child, new GFixedSize(storedSize, GFixedSize.Type.PX));
+                } else {
+                    flexes.put(child, storedSize);
+                }
+            }
+            child.restoreWindowsSizes(storage);
+        }
+        redraw(false);
     }
 }
