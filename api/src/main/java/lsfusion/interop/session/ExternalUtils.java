@@ -269,11 +269,7 @@ public class ExternalUtils {
                 entity = new StringEntity((String) value, ExternalUtils.TEXT_PLAIN);
             }
         } else {
-            if (bodyUrl != null) {
-                entity = new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED);
-            } else {
-                entity = new StringEntity("", ExternalUtils.TEXT_PLAIN);
-            }
+            entity = bodyUrl != null ? new StringEntity(bodyUrl, APPLICATION_FORM_URLENCODED) : null;
         }
         return entity;
     }
