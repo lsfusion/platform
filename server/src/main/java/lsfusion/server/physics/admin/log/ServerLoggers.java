@@ -100,6 +100,10 @@ public class ServerLoggers {
         sqlHandLogger.error("SUPPRESSED : " + ExceptionUtils.toString(t) + '\n' + ExecutionStackAspect.getExStackTrace());
     }
     
+    public static void handledExLog(String message) {
+        sqlHandLogger.info(message + '\n' + ExecutionStackAspect.getExStackTrace());
+    }
+
     public static void handledLog(String message) {
         sqlHandLogger.info(message + '\n' + ExceptionUtils.getStackTrace());
     }

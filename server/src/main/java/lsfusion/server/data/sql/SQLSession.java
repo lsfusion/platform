@@ -1714,7 +1714,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
 
         if(handled != null) {
-            handLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled.toString() + message + (handled instanceof SQLUniqueViolationException ? " " + ExceptionUtils.getStackTrace() : ""));
+            handLogger.info((inTransaction ? "TRANSACTION " : "") + " " + handled + message + (handled instanceof SQLUniqueViolationException ? " " + ExceptionUtils.getStackTrace() : ""));
             return handled;
         }
         
@@ -2066,8 +2066,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             long started = System.currentTimeMillis();
 
             String checkStatementSubstring = Settings.get().getCheckStatementSubstring();
-            if(checkStatementSubstring != null && !checkStatementSubstring.isEmpty() && statement.toString().contains(checkStatementSubstring))
-                ServerLoggers.handledLog("FOUND STATEMENT : " + statement);
+            if(checkStatementSubstring != null && !checkStatementSubstring.isEmpty() && statement.toString().contains(checkStatementSubstring)) {
+                String checkExcludeStatementSubstring = Settings.get().getCheckExcludeStatementSubstring();
+                if(checkExcludeStatementSubstring == null || !statement.toString().contains(checkExcludeStatementSubstring))
+                    ServerLoggers.handledExLog("FOUND STATEMENT : " + statement);
+            }
 
             try {
                 try {
