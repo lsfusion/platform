@@ -129,8 +129,10 @@ public class ExternalHTTPAction extends ExternalAction {
                 if (method.hasBody()) {
                     String contentType = headers.get("Content-Type");
                     HttpEntity entity = ExternalUtils.getInputStreamFromList(paramList, bodyUrl, bodyParamNames, bodyParamHeadersList, null, contentType != null ? ContentType.parse(contentType) : null);
-                    body = IOUtils.readBytesFromHttpEntity(entity);
-                    headers.put("Content-Type", entity.getContentType().getValue());
+                    if (entity != null) {
+                        body = IOUtils.readBytesFromHttpEntity(entity);
+                        headers.put("Content-Type", entity.getContentType().getValue());
+                    }
                 }
 
                 Integer timeout = (Integer) context.getBL().LM.timeoutHttp.read(context);
