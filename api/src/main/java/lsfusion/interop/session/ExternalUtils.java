@@ -323,11 +323,7 @@ public class ExternalUtils {
                 entity = new StringEntity((String) value, nvl(forceContentType, ExternalUtils.TEXT_PLAIN));
             }
         } else {
-            if (bodyUrl != null) {
-                entity = new StringEntity(bodyUrl, nvl(forceContentType, APPLICATION_FORM_URLENCODED));
-            } else {
-                entity = new StringEntity("", nvl(forceContentType, ExternalUtils.TEXT_PLAIN));
-            }
+            entity = bodyUrl != null ? new StringEntity(bodyUrl, nvl(forceContentType, APPLICATION_FORM_URLENCODED)) : null;
         }
         return entity;
     }
