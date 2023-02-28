@@ -58,7 +58,10 @@ public interface BaseImage extends Serializable {
     }
 
     static void initImageText(Widget widget, String caption, BaseImage appImage, boolean vertical) {
-        initImageText(widget.getElement());
+        Element element = widget.getElement();
+        // others image texts handle color themes changes with the explicit colorThemeChanged (rerendering the whole view)
+        element.addClassName("img-text-widget");
+        initImageText(element);
         updateText(widget, caption);
         updateImage(appImage, widget, vertical);
     }
@@ -116,9 +119,13 @@ public interface BaseImage extends Serializable {
         }
     }
 
+    String IMAGE_WIDGET = "lsf-image-widget-caption";
+
     // updating element with text
     static void updateImage(BaseImage image, Widget widget, boolean vertical) {
-        updateImage(image, widget.getElement(), vertical);
+        Element element = widget.getElement();
+        element.setPropertyObject(IMAGE_WIDGET, new Pair<>(image, vertical));
+        updateImage(image, element, vertical);
     }
     static void updateImage(BaseImage image, Element element, boolean vertical) {
         Element imageElement = (Element) element.getPropertyObject(IMAGE);

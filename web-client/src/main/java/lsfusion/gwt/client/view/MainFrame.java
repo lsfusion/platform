@@ -3,10 +3,7 @@ package lsfusion.gwt.client.view;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.BrowserEvents;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.*;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
@@ -19,8 +16,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
-import lsfusion.gwt.client.base.FocusUtils;
-import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.exception.GExceptionManager;
 import lsfusion.gwt.client.base.log.GLog;
 import lsfusion.gwt.client.base.result.VoidResult;
@@ -54,6 +50,8 @@ import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
 import java.util.*;
+
+import static lsfusion.gwt.client.base.BaseImage.IMAGE_WIDGET;
 
 // scope - every single tab (not browser) even for static
 public class MainFrame implements EntryPoint {
@@ -411,6 +409,14 @@ public class MainFrame implements EntryPoint {
             Document.get().getDocumentElement().setAttribute("data-bs-theme", colorThemeSid);
 
             StyleDefaults.reset();
+
+            NodeList<Element> imgTextElements = GwtClientUtils.getElementsByClassName("img-text-widget");
+            for(int i = 0, size = imgTextElements.getLength(); i < size; i++) {
+                Element imgTextElement = imgTextElements.getItem(i);
+                Pair<BaseImage, Boolean> baseImage = (Pair<BaseImage, Boolean>) imgTextElement.getPropertyObject(IMAGE_WIDGET);
+                if(baseImage != null && baseImage.first instanceof BaseStaticImage) // if it uses themed image
+                    BaseImage.updateImage(baseImage.first, imgTextElement, baseImage.second);
+            }
 
             for (ColorThemeChangeListener colorThemeChangeListener : colorThemeChangeListeners) {
                 colorThemeChangeListener.colorThemeChanged();

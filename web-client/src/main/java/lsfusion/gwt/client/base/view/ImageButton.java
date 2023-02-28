@@ -5,7 +5,7 @@ import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
 
-public abstract class ImageButton extends FormButton implements ColorThemeChangeListener {
+public abstract class ImageButton extends FormButton {
 
     private boolean focusable = true;
 
@@ -22,8 +22,6 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
         BaseImage.initImageText(this, caption, image, vertical);
 
 //        imgElement.addClassName("btn-image-img"); ???
-
-        MainFrame.addColorThemeChangeListener(this);
     }
 
     protected abstract BaseImage getImage();
@@ -43,10 +41,5 @@ public abstract class ImageButton extends FormButton implements ColorThemeChange
         if (!focusable) {
             setTabIndex(-1);
         }
-    }
-
-    @Override
-    public void colorThemeChanged() {
-        updateImage();
     }
 }
