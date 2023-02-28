@@ -2685,6 +2685,7 @@ public class Settings implements Cloneable {
     }
 
     private String checkStatementSubstring = null;
+    private String checkExcludeStatementSubstring = null;
 
     public String getCheckStatementSubstring() {
         return checkStatementSubstring;
@@ -2692,6 +2693,14 @@ public class Settings implements Cloneable {
 
     public void setCheckStatementSubstring(String checkStatementSubstring) {
         this.checkStatementSubstring = checkStatementSubstring;
+    }
+
+    public String getCheckExcludeStatementSubstring() {
+        return checkExcludeStatementSubstring;
+    }
+
+    public void setCheckExcludeStatementSubstring(String checkExcludeStatementSubstring) {
+        this.checkExcludeStatementSubstring = checkExcludeStatementSubstring;
     }
 
     // temporary fallback
