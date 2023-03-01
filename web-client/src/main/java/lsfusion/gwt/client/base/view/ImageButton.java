@@ -25,9 +25,14 @@ public abstract class ImageButton extends FormButton {
     }
 
     protected abstract BaseImage getImage();
+    protected abstract String getCaption();
 
-    protected void updateImage() {
+    public void updateImage() {
         BaseImage.updateImage(getImage(), this, vertical);
+    }
+
+    public void updateText() {
+        BaseImage.updateText(this, getCaption());
     }
 
     // call before attach

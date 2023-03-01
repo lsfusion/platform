@@ -41,10 +41,10 @@ pre {
 }
 body {
     color: var(--text-color);
-    margin: 10px;
-    border: 0;
-    padding: 0;
-    direction: ltr;
+    /*margin: 10px;*/
+    /*border: 0;*/
+    /*padding: 0;*/
+    /*direction: ltr;*/
 }
 
 body, body .background-inherit {

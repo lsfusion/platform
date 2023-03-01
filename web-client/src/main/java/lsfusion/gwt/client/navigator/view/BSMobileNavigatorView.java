@@ -3,74 +3,62 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 
-public class BSMobileNavigatorView implements MobileNavigatorView {
+public class BSMobileNavigatorView extends MobileNavigatorView {
     public static final String OFFCANVAS_ID = "mobileMenuOffcanvas";
-    private final GINavigatorController navigatorController;
 
     public BSMobileNavigatorView(GNavigatorElement root, GINavigatorController navigatorController) {
+        super(root, navigatorController);
+    }
 
-        this.navigatorController = navigatorController;
-
+    protected FlexPanel initRootPanel() {
         FlexPanel navBarPanel = new FlexPanel(true);
         navBarPanel.addStyleName("offcanvas offcanvas-start navbar p-0");
+
         Element navBarPanelElement = navBarPanel.getElement();
-        
         navBarPanelElement.setId(OFFCANVAS_ID);
         navBarPanelElement.getStyle().setOverflowY(Style.Overflow.AUTO);
         navBarPanelElement.getStyle().setOverflowX(Style.Overflow.HIDDEN);
-
-        FlexPanel navPanel = new FlexPanel(true);
-        navPanel.addStyleName("navbar-nav navbar-nav-vert");
-        for (GNavigatorElement child : root.children) {
-            createMenuItem(navPanel, child, 0);
-        }
-        navBarPanel.add(navPanel);
-        
-        RootLayoutPanel.get().getElement().appendChild(navBarPanelElement);
-        
-        init(navBarPanelElement);
+        return navBarPanel;
     }
 
-    private void createMenuItem(FlexPanel panel, GNavigatorElement navigatorElement, int level) {
-        ImageButton button = new NavigatorImageButton(navigatorElement, false);
+    protected ComplexPanel initSubMenuPanel() {
+        return new FlexPanel(true);
+    }
+
+    protected void initSubRootPanel(ComplexPanel navPanel) {
+        navPanel.addStyleName("navbar-nav navbar-nav-vert");
+    }
+
+    protected void initSubMenuItem(ImageButton button, ComplexPanel subMenuPanel) {
+        subMenuPanel.setVisible(false);
+        button.addStyleName("nav-folder collapsed");
+        button.addClickHandler(event -> {
+            boolean wasVisible = subMenuPanel.isVisible();
+            subMenuPanel.setVisible(!wasVisible);
+            button.setStyleName("collapsed", wasVisible);
+        });
+    }
+
+    protected ComplexPanel wrapNavigatorItem(ComplexPanel panel) {
+        return panel;
+    }
+
+    protected void initMenuItem(int level, ImageButton button) {
         button.addStyleName("nav-item nav-link navbar-text nav-link-horz");
         button.addStyleName("nav-link-horz-" + level);
+    }
 
-        FlexPanel subMenuPanel = new FlexPanel(true);
-        subMenuPanel.setVisible(false);
-
-        panel.add(button);
-        panel.add(subMenuPanel);
-
-        boolean isFolder = navigatorElement.children.size() > 0;
-        if (isFolder) {
-            button.addStyleName("nav-folder collapsed");
-            
-            for (GNavigatorElement child : navigatorElement.children) {
-                createMenuItem(subMenuPanel, child, level + 1);
-            }
-        }
-
-        Event.sinkEvents(button.getElement(), Event.ONCLICK);
-        Event.setEventListener(button.getElement(), event -> {
-            if (Event.ONCLICK == event.getTypeInt()) {
-                if (isFolder) {
-                    boolean wasVisible = subMenuPanel.isVisible();
-                    subMenuPanel.setVisible(!wasVisible);
-                    button.setStyleName("collapsed", wasVisible);
-                } else {
-                    navigatorController.openElement(navigatorElement, event);
-                    closeNavigatorMenu();
-                }
-            }
-        });
+    protected void enable(ComplexPanel navBarPanel) {
+        init(navBarPanel.getElement());
     }
 
     public native void init(Element offcanvas_el) /*-{

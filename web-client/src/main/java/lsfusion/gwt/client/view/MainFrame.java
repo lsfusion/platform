@@ -59,7 +59,7 @@ public class MainFrame implements EntryPoint {
     public static NavigatorDispatchAsync navigatorDispatchAsync;
 
     public static boolean mobile;
-    private static MobileNavigatorView mobileNavigatorView = null;
+    public static MobileNavigatorView mobileNavigatorView = null;
     public static int mobileAdjustment;
 
     // settings    
@@ -594,13 +594,13 @@ public class MainFrame implements EntryPoint {
     }
     
     public static void openNavigatorMenu() {
-        if (mobileNavigatorView != null) {
+        if (mobile) {
             mobileNavigatorView.openNavigatorMenu();
         }
     }
     
     public static void closeNavigatorMenu() {
-        if (mobileNavigatorView != null) {
+        if (mobile) {
             mobileNavigatorView.closeNavigatorMenu();
         }
     }

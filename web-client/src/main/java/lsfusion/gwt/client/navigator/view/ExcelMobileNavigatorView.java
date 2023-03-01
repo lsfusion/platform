@@ -2,88 +2,52 @@ package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.LIElement;
-import com.google.gwt.dom.client.UListElement;
-import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.view.ImageButton;
+import lsfusion.gwt.client.base.view.NavigatorImageButton;
+import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
-import lsfusion.gwt.client.view.ColorThemeChangeListener;
-import lsfusion.gwt.client.view.MainFrame;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class ExcelMobileNavigatorView implements MobileNavigatorView, ColorThemeChangeListener {
-    private GINavigatorController navigatorController;
-    private Map<GNavigatorElement, Element> icons = new HashMap<>();
+public class ExcelMobileNavigatorView extends MobileNavigatorView {
 
     public ExcelMobileNavigatorView(GNavigatorElement root, GINavigatorController navigatorController) {
-        this.navigatorController = navigatorController;
-
-        Element menuElement = createNavigatorMenu(root);
-        RootLayoutPanel.get().getElement().appendChild(menuElement);
-        enableMMenu(menuElement, ClientMessages.Instance.get().navigator());
-
-        MainFrame.addColorThemeChangeListener(this);
+        super(root, navigatorController);
     }
 
-    private Element createNavigatorMenu(GNavigatorElement root) {
-        Element navElement = Document.get().createElement("nav");
-        navElement.setId("lsfNavigatorMenu");
-
-        UListElement menuULElement = Document.get().createULElement();
-        navElement.appendChild(menuULElement);
-
-        for (GNavigatorElement child : root.children) {
-            menuULElement.appendChild(createMenuItem(child));
-        }
+    protected ComplexPanel initRootPanel() {
+        ResizableComplexPanel navElement = new ResizableComplexPanel(Document.get().createElement("nav"));
+        navElement.getElement().setId("lsfNavigatorMenu");
         return navElement;
     }
 
-    private Element createMenuItem(GNavigatorElement navigatorElement) {
-        LIElement liElement = Document.get().createLIElement();
+    protected ComplexPanel initSubMenuPanel() {
+        return new ResizableComplexPanel(Document.get().createULElement());
+    }
 
-        Element iconImageElement = null;
-        if (navigatorElement.image != null) {
-            iconImageElement = navigatorElement.image.createImage();
-            icons.put(navigatorElement, iconImageElement);
-        }
+    @Override
+    protected void initSubRootPanel(ComplexPanel rootPanel) {
+    }
 
-        Element textElement;
-        UListElement subMenuElement = null;
+    @Override
+    protected void initMenuItem(int level, ImageButton button) {
+    }
 
-        if (navigatorElement.children.size() > 0) {
-            textElement = Document.get().createSpanElement();
-            
-            subMenuElement = Document.get().createULElement();
-            for (GNavigatorElement child : navigatorElement.children) {
-                subMenuElement.appendChild(createMenuItem(child));
-            }
-        } else {
-            textElement = Document.get().createAnchorElement();
-            Event.sinkEvents(textElement, Event.ONCLICK);
-            Event.setEventListener(textElement, event -> {
-                if (Event.ONCLICK == event.getTypeInt()) {
-                    navigatorController.openElement(navigatorElement, event);
-                    closeNavigatorMenu();
-                }
-            });
-        }
+    @Override
+    protected void initSubMenuItem(ImageButton button, ComplexPanel subMenuPanel) {
+    }
 
-        if (iconImageElement != null) {
-            liElement.appendChild(iconImageElement);
-        }
-        
-        textElement.setInnerText(navigatorElement.caption);
-        liElement.appendChild(textElement);
-
-        if (subMenuElement != null) {
-            liElement.appendChild(subMenuElement);
-        }
-
+    protected ComplexPanel wrapNavigatorItem(ComplexPanel menuULElement) {
+        // wrapping into li;
+        ResizableComplexPanel liElement = new ResizableComplexPanel(Document.get().createLIElement());
+        menuULElement.add(liElement);
         return liElement;
+    }
+
+    protected void enable(ComplexPanel navElement) {
+        enableMMenu(navElement.getElement(), ClientMessages.Instance.get().navigator());
     }
 
     public final native void enableMMenu(Element element, String title) /*-{
@@ -103,10 +67,4 @@ public class ExcelMobileNavigatorView implements MobileNavigatorView, ColorTheme
     public native void closeNavigatorMenu() /*-{
         drawer.close();
     }-*/;
-
-    @Override
-    public void colorThemeChanged() {
-//        for (Map.Entry<GNavigatorElement, Element> icon : icons.entrySet())
-//            icon.getKey().image.setImageSrc(icon.getValue());
-    }
 }

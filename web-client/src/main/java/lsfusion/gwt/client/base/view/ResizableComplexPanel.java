@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -11,7 +12,10 @@ public class ResizableComplexPanel extends ComplexPanel implements RequiresResiz
     protected Widget main;
 
     public ResizableComplexPanel() {
-        setElement(Document.get().createDivElement());
+        this(Document.get().createDivElement());
+    }
+    public ResizableComplexPanel(Element element) {
+        setElement(element);
     }
 
     @Override

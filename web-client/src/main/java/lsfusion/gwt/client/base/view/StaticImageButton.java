@@ -8,16 +8,23 @@ import lsfusion.gwt.client.view.ColorThemeChangeListener;
 public class StaticImageButton extends ImageButton {
 
     protected BaseImage image;
+    protected String caption;
 
     public StaticImageButton(String caption, BaseStaticImage baseImage) {
         super(caption, baseImage, false, null);
 
+        this.caption = caption;
         this.image = baseImage;
     }
 
     @Override
     protected BaseImage getImage() {
         return image;
+    }
+
+    @Override
+    protected String getCaption() {
+        return caption;
     }
 
     public void changeImage(StaticImage image) {
