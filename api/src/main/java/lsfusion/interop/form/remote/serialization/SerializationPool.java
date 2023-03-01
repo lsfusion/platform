@@ -5,6 +5,8 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.context.ApplicationContext;
 import lsfusion.base.context.ApplicationContextHolder;
+import lsfusion.base.file.AppImage;
+import lsfusion.base.file.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -207,11 +209,19 @@ public abstract class SerializationPool<C> {
         BaseUtils.writeObject(outStream, object);
     }
 
+    public void writeImageIcon(DataOutputStream outStream, AppImage appImage) throws IOException {
+        IOUtils.writeImageIcon(outStream, appImage);
+    }
+
     public <T> T readObject(DataInputStream inStream) throws IOException {
         T object = BaseUtils.readObject(inStream);
         if(object != null)
             setInstanceContext(object);
         return object;
+    }
+
+    public AppImage readImageIcon(DataInputStream inStream) throws IOException {
+        return IOUtils.readImageIcon(inStream);
     }
 
     public void writeString(DataOutputStream outStream, String str) throws IOException {

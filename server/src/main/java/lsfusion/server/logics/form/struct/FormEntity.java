@@ -10,7 +10,7 @@ import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.base.comb.Subsets;
 import lsfusion.base.dnf.AddSet;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormScheduler;
@@ -113,7 +113,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     
     private String canonicalName;
     private LocalizedString initCaption;
-    private AppImage initImage;
+    private String initImage;
     private DebugInfo.DebugPoint debugPoint;
 
     public NFMapList<Object, ActionObjectEntity<?>> eventActions = NFFact.mapList();
@@ -265,7 +265,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         this.ID = BaseLogicsModule.generateStaticNewID();
 
         this.initCaption = caption;
-        this.initImage = imagePath != null ? new AppImage(imagePath) : null;
+        this.initImage = imagePath;
 
         this.canonicalName = canonicalName;
         this.debugPoint = debugPoint;
@@ -1243,13 +1243,15 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public String getName() {
-        return CanonicalNameUtils.getName(canonicalName);
+        if(isNamed())
+            return CanonicalNameUtils.getName(canonicalName);
+        return null;
     }
 
     private String integrationSID;
     
     public String getIntegrationSID() {
-        return integrationSID != null ? integrationSID : canonicalName != null ? getName() : null;
+        return integrationSID != null ? integrationSID : getName();
     }
 
     public void setIntegrationSID(String integrationSID) {
@@ -1414,7 +1416,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public LocalizedString getInitCaption() {
         return initCaption;
     }
-    public AppImage getInitImage() {
+    public String getInitImage() {
         return initImage;
     }
 
@@ -1422,8 +1424,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return getRichDesign().mainContainer.caption;
     }
 
-    public AppImage getImage() {
-        return getRichDesign().mainContainer.image;
+    public AppServerImage getImage() {
+        FormView formView = getRichDesign();
+        return formView.mainContainer.getImage(formView);
     }
 
     public String getLocalizedCaption() {

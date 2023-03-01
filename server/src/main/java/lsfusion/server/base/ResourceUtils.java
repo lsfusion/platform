@@ -1,14 +1,15 @@
-package lsfusion.base;
+package lsfusion.server.base;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.ApiResourceBundle;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.Result;
 import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.base.lambda.EFunction;
-import lsfusion.interop.action.ClientWebAction;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -325,40 +328,29 @@ public class ResourceUtils {
         cache.keySet().stream().filter(checkExtension).forEach(cache::remove);
     }
 
-    public static String registerFont(ClientWebAction action) {
-        try {
-            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-            Font font = Font.createFont(Font.TRUETYPE_FONT, ((RawFileData) action.resource).getInputStream());
-            ge.registerFont(font);
-            return font.getFamily();
-        } catch (FontFormatException | IOException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    public static void registerLibrary(ClientWebAction action) {
-        try {
-            byte[] serverBytes = ((RawFileData) action.resource).getBytes();
-            File clientFile = SystemUtils.getUserFile(action.resourceName);
-
-            if (!clientFile.exists() || !Arrays.equals(serverBytes, FileUtils.readFileToByteArray(clientFile))) {
-                SystemUtils.writeUserFile(action.resourceName, serverBytes);
+    public static String getRevision(boolean inDevMode) {
+        if (!inDevMode) {
+            try {
+                String[] paths = getClassPathElements();
+                for (String path : paths) {
+                    if (!isRedundantString(path) && path.toLowerCase().endsWith(".jar")) {
+                        File file = new File(path);
+                        if (file.exists()) {
+                            JarFile jarFile = new JarFile(file);
+                            Manifest manifest = jarFile.getManifest();
+                            if (manifest != null) {
+                                String revisionString = manifest.getMainAttributes().getValue("SCM-Version");
+                                Integer revision = BaseUtils.parseInt(revisionString);
+                                if (revision != null && revision > 0) {
+                                    return revisionString;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (IOException ignore) {
             }
-
-            String libraryPath = clientFile.getParentFile().getAbsolutePath();
-            setLibraryPath(libraryPath, "jna.library.path");
-            setLibraryPath(libraryPath, "java.library.path");
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
         }
-    }
-
-    private static void setLibraryPath(String path, String property) {
-        String libraryPath = System.getProperty(property);
-        if (libraryPath == null) {
-            System.setProperty(property, path);
-        } else if (!libraryPath.contains(path)) {
-            System.setProperty(property, path + ";" + libraryPath);
-        }
+        return null;
     }
 }

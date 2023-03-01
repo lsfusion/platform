@@ -65,7 +65,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
             columnsPanel.addStyleName("propertyContainerPanel");
             return new ComponentWidget(columnsPanel);
         } else {
-            Result<CaptionWidget> captionWidget = alignCaption && property.container.isAlignCaptions() ? new Result<>() : null;
+            Result<CaptionWidget> captionWidget = alignCaption && property.container.isAlignCaptions() ? new Result<>() : null; // or is tabbed ?
             return new ComponentWidget(addPanelRenderer(GGroupObjectValue.EMPTY, captionWidget), captionWidget != null ? captionWidget.result : null);
         }
    }

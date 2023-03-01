@@ -1,12 +1,9 @@
 package lsfusion.base.file;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ResourceUtils;
-import lsfusion.base.Result;
 import lsfusion.interop.base.view.ColorTheme;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 public class AppImage implements Serializable {
@@ -15,49 +12,40 @@ public class AppImage implements Serializable {
     public AppImage() {
     }
 
-    private Map<ColorTheme, String> imagePathes;
+    public static final String INPUT_NEW = "new";
+    public static final String INPUT_DIALOG = "dialog";
+    public static final String INPUT_RESET = "reset";
+
+    private String imagePath;
     private Map<ColorTheme, RawFileData> images;
 
     public String fontClasses;
 
-    public AppImage(String imagePath) {
-        Map<ColorTheme, String> imagePathes = new HashMap<>();
-        Map<ColorTheme, RawFileData> images = new HashMap<>();
+    public AppImage(String fontClasses, String imagePath, Map<ColorTheme, RawFileData> images) {
+        this.fontClasses = fontClasses;
 
-        for (ColorTheme colorTheme : ColorTheme.values()) {
-            Result<String> fullPath = new Result<>();
-            boolean defaultTheme = colorTheme.isDefault();
-            // multipleUsages true, because one imagePath is often used a lot of times
-            RawFileData themedImageFile = ResourceUtils.findResourceAsFileData(colorTheme.getImagePath(imagePath), !defaultTheme, true, fullPath, "images");
-            if(defaultTheme || themedImageFile != null) {
-                themedImageFile.getID(); // to calculate the cache
-                images.put(colorTheme, themedImageFile);
-                imagePathes.put(colorTheme, fullPath.result);
-            }
-        }
-
-        this.imagePathes = imagePathes;
+        this.imagePath = imagePath;
         this.images = images;
-
-        this.fontClasses = AppImages.predefinedFontClasses.get(BaseUtils.getFileNameAndExtension(imagePath));
     }
 
     public transient Object desktopClientImages;
 
     public RawFileData getImage(ColorTheme colorTheme) {
+        if(images == null)
+            return null;
+
         return images.get(colorTheme);
     }
 
-    public String getImagePath(ColorTheme colorTheme) {
-        return imagePathes.get(colorTheme);
+    public String getImagePath() {
+        return imagePath;
     }
     
-    public boolean isGif(ColorTheme colorTheme) {
-        return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(getImagePath(colorTheme)));
+    public static boolean isGif(String imagePath) {
+        return "gif".equalsIgnoreCase(BaseUtils.getFileExtension(imagePath));
     }
 
-    public boolean isNonThemed(ColorTheme colorTheme) {
-        String extension = BaseUtils.getFileExtension(getImagePath(colorTheme));
+    public static boolean isNonThemed(String extension) {
         return "svg".equalsIgnoreCase(extension) || "bmp".equalsIgnoreCase(extension) || "webp".equalsIgnoreCase(extension);
     }
 

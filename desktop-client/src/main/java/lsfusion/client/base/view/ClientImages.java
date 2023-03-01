@@ -59,10 +59,19 @@ public class ClientImages {
         return themeImageIcon;
     }
 
+    private static ImageIcon UNKNOWN;
+
     public static ImageIcon calculateImage(AppImage imageHolder, ColorTheme colorTheme) {
         RawFileData themeImage = imageHolder.getImage(colorTheme);
-        if (themeImage == null)
-            return ClientColorUtils.createFilteredImageIcon(getImage(imageHolder, DEFAULT));
+        if (themeImage == null) {
+            if(colorTheme.isDefault()) {
+                if(UNKNOWN == null) {
+                    UNKNOWN = readImage("closeAllTabs.png");
+                }
+                return UNKNOWN;
+            } else
+                return ClientColorUtils.createFilteredImageIcon(getImage(imageHolder, DEFAULT));
+        }
         return themeImage.getImageIcon();
     }
 

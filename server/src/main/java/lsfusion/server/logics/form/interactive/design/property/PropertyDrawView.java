@@ -4,7 +4,7 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -39,6 +39,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.table.MapKeysTable;
 
@@ -107,7 +108,7 @@ public class PropertyDrawView extends BaseComponentView {
     public FlexAlignment valueAlignment;
 
     public LocalizedString caption;
-    public AppImage image;
+    public AppServerImage image;
     public boolean clearText;
     public boolean notSelectAll;
     public String toolTip;
@@ -136,7 +137,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public String getIntegrationSID() {
-        return entity.integrationSID;
+        return entity.getIntegrationSID();
     }
 
     public Type getType() {
@@ -252,10 +253,23 @@ public class PropertyDrawView extends BaseComponentView {
                 : entity.getCaption();
     }
 
-    public AppImage getImage() {
-        return image != null
-                ? image
-                : entity.getImage();
+    public void setImage(String image) {
+        this.image = AppServerImage.createPropertyImage(image, this);
+    }
+
+    public AppServerImage getImage() {
+        if(image != null)
+            return image;
+
+        AppServerImage image = entity.getImage();
+        if(image != null)
+            return image;
+
+        return getDefaultImage();
+    }
+
+    private AppServerImage getDefaultImage() {
+        return entity.getValueActionOrProperty().property.getDefaultImage(Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
@@ -377,7 +391,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(isBoxed(pool.context.entity));
 
         pool.writeString(outStream, getDrawCaption());
-        pool.writeObject(outStream, getImage());
+        AppServerImage.serialize(getImage(), outStream, pool);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
         pool.writeLong(outStream, maxValue);

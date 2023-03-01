@@ -3,7 +3,7 @@ package lsfusion.server.logics.form.interactive.action.async.map;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class AsyncMapInputListAction<T extends PropertyInterface> {
 
-    public AppImage action;
+    public AppServerImage action;
     public String id;
     public AsyncMapEventExec<T> asyncExec; // it's an asyncexec and not asynceventexec, since in continueDispatching there is no push infrastructure so far (and it's not clear if it's needed at all)
     public String keyStroke;
@@ -33,7 +33,7 @@ public class AsyncMapInputListAction<T extends PropertyInterface> {
     public ImList<QuickAccess> quickAccessList;
     public int index;
 
-    public AsyncMapInputListAction(AppImage action, String id, AsyncMapEventExec<T> asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, int index) {
+    public AsyncMapInputListAction(AppServerImage action, String id, AsyncMapEventExec<T> asyncExec, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, int index) {
         this.action = action;
         this.id = id;
         this.asyncExec = asyncExec;

@@ -1,7 +1,6 @@
 package lsfusion.base.file;
 
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.mutability.TwinImmutableObject;
 import org.apache.commons.io.FileUtils;

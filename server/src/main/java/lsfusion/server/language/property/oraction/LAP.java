@@ -4,9 +4,6 @@ import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.file.AppImage;
-import lsfusion.interop.form.event.BindingMode;
-import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -16,9 +13,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 
-import javax.swing.*;
 import java.util.List;
-import java.util.Map;
 
 public abstract class LAP<T extends PropertyInterface, P extends ActionOrProperty<T>> {
 
@@ -89,44 +84,12 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setFlexCharWidth(charWidth, flex);
     }
 
-    public void setImage(AppImage image) {
-        getActionOrProperty().image = image;
-    }
-
     public void setDefaultCompare(String defaultCompare) {
         getActionOrProperty().drawOptions.setDefaultCompare(defaultCompare);
     }
 
-    public void setChangeKey(KeyStroke changeKey) {
-        getActionOrProperty().drawOptions.setChangeKey(changeKey);
-    }
-
-    public void setChangeKey(KeyStroke changeKey, Map<String, BindingMode> bindingModes) {
-        getActionOrProperty().drawOptions.setChangeKey(changeKey, bindingModes);
-    }
-
-    public void setChangeKeyPriority(Integer changeKeyPriority) {
-        getActionOrProperty().drawOptions.setChangeKeyPriority(changeKeyPriority);
-    }
-
-    public void setShowChangeKey(boolean showChangeKey) {
-        getActionOrProperty().drawOptions.setShowChangeKey(showChangeKey);
-    }
-
     public void setChangeMouse(String changeMouse) {
         getActionOrProperty().drawOptions.setChangeMouse(changeMouse);
-    }
-
-    public void setChangeMouse(String changeMouse, Map<String, BindingMode> bindingModes) {
-        getActionOrProperty().drawOptions.setChangeMouse(changeMouse, bindingModes);
-    }
-
-    public void setChangeMousePriority(Integer changeMousePriority) {
-        getActionOrProperty().drawOptions.setChangeMousePriority(changeMousePriority);
-    }
-    
-    public void addProcessor(ActionOrProperty.DefaultProcessor processor) {
-        getActionOrProperty().drawOptions.addProcessor(processor);
     }
 
     public void setRegexp(String regexp) {
@@ -141,10 +104,6 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setEchoSymbols(echoSymbols);
     }
 
-    public void setViewType(ClassViewType viewType) {
-        getActionOrProperty().drawOptions.setViewType(viewType);
-    }
-    
     public void setCustomRenderFunction(String customRenderFunction) {
         getActionOrProperty().drawOptions.setCustomRenderFunction(customRenderFunction);
     }

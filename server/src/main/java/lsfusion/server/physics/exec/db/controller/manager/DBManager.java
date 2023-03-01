@@ -79,7 +79,6 @@ import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.interactive.property.PropertyAsync;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.navigator.controller.env.*;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.CurrentEnvironmentProperty;
@@ -124,7 +123,7 @@ import java.util.*;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.BaseUtils.isRedundantString;
-import static lsfusion.base.SystemUtils.getRevision;
+import static lsfusion.server.base.ResourceUtils.getRevision;
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.directLI;
 

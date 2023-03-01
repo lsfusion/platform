@@ -180,11 +180,13 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         th.addClassName("wrap-wrapimgdiv");
         th.addClassName("wrap-text-not-empty");
+        th.addClassName("wrap-img-horz");
 
         Element img = (sortDir ? StaticImage.SORTUP : StaticImage.SORTDOWN).createImage();
         img.addClassName("sort-img");
-        img.addClassName("wrap-img-horz-margins");
+//        img.addClassName("wrap-img-horz-margins");
         img.addClassName("wrap-img");
+        img.addClassName("wrap-text-img");
         th.appendChild(img);
 
         Element wrappedTh = Document.get().createDivElement();

@@ -17,7 +17,9 @@
     border-top: var(--border-width) solid var(--panel-border-color);
 }
 
-.bottom-margin {
+.bottom-margin,
+.bottom-margin.nav /* nov sets margin-bottom:0 somewhy */
+{
     margin-bottom: var(--border-cont-vert-padding);
 }
 

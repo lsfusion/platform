@@ -67,14 +67,14 @@
 .caption-panel-header.collapsible.collapsed::before,
 .card-header.collapsible.collapsed::before,
 .nav-folder.collapsed::after {
-    content: "\f107";
+    content: "\f105";
     font: var(--fa-font-solid);
 }
 
 .caption-panel-header.collapsible:not(.collapsed)::before,
 .card-header.collapsible:not(.collapsed)::before,
 .nav-folder:not(.collapsed)::after {
-    content: "\f106";
+    content: "\f107";
     font: var(--fa-font-solid);
 }
 

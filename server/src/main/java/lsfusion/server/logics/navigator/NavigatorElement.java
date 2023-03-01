@@ -3,10 +3,10 @@ package lsfusion.server.logics.navigator;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
-import lsfusion.base.file.IOUtils;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
+import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -18,6 +18,7 @@ import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncSerializer;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.Property;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -40,7 +41,7 @@ public abstract class NavigatorElement {
         element.setParent(this, version);
     }
 
-    public abstract AppImage getDefaultIcon(boolean top);
+    public abstract String getDefaultIcon();
 
     public NavigatorWindow window = null;
     public boolean parentWindow;
@@ -52,7 +53,7 @@ public abstract class NavigatorElement {
     public Supplier<LocalizedString> caption;
 
     public Property propertyImage;
-    public Supplier<AppImage> image;
+    public Supplier<AppServerImage> image;
 
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
@@ -66,12 +67,30 @@ public abstract class NavigatorElement {
         this.ID = BaseLogicsModule.generateStaticNewID();
     }
 
-    public LocalizedString getCaption() {
-        return caption.get();
+    public boolean isParentRoot() {
+        NavigatorElement parent = getParent();
+        return parent == null || parent.getParent() == null;
     }
 
-    public AppImage getImage() {
-        return image.get();
+    public LocalizedString getCaption() {
+        return caption.get(); // can not be null, see createNavigatorElement (forms and actions always have name)
+//        return LocalizedString.create(CanonicalNameUtils.getName(getCanonicalName()));
+    }
+
+    public AppServerImage getImage() {
+        AppServerImage image = this.image.get();
+        if(image != null)
+            return image;
+
+        return getDefaultImage();
+    }
+
+    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon) {
+        return AppServerImage.createDefaultImage(rankingThreshold, getName(), () -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this) : null);
+    }
+
+    private AppServerImage getDefaultImage() {
+        return getDefaultImage(Settings.get().getDefaultNavigatorImageRankingThreshold(), Settings.get().isDefaultNavigatorImage());
     }
 
     public int getID() {
@@ -207,7 +226,8 @@ public abstract class NavigatorElement {
         this.propertyImage = imageProperty;
     }
 
-    public void setImage(AppImage image) {
+    public void setImage(String imagePath) {
+        AppServerImage image = AppServerImage.createNavigatorImage(imagePath, this);
         this.image = () -> image;
     }
 
@@ -257,7 +277,7 @@ public abstract class NavigatorElement {
             outStream.writeBoolean(parentWindow);
         }
 
-        IOUtils.writeImageIcon(outStream, getImage());
+        AppServerImage.serialize(getImage(), outStream);
 
         AsyncSerializer.serializeEventExec(getAsyncExec(), outStream);
     }

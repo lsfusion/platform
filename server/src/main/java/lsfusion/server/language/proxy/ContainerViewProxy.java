@@ -1,6 +1,5 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.version.Version;
@@ -29,7 +28,7 @@ public class ContainerViewProxy extends ComponentViewProxy<ContainerView> {
 
     public void setImage(Object image) {
         if(image instanceof LocalizedString)
-            target.image = new AppImage(((LocalizedString) image).getSourceString());
+            target.setImage(((LocalizedString) image).getSourceString(), null); // should be something else, but for now it's not that important
         else {
             // we want to keep base name for example for form name prediction in async form opening
 //            if (target.caption == null) {

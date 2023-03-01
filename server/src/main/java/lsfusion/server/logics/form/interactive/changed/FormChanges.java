@@ -1,9 +1,8 @@
 package lsfusion.server.logics.form.interactive.changed;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ResourceUtils;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -14,6 +13,7 @@ import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.file.*;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
@@ -30,18 +30,21 @@ import lsfusion.server.logics.form.interactive.controller.remote.RemoteForm;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
+import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
+import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.inlineFileSeparator;
 import static lsfusion.base.BaseUtils.serializeObject;
@@ -146,7 +149,7 @@ public class FormChanges {
             System.out.println(container);
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
+    public void serialize(DataOutputStream outStream, FormView formView) throws IOException {
 
         outStream.writeInt(objects.size());
         for (int i=0,size=objects.size();i<size;i++) {
@@ -180,7 +183,7 @@ public class FormChanges {
             if(propertyReadInstance instanceof PropertyDrawInstance.LastReaderInstance)
                 outStream.writeInt(((PropertyDrawInstance.LastReaderInstance) propertyReadInstance).index);
 
-            NeedImage needImage = getNeedImage(propertyReadInstance);
+            NeedImage needImage = getNeedImage(propertyReadInstance, formView);
 
             outStream.writeInt(rows.size());
             for (int j=0,sizeJ=rows.size();j<sizeJ;j++) {
@@ -230,12 +233,17 @@ public class FormChanges {
 
     public static class NeedImage {
         public final Type type;
+        public final Function<String, AppServerImage> imageSupplier;
 
-        public NeedImage(Type type) {
+        public NeedImage(Type type, Function<String, AppServerImage> imageSupplier) {
             this.type = type;
+            this.imageSupplier = imageSupplier;
         }
     }
-    public static Object convertFileValue(NeedImage needImage, Object value) {
+    public static Object convertFileValue(NeedImage needImage, Object value) throws IOException {
+        if(value instanceof FileData && needImage != null && ((FileData)value).getExtension().equals("resourceImage"))
+            value = new String(((FileData) value).getRawFile().getBytes());
+
         if(value instanceof NamedFileData || value instanceof FileData || value instanceof RawFileData) {
             if(needImage != null) {
                 if(value instanceof RawFileData && needImage.type instanceof StaticFormatFileClass)
@@ -247,7 +255,7 @@ public class FormChanges {
         }
 
         if(value instanceof String && needImage != null) {
-            return new AppImage((String)value);
+            return AppServerImage.getAppImage(needImage.imageSupplier.apply((String)value));
         }
 
         if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
@@ -273,16 +281,22 @@ public class FormChanges {
         return value;
     }
 
-    private static NeedImage getNeedImage(PropertyReaderInstance reader) {
+    private static NeedImage getNeedImage(PropertyReaderInstance reader, FormView formView) {
         Type readerType;
         if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty() && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
-            return new NeedImage(readerType);
+            PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
+            return getNeedImage(readerType, propertyDraw);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
-            return new NeedImage(reader.getPropertyObjectInstance().getType());
+            return getNeedImage(reader.getPropertyObjectInstance().getType(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
-            return new NeedImage(reader.getPropertyObjectInstance().getType());
+            ContainerView containerView = ((ContainerViewInstance.ExtraReaderInstance) reader).getContainerView();
+            return new NeedImage(reader.getPropertyObjectInstance().getType(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, formView));
         }
         return null;
+    }
+
+    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw) {
+        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, propertyDraw));
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {
@@ -344,10 +358,10 @@ public class FormChanges {
         }
     }
 
-    public byte[] serialize() {
+    public byte[] serialize(FormView formView) {
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-            serialize(new DataOutputStream(outStream));
+            serialize(new DataOutputStream(outStream), formView);
             return outStream.toByteArray();
         } catch (Exception e) {
             throw Throwables.propagate(e);

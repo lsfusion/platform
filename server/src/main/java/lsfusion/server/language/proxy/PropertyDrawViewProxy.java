@@ -1,6 +1,5 @@
 package lsfusion.server.language.proxy;
 
-import lsfusion.base.file.AppImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
@@ -165,7 +164,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
 
     public void setImage(Object image) {
         if(image instanceof LocalizedString)
-            target.image = new AppImage(((LocalizedString) image).getSourceString());
+            target.setImage(((LocalizedString) image).getSourceString());
         else
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE);
     }

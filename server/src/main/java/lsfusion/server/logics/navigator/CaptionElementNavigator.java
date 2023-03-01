@@ -4,8 +4,8 @@ import lsfusion.server.logics.property.Property;
 
 public class CaptionElementNavigator extends ElementNavigator {
 
-    public CaptionElementNavigator(Property property, String canonicalName) {
-        super(property, canonicalName);
+    public CaptionElementNavigator(Property property, NavigatorElement element) {
+        super(property, element);
     }
 
     @Override

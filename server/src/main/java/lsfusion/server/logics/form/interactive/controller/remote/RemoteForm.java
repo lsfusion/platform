@@ -924,7 +924,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
-            return formChanges.serialize();
+            return formChanges.serialize(richDesign);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

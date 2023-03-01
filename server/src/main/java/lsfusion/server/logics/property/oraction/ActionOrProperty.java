@@ -10,11 +10,8 @@ import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.base.col.lru.LRUSVSMap;
-import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.comb.ListPermutations;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
 import lsfusion.interop.form.event.KeyInputEvent;
@@ -78,7 +75,13 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption; // assert not null
 
-    public AppImage image;
+    public AppServerImage image;
+    public void setImage(AppServerImage image) {
+        this.image = image;
+    }
+    public void setImage(String imagePath) {
+        setImage(AppServerImage.createPropertyImage(imagePath, this));
+    }
 
     public LocalizedString localizedToString() {
         LocalizedString result = LocalizedString.create(getSID());
@@ -197,6 +200,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             return PropertyCanonicalNameParser.getName(canonicalName);
         }
         return null;
+    }
+
+    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon) {
+        return AppServerImage.createDefaultImage(rankingThreshold, getName(), () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, ActionOrProperty.this) : null);
     }
 
     public String getNamespace() {

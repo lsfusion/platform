@@ -1,11 +1,9 @@
 package lsfusion.server.logics.navigator;
 
-import lsfusion.base.file.AppImage;
-import lsfusion.base.file.AppImages;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.interactive.action.async.AsyncExec;
-import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class NavigatorAction extends NavigatorElement {
     private final Action<?> action;
@@ -19,10 +17,11 @@ public class NavigatorAction extends NavigatorElement {
     }
 
     @Override
-    public AppImage getDefaultIcon(boolean top) {
+    public String getDefaultIcon() {
+        boolean top = isParentRoot();
         if(form != null)
-            return top ? AppImages.FORMTOP : AppImages.FORM;
-        return top ? AppImages.ACTIONTOP : AppImages.ACTION;
+            return top ? AppServerImage.FORMTOP : AppServerImage.FORM;
+        return top ? AppServerImage.ACTIONTOP : AppServerImage.ACTION;
     }
 
     @Override

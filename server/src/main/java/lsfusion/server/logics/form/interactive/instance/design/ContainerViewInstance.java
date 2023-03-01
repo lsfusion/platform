@@ -59,5 +59,9 @@ public class ContainerViewInstance extends CellInstance<ContainerView> {
         public Object getProfiledObject() {
             return entity.getExtra(type);
         }
+
+        public ContainerView getContainerView() {
+            return entity;
+        }
     }
 }

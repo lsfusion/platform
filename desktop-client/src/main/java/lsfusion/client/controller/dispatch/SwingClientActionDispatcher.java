@@ -2,7 +2,6 @@ package lsfusion.client.controller.dispatch;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
-import lsfusion.base.ResourceUtils;
 import lsfusion.base.SystemUtils;
 import lsfusion.base.file.FileDialogUtils;
 import lsfusion.base.file.RawFileData;
@@ -705,9 +704,9 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     @Override
     public void execute(ClientWebAction action) {
         if (action.isFont()) {
-            ResourceUtils.registerFont(action);
+            SystemUtils.registerFont(action);
         } else if(action.isLibrary()) {
-            ResourceUtils.registerLibrary(action);
+            SystemUtils.registerLibrary(action);
         }
     }
 

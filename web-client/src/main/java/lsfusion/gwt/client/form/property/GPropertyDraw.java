@@ -472,7 +472,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             for (int i = 0; i < actions.length; i++) {
                 GInputListAction action = actions[i];
                 //addDialogInputAProp from server
-                if (action.id != null && action.id.equals("dialog")) {
+                if (action.id != null && action.id.equals(AppStaticImage.INPUT_DIALOG)) {
                     return action.index;
                 }
             }
@@ -640,9 +640,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return value.replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    public ImageDescription getImage() {
+    public GSize getImageWidth(GFont font) {
         assert isAction();
-        return appImage != null ? appImage.getImage() : null;
+        return appImage != null ? appImage.getWidth(font) : null;
+    }
+    public GSize getImageHeight(GFont font) {
+        assert isAction();
+        return appImage != null ? appImage.getHeight(font) : null;
     }
 
     @Override

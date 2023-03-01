@@ -87,7 +87,7 @@ public class ClientContainer extends ClientComponent {
         children = pool.deserializeList(inStream);
 
         caption = pool.readString(inStream);
-        image = pool.readObject(inStream);
+        image = pool.readImageIcon(inStream);
 
         collapsible = inStream.readBoolean();
 

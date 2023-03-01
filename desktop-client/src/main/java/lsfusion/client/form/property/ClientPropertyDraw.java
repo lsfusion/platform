@@ -478,7 +478,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             for (int i = 0; i < actions.length; i++) {
                 ClientInputListAction action = actions[i];
                 //addDialogInputAProp from server
-                if (action.id != null && action.id.equals("dialog")) {
+                if (action.id != null && action.id.equals(AppImage.INPUT_DIALOG)) {
                     return action.index;
                 }
             }
@@ -539,7 +539,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         boxed = inStream.readBoolean();
 
         caption = pool.readString(inStream);
-        image = pool.readObject(inStream);
+        image = pool.readImageIcon(inStream);
 
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);

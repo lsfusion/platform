@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.file.AppImage;
 import lsfusion.base.lambda.set.FullFunctionSet;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ClientAction;
@@ -513,9 +512,9 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         MExclSet<PropertyNavigator> mResult = SetFact.mExclSet();
         for(NavigatorElement navigatorElement : getNavigatorTreeObjects().keyIt()) {
             if(navigatorElement.propertyImage != null)
-                mResult.exclAdd(new ImageElementNavigator(navigatorElement.propertyImage, navigatorElement.getCanonicalName()));
+                mResult.exclAdd(new ImageElementNavigator(navigatorElement.propertyImage, navigatorElement));
             if(navigatorElement.headerProperty != null)
-                mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement.getCanonicalName()));
+                mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement));
         }
         return mResult.immutable();
     }
@@ -552,15 +551,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                     }
                 }
 
-                if (session != null) {
+                if (session != null)
                     changes = query.execute(session).singleValue();
-                    changes = changes.mapItValues((propertyNavigator, value) -> {
-                        if (propertyNavigator instanceof ImageElementNavigator && value instanceof String) {
-                            value = new AppImage((String) value);
-                        }
-                        return value;
-                    });
-                }
 
             } finally {
                 if(session != null)

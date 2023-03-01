@@ -3,7 +3,7 @@ package lsfusion.server.language;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.base.ResourceUtils;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -11,7 +11,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
@@ -141,10 +141,7 @@ import lsfusion.server.physics.admin.reflection.property.CanonicalNameProperty;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.debug.action.ShowRecDepAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
-import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
-import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
-import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
+import lsfusion.server.physics.dev.id.name.*;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
 import lsfusion.server.physics.dev.integration.external.to.*;
@@ -1360,7 +1357,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setViewType(LAP property, ClassViewType viewType) {
-        property.setViewType(viewType);
+        property.getActionOrProperty().drawOptions.setViewType(viewType);
     }
     
     public void setCustomRenderFunction(LAP property, String customRenderFunction) {
@@ -1386,27 +1383,32 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public void setImage(LAP property, String path) {
-        property.setImage(new AppImage(path));
+        property.getActionOrProperty().setImage(path);
     }
 
     public void setDefaultCompare(LAP property, String defaultCompare) {
         property.setDefaultCompare(defaultCompare);
     }
 
-    public void setChangeKey(LAP property, String code, Boolean showChangeKey) {
+    public void setChangeKey(LAP lap, String code, Boolean showChangeKey) {
+        ActionOrProperty actionOrProperty = lap.getActionOrProperty();
+
         KeyStrokeOptions options = parseKeyStrokeOptions(code);
-        property.setChangeKey(KeyStroke.getKeyStroke(options.keyStroke), options.bindingModesMap);
-        property.setChangeKeyPriority(options.priority);
+        KeyStroke changeKey = KeyStroke.getKeyStroke(options.keyStroke);
+        actionOrProperty.drawOptions.setChangeKey(changeKey, options.bindingModesMap);
+        actionOrProperty.drawOptions.setChangeKeyPriority(options.priority);
         if (showChangeKey != null)
-            property.setShowChangeKey(showChangeKey);
+            actionOrProperty.drawOptions.setShowChangeKey(showChangeKey);
     }
 
-    public void setChangeMouse(LAP property, String code, Boolean showChangeKey) {
+    public void setChangeMouse(LAP lap, String code, Boolean showChangeKey) {
+        ActionOrProperty actionOrProperty = lap.getActionOrProperty();
+
         KeyStrokeOptions options = parseKeyStrokeOptions(code);
-        property.setChangeMouse(options.keyStroke, options.bindingModesMap);
-        property.setChangeMousePriority(options.priority);
+        actionOrProperty.drawOptions.setChangeMouse(options.keyStroke, options.bindingModesMap);
+        actionOrProperty.drawOptions.setChangeMousePriority(options.priority);
         if (showChangeKey != null)
-            property.setShowChangeKey(showChangeKey);
+            actionOrProperty.drawOptions.setShowChangeKey(showChangeKey);
     }
 
     private static List<String> supportedBindings = Arrays.asList("preview", "dialog", "group", "editing", "showing", "panel", "cell");
@@ -2297,7 +2299,8 @@ public class ScriptingLogicsModule extends LogicsModule {
                     LAWithParams action = actions.get(i);
                     KeyStrokeOptions options = parseKeyStrokeOptions(keyStrokes.get(i));
                     return(splitAPParams(action, contextSize, usedInterfaces, value -> 0, (property, mapValues, mapExternal) ->
-                            new InputContextAction(actionImage, options.keyStroke, options.bindingModesMap, options.priority, ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
+                            // not sure that null or constant id won't do
+                            new InputContextAction(actionImage, getFileName(actionImage), options.keyStroke, options.bindingModesMap, options.priority, ListFact.fromJavaList(quickAccesses.get(i)), action.getLP().action, mapValues)));
                 }));
     }
 
@@ -4952,7 +4955,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         String canonicalName = elementCanonicalName(name);
 
         Supplier<LocalizedString> defaultCaption;
-        Supplier<AppImage> defaultImage;
+        Supplier<AppServerImage> defaultImage;
         NavigatorElement newElement;
         if (form != null) {
             newElement = createNavigatorForm(form, canonicalName);
@@ -4964,24 +4967,15 @@ public class ScriptingLogicsModule extends LogicsModule {
             defaultImage = () -> action.action.image;
         } else {
             newElement = createNavigatorFolder(canonicalName);
-            defaultCaption = () -> null;
+            defaultCaption = () -> LocalizedString.create(name); // CanonicalNameUtils.getName(newElement.getCanonicalName()));
             defaultImage = () -> null;
         }
 
-        newElement.caption = () -> {
-            LocalizedString aCaption = caption;
-            if(aCaption == null)
-                aCaption = defaultCaption.get();
-            if(aCaption == null)
-                aCaption = LocalizedString.create(name);
-            return aCaption;
-        };
-        newElement.image = () -> {
-            AppImage image = defaultImage.get();
-            if(image == null)
-                image = newElement.getDefaultIcon(baseLM.root.equals(newElement.getParent()));
-            return image;
-        };
+        if(caption != null)
+            defaultCaption = () -> caption;
+
+        newElement.caption = defaultCaption;
+        newElement.image = defaultImage;
 
         newElement.setDebugPoint(point);
         addNavigatorElement(newElement);
@@ -5009,7 +5003,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         setNavigatorElementWindow(element, options.windowName, options.parentWindow);
-        setNavigatorElementImage(element, options.imageProperty != null ? options.imageProperty.getLP().property : null, options.imagePath != null ? new AppImage(options.imagePath) : null);
+        setNavigatorElementImage(element, options.imageProperty != null ? options.imageProperty.getLP().property : null, options.imagePath);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
 
         ComplexLocation<NavigatorElement> location = options.location;
@@ -5039,11 +5033,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void setNavigatorElementImage(NavigatorElement element, Property imageProperty, AppImage image) {
+    public void setNavigatorElementImage(NavigatorElement element, Property imageProperty, String imagePath) {
         if(imageProperty != null)
             element.setPropertyImage(imageProperty);
-        if (image != null)
-            element.setImage(image);
+        if (imagePath != null)
+            element.setImage(imagePath);
     }
 
     public void setNavigatorElementHeader(NavigatorElement element, Property headerProperty) {

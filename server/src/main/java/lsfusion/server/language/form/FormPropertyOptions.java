@@ -3,10 +3,10 @@ package lsfusion.server.language.form;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.file.AppImage;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.PropertyEditType;
 import lsfusion.interop.form.property.PropertyGroupType;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.version.ComplexLocation;
 
 import lsfusion.server.logics.action.Action;
@@ -37,7 +37,7 @@ public class FormPropertyOptions {
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
     private PropertyObjectEntity image;
-    private AppImage appImage;
+    private String appImage;
     private PropertyObjectEntity header;
     private PropertyObjectEntity footer;
     private ClassViewType viewType;
@@ -164,18 +164,20 @@ public class FormPropertyOptions {
         return image;
     }
 
-    public AppImage getAppImage() {
+    public String getAppImage() {
         return appImage;
     }
 
-    public void setImage(Object image) {
-        if(image instanceof LocalizedString)
-            setAppImage(new AppImage(((LocalizedString) image).getSourceString()));
+    public void setImage(Object literal, PropertyObjectEntity property) {
+        if(literal instanceof LocalizedString)
+            setAppImage((((LocalizedString) literal).getSourceString()));
+        else if(property != null)
+            setImage(property);
         else
-            setImage((PropertyObjectEntity) image);
+            setAppImage(AppServerImage.AUTO);
     }
 
-    public void setAppImage(AppImage image) {
+    public void setAppImage(String image) {
         this.appImage = image;
     }
 

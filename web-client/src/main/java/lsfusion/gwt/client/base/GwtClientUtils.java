@@ -1175,4 +1175,8 @@ public class GwtClientUtils {
     public static native void draggable(Element element, String handle)/*-{
         $wnd.$(element).draggable({ handle: handle});
     }-*/;
+
+    public static final native NodeList<Element> getElementsByClassName(String className) /*-{
+        return $doc.getElementsByClassName(className);
+    }-*/;
 }

@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ContainerType;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -17,6 +17,7 @@ import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
@@ -31,7 +32,29 @@ public class ContainerView extends ComponentView {
     public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
 
     public LocalizedString caption;
-    public AppImage image;
+    public AppServerImage image;
+
+    public void setImage(String imagePath, FormView formView) {
+        image = AppServerImage.createContainerImage(imagePath, this, formView);
+    }
+
+    public AppServerImage getImage(FormView formView) {
+        if(image != null)
+            return image;
+
+        return getDefaultImage(main ? formView : null);
+    }
+
+    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon, FormView formView) {
+        return AppServerImage.createDefaultImage(rankingThreshold, main ? formView.entity.getName() : getSID(), () -> useDefaultIcon ?
+                AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView) : null);
+    }
+
+    private AppServerImage getDefaultImage(FormView formView) {
+        return getDefaultImage(main ? Settings.get().getDefaultFormImageRankingThreshold() : Settings.get().getDefaultContainerImageRankingThreshold(),
+                 main ? Settings.get().isDefaultFormImage() : Settings.get().isDefaultContainerImage(), formView);
+    }
+
     private Boolean collapsible;
 
     public boolean border;
@@ -434,7 +457,7 @@ public class ContainerView extends ComponentView {
         pool.serializeCollection(outStream, getChildrenList());
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
-        pool.writeObject(outStream, image);
+        AppServerImage.serialize(getImage(pool.context.view), outStream, pool);
 
         outStream.writeBoolean(isCollapsible());
 

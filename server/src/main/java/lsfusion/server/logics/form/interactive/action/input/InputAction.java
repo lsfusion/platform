@@ -3,6 +3,8 @@ package lsfusion.server.logics.form.interactive.action.input;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.*;
+import lsfusion.base.file.AppImage;
+import lsfusion.server.base.AppServerImage;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.ObjectValue;
@@ -151,7 +153,7 @@ public class InputAction extends SystemExplicitAction {
 
     // we're removing the "new" action (just like in FormInteractiveAction all property dependendencies are not include), because it has global changes, which "break" for example FORMCHANGE flow checks (and forms with SELECTOR get MANAGESESSION for auto management sessions)
     protected ImList<InputContextAction<?, ClassPropertyInterface>> getDependContextActions() {
-        return contextActions.filterList(element -> !element.id.equals("new"));
+        return contextActions.filterList(element -> !element.id.equals(AppImage.INPUT_NEW));
     }
 
     @IdentityInstanceLazy
