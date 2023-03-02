@@ -5,6 +5,8 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
+import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -15,9 +17,14 @@ public abstract class WindowsController {
     public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
         WindowNode rootNode = new WindowNode(0, 0, 100, 100);
+        rootNode.isFlex = true;
 
         initializeNodes(allWindows, rootNode, formsWindow);
 
+        if (MainFrame.verticalNavbar) {
+            rootNode = rotateNavbar(rootNode);
+        }
+        
         rootElement = (FlexWindowElement) fillWindowChildren(rootNode);
 
         Widget rootView = rootElement.initializeView();
@@ -56,7 +63,7 @@ public abstract class WindowsController {
                     WindowNode tabbed = new WindowNode(first.x, first.y, first.width, first.height);
                     tabbed.isTabbed = true;
                     for (GAbstractWindow tabChild : tabChildren) {
-                        new WindowNode(tabChild).setParent(tabbed);
+                        new WindowNode(tabChild).changeParent(tabbed);
                     }
                     nodes.add(tabbed);
                 } else {
@@ -92,12 +99,12 @@ public abstract class WindowsController {
                 if (node.isTabbed) {
                     WindowNode newTab = new WindowNode(node.x, node.y, node.width, node.height);
                     for (WindowNode child : newChildren) {
-                        child.setParent(newTab);
+                        child.changeParent(newTab);
                     }
-                    newTab.setParent(node);
+                    newTab.changeParent(node);
                 } else {
                     for (WindowNode child : newChildren) {
-                        child.setParent(node);
+                        child.changeParent(node);
                     }
                 }
             }
@@ -109,8 +116,6 @@ public abstract class WindowsController {
             createTabsIfNecessary(childNode);
         }
 
-        rootNode.isFlex = true;
-        rootNode.vertical = true;
         fillWithChildren(rootNode, rootNode.children, rootNode.x, rootNode.y, rootNode.width, rootNode.height);
         deepestFlexWindow.addChild(new WindowNode(formsWindow));
     }
@@ -120,17 +125,15 @@ public abstract class WindowsController {
             WindowNode parent = node.parent;
             WindowNode tabWindow = new WindowNode(node.x, node.y, node.width, node.height);
             tabWindow.isTabbed = true;
-            parent.removeChild(node);
-            node.setParent(tabWindow);
+            node.changeParent(tabWindow);
             WindowNode midNode = new WindowNode(node.x, node.y, node.width, node.height);
             for (WindowNode child : new ArrayList<>(node.children)) {
-                node.removeChild(child);
-                child.setParent(midNode);
+                child.changeParent(midNode);
 
                 createTabsIfNecessary(child);
             }
-            midNode.setParent(tabWindow);
-            tabWindow.setParent(parent);
+            midNode.changeParent(tabWindow);
+            tabWindow.changeParent(parent);
         }
     }
 
@@ -145,8 +148,7 @@ public abstract class WindowsController {
         for (WindowNode window : leftToPut) {
             if (windowsLeft.size() == 1) {
                 WindowNode lastWindow = windowsLeft.get(0);
-                lastWindow.parent.removeChild(lastWindow);
-                lastWindow.setParent(parent);
+                lastWindow.changeParent(parent);
                 return;
             }
 
@@ -186,7 +188,7 @@ public abstract class WindowsController {
             // иначе пробуем сложить часть окон в гор.или верт. сплит
             WindowNode split = putInSplit(windowsLeft, rectX, rectY, rectWidth, rectHeight);
             if (split != null) {
-                split.setParent(parent);
+                split.changeParent(parent);
 
                 for (WindowNode splitChild : split.children) {
                     windowsLeft.remove(splitChild);
@@ -226,12 +228,11 @@ public abstract class WindowsController {
             WindowNode newParent = new WindowNode(rectX, rectY, rectWidth, rectHeight);
             newParent.isFlex = true;
             newParent.vertical = vertical;
-            newParent.setParent(parent);
+            newParent.changeParent(parent);
             parent = newParent;
             deepestFlexWindow = parent;
         }
-        window.parent.removeChild(window);
-        window.setParent(parent);
+        window.changeParent(parent);
         return parent;
     }
 
@@ -291,8 +292,7 @@ public abstract class WindowsController {
 
         if (splitChildren != null) {
             for (WindowNode window : splitChildren) {
-                window.parent.removeChild(window);
-                window.setParent(flexWindow);
+                window.changeParent(flexWindow);
             }
         }
 
@@ -317,6 +317,47 @@ public abstract class WindowsController {
 
     private boolean attachVertically(WindowNode window, int rectY, int rectHeight) {
         return window.y == rectY || window.y + window.height == rectY + rectHeight;
+    }
+    
+    // rotates navbar and returns new root node
+    private WindowNode rotateNavbar(WindowNode rootNode) {
+        WindowNode navbarNode = findNavbarWindow(rootNode);
+        assert navbarNode != null;
+
+        navbarNode.vertical = true;
+        navbarNode.x = -1; // to be sure it goes first (left), as children are ordered by x/y coordinates
+
+        // change children orientation
+        for (WindowNode child : navbarNode.children) {
+            child.y = child.x;
+            child.x = 0;
+            int tmp = child.width;
+            child.width = child.height;
+            child.height = tmp;
+        }
+
+        // create new horizontal root flex panel
+        WindowNode newRootNode = new WindowNode(0, 0, 100, 100);
+        newRootNode.isFlex = true;
+        newRootNode.vertical = false;
+        navbarNode.changeParent(newRootNode);
+        rootNode.changeParent(newRootNode);
+        
+        return newRootNode;
+    }
+    
+    private WindowNode findNavbarWindow(WindowNode parent) {
+        for (WindowNode child : parent.children) {
+            if (child.window instanceof GNavigatorWindow && ((GNavigatorWindow) child.window).isRoot()) {
+                return parent;
+            } else {
+                WindowNode maybeRoot = findNavbarWindow(child);
+                if (maybeRoot != null) {
+                    return maybeRoot;
+                }
+            }
+        }
+        return null;
     }
 
     private WindowElement fillWindowChildren(WindowNode node) {
@@ -444,7 +485,10 @@ public abstract class WindowsController {
             return x <= node.x && y <= node.y && x + width >= node.x + node.width && y + height >= node.y + node.height;
         }
 
-        public void setParent(WindowNode parent) {
+        public void changeParent(WindowNode parent) {
+            if (this.parent != null) {
+                this.parent.removeChild(this);
+            }
             this.parent = parent;
             parent.addChild(this);
         }

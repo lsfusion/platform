@@ -44,6 +44,7 @@ import lsfusion.gwt.client.navigator.view.ExcelMobileNavigatorView;
 import lsfusion.gwt.client.navigator.view.MobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -87,6 +88,8 @@ public class MainFrame implements EntryPoint {
     public static String[] preDefinedDateRangesNames;
 
     public static boolean useTextAsFilterSeparator;
+    
+    public static boolean verticalNavbar;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -489,6 +492,20 @@ public class MainFrame implements EntryPoint {
             }
             RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
         } else {
+            if (MainFrame.verticalNavbar) {
+                // change navbar navigators orientation
+                for (GAbstractWindow window : result.navigatorWindows) {
+                    if (window instanceof GToolbarNavigatorWindow) {
+                        GToolbarNavigatorWindow toolbarWindow = (GToolbarNavigatorWindow) window;
+                        if (toolbarWindow.isInRootNavBar()) {
+                            toolbarWindow.vertical = true;
+                            toolbarWindow.verticalTextPosition = GToolbarNavigatorWindow.CENTER;
+                            toolbarWindow.alignmentX = GToolbarNavigatorWindow.LEFT_ALIGNMENT;
+                        }
+                    }
+                }
+            }
+            
             navigatorController.initializeNavigatorViews(result.navigatorWindows);
             navigatorController.setRootElement(result.root);
 
@@ -575,6 +592,8 @@ public class MainFrame implements EntryPoint {
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
                 preDefinedDateRangesNames = gClientSettings.preDefinedDateRangesNames;
                 useTextAsFilterSeparator = gClientSettings.useTextAsFilterSeparator;
+                
+                verticalNavbar = gClientSettings.verticalNavbar;
 
                 initializeFrame(result.navigatorInfo);
             }

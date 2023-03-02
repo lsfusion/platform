@@ -51,6 +51,10 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
     public LP useBootstrap;
     public LP serverUseBootstrap;
+    
+    public LP verticalNavbar;
+    
+    public LP serverVerticalNavbar;
 
     public LP computerConnection;
     public LP remoteAddressConnection;
@@ -145,6 +149,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         useBootstrap = findProperty("useBootstrap[CustomUser]");
         serverUseBootstrap = findProperty("serverUseBootstrap[]");
+        
+        verticalNavbar = findProperty("verticalNavbar[CustomUser]");
+        serverVerticalNavbar = findProperty("serverVerticalNavbar[]");
 
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");

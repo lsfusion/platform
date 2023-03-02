@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.Set;
 
@@ -25,7 +26,12 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
         boolean vertical = window.isVertical();
         main = new ResizableComplexPanel();
         main.addStyleName("navbar p-0");
+        main.addStyleName("navbar-" + (vertical ? "vert" : "horz"));
 
+        if (window.isInRootNavBar()) {
+            main.addStyleName(MainFrame.verticalNavbar ? "navbar-text-on-hover" : "navbar-expand");
+        }
+        
         panel = new ResizableComplexPanel();
         panel.addStyleName("navbar-nav");
         panel.addStyleName("navbar-nav-" + (vertical ? "vert" : "horz"));

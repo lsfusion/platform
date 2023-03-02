@@ -17,7 +17,7 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
     public static final int BOTTOM  = 3;
     public static final int RIGHT   = 4;
 
-    public int type;
+    public boolean vertical;
     public boolean showSelect;
 
     public int verticalTextPosition;
@@ -31,11 +31,7 @@ public class GToolbarNavigatorWindow extends GNavigatorWindow {
 
     @Override
     public boolean isVertical() {
-        return type == 1;
-    }
-
-    public boolean isHorizontal() {
-        return type == 0;
+        return vertical;
     }
 
     @Override

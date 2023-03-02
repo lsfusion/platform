@@ -2,7 +2,10 @@ package lsfusion.server.logics;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
-import lsfusion.base.*;
+import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
+import lsfusion.base.ReflectionUtils;
+import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -20,8 +23,10 @@ import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.ResourceUtils;
-import lsfusion.server.base.caches.*;
+import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;
+import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleAdapter;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -168,6 +173,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public String topModule;
 
     public boolean useBootstrap;
+    
+    public boolean verticalNavbar;
 
     public String logicsCaption;
 
@@ -209,6 +216,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public void setUseBootstrap(boolean useBootstrap) {
         this.useBootstrap = useBootstrap;
+    }
+    
+    public void setVerticalNavbar(boolean verticalNavbar) {
+        this.verticalNavbar = verticalNavbar;
     }
 
     public void setLogicsCaption(String logicsCaption) {

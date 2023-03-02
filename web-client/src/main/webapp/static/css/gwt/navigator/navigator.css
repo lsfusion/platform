@@ -1,3 +1,11 @@
+.navbar.navbar-vert {
+    overflow-y: auto;
+}
+
+.navbar.navbar-horz {
+    overflow-x: auto;
+}
+
 .navbar-nav {
     display: flex;
 }
@@ -5,7 +13,6 @@
 .navbar-nav.navbar-nav-horz {
     flex-direction: row;
     flex-wrap: nowrap;
-    overflow-x: auto;
 }
 
 .navbar-nav.navbar-nav-vert {
@@ -57,6 +64,14 @@
 /*.nav-link-horz .btn-image-img {*/
 /*    height: 1rem;*/
 /*}*/
+
+.navbar-text-on-hover:not(:hover) .nav-link {
+    font-size: 0;
+}
+
+.navbar-text-on-hover .nav-link {
+    transition: font-size 300ms;
+}
 
 .panelNavigatorView {
     display: block;

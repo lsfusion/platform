@@ -24,6 +24,10 @@ public abstract class GNavigatorWindow extends GAbstractWindow {
     public boolean isLogo() {
         return canonicalName.equals("System.logo");
     }
+    
+    public boolean isInRootNavBar() {
+        return isLogo() || isRoot() || isSystem();
+    }
 
     public boolean isVertical() {
         return false;

@@ -672,11 +672,12 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
 EXTEND FORM settings
-    PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, serverUseBootstrap READONLY
+    PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, 
+                 tableGridColor, serverUseBootstrap READONLY, serverVerticalNavbar READONLY 
 
     OBJECTS uc = CustomUser
     PROPERTIES(uc) READONLY name, login, userRoles
-    PROPERTIES(uc) fontSize, userUseBootstrap, colorThemeName,
+    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, colorThemeName,
                    selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
 ;
 
@@ -685,6 +686,7 @@ DESIGN settings {
         NEW colorsPane {
             caption = '{service.form.settings.caption.design}';
             MOVE PROPERTY (serverUseBootstrap());
+            MOVE PROPERTY (serverVerticalNavbar());
             NEW colorsHeaderPane {
                 type = CONTAINERH;
                 NEW defaultColors {
@@ -795,7 +797,8 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         showNotDefinedStrings = valueSettingBoolean('showNotDefinedStrings'),
         pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
-        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator');
+        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
+        verticalNavbar = verticalNavbar();
 }
 
 getClientSettings() {

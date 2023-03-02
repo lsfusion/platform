@@ -56,6 +56,11 @@ toggleColorTheme() {
     formRefresh();
 }
 
+userVerticalNavbar '{navigator.vertical.navbar}' = DATA TBOOLEAN (CustomUser);
+serverVerticalNavbar '{navigator.vertical.navbar}' = DATA BOOLEAN ();
+verticalNavbar '{navigator.vertical.navbar}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
+verticalNavbar = verticalNavbar(currentUser());
+
 NAVIGATOR {
     NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleBootstrap HEADER colorThemeCaption() IMAGE colorThemeImage();

@@ -121,7 +121,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.horizontalTextPosition = clientWindow.horizontalTextPosition;
         window.verticalTextPosition = clientWindow.verticalTextPosition;
         window.showSelect = clientWindow.showSelect;
-        window.type = clientWindow.type;
+        window.vertical = clientWindow.type == 1;
         return window;
     }
 
