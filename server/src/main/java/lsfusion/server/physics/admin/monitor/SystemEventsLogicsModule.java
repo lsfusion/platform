@@ -15,6 +15,7 @@ import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.user.AbstractCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
+import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.authentication.AuthenticationLogicsModule;
 import lsfusion.server.physics.admin.authentication.property.CurrentConnectionProperty;
@@ -107,6 +108,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP maxTotalMemoryComputerDateTimeFromDateTimeTo;
     public LP minUsedMemoryComputerDateTimeFromDateTimeTo;
     public LP maxUsedMemoryComputerDateTimeFromDateTimeTo;
+
+    public NavigatorElement logo;
 
     public SystemEventsLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/SystemEvents.lsf");
@@ -202,6 +205,9 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maxTotalMemoryComputerDateTimeFromDateTimeTo = findProperty("maxTotalMemoryFromTo[Computer,DATETIME,DATETIME]");
         minUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("minUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
         maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
+
+        logo = findNavigatorElement("logoAction");
+        logo.elementClass = "navbar-icon-xlarge";
     }
 
     public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {

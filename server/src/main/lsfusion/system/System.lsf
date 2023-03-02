@@ -454,7 +454,7 @@ WINDOW tree  TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE;
 
 NAVIGATOR {
     NEW FOLDER root '{navigator.forms}' WINDOW root {
-        NEW FOLDER administration '{navigator.administration}' LAST WINDOW system PARENT HEADER NULL IMAGE 'tools.png' {
+        NEW FOLDER administration '{navigator.administration}' LAST WINDOW system PARENT IMAGE 'tools.png' {
             NEW FOLDER application '{navigator.application}' WINDOW toolbar PARENT {
                 NEW options;
                 NEW integrationData;

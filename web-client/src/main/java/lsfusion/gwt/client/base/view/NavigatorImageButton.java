@@ -15,6 +15,10 @@ public class NavigatorImageButton extends ImageButton {
         super(element.caption, element.image, vertical, span ? Document.get().createSpanElement() : Document.get().createAnchorElement());
 
         this.element = element;
+
+        String elementClass = element.elementClass;
+        if(elementClass != null)
+            addStyleName(elementClass);
     }
 
     @Override

@@ -37,6 +37,7 @@ serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
 useBootstrap '{system.events.use.bootstrap}' (CustomUser u) = IF userUseBootstrap(u) THEN userUseBootstrap(u) == TTRUE ELSE serverUseBootstrap();
 useBootstrap = useBootstrap(currentUser());
 
+bootstrapCaption = IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}';
 bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
 toggleBootstrap () {
     userUseBootstrap(currentUser()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
@@ -44,6 +45,7 @@ toggleBootstrap () {
     INTERNAL CLIENT 'reload';
 }
 
+colorThemeCaption = IF colorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.light.mode}' ELSE '{system.events.dark.mode}';
 colorThemeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'lightMode.png' ELSE 'darkMode.png';
 toggleColorTheme() {
     IF colorTheme(currentUser()) == ColorTheme.dark THEN
@@ -55,8 +57,8 @@ toggleColorTheme() {
 }
 
 NAVIGATOR {
-    NEW toggleColorTheme WINDOW system PARENT FIRST HEADER NULL IMAGE colorThemeImage();
-    NEW toggleBootstrap WINDOW system PARENT AFTER toggleColorTheme HEADER NULL IMAGE bootstrapImage();
+    NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
+    NEW toggleColorTheme WINDOW system PARENT BEFORE toggleBootstrap HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.css' THEN 1;

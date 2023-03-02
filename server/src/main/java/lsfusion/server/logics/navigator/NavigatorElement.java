@@ -55,6 +55,8 @@ public abstract class NavigatorElement {
     public Property propertyImage;
     public Supplier<AppServerImage> image;
 
+    public String elementClass;
+
     private final String canonicalName;
     private DebugInfo.DebugPoint debugPoint;
 
@@ -269,6 +271,7 @@ public abstract class NavigatorElement {
         SerializationUtil.writeString(outStream, getPath());
 
         outStream.writeUTF(ThreadLocalContext.localize(getCaption()));
+        SerializationUtil.writeString(outStream, elementClass);
         outStream.writeBoolean(hasChildren());
         if (window == null) {
             outStream.writeInt(WindowType.NULL_VIEW);

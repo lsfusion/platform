@@ -21,6 +21,7 @@ public abstract class GNavigatorElement implements Serializable, HasNativeSID {
     public String creationPath;
     public String path;
     public BaseImage image;
+    public String elementClass;
 
     public GAsyncExec asyncExec;
 
