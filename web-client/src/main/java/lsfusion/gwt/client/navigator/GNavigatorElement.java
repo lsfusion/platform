@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.form.property.async.GAsyncExec;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
@@ -14,12 +15,13 @@ import java.util.Set;
 
 import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSeparator;
 
-public abstract class GNavigatorElement implements Serializable {
+public abstract class GNavigatorElement implements Serializable, HasNativeSID {
     public String canonicalName;
     public String caption;
     public String creationPath;
     public String path;
     public BaseImage image;
+    public String elementClass;
 
     public GAsyncExec asyncExec;
 
@@ -61,7 +63,12 @@ public abstract class GNavigatorElement implements Serializable {
                         ":</b> %s<a class='lsf-tooltip-path'></a> &ensp; <a class='lsf-tooltip-help'></a></html>",
                         caption, canonicalName, creationPath) : caption;
     }
-    
+
+    @Override
+    public String getNativeSID() {
+        return canonicalName;
+    }
+
     public boolean isFolder() {
         return false;
     }

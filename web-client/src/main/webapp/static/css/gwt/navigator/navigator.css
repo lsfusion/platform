@@ -24,11 +24,24 @@
 /*    font-size: 1.5rem;*/
 /*}*/
 
-.navbar-large-icon .nav-link > i {
+.navbar-icon-large .nav-link > i,
+.navbar-icon-large.nav-link > i {
     font-size: 1.5rem;
 }
-.navbar-xlarge-icon .nav-link > i {
+.navbar-icon-xlarge .nav-link > i,
+.navbar-icon-xlarge.nav-link > i {
     font-size: 2.5rem
+}
+
+.navbar-text-hidden .nav-link,
+.navbar-text-hidden.nav-link {
+    font-size: 0;
+}
+/* removing margins, since text is actually hidden */
+.navbar-text-hidden .nav-link > i.wrap-text-img,
+.navbar-text-hidden.nav-link > i.wrap-text-img {
+    margin-bottom: 0;
+    margin-right: 0;
 }
 
 .nav-link.nav-link-horz-1 {

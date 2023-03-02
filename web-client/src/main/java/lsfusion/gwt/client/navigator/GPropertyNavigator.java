@@ -5,7 +5,7 @@ import lsfusion.gwt.client.base.jsni.HasNativeSID;
 
 import java.io.Serializable;
 
-public abstract class GPropertyNavigator implements Serializable, IsSerializable {
+public abstract class GPropertyNavigator implements Serializable {
 
     public GPropertyNavigator() {
     }

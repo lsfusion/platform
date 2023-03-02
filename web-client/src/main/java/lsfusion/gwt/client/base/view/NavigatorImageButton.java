@@ -9,13 +9,25 @@ public class NavigatorImageButton extends ImageButton {
     private final GNavigatorElement element;
 
     public NavigatorImageButton(GNavigatorElement element, boolean vertical) {
-        super(element.caption, element.image, vertical, Document.get().createAnchorElement());
+        this(element, vertical, false);
+    }
+    public NavigatorImageButton(GNavigatorElement element, boolean vertical, boolean span) {
+        super(element.caption, element.image, vertical, span ? Document.get().createSpanElement() : Document.get().createAnchorElement());
 
         this.element = element;
+
+        String elementClass = element.elementClass;
+        if(elementClass != null)
+            addStyleName(elementClass);
     }
 
     @Override
     protected BaseImage getImage() {
         return element.image;
+    }
+
+    @Override
+    protected String getCaption() {
+        return element.caption;
     }
 }

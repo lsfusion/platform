@@ -697,15 +697,15 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         String formsCss = "bg-body-tertiary"; // it makes sense to be equal to the class in the ModalWindow constructor
 
         baseWindows.logo = (ToolBarNavigatorWindow) findWindow("logo");
-        baseWindows.logo.elementClass = navBarCss + " navbar-xlarge-icon";
+        baseWindows.logo.elementClass = navBarCss;
         baseWindows.logo.autoSize = true;
 
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
-        baseWindows.root.elementClass = navBarCss + " navbar-large-icon";
+        baseWindows.root.elementClass = navBarCss + " navbar-icon-large";
         baseWindows.root.autoSize = true;
 
         baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
-        baseWindows.system.elementClass = navBarCss + " navbar-large-icon";
+        baseWindows.system.elementClass = navBarCss + " navbar-icon-large navbar-text-hidden";
         baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");

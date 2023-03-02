@@ -27,7 +27,9 @@ public abstract class ClientNavigatorElement {
     public String creationPath;
     public String path;
     public String caption;
-    
+
+    public String elementClass;
+
     public List<ClientNavigatorElement> parents = new ArrayList<>();
     public List<ClientNavigatorElement> children = new ArrayList<>();
     public AppImage appImage;
@@ -53,6 +55,7 @@ public abstract class ClientNavigatorElement {
         path = SerializationUtil.readString(inStream);
 
         caption = inStream.readUTF();
+        elementClass = SerializationUtil.readString(inStream);
         hasChildren = inStream.readBoolean();
         window = ClientNavigatorWindow.deserialize(inStream);
         if(window != null) {
