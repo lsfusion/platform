@@ -84,7 +84,7 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("retail.png", "fa-solid fa-bag-shopping");
         AppServerImage.predefinedFontClasses.exclAdd("projectManagement.png", "fa-solid fa-diagram-project");
 
-        AppServerImage.predefinedFontClasses.exclAdd("logo.png", "lsfi lsfi-logo-horizontal");
+        AppServerImage.predefinedFontClasses.exclAdd("logo.png", "lsfi lsfi-logo");
     }
 
     private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G2);
