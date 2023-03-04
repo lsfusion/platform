@@ -26,7 +26,7 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
     }
 
     public void setComponent(Widget component) {
-        this.component = window.drawScrollBars ? new ScrollPanel(component) : component;
+        this.component = component;
     }
 
     public Widget getView() {

@@ -490,33 +490,39 @@ public class MainFrame implements EntryPoint {
         // пока прячем всё, что не поддерживается
         result.status.visible = false;
 
-        this.root = result.root;
+        GNavigatorElement root = result.root;
+        ArrayList<GNavigatorWindow> navigatorWindows = result.navigatorWindows;
+
+        this.root = root;
         this.navigatorController = navigatorController;
 
         if (mobile) {
             if (useBootstrap) {
-                mobileNavigatorView = new BSMobileNavigatorView(result.root, navigatorController);
+                mobileNavigatorView = new BSMobileNavigatorView(root, navigatorWindows, navigatorController);
             } else {
-                mobileNavigatorView = new ExcelMobileNavigatorView(result.root, navigatorController);
+                mobileNavigatorView = new ExcelMobileNavigatorView(root, navigatorWindows, navigatorController);
             }
             RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
+            RootLayoutPanel.get().addStyleName("nav-mobile");
         } else {
-            navigatorController.initializeNavigatorViews(result.navigatorWindows);
-            navigatorController.setRootElement(result.root);
+            navigatorController.initializeNavigatorViews(navigatorWindows);
+            navigatorController.setRootElement(root);
 
             List<GAbstractWindow> allWindows = new ArrayList<>();
-            allWindows.addAll(result.navigatorWindows);
+            allWindows.addAll(navigatorWindows);
             allWindows.addAll(commonWindows.keySet());
 
             windowsController.initializeWindows(allWindows, formsWindow);
 
             navigatorController.update();
+
+            RootLayoutPanel.get().addStyleName("nav-desktop");
         }
 
         formsController.initRoot(formsController);
 
         //apply initial navigator changes from navigatorinfo somewhere around here
-        applyNavigatorChanges(result.root, result.navigatorChanges, navigatorController);
+        applyNavigatorChanges(root, result.navigatorChanges, navigatorController);
 
         formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
             @Override

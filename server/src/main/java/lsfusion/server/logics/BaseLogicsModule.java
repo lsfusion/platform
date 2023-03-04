@@ -692,7 +692,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // Окна
         baseWindows = new Windows();
 
-        String navBarCss = "navbar-expand bg-dark-subtle"; // alternative: bg-dark / navbar-dark -> bg-dark-subtle -> bg-body-secondary
+        String navBarCss = "bg-dark-subtle"; // alternative: bg-dark / navbar-dark -> bg-dark-subtle -> bg-body-secondary
         String restCss = "bg-body-secondary";
         String formsCss = "bg-body-tertiary"; // it makes sense to be equal to the class in the ModalWindow constructor
 
@@ -705,7 +705,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         baseWindows.root.autoSize = true;
 
         baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
-        baseWindows.system.elementClass = navBarCss + " navbar-icon-large navbar-text-hidden";
+        baseWindows.system.elementClass = navBarCss + " navbar-icon-large navbar-desktop-text-hidden";
         baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");

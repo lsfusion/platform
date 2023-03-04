@@ -25,6 +25,10 @@ public abstract class GNavigatorWindow extends GAbstractWindow {
         return canonicalName.equals("System.logo");
     }
 
+    public boolean isToolbar() {
+        return canonicalName.equals("System.toolbar");
+    }
+
     public boolean isVertical() {
         return false;
     }

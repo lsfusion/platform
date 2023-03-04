@@ -1,17 +1,40 @@
-.navbar-nav {
+.navbar-nav.navbar-nav-horz,
+.navbar-nav.navbar-nav-vert
+{
     display: flex;
+
+    flex-wrap: nowrap;
+
+    /* the trick is that we're using navbar / navbar-nav to get proper design, for example active / nonactive / hover links */
+    /* but navbar classes also define some "responsive layout", which we don't want*/
+    /* in particular navbar sets align-items: center, and justify-content:space-between (flex-start that is set by navbar-expand), which we usually don't want, since navbar is just a wrapper for the navbar-nav */
+    /* basically there are to approaches, depending on whether we want to align items in nav, or the whole nav */
+    /* this approach assumes that items are aligned, so GToolbarNavigatorView sets the alignment for the nav */
+    flex: 1 1 auto;
+    align-self: stretch;
+    /* in the other approach we should override align-items and justify-content to the default flex-start (align-self won't do since the important won't work), and set the alignment for the navbar */
 }
 
-.navbar-nav.navbar-nav-horz {
+.navbar-nav.navbar-nav-horz
+{
     flex-direction: row;
-    flex-wrap: nowrap;
+
+    /* in horizontal navbar it makes sense to center the text */
+    text-align: center;
+
+    /* should look on drawScrollbars? */
     overflow-x: auto;
 }
 
-.navbar-nav.navbar-nav-vert {
+.navbar-nav.navbar-nav-vert,
+.navbar-expand .navbar-nav.navbar-nav-vert /* navbar-expand navbar-nav somewhy sets flex-direction: row */
+{
     flex-direction: column;
-    align-items: flex-start;
-    padding-left: 0.5rem;
+
+    /* should look on drawScrollbars? */
+    overflow-y: auto;
+
+    /*align-items: flex-start;*/
 }
 
 /*.nav-link.nav-link-vert {*/
@@ -33,13 +56,13 @@
     font-size: 2.5rem
 }
 
-.navbar-text-hidden .nav-link,
-.navbar-text-hidden.nav-link {
+.nav-desktop .navbar-desktop-text-hidden .nav-link,
+.nav-desktop .navbar-desktop-text-hidden.nav-link {
     font-size: 0;
 }
 /* removing margins, since text is actually hidden */
-.navbar-text-hidden .nav-link > i.wrap-text-img,
-.navbar-text-hidden.nav-link > i.wrap-text-img {
+.nav-desktop .navbar-desktop-text-hidden .nav-link > i.wrap-text-img,
+.nav-desktop .navbar-desktop-text-hidden.nav-link > i.wrap-text-img {
     margin-bottom: 0;
     margin-right: 0;
 }

@@ -7,23 +7,56 @@ import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
+import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+
+import java.util.ArrayList;
+import java.util.function.Predicate;
 
 public abstract class MobileNavigatorView {
 
     protected final GINavigatorController navigatorController;
 
-    protected MobileNavigatorView(GNavigatorElement root, GINavigatorController navigatorController) {
+    protected final static Predicate<GNavigatorWindow> ANY = navigatorWindow -> true;
+
+    protected GNavigatorWindow logo;
+    protected GNavigatorWindow system;
+    protected GNavigatorWindow toolbar;
+
+
+    protected static class RootPanels {
+
+        ComplexPanel mainPanel;
+
+        Predicate<GNavigatorWindow>[] windows;
+        ComplexPanel[] windowPanels;
+
+        public RootPanels(ComplexPanel mainPanel, Predicate<GNavigatorWindow>[] windows, ComplexPanel[] windowPanels) {
+            this.mainPanel = mainPanel;
+            this.windows = windows;
+            this.windowPanels = windowPanels;
+        }
+    }
+
+    protected MobileNavigatorView(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
         this.navigatorController = navigatorController;
 
-        ComplexPanel navBarPanel = initRootPanel();
+        for(GNavigatorWindow navigatorWindow : navigatorWindows) {
+            if(navigatorWindow.isLogo())
+                logo = navigatorWindow;
+            if(navigatorWindow.isSystem())
+                system = navigatorWindow;
+            if(navigatorWindow.isToolbar())
+                toolbar = navigatorWindow;
+        }
 
-        ComplexPanel navPanel = createChildrenMenuItems(navBarPanel, root, -1);
+        RootPanels rootPanels = initRootPanels();
 
-        initSubRootPanel(navPanel);
+        for(int i=0;i<rootPanels.windows.length;i++) {
+            createChildrenMenuItems(rootPanels.windowPanels[i], rootPanels.windows[i], root, -1);
+        }
 
-        RootLayoutPanel.get().add(navBarPanel);
-
-        enable(navBarPanel);
+        RootLayoutPanel.get().add(rootPanels.mainPanel);
+        enable(rootPanels.mainPanel);
     }
 
     private final NativeSIDMap<GNavigatorElement, NavigatorImageButton> navigatorItems = new NativeSIDMap<>();
@@ -31,16 +64,16 @@ public abstract class MobileNavigatorView {
     protected void createNavigatorItem(ComplexPanel panel, GNavigatorElement navigatorElement, int level) {
         NavigatorImageButton button = new NavigatorImageButton(navigatorElement, false, navigatorElement.children.size() > 0); // somewhy folder should be span (otherwise there are some odd borders to the right)
         navigatorItems.put(navigatorElement, button);
-        initMenuItem(level, button);
 
-        panel = wrapNavigatorItem(panel);
+        panel = initMenuItem(panel, level, button);
         panel.add(button);
 
-        boolean isFolder = navigatorElement.children.size() > 0;
-        if (isFolder) {
-            ComplexPanel subMenuPanel = createChildrenMenuItems(panel, navigatorElement, level);
+        if (navigatorElement.children.size() > 0) {
+            ComplexPanel subMenuPanel = initFolderPanel(button);
 
-            initSubMenuItem(button, subMenuPanel);
+            createChildrenMenuItems(subMenuPanel, ANY, navigatorElement, level);
+
+            panel.add(subMenuPanel);
         } else {
             button.addClickHandler(event -> {
                 navigatorController.openElement(navigatorElement, event.getNativeEvent());
@@ -57,30 +90,20 @@ public abstract class MobileNavigatorView {
         navigatorItems.get(navigatorElement).updateText();
     }
 
-    protected abstract void enable(ComplexPanel navBarPanel);
-
-    protected abstract void initSubMenuItem(ImageButton button, ComplexPanel subMenuPanel);
-
-    protected abstract ComplexPanel wrapNavigatorItem(ComplexPanel panel);
-
-    protected abstract void initMenuItem(int level, ImageButton button);
-
-    protected ComplexPanel createChildrenMenuItems(ComplexPanel panel, GNavigatorElement navigatorElement, int level) {
-        ComplexPanel subMenuPanel = initSubMenuPanel();
-
+    protected void createChildrenMenuItems(ComplexPanel subMenuPanel, Predicate<GNavigatorWindow> window, GNavigatorElement navigatorElement, int level) {
         for (GNavigatorElement child : navigatorElement.children) {
-            createNavigatorItem(subMenuPanel, child, level + 1);
+            if(window.test(child.window))
+                createNavigatorItem(subMenuPanel, child, level + 1);
         }
-
-        panel.add(subMenuPanel);
-        return subMenuPanel;
     }
 
-    protected abstract ComplexPanel initRootPanel();
+    protected abstract RootPanels initRootPanels();
 
-    protected abstract void initSubRootPanel(ComplexPanel rootPanel);
+    protected abstract ComplexPanel initFolderPanel(NavigatorImageButton button);
 
-    protected abstract ComplexPanel initSubMenuPanel();
+    protected abstract ComplexPanel initMenuItem(ComplexPanel panel, int level, ImageButton button);
+
+    protected abstract void enable(ComplexPanel navBarPanel);
 
     public abstract void openNavigatorMenu();
 
