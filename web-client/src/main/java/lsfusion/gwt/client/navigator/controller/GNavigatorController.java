@@ -84,7 +84,7 @@ public abstract class GNavigatorController implements GINavigatorController {
     }
 
     @Override
-    public void openElement(GNavigatorElement element, NativeEvent nativeEvent) {
+    public void openElement(GNavigatorAction element, NativeEvent nativeEvent) {
         if (element instanceof GNavigatorAction) {
             boolean sync = element.asyncExec == null;
             Function asyncExec = pushAsyncResult -> formsController.executeNavigatorAction(element.canonicalName, nativeEvent, sync);

@@ -705,7 +705,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         baseWindows.root.autoSize = true;
 
         baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
-        baseWindows.system.elementClass = navBarCss + " navbar-icon-large navbar-desktop-text-hidden";
+        baseWindows.system.elementClass = navBarCss + " navbar-desktop-icon-large navbar-desktop-text-hidden";
         baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");

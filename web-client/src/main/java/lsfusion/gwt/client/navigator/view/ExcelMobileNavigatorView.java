@@ -35,7 +35,7 @@ public class ExcelMobileNavigatorView extends MobileNavigatorView {
     }
 
     @Override
-    protected ComplexPanel initMenuItem(ComplexPanel panel, int level, ImageButton button) {
+    protected ComplexPanel wrapMenuItem(ComplexPanel panel, int level, ImageButton button) {
         // wrapping into li;
         ResizableComplexPanel liElement = new ResizableComplexPanel(Document.get().createLIElement());
         panel.add(liElement);

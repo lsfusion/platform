@@ -496,6 +496,9 @@ public class MainFrame implements EntryPoint {
         this.root = root;
         this.navigatorController = navigatorController;
 
+        RootPanel.getBodyElement().addClassName(useBootstrap ? "nav-bootstrap" : "nav-excel");
+        RootPanel.getBodyElement().addClassName(mobile ? "nav-mobile" : "nav-desktop");
+
         if (mobile) {
             if (useBootstrap) {
                 mobileNavigatorView = new BSMobileNavigatorView(root, navigatorWindows, navigatorController);
@@ -503,7 +506,6 @@ public class MainFrame implements EntryPoint {
                 mobileNavigatorView = new ExcelMobileNavigatorView(root, navigatorWindows, navigatorController);
             }
             RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
-            RootLayoutPanel.get().addStyleName("nav-mobile");
         } else {
             navigatorController.initializeNavigatorViews(navigatorWindows);
             navigatorController.setRootElement(root);
@@ -515,8 +517,6 @@ public class MainFrame implements EntryPoint {
             windowsController.initializeWindows(allWindows, formsWindow);
 
             navigatorController.update();
-
-            RootLayoutPanel.get().addStyleName("nav-desktop");
         }
 
         formsController.initRoot(formsController);

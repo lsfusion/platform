@@ -47,13 +47,36 @@
 /*    font-size: 1.5rem;*/
 /*}*/
 
+/* used to align icons (important for hover for example), because font awesome icons for example have different width */
+/* could be refactored to the explicit .navbar-icon-fixed-width */
+.navbar-nav.navbar-nav-vert .nav-link > i {
+    width: 1.25em;
+    text-align: center;
+}
+
+/* for using in hover to have "more aligned" elements */
+.navbar-icon-fixed-width-large .nav-link > i {
+    width: 4em;
+}
+
 .navbar-icon-large .nav-link > i,
 .navbar-icon-large.nav-link > i {
     font-size: 1.5rem;
 }
+
+.nav-desktop .navbar-desktop-icon-large .nav-link > i,
+.nav-desktop .navbar-desktop-icon-large.nav-link > i {
+    font-size: 1.5rem;
+}
+
 .navbar-icon-xlarge .nav-link > i,
 .navbar-icon-xlarge.nav-link > i {
     font-size: 2.5rem
+}
+
+.nav-excel.nav-mobile .navbar-excel-mobile-hidden .nav-link,
+.nav-excel.nav-mobile .navbar-excel-mobile-hidden.nav-link {
+    display: none;
 }
 
 .nav-desktop .navbar-desktop-text-hidden .nav-link,

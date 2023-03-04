@@ -77,7 +77,7 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
         FlexPanel subMenuPanel = new FlexPanel(true);
 
         subMenuPanel.setVisible(false);
-        button.addStyleName("nav-folder collapsed");
+        button.addStyleName("nav-bs-mobile-folder collapsed");
         button.addClickHandler(event -> {
             boolean wasVisible = subMenuPanel.isVisible();
             subMenuPanel.setVisible(!wasVisible);
@@ -87,9 +87,7 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
         return subMenuPanel;
     }
 
-    protected ComplexPanel initMenuItem(ComplexPanel panel, int level, ImageButton button) {
-        button.addStyleName("nav-item nav-link navbar-text nav-link-horz");
-        button.addStyleName("nav-link-horz-" + level);
+    protected ComplexPanel wrapMenuItem(ComplexPanel panel, int level, ImageButton button) {
         return panel;
     }
 

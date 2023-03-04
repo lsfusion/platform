@@ -207,7 +207,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         maxUsedMemoryComputerDateTimeFromDateTimeTo = findProperty("maxUsedMemoryFromTo[Computer,DATETIME,DATETIME]");
 
         logo = findNavigatorElement("logoAction");
-        logo.elementClass = "navbar-icon-xlarge";
+        logo.elementClass = "navbar-icon-xlarge navbar-excel-mobile-hidden";
     }
 
     public void logException(BusinessLogics bl, ExecutionStack stack, Throwable t, DataObject user, String clientName, boolean client, boolean web) throws SQLException, SQLHandledException {

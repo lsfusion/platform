@@ -5,7 +5,9 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
+import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
@@ -62,13 +64,14 @@ public abstract class MobileNavigatorView {
     private final NativeSIDMap<GNavigatorElement, NavigatorImageButton> navigatorItems = new NativeSIDMap<>();
 
     protected void createNavigatorItem(ComplexPanel panel, GNavigatorElement navigatorElement, int level) {
-        NavigatorImageButton button = new NavigatorImageButton(navigatorElement, false, navigatorElement.children.size() > 0); // somewhy folder should be span (otherwise there are some odd borders to the right)
+        boolean isFolder = navigatorElement instanceof GNavigatorFolder;
+        NavigatorImageButton button = new NavigatorImageButton(navigatorElement, false, isFolder, level); // somewhy folder should be span (otherwise there are some odd borders to the right)
         navigatorItems.put(navigatorElement, button);
 
-        panel = initMenuItem(panel, level, button);
+        panel = wrapMenuItem(panel, level, button);
         panel.add(button);
 
-        if (navigatorElement.children.size() > 0) {
+        if (isFolder) {
             ComplexPanel subMenuPanel = initFolderPanel(button);
 
             createChildrenMenuItems(subMenuPanel, ANY, navigatorElement, level);
@@ -76,7 +79,7 @@ public abstract class MobileNavigatorView {
             panel.add(subMenuPanel);
         } else {
             button.addClickHandler(event -> {
-                navigatorController.openElement(navigatorElement, event.getNativeEvent());
+                navigatorController.openElement((GNavigatorAction) navigatorElement, event.getNativeEvent());
                 closeNavigatorMenu();
             });
         }
@@ -101,7 +104,7 @@ public abstract class MobileNavigatorView {
 
     protected abstract ComplexPanel initFolderPanel(NavigatorImageButton button);
 
-    protected abstract ComplexPanel initMenuItem(ComplexPanel panel, int level, ImageButton button);
+    protected abstract ComplexPanel wrapMenuItem(ComplexPanel panel, int level, ImageButton button);
 
     protected abstract void enable(ComplexPanel navBarPanel);
 

@@ -84,41 +84,9 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
     boolean firstFolder = true;
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        FormButton button = new NavigatorImageButton(element, verticalTextAlign);
-        button.addStyleName("nav-item");
-        button.addStyleName("nav-link");
-        button.addStyleName("navbar-text");
-
-        button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
-        button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);
-
-        // debug info
-        button.getElement().setAttribute("lsfusion-container", element.canonicalName);
+        FormButton button = new NavigatorImageButton(element, verticalTextAlign, step);
 
         button.addClickHandler(event -> selectElement(element, event.getNativeEvent()));
-
-        TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
-            @Override
-            public String getTooltip() {
-                return element.getTooltipText();
-            }
-
-            @Override
-            public String getPath() {
-                return element.path;
-            }
-
-            @Override
-            public String getCreationPath() {
-                return element.creationPath;
-            }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return button.isAttached() && button.isVisible();
-            }
-        };
-        TooltipManager.registerWidget(button, tooltipHelper);
 
         if (window.allButtonsActive() || (element.isFolder() && element.equals(selected))) {
             button.addStyleName("active");
