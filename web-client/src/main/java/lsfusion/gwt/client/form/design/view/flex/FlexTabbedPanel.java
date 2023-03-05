@@ -11,27 +11,27 @@ import java.util.function.Consumer;
 public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, RequiresResize, ProvidesResize {
 
     protected TabBar tabBar;
+    protected boolean tabEnd;
 
     public FlexTabbedPanel() {
-        this(null);
+        this(null, false);
     }
-    public FlexTabbedPanel(Widget extraTabWidget) {
-        this(extraTabWidget, true);
+    public FlexTabbedPanel(Widget extraTabWidget, boolean end) {
+        this(extraTabWidget, true, end);
     }
-    public FlexTabbedPanel(boolean vertical) {
-        this(null, vertical);
-    }
-    private FlexTabbedPanel(Widget extraTabWidget, boolean vertical) {
+
+    public FlexTabbedPanel(Widget extraTabWidget, boolean vertical, boolean end) {
         super(vertical);
 
-        FlexTabBar tabBar = new FlexTabBar(extraTabWidget, !vertical);
+        FlexTabBar tabBar = new FlexTabBar(extraTabWidget, !vertical, end);
         add(tabBar, GFlexAlignment.STRETCH);
         tabBar.setBeforeSelectionHandler(this::onBeforeTabSelected);
         tabBar.setSelectionHandler(FlexTabbedPanel.this::onTabSelected);
         this.tabBar = tabBar;
 
         addStyleName("tab-panel");
-        addStyleName(vertical ? "tab-panel-vert" : "tab-panel-horz");
+        addStyleName(end ? "tab-panel-end" : "tab-panel-start");
+        tabEnd = end;
     }
 
     private void onBeforeTabSelected(Integer index) {
@@ -82,7 +82,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
      */
 
     public interface AddToDeck {
-        void add(SizedFlexPanel deck, int beforeIndex);
+        void add(int beforeIndex);
     }
 
     private Label createTab(String tabText, boolean wordWrap) {
@@ -100,14 +100,14 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
 
     public void addTab(Widget w, Integer index, Widget tabWidget) {
         w.addStyleName("tab-pane");
-        insertTab(tabWidget, index != null ? index : getTabCount(), (widgets, beforeIndex) -> widgets.addFillShrink(w, beforeIndex));
+        insertTab(tabWidget, index != null ? index : getTabCount(), (beforeIndex) -> addFillShrink(w, beforeIndex));
     }
 
     public void insertTab(Widget tabWidget, int beforeIndex, AddToDeck addToDeck) {
         tabBar.insertTab(tabWidget, beforeIndex);
 
         int tabIndex = getTabIndex(beforeIndex);
-        addToDeck.add(this, tabIndex);
+        addToDeck.add(tabIndex);
         getWidget(tabIndex).setVisible(false);
     }
 
@@ -127,11 +127,11 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
     }
 
     private int getTabIndex(int index) {
-        return index + 1; // tab bar is first
+        return tabEnd ? index : index + 1; // if tab bar is first then shifting the index
     }
 
     public int getTabCount() {
-        return getWidgetCount() - 1; // tab bar is first
+        return getWidgetCount() - 1; // tab bar is included
     }
 
     public int getSelectedTab() {
@@ -177,7 +177,7 @@ public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, Req
 
     @Override
     public Border getOuterTopBorder() {
-        return Border.HAS_MARGIN; //.tab-panel-vert > .nav-tabs has top padding
+        return Border.HAS_MARGIN; // .nav-tabs-vert has top padding
     }
 
     @Override

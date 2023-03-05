@@ -25,7 +25,7 @@ public class TabbedContainerView extends GAbstractContainerView {
 
         assert container.tabbed;
 
-        panel = new FlexTabbedPanel(vertical);
+        panel = new FlexTabbedPanel(null, vertical, false);
 
         panel.setSelectionHandler(index -> {
             onTabSelected(index, formController, container);
@@ -106,7 +106,7 @@ public class TabbedContainerView extends GAbstractContainerView {
                     visibleChildren.add(index, child);
                     final int fi = i;
 
-                    panel.insertTab(childrenCaptions.get(i).widget.widget, index, (deck, beforeIndex) -> addChildrenWidget(deck, fi, beforeIndex));
+                    panel.insertTab(childrenCaptions.get(i).widget.widget, index, (beforeIndex) -> addChildrenWidget(panel, fi, beforeIndex));
                 }
             } else if (index != -1) {
                 visibleChildren.remove(index);

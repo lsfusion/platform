@@ -186,6 +186,7 @@
     outline: var(--table-outline-width) solid var(--bs-table-border-color);
     border-right: none;
 }
+
 /* --- --- */
 
 @supports (-moz-appearance: none) {
@@ -196,7 +197,27 @@
     }
 }
 
+/* Scroll shadow support */
+
 .scroll-shadow-container.scroll-down > .scroll-shadow-header {
     z-index: 1;
     box-shadow: 0 0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+
+/* The end tab bar location support - just inverting borders */
+
+.nav-tabs-vert.nav-tabs-end {
+    border-top: var(--bs-nav-tabs-border-width) solid var(--bs-nav-tabs-border-color);
+    border-bottom: none;
+
+    --bs-nav-tabs-link-active-border-color: var(--bs-body-bg) var(--bs-border-color) var(--bs-border-color);
+}
+
+.nav-tabs-vert.nav-tabs-end .nav-link {
+    margin-top: calc(-1 * var(--bs-nav-tabs-border-width));
+    margin-bottom: 0;
+    border-bottom-left-radius: var(--bs-nav-tabs-border-radius);
+    border-bottom-right-radius: var(--bs-nav-tabs-border-radius);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
