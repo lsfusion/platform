@@ -505,7 +505,13 @@ public class MainFrame implements EntryPoint {
             } else {
                 mobileNavigatorView = new ExcelMobileNavigatorView(root, navigatorWindows, navigatorController);
             }
-            RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
+            Widget formsView = windowsController.getWindowView(formsWindow);
+
+            String elementClass = formsWindow.elementClass;
+            if(elementClass != null)
+                formsView.addStyleName(elementClass);
+
+            RootLayoutPanel.get().add(formsView);
         } else {
             navigatorController.initializeNavigatorViews(navigatorWindows);
             navigatorController.setRootElement(root);

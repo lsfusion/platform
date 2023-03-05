@@ -1435,18 +1435,22 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     private static final String SCROLL_SHADOW_CONTAINER = "__scroll_shadow_container";
     private static void setContentScrolled(Widget widget) {
-        Element container = GwtClientUtils.getParentWithAttribute(widget.getElement(), SCROLL_SHADOW_CONTAINER);
+        Element element = widget.getElement();
+        Element container = GwtClientUtils.getParentWithAttribute(element, SCROLL_SHADOW_CONTAINER);
         if(container != null) { // just in case
-            if(widget.getElement().getScrollTop() > MainFrame.mobileAdjustment)
-                container.addClassName("scroll-down");
+            int scrollTop = element.getScrollTop();
+            if(container.getAttribute(SCROLL_SHADOW_CONTAINER).equals("end") ?
+                    scrollTop < element.getScrollHeight() - element.getClientHeight() - MainFrame.mobileAdjustment :
+                    scrollTop > MainFrame.mobileAdjustment)
+                container.addClassName("scrolled");
             else
-                container.removeClassName("scroll-down");
+                container.removeClassName("scrolled");
         }
     }
 
-    public static void makeShadowOnScroll(Widget container, Widget header, FlexPanel contentWidget) {
-        container.addStyleName("scroll-shadow-container");
-        container.getElement().setAttribute(SCROLL_SHADOW_CONTAINER, "true");
+    public static void makeShadowOnScroll(Widget container, Widget header, FlexPanel contentWidget, boolean end) {
+        container.addStyleName(end ? "scroll-shadow-container-end" : "scroll-shadow-container-start");
+        container.getElement().setAttribute(SCROLL_SHADOW_CONTAINER, end ? "end" : "start");
         header.addStyleName("scroll-shadow-header");
 
         /* for example modal-body uses padding which is not what we want since we want it to have the scroll respecting form paddings,

@@ -511,7 +511,7 @@ public abstract class FormsController {
 
         tabsPanel.addTab(contentWidget, index, header);
 
-        FlexPanel.makeShadowOnScroll(tabsPanel, tabsPanel.getTabBar(), contentWidget);
+        FlexPanel.makeShadowOnScroll(tabsPanel, tabsPanel.getTabBar(), contentWidget, tabsPanel.tabEnd);
 
         assert !isAdding;
         isAdding = true;

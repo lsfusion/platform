@@ -1,21 +1,46 @@
-.nav-tabs-horz.nav-tabs-start {
-    padding-left: var(--border-cont-horz-padding);
-}
-.nav-tabs-horz.nav-tabs-end {
-    padding-right: var(--border-cont-horz-padding);
-}
-.nav-tabs-vert.nav-tabs-start {
-    padding-top: var(--border-cont-vert-padding);
-}
-.nav-tabs-vert.nav-tabs-end {
-    padding-bottom: var(--border-cont-vert-padding);
+
+/* PADDINGS */
+
+.tab-bar {
+    --tab-bar-horz-padding: var(--border-cont-horz-padding);
+    --tab-bar-vert-padding: var(--border-cont-vert-padding);
 }
 
+/* main direction */
+
+.nav-tabs-horz.nav-tabs-start {
+    padding-left: var(--tab-bar-horz-padding);
+}
+.nav-tabs-horz.nav-tabs-end {
+    padding-right: var(--tab-bar-horz-padding);
+}
+.nav-tabs-vert.nav-tabs-start {
+    padding-top: var(--tab-bar-vert-padding);
+}
+.nav-tabs-vert.nav-tabs-end {
+    padding-bottom: var(--tab-bar-vert-padding);
+}
+
+/* opposite direction */
+
 .forms-container > .tab-bar .nav-tabs-bar-wrap-horz > .nav-tabs {
-    padding-top: var(--border-cont-vert-padding);
+    padding-top: var(--tab-bar-vert-padding);
+}
+.forms-container > .tab-bar .nav-extra-toolbar.nav-tabs-horz {
+    padding-bottom: var(--tab-bar-vert-padding);
 }
 .forms-container > .tab-bar .nav-tabs-bar-wrap-vert > .nav-tabs {
-    padding-left: var(--border-cont-horz-padding);
+    padding-left: var(--tab-bar-horz-padding);
+}
+.forms-container > .tab-bar .nav-extra-toolbar.nav-tabs-vert {
+    padding-right: var(--tab-bar-horz-padding);
+}
+
+/* reducing tab paddings in the mobile navigator to look more compact / authentic */
+
+.nav-mobile .forms-container > .tab-bar {
+    --tab-bar-horz-padding: var(--border-comp-horz-padding);
+    --tab-bar-vert-padding: var(--border-comp-vert-padding);
 }
 
 /* ??? not sure that this is needed ??? */

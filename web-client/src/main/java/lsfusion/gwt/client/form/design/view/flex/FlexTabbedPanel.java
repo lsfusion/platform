@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 public class FlexTabbedPanel extends SizedFlexPanel implements IndexedPanel, RequiresResize, ProvidesResize {
 
     protected TabBar tabBar;
-    protected boolean tabEnd;
+    public final boolean tabEnd;
 
     public FlexTabbedPanel() {
         this(null, false);

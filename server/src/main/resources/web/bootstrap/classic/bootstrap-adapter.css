@@ -199,9 +199,13 @@
 
 /* Scroll shadow support */
 
-.scroll-shadow-container.scroll-down > .scroll-shadow-header {
+.scroll-shadow-container-start.scrolled > .scroll-shadow-header {
     z-index: 1;
     box-shadow: 0 0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
+}
+.scroll-shadow-container-end.scrolled > .scroll-shadow-header {
+    z-index: 1;
+    box-shadow: 0 -0.1rem 0.5rem 0 rgba(var(--bs-body-color-rgb),.15);
 }
 
 /* The end tab bar location support - just inverting borders */

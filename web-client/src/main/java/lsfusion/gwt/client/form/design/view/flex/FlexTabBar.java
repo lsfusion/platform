@@ -56,7 +56,7 @@ public class FlexTabBar extends Composite implements TabBar {
 
             // to have border underneath
             // we can't set nav-tabs to the whole flex tab bar, because we want overflow:auto, and margin - 1 (to override the border) needs overflow:visible
-            extraTabWidget.addStyleName(navTabs);
+            extraTabWidget.addStyleName(navTabs + " nav-extra-toolbar");
             tabBarContainer.addStretched(extraTabWidget);
 
             initWidget(tabBarContainer);
