@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.navigator.window.view;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
@@ -13,9 +12,7 @@ public class SimpleWindowElement extends WindowElement {
         this.window = window;
         main.registerWindow(window, this);
 
-        if (!GwtSharedUtils.isRedundantString(window.elementClass)) {
-            main.getWindowView(window).addStyleName(window.elementClass);
-        }
+        main.updateElementClass(window);
     }
 
     @Override

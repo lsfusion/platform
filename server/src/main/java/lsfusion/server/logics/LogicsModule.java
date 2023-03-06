@@ -114,6 +114,7 @@ import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -348,6 +349,10 @@ public abstract class LogicsModule {
 
     public AbstractWindow getWindow(String name) {
         return windows.get(name);
+    }
+
+    public Collection<AbstractWindow> getWindows() {
+        return windows.values();
     }
 
     public MetaCodeFragment getMetaCodeFragment(String name, int paramCnt) {

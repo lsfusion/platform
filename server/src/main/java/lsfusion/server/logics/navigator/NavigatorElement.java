@@ -55,6 +55,7 @@ public abstract class NavigatorElement {
     public Property propertyImage;
     public Supplier<AppServerImage> image;
 
+    public Property propertyElementClass;
     public String elementClass;
 
     private final String canonicalName;
@@ -231,6 +232,14 @@ public abstract class NavigatorElement {
     public void setImage(String imagePath) {
         AppServerImage image = AppServerImage.createNavigatorImage(imagePath, this);
         this.image = () -> image;
+    }
+
+    public void setPropertyElementClass(Property elementClassProperty) {
+        this.propertyElementClass = elementClassProperty;
+    }
+
+    public void setElementClass(String elementClass) {
+        this.elementClass = elementClass;
     }
 
     public void setHeaderProperty(Property headerProperty) {

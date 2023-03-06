@@ -307,7 +307,6 @@ public class MainFrame implements EntryPoint {
         };
 
         formsControllerLinker.link = formsController;
-        actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController);
 
         //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
         Window.addCloseHandler(new CloseHandler<Window>() { // добавляем после инициализации окон
@@ -343,6 +342,8 @@ public class MainFrame implements EntryPoint {
             }
         };
         navigatorControllerLink.link = navigatorController;
+
+        actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController, navigatorController);
 
         initializeWindows(result, formsController, windowsController, navigatorController, formsWindowLink, commonWindowsLink);
 
@@ -474,9 +475,6 @@ public class MainFrame implements EntryPoint {
         return modalPopup;
     }
 
-    static GNavigatorElement root;
-    static GNavigatorController navigatorController;
-
     private void initializeWindows(NavigatorInfo result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
         GwtClientUtils.removeLoaderFromHostedPage();
 
@@ -490,20 +488,18 @@ public class MainFrame implements EntryPoint {
         // пока прячем всё, что не поддерживается
         result.status.visible = false;
 
-        GNavigatorElement root = result.root;
         ArrayList<GNavigatorWindow> navigatorWindows = result.navigatorWindows;
 
-        this.root = root;
-        this.navigatorController = navigatorController;
+        navigatorController.setRoot(result.root);
 
         RootPanel.getBodyElement().addClassName(useBootstrap ? "nav-bootstrap" : "nav-excel");
         RootPanel.getBodyElement().addClassName(mobile ? "nav-mobile" : "nav-desktop");
 
         if (mobile) {
             if (useBootstrap) {
-                mobileNavigatorView = new BSMobileNavigatorView(root, navigatorWindows, navigatorController);
+                mobileNavigatorView = new BSMobileNavigatorView(navigatorWindows, navigatorController);
             } else {
-                mobileNavigatorView = new ExcelMobileNavigatorView(root, navigatorWindows, navigatorController);
+                mobileNavigatorView = new ExcelMobileNavigatorView(navigatorWindows, navigatorController);
             }
             Widget formsView = windowsController.getWindowView(formsWindow);
 
@@ -514,7 +510,6 @@ public class MainFrame implements EntryPoint {
             RootLayoutPanel.get().add(formsView);
         } else {
             navigatorController.initializeNavigatorViews(navigatorWindows);
-            navigatorController.setRootElement(root);
 
             List<GAbstractWindow> allWindows = new ArrayList<>();
             allWindows.addAll(navigatorWindows);
@@ -525,10 +520,10 @@ public class MainFrame implements EntryPoint {
             navigatorController.update();
         }
 
-        formsController.initRoot(formsController);
+        formsController.initRoot();
 
         //apply initial navigator changes from navigatorinfo somewhere around here
-        applyNavigatorChanges(root, result.navigatorChanges, navigatorController);
+        applyNavigatorChanges(result.navigatorChanges, navigatorController, windowsController);
 
         formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
             @Override
@@ -542,17 +537,13 @@ public class MainFrame implements EntryPoint {
         });
     }
 
-    public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO) {
-        applyNavigatorChanges(root, navigatorChangesDTO, navigatorController);
-    }
-
-    public static void applyNavigatorChanges(GNavigatorElement root, GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController) {
+    public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {
         if (navigatorChangesDTO.properties.length == 0) { // optimization
             return;
         }
 
         for(int i = 0; i < navigatorChangesDTO.properties.length; i++) {
-            navigatorChangesDTO.properties[i].update(root, navigatorChangesDTO.values[i]);
+            navigatorChangesDTO.properties[i].update(navigatorController, windowsController, navigatorChangesDTO.values[i]);
         }
 
         // here we do not do incremental update, but global "refresh" (as we use the same mechanism for selected mechanism)

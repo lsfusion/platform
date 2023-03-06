@@ -3,7 +3,11 @@ package lsfusion.gwt.client.navigator.window.view;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
@@ -12,8 +16,24 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.*;
 
 public abstract class WindowsController extends CustomSplitLayoutPanel {
-    private Map<GAbstractWindow, WindowElement> windowElementsMapping = new HashMap<>();
+    private NativeSIDMap<GAbstractWindow, WindowElement> windowElementsMapping = new NativeSIDMap<>();
     private SplitWindowElement rootElement;
+
+    public void updateElementClass(GAbstractWindow window) {
+        String elementClass = window.elementClass;
+        if (!GwtSharedUtils.isRedundantString(elementClass)) {
+            getWindowView(window).addStyleName(elementClass);
+        }
+    }
+
+    public GAbstractWindow findWindowByCanonicalName(String canonicalName) {
+        Result<GAbstractWindow> rWindow = new Result<>();
+        windowElementsMapping.foreachKey(window -> {
+            if (window.canonicalName.equals(canonicalName))
+                rWindow.set(window);
+        });
+        return rWindow.result;
+    }
 
     public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
@@ -175,12 +195,11 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     }
 
     private void setDefaultVisible() {
-        for (GAbstractWindow window : windowElementsMapping.keySet()) {
-            WindowElement windowElement = windowElementsMapping.get(window);
+        windowElementsMapping.foreachEntry((window, windowElement) -> {
             if (windowElement != null) {
                 windowElement.setVisible(window.visible);
             }
-        }
+        });
     }
 
     public void autoSizeWindows() {

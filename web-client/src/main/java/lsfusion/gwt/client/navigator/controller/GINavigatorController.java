@@ -8,6 +8,9 @@ import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import java.util.Map;
 
 public interface GINavigatorController {
+
+    GNavigatorElement getRoot();
+
     void update();
 
     void openElement(GNavigatorAction element, NativeEvent event);

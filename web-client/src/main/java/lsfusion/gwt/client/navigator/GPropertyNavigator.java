@@ -1,7 +1,7 @@
 package lsfusion.gwt.client.navigator;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
-import lsfusion.gwt.client.base.jsni.HasNativeSID;
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 import java.io.Serializable;
 
@@ -10,5 +10,5 @@ public abstract class GPropertyNavigator implements Serializable {
     public GPropertyNavigator() {
     }
 
-    public abstract void update(GNavigatorElement root, Object value);
+    public abstract void update(GNavigatorController navigatorController, WindowsController windowsController, Object value);
 }

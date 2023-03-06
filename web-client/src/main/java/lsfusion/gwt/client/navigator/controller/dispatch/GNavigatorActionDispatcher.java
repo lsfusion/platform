@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.navigator.controller.dispatch;
 
-import com.google.gwt.core.client.GWT;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
@@ -8,6 +7,7 @@ import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.ContinueNavigatorAction;
 import lsfusion.gwt.client.controller.remote.action.navigator.ThrowInNavigatorAction;
 import lsfusion.gwt.client.form.controller.FormsController;
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import lsfusion.gwt.client.view.MainFrame;
 
@@ -15,10 +15,12 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
     
     private final WindowsController windowsController;
     private final FormsController formsController;
+    private final GNavigatorController navigatorController;
 
-    public GNavigatorActionDispatcher(WindowsController windowsController, FormsController formsController) {
+    public GNavigatorActionDispatcher(WindowsController windowsController, FormsController formsController, GNavigatorController navigatorController) {
         this.windowsController = windowsController;
         this.formsController = formsController;
+        this.navigatorController = navigatorController;
     }
 
     @Override
@@ -48,7 +50,7 @@ public class GNavigatorActionDispatcher extends GwtActionDispatcher {
 
     @Override
     public void execute(GProcessNavigatorChangesAction action) {
-        MainFrame.applyNavigatorChanges(action.navigatorChanges);
+        MainFrame.applyNavigatorChanges(action.navigatorChanges, navigatorController, windowsController);
     }
 
     @Override

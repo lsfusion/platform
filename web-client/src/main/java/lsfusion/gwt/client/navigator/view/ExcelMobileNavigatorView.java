@@ -7,7 +7,6 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
@@ -16,8 +15,8 @@ import java.util.function.Predicate;
 
 public class ExcelMobileNavigatorView extends MobileNavigatorView {
 
-    public ExcelMobileNavigatorView(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
-        super(root, navigatorWindows, navigatorController);
+    public ExcelMobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
+        super(navigatorWindows, navigatorController);
     }
 
     protected RootPanels initRootPanels() {

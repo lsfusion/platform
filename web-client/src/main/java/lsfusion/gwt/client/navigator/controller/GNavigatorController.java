@@ -31,7 +31,12 @@ public abstract class GNavigatorController implements GINavigatorController {
         }
     }
 
-    public void setRootElement(GNavigatorElement root) {
+    @Override
+    public GNavigatorElement getRoot() {
+        return root;
+    }
+
+    public void setRoot(GNavigatorElement root) {
         this.root = root;
     }
 

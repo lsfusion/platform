@@ -1,5 +1,8 @@
 package lsfusion.gwt.client.navigator;
 
+import lsfusion.gwt.client.navigator.controller.GNavigatorController;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
+
 public abstract class GElementNavigator extends GPropertyNavigator {
     public String canonicalName;
 
@@ -10,10 +13,10 @@ public abstract class GElementNavigator extends GPropertyNavigator {
         this.canonicalName = canonicalName;
     }
 
-    public void update(GNavigatorElement root, Object value) {
-        updateElement(findNavigatorElementByCanonicalName(root), value);
+    public void update(GNavigatorController navigatorController, WindowsController windowsController, Object value) {
+        updateElement(findNavigatorElementByCanonicalName(navigatorController.getRoot()), value);
     }
-    public abstract void updateElement(GNavigatorElement root, Object value);
+    public abstract void updateElement(GNavigatorElement element, Object value);
 
     protected GNavigatorElement findNavigatorElementByCanonicalName(GNavigatorElement root) {
         for(GNavigatorElement child : root.children) {

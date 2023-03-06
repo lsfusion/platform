@@ -69,6 +69,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.caches.MapCacheAspect;
@@ -1834,6 +1835,15 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         for(LogicsModule logicsModule : modules.all()) {
             for(NavigatorElement entry : logicsModule.getNavigatorElements())
                 mResult.exclAdd(entry);            
+        }
+        return mResult.immutable();
+    }
+
+    public ImSet<AbstractWindow> getWindows() {
+        MExclSet<AbstractWindow> mResult = SetFact.mExclSet();
+        for(LogicsModule logicsModule : modules.all()) {
+            for(AbstractWindow entry : logicsModule.getWindows())
+                mResult.exclAdd(entry);
         }
         return mResult.immutable();
     }

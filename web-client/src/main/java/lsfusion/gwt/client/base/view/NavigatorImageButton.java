@@ -22,9 +22,7 @@ public class NavigatorImageButton extends ImageButton {
         addStyleName(vertical ? "nav-link-vert" : "nav-link-horz");
         addStyleName((vertical ? "nav-link-vert" : "nav-link-horz") + "-" + level);
 
-        String elementClass = element.elementClass;
-        if(elementClass != null)
-            addStyleName(elementClass);
+        updateElementClass();
 
         // debug info
         getElement().setAttribute("lsfusion-container", element.canonicalName);
@@ -51,6 +49,12 @@ public class NavigatorImageButton extends ImageButton {
             }
         };
         TooltipManager.registerWidget(this, tooltipHelper);
+    }
+
+    public void updateElementClass() {
+        String elementClass = element.elementClass;
+        if(elementClass != null)
+            addStyleName(elementClass);
     }
 
     @Override

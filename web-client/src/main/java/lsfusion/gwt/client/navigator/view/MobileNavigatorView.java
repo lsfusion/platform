@@ -39,7 +39,7 @@ public abstract class MobileNavigatorView {
         }
     }
 
-    protected MobileNavigatorView(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
+    protected MobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
         this.navigatorController = navigatorController;
 
         for(GNavigatorWindow navigatorWindow : navigatorWindows) {
@@ -54,7 +54,7 @@ public abstract class MobileNavigatorView {
         RootPanels rootPanels = initRootPanels();
 
         for(int i=0;i<rootPanels.windows.length;i++) {
-            createChildrenMenuItems(rootPanels.windowPanels[i], rootPanels.windows[i], root, -1);
+            createChildrenMenuItems(rootPanels.windowPanels[i], rootPanels.windows[i], navigatorController.getRoot(), -1);
         }
 
         RootLayoutPanel.get().add(rootPanels.mainPanel);
@@ -91,6 +91,10 @@ public abstract class MobileNavigatorView {
 
     public void updateText(GNavigatorElement navigatorElement) {
         navigatorItems.get(navigatorElement).updateText();
+    }
+
+    public void updateElementClass(GNavigatorElement navigatorElement) {
+        navigatorItems.get(navigatorElement).updateElementClass();
     }
 
     protected void createChildrenMenuItems(ComplexPanel subMenuPanel, Predicate<GNavigatorWindow> window, GNavigatorElement navigatorElement, int level) {

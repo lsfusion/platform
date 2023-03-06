@@ -8,7 +8,6 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
@@ -19,8 +18,8 @@ import java.util.function.Predicate;
 public class BSMobileNavigatorView extends MobileNavigatorView {
     public static final String OFFCANVAS_ID = "mobileMenuOffcanvas";
 
-    public BSMobileNavigatorView(GNavigatorElement root, ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
-        super(root, navigatorWindows, navigatorController);
+    public BSMobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
+        super(navigatorWindows, navigatorController);
     }
 
     protected RootPanels initRootPanels() {

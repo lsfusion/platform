@@ -1,13 +1,13 @@
 package lsfusion.gwt.server.convert;
 
-import lsfusion.client.navigator.ClientCaptionElementNavigator;
-import lsfusion.client.navigator.ClientImageElementNavigator;
-import lsfusion.client.navigator.ClientNavigatorChanges;
-import lsfusion.client.navigator.ClientPropertyNavigator;
+import lsfusion.client.navigator.*;
+import lsfusion.client.navigator.window.ClientClassWindowNavigator;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
 import lsfusion.gwt.client.navigator.GCaptionElementNavigator;
+import lsfusion.gwt.client.navigator.GClassElementNavigator;
 import lsfusion.gwt.client.navigator.GImageElementNavigator;
 import lsfusion.gwt.client.navigator.GPropertyNavigator;
+import lsfusion.gwt.client.navigator.window.GClassWindowNavigator;
 import lsfusion.gwt.server.MainDispatchServlet;
 
 import java.io.IOException;
@@ -52,5 +52,17 @@ public class ClientNavigatorChangesToGwtConverter extends ObjectConverter {
     @Converter(from = ClientImageElementNavigator.class)
     public GImageElementNavigator convertImageElementNavigator(ClientImageElementNavigator imageElementNavigator) {
         return new GImageElementNavigator(imageElementNavigator.canonicalName);
+    }
+
+    @Cached
+    @Converter(from = ClientClassElementNavigator.class)
+    public GClassElementNavigator convertClassElementNavigator(ClientClassElementNavigator imageElementNavigator) {
+        return new GClassElementNavigator(imageElementNavigator.canonicalName);
+    }
+
+    @Cached
+    @Converter(from = ClientClassWindowNavigator.class)
+    public GClassWindowNavigator convertClassWindowNavigator(ClientClassWindowNavigator imageElementNavigator) {
+        return new GClassWindowNavigator(imageElementNavigator.canonicalName);
     }
 }
