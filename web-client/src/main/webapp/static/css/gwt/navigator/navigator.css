@@ -32,13 +32,6 @@
 /*    font-size: 1.5rem;*/
 /*}*/
 
-.navbar-nav-horz .navbar-icon > i {
-    font-size: 2.5rem
-}
-.navbar-nav-vert .navbar-icon > i {
-    font-size: 1.5rem
-}
-
 .navbar-icon-large .nav-link > i,
 .navbar-icon-large.nav-link > i {
     font-size: 1.5rem;
@@ -46,13 +39,6 @@
 .navbar-icon-xlarge .nav-link > i,
 .navbar-icon-xlarge.nav-link > i {
     font-size: 2.5rem
-}
-
-.navbar-nav.navbar-nav-horz .lsfi-logo:before {
-    content: var(--lsfi-logo-horizontal-content);
-}
-.navbar-nav.navbar-nav-vert .lsfi-logo:before {
-    content: var(--lsfi-logo-vertical-content);
 }
 
 .navbar-text-hidden .nav-link,
