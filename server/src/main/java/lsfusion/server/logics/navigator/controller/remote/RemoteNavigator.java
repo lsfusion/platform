@@ -54,6 +54,8 @@ import lsfusion.server.logics.navigator.controller.env.ChangesObject;
 import lsfusion.server.logics.navigator.controller.env.ClassCache;
 import lsfusion.server.logics.navigator.controller.env.FormController;
 import lsfusion.server.logics.navigator.controller.manager.NavigatorsManager;
+import lsfusion.server.logics.navigator.window.AbstractWindow;
+import lsfusion.server.logics.navigator.window.ToolBarNavigatorWindow;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.controller.remote.RemoteConnection;
@@ -443,6 +445,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return businessLogics.LM.root.getChildrenMap(securityPolicy);
     }
 
+    private ImSet<AbstractWindow> getWindows() {
+        return businessLogics.getWindows();
+    }
+
     @Override
     protected boolean synchronizeRequests() {
         return false;
@@ -515,6 +521,12 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
                 mResult.exclAdd(new ImageElementNavigator(navigatorElement.propertyImage, navigatorElement));
             if(navigatorElement.headerProperty != null)
                 mResult.exclAdd(new CaptionElementNavigator(navigatorElement.headerProperty, navigatorElement));
+            if(navigatorElement.propertyElementClass != null)
+                mResult.exclAdd(new ClassElementNavigator(navigatorElement.propertyElementClass, navigatorElement));
+        }
+        for(AbstractWindow window : getWindows()) {
+            if(window.propertyElementClass != null)
+                mResult.exclAdd(new ClassWindowNavigator(window.propertyElementClass, window));
         }
         return mResult.immutable();
     }

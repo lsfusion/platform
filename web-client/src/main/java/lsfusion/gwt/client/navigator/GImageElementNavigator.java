@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.navigator;
 
 import lsfusion.gwt.client.base.AppBaseImage;
-import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class GImageElementNavigator extends GElementNavigator {

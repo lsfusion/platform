@@ -4892,6 +4892,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (tvAlign != null) {
             window.verticalTextPosition = asVerticalTextPosition(tvAlign);
         }
+
+        window.propertyElementClass = options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null;
+        window.elementClass = options.elementClass;
+
         return window;
     }
 
@@ -4916,6 +4920,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         public boolean parentWindow;
         public LPWithParams imageProperty;
         public LPWithParams headerProperty;
+
+        public LPWithParams elementClassProperty;
+        public String elementClass;
     }
 
     public NavigatorElement createScriptedNavigatorElement(String name, LocalizedString caption, DebugInfo.DebugPoint point,
@@ -5004,6 +5011,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void applyNavigatorElementOptions(NavigatorElement element, NavigatorElement parent, NavigatorElementOptions options, boolean isEditOperation) throws ScriptingErrorLog.SemanticErrorException {
         setNavigatorElementWindow(element, options.windowName, options.parentWindow);
         setNavigatorElementImage(element, options.imageProperty != null ? options.imageProperty.getLP().property : null, options.imagePath);
+        setNavigatorElementClass(element, options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null, options.elementClass);
         setNavigatorElementHeader(element, options.headerProperty != null ? options.headerProperty.getLP().property : null);
 
         ComplexLocation<NavigatorElement> location = options.location;
@@ -5038,6 +5046,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             element.setPropertyImage(imageProperty);
         if (imagePath != null)
             element.setImage(imagePath);
+    }
+
+    public void setNavigatorElementClass(NavigatorElement element, Property elementClassProperty, String elementClass) {
+        if(elementClassProperty != null)
+            element.setPropertyElementClass(elementClassProperty);
+        if (elementClass != null)
+            element.setElementClass(elementClass);
     }
 
     public void setNavigatorElementHeader(NavigatorElement element, Property headerProperty) {

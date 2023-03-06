@@ -132,11 +132,7 @@ public abstract class FormsController {
             toolbarView.addComponent(mobileMenuButton);
         }
 
-        tabsPanel = new FlexTabbedPanel(toolbarView);
-        if (MainFrame.mobile) {
-            tabsPanel.getElement().addClassName("mobileFormsTabPanel");
-            tabsPanel.getElement().getStyle().setProperty("flexDirection", "column-reverse");
-        }
+        tabsPanel = new FlexTabbedPanel(toolbarView, MainFrame.mobile);
 
         // unselected (but not removed)
         tabsPanel.setBeforeSelectionHandler(index -> {
@@ -341,8 +337,8 @@ public abstract class FormsController {
         }
     }
 
-    public void initRoot(FormsController formsController) {
-        GFormController.initKeyEventHandler(RootPanel.get(), formsController, () -> {
+    public void initRoot() {
+        GFormController.initKeyEventHandler(RootPanel.get(), this, () -> {
             FormContainer currentForm = MainFrame.getCurrentForm();
             if(currentForm != null)
                 return currentForm.getForm();
@@ -515,7 +511,7 @@ public abstract class FormsController {
 
         tabsPanel.addTab(contentWidget, index, header);
 
-        FlexPanel.makeShadowOnScroll(tabsPanel, tabsPanel.getTabBar(), contentWidget);
+        FlexPanel.makeShadowOnScroll(tabsPanel, tabsPanel.getTabBar(), contentWidget, tabsPanel.tabEnd);
 
         assert !isAdding;
         isAdding = true;

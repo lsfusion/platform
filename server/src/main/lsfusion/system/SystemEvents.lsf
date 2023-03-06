@@ -30,7 +30,7 @@ logo() = defaultLogo();
 logoAction() {}
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo();
+    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS 'navbar-icon-xlarge navbar-excel-mobile-hidden';
 }
 
 userUseBootstrap = DATA TBOOLEAN (CustomUser);

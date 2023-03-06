@@ -3,7 +3,9 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
+import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 
@@ -26,7 +28,7 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
     }
 
     public void setComponent(Widget component) {
-        this.component = window.drawScrollBars ? new ScrollPanel(component) : component;
+        this.component = component;
     }
 
     public Widget getView() {
@@ -51,10 +53,12 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
     }
 
     protected void selectElement(GNavigatorElement element, NativeEvent event) {
-        navigatorController.resetSelectedElements(element);
-        selected = element;
+        if(element instanceof GNavigatorFolder) {
+            navigatorController.resetSelectedElements(element);
+            selected = element;
 
-        navigatorController.update();
-        navigatorController.openElement(element, event);
+            navigatorController.update();
+        } else
+            navigatorController.openElement((GNavigatorAction) element, event);
     }
 }

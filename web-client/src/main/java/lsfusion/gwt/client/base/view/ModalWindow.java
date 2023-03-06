@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.base.view;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -90,7 +89,7 @@ public class ModalWindow extends ResizableComplexPanel {
     }
 
     public void makeShadowOnScroll() {
-        FlexPanel.makeShadowOnScroll(content, header, body);
+        FlexPanel.makeShadowOnScroll(content, header, body, false);
     }
 
     public void show() {

@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.function.Consumer;
 
@@ -15,45 +16,77 @@ public class FlexTabBar extends Composite implements TabBar {
 
     private final FlexPanel panel;
 
+    public final boolean end;
+
     private int selectedTab = -1;
 
-    public FlexTabBar(Widget extraTabWidget, boolean vertical) {
+    private final int extraStartWidgets;
+
+    public FlexTabBar(Widget extraTabWidget, boolean vertical, boolean end) {
         panel = new FlexPanel(vertical);
-        
-        panel.getElement().addClassName("tabBarItemsWrapper");
-        
+
+        this.end = end;
+
+        // need this rules here (not for the panel) to avoid cascade css rules (when tab is in another tab)
+        // we can't use for example .tab-bar-horz .nav-tabs rule, because sometimes nav-tabs can be this bar or sometimes can be its child
+        String navTabs = "nav nav-tabs " +
+                (vertical ? "nav-tabs-horz" : "nav-tabs-vert") + " " +
+                (end ? "nav-tabs-end" : "nav-tabs-start");
+        panel.addStyleName(navTabs);
+
+        FlexPanel wrappedPanel;
+        if(MainFrame.mobile || extraTabWidget != null) {
+            // we have to wrap panel to set auto overflow, since nav-tabs needs overflow:visible (sets margin - 1, to override the border)
+            // and we need overflow auto not to overlap extra widget (and in the mobile mode when the bar can be very long)
+            wrappedPanel = new FlexPanel(vertical);
+            if (MainFrame.mobile) // in mobile mode we don't want the bar to wrap (but to scroll to the right)
+                wrappedPanel.addFill(panel);
+            else
+                wrappedPanel.addFillShrink(panel);
+            wrappedPanel.addStyleName(vertical ? "nav-tabs-bar-wrap-horz" : "nav-tabs-bar-wrap-vert");
+        } else // if we use wrap and don't have extra widgets we don't wrap tab bar into the panel, to let the tab bar overflow (just like caption panel), and save dom element
+            wrappedPanel = panel;
+
         if (extraTabWidget == null) {
-            initWidget(panel);
+            initWidget(wrappedPanel);
         } else {
             FlexPanel tabBarContainer = new FlexPanel(vertical);
-            tabBarContainer.addFillShrink(panel);
-            tabBarContainer.add(extraTabWidget, GFlexAlignment.CENTER);
+
+            tabBarContainer.addFillShrink(wrappedPanel);
+
+            // to have border underneath
+            // we can't set nav-tabs to the whole flex tab bar, because we want overflow:auto, and margin - 1 (to override the border) needs overflow:visible
+            extraTabWidget.addStyleName(navTabs + " nav-extra-toolbar");
+            tabBarContainer.addStretched(extraTabWidget);
+
             initWidget(tabBarContainer);
         }
 
+        addStyleName("tab-bar");
+
         sinkEvents(Event.ONMOUSEDOWN);
 
-        addStyleName("nav");
-        addStyleName("nav-tabs");
-
 //        addStyleName("nav-tabs-" + (vertical ? "vert" : "horz"));
-        panel.getElement().getStyle().setProperty("flexWrap", "wrap");
+//        panel.getElement().getStyle().setProperty("flexWrap", "wrap");
 
-        // first is to have an offset on the left, rest not sure what for
-        Label first = new Label();
-        Label rest = new Label();
-
-        first.setWordWrap(true);
-        rest.setWordWrap(true);
-
-        first.setText("\u00A0");
-        rest.setText("\u00A0");
-
-        first.setStyleName("nav-item-first");
-        rest.setStyleName("nav-item-rest");
-
-        panel.add(first, GFlexAlignment.STRETCH);
-        panel.addFill(rest);
+//        if(!MainFrame.useBootstrap) {
+//            // first is to have an offset on the left, rest not sure what for (and if it has some width, when wrapping gives empty line)
+//            Label first = new Label();
+//
+//            first.setWordWrap(true);
+////        rest.setWordWrap(true);
+//
+//            first.setText("\u00A0");
+////        rest.setText("\u00A0");
+//
+//            first.setStyleName("nav-item-first");
+////        rest.setStyleName("nav-item-rest");
+//
+//            panel.add(first, GFlexAlignment.STRETCH);
+//
+//            extraStartWidgets = 1;
+//        } else
+            extraStartWidgets = 0;
     }
 
     private Consumer<Integer> beforeSelectionHandler;
@@ -71,7 +104,7 @@ public class FlexTabBar extends Composite implements TabBar {
     }
 
     public int getTabCount() {
-        return panel.getWidgetCount() - 2;
+        return panel.getWidgetCount() - extraStartWidgets;
     }
 
     public void insertTab(Widget widget, int beforeIndex) {
@@ -95,7 +128,7 @@ public class FlexTabBar extends Composite implements TabBar {
         if(beforeIndex <= selectedTab)
             selectedTab++;
 
-        panel.add(delWidget, beforeIndex + 1, GFlexAlignment.STRETCH);
+        panel.add(delWidget, beforeIndex + extraStartWidgets, GFlexAlignment.STRETCH);
         delWidget.getElement().scrollIntoView();
     }
 
@@ -136,7 +169,7 @@ public class FlexTabBar extends Composite implements TabBar {
     private Item getTabItem(int index) {
         assert (index >= 0) && (index < getTabCount()) : "Tab index out of bounds";
 
-        return (Item) panel.getWidget(index + 1);
+        return (Item) panel.getWidget(index + extraStartWidgets);
     }
 
     private void checkInsertBeforeTabIndex(int beforeIndex) {
@@ -160,11 +193,11 @@ public class FlexTabBar extends Composite implements TabBar {
      *         located and selected, false otherwise
      */
     private void selectTabByTabWidget(Widget tabWidget) {
-        int numTabs = panel.getWidgetCount() - 1;
+        int numTabs = getTabCount();
 
-        for (int i = 1; i < numTabs; ++i) {
-            if (panel.getWidget(i) == tabWidget) {
-                selectTab(i - 1);
+        for (int i = 0; i < numTabs; i++) {
+            if (getTabItem(i) == tabWidget) {
+                selectTab(i);
             }
         }
     }

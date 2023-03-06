@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.navigator.window;
 
+import lsfusion.gwt.client.base.jsni.HasNativeSID;
+
 import java.io.Serializable;
 
-public class GAbstractWindow implements Serializable, com.google.gwt.user.client.rpc.IsSerializable {
+public class GAbstractWindow implements Serializable, com.google.gwt.user.client.rpc.IsSerializable, HasNativeSID {
     public String canonicalName;
     public String caption;
     public int position;
@@ -20,7 +22,12 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     public String elementClass;
 
     public boolean autoSize;
-    
+
+    @Override
+    public String getNativeSID() {
+        return canonicalName;
+    }
+
     public boolean isAutoSize(boolean vertical) {
         return autoSize;
     }

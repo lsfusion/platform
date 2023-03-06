@@ -35,7 +35,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -277,7 +276,7 @@ public class MainFrame implements EntryPoint {
                 if (window.equals(formsWindowLink.link)) {
                     view = formsControllerLinker.link.getView();
                 } else if (window instanceof GNavigatorWindow) {
-                    view = navigatorControllerLink.link.getNavigatorView((GNavigatorWindow) window).getView();
+                    view = navigatorControllerLink.link.getNavigatorWidgetView((GNavigatorWindow) window);
                 } else {
                     view = commonWindowsLink.link.get(window);
                 }
@@ -304,7 +303,6 @@ public class MainFrame implements EntryPoint {
         };
 
         formsControllerLinker.link = formsController;
-        actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController);
 
         //we use CloseHandler instead of Window.ClosingHandler because mobile browsers send closing event without closing window
         Window.addCloseHandler(new CloseHandler<Window>() { // добавляем после инициализации окон
@@ -334,6 +332,8 @@ public class MainFrame implements EntryPoint {
             }
         };
         navigatorControllerLink.link = navigatorController;
+
+        actionDispatcherLink.link = new GNavigatorActionDispatcher(windowsController, formsController, navigatorController);
 
         initializeWindows(result, formsController, windowsController, navigatorController, formsWindowLink, commonWindowsLink);
 
@@ -465,9 +465,6 @@ public class MainFrame implements EntryPoint {
         return modalPopup;
     }
 
-    static GNavigatorElement root;
-    static GNavigatorController navigatorController;
-
     private void initializeWindows(NavigatorInfo result, final FormsController formsController, final WindowsController windowsController, final GNavigatorController navigatorController, final Linker<GAbstractWindow> formsWindowLink, final Linker<Map<GAbstractWindow, Widget>> commonWindowsLink) {
         GwtClientUtils.removeLoaderFromHostedPage();
 
@@ -481,15 +478,22 @@ public class MainFrame implements EntryPoint {
         // пока прячем всё, что не поддерживается
         result.status.visible = false;
 
-        this.root = result.root;
-        this.navigatorController = navigatorController;
+        ArrayList<GNavigatorWindow> navigatorWindows = result.navigatorWindows;
+
+        navigatorController.setRoot(result.root);
+
+        RootPanel.getBodyElement().addClassName(useBootstrap ? "nav-bootstrap" : "nav-excel");
+        RootPanel.getBodyElement().addClassName(mobile ? "nav-mobile" : "nav-desktop");
 
         if (mobile) {
             if (useBootstrap) {
-                mobileNavigatorView = new BSMobileNavigatorView(result.root, navigatorController);
+                mobileNavigatorView = new BSMobileNavigatorView(navigatorWindows, windowsController, navigatorController);
             } else {
-                mobileNavigatorView = new ExcelMobileNavigatorView(result.root, navigatorController);
+                mobileNavigatorView = new ExcelMobileNavigatorView(navigatorWindows, windowsController, navigatorController);
             }
+
+            windowsController.registerMobileWindow(formsWindow);
+
             RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
         } else {
             if (MainFrame.verticalNavbar) {
@@ -506,11 +510,10 @@ public class MainFrame implements EntryPoint {
                 }
             }
             
-            navigatorController.initializeNavigatorViews(result.navigatorWindows);
-            navigatorController.setRootElement(result.root);
+            navigatorController.initializeNavigatorViews(navigatorWindows);
 
             List<GAbstractWindow> allWindows = new ArrayList<>();
-            allWindows.addAll(result.navigatorWindows);
+            allWindows.addAll(navigatorWindows);
             allWindows.addAll(commonWindows.keySet());
 
             windowsController.initializeWindows(allWindows, formsWindow);
@@ -518,10 +521,10 @@ public class MainFrame implements EntryPoint {
             navigatorController.update();
         }
 
-        formsController.initRoot(formsController);
+        formsController.initRoot();
 
         //apply initial navigator changes from navigatorinfo somewhere around here
-        applyNavigatorChanges(result.root, result.navigatorChanges, navigatorController);
+        applyNavigatorChanges(result.navigatorChanges, navigatorController, windowsController);
 
         formsController.executeNotificationAction("SystemEvents.onClientStarted[]", 0, formsController.new ServerResponseCallback(false) {
             @Override
@@ -535,17 +538,13 @@ public class MainFrame implements EntryPoint {
         });
     }
 
-    public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO) {
-        applyNavigatorChanges(root, navigatorChangesDTO, navigatorController);
-    }
-
-    public static void applyNavigatorChanges(GNavigatorElement root, GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController) {
+    public static void applyNavigatorChanges(GNavigatorChangesDTO navigatorChangesDTO, GNavigatorController navigatorController, WindowsController windowsController) {
         if (navigatorChangesDTO.properties.length == 0) { // optimization
             return;
         }
 
         for(int i = 0; i < navigatorChangesDTO.properties.length; i++) {
-            navigatorChangesDTO.properties[i].update(root, navigatorChangesDTO.values[i]);
+            navigatorChangesDTO.properties[i].update(navigatorController, windowsController, navigatorChangesDTO.values[i]);
         }
 
         // here we do not do incremental update, but global "refresh" (as we use the same mechanism for selected mechanism)

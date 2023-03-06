@@ -3,46 +3,42 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
+import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
+
+import java.util.ArrayList;
+import java.util.function.Predicate;
 
 public class ExcelMobileNavigatorView extends MobileNavigatorView {
 
-    public ExcelMobileNavigatorView(GNavigatorElement root, GINavigatorController navigatorController) {
-        super(root, navigatorController);
+    public ExcelMobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, WindowsController windowsController, GINavigatorController navigatorController) {
+        super(navigatorWindows, windowsController, navigatorController);
     }
 
-    protected ComplexPanel initRootPanel() {
+    protected RootPanels initRootPanels() {
         ResizableComplexPanel navElement = new ResizableComplexPanel(Document.get().createElement("nav"));
         navElement.getElement().setId("lsfNavigatorMenu");
-        return navElement;
+
+        ComplexPanel navPanel = new ResizableComplexPanel(Document.get().createULElement());
+        navElement.add(navPanel);
+
+        return new RootPanels(navElement, new Predicate[] {ANY}, new ComplexPanel[] { navPanel });
     }
 
-    protected ComplexPanel initSubMenuPanel() {
+    protected ComplexPanel initFolderPanel(NavigatorImageButton button) {
         return new ResizableComplexPanel(Document.get().createULElement());
     }
 
     @Override
-    protected void initSubRootPanel(ComplexPanel rootPanel) {
-    }
-
-    @Override
-    protected void initMenuItem(int level, ImageButton button) {
-    }
-
-    @Override
-    protected void initSubMenuItem(ImageButton button, ComplexPanel subMenuPanel) {
-    }
-
-    protected ComplexPanel wrapNavigatorItem(ComplexPanel menuULElement) {
+    protected ComplexPanel wrapMenuItem(ComplexPanel panel, int level, ImageButton button) {
         // wrapping into li;
         ResizableComplexPanel liElement = new ResizableComplexPanel(Document.get().createLIElement());
-        menuULElement.add(liElement);
+        panel.add(liElement);
         return liElement;
     }
 

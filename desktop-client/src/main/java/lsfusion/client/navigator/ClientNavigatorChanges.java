@@ -1,6 +1,7 @@
 package lsfusion.client.navigator;
 
 import lsfusion.base.file.IOUtils;
+import lsfusion.client.navigator.window.ClientClassWindowNavigator;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -32,6 +33,12 @@ public class ClientNavigatorChanges {
                     break;
                 case 1:
                     propertyNavigator = new ClientImageElementNavigator(canonicalName);
+                    break;
+                case 2:
+                    propertyNavigator = new ClientClassElementNavigator(canonicalName);
+                    break;
+                case 10:
+                    propertyNavigator = new ClientClassWindowNavigator(canonicalName);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported ClientPropertyNavigator");

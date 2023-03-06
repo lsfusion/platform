@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
@@ -13,7 +15,7 @@ import lsfusion.gwt.client.view.MainFrame;
 import java.util.Set;
 
 public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindow> {
-    private final Panel main;
+    private final ResizableComplexPanel main;
 
     private final ResizableComplexPanel panel;
     private final boolean verticalTextAlign;
@@ -24,38 +26,52 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
         verticalTextAlign = window.hasVerticalTextPosition();
 
         boolean vertical = window.isVertical();
-        main = new ResizableComplexPanel();
-        main.addStyleName("navbar p-0");
-        main.addStyleName("navbar-" + (vertical ? "vert" : "horz"));
+
+        Pair<ResizableComplexPanel, ResizableComplexPanel> toolbarPanel = createToolbarPanel(vertical);
+        this.main = toolbarPanel.first;
+        this.panel = toolbarPanel.second;
 
         if (window.isInRootNavBar()) {
             main.addStyleName(MainFrame.verticalNavbar ? "navbar-text-on-hover" : "navbar-expand");
         }
+
+        setAlignment(vertical, this.main, this.panel, window);
+
+        setComponent(this.main);
+    }
+
+    public static Pair<ResizableComplexPanel, ResizableComplexPanel> createToolbarPanel(boolean vertical) {
+        ResizableComplexPanel main = new ResizableComplexPanel();
+        main.addStyleName("navbar navbar-expand p-0"); // navbar-expand to set horizontal paddings (vertical are set in navbar-text)
+
+        main.addStyleName("navbar-" + (vertical ? "vert" : "horz"));
         
-        panel = new ResizableComplexPanel();
+        ResizableComplexPanel panel = new ResizableComplexPanel();
         panel.addStyleName("navbar-nav");
-        panel.addStyleName("navbar-nav-" + (vertical ? "vert" : "horz"));
+        panel.addStyleName(vertical ? "navbar-nav-vert" : "navbar-nav-horz");
 
-        if (vertical) {
-            panel.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
-                              (window.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "align-items-end" :
-                                                                                               "align-items-start"));
-
-            main.addStyleName(window.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
-                              (window.alignmentY == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "justify-content-end" :
-                                                                                                        "justify-content-start"));
-        } else {
-            panel.addStyleName(window.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
-                              (window.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
-                                                                                               "align-items-start"));
-
-            main.addStyleName(window.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
-                              (window.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ?  "justify-content-end" :
-                                                                                                      "justify-content-start"));
-        }
         main.add(panel);
+        return new Pair<>(main, panel);
+    }
 
-        setComponent(main);
+    public static void setAlignment(boolean vertical, ResizableComplexPanel main, ResizableComplexPanel panel, GToolbarNavigatorWindow toolbarWindow) {
+        if (vertical) {
+            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
+                    (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "align-items-end" :
+                            "align-items-start"));
+
+            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+                    (toolbarWindow.alignmentY == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
+                            "justify-content-start"));
+        } else {
+            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
+                    (toolbarWindow.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
+                            "align-items-start"));
+
+            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+                    (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
+                            "justify-content-start"));
+        }
     }
 
     @Override
@@ -73,41 +89,9 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
     boolean firstFolder = true;
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
-        FormButton button = new NavigatorImageButton(element, verticalTextAlign);
-        button.addStyleName("nav-item");
-        button.addStyleName("nav-link");
-        button.addStyleName("navbar-text");
-
-        button.addStyleName(verticalTextAlign ? "nav-link-vert" : "nav-link-horz");
-        button.addStyleName((verticalTextAlign ? "nav-link-vert" : "nav-link-horz") + "-" + step);
-
-        // debug info
-        button.getElement().setAttribute("lsfusion-container", element.canonicalName);
+        FormButton button = new NavigatorImageButton(element, verticalTextAlign, step);
 
         button.addClickHandler(event -> selectElement(element, event.getNativeEvent()));
-
-        TooltipManager.TooltipHelper tooltipHelper = new TooltipManager.TooltipHelper() {
-            @Override
-            public String getTooltip() {
-                return element.getTooltipText();
-            }
-
-            @Override
-            public String getPath() {
-                return element.path;
-            }
-
-            @Override
-            public String getCreationPath() {
-                return element.creationPath;
-            }
-
-            @Override
-            public boolean stillShowTooltip() {
-                return button.isAttached() && button.isVisible();
-            }
-        };
-        TooltipManager.registerWidget(button, tooltipHelper);
 
         if (window.allButtonsActive() || (element.isFolder() && element.equals(selected))) {
             button.addStyleName("active");

@@ -1,6 +1,8 @@
 package lsfusion.server.language.navigator.window;
 
 import lsfusion.interop.base.view.FlexAlignment;
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.logics.property.Property;
 
 public class NavigatorWindowOptions {
 
@@ -89,6 +91,9 @@ public class NavigatorWindowOptions {
     public void setTextHAlign(FlexAlignment textHAlign) {
         this.textHAlign = textHAlign;
     }
+
+    public ScriptingLogicsModule.LPWithParams elementClassProperty;
+    public String elementClass;
 
     @Override
     public String toString() {

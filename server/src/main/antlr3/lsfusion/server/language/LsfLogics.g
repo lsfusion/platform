@@ -2287,7 +2287,7 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 		$property = self.addScriptedSignatureProp($expr.property);
 	}
 } 
-	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
+	: 	'IS' 'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
 activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
@@ -4798,6 +4798,15 @@ windowOptions returns [NavigatorWindowOptions options]
 		|	'VALIGN' '(' va=flexAlignmentLiteral ')' { $options.setVAlign($va.val); }
 		|	'TEXTHALIGN' '(' tha=flexAlignmentLiteral ')' { $options.setTextHAlign($tha.val); }
 		|	'TEXTVALIGN' '(' tva=flexAlignmentLiteral ')' { $options.setTextVAlign($tva.val); }
+        |	'CLASS' aclass=propertyExpressionOrLiteral[null] {
+                if (inMainParseState()) {
+                    if($aclass.literal != null && $aclass.literal.value instanceof LocalizedString) {
+                        $options.elementClass = ((LocalizedString) $aclass.literal.value).toString();
+                    } else {
+                        $options.elementClassProperty = $aclass.property;
+                    }
+                }
+            }
 		)*
 	;
 
@@ -4889,6 +4898,15 @@ navigatorElementOptions returns [NavigatorElementOptions options]
 	                $options.imageProperty = $image.property;
 	            } else
 	                $options.imagePath = AppServerImage.AUTO;
+	        }
+	    }
+	|	'CLASS' aclass = propertyExpressionOrLiteral[null] {
+	        if (inMainParseState()) {
+	            if($aclass.literal != null && $aclass.literal.value instanceof LocalizedString) {
+	                $options.elementClass = ((LocalizedString) $aclass.literal.value).toString();
+	            } else {
+	                $options.elementClassProperty = $aclass.property;
+	            }
 	        }
 	    }
 	|   'HEADER' headerExpr = propertyExpression[null, false] { $options.headerProperty = $headerExpr.property; }

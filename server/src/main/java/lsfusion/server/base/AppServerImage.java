@@ -69,7 +69,7 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("play.png", "fa-solid fa-play");
 
         AppServerImage.predefinedFontClasses.exclAdd("bootstrap.png", "fa-brands fa-bootstrap");
-        AppServerImage.predefinedFontClasses.exclAdd("excel.png", "fa-solid fa-file-excel");
+        AppServerImage.predefinedFontClasses.exclAdd("excel.png", "fa-solid fa-table-list");
 
         AppServerImage.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid fa-sun");
         AppServerImage.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid fa-moon");

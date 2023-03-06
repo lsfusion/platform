@@ -4,8 +4,10 @@
     --textfield-border-radius: var(--combobox-border-radius);
     --table-border-radius: var(--combobox-border-radius);
     --panel-border-radius: var(--combobox-border-radius);
-    --tab-border-radius-vert: 0 0 var(--combobox-border-radius) var(--combobox-border-radius);
-    --tab-border-radius-horz: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
+    --tab-border-radius-bottom: 0 0 var(--combobox-border-radius) var(--combobox-border-radius);
+    --tab-border-radius-top: var(--combobox-border-radius) var(--combobox-border-radius) 0 0;
+    --tab-border-radius-left: var(--combobox-border-radius) 0 0 var(--combobox-border-radius);
+    --tab-border-radius-right: 0 var(--combobox-border-radius) var(--combobox-border-radius) 0;
     --dialog-border-radius: 0.3rem;
 }
 

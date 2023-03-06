@@ -1,26 +1,54 @@
-.tab-panel-horz > .nav-tabs {
-    padding-left: var(--border-cont-horz-padding);
+
+/* PADDINGS */
+
+.tab-bar {
+    --tab-bar-horz-padding: var(--border-cont-horz-padding);
+    --tab-bar-vert-padding: var(--border-cont-vert-padding);
 }
 
-/*.tab-panel-horz > .nav.nav-tabs {*/
-/*    margin-right: var(--border-cont-horz-padding);*/
-/*}*/
-.tab-panel-horz > .tab-pane {
-    padding-left: var(--border-cont-horz-padding);
+/* main direction */
+
+.nav-tabs-horz.nav-tabs-start {
+    padding-left: var(--tab-bar-horz-padding);
+}
+.nav-tabs-horz.nav-tabs-end {
+    padding-right: var(--tab-bar-horz-padding);
+}
+.nav-tabs-vert.nav-tabs-start {
+    padding-top: var(--tab-bar-vert-padding);
+}
+.nav-tabs-vert.nav-tabs-end {
+    padding-bottom: var(--tab-bar-vert-padding);
 }
 
-.tab-panel-vert > .nav-tabs {
-    padding-top: var(--border-cont-vert-padding);
+/* opposite direction */
+
+.forms-container > .tab-bar .nav-tabs-bar-wrap-horz > .nav-tabs {
+    padding-top: var(--tab-bar-vert-padding);
+}
+.forms-container > .tab-bar .nav-extra-toolbar.nav-tabs-horz {
+    padding-bottom: var(--tab-bar-vert-padding);
+}
+.forms-container > .tab-bar .nav-tabs-bar-wrap-vert > .nav-tabs {
+    padding-left: var(--tab-bar-horz-padding);
+}
+.forms-container > .tab-bar .nav-extra-toolbar.nav-tabs-vert {
+    padding-right: var(--tab-bar-horz-padding);
 }
 
-/*.tab-panel-vert > .nav.nav-tabs {*/
-/*    margin-bottom: var(--border-cont-vert-padding);*/
-/*}*/
-/*.tab-panel-vert > .tab-pane {*/
-/*    padding-top: var(--border-cont-vert-padding);*/
+/* reducing tab paddings in the mobile navigator to look more compact / authentic */
+
+.nav-mobile .forms-container > .tab-bar {
+    --tab-bar-horz-padding: var(--border-comp-horz-padding);
+    --tab-bar-vert-padding: var(--border-comp-vert-padding);
+}
+
+/* ??? not sure that this is needed ??? */
+/*.tab-panel-horz > .tab-pane {*/
+/*    padding-left: var(--border-cont-horz-padding);*/
 /*}*/
 
-/* cursors - now the captions are not <a> so we'll change the cursro explicitly */
+/* cursors - now the captions are not <a> so we'll change the cursor explicitly */
 
 .nav-link {
     cursor: pointer;
@@ -34,57 +62,36 @@
     cursor: default;
 }
 
-
-/* have no idea what it's for */
-/*.nav-tabs-vert .nav-item-first {*/
-/*    width: 0;  !* to make it invisible when all tabs are wrapped *!*/
-/*}*/
-/*.nav-tabs-vert .nav-item-rest {*/
-/*    width: 0;  !* to make it invisible when all tabs are wrapped *!*/
-/*}*/
-/*.nav-tabs .nav-item-first {*/
-/*    height: 0;  !* to make it invisible when all tabs are wrapped *!*/
-/*}*/
-/*.nav-tabs .nav-item-rest {*/
-/*    height: 0;  !* to make it invisible when all tabs are wrapped *!*/
-/*}*/
-
 .tab-panel {
+}
+/* if there are no tabs, we want the bar to be at the start / end */
+.tab-panel-start {
+    justify-content: flex-start;
+}
+.tab-panel-end {
+    justify-content: flex-end;
 }
 
 .tab-close-button {
 }
 
-/* ------------ Mobile Forms Tab Panel ------------ */
-.mobileFormsTabPanel.tab-panel-vert > .nav-tabs {
-    padding-top: 0;
-    padding-bottom: var(--border-cont-vert-padding);
+.nav-tabs-bar-wrap-vert {
+    overflow-x: auto;
+    overflow-y: hidden; /* need this to avoid redundant vertical scrolls because of some roundings */
+}
+.nav-tabs-bar-wrap-horz {
+    overflow-x: hidden; /* need this to avoid redundant vertical scrolls because of some roundings */
+    overflow-y: auto;
 }
 
-.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .tabBarItemsWrapper {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
+/* making mobile friendly */
 
+.nav-mobile .forms-container .nav-tabs-bar-wrap-vert,
+.nav-mobile .forms-container .nav-tabs-bar-wrap-horz {
     scrollbar-width: none; /* hide scrollbars in Firefox */
 }
 
-.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .tabBarItemsWrapper::-webkit-scrollbar {
+.nav-mobile .forms-container .nav-tabs-bar-wrap-vert::-webkit-scrollbar,
+.nav-mobile .forms-container .nav-tabs-bar-wrap-horz::-webkit-scrollbar {
     display: none; /* hide scrollbars in Safari and Chrome */
-}
-
-.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .nav-item {
-    border-top: none;
-    border-bottom: 1px solid var(--panel-border-color);
-    border-radius: var(--tab-border-radius-vert);
-}
-
-.mobileFormsTabPanel.tab-panel-vert > .nav-tabs .nav-item:hover {
-    border-bottom: 1px solid var(--component-hover-border-color);
-}
-
-.mobileFormsTabPanel > .tab-pane {
-    padding-top: 0;
-    padding-bottom: var(--border-cont-vert-padding);
-    border-top: none;
-    border-bottom: 1px solid var(--panel-border-color);
 }
