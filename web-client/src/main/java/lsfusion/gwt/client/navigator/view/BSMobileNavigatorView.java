@@ -11,6 +11,7 @@ import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -18,8 +19,8 @@ import java.util.function.Predicate;
 public class BSMobileNavigatorView extends MobileNavigatorView {
     public static final String OFFCANVAS_ID = "mobileMenuOffcanvas";
 
-    public BSMobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
-        super(navigatorWindows, navigatorController);
+    public BSMobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, WindowsController windowsController, GINavigatorController navigatorController) {
+        super(navigatorWindows, windowsController, navigatorController);
     }
 
     protected RootPanels initRootPanels() {
@@ -61,9 +62,8 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
             else
                 navWindowsPanel.addStretched(main);
 
-            String elementClass = cssWindow.elementClass;
-            if(elementClass != null)
-                main.addStyleName(elementClass);
+            navigatorController.initMobileNavigatorView(cssWindow, main);
+            windowsController.registerMobileWindow(cssWindow);
 
             windows[i] = filterWindow;
             windowPanels[i] = panel;

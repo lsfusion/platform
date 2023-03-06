@@ -9,14 +9,15 @@ import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
 
 public class ExcelMobileNavigatorView extends MobileNavigatorView {
 
-    public ExcelMobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
-        super(navigatorWindows, navigatorController);
+    public ExcelMobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, WindowsController windowsController, GINavigatorController navigatorController) {
+        super(navigatorWindows, windowsController, navigatorController);
     }
 
     protected RootPanels initRootPanels() {

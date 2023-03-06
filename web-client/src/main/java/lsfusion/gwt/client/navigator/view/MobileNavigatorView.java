@@ -10,6 +10,7 @@ import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -17,6 +18,7 @@ import java.util.function.Predicate;
 public abstract class MobileNavigatorView {
 
     protected final GINavigatorController navigatorController;
+    protected final WindowsController windowsController;
 
     protected final static Predicate<GNavigatorWindow> ANY = navigatorWindow -> true;
 
@@ -39,8 +41,9 @@ public abstract class MobileNavigatorView {
         }
     }
 
-    protected MobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, GINavigatorController navigatorController) {
+    protected MobileNavigatorView(ArrayList<GNavigatorWindow> navigatorWindows, WindowsController windowsController, GINavigatorController navigatorController) {
         this.navigatorController = navigatorController;
+        this.windowsController = windowsController;
 
         for(GNavigatorWindow navigatorWindow : navigatorWindows) {
             if(navigatorWindow.isLogo())

@@ -16,8 +16,6 @@ public class GClassWindowNavigator extends GWindowNavigator {
     public void updateWindow(GAbstractWindow window, WindowsController windowsController, Object value) {
         window.elementClass = (String) value;
 
-        if(!MainFrame.mobile) {
-            windowsController.updateElementClass(window);
-        }
+        windowsController.updateElementClass(window);
     }
 }

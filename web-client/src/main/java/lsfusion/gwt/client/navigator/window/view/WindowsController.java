@@ -175,8 +175,13 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         }
     }
 
+    public void registerMobileWindow(GAbstractWindow window) {
+        registerWindow(window, null);
+    }
     public void registerWindow(GAbstractWindow window, WindowElement windowElement) {
         windowElementsMapping.put(window, windowElement);
+
+        updateElementClass(window);
     }
 
     public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {

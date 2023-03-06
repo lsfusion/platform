@@ -35,7 +35,6 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GNavigatorController;
 import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatcher;
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
@@ -275,7 +274,7 @@ public class MainFrame implements EntryPoint {
                 if (window.equals(formsWindowLink.link)) {
                     view = formsControllerLinker.link.getView();
                 } else if (window instanceof GNavigatorWindow) {
-                    view = navigatorControllerLink.link.getNavigatorView((GNavigatorWindow) window).getView();
+                    view = navigatorControllerLink.link.getNavigatorWidgetView((GNavigatorWindow) window);
                 } else {
                     view = commonWindowsLink.link.get(window);
                 }
@@ -497,17 +496,14 @@ public class MainFrame implements EntryPoint {
 
         if (mobile) {
             if (useBootstrap) {
-                mobileNavigatorView = new BSMobileNavigatorView(navigatorWindows, navigatorController);
+                mobileNavigatorView = new BSMobileNavigatorView(navigatorWindows, windowsController, navigatorController);
             } else {
-                mobileNavigatorView = new ExcelMobileNavigatorView(navigatorWindows, navigatorController);
+                mobileNavigatorView = new ExcelMobileNavigatorView(navigatorWindows, windowsController, navigatorController);
             }
-            Widget formsView = windowsController.getWindowView(formsWindow);
 
-            String elementClass = formsWindow.elementClass;
-            if(elementClass != null)
-                formsView.addStyleName(elementClass);
+            windowsController.registerMobileWindow(formsWindow);
 
-            RootLayoutPanel.get().add(formsView);
+            RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
         } else {
             navigatorController.initializeNavigatorViews(navigatorWindows);
 

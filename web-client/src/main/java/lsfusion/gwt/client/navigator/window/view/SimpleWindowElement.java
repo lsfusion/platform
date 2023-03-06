@@ -11,8 +11,6 @@ public class SimpleWindowElement extends WindowElement {
         super(main, x, y, width, height);
         this.window = window;
         main.registerWindow(window, this);
-
-        main.updateElementClass(window);
     }
 
     @Override
