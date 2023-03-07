@@ -28,9 +28,10 @@ logo() = defaultLogo();
 //logo() = OVERRIDE logicsLogo(), defaultLogo();
 
 logoAction() {}
+logoActionClass = DATA STRING();
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS 'navbar-icon-xlarge navbar-excel-mobile-hidden';
+    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS logoActionClass() +' navbar-excel-mobile-hidden';
 }
 
 userUseBootstrap = DATA TBOOLEAN (CustomUser);
@@ -65,8 +66,10 @@ verticalNavbar = verticalNavbar(currentUser());
 onWebClientStarted() + {
     IF verticalNavbar() THEN {
         defaultLogo() <- 'logo.png';
+        logoActionClass() <- 'navbar-icon-large';
     } ELSE {
         defaultLogo() <- 'logoHorizontal.png';
+        logoActionClass() <- 'navbar-icon-xlarge';
     }
     apply();
 }
