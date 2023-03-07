@@ -1,16 +1,12 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
-import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.Set;
 
@@ -30,10 +26,6 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
         Pair<ResizableComplexPanel, ResizableComplexPanel> toolbarPanel = createToolbarPanel(vertical);
         this.main = toolbarPanel.first;
         this.panel = toolbarPanel.second;
-
-        if (window.isInRootNavBar()) {
-            main.addStyleName(MainFrame.verticalNavbar ? "navbar-text-on-hover" : "navbar-expand");
-        }
 
         setAlignment(vertical, this.main, this.panel, window);
 
