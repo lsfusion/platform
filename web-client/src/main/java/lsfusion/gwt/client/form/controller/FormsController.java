@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -261,10 +262,10 @@ public abstract class FormsController {
     private void updateForceLinkModeStyles(EditMode editMode, boolean forceLinkMode) {
         boolean linkMode = editMode == EditMode.LINK;
         if(!isForceLinkMode() && forceLinkMode) {
-            scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
+            scheduleLinkModeStylesTimer(() -> setLinkModeClassName(linkMode));
         } else {
             cancelLinkModeStylesTimer();
-            setLinkModeStyles(linkMode);
+            setLinkModeClassName(linkMode);
         }
     }
 
@@ -288,12 +289,20 @@ public abstract class FormsController {
         }
     }
 
-    private void setLinkModeStyles(boolean linkMode) {
+    private void setLinkModeClassName(boolean linkMode) {
+        setGlobalClassName(linkMode, "linkMode");
+    }
+
+    private void updateFormsNotEmptyClassName() {
+        setGlobalClassName(!forms.isEmpty(), "forms-container-not-empty");
+    }
+
+    public static void setGlobalClassName(boolean set, String elementClass) {
         Element globalElement = RootPanel.get().getElement();
-        if(linkMode)
-            globalElement.addClassName("linkMode");
+        if(set)
+            globalElement.addClassName(elementClass);
         else
-            globalElement.removeClassName("linkMode");
+            globalElement.removeClassName(elementClass);
     }
 
     private static Timer editModeTimer;
@@ -503,6 +512,8 @@ public abstract class FormsController {
             formFocusOrder.add(null);
         }
 
+        updateFormsNotEmptyClassName();
+
         FlexPanel contentWidget = dockable.getContentWidget();
 
         FlexPanel header = new FlexPanel();
@@ -533,6 +544,8 @@ public abstract class FormsController {
 
         forms.remove(index);
         formFocusOrder.remove(index);
+
+        updateFormsNotEmptyClassName();
 
         ensureTabSelected();
     }

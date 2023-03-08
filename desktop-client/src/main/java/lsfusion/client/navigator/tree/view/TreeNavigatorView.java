@@ -1,7 +1,6 @@
 package lsfusion.client.navigator.tree.view;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.tree.ClientTree;
@@ -37,7 +36,7 @@ public class TreeNavigatorView extends NavigatorView {
         root = new ClientTreeNode(ClientResourceBundle.getString("navigator.root"));
         addRootActions();
         for (ClientNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addElement(root, element, newElements);
             }
         }

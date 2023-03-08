@@ -22,7 +22,7 @@ public class GPanelNavigatorView extends GNavigatorView<GPanelNavigatorWindow> {
     public void refresh(Set<GNavigatorElement> newElements) {
         panel.clear();
         for (final GNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addElement(element, panel);
             }
         }

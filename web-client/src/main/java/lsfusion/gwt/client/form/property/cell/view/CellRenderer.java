@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
@@ -53,9 +54,7 @@ public abstract class CellRenderer<T> {
         else
             renderElement = Document.get().createDivElement();
 
-        String valueElementClass = getValueElementClass();
-        if(valueElementClass != null)
-            GwtClientUtils.addClassNames(renderElement, valueElementClass);
+        BaseImage.setClass(renderElement, getValueElementClass());
 
         return renderElement;
     }

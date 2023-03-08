@@ -10,11 +10,11 @@ public class SimpleWindowElement extends WindowElement {
     public SimpleWindowElement(WindowsController controller, GAbstractWindow window, int x, int y, int width, int height) {
         super(controller, x, y, width, height);
         this.window = window;
-        controller.registerWindow(window, this);
+    }
 
-        if (!GwtSharedUtils.isRedundantString(window.elementClass)) {
-            controller.getWindowView(window).addStyleName(window.elementClass);
-        }
+    @Override
+    public void onAddView(WindowsController controller) {
+        controller.registerWindow(window, this); // here (not in the constructor) because in updateElementClass we need parent
     }
 
     @Override

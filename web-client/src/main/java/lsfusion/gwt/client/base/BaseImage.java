@@ -12,7 +12,7 @@ import java.io.Serializable;
 public interface BaseImage extends Serializable {
 
     String TEXT = "lsf-text-caption";
-    String HTML = "lsf-html-caption";
+    String DIV = "lsf-div-caption";
     String IMAGE = "lsf-image-caption";
 
     String getImageElementSrc(boolean enabled);
@@ -40,21 +40,28 @@ public interface BaseImage extends Serializable {
         if(useIcon != needIcon)
             return false;
 
-        if (useIcon) {
-            String fontClasses = ((BaseStaticImage)this).getFontClasses();
-            String prevFontClasses = element.getPropertyString(GwtClientUtils.FONT_CLASSES_ATTRIBUTE);
-            if(prevFontClasses != null)
-                GwtClientUtils.removeClassNames(element, prevFontClasses);
-
-            // it seems that enabled is not needed, since it is handled with the text color
-            if(!fontClasses.isEmpty())
-                GwtClientUtils.addClassNames(element, fontClasses);
-
-            element.setPropertyString(GwtClientUtils.FONT_CLASSES_ATTRIBUTE, fontClasses);
-        } else {
+        if (useIcon)
+            updateClasses(element, ((BaseStaticImage) this).getFontClasses());
+        else
             ((ImageElement) element).setSrc(getImageElementSrc(true));
-        }
+
         return true;
+    }
+
+    static void updateClasses(Element element, String fontClasses) {
+        String prevFontClasses = element.getPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+        if(prevFontClasses != null)
+            GwtClientUtils.removeClassNames(element, prevFontClasses);
+
+        // it seems that enabled is not needed, since it is handled with the text color
+        setClass(element, fontClasses);
+
+        element.setPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, fontClasses);
+    }
+
+    static void setClass(Element element, String fontClasses) {
+        if(fontClasses != null && !fontClasses.isEmpty())
+            GwtClientUtils.addClassNames(element, fontClasses);
     }
 
     static void initImageText(Widget widget, String caption, BaseImage appImage, boolean vertical) {
@@ -62,7 +69,7 @@ public interface BaseImage extends Serializable {
         // others image texts handle color themes changes with the explicit colorThemeChanged (rerendering the whole view)
         element.addClassName("img-text-widget");
         initImageText(element);
-        updateText(widget, caption);
+        updateText(widget, caption, vertical);
         updateImage(appImage, widget, vertical);
     }
 
@@ -75,7 +82,7 @@ public interface BaseImage extends Serializable {
 
     static void clearImageText(Element element, boolean vertical) {
         element.setPropertyObject(TEXT, null);
-        element.setPropertyObject(HTML, null);
+        element.setPropertyObject(DIV, null);
         element.setPropertyObject(IMAGE, null);
 
         element.removeClassName("wrap-text-not-empty");
@@ -85,34 +92,53 @@ public interface BaseImage extends Serializable {
             element.removeClassName("wrap-img-horz");
     }
 
-    static void updateText(Widget widget, String text) {
-        updateText(widget.getElement(), text);
+    static void updateText(Widget widget, String text, boolean vertical) {
+        updateText(widget, text, vertical, false);
+    }
+    static void updateText(Widget widget, String text, boolean vertical, boolean forceDiv) {
+        updateText(widget.getElement(), text, vertical, forceDiv);
 
         if(widget instanceof CaptionPanelHeader)
             widget.setVisible(text != null && !text.isEmpty());
     }
-    static void updateText(Element element, String text) {
+    static void updateText(Element element, String text, boolean vertical) {
+        updateText(element, text, vertical, false);
+    }
+    static void updateText(Element element, String text, boolean vertical, boolean forceDiv) {
         Node textNode = (Node) element.getPropertyObject(TEXT); // always present, since it is initialized in initImageText
-        Element htmlElement = (Element) element.getPropertyObject(HTML);
+        Element htmlElement = (Element) element.getPropertyObject(DIV);
 
         text = text == null ? "" : text;
-        if (EscapeUtils.isContainHtmlTag(text)) {
+        if ((forceDiv && !text.isEmpty()) || EscapeUtils.isContainHtmlTag(text)) {
             if(htmlElement == null) {
-                htmlElement = Document.get().createSpanElement(); // we want display inline just as regular text
+                htmlElement = Document.get().createDivElement();
+                htmlElement.addClassName("wrap-text-div");
+
+                if(vertical) {
+                    element.addClassName("wrap-div-vert");
+                } else {
+                    element.addClassName("wrap-div-horz");
+                }
+
                 element.appendChild(htmlElement);
-                element.setPropertyObject(HTML, htmlElement);
+                element.setPropertyObject(DIV, htmlElement);
             }
             htmlElement.setInnerHTML(text);
             textNode.setNodeValue("");
         } else {
             if(htmlElement != null) {
                 element.removeChild(htmlElement);
-                element.setPropertyObject(HTML, null);
+                if(vertical)
+                    element.removeClassName("wrap-div-vert");
+                else
+                    element.removeClassName("wrap-div-horz");
+
+                element.setPropertyObject(DIV, null);
             }
             textNode.setNodeValue(text);
         }
 
-        if (!text.equals("")) {
+        if (!text.isEmpty()) {
             element.addClassName("wrap-text-not-empty");
         } else {
             element.removeClassName("wrap-text-not-empty");

@@ -164,7 +164,7 @@ public class GFormLayout extends ResizableComplexPanel {
             String caption = container.caption;
             BaseImage image = container.image;
             if(alreadyInitialized) {
-                BaseImage.updateText(captionWidget, caption);
+                BaseImage.updateText(captionWidget, caption, false);
                 BaseImage.updateImage(image, captionWidget, false);
             } else
                 BaseImage.initImageText(captionWidget, caption, image, false);

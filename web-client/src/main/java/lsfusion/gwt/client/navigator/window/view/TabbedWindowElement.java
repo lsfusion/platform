@@ -52,14 +52,17 @@ public class TabbedWindowElement extends WindowElement {
     }
 
     @Override
-    public Widget initializeView() {
+    public Widget initializeView(WindowsController controller) {
         for (WindowElement child : children) {
-            Widget windowView = child.initializeView();
+            Widget windowView = child.initializeView(controller);
+
             tabPanel.addTab(windowView, child.getCaption());
             visibleChildren.add(child);
             tabPanel.selectTab(visibleChildren.indexOf(child));
+
+            child.onAddView(controller);
         }
-        return super.initializeView();
+        return super.initializeView(controller);
     }
 
     @Override

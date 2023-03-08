@@ -47,16 +47,16 @@ public class FlexWindowElement extends WindowElement {
     }
 
     @Override
-    public Widget initializeView() {
-        redraw(true);
-        return super.initializeView();
+    public Widget initializeView(WindowsController controller) {
+        redraw(controller);
+        return super.initializeView(controller);
     }
 
     @Override
     public void setWindowVisible(WindowElement window) {
         if (!visibleChildren.contains(window)) {
             visibleChildren.add(window);
-            redraw(false);
+            redraw();
         }
     }
 
@@ -64,11 +64,14 @@ public class FlexWindowElement extends WindowElement {
     public void setWindowInvisible(WindowElement window) {
         if (visibleChildren.contains(window)) {
             visibleChildren.remove(window);
-            redraw(false);
+            redraw();
         }
     }
     
-    private void redraw(boolean initial) {
+    private void redraw() {
+        redraw(null);
+    }
+    private void redraw(WindowsController controller) {
         List<WindowElement> orderedChildren = visibleChildren.stream().sorted((o1, o2) -> vertical ? o1.y - o2.y : o1.x - o2.x).collect(Collectors.toList());
         
         int totalSize = 0;
@@ -96,20 +99,23 @@ public class FlexWindowElement extends WindowElement {
 
         panel.clear();
         for (WindowElement child : orderedChildren) {
-            GSize basis = child.isAutoSize(vertical) ? prefs.get(child) : GSize.ZERO;
-            Widget windowView = initial ? child.initializeView() : child.getView();
-            
-            panel.add(windowView, GFlexAlignment.STRETCH, currentFlexes.get(child) / totalFlex, false, basis);
+            Widget windowView = controller != null ? child.initializeView(controller) : child.getView();
+
+            panel.add(windowView, GFlexAlignment.STRETCH, currentFlexes.get(child) / totalFlex,
+                    false, child.isAutoSize(vertical) ? prefs.get(child) : GSize.ZERO);
             
             boolean lastInLine = orderedChildren.indexOf(child) == orderedChildren.size() - 1;
             windowView.setStyleName("last-in-line", lastInLine);
+
+            if(controller != null)
+                child.onAddView(controller);
         }
     }
 
     public void resetWindowSize() {
         flexes.clear();
         prefs.clear();
-        redraw(false);
+        redraw();
         
         for (WindowElement child : children) {
             if (child instanceof FlexWindowElement) {
@@ -125,7 +131,7 @@ public class FlexWindowElement extends WindowElement {
             panel.clear();
             panel.add(lastChild.getView(), GFlexAlignment.STRETCH, 1, false, GSize.ZERO);
         } else {
-            redraw(false);
+            redraw();
         }
         if (lastChild instanceof FlexWindowElement) {
             ((FlexWindowElement) lastChild).setBorderWindowsHidden(hidden);
@@ -202,6 +208,6 @@ public class FlexWindowElement extends WindowElement {
             }
             child.restoreWindowsSizes(storage);
         }
-        redraw(false);
+        redraw();
     }
 }

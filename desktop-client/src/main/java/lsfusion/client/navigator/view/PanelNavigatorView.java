@@ -1,6 +1,5 @@
 package lsfusion.client.navigator.view;
 
-import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.base.view.FlatRolloverButton;
 import lsfusion.client.form.object.table.grid.user.toolbar.view.TitledPanel;
 import lsfusion.client.navigator.ClientNavigatorElement;
@@ -30,7 +29,7 @@ public class PanelNavigatorView extends NavigatorView {
     public void refresh(Set<ClientNavigatorElement> newElements) {
         panel.removeAll();
         for (ClientNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addElement(element, panel);
             }
         }

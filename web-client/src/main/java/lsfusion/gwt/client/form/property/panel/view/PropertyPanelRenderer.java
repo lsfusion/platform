@@ -6,7 +6,6 @@ import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
@@ -119,6 +118,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
             return;
         }
 
-        BaseImage.updateText(label, text);
+        BaseImage.updateText(label, text, property.panelCaptionVertical);
     }
 }

@@ -42,8 +42,10 @@ public abstract class WindowElement {
     public void setWindowInvisible(WindowElement window) {}
     
     
-    public Widget initializeView() {
+    public Widget initializeView(WindowsController controller) {
         return getView();
+    }
+    public void onAddView(WindowsController controller) {
     }
 
     public abstract void addElement(WindowElement window);

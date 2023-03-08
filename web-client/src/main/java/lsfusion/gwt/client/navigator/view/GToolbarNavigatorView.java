@@ -71,7 +71,7 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
         panel.clear();
 
         for (GNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addElement(element, newElements, 0);
             }
         }

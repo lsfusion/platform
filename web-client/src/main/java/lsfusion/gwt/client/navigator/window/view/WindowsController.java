@@ -3,14 +3,15 @@ package lsfusion.gwt.client.navigator.window.view;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
@@ -19,11 +20,39 @@ public abstract class WindowsController {
     private NativeSIDMap<GAbstractWindow, WindowElement> windowElementsMapping = new NativeSIDMap<>();
     private FlexWindowElement rootElement;
 
+    public static final String NAVBAR_TEXT_ON_HOVER = "navbar-desktop-text-on-hover";
+    private static final String PROPAGATE_CLASS_TO_PARENT_ATTR = "propagate_class_to_parent_attr";
     public void updateElementClass(GAbstractWindow window) {
-        String elementClass = window.elementClass;
-        if (!GwtSharedUtils.isRedundantString(elementClass)) {
-            getWindowView(window).addStyleName(elementClass);
+        Widget windowView = getWindowView(window);
+        BaseImage.updateClasses(windowView.getElement(), propagateOnHoverToParent(window, windowView, window.elementClass));
+    }
+
+    private static String propagateOnHoverToParent(GAbstractWindow window, Widget windowView, String elementClass) {
+        // we're assuming that if there is an upper flex panel, it's parent will be the opposite direction (due to the window layout mechanism)
+        // this makes the whole mechanism a lot simpler
+        String propagateClassToParent = NAVBAR_TEXT_ON_HOVER;
+        Widget parent;
+        // also we're assuming that window already has parent
+        boolean isVertical = window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical();
+        if((parent = windowView.getParent()) instanceof FlexPanel && ((FlexPanel) parent).isVertical() == isVertical) {
+            boolean hasPropagateClass = elementClass != null && elementClass.contains(propagateClassToParent);
+
+            int prevOnHover = windowView.getElement().getPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR);
+            int newOnHover = hasPropagateClass ? 1 : 0;
+            windowView.getElement().setPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR, newOnHover);
+
+            int prevParentOnHover = parent.getElement().getPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR);
+            int newPrevParentOnHover = prevParentOnHover + (newOnHover - prevOnHover);
+            parent.getElement().setPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR, newPrevParentOnHover);
+
+            int childCount = ((FlexPanel) parent).getWidgetCount();
+            boolean prevNeedOnHover = prevParentOnHover == childCount;
+            boolean newNeedOnHover = newPrevParentOnHover == childCount;
+
+            if(prevNeedOnHover != newNeedOnHover)
+                BaseImage.updateClasses(parent.getElement(), newNeedOnHover ? propagateClassToParent : null); // we're assuming that no one else updates that parent window classes
         }
+        return elementClass;
     }
 
     public GAbstractWindow findWindowByCanonicalName(String canonicalName) {
@@ -48,7 +77,7 @@ public abstract class WindowsController {
         
         rootElement = (FlexWindowElement) fillWindowChildren(rootNode);
 
-        Widget rootView = rootElement.initializeView();
+        Widget rootView = rootElement.initializeView(this);
 
         setDefaultVisible();
 

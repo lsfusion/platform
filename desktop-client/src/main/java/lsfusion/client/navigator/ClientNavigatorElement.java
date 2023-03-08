@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 
@@ -30,7 +29,7 @@ public abstract class ClientNavigatorElement {
 
     public String elementClass;
 
-    public List<ClientNavigatorElement> parents = new ArrayList<>();
+    public ClientNavigatorElement parent;
     public List<ClientNavigatorElement> children = new ArrayList<>();
     public AppImage appImage;
     public Image fileImage = null;
@@ -152,16 +151,6 @@ public abstract class ClientNavigatorElement {
         }
 
         return element;
-    }
-
-    //содержатся ли родители текущей вершины в заданном множестве
-    public boolean containsParent(Set<ClientNavigatorElement> set) {
-        for (ClientNavigatorElement parent : parents) {
-            if (set.contains(parent)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public String getTooltip() {

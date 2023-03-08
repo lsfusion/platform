@@ -482,8 +482,8 @@ public class MainFrame implements EntryPoint {
 
         navigatorController.setRoot(result.root);
 
-        RootPanel.getBodyElement().addClassName(useBootstrap ? "nav-bootstrap" : "nav-excel");
-        RootPanel.getBodyElement().addClassName(mobile ? "nav-mobile" : "nav-desktop");
+        FormsController.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
+        FormsController.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
 
         if (mobile) {
             if (useBootstrap) {

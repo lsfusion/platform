@@ -31,7 +31,7 @@ logoAction() {}
 logoActionClass = DATA STRING();
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS logoActionClass() +' navbar-excel-mobile-hidden';
+    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS 'navbar-excel-mobile-hidden' + (IF hover() THEN '' ELSE (' ' + logoActionClass()));
 }
 
 userUseBootstrap = DATA TBOOLEAN (CustomUser);

@@ -1,6 +1,5 @@
 package lsfusion.client.navigator.view;
 
-import lsfusion.client.base.view.ClientImages;
 import lsfusion.client.navigator.ClientNavigatorElement;
 import lsfusion.client.navigator.controller.INavigatorController;
 import lsfusion.client.navigator.window.ClientMenuNavigatorWindow;
@@ -27,7 +26,7 @@ public class MenuNavigatorView extends NavigatorView {
     public void refresh(Set<ClientNavigatorElement> newElements) {
         menuBar.removeAll();
         for (ClientNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 JComponent component = addElement(menuBar, element, newElements, 0);
             }
         }
