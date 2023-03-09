@@ -112,6 +112,8 @@
         <tess4j.version>4.3.1</tess4j.version>
         <pdfbox.version>2.0.12</pdfbox.version>
         <fax4j.version>0.44.2</fax4j.version>
+        <lucene.core.version>9.5.0</lucene.core.version>
+        <lucene.analyzers.version>8.11.2</lucene.analyzers.version>
     </properties>
 
     <!-- DEPENDENCY VERSIONS -->
@@ -666,6 +668,18 @@
                 <groupId>net.sf.fax4j</groupId>
                 <artifactId>fax4j</artifactId>
                 <version>${fax4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${lucene.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers-common</artifactId>
+                <version>${lucene.analyzers.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

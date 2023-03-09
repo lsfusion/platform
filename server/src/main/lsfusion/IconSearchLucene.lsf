@@ -1,0 +1,95 @@
+MODULE IconSearchLucene;
+
+GROUP search;
+free = DATA LOCAL STRING(INTEGER);
+icon_id = DATA LOCAL STRING (INTEGER);
+icon_id_2 = DATA LOCAL STRING (INTEGER);
+term = DATA LOCAL STRING (INTEGER);
+label = DATA LOCAL STRING (STRING);
+
+FORM rootForm
+OBJECTS icon=STRING EXTKEY
+
+OBJECTS terms=INTEGER IN search
+PROPERTIES term(terms) EXTID 'value'
+FILTERS icon_id(terms) = icon
+PROPERTIES(icon) label
+
+OBJECTS free=INTEGER
+PROPERTIES(free) free EXTID 'value'
+FILTERS icon_id_2(free) == icon
+;
+
+CLASS Icon;
+iconName = DATA STRING (Icon);
+label = DATA STRING (Icon);
+terms = DATA STRING (Icon);
+free = DATA STRING (Icon);
+
+icon(iconName) = GROUP AGGR Icon icn BY iconName(icn);
+terms(STRING icon) = GROUP CONCAT term(INTEGER i) IF icon_id(i) == icon, ' ' ORDER i;
+free(STRING icon) = GROUP CONCAT free(INTEGER i) IF icon_id_2(i) == icon, ' ' ORDER i;
+
+//need to prepend to JSON ' { "icon": { ' and append ' } ' without single quotes
+iconsImport() {
+    INPUT j = JSONFILE DO {
+        IMPORT rootForm JSON FROM j;
+        FOR [GROUP SUM 1 IF icon_id(INTEGER i) BY icon_id(i)](STRING icon_id) AND NOT icon(icon_id) NEW icn = Icon DO {
+            iconName(icn) <- icon_id;
+        }
+
+        FOR iconName(Icon icn) == icon_id(INTEGER i) DO {
+            LOCAL local_icon_id = STRING();
+            local_icon_id() <- icon_id(i);
+
+            terms(icn) <- terms(local_icon_id());
+            free(icn) <- free(local_icon_id());
+            label(icn) <- label(icon_id(i)) IF NOT label(icn);
+        }
+
+        DELETE Icon icn WHERE icn IS Icon AND NOT [ GROUP SUM 1 BY icon_id(INTEGER i)](iconName(icn));
+
+        APPLY;
+    }
+}
+
+tsRank (STRING terms, STRING search) = FORMULA DOUBLE PG 'ts_rank(to_tsvector($1), plainto_tsquery($2))';
+
+getFAIconName INTERNAL 'lsfusion.server.logics.GetFAIconNameActionLucene' (STRING);
+
+bestIconName = DATA LOCAL STRING();
+getBestIcon(STRING s) {
+    LOCAL rank = DOUBLE(Icon);
+    FOR terms(Icon icn) DO {
+        rank(icn) <- tsRank(terms(icn), s);
+    }
+
+    LOCAL bestIcon = Icon();
+    bestIcon() <- GROUP LAST Icon icn IF rank(icn) ORDER rank(icn);
+    bestIconName() <- iconName(bestIcon());
+}
+
+test() {
+    INPUT s = STRING DO {
+        getFAIconName(s);
+    }
+}
+
+FORM fontLucene
+    PROPERTIES() iconsImport, bestIconName, test PANEL
+    OBJECTS icn = Icon
+    PROPERTIES(icn) iconName READONLY, terms READONLY, label READONLY, free READONLY, DELETE
+;
+
+DESIGN fontLucene {
+    NEW container {
+        MOVE PROPERTY(test()) {
+            width = 100;
+            height = 20;
+        }
+    }
+}
+
+NAVIGATOR {
+    NEW fontLucene;
+}
