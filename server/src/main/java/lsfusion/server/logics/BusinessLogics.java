@@ -74,7 +74,6 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.controller.remote.RemoteNavigator;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
-import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.AggregateProperty;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.caches.MapCacheAspect;
@@ -176,6 +175,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public boolean useBootstrap;
     
     public boolean verticalNavbar;
+    
+    public boolean pinNavbar;
 
     public String logicsCaption;
 
@@ -221,6 +222,10 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public void setVerticalNavbar(boolean verticalNavbar) {
         this.verticalNavbar = verticalNavbar;
+    }
+    
+    public void setPinNavbar(boolean pinNavbar) {
+        this.pinNavbar = pinNavbar;
     }
 
     public void setLogicsCaption(String logicsCaption) {

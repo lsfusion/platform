@@ -677,7 +677,7 @@ EXTEND FORM settings
 
     OBJECTS uc = CustomUser
     PROPERTIES(uc) READONLY name, login, userRoles
-    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, colorThemeName,
+    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, pinNavbar, colorThemeName,
                    selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
 ;
 
@@ -798,7 +798,8 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
         useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
-        verticalNavbar = verticalNavbar();
+        verticalNavbar = verticalNavbar(),
+        pinNavbar = pinNavbar();
 }
 
 getClientSettings() {

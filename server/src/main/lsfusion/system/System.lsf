@@ -445,10 +445,10 @@ META defineLinkDialog (object)
     } ASON CHANGE object;
 END
 
-hover = DATA BOOLEAN (); // temp
+pinNavbar = ABSTRACT BOOLEAN ();
 
-WINDOW logo TOOLBAR HORIZONTAL POSITION(0, 0, 10, 6) VALIGN (CENTER) HALIGN (START) HIDETITLE HIDESCROLLBARS CLASS 'bg-dark-subtle' + (IF hover() THEN ' navbar-desktop-text-on-hover' ELSE '');
-WINDOW root TOOLBAR HORIZONTAL POSITION(10, 0, 70, 6) VALIGN (CENTER) HALIGN (CENTER) HIDETITLE HIDESCROLLBARS CLASS 'bg-dark-subtle navbar-icon-large' + (IF hover() THEN ' navbar-desktop-text-on-hover' ELSE '');
+WINDOW logo TOOLBAR HORIZONTAL POSITION(0, 0, 10, 6) VALIGN (CENTER) HALIGN (START) HIDETITLE HIDESCROLLBARS CLASS 'bg-dark-subtle' + (IF pinNavbar() THEN '' ELSE ' navbar-desktop-text-on-hover');
+WINDOW root TOOLBAR HORIZONTAL POSITION(10, 0, 70, 6) VALIGN (CENTER) HALIGN (CENTER) HIDETITLE HIDESCROLLBARS CLASS 'bg-dark-subtle navbar-icon-large' + (IF pinNavbar() THEN '' ELSE ' navbar-desktop-text-on-hover');
 WINDOW system TOOLBAR HORIZONTAL POSITION(80, 0, 20, 6) VALIGN (CENTER) HALIGN (END) HIDETITLE HIDESCROLLBARS CLASS 'bg-dark-subtle navbar-desktop-icon-large navbar-desktop-text-hidden';
 
 WINDOW toolbar TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE CLASS 'bg-body-secondary';

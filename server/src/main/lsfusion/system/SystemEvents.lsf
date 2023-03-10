@@ -31,7 +31,7 @@ logoAction() {}
 logoActionClass = DATA STRING();
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS 'navbar-excel-mobile-hidden' + (IF hover() THEN '' ELSE (' ' + logoActionClass()));
+    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS 'navbar-excel-mobile-hidden' + (IF pinNavbar() THEN '' ELSE (' ' + logoActionClass()));
 }
 
 userUseBootstrap = DATA TBOOLEAN (CustomUser);
@@ -58,9 +58,9 @@ toggleColorTheme() {
     formRefresh();
 }
 
-userVerticalNavbar '{navigator.vertical.navbar}' = DATA TBOOLEAN (CustomUser);
-serverVerticalNavbar '{navigator.vertical.navbar}' = DATA BOOLEAN ();
-verticalNavbar '{navigator.vertical.navbar}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
+userVerticalNavbar '{navigator.navbar.vertical}' = DATA TBOOLEAN (CustomUser);
+serverVerticalNavbar '{navigator.navbar.vertical}' = DATA BOOLEAN ();
+verticalNavbar '{navigator.navbar.vertical}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
 verticalNavbar = verticalNavbar(currentUser());
 
 verticalNavbarCaption = IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}';
@@ -69,6 +69,18 @@ toggleVerticalNavbar () {
     userVerticalNavbar(currentUser()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
     APPLY;
     INTERNAL CLIENT 'reload';
+}
+
+userPinNavbar '{navigator.navbar.pin}' = DATA TBOOLEAN (CustomUser);
+serverPinNavbar '{navigator.navbar.pin}' = DATA BOOLEAN ();
+pinNavbar '{navigator.navbar.pin}' (CustomUser u) = IF userPinNavbar(u) THEN userPinNavbar(u) == TTRUE ELSE serverPinNavbar();
+pinNavbar() += pinNavbar(currentUser());
+
+pinNavbarCaption = IF pinNavbar() THEN '{system.events.navbar.unpin}' ELSE '{system.events.navbar.pin}';
+pinNavbarImage = IF pinNavbar() THEN 'navbarUnpin.png' ELSE 'navbarPin.png';
+togglePinNavbar () {
+    userPinNavbar(currentUser()) <- IF pinNavbar() THEN TFALSE ELSE TTRUE;
+    apply();
 }
 
 onWebClientStarted() + {
@@ -83,8 +95,8 @@ onWebClientStarted() + {
 }
 
 NAVIGATOR {
-//    NEW toggleVerticalNavbar WINDOW system PARENT HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
-    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE administration HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
+    NEW togglePinNavbar WINDOW system PARENT BEFORE administration HEADER pinNavbarCaption() IMAGE pinNavbarImage();
+    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE togglePinNavbar HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
     NEW toggleBootstrap WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER bootstrapCaption() IMAGE bootstrapImage();
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleBootstrap HEADER colorThemeCaption() IMAGE colorThemeImage();
 }

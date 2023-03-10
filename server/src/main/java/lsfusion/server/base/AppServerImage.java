@@ -77,6 +77,9 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("navbarVert.png", "bi bi-layout-sidebar");
         AppServerImage.predefinedFontClasses.exclAdd("navbarHorz.png", "bi bi-window-sidebar");
 
+        AppServerImage.predefinedFontClasses.exclAdd("navbarPin.png", "bi bi-pin-fill");
+        AppServerImage.predefinedFontClasses.exclAdd("navbarUnpin.png", "bi bi-pin-angle-fill");
+
         AppServerImage.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
 
         AppServerImage.predefinedFontClasses.exclAdd("inventory.png", "fa-solid fa-warehouse");
