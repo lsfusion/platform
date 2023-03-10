@@ -63,6 +63,14 @@ serverVerticalNavbar '{navigator.vertical.navbar}' = DATA BOOLEAN ();
 verticalNavbar '{navigator.vertical.navbar}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
 verticalNavbar = verticalNavbar(currentUser());
 
+verticalNavbarCaption = IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}';
+verticalNavbarImage = IF verticalNavbar() THEN 'navbarHorz.png' ELSE 'navbarVert.png';
+toggleVerticalNavbar () {
+    userVerticalNavbar(currentUser()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
+    APPLY;
+    INTERNAL CLIENT 'reload';
+}
+
 onWebClientStarted() + {
     IF verticalNavbar() THEN {
         defaultLogo() <- 'logo.png';
@@ -75,7 +83,9 @@ onWebClientStarted() + {
 }
 
 NAVIGATOR {
-    NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
+//    NEW toggleVerticalNavbar WINDOW system PARENT HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
+    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE administration HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
+    NEW toggleBootstrap WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER bootstrapCaption() IMAGE bootstrapImage();
     NEW toggleColorTheme WINDOW system PARENT BEFORE toggleBootstrap HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
