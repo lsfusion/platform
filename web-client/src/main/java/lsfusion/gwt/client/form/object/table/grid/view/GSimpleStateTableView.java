@@ -329,6 +329,17 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return isReadOnly(property, getKey(object));
     }
 
+    protected Object getValueElementClass(String property, GGroupObjectValue object) {
+        Column column = columnMap.get(property);
+        if(column == null)
+            return null;
+        return getValueElementClass(column.property, object, column.columnKey);
+    }
+
+    protected Object getValueElementClass(String property, JavaScriptObject object) {
+        return getValueElementClass(property, getKey(object));
+    }
+
     protected Object getBackground(String property, GGroupObjectValue object) {
         Column column = columnMap.get(property);
         if(column == null)
@@ -521,6 +532,10 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+            },
+            getValueClass: function (property, object) {
+                var aclass = thisObj.@GSimpleStateTableView::getValueElementClass(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);
+                return aclass ? aclass.toString() : null;
             },
             getBackground: function (property, object) {
                 var color = thisObj.@GSimpleStateTableView::getBackground(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

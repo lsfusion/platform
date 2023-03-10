@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.action.lifecycle;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.mutable.MList;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
@@ -17,8 +18,6 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
-import java.awt.*;
-
 import static lsfusion.server.logics.property.PropertyFact.createAnd;
 import static lsfusion.server.logics.property.PropertyFact.createTrue;
 
@@ -28,14 +27,14 @@ public abstract class FormToolbarAction extends InternalAction {
         super(lm);
 
         drawOptions.addProcessor(new DefaultProcessor() {
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                 LP propertyCaption = getShowIf();
                 if (propertyCaption != null) {
-                    entity.setPropertyExtra(form.addPropertyObject(propertyCaption), PropertyDrawExtraType.SHOWIF);
+                    entity.setPropertyExtra(form.addPropertyObject(propertyCaption), PropertyDrawExtraType.SHOWIF, version);
                 }
                 LP readOnlyIf = getReadOnlyIf();
                 if(readOnlyIf != null) {
-                    entity.setPropertyExtra(form.addPropertyObject(readOnlyIf), PropertyDrawExtraType.READONLYIF);
+                    entity.setPropertyExtra(form.addPropertyObject(readOnlyIf), PropertyDrawExtraType.READONLYIF, version);
                 }
             }
             public void proceedDefaultDesign(PropertyDrawView propertyView) {

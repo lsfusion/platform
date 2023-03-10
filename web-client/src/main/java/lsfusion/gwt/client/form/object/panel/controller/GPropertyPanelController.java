@@ -42,6 +42,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, Object> readOnly;
     private NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues;
     private NativeHashMap<GGroupObjectValue, Object> cellForegroundValues;
+    private NativeHashMap<GGroupObjectValue, Object> cellValueElementClasses;
 
     private NativeHashMap<GGroupObjectValue, Object> images;
 
@@ -147,6 +148,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
+        Object valueElementClass = null;
+        if(cellValueElementClasses != null) {
+            valueElementClass = cellValueElementClasses.get(columnKey);
+        }
         Object background = null;
         if (cellBackgroundValues != null) {
             background = cellBackgroundValues.get(columnKey);
@@ -158,6 +163,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         renderer.update(values.get(columnKey),
                 loadings != null && loadings.get(columnKey) != null,
                 images != null ? images.get(columnKey) : null,
+                valueElementClass == null ? property.valueElementClass : valueElementClass,
                 background == null ? property.background : background,
                 foreground == null ? property.foreground : foreground,
                 readOnly != null && readOnly.get(columnKey) != null);
@@ -227,6 +233,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
             columnsUpdated = needColumnsPanel();
         }
+    }
+
+    public void setCellValueElementClasses(NativeHashMap<GGroupObjectValue, Object> cellValueElementClasses) {
+        this.cellValueElementClasses = cellValueElementClasses;
     }
 
     public void setCellBackgroundValues(NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues) {

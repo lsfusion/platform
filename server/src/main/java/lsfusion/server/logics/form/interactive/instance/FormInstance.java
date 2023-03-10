@@ -95,6 +95,7 @@ import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.instance.design.BaseComponentViewInstance;
+import lsfusion.server.logics.form.interactive.instance.design.ComponentViewInstance;
 import lsfusion.server.logics.form.interactive.instance.design.ContainerViewInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.NotNullFilterInstance;
@@ -2446,6 +2447,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.captionReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.footerReader, toDraw, result, propRowColumnGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.readOnlyReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.valueElementClassReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.foregroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty() ? propRowColumnGrids : propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
@@ -2468,19 +2470,25 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         for (ComponentView component : entity.getPropertyComponents()) {
+            boolean hidden = isHidden(component);
+            boolean update = true;
+
+            ImSet<GroupObjectInstance> gridGroups = SetFact.EMPTY();
+
+            ComponentViewInstance<?> componentInstance;
             if(component instanceof ContainerView) {
                 ContainerView container = (ContainerView) component;
-
-                boolean hidden = isHidden(container);
-                boolean update = true;
-
-                ImSet<GroupObjectInstance> gridGroups = SetFact.EMPTY();
 
                 ContainerViewInstance containerInstance = instanceFactory.getInstance(container);
                 fillChangedReader(containerInstance.captionReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(containerInstance.imageReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(containerInstance.customDesignReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
-            }
+
+                componentInstance = containerInstance;
+            } else
+                componentInstance = instanceFactory.getInstance(component);
+
+            fillChangedReader(componentInstance.elementClassReader, null, result, gridGroups, hidden, update, true, mReadProperties, changedDrawProps, changedProps);
         }
         return mReadProperties.immutable();
     }

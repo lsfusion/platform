@@ -48,20 +48,19 @@ public interface BaseImage extends Serializable {
         return true;
     }
 
-    static void updateClasses(Element element, String fontClasses) {
-        String prevFontClasses = element.getPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
-        if(prevFontClasses != null)
-            GwtClientUtils.removeClassNames(element, prevFontClasses);
+    static void updateClasses(Element element, String classes) {
+        String prevClasses = element.getPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+        if(prevClasses != null)
+            GwtClientUtils.removeClassNames(element, prevClasses);
 
-        // it seems that enabled is not needed, since it is handled with the text color
-        setClass(element, fontClasses);
-
-        element.setPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, fontClasses);
+        setClasses(element, classes);
     }
 
-    static void setClass(Element element, String fontClasses) {
-        if(fontClasses != null && !fontClasses.isEmpty())
-            GwtClientUtils.addClassNames(element, fontClasses);
+    static void setClasses(Element element, String setClasses) {
+        if(setClasses != null && !setClasses.isEmpty())
+            GwtClientUtils.addClassNames(element, setClasses);
+
+        element.setPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, setClasses);
     }
 
     static void initImageText(Widget widget, String caption, BaseImage appImage, boolean vertical) {

@@ -4,7 +4,6 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.ImMap;
@@ -46,7 +45,6 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
-import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.log.ServerLoggers;
@@ -527,10 +525,10 @@ public class ScriptingFormEntity {
             property.setColumnGroupObjects(columns.columnsName, SetFact.fromJavaOrderSet(columns.columns));
         }
 
-        property.setPropertyExtra(options.getHeader(), PropertyDrawExtraType.CAPTION);
-        property.setPropertyExtra(options.getFooter(), PropertyDrawExtraType.FOOTER);
+        property.setPropertyExtra(options.getHeader(), PropertyDrawExtraType.CAPTION, version);
+        property.setPropertyExtra(options.getFooter(), PropertyDrawExtraType.FOOTER, version);
 
-        property.setPropertyExtra(options.getShowIf(), PropertyDrawExtraType.SHOWIF);
+        property.setPropertyExtra(options.getShowIf(), PropertyDrawExtraType.SHOWIF, version);
 
         property.formula = options.formula;
         property.formulaOperands = options.formulaOperands;
@@ -540,26 +538,31 @@ public class ScriptingFormEntity {
 
         property.quickFilterProperty = options.getQuickFilterPropertyDraw();
 
+        PropertyObjectEntity valueElementClassProperty = options.getValueElementClass();
+        if(valueElementClassProperty != null) {
+            property.setPropertyExtra(valueElementClassProperty, PropertyDrawExtraType.VALUEELEMENTCLASS, version);
+        }
+
         PropertyObjectEntity backgroundProperty = options.getBackground();
         if (backgroundProperty != null && !((PropertyObjectEntity<?>)backgroundProperty).property.getType().equals(ColorClass.instance)) {
-            property.setPropertyExtra(addGroundPropertyObject(backgroundProperty, true), PropertyDrawExtraType.BACKGROUND);
+            property.setPropertyExtra(addGroundPropertyObject(backgroundProperty, true), PropertyDrawExtraType.BACKGROUND, version);
         } else {
-            property.setPropertyExtra(backgroundProperty, PropertyDrawExtraType.BACKGROUND);
+            property.setPropertyExtra(backgroundProperty, PropertyDrawExtraType.BACKGROUND, version);
         }
 
         PropertyObjectEntity foregroundProperty = options.getForeground();
         if (foregroundProperty != null && !((PropertyObjectEntity<?>)foregroundProperty).property.getType().equals(ColorClass.instance)) {
-            property.setPropertyExtra(addGroundPropertyObject(foregroundProperty, false), PropertyDrawExtraType.FOREGROUND);
+            property.setPropertyExtra(addGroundPropertyObject(foregroundProperty, false), PropertyDrawExtraType.FOREGROUND, version);
         } else {
-            property.setPropertyExtra(foregroundProperty, PropertyDrawExtraType.FOREGROUND);
+            property.setPropertyExtra(foregroundProperty, PropertyDrawExtraType.FOREGROUND, version);
         }
 
         PropertyObjectEntity imageProperty = options.getImage();
         if (imageProperty != null) {
-            property.setPropertyExtra(imageProperty, PropertyDrawExtraType.IMAGE);
+            property.setPropertyExtra(imageProperty, PropertyDrawExtraType.IMAGE, version);
         }
 
-        property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF);
+        property.setPropertyExtra(options.getReadOnlyIf(), PropertyDrawExtraType.READONLYIF, version);
         if (options.getViewType() != null) {
             property.viewType = options.getViewType();
         }
@@ -670,12 +673,8 @@ public class ScriptingFormEntity {
 
     private <P extends PropertyInterface, C extends PropertyInterface> PropertyObjectEntity addGroundPropertyObject(PropertyObjectEntity<P> groundProperty, boolean back) {
         LP<C> defaultColorProp = back ? LM.baseLM.defaultOverrideBackgroundColor : LM.baseLM.defaultOverrideForegroundColor;
-        PropertyMapImplement<P, P> groupImplement = groundProperty.property.getImplement();
-        PropertyMapImplement<?, P> mapImpl = PropertyFact.createAnd(groundProperty.property.interfaces,
-                new PropertyMapImplement<>(defaultColorProp.property, MapFact.<C, P>EMPTYREV()), groupImplement);
-        return new PropertyObjectEntity(
-                mapImpl.property,
-                mapImpl.mapping.join(groundProperty.mapping));
+        return PropertyFact.createAnd(groundProperty.property.interfaces, // default IF property()
+                defaultColorProp.getImplement(), groundProperty.property.getImplement()).mapEntityObjects(groundProperty.mapping);
     }
 
     public PropertyDrawEntity getPropertyDraw(String sid, Version version) throws ScriptingErrorLog.SemanticErrorException {

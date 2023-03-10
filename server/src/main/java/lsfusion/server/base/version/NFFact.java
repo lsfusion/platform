@@ -59,7 +59,11 @@ public class NFFact {
     public static <K> NFSet<K> set() {
         return new NFSetImpl<>();
     }
-    
+
+    public static <K, V> NFMap<K, V> map() {
+        return new NFMapImpl<>();
+    }
+
     public static <K, V> NFOrderMap<K, V> orderMap() {
         return new NFOrderMapImpl<>();
     }

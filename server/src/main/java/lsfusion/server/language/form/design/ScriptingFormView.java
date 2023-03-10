@@ -57,9 +57,9 @@ public class ScriptingFormView {
         return parent;
     }
 
-    public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+    public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Version version, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         try {
-            ViewProxyUtil.setObjectProperty(propertyReceiver, propertyName, propertyValue, debugPoint);
+            ViewProxyUtil.setObjectProperty(propertyReceiver, propertyName, propertyValue, version, debugPoint);
         } catch (Exception e) {
             errLog.emitUnableToSetPropertyError(parser, propertyName, e.getMessage());
         }

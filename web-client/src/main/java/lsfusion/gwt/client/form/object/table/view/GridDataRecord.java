@@ -13,6 +13,7 @@ public class GridDataRecord implements RowIndexHolder {
 
     private NativeStringMap<Object> values;
     private NativeStringMap<Boolean> readOnlys;
+    private NativeStringMap<String> valueElementClasses;
     private NativeStringMap<String> backgrounds;
     private NativeStringMap<String> foregrounds;
 
@@ -59,6 +60,18 @@ public class GridDataRecord implements RowIndexHolder {
 
     public void setImage(String column, Object image) {
         setAttribute(column + "_image", image);
+    }
+
+    public void setValueElementClass(String column, Object elementClass) {
+        if (elementClass != null) {
+            createValueElementClasses().put(column, elementClass.toString());
+        } else if (valueElementClasses != null) {
+            valueElementClasses.remove(column);
+        }
+    }
+
+    public String getValueElementClass(String column) {
+        return valueElementClasses != null ? valueElementClasses.get(column) : null;
     }
 
     public void setBackground(String column, Object color) {
@@ -129,6 +142,13 @@ public class GridDataRecord implements RowIndexHolder {
             values = new NativeStringMap<>();
         }
         return values;
+    }
+
+    private NativeStringMap<String> createValueElementClasses() {
+        if (valueElementClasses == null) {
+            valueElementClasses = new NativeStringMap<>();
+        }
+        return valueElementClasses;
     }
 
     private NativeStringMap<String> createBackgrounds() {

@@ -54,6 +54,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
+    public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
@@ -942,6 +943,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.LAST;
+        }
+    }
+
+    public class ValueElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CELL_VALUEELEMENTCLASS;
         }
     }
 
