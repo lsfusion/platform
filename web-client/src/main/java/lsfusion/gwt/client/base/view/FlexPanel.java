@@ -689,9 +689,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     private static void drawBorder(Widget widget, Border border, boolean start, boolean vertical) {
+        assert border != Border.HAS_MARGIN;
         if(border == Border.NO)
             return;
 
+        // here it's either NEED or HAS
         if (start) {
             if(border == Border.NEED) {
                 if(vertical)
@@ -700,10 +702,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     widget.addStyleName("left-border");
             }
         } else {
-            if(vertical)
-                widget.addStyleName("bottom-margin");
-            else
-                widget.addStyleName("right-margin");
+            if(border == Border.NEED) { // i.e doesn't have
+                if (vertical)
+                    widget.addStyleName("bottom-padding");
+                else
+                    widget.addStyleName("right-padding");
+            } else {
+                if (vertical)
+                    widget.addStyleName("bottom-margin");
+                else
+                    widget.addStyleName("right-margin");
+            }
         }
     }
     private static void clearBorder(Widget widget, boolean start, boolean vertical) {
@@ -713,10 +722,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             else
                 widget.removeStyleName("left-border");
         } else {
-            if(vertical)
+            if(vertical) {
                 widget.removeStyleName("bottom-margin");
-            else
+                widget.removeStyleName("bottom-padding");
+            } else {
                 widget.removeStyleName("right-margin");
+                widget.removeStyleName("right-padding");
+            }
         }
     }
     private static void drawWrapBorder(Widget widget, Border border) {

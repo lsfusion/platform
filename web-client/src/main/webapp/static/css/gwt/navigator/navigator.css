@@ -1,3 +1,13 @@
+.navbar.navbar-vert {
+    /* should look on drawScrollbars? */
+    overflow-x: auto;
+}
+
+.navbar.navbar-horz {
+    /* should look on drawScrollbars? */
+    overflow-y: auto;
+}
+
 .navbar-nav.navbar-nav-horz,
 .navbar-nav.navbar-nav-vert
 {
@@ -27,18 +37,12 @@
 
     /* in horizontal navbar it makes sense to center the text */
     text-align: center;
-
-    /* should look on drawScrollbars? */
-    overflow-x: auto;
 }
 
 .navbar-nav.navbar-nav-vert,
 .navbar-expand .navbar-nav.navbar-nav-vert /* navbar-expand navbar-nav somewhy sets flex-direction: row */
 {
     flex-direction: column;
-
-    /* should look on drawScrollbars? */
-    overflow-y: auto;
 
     /*align-items: flex-start;*/
 }
