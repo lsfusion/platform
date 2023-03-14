@@ -74,11 +74,11 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid fa-sun");
         AppServerImage.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid fa-moon");
 
-        AppServerImage.predefinedFontClasses.exclAdd("navbarVert.png", "bi bi-layout-sidebar");
-        AppServerImage.predefinedFontClasses.exclAdd("navbarHorz.png", "bi bi-window-sidebar");
+        AppServerImage.predefinedFontClasses.exclAdd("navbarVert.png", "fa-solid fa-window-maximize fa-rotate-270");
+        AppServerImage.predefinedFontClasses.exclAdd("navbarHorz.png", "fa-solid fa-window-maximize");
 
-        AppServerImage.predefinedFontClasses.exclAdd("navbarPin.png", "bi bi-pin-fill");
-        AppServerImage.predefinedFontClasses.exclAdd("navbarUnpin.png", "bi bi-pin-angle-fill");
+        AppServerImage.predefinedFontClasses.exclAdd("navbarPin.png", "fa-solid fa-thumbtack");
+        AppServerImage.predefinedFontClasses.exclAdd("navbarUnpin.png", "fa-solid fa-thumbtack fa-rotate-90");
 
         AppServerImage.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
 

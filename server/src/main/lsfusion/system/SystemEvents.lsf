@@ -95,10 +95,10 @@ onWebClientStarted() + {
 }
 
 NAVIGATOR {
-    NEW togglePinNavbar WINDOW system PARENT BEFORE administration HEADER pinNavbarCaption() IMAGE pinNavbarImage();
-    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE togglePinNavbar HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
-    NEW toggleBootstrap WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER bootstrapCaption() IMAGE bootstrapImage();
-    NEW toggleColorTheme WINDOW system PARENT BEFORE toggleBootstrap HEADER colorThemeCaption() IMAGE colorThemeImage();
+    NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
+    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE toggleBootstrap HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
+    NEW togglePinNavbar WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER pinNavbarCaption() IMAGE pinNavbarImage();
+    NEW toggleColorTheme WINDOW system PARENT BEFORE togglePinNavbar HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.css' THEN 1;
