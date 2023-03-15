@@ -568,6 +568,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return false;
     }
 
+    public boolean supportsDeadLockPriority() {
+        return true;
+    }
+
     public boolean supportsNoCount() {
         return false;
     }

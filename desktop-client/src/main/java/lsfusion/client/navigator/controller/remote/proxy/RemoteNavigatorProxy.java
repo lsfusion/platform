@@ -3,6 +3,7 @@ package lsfusion.client.navigator.controller.remote.proxy;
 import com.google.common.base.Throwables;
 import lsfusion.base.Pair;
 import lsfusion.client.connection.RemoteConnectionProxy;
+import lsfusion.client.controller.remote.proxy.RemoteRequestObjectProxy;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.ClientCallBackInterface;
@@ -51,5 +52,10 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface> extends Re
     @Override
     public ServerResponse executeNavigatorAction(long requestIndex, long lastReceivedRequestIndex, String navigatorActionSID, int type) throws RemoteException {
         return target.executeNavigatorAction(requestIndex, lastReceivedRequestIndex, navigatorActionSID, type);
+    }
+    
+    @Override
+    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
+        target.updateNavigatorClientSettings(screenSize, mobile);
     }
 }

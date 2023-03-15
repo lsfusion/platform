@@ -6,8 +6,8 @@ import lsfusion.base.BaseUtils;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.lambda.CallableWithParam;
 import lsfusion.interop.base.exception.RemoteMessageException;
-import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -131,11 +131,6 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
         return createSession(rmiManager.getPort(), token, sessionInfo);
-    }
-
-    @Override
-    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
-        navigatorsManager.updateNavigatorClientSettings(getStack(), screenSize, mobile);
     }
 
     public RemoteSession createSession(int port, AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {

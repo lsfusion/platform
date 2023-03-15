@@ -2,8 +2,8 @@ package lsfusion.client.controller.remote.proxy;
 
 import lsfusion.client.navigator.controller.remote.proxy.RemoteNavigatorProxy;
 import lsfusion.client.session.remote.proxy.RemoteSessionProxy;
-import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.logics.remote.RemoteLogicsInterface;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -29,11 +29,6 @@ public class RemoteLogicsProxy<T extends RemoteLogicsInterface> extends PendingR
     @Override
     public RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException {
         return new RemoteSessionProxy<>(target.createSession(token, sessionInfo), realHostName);
-    }
-
-    @Override
-    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
-        target.updateNavigatorClientSettings(screenSize, mobile);
     }
 
     public void sendPingInfo(String computerName, Map<Long, List<Long>> pingInfoMap)  throws RemoteException {

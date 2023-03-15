@@ -5,9 +5,6 @@ import lsfusion.base.ServerUtils;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.gwt.client.GNavigatorChangesDTO;
-import lsfusion.gwt.client.base.jsni.Function;
-import lsfusion.gwt.client.base.jsni.Function2;
-import lsfusion.gwt.client.navigator.GNavigatorChanges;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
 import lsfusion.gwt.client.controller.remote.action.navigator.GClientSettings;
 import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigator;
@@ -15,7 +12,6 @@ import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigato
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorInfo;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.GPropertyNavigator;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.view.GColorTheme;
@@ -24,7 +20,6 @@ import lsfusion.gwt.server.convert.ClientFormChangesToGwtConverter;
 import lsfusion.gwt.server.convert.ClientNavigatorToGwtConverter;
 import lsfusion.gwt.server.navigator.NavigatorActionHandler;
 import lsfusion.http.controller.MainController;
-import lsfusion.interop.logics.ServerSettings;
 import lsfusion.interop.navigator.ClientSettings;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import net.customware.gwt.dispatch.server.ExecutionContext;
@@ -47,7 +42,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, action.sessionID);
         GClientSettings gClientSettings = getClientSettings(remoteNavigator, servlet);
 
-        servlet.getNavigatorProvider().updateNavigatorClientSettings(action.screenSize, action.mobile);
+        remoteNavigator.updateNavigatorClientSettings(action.screenSize, action.mobile);
 
         return new InitializeNavigatorResult(gClientSettings, navigatorInfo);
     }
