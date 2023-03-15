@@ -11,7 +11,6 @@ import java.rmi.RemoteException;
 public interface NavigatorProvider {
 
     String createNavigator(LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
-    void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException;
     NavigatorSessionObject getNavigatorSessionObject(String sessionID) throws SessionInvalidatedException;
     NavigatorSessionObject createOrGetNavigatorSessionObject(String sessionID, LogicsSessionObject sessionObject, HttpServletRequest request) throws RemoteException;
     void removeNavigatorSessionObject(String sessionID) throws RemoteException;

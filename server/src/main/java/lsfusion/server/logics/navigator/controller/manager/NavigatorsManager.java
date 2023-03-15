@@ -126,22 +126,6 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
         }
     }
 
-    public void updateNavigatorClientSettings(ExecutionStack stack, String screenSize, boolean mobile) {
-        DataObject newConnection;
-
-        try (DataSession session = createSession()) {
-            newConnection = session.addObject(businessLogics.systemEventsLM.connection);
-            businessLogics.systemEventsLM.screenSizeConnection.change(screenSize, session, newConnection);
-            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID((mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP).toString()), session, newConnection);
-
-            String result = session.applyMessage(businessLogics, stack);
-            if(result != null)
-                throw new RemoteMessageException(result);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
     public void navigatorCreated(ExecutionStack stack, RemoteNavigator navigator, NavigatorInfo navigatorInfo) throws SQLException, SQLHandledException {
         DataObject newConnection;
 

@@ -42,7 +42,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, action.sessionID);
         GClientSettings gClientSettings = getClientSettings(remoteNavigator, servlet);
 
-        servlet.getNavigatorProvider().updateNavigatorClientSettings(action.screenSize, action.mobile);
+        remoteNavigator.updateNavigatorClientSettings(action.screenSize, action.mobile);
 
         return new InitializeNavigatorResult(gClientSettings, navigatorInfo);
     }

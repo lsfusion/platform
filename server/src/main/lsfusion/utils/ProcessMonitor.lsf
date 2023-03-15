@@ -62,7 +62,7 @@ dateTimeSQLProcess '{process.monitor.date.time.sql.process}' = DATA LOCAL DATETI
 isActiveSQLProcess '{process.monitor.is.active.sql.process}' = DATA LOCAL BOOLEAN (STRING[10]);
 inTransactionSQLProcess '{process.monitor.in.transaction.sql.process}' = DATA LOCAL BOOLEAN (STRING[10]);
 startTransactionSQLProcess '{process.monitor.start.transaction.sql.process}' = DATA LOCAL DATETIME (STRING[10]);
-attemptCountSQLProcess '{process.monitor.attempt.count.sql.process}' = DATA LOCAL STRING[20] (STRING[10]);
+attemptCountSQLProcess '{process.monitor.attempt.count.sql.process}' = DATA LOCAL STRING[30] (STRING[10]);
 statusSQLProcess '{process.monitor.status.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 statusMessageSQLProcess '{process.monitor.status.message.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 
