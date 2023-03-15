@@ -1,0 +1,115 @@
+MODULE IconsSearch;
+REQUIRE Utils;
+
+data_id = DATA LOCAL STRING (INTEGER);
+data_id_2 = DATA LOCAL STRING (INTEGER);
+term = DATA LOCAL STRING(INTEGER);
+synonym = DATA LOCAL STRING(INTEGER);
+label = DATA LOCAL STRING(STRING);
+
+FORM iconsForm
+    OBJECTS data=STRING EXTKEY
+
+    PROPERTIES(data) label
+
+    OBJECTS terms=INTEGER
+    PROPERTIES(terms) term EXTID 'value'
+    FILTERS data_id(terms) == data
+
+    OBJECTS synonyms=INTEGER
+    PROPERTIES (synonyms) synonym EXTID 'value'
+    FILTERS data_id_2(synonyms) == data
+;
+
+CLASS Icon;
+iconName = DATA STRING (Icon);
+label = DATA STRING (Icon);
+terms = DATA STRING (Icon);
+synonyms = DATA STRING (Icon);
+// todo добавить free
+
+icon(iconName) = GROUP AGGR Icon icn BY iconName(icn);
+terms(STRING iconName) = GROUP CONCAT term(INTEGER i) IF data_id(i) == iconName, ' ' ORDER i;
+synonyms(STRING iconName) = GROUP CONCAT synonym(INTEGER i) IF data_id_2(i) == iconName, ' ' ORDER i;
+
+iconName = GROUP MAX STRING s BY label(s);
+iconsImport() {
+    INPUT j = JSONFILE DO {
+        IMPORT iconsForm JSON FROM j;
+        
+        FOR iconName(STRING s) AND NOT icon(iconName(s)) NEW icn = Icon DO {
+            iconName(icn) <- iconName(s);
+        }
+
+        FOR iconName(Icon icn) == iconName(STRING s) DO {            
+            label(icn) <- lower(s);
+            terms(icn) <- lower(terms(iconName(icn)));
+            synonyms(icn) <- lower(synonyms(iconName(icn)));
+        }
+        
+        DELETE Icon icn WHERE icn IS Icon AND NOT [ GROUP SUM 1 BY iconName(STRING s)](iconName(icn));
+
+        APPLY;
+    }
+}
+
+tsRankToTsQuery (STRING label, STRING termsIcon, STRING synonyms, STRING search) = FORMULA DOUBLE PG 'ts_rank(setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\'), to_tsquery($4))';
+bestIconName = DATA LOCAL STRING();
+
+getBestIcon(STRING s) {
+    LOCAL rankToTsQuery = DOUBLE (Icon);
+    FOR iconName(Icon icn) DO {
+        rankToTsQuery(icn) <- tsRankToTsQuery(label(icn), terms(icn), synonyms(icn), s);
+    }
+
+    LOCAL bestIcon = Icon();
+    bestIcon() <- GROUP LAST Icon icn IF rankToTsQuery(icn) ORDER rankToTsQuery(icn);
+    bestIconName() <- CONCAT '', 'fa-', iconName(bestIcon());
+}
+
+getFAIconName INTERNAL 'lsfusion.server.logics.GetFAIconNameAction' (STRING);
+
+search = DATA LOCAL STRING ();
+getFAIconName() {
+    INPUT s = search() CHANGE DO {
+        getFAIconName(s);
+    }
+}
+
+FORM font
+    PROPERTIES() iconsImport, search ON CHANGE getFAIconName(), bestIconName READONLY
+    OBJECTS icn = Icon
+    PROPERTIES(icn) READONLY iconName, label, terms, synonyms
+    PROPERTIES (icn) DELETE
+;
+
+DESIGN font {
+    NEW import {
+        MOVE PROPERTY(iconsImport()) {
+            caption = 'import JSON';
+            fontSize = 36;
+        }
+    }
+    NEW search  {
+        MOVE PROPERTY(search()) {
+            caption = 'action name';
+            fontSize = 36;
+            width = 500;
+        }
+    }
+    NEW bestIcon {
+        MOVE PROPERTY(bestIconName()) {
+            caption = 'best icon name';
+            fontSize = 36;
+            width = 500;
+        }
+    }
+    NEW icons {
+        fill = 1;
+        MOVE BOX(icn);
+    }
+}
+
+NAVIGATOR {
+    NEW font;
+}

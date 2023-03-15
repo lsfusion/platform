@@ -31,7 +31,7 @@ public class GetFAIconNameAction extends InternalAction {
     protected void executeInternal(ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
         String searchPhrase = (String) context.getDataKeyValue(searchPhraseInterface).getValue();
         try {
-            findAction("getBestIcon[STRING]").execute(context, new DataObject(String.join(" ", splitCamelCase(searchPhrase))));
+            findAction("getBestIcon[STRING]").execute(context, new DataObject(String.join(" | ", splitCamelCase(searchPhrase))));
             Object bestIconName = findProperty("bestIconName[]").read(context);
             System.out.println(bestIconName);
         } catch (ScriptingErrorLog.SemanticErrorException e) {
