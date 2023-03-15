@@ -126,11 +126,6 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     }
 
     @Override
-    public void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException {
-        remoteLogics.updateNavigatorClientSettings(screenSize, mobile);
-    }
-
-    @Override
     public String getSessionInfo() {
         return "SESSION " + servSID + " CURRENT OPENED TABS " + currentLogicsAndNavigators.keySet();
     }

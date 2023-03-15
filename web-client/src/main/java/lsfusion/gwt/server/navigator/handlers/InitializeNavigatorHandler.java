@@ -5,10 +5,10 @@ import lsfusion.base.ServerUtils;
 import lsfusion.client.navigator.NavigatorData;
 import lsfusion.client.navigator.window.ClientNavigatorWindow;
 import lsfusion.gwt.client.base.exception.AppServerNotAvailableDispatchException;
-import lsfusion.gwt.client.controller.remote.action.navigator.WebClientSettings;
 import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigator;
 import lsfusion.gwt.client.controller.remote.action.navigator.InitializeNavigatorResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.NavigatorInfo;
+import lsfusion.gwt.client.controller.remote.action.navigator.WebClientSettings;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GColorPreferences;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
@@ -40,7 +40,7 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         NavigatorInfo navigatorInfo = getNavigatorInfo(remoteNavigator, servlet, getServerSettings(action));
         WebClientSettings webClientSettings = getClientSettings(remoteNavigator, servlet);
 
-        servlet.getNavigatorProvider().updateNavigatorClientSettings(action.screenSize, action.mobile);
+        remoteNavigator.updateNavigatorClientSettings(action.screenSize, action.mobile);
 
         return new InitializeNavigatorResult(webClientSettings, navigatorInfo);
     }

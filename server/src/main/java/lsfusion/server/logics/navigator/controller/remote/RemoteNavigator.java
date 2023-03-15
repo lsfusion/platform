@@ -13,8 +13,10 @@ import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.interop.action.ClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
+import lsfusion.interop.base.exception.RemoteMessageException;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.ClientType;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.form.object.table.grid.user.design.ColorPreferences;
 import lsfusion.interop.form.remote.RemoteFormInterface;
@@ -389,6 +391,19 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             session.applyException(businessLogics, stack);
         } catch (Exception e) {
             logger.error("UpdatePingInfo error: ", e);
+        }
+    }
+
+    public void updateNavigatorClientSettings(String screenSize, boolean mobile) {
+        try (DataSession session = createSession()) {
+            businessLogics.systemEventsLM.screenSizeConnection.change(screenSize, session, getConnection());
+            businessLogics.systemEventsLM.clientTypeConnection.change(businessLogics.systemEventsLM.clientType.getObjectID((mobile ? ClientType.WEB_MOBILE : ClientType.WEB_DESKTOP).toString()), session, getConnection());
+
+            String result = session.applyMessage(businessLogics, getStack());
+            if (result != null)
+                throw new RemoteMessageException(result);
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 
