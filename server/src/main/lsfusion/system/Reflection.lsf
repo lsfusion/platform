@@ -41,8 +41,8 @@ CLASS Form '{reflection.form}';
 TABLE form (Form);
 TABLE formNames (STRING[100]);
 
-caption '{reflection.caption.form}' = DATA STRING[250] (Form);
-canonicalName '{reflection.canonical.name.form}' = DATA STRING[100] (Form);
+caption '{reflection.caption.form}' = DATA ISTRING[250] (Form) CHARWIDTH 20 IN id;
+canonicalName '{reflection.canonical.name.form}' = DATA STRING[100] (Form) CHARWIDTH 20 IN id;
 form '{reflection.form}' (sid) = GROUP AGGR Form form WHERE form IS Form BY canonicalName(form) MATERIALIZED TABLE formNames; // for profiler
 is (Form form) = form IS Form;
 
@@ -141,8 +141,8 @@ TABLE formPropertyDraw (Form, PropertyDraw);
 TABLE propertyDraw (PropertyDraw);
 TABLE propertyDrawCustomUser (PropertyDraw, CustomUser);
 
-sid '{reflection.sid.property.draw}' = DATA STRING[100] (PropertyDraw) IN id;
-caption '{reflection.caption.property.draw}' = DATA STRING[250] (PropertyDraw);
+sid '{reflection.sid.property.draw}' = DATA STRING[100] (PropertyDraw) IN id CHARWIDTH 20;
+caption '{reflection.caption.property.draw}' = DATA STRING[250] (PropertyDraw) CHARWIDTH 20;
 form '{reflection.form.property.draw}' = DATA Form (PropertyDraw) INDEXED;
 nameForm '{reflection.form.property.draw}' (PropertyDraw pd) = canonicalName(form(pd)) IN id;
 groupObject '{reflection.group.object.property.draw}' = DATA GroupObject (PropertyDraw);
@@ -161,8 +161,8 @@ captionShow '{reflection.show.property.draw.custom.user}' (PropertyDraw property
 columnCaption '{reflection.column.caption.property.draw.custom.user}' = DATA STRING[100] (PropertyDraw, CustomUser);
 columnCaption '{reflection.column.caption.property.draw}' = DATA STRING[100] (PropertyDraw);
 
-columnPattern '{reflection.column.pattern.property.draw.custom.user}' = DATA STRING[100] (PropertyDraw, CustomUser);
-columnPattern '{reflection.column.pattern.property.draw}' = DATA STRING[100] (PropertyDraw);
+columnPattern '{reflection.column.pattern.property.draw.custom.user}' = DATA STRING[100] (PropertyDraw, CustomUser) CHARWIDTH 15;
+columnPattern '{reflection.column.pattern.property.draw}' = DATA STRING[100] (PropertyDraw) CHARWIDTH 15;
 
 columnWidth '{reflection.column.width.property.draw.custom.user}' = DATA INTEGER (PropertyDraw, CustomUser);
 columnWidth '{reflection.column.width.property.draw}' = DATA INTEGER (PropertyDraw);
@@ -178,7 +178,9 @@ columnAscendingSort '{reflection.column.ascending.sort.property.draw}' = DATA BO
 
 hasUserPreferences '{reflection.has.user.preferences.group.object.custom.user}'= DATA BOOLEAN (GroupObject, CustomUser);
 countShowPropertyDraw(g, CustomUser u) = GROUP SUM 1 IF show(PropertyDraw property, u) == PropertyDrawShowStatus.Show BY groupObject(property);
+countUserPreferences '{authentication.users.number}' (GroupObject g) = GROUP SUM 1 IF hasUserPreferences(g, CustomUser u);
 CONSTRAINT hasUserPreferences(GroupObject g, CustomUser u) AND NOT countShowPropertyDraw(g, u) MESSAGE '{reflection.constraint.has.user.preferences}';
+
 hasUserPreferences '{reflection.has.user.preferences.group.object}' = DATA BOOLEAN (GroupObject);
 countShowPropertyDraw(g) = GROUP SUM 1 IF show(PropertyDraw property) == PropertyDrawShowStatus.Show BY groupObject(property);
 CONSTRAINT hasUserPreferences(GroupObject g) AND NOT countShowPropertyDraw(g) MESSAGE '{reflection.constraint.has.user.preferences}';
@@ -310,7 +312,7 @@ CLASS GroupObject '{reflection.group.object}';
 TABLE groupObjectCustomUser (GroupObject, CustomUser);
 TABLE groupObject (GroupObject);
 
-sid '{reflection.sid.group.object}' = DATA STRING[100] (GroupObject) IN id;
+sid '{reflection.sid.group.object}' = DATA STRING[100] (GroupObject) IN id CHARWIDTH 10;
 form '{reflection.form.group.object}' = DATA Form (GroupObject);
 canonicalNameForm (GroupObject groupObject) = canonicalName (form(groupObject)) IN id;
 captionForm (GroupObject groupObject) = caption (form(groupObject)) IN id; 
@@ -419,58 +421,80 @@ FORM navigatorElements '{reflection.form.navigator.elements}'
 ;
 
 FORM forms '{reflection.form.forms}'
+    OBJECTS f = Form PANEL
+    PROPERTIES(f) SELECTOR canonicalName, caption
 
-    OBJECTS tf=Form
-    PROPERTIES(tf) READONLY canonicalName, caption
+    OBJECTS g = GroupObject
+    PROPERTIES(g) sid READONLY, hasUserPreferences, countUserPreferences READONLY
+    FILTERS form(g) = f
 
-    OBJECTS u=CustomUser PANEL
-    PROPERTIES(u) SELECTOR firstName, lastName, login
-
-    OBJECTS g=GroupObject
-    PROPERTIES(g) sid READONLY, fontSize, isFontBold, isFontItalic, pageSize, headerHeight, hasUserPreferences
-    PROPERTIES(g,u) fontSize, isFontBold, isFontItalic, pageSize, headerHeight, hasUserPreferences
-    
-    OBJECTS fg=FormGrouping
-    PROPERTIES(fg) name, itemQuantity
-
-    OBJECTS p=PropertyDraw
+    // global
+    OBJECTS p = PropertyDraw
     PROPERTIES(p) READONLY sid, caption
+    PROPERTIES(p) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
+    ORDERS captionShow(p), columnOrder(p)
+    FILTERS groupObject(p) = g
 
-    PROPERTIES(p) captionShow
-    PROPERTIES(p,u) captionShow
-    PROPERTIES(p) columnCaption
-    PROPERTIES(p,u) columnCaption
-    PROPERTIES(p) columnPattern
-    PROPERTIES(p,u) columnPattern
-    PROPERTIES(p) columnWidth
-    PROPERTIES(p,u) columnWidth
-    PROPERTIES(p) columnOrder
-    PROPERTIES(p,u) columnOrder
-    PROPERTIES(p) columnSort
-    PROPERTIES(p) columnAscendingSort
-    PROPERTIES(p,u) columnSort
-    PROPERTIES(p,u) columnAscendingSort
-    PROPERTIES(fg,p) groupOrder, sum, max, pivot 
+    // user
+    OBJECTS u = CustomUser
+    PROPERTIES(u) READONLY firstName, lastName, login
+    PROPERTIES(g, u) hasUserPreferences, fontSize, isFontBold, isFontItalic, pageSize, headerHeight
+    FILTERGROUP userPreferences
+        FILTER '{reflection.has.user.preferences.group.object.custom.user}' hasUserPreferences(g, u) DEFAULT
 
-    FILTERS
-        form(g) == tf,
-        form(p) == tf,
-        groupObject(fg)==g 
+    OBJECTS pu = PropertyDraw
+    PROPERTIES(pu) READONLY sid, caption
+    PROPERTIES(pu, u) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
+    ORDERS captionShow(pu, u), columnOrder(pu, u)
+    FILTERS groupObject(pu) = g
+    
+    OBJECTS up = CustomUser
+    PROPERTIES(up) READONLY firstName, lastName, login
+    PROPERTIES(pu, up) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
+    FILTERGROUP userShow
+        FILTER '{reflection.show.property.draw.custom.user}' show(pu, up) = PropertyDrawShowStatus.Show DEFAULT
 
-    FILTERGROUP filtersForm
-        FILTER '{reflection.form.forms.filter.group.object}' groupObject(p)==g 'F8'
+    // grouping
+    OBJECTS fg = FormGrouping
+    PROPERTIES(fg) name, itemQuantity
+    FILTERS groupObject(fg) = g
+
+    OBJECTS pfg = PropertyDraw
+    PROPERTIES(pfg) READONLY sid, caption
+    PROPERTIES(fg, pfg) groupOrder, sum, max, pivot
+    FILTERS groupObject(pfg) = g
 ;
 
 DESIGN forms {
     OBJECTS {
-        NEW groupingContainer BEFORE BOX(p) {
-            type = CONTAINERH;
+        NEW pane FIRST {
             fill = 1;
-            MOVE BOX(g) {
-                fill = 2;
+            type = CONTAINERH;
+            NEW leftPane {
+                align = STRETCH;
+                MOVE PROPERTY(canonicalName(f)) { align = STRETCH; }
+                MOVE PROPERTY(caption(f)) { align = STRETCH; }
+                MOVE BOX(g);
             }
-            MOVE BOX(fg) {
-                fill = 1;
+            NEW rightPane {
+                fill = 2;
+                type = TABBED;
+                NEW global {
+                    caption = '{reflection.property.draw}';
+                    MOVE BOX(p);
+                }
+                NEW user {
+                    caption = '{authentication.custom.user}';
+                    MOVE BOX(u);
+                    MOVE BOX(pu) { fill = 2; }
+                    MOVE BOX(up);
+                }
+                NEW grouping {
+                    type = CONTAINERH;
+                    caption = '{reflection.form.grouping}';
+                    MOVE BOX(fg);
+                    MOVE BOX(pfg) { fill = 3; }
+                }
             }
         }
     }
