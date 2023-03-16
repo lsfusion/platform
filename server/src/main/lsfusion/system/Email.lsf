@@ -137,9 +137,8 @@ CLASS Email '{email.email}';
 TABLE email(Email);
 
 id = DATA STRING (Email);  
-emailId = GROUP AGGR Email email BY id (email);
-
 account = DATA Account (Email) NONULL DELETE;
+emailId = GROUP AGGR Email email BY account(email), id (email);
 
 uid = DATA LONG (Email);  
 emailAccountUID = GROUP AGGR Email email BY account(email), uid (email); 
