@@ -139,6 +139,11 @@
                 <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
                 <entry key="filterMatchLanguage" value="${settings.filterMatchLanguage:}"/>
                 <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
+                <entry key="defaultAutoImageRankingThreshold" value="${settings.defaultAutoImageRankingThreshold:}"/>
+                <entry key="defaultNavigatorImageRankingThreshold" value="${settings.defaultNavigatorImageRankingThreshold:}"/>
+                <entry key="defaultFormImageRankingThreshold" value="${settings.defaultFormImageRankingThreshold:}"/>
+                <entry key="defaultContainerImageRankingThreshold" value="${settings.defaultContainerImageRankingThreshold:}"/>
+                <entry key="defaultPropertyImageRankingThreshold" value="${settings.defaultPropertyImageRankingThreshold:}"/>
             </map>
         </property>
         </bean>

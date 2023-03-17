@@ -1,5 +1,6 @@
 package lsfusion.server.base;
 
+import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
@@ -12,6 +13,11 @@ import lsfusion.base.file.IOUtils;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.ColorTheme;
 import lsfusion.server.base.caches.ManualLazy;
+import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.value.DataObject;
+import lsfusion.server.logics.BaseLogicsModule;
+import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -24,9 +30,14 @@ import lsfusion.server.physics.admin.Settings;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AppServerImage {
 
@@ -144,11 +155,35 @@ public class AppServerImage {
         if(result == null) {
             // turn name into a phrase
             // and then search lsf by calling the icon with the maximum search for his word in this phrase (taking into account morphology, stop words and synonyms)
-            result = NULL; // temporary fix
+
+            try {
+                BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
+                DataSession session = ThreadLocalContext.getDbManager().createSession();
+                baseLM.getBestIconAction.execute(session, ThreadLocalContext.getStack(), new DataObject(String.join(" | ", splitCamelCase(name))));
+
+                Double bestIconRank = (Double) baseLM.bestIconRank.read(session);
+                Object bestIconName = baseLM.bestIconName.read(session);
+                result = bestIconRank > rankingThreshold ? new AppServerImage(null, "fa " + bestIconName) : NULL;
+
+                System.out.println("formName = " + name + ", iconName = " + bestIconName + ", rank = " + bestIconRank);
+
+            } catch (SQLException | SQLHandledException e) {
+                throw Throwables.propagate(e); // todo ??
+            }
 
             cachedDefaultImages.put(cacheKey, result);
         }
         return result == NULL ? null : result;
+    }
+
+    private static final Pattern camelCasePattern = Pattern.compile("(([A-Z]?[a-z]+)|([A-Z]))");
+    public static List<String> splitCamelCase(String text) {
+        Matcher matcher = camelCasePattern.matcher(text);
+        List<String> words = new ArrayList<>();
+        while (matcher.find()) {
+            words.add(matcher.group(0));
+        }
+        return words;
     }
 
     public static AppServerImage createDefaultImage(float rankingThreshold, String name, Supplier<AppServerImage> defaultImage) {

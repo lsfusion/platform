@@ -241,6 +241,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP count;
     public LP isPivot;
 
+    public LA getBestIconAction;
+    public LP bestIconName;
+    public LP bestIconRank;
+
     public Group privateGroup;
 
     public TableFactory tableFactory;
@@ -596,6 +600,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         listViewType = (ConcreteCustomClass) findClass("ListViewType");
         count = findProperty("count[]");
         isPivot = findProperty("isPivot[ListViewType]");
+
+        getBestIconAction = findAction("getBestIcon[STRING]");
+        bestIconName = findProperty("bestIconName[]");
+        bestIconRank = findProperty("bestIconRank[]");
 
         initNavigators();
     }

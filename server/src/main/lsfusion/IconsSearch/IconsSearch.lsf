@@ -21,18 +21,12 @@ FORM iconsForm
     FILTERS data_id_2(synonyms) == data
 ;
 
-CLASS Icon;
-iconName = DATA STRING (Icon);
-label = DATA STRING (Icon);
-terms = DATA STRING (Icon);
-synonyms = DATA STRING (Icon);
-// todo добавить free
-
 icon(iconName) = GROUP AGGR Icon icn BY iconName(icn);
 terms(STRING iconName) = GROUP CONCAT term(INTEGER i) IF data_id(i) == iconName, ' ' ORDER i;
 synonyms(STRING iconName) = GROUP CONCAT synonym(INTEGER i) IF data_id_2(i) == iconName, ' ' ORDER i;
 
 iconName = GROUP MAX STRING s BY label(s);
+tsVector(STRING label, STRING termsIcon, STRING synonyms) = FORMULA PG 'setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\')';
 iconsImport() {
     INPUT j = JSONFILE DO {
         IMPORT iconsForm JSON FROM j;
@@ -45,26 +39,13 @@ iconsImport() {
             label(icn) <- lower(s);
             terms(icn) <- lower(terms(iconName(icn)));
             synonyms(icn) <- lower(synonyms(iconName(icn)));
+            tsVector(icn) <- tsVector(label(icn), terms(icn), synonyms(icn));
         }
         
         DELETE Icon icn WHERE icn IS Icon AND NOT [ GROUP SUM 1 BY iconName(STRING s)](iconName(icn));
 
         APPLY;
     }
-}
-
-tsRankToTsQuery (STRING label, STRING termsIcon, STRING synonyms, STRING search) = FORMULA DOUBLE PG 'ts_rank(setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\'), to_tsquery($4))';
-bestIconName = DATA LOCAL STRING();
-
-getBestIcon(STRING s) {
-    LOCAL rankToTsQuery = DOUBLE (Icon);
-    FOR iconName(Icon icn) DO {
-        rankToTsQuery(icn) <- tsRankToTsQuery(label(icn), terms(icn), synonyms(icn), s);
-    }
-
-    LOCAL bestIcon = Icon();
-    bestIcon() <- GROUP LAST Icon icn IF rankToTsQuery(icn) ORDER rankToTsQuery(icn);
-    bestIconName() <- CONCAT '', 'fa-', iconName(bestIcon());
 }
 
 getFAIconName INTERNAL 'lsfusion.server.logics.GetFAIconNameAction' (STRING);
@@ -79,7 +60,7 @@ getFAIconName() {
 FORM font
     PROPERTIES() iconsImport, search ON CHANGE getFAIconName(), bestIconName READONLY
     OBJECTS icn = Icon
-    PROPERTIES(icn) READONLY iconName, label, terms, synonyms
+    PROPERTIES(icn) READONLY iconName, label, terms, synonyms, tsVector
     PROPERTIES (icn) DELETE
 ;
 
