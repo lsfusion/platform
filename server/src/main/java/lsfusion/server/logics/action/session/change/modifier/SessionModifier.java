@@ -248,13 +248,17 @@ public abstract class SessionModifier implements Modifier {
         return false;
     }
 
-    public <P extends PropertyInterface> boolean allowPropertyPrereadValues(Property<P> property) {
+    protected <P extends PropertyInterface> boolean allowPropertyPrereadValues(Property<P> property) {
         if(!property.isPreread())
             return false;
+
         if(Settings.get().isDisablePrereadValues())
             return false;
 
-        return !prereadProps.contains(property);
+        if (prereadProps.contains(property))
+            return false;
+
+        return true;
     }
 
     public <P extends PropertyInterface> ValuesContext cacheAllowPrereadValues(Property<P> property) {
@@ -271,17 +275,23 @@ public abstract class SessionModifier implements Modifier {
     // assert что в values только
     // предполагается что должно быть consistent с MapCacheAspect.prereadHintEnabled
     public <P extends PropertyInterface> boolean allowPrereadValues(Property<P> property, ImMap<P, Expr> values) {
-        if(!allowPropertyPrereadValues(property)) // we're not already reading this property
+        // assert что values только complex values
+
+        if(!allowPropertyPrereadValues(property))
             return false;
 
         PrereadRows prereadRows = preread.get(property);
 
-        if(values.size()==property.interfaces.size()) // if there are all values, we're checking if we haven't already read this values
-            return !(prereadRows != null && prereadRows.readValues.containsKey(values));
+        if(values.size()==property.interfaces.size()) { // если все есть
+            if(prereadRows!=null && prereadRows.readValues.containsKey(values))
+                return false;
+        } else {
+            ImMap<P, Expr> complexValues = Property.onlyComplex(values);
+            if(complexValues.isEmpty() || (prereadRows!=null && prereadRows.readParams.keys().containsAll(complexValues.values().toSet())))
+                return false;
+        }
 
-        // there are complex values and we have not already read them all
-        ImMap<P, Expr> complexValues = Property.onlyComplex(values);
-        return !complexValues.isEmpty() && !(prereadRows != null && prereadRows.readParams.keys().containsAll(complexValues.values().toSet()));
+        return true;
     }
 
     public boolean forceDisableNoUpdate(Property property) {

@@ -324,7 +324,9 @@ public class AutoHintsAspect {
     @Around("execution(* lsfusion.server.logics.property.Property.getJoinExpr(lsfusion.base.col.interfaces.immutable.ImMap,lsfusion.server.logics.property.CalcType,lsfusion.server.logics.action.session.change.PropertyChanges,lsfusion.server.data.where.WhereBuilder)) " +
             "&& target(property) && args(joinExprs,calcType,propChanges,changedWhere)")
     public Object callGetJoinExpr(ProceedingJoinPoint thisJoinPoint, Property property, ImMap joinExprs, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) throws Throwable {
-        if(!calcType.isExpr() || !property.isFull(calcType.getAlgInfo()))
+        // сначала target в аспекте должен быть
+
+        if(!property.isFull(calcType.getAlgInfo()) || !calcType.isExpr())
             return thisJoinPoint.proceed();
 
         SessionModifier catchHint = catchAutoHint.get();
