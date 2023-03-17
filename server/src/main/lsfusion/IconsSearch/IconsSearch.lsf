@@ -1,10 +1,12 @@
 MODULE IconsSearch;
 REQUIRE Utils;
 
-data_id = DATA LOCAL STRING (INTEGER);
-data_id_2 = DATA LOCAL STRING (INTEGER);
+data_id_terms = DATA LOCAL STRING (INTEGER);
+data_id_synonyms = DATA LOCAL STRING (INTEGER);
+data_id_free = DATA LOCAL STRING (INTEGER);
 term = DATA LOCAL STRING(INTEGER);
 synonym = DATA LOCAL STRING(INTEGER);
+free = DATA LOCAL STRING(INTEGER);
 label = DATA LOCAL STRING(STRING);
 
 FORM iconsForm
@@ -14,16 +16,21 @@ FORM iconsForm
 
     OBJECTS terms=INTEGER
     PROPERTIES(terms) term EXTID 'value'
-    FILTERS data_id(terms) == data
+    FILTERS data_id_terms(terms) == data
 
     OBJECTS synonyms=INTEGER
     PROPERTIES (synonyms) synonym EXTID 'value'
-    FILTERS data_id_2(synonyms) == data
+    FILTERS data_id_synonyms(synonyms) == data
+
+    OBJECTS free=INTEGER
+    PROPERTIES (free) free EXTID 'value'
+    FILTERS data_id_free(free) == data
 ;
 
 icon(iconName) = GROUP AGGR Icon icn BY iconName(icn);
-terms(STRING iconName) = GROUP CONCAT term(INTEGER i) IF data_id(i) == iconName, ' ' ORDER i;
-synonyms(STRING iconName) = GROUP CONCAT synonym(INTEGER i) IF data_id_2(i) == iconName, ' ' ORDER i;
+terms(STRING iconName) = GROUP CONCAT term(INTEGER i) IF data_id_terms(i) == iconName, ' ' ORDER i;
+synonyms(STRING iconName) = GROUP CONCAT synonym(INTEGER i) IF data_id_synonyms(i) == iconName, ' ' ORDER i;
+free(STRING iconName) = GROUP CONCAT free(INTEGER i) IF data_id_free(i) == iconName, ' ' ORDER i;
 
 iconName = GROUP MAX STRING s BY label(s);
 tsVector(STRING label, STRING termsIcon, STRING synonyms) = FORMULA PG 'setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\')';
@@ -39,6 +46,7 @@ iconsImport() {
             label(icn) <- lower(s);
             terms(icn) <- lower(terms(iconName(icn)));
             synonyms(icn) <- lower(synonyms(iconName(icn)));
+            free(icn) <-  free(iconName(icn));
             tsVector(icn) <- tsVector(label(icn), terms(icn), synonyms(icn));
         }
         
@@ -60,7 +68,7 @@ getFAIconName() {
 FORM font
     PROPERTIES() iconsImport, search ON CHANGE getFAIconName(), bestIconName READONLY
     OBJECTS icn = Icon
-    PROPERTIES(icn) READONLY iconName, label, terms, synonyms, tsVector
+    PROPERTIES(icn) READONLY iconName, label, terms, synonyms, free, tsVector
     PROPERTIES (icn) DELETE
 ;
 

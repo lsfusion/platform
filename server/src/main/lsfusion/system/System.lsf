@@ -559,8 +559,8 @@ iconName = DATA STRING (Icon);
 label = DATA STRING (Icon);
 terms = DATA STRING (Icon);
 synonyms = DATA STRING (Icon);
+free = DATA STRING (Icon);
 tsVector = DATA STRING(Icon);
-//todo добавить styles. т.к. если в styles только brands, то нужно писать не "fa fa-icon-name", а "fa-brands fa-icon-name"  
 
 tsRank(STRING tsVector, STRING search) = FORMULA DOUBLE PG 'ts_rank($1::tsvector, to_tsquery($2))';
 bestIconName = DATA LOCAL STRING();
@@ -574,6 +574,10 @@ getBestIcon(STRING s) {
 
     LOCAL bestIcon = Icon();
     bestIcon() <- GROUP LAST Icon icn IF rankToTsQuery(icn) ORDER rankToTsQuery(icn);
-    bestIconName() <- CONCAT '', 'fa-', iconName(bestIcon());
+    IF free(bestIcon()) == 'brands' THEN {
+        bestIconName() <- CONCAT '', 'fa-brands fa-', iconName(bestIcon());
+    } ELSE {
+        bestIconName() <- CONCAT '', 'fa fa-', iconName(bestIcon());
+    }
     bestIconRank() <- rankToTsQuery(bestIcon());
 }

@@ -163,7 +163,7 @@ public class AppServerImage {
 
                 Double bestIconRank = (Double) baseLM.bestIconRank.read(session);
                 Object bestIconName = baseLM.bestIconName.read(session);
-                result = bestIconRank > rankingThreshold ? new AppServerImage(null, "fa " + bestIconName) : NULL;
+                result = bestIconRank > rankingThreshold ? new AppServerImage(null, (String) bestIconName) : NULL;
 
                 System.out.println("formName = " + name + ", iconName = " + bestIconName + ", rank = " + bestIconRank);
 
