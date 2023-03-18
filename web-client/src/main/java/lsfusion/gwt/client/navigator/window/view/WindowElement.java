@@ -42,8 +42,7 @@ public abstract class WindowElement {
     public void setWindowInvisible(WindowElement window) {}
     
     
-    public Widget initializeView(WindowsController controller) {
-        return getView();
+    public void initializeView(WindowsController controller) {
     }
     public void onAddView(WindowsController controller) {
     }
@@ -73,7 +72,7 @@ public abstract class WindowElement {
         return sid.toString();
     }
     
-    public String getStorageSizeKey(boolean flex) {
-        return GwtClientUtils.getLogicsName() + "_" + getSID() + "_" + (flex ? "flex" : "basis");
+    public String getStorageSizeKey() {
+        return GwtClientUtils.getLogicsName() + "_" + getSID();
     }
 }

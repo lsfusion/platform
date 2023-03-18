@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.navigator.view;
 
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -11,7 +10,6 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import java.util.Set;
 
 public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindow> {
-    private final ResizableComplexPanel main;
 
     private final ResizableComplexPanel panel;
     private final boolean verticalTextAlign;
@@ -23,47 +21,11 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
 
         boolean vertical = window.isVertical();
 
-        Pair<ResizableComplexPanel, ResizableComplexPanel> toolbarPanel = createToolbarPanel(vertical);
-        this.main = toolbarPanel.first;
-        this.panel = toolbarPanel.second;
+        ToolbarPanel main = new ToolbarPanel(vertical, window);
 
-        setAlignment(vertical, this.main, this.panel, window);
+        setComponent(main);
 
-        setComponent(this.main);
-    }
-
-    public static Pair<ResizableComplexPanel, ResizableComplexPanel> createToolbarPanel(boolean vertical) {
-        ResizableComplexPanel main = new ResizableComplexPanel();
-        main.addStyleName("navbar navbar-expand p-0"); // navbar-expand to set horizontal paddings (vertical are set in navbar-text)
-
-        main.addStyleName("navbar-" + (vertical ? "vert" : "horz"));
-        
-        ResizableComplexPanel panel = new ResizableComplexPanel();
-        panel.addStyleName("navbar-nav");
-        panel.addStyleName(vertical ? "navbar-nav-vert" : "navbar-nav-horz");
-
-        main.add(panel);
-        return new Pair<>(main, panel);
-    }
-
-    public static void setAlignment(boolean vertical, ResizableComplexPanel main, ResizableComplexPanel panel, GToolbarNavigatorWindow toolbarWindow) {
-        if (vertical) {
-            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
-                    (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "align-items-end" :
-                            "align-items-start"));
-
-            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
-                    (toolbarWindow.alignmentY == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
-                            "justify-content-start"));
-        } else {
-            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
-                    (toolbarWindow.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
-                            "align-items-start"));
-
-            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
-                    (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
-                            "justify-content-start"));
-        }
+        this.panel = main.panel;
     }
 
     @Override
@@ -115,7 +77,7 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
     public int getWidth() {
         return panel.getElement().getScrollWidth();
     }
-    
+
     @Override
     public void resetSelectedElement(GNavigatorElement newSelectedElement) {
         GNavigatorElement selectedElement = getSelectedElement();

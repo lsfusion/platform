@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.view.MainFrame;
@@ -11,17 +12,7 @@ import lsfusion.gwt.client.view.MainFrame;
 public class CaptionPanel extends FlexPanel {
     protected Widget header;
 
-    private final boolean border;
-
-    @Override
-    public Border getOuterTopBorder() {
-        return border ? Border.HAS : Border.HAS_MARGIN; // captioned not bordered container already "margined" (with min-height, label paddings)
-    }
-
-    @Override
-    public Border getOuterRestBorder() { // except the top border
-        return border ? Border.HAS : Border.NEED;
-    }
+    public final boolean border;
 
     private boolean waitingForElement;
 

@@ -14,7 +14,7 @@ public class GCaptionElementNavigator extends GElementNavigator {
 
     @Override
     public void updateElement(GNavigatorElement result, Object value) {
-        result.caption = (String) value;
+        result.caption = value != null ? value.toString() : null;
 
         if(MainFrame.mobile) { // not mobile elements are updated in NavigatorController.update()
             MainFrame.mobileNavigatorView.updateText(result);

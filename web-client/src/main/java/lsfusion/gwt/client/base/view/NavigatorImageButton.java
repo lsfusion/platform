@@ -54,7 +54,7 @@ public class NavigatorImageButton extends ImageButton {
     }
 
     public void updateElementClass() {
-        BaseImage.updateClasses(getElement(), element.elementClass);
+        BaseImage.updateClasses(this, element.elementClass);
 
         updateForceDiv(); // forceDiv might change
     }

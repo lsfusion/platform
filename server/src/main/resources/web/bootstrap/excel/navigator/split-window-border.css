@@ -1,7 +1,7 @@
-.split-horz:not(.last-in-line) {
-    border-right: var(--border-width) solid var(--split-border-color);
-}
+/*.split-horz:not(.last-in-line) {*/
+/*    border-right: var(--border-width) solid var(--split-border-color);*/
+/*}*/
 
-.split-vert:not(.last-in-line) {
-    border-bottom: var(--border-width) solid var(--split-border-color);
-}
+/*.split-vert:not(.last-in-line) {*/
+/*    border-bottom: var(--border-width) solid var(--split-border-color);*/
+/*}*/

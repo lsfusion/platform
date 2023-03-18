@@ -12,129 +12,68 @@ import java.util.stream.Collectors;
 public class FlexWindowElement extends WindowElement {
     private final boolean vertical;
     public List<WindowElement> children = new ArrayList<>();
-    private HashMap<WindowElement, Double> flexes = new HashMap<>();
-    private HashMap<WindowElement, GSize> prefs = new HashMap<>();
-    private Set<WindowElement> visibleChildren = new HashSet<>();
-    private FlexPanel panel;
+    private Panel panel;
+
+    public static class Panel extends FlexPanel {
+        public Panel(boolean vertical, GFlexAlignment flexAlignment) {
+            super(vertical, flexAlignment);
+        }
+    }
     
     public FlexWindowElement(boolean vertical, WindowsController controller, int x, int y, int width, int height) {
         super(controller, x, y, width, height);
         this.vertical = vertical;
-        panel = new FlexPanel(vertical, GFlexAlignment.STRETCH) {
-            @Override
-            public void onResize() {
-                super.onResize();
-                for (WindowElement child : visibleChildren) {
-                    Object layoutData = child.getView().getLayoutData();
-                    if (!child.isAutoSize(FlexWindowElement.this.vertical)) {
-                        flexes.put(child, ((WidgetLayoutData) layoutData).flex.flex);
-                    } else {
-                        prefs.put(child, ((WidgetLayoutData) layoutData).flex.flexBasis);
-                    }
-                }
-            }
-        };
+        panel = new Panel(vertical, GFlexAlignment.STRETCH);
     }
 
     @Override
     public void addElement(WindowElement element) {
-        if (!children.contains(element)) {
-            children.add(element);
-            visibleChildren.add(element);
-            element.getView().addStyleName(vertical ? "split-vert" : "split-horz");
-        }
+        children.add(element);
         element.parent = this;
+        element.getView().addStyleName(vertical ? "split-vert" : "split-horz");
     }
 
     @Override
-    public Widget initializeView(WindowsController controller) {
-        redraw(controller);
-        return super.initializeView(controller);
+    public void initializeView(WindowsController controller) {
+        List<WindowElement> orderedChildren = getOrderedChildren();
+
+        for (WindowElement child : orderedChildren) {
+            child.initializeView(controller);
+
+            boolean autoSize = child.isAutoSize(vertical);
+            panel.add(child.getView(), GFlexAlignment.STRETCH, autoSize ? 0.0 : (vertical ? child.height : child.width), false, autoSize ? null : GSize.ZERO);
+        }
+    }
+
+    @Override
+    public void onAddView(WindowsController controller) {
+        for (WindowElement child : children)
+            child.onAddView(controller);
     }
 
     @Override
     public void setWindowVisible(WindowElement window) {
-        if (!visibleChildren.contains(window)) {
-            visibleChildren.add(window);
-            redraw();
-        }
+        window.getView().setVisible(true);
     }
 
     @Override
     public void setWindowInvisible(WindowElement window) {
-        if (visibleChildren.contains(window)) {
-            visibleChildren.remove(window);
-            redraw();
-        }
+        window.getView().setVisible(false);
     }
-    
-    private void redraw() {
-        redraw(null);
-    }
-    private void redraw(WindowsController controller) {
-        List<WindowElement> orderedChildren = visibleChildren.stream().sorted((o1, o2) -> vertical ? o1.y - o2.y : o1.x - o2.x).collect(Collectors.toList());
-        
-        int totalSize = 0;
-        for (WindowElement child : orderedChildren) {
-            if (!child.isAutoSize(vertical)) {
-                totalSize += vertical ? child.height : child.width;
-            }
-        }
-        
-        // count actual flexes taking into account that some windows may change their visibility in runtime
-        double totalFlex = 0d;
-        Map<WindowElement, Double> currentFlexes = new HashMap<>();
-        for (WindowElement child : orderedChildren) {
-            Double flex = flexes.get(child);
-            if (flex == null) {
-                if (!child.isAutoSize(vertical)) {
-                    flex = (double) (vertical ? child.height : child.width) / totalSize;
-                } else {
-                    flex = 0d;
-                }
-            } 
-            totalFlex += flex;
-            currentFlexes.put(child, flex);
-        }
 
-        panel.clear();
-        for (WindowElement child : orderedChildren) {
-            Widget windowView = controller != null ? child.initializeView(controller) : child.getView();
-
-            panel.add(windowView, GFlexAlignment.STRETCH, currentFlexes.get(child) / totalFlex,
-                    false, child.isAutoSize(vertical) ? prefs.get(child) : GSize.ZERO);
-            
-            boolean lastInLine = orderedChildren.indexOf(child) == orderedChildren.size() - 1;
-            windowView.setStyleName("last-in-line", lastInLine);
-
-            if(controller != null)
-                child.onAddView(controller);
-        }
+    private List<WindowElement> getOrderedChildren() {
+        return children.stream().sorted((o1, o2) -> vertical ? o1.y - o2.y : o1.x - o2.x).collect(Collectors.toList());
     }
 
     public void resetWindowSize() {
-        flexes.clear();
-        prefs.clear();
-        redraw();
-        
         for (WindowElement child : children) {
+            FlexPanel.FlexLayoutData flexLayoutData = ((FlexPanel.WidgetLayoutData) child.getView().getLayoutData()).flex;
+
+            panel.setFlex(child.getView(), flexLayoutData.baseFlex, flexLayoutData.baseFlexBasis);
+
             if (child instanceof FlexWindowElement) {
                 ((FlexWindowElement) child).resetWindowSize();
             }
-        }
-    }
-
-    public void setBorderWindowsHidden(boolean hidden) {
-        // assume that 'forms' window is always added in the end of container and its parents - in the end of their containers recursively 
-        WindowElement lastChild = children.get(children.size() - 1);
-        if (hidden) {
-            panel.clear();
-            panel.add(lastChild.getView(), GFlexAlignment.STRETCH, 1, false, GSize.ZERO);
-        } else {
-            redraw();
-        }
-        if (lastChild instanceof FlexWindowElement) {
-            ((FlexWindowElement) lastChild).setBorderWindowsHidden(hidden);
         }
     }
 
@@ -176,16 +115,15 @@ public class FlexWindowElement extends WindowElement {
     @Override
     public void storeWindowsSizes(Storage storage) {
         for (WindowElement child : children) {
-            boolean autoSize = child.isAutoSize(vertical);
-            String storageSizeKey = child.getStorageSizeKey(!autoSize);
             FlexPanel.FlexLayoutData flexLayoutData = ((FlexPanel.WidgetLayoutData) child.getView().getLayoutData()).flex;
-            if (autoSize) {
-                if (flexLayoutData.flexBasis != null) {
-                    storage.setItem(storageSizeKey, flexLayoutData.flexBasis.getResizeSize().toString());
-                }
+
+            String storedSize;
+            if (child.isAutoSize(vertical)) {
+                storedSize = flexLayoutData.flexBasis != null ? flexLayoutData.flexBasis.getResizeSize().toString() : null;
             } else {
-                storage.setItem(storageSizeKey, String.valueOf(flexLayoutData.flex));
+                storedSize = String.valueOf(flexLayoutData.flex);
             }
+            storage.setItem(child.getStorageSizeKey(), storedSize);
             
             child.storeWindowsSizes(storage);
         }
@@ -194,20 +132,15 @@ public class FlexWindowElement extends WindowElement {
     @Override
     public void restoreWindowsSizes(Storage storage) {
         for (WindowElement child : children) {
-            boolean autoSize = child.isAutoSize(vertical);
-            String storageSizeKey = child.getStorageSizeKey(!autoSize);
-            String sizeString = storage.getItem(storageSizeKey);
+            String sizeString = storage.getItem(child.getStorageSizeKey());
+
             Double storedSize = sizeString != null && !sizeString.equals("null") ? Double.valueOf(sizeString) : null; // it seems that somewhy sizeString can be null
             if (storedSize != null) {
-                if (autoSize) {
-                    // doesn't allow to resize back to null
-//                    prefs.put(child, new GFixedSize(storedSize, GFixedSize.Type.PX));
-                } else {
-                    flexes.put(child, storedSize);
-                }
+                boolean autoSize = child.isAutoSize(vertical);
+                panel.setFlex(child.getView(), autoSize ? 0.0 : storedSize, autoSize ? GSize.getResizeNSize((int) Math.round(storedSize)) : GSize.ZERO);
             }
+
             child.restoreWindowsSizes(storage);
         }
-        redraw();
     }
 }

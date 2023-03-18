@@ -5,7 +5,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.CaptionPanelHeader;
+import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.io.Serializable;
 
@@ -48,20 +50,98 @@ public interface BaseImage extends Serializable {
         return true;
     }
 
+    static void updateClasses(Widget widget, String classes) {
+        updateClasses(widget.getElement(), classes);
+    }
+
+    interface PropagateClasses {
+        boolean is(Widget widget, Widget parent, String className);
+    }
+    static void updateClasses(Widget widget, String classes, PropagateClasses propagateClasses) {
+        updateClasses(widget, buildClassesChanges(widget.getElement(), classes), propagateClasses);
+    }
+    static void updateClasses(Widget widget, NativeStringMap<Boolean> classChanges, PropagateClasses propagateClasses) {
+        Widget parent = widget.getParent();
+
+        NativeStringMap<Boolean> propagateClassChanges = new NativeStringMap<>();
+        classChanges.foreachEntry((aclass, add) -> {
+            boolean propagated = false;
+            if (propagateClasses.is(widget, parent, aclass)) {
+                int prevAggrClasses = parent.getElement().getPropertyInt("PROPAGATE_CLASS_" + aclass);
+                int newAggrClasses = prevAggrClasses + (add ? 1 : -1);
+                parent.getElement().setPropertyInt("PROPAGATE_CLASS_" + aclass, newAggrClasses);
+
+                int childCount = ((FlexPanel) parent).getWidgetCount(); // parentElement.getChildCount
+                boolean prevNeedOnHover = prevAggrClasses == childCount;
+                boolean newNeedOnHover = newAggrClasses == childCount;
+                if (prevNeedOnHover != newNeedOnHover) { // changed status
+                    assert newNeedOnHover == add;
+                    propagated = true;
+                    for (int i = 0; i < childCount; i++) { // updating siblings
+                        Widget siblingWidget = ((FlexPanel) parent).getWidget(i); // parentElement.getChild()
+                        if (!widget.equals(siblingWidget))
+                            applyClassChange(siblingWidget.getElement(), aclass, !add);
+                    }
+                }
+            }
+            if (propagated) {
+                propagateClassChanges.put(aclass, add);
+            } else {
+                applyClassChange(widget.getElement(), aclass, add);
+            }
+        });
+
+        if(!propagateClassChanges.isEmpty()) { // optimization
+            // parents has classes only set with propagations (in this case we don't need to update LSF_CLASSES_ATTRIBUTE)
+            assert parent.getElement().getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE) == null;
+            updateClasses(parent, propagateClassChanges, propagateClasses);
+        }
+    }
+
+    static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses) {
+        String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+        if(prevClasses == null)
+            prevClasses = new String[0];
+
+        NativeStringMap<Boolean> changes = new NativeStringMap<>();
+        for(String prevClass : prevClasses) {
+            changes.put(prevClass, false);
+        }
+
+        String[] classes = newClasses != null ? newClasses.split(" ") : new String[0];
+        for(String newClass : classes) {
+            if(changes.remove(newClass) == null)
+                changes.put(newClass, true);
+        }
+        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, classes);
+
+        return changes;
+    }
+
+    static void applyClassChange(Element element, String aclass, Boolean add) {
+        if(add)
+            element.addClassName(aclass);
+        else
+            element.removeClassName(aclass);
+    }
+
     static void updateClasses(Element element, String classes) {
-        String prevClasses = element.getPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
-        if(prevClasses != null)
-            GwtClientUtils.removeClassNames(element, prevClasses);
-
-        setClasses(element, classes);
+        buildClassesChanges(element, classes).foreachEntry((aclass, add) -> {
+            applyClassChange(element, aclass, add);
+        });
     }
 
-    static void setClasses(Element element, String setClasses) {
-        if(setClasses != null && !setClasses.isEmpty())
-            GwtClientUtils.addClassNames(element, setClasses);
-
-        element.setPropertyString(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, setClasses);
-    }
+//    static boolean hasClassPrefix(Element element, String classPrefix) {
+//        // we're using lsf set (and not all) css  classes, to avoid unpredictable resulta
+//        String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+//        if(prevClasses != null) {
+//            for(String prevClass : prevClasses) {
+//                if(prevClass.startsWith(classPrefix))
+//                    return true;
+//            }
+//        }
+//        return false;
+//    }
 
     static void initImageText(Widget widget, String caption, BaseImage appImage, boolean vertical) {
         Element element = widget.getElement();

@@ -60,8 +60,12 @@ public abstract class MobileNavigatorView {
             createChildrenMenuItems(rootPanels.windowPanels[i], rootPanels.windows[i], navigatorController.getRoot(), -1);
         }
 
-        RootLayoutPanel.get().add(rootPanels.mainPanel);
-        enable(rootPanels.mainPanel);
+
+        ComplexPanel mainPanel = rootPanels.mainPanel;
+
+        windowsController.initNavigatorRootView(mainPanel);
+        RootLayoutPanel.get().add(mainPanel);
+        enable(mainPanel);
     }
 
     private final NativeSIDMap<GNavigatorElement, NavigatorImageButton> navigatorItems = new NativeSIDMap<>();

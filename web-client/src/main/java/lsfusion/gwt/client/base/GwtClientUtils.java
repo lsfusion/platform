@@ -176,6 +176,18 @@ public class GwtClientUtils {
         return result;
     }
 
+    public static boolean hasClassNamePrefix(String classNames, String classNamePrefix) {
+        if(classNames != null && classNames.contains(classNamePrefix)) { // optimization
+            String[] aClassNames = classNames.split(" ");
+            for(int i = 0; i <aClassNames.length ;i++) {
+                String className = aClassNames[i];
+                if(className.startsWith(classNamePrefix))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     public static String getPageParameter(String parameterName) {
         return getPageParameters().get(parameterName);
     }

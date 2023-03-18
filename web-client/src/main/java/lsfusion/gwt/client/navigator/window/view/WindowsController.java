@@ -4,10 +4,10 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
@@ -18,41 +18,31 @@ import java.util.*;
 
 public abstract class WindowsController {
     private NativeSIDMap<GAbstractWindow, WindowElement> windowElementsMapping = new NativeSIDMap<>();
-    private FlexWindowElement rootElement;
+    public FlexWindowElement rootElement;
+    public GAbstractWindow formsWindow;
 
     public static final String NAVBAR_TEXT_ON_HOVER = "navbar-desktop-text-on-hover";
-    private static final String PROPAGATE_CLASS_TO_PARENT_ATTR = "propagate_class_to_parent_attr";
+    public static final String BACKGROUND_PREFIX = "bg-";
+
     public void updateElementClass(GAbstractWindow window) {
         Widget windowView = getWindowView(window);
-        BaseImage.updateClasses(windowView.getElement(), propagateOnHoverToParent(window, windowView, window.elementClass));
-    }
+        String elementClass = window.elementClass;
 
-    private static String propagateOnHoverToParent(GAbstractWindow window, Widget windowView, String elementClass) {
-        // we're assuming that if there is an upper flex panel, it's parent will be the opposite direction (due to the window layout mechanism)
-        // this makes the whole mechanism a lot simpler
-        String propagateClassToParent = NAVBAR_TEXT_ON_HOVER;
-        Widget parent;
-        // also we're assuming that window already has parent
-        boolean isVertical = window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical();
-        if((parent = windowView.getParent()) instanceof FlexPanel && ((FlexPanel) parent).isVertical() == isVertical) {
-            boolean hasPropagateClass = elementClass != null && elementClass.contains(propagateClassToParent);
+//        we still need NEED_MARGINS for formscontroller, so it's a question if it's right
+//        we still need bg_ to HAS (however here we should use paddings ???) be converted to respect margins ???
 
-            int prevOnHover = windowView.getElement().getPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR);
-            int newOnHover = hasPropagateClass ? 1 : 0;
-            windowView.getElement().setPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR, newOnHover);
+        BaseImage.updateClasses(windowView, elementClass, (widget, parent, className) -> {
+            if(className.equals(NAVBAR_TEXT_ON_HOVER)) {
+                boolean isWindow = widget.equals(windowView);
+                if((isWindow || widget instanceof FlexPanel) && parent instanceof FlexPanel) {
+                    boolean thisVertical = isWindow ? window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical() : ((FlexPanel) widget).isVertical();
+                    return ((FlexPanel) parent).isVertical() == thisVertical;
+                }
+            } else if(className.startsWith(BACKGROUND_PREFIX))
+                return true;
 
-            int prevParentOnHover = parent.getElement().getPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR);
-            int newPrevParentOnHover = prevParentOnHover + (newOnHover - prevOnHover);
-            parent.getElement().setPropertyInt(PROPAGATE_CLASS_TO_PARENT_ATTR, newPrevParentOnHover);
-
-            int childCount = ((FlexPanel) parent).getWidgetCount();
-            boolean prevNeedOnHover = prevParentOnHover == childCount;
-            boolean newNeedOnHover = newPrevParentOnHover == childCount;
-
-            if(prevNeedOnHover != newNeedOnHover)
-                BaseImage.updateClasses(parent.getElement(), newNeedOnHover ? propagateClassToParent : null); // we're assuming that no one else updates that parent window classes
-        }
-        return elementClass;
+            return false;
+        });
     }
 
     public GAbstractWindow findWindowByCanonicalName(String canonicalName) {
@@ -76,14 +66,17 @@ public abstract class WindowsController {
         }
         
         rootElement = (FlexWindowElement) fillWindowChildren(rootNode);
+        rootElement.initializeView(this);
+        rootElement.onAddView(this);
+        initNavigatorRootView(rootElement.getView());
 
-        Widget rootView = rootElement.initializeView(this);
+        this.formsWindow = formsWindow;
 
         setDefaultVisible();
 
         restoreWindowsSizes();
 
-        RootLayoutPanel.get().add(rootView);
+        RootLayoutPanel.get().add(rootElement.getView());
     }
 
     private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode, GAbstractWindow formsWindow) {
@@ -432,11 +425,11 @@ public abstract class WindowsController {
 
     public void registerMobileWindow(GAbstractWindow window) {
         registerWindow(window, null);
+
+        updateElementClass(window);
     }
     public void registerWindow(GAbstractWindow window, WindowElement windowElement) {
         windowElementsMapping.put(window, windowElement);
-
-        updateElementClass(window);
     }
 
     public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {
@@ -446,11 +439,21 @@ public abstract class WindowsController {
                 windowElement.setVisible(entry.getValue());
             }
         }
+
+        updatePanels();
     }
-    
+
+    private void updatePanels() {
+        FlexPanel.updatePanels(rootElement.getView());
+
+        RootLayoutPanel.get().onResize();
+    }
+
     public void resetLayout() {
         setDefaultVisible();
         rootElement.resetWindowSize();
+
+        updatePanels();
     }
 
     private void setDefaultVisible() {
@@ -463,8 +466,18 @@ public abstract class WindowsController {
 
     // in current layout formsWindow is always added as the CENTER widget.
     // so to enable full screen mode we only need to hide all non-CENTER windows in root split panel
+    private Widget formsWidget;
     public void setFullScreenMode(boolean fullScreen) {
-        rootElement.setBorderWindowsHidden(fullScreen);
+        ResizableSimplePanel formsPanel = (ResizableSimplePanel) getWindowView(formsWindow);
+        if(fullScreen) {
+            RootLayoutPanel.get().remove(rootElement.getView());
+            formsWidget = formsPanel.getWidget();
+            RootLayoutPanel.get().add(formsWidget);
+        } else {
+            formsPanel.setWidget(formsWidget);
+            formsWidget = null;
+            RootLayoutPanel.get().add(rootElement.getView());
+        }
     }
 
     public abstract Widget getWindowView(GAbstractWindow window);
@@ -499,6 +512,11 @@ public abstract class WindowsController {
             }
         }
         return 0;
+    }
+
+    public void initNavigatorRootView(Widget navRootWidget) {
+//        if(MainFrame.useBootstrap)
+//            navRootWidget.addStyleName("bg-body-secondary");
     }
 
     private class WindowNode {

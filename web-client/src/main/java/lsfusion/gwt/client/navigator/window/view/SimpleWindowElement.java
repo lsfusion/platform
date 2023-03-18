@@ -13,8 +13,14 @@ public class SimpleWindowElement extends WindowElement {
     }
 
     @Override
+    public void initializeView(WindowsController controller) {
+        controller.registerWindow(window, this);
+    }
+
+    @Override
     public void onAddView(WindowsController controller) {
-        controller.registerWindow(window, this); // here (not in the constructor) because in updateElementClass we need parent
+        // here (not in the constructor) because in updateElementClass we need parent
+        controller.updateElementClass(window);
     }
 
     @Override

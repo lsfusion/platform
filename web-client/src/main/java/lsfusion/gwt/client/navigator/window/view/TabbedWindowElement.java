@@ -13,15 +13,22 @@ public class TabbedWindowElement extends WindowElement {
     private List<WindowElement> children = new ArrayList<>();
     private List<WindowElement> visibleChildren = new ArrayList<>();
 
-    private FlexTabbedPanel tabPanel = new FlexTabbedPanel() {
+    private Panel tabPanel;
+
+    public static class Panel extends FlexTabbedPanel {
+        public Panel() {
+        }
+
         @Override
         public void checkResizeEvent(NativeEvent event, Element cursorElement) {
             // do nothing as it clashes with resize in CustomSplitLayoutPanel
         }
-    };
+    }
 
     public TabbedWindowElement(WindowsController controller, int x, int y, int width, int height) {
         super(controller, x, y, width, height);
+
+        tabPanel = new Panel();
     }
 
     public Widget getView() {
@@ -52,17 +59,23 @@ public class TabbedWindowElement extends WindowElement {
     }
 
     @Override
-    public Widget initializeView(WindowsController controller) {
+    public void initializeView(WindowsController controller) {
         for (WindowElement child : children) {
-            Widget windowView = child.initializeView(controller);
+            child.initializeView(controller);
+
+            Widget windowView = child.getView();
 
             tabPanel.addTab(windowView, child.getCaption());
             visibleChildren.add(child);
             tabPanel.selectTab(visibleChildren.indexOf(child));
+        }
+    }
 
+    @Override
+    public void onAddView(WindowsController controller) {
+        for (WindowElement child : children) {
             child.onAddView(controller);
         }
-        return super.initializeView(controller);
     }
 
     @Override

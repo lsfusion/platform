@@ -15,10 +15,7 @@ import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -59,7 +56,9 @@ import static lsfusion.gwt.client.form.event.GKeyStroke.isTabEvent;
 public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
-    private final FlexTabbedPanel tabsPanel;
+    private final ResizableSimplePanel container; // used for / in the setFullScreenMode, and it is assumed that it is returned in getView
+
+    private final Panel tabsPanel;
 
     private final List<FormContainer> formContainers = new ArrayList<>();
 
@@ -76,6 +75,12 @@ public abstract class FormsController {
     private boolean fullScreenMode = false;
     
     private GToolbarButton mobileMenuButton;
+
+    public static class Panel extends FlexTabbedPanel {
+        public Panel(Widget extraTabWidget, boolean end) {
+            super(extraTabWidget, end);
+        }
+    }
 
     public FormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
@@ -133,7 +138,7 @@ public abstract class FormsController {
             toolbarView.addComponent(mobileMenuButton);
         }
 
-        tabsPanel = new FlexTabbedPanel(toolbarView, MainFrame.mobile);
+        tabsPanel = new Panel(toolbarView, MainFrame.mobile);
 
         // unselected (but not removed)
         tabsPanel.setBeforeSelectionHandler(index -> {
@@ -152,6 +157,10 @@ public abstract class FormsController {
         });
 
         tabsPanel.addStyleName("forms-container");
+
+        container = new ResizableSimplePanel();
+        container.setSizedWidget(tabsPanel, true);
+        container.addStyleName("forms-container-window");
 
         initEditModeTimer();
     }
@@ -356,7 +365,7 @@ public abstract class FormsController {
     }
 
     public Widget getView() {
-        return tabsPanel;
+        return container;
     }
 
     public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
