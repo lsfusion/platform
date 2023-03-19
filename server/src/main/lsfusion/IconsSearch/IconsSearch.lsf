@@ -1,5 +1,31 @@
 MODULE IconsSearch;
+
 REQUIRE Utils;
+
+// Icon properties
+
+CLASS Icon;
+iconName = DATA STRING (Icon);
+label = DATA STRING (Icon);
+terms = DATA STRING (Icon);
+synonyms = DATA STRING (Icon);
+free = DATA STRING (Icon);
+iconClass(Icon i) = (IF free(i) = 'brands' THEN 'fa-brands' ELSE 'fa') + ' fa-' + iconName(i);
+vector(Icon i) = tsVector(label(i), terms(i), synonyms(i));
+rank(STRING s, Icon i) = tsRank(vector(i), splitCamelCase(s, ' | '));
+
+// Searching the best icon
+
+bestIconClass = DATA LOCAL STRING();
+bestIconRank = DATA LOCAL DOUBLE();
+getBestIcon(STRING s) {
+    FOR Icon lastIcon = (GROUP LAST Icon icn IF rank(s, icn) ORDER rank(s, icn)) DO {
+        bestIconClass() <- iconClass(lastIcon);
+        bestIconRank() <- rank(s, lastIcon);
+    }
+}
+
+// Icon import
 
 data_id_terms = DATA LOCAL STRING (INTEGER);
 data_id_synonyms = DATA LOCAL STRING (INTEGER);
@@ -9,7 +35,7 @@ synonym = DATA LOCAL STRING(INTEGER);
 free = DATA LOCAL STRING(INTEGER);
 label = DATA LOCAL STRING(STRING);
 
-FORM iconsForm
+FORM importIcons
     OBJECTS data=STRING EXTKEY
 
     PROPERTIES(data) label
@@ -33,10 +59,9 @@ synonyms(STRING iconName) = GROUP CONCAT synonym(INTEGER i) IF data_id_synonyms(
 free(STRING iconName) = GROUP CONCAT free(INTEGER i) IF data_id_free(i) == iconName, ' ' ORDER i;
 
 iconName = GROUP MAX STRING s BY label(s);
-tsVector(STRING label, STRING termsIcon, STRING synonyms) = FORMULA PG 'setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\')';
 iconsImport() {
     INPUT j = JSONFILE DO {
-        IMPORT iconsForm JSON FROM j;
+        IMPORT importIcons JSON FROM j;
         
         FOR iconName(STRING s) AND NOT icon(iconName(s)) NEW icn = Icon DO {
             iconName(icn) <- iconName(s);
@@ -47,7 +72,6 @@ iconsImport() {
             terms(icn) <- lower(terms(iconName(icn)));
             synonyms(icn) <- lower(synonyms(iconName(icn)));
             free(icn) <-  free(iconName(icn));
-            tsVector(icn) <- tsVector(label(icn), terms(icn), synonyms(icn));
         }
         
         DELETE Icon icn WHERE icn IS Icon AND NOT [ GROUP SUM 1 BY iconName(STRING s)](iconName(icn));
@@ -56,49 +80,56 @@ iconsImport() {
     }
 }
 
-getFAIconName INTERNAL 'lsfusion.server.logics.GetFAIconNameAction' (STRING);
+// Icons form
 
 search = DATA LOCAL STRING ();
-getFAIconName() {
-    INPUT s = search() CHANGE DO {
-        getFAIconName(s);
-    }
-}
-
-FORM font
-    PROPERTIES() iconsImport, search ON CHANGE getFAIconName(), bestIconName READONLY
-    OBJECTS icn = Icon
-    PROPERTIES(icn) READONLY iconName, label, terms, synonyms, free, tsVector
-    PROPERTIES (icn) DELETE
+message(Icon i) { MESSAGE iconName(i); }
+FORM icons 
+    PROPERTIES() iconsImport, search ON CHANGE {
+        INPUT s = search() CHANGE DO {
+            getBestIcon(s);
+        }
+    }, bestIconClass  READONLY IMAGE bestIconClass(), bestIconRank READONLY 
+    OBJECTS i = Icon 
+    PROPERTIES iconImage 'Icon' = message(i) IMAGE iconClass(i) GRID, rank 'Rank' = rank(search(), i) 
+    PROPERTIES(i) READONLY iconName, label, terms, synonyms, free, vector
+    PROPERTIES (i) DELETE
 ;
 
-DESIGN font {
-    NEW import {
-        MOVE PROPERTY(iconsImport()) {
-            caption = 'import JSON';
-            fontSize = 36;
+DESIGN icons {
+    OBJECTS {
+        NEW import {
+            MOVE PROPERTY(iconsImport()) {
+                caption = 'import JSON';
+                fontSize = 36;
+            }
         }
-    }
-    NEW search  {
-        MOVE PROPERTY(search()) {
-            caption = 'action name';
-            fontSize = 36;
-            width = 500;
+        NEW search {
+            MOVE PROPERTY(search()) {
+                caption = 'action name';
+                fontSize = 36;
+                width = 500;
+            }
         }
-    }
-    NEW bestIcon {
-        MOVE PROPERTY(bestIconName()) {
-            caption = 'best icon name';
-            fontSize = 36;
-            width = 500;
+        NEW bestIcon {
+            MOVE PROPERTY(bestIconClass()) {
+                caption = 'best icon name';
+                fontSize = 36;
+                width = 500;
+            }
+            MOVE PROPERTY(bestIconRank()) {
+                caption = 'best icon rank';
+                fontSize = 36;
+                width = 500;
+            }
         }
-    }
-    NEW icons {
-        fill = 1;
-        MOVE BOX(icn);
+        NEW icons {
+            fill = 1;
+            MOVE BOX(i);
+        }
     }
 }
 
 NAVIGATOR {
-    NEW font;
+    NEW icons;
 }

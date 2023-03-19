@@ -484,12 +484,8 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
         // сначала and'им where и push, получаем интерфейсы I + push (T)
         Result<ImRevMap<I, PropertyInterface>> mapInnerInterfaces = new Result<>();
         ImSet<T> mergedInterfaces = mapping.valuesSet().merge(push.mapping.valuesSet());
-        for(PropertyInterfaceImplement<T> order : orders.keyIt()) {
-            if(order instanceof PropertyMapImplement)
-                mergedInterfaces = mergedInterfaces.merge(((PropertyMapImplement<?, T>) order).mapping.valuesSet());
-            else
-                mergedInterfaces = mergedInterfaces.merge((T) order);
-        }
+        for(PropertyInterfaceImplement<T> order : orders.keyIt())
+            mergedInterfaces = mergedInterfaces.merge(order.getInterfaces());
         ImRevMap<T, PropertyInterface> mapPushInterfaces = createCommon(mergedInterfaces, innerInterfaces, mapping.crossJoin(mapInterfaces), mapInnerInterfaces);
 
         PropertyMapImplement<?, PropertyInterface> mapPush = push.map(mapPushInterfaces);

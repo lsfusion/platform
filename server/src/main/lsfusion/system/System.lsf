@@ -553,32 +553,3 @@ DESIGN options {
         }
     }
 }
-
-
-CLASS Icon;
-iconName = DATA STRING (Icon);
-label = DATA STRING (Icon);
-terms = DATA STRING (Icon);
-synonyms = DATA STRING (Icon);
-free = DATA STRING (Icon);
-tsVector = DATA STRING(Icon);
-
-tsRank(STRING tsVector, STRING search) = FORMULA DOUBLE PG 'ts_rank($1::tsvector, to_tsquery($2))';
-bestIconName = DATA LOCAL STRING();
-bestIconRank = DATA LOCAL DOUBLE();
-
-getBestIcon(STRING s) {
-    LOCAL rankToTsQuery = DOUBLE (Icon);
-    FOR iconName(Icon icn) DO {
-        rankToTsQuery(icn) <- tsRank(tsVector(icn), s);
-    }
-
-    LOCAL bestIcon = Icon();
-    bestIcon() <- GROUP LAST Icon icn IF rankToTsQuery(icn) ORDER rankToTsQuery(icn);
-    IF free(bestIcon()) == 'brands' THEN {
-        bestIconName() <- CONCAT '', 'fa-brands fa-', iconName(bestIcon());
-    } ELSE {
-        bestIconName() <- CONCAT '', 'fa fa-', iconName(bestIcon());
-    }
-    bestIconRank() <- rankToTsQuery(bestIcon());
-}

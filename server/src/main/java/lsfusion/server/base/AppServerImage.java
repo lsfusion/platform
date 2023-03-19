@@ -156,20 +156,21 @@ public class AppServerImage {
             // turn name into a phrase
             // and then search lsf by calling the icon with the maximum search for his word in this phrase (taking into account morphology, stop words and synonyms)
 
-            try {
-                BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
-                DataSession session = ThreadLocalContext.getDbManager().createSession();
-                baseLM.getBestIconAction.execute(session, ThreadLocalContext.getStack(), new DataObject(String.join(" | ", splitCamelCase(name))));
-
-                Double bestIconRank = (Double) baseLM.bestIconRank.read(session);
-                Object bestIconName = baseLM.bestIconName.read(session);
-                result = bestIconRank > rankingThreshold ? new AppServerImage(null, (String) bestIconName) : NULL;
-
-                System.out.println("formName = " + name + ", iconName = " + bestIconName + ", rank = " + bestIconRank);
-
-            } catch (SQLException | SQLHandledException e) {
-                throw Throwables.propagate(e); // todo ??
-            }
+//            try {
+//                BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
+//                DataSession session = ThreadLocalContext.getDbManager().createSession();
+//                baseLM.getBestIconAction.execute(session, ThreadLocalContext.getStack(), new DataObject(String.join(" | ", splitCamelCase(name))));
+//
+//                Double bestIconRank = (Double) baseLM.bestIconRank.read(session);
+//                Object bestIconName = baseLM.bestIconName.read(session);
+//                result = bestIconRank != null && bestIconRank > rankingThreshold ? new AppServerImage(null, (String) bestIconName) : NULL;
+//
+//                System.out.println("formName = " + name + ", iconName = " + bestIconName + ", rank = " + bestIconRank);
+//
+//            } catch (SQLException | SQLHandledException e) {
+//                throw Throwables.propagate(e); // todo ??
+//            }
+            result = NULL;
 
             cachedDefaultImages.put(cacheKey, result);
         }

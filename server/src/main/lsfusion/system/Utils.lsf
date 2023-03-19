@@ -146,7 +146,11 @@ replace (TEXT p1, TEXT p2, TEXT p3) = FORMULA TEXT 'replace($1,$2,$3)';
 length = FORMULA INTEGER PG 'length($1)', MS 'len($1)';
 
 strpos (TEXT string, TEXT substring) = FORMULA INTEGER PG 'strpos($1, $2)', MS 'charindex($2, $1)'; 
-regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FORMULA STRING PG 'REGEXP_REPLACE($1, $2, $3, $4)'; 
+regexpReplace (STRING source, STRING pattern, STRING replace, STRING flags) = FORMULA STRING PG 'REGEXP_REPLACE($1, $2, $3, $4)';
+splitCamelCase (STRING source, STRING delimiter) = regexpReplace(source, '([a-z])([A-Z])', '\\1' + delimiter + '\\2', 'g');
+
+tsRank(STRING tsVector, STRING search) = FORMULA DOUBLE PG 'ts_rank($1::tsvector, to_tsquery($2))';
+tsVector(STRING A, STRING B, STRING C) = FORMULA PG 'setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\')';
 
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 

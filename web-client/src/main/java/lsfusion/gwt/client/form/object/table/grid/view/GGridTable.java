@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.object.table.grid.view;
 
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.BrowserEvents;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.TableRowElement;
