@@ -906,7 +906,7 @@ public class PropertyFact {
         if(!innerInterfaces.containsAll(whereInterfaces)) { // оптимизация, если есть допинтерфейсы - надо группировать
             if(!whereInterfaces.containsAll(getUsedInterfaces(writeFrom))) { // если не все ключи есть, придется докинуть or
                 if(writeFrom instanceof PropertyMapImplement) {
-                    whereInterfaces = innerInterfaces.merge(whereInterfaces);
+                    whereInterfaces = whereInterfaces.merge(innerInterfaces);
                     where = (PropertyMapImplement<W, I>) SetAction.getFullProperty(whereInterfaces, where, writeTo, writeFrom);
                 } else { // по сути оптимизация, чтобы or не тянуть
                     whereInterfaces = whereInterfaces.merge((I) writeFrom);
@@ -920,6 +920,16 @@ public class PropertyFact {
             // поэтому будем подставлять те классы которые есть, предполагая что если нет они должны придти сверху
             if(!where.mapIsFull(checkContext)) // может быть избыточно для 2-го случая сверху, но для where в принципе надо
                 where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, IsClassProperty.getMapProperty(where.mapInterfaceClasses(ClassType.wherePolicy).filter(checkContext))); // filterIncl
+
+            // we can do it before the above check, but since we don't have any classes during where extending it doesn't make any sense
+            for(PropertyInterfaceImplement<I> order : orders.keyIt()) {
+                ImSet<I> usedOrderInterfaces = getUsedInterfaces(order);
+                if (!whereInterfaces.containsAll(usedOrderInterfaces)) {
+                    ImSet<I> extraInterfaces = usedOrderInterfaces.remove(whereInterfaces);
+                    whereInterfaces = whereInterfaces.addExcl(extraInterfaces);
+                    where = (PropertyMapImplement<W, I>) createAnd(whereInterfaces, where, BaseUtils.<ImSet<PropertyInterfaceImplement<I>>>immutableCast(extraInterfaces));
+                }
+            }
 
             ImRevMap<W, I> mapPushInterfaces = where.mapping.filterValuesRev(innerInterfaces); ImRevMap<I, W> mapWhere = where.mapping.reverse();
             writeFrom = createLastGProp(where.property, writeFrom.map(mapWhere), mapPushInterfaces.keys(), mapImplements(orders, mapWhere), ordersNotNull).map(mapPushInterfaces);
