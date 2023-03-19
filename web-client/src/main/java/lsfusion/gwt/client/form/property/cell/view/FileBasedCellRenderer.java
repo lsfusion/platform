@@ -15,7 +15,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
         element.setInnerText(null); // remove all
 
         Element img = null;

@@ -100,7 +100,7 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
         InputElement input = getInputElement(element);
         boolean newValue = value != null && (Boolean) value;
         setChecked(input, newValue);
