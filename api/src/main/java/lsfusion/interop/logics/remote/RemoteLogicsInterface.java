@@ -1,8 +1,8 @@
 package lsfusion.interop.logics.remote;
 
 import lsfusion.interop.base.remote.PendingRemoteInterface;
-import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.connection.AuthenticationToken;
+import lsfusion.interop.connection.authentication.Authentication;
 import lsfusion.interop.navigator.NavigatorInfo;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
 import lsfusion.interop.session.ExternalRequest;
@@ -26,8 +26,6 @@ public interface RemoteLogicsInterface extends PendingRemoteInterface {
     // stateful interfaces
     RemoteNavigatorInterface createNavigator(AuthenticationToken token, NavigatorInfo navigatorInfo) throws RemoteException;
     RemoteSessionInterface createSession(AuthenticationToken token, SessionInfo sessionInfo) throws RemoteException;
-
-    void updateNavigatorClientSettings(String screenSize, boolean mobile) throws RemoteException;
 
     // RESTful interfaces
     // external requests (interface is similar to RemoteSessionInterface but with token)

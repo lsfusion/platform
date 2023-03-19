@@ -268,6 +268,9 @@ public abstract class CellRenderer<T> {
     protected boolean renderedLoadingContent(UpdateContext updateContext) {
         return false;
     }
+    protected Object getExtraValue(UpdateContext updateContext) {
+        return null;
+    }
 
     protected boolean needToRenderToolbarContent() {
         return property.toolbar;
@@ -276,7 +279,7 @@ public abstract class CellRenderer<T> {
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
     private static class RenderedState {
         public Object value;
-        public boolean loading;
+        public Object extraValue;
         public GColorTheme colorTheme; // for action and color cell renderer
 
         public String foreground;
@@ -288,8 +291,8 @@ public abstract class CellRenderer<T> {
 
         public ToolbarState toolbar;
     }
-    private boolean equalsDynamicState(RenderedState state, Object value, boolean isLoading, GColorTheme colorTheme) {
-        return GwtClientUtils.nullEquals(state.value, value) && state.loading == isLoading && state.colorTheme == colorTheme && !state.rerender;
+    private boolean equalsDynamicState(RenderedState state, Object value, Object extraValue, GColorTheme colorTheme) {
+        return GwtClientUtils.nullEquals(state.value, value) && GwtClientUtils.nullEquals(state.extraValue, extraValue) && state.colorTheme == colorTheme && !state.rerender;
     }
     private boolean equalsColorState(RenderedState state, String background, String foreground) {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
@@ -318,7 +321,7 @@ public abstract class CellRenderer<T> {
             clearEditSelected(element, property);
 
         Object value = updateContext.getValue();
-        boolean loading = updateContext.isLoading() && renderedLoadingContent(updateContext);
+        Object extraValue = getExtraValue(updateContext); // in action we also use isLoading and getImage
 
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
         boolean isNew = false;
@@ -352,15 +355,15 @@ public abstract class CellRenderer<T> {
         }
 
         boolean cleared = false;
-        if(isNew || !equalsDynamicState(renderedState, value, loading, MainFrame.colorTheme)) {
+        if(isNew || !equalsDynamicState(renderedState, value, extraValue, MainFrame.colorTheme)) {
             // there might be stack overflow, if this is done after renderDynamicContent, and this is a custom cell render, which calls changeProperty in its update method
             // setting value earlier breaks the recursion
             renderedState.value = value;
-            renderedState.loading = loading;
+            renderedState.extraValue = extraValue;
             renderedState.colorTheme = MainFrame.colorTheme;
             renderedState.rerender = false;
 
-            cleared = updateContent(element, value, loading, updateContext);
+            cleared = updateContent(element, value, extraValue, updateContext);
         }
 
         if(needToRenderToolbarContent())
@@ -558,7 +561,7 @@ public abstract class CellRenderer<T> {
     }
 
     public abstract boolean renderContent(Element element, RenderContext renderContext);
-    public abstract boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext);
+    public abstract boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext);
     public abstract boolean clearRenderContent(Element element, RenderContext renderContext);
 
     public int getWidthPadding() {

@@ -2684,6 +2684,25 @@ public class Settings implements Cloneable {
         return updateSavePointsMinMultiplier;
     }
 
+    private String checkStatementSubstring = null;
+    private String checkExcludeStatementSubstring = null;
+
+    public String getCheckStatementSubstring() {
+        return checkStatementSubstring;
+    }
+
+    public void setCheckStatementSubstring(String checkStatementSubstring) {
+        this.checkStatementSubstring = checkStatementSubstring;
+    }
+
+    public String getCheckExcludeStatementSubstring() {
+        return checkExcludeStatementSubstring;
+    }
+
+    public void setCheckExcludeStatementSubstring(String checkExcludeStatementSubstring) {
+        this.checkExcludeStatementSubstring = checkExcludeStatementSubstring;
+    }
+
     // temporary fallback
     private boolean removeClassesFallback = false;
 

@@ -22,7 +22,7 @@ public class HTMLLinkCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
         element.setInnerHTML("<iframe src=\"" + value + "\" style=\"width:100%; height:100%;\" >Unfortunately this content could not be displayed</iframe>");
 
         return true;

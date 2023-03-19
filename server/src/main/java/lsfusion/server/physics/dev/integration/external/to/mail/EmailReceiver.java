@@ -76,7 +76,7 @@ public class EmailReceiver {
                 minDateTime, unpack, ignoreExceptions);
 
         importEmails(context, LM, accountObject, data.get(0));
-        importAttachments(context, LM, data.get(1));
+        importAttachments(context, LM, data.get(1), accountObject);
 
         LM.findAction("formRefresh[]").execute(context);
     }
@@ -164,7 +164,7 @@ public class EmailReceiver {
 
         ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[STRING]").getMapping(idEmailField));
+                LM.findProperty("emailId[Account,STRING]").getMapping(accountObject,idEmailField));
         keys.add(emailKey);
         props.add(new ImportProperty(idEmailField, LM.findProperty("id[Email]").getMapping(emailKey)));
         props.add(new ImportProperty(accountObject, LM.findProperty("account[Email]").getMapping(emailKey)));
@@ -207,7 +207,7 @@ public class EmailReceiver {
         }
     }
 
-    private static void importAttachments(ExecutionContext context, EmailLogicsModule LM, List<List<Object>> data) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
+    private static void importAttachments(ExecutionContext context, EmailLogicsModule LM, List<List<Object>> data, DataObject accountObject) throws ScriptingErrorLog.SemanticErrorException, SQLException, SQLHandledException {
 
         List<ImportProperty<?>> props = new ArrayList<>();
         List<ImportField> fields = new ArrayList<>();
@@ -215,7 +215,7 @@ public class EmailReceiver {
 
         ImportField idEmailField = new ImportField(LM.findProperty("id[Email]"));
         ImportKey<?> emailKey = new ImportKey((ConcreteCustomClass) LM.findClass("Email"),
-                LM.findProperty("emailId[STRING]").getMapping(idEmailField));
+                LM.findProperty("emailId[Account,STRING]").getMapping(accountObject,idEmailField));
         emailKey.skipKey = true;
         keys.add(emailKey);
         fields.add(idEmailField);

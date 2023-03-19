@@ -111,6 +111,10 @@ public class RequestAction extends KeepContextAction {
 
     @Override
     public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
+        // because ELSE actions in the INPUT operator are not achieved in async mode, we "disable" async for RequestAction-s
+        if (!optimistic && elseAction != null)
+            return null;
+
         return requestAction.mapAsyncEventExec(optimistic, recursive);
     }
 

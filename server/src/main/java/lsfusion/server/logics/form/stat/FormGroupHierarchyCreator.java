@@ -13,7 +13,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import java.util.*;
 
 public class FormGroupHierarchyCreator {
-    private FormEntity form;
+    private final FormEntity form;
     
     private final boolean supportGroupColumns;
 
@@ -23,10 +23,12 @@ public class FormGroupHierarchyCreator {
         this.supportGroupColumns = supportGroupColumns;
     }
     
-    private boolean addDependencies(Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, Set<GroupObjectEntity> groupsSet) {
+    private boolean addDependencies(ImOrderSet<GroupObjectEntity> allGroups,
+                                    Map<GroupObjectEntity, Set<GroupObjectEntity>> graph,
+                                    Set<GroupObjectEntity> groupsSet) {
         boolean changed = false;
         GroupObjectEntity prev = null, cur = null;
-        for (GroupObjectEntity group : form.getGroupsListIt()) { // probably groups from the upper method should / could be used
+        for (GroupObjectEntity group : allGroups) {
             if (groupsSet.contains(group)) {
                 prev = cur;
                 cur = group;
@@ -53,17 +55,17 @@ public class FormGroupHierarchyCreator {
      * Если две группы связаны каким-нибудь свойством, фильтром и т.п., то добавляется ребро от "нижней" группы к "верхней"
      * Порядок групп определяется порядком в form.groups
      */
-    private void addDependenciesToGraph(ImOrderSet<GroupObjectEntity> groups, Map<GroupObjectEntity, Set<GroupObjectEntity>> graph, ImSet<GroupObjectEntity> excludeGroupObjects) {
+    private void addDependenciesToGraph(ImOrderSet<GroupObjectEntity> groups, Map<GroupObjectEntity, Set<GroupObjectEntity>> graph) {
         Iterable<PropertyDrawEntity> propertyDraws = form.getPropertyDrawsIt();
         for (PropertyDrawEntity<?> property : propertyDraws) {
             Set<GroupObjectEntity> propObjects = getGroupsByObjects(property.getObjectInstances(), groups);
             if(supportGroupColumns)
                 propObjects.removeAll(property.getColumnGroupObjects().toJavaList());
-            addDependencies(graph, propObjects);
+            addDependencies(groups, graph, propObjects);
         }
 
-        for (FilterEntity filter : form.getFixedFilters()) {
-            addDependencies(graph, getGroupsByObjects(filter.getObjects(), groups));
+        for (FilterEntity<?> filter : form.getFixedFilters()) {
+            addDependencies(groups, graph, getGroupsByObjects(filter.getObjects(), groups));
         }
     }
 
@@ -77,11 +79,11 @@ public class FormGroupHierarchyCreator {
 
     /**
      * Формирование графа зависимостей в виде леса (набора деревьев)
-     *
+     * <p>
      * Алгоритм:
      * Инвариант, который на каждом шаге алгоритма сохраняем: строящийся граф должен быть лесом на каждом шаге, то есть
      * в каждую вершину не может входить более одного ребра.
-     *
+     * <p>
      * Перебираем все группы в том же порядке в котором они находятся в form.groups.
      * Для каждой группы перебираем все исходящие ребра (то есть группы, от которых текущая группа зависит)
      * Каждое ребро (шаг алгоритма) пробуем добавить в результирующий граф, инвертируя его. Если получаем нарушение
@@ -159,7 +161,7 @@ public class FormGroupHierarchyCreator {
         ImOrderSet<GroupObjectEntity> groups = form.getGroupsList().removeOrderIncl(excludeGroupObjects);
         
         Map<GroupObjectEntity, Set<GroupObjectEntity>> graph = createNewGraph(groups);
-        addDependenciesToGraph(groups, graph, excludeGroupObjects);
+        addDependenciesToGraph(groups, graph);
         graph = formForest(groups, graph);
         
         // building list from set
