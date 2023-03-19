@@ -683,3 +683,56 @@ DESIGN findNavigator {
 NAVIGATOR {
     NEW findNavigator LAST IMAGE 'search.png' WINDOW system PARENT;
 }
+
+// extend reflection
+
+countUserPreferences '{authentication.users.number}' (GroupObject g, UserRole r) =
+    GROUP SUM 1 IF hasUserPreferences(g, CustomUser u) AND has(u, r);
+
+countUser (PropertyDraw pr, UserRole r, PropertyDrawShowStatus s) =
+    GROUP SUM 1 IF show(pr, CustomUser u) = s AND has(u, r);
+captionShow '{reflection.show.property.draw}' (PropertyDraw pr, UserRole r) =
+    GROUP CONCAT staticCaption(PropertyDrawShowStatus s) + ' : ' + countUser(pr, r, s), ', ' ORDER s;
+hide '{reflection.property.draw.status.hide}' (PropertyDraw pr, UserRole r) {
+    show(pr, CustomUser u) <- PropertyDrawShowStatus.Hide WHERE has(u, r) AND show(pr, u) = PropertyDrawShowStatus.Show;
+}
+
+columnSort '{reflection.column.sort.property.draw.custom.user}' (PropertyDraw pr, UserRole r) =
+    GROUP SUM 1 IF columnSort(pr, CustomUser u) AND has(u, r);
+dropSort '{logics.property.actions.drop}' (PropertyDraw pr, UserRole r) {
+    columnSort(pr, CustomUser u) <- NULL WHERE has(u, r);
+}
+
+EXTEND FORM forms
+    PROPERTIES(u) READONLY AFTER login(u) userRoles, lastActivity
+    PROPERTIES(up) READONLY AFTER login(up) userRoles, lastActivity
+
+    OBJECTS r = UserRole
+    PROPERTIES(r) READONLY name, sid
+    PROPERTIES(g, r) countUserPreferences READONLY
+    FILTERS countUserPreferences(g, r)
+
+    OBJECTS pr = PropertyDraw
+    PROPERTIES(pr) READONLY sid, caption
+    PROPERTIES(pr, r) BACKGROUND RGB(224,224,255) captionShow, hide GRID, columnSort, dropSort GRID
+    PROPERTIES(pr, r) BACKGROUND RGB(224,224,255) DRAW r rps = captionShow, rcs = columnSort
+    FILTERS groupObject(pr) = g
+
+    OBJECTS ur = CustomUser
+    PROPERTIES(ur) READONLY firstName, lastName, login, userRoles, lastActivity
+    PROPERTIES(pr, ur) BACKGROUND RGB(224,224,255) captionShow, columnCaption, columnPattern, columnWidth, columnOrder, columnSort, columnAscendingSort
+    FILTERS has(ur, r)
+    FILTERGROUP roleShow
+        FILTER '{reflection.show.property.draw.custom.user}' show(pr, ur) = PropertyDrawShowStatus.Show DEFAULT
+
+;
+DESIGN forms {
+    rightPane {
+        NEW role {
+            caption = '{security.user.roles}';
+            MOVE BOX(r);
+            MOVE BOX(pr) { fill = 2; }
+            MOVE BOX(ur);
+        }
+    }
+}
