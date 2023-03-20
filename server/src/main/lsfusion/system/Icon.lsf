@@ -5,13 +5,13 @@ REQUIRE Utils, Reflection;
 // Icon properties
 
 CLASS Icon;
-iconName = DATA STRING (Icon);
-label = DATA STRING (Icon);
-terms = DATA STRING (Icon);
-synonyms = DATA STRING (Icon);
-free = DATA STRING (Icon);
+iconName '{icon.name}' = DATA STRING (Icon);
+label '{icon.label}' = DATA STRING (Icon);
+terms '{icon.terms}' = DATA STRING (Icon);
+synonyms '{icon.synonyms}' = DATA STRING (Icon);
+free '{icon.free.class}' = DATA STRING (Icon);
 iconClass(Icon i) = (IF free(i) = 'brands' THEN 'fa-brands' ELSE 'fa') + ' fa-' + iconName(i);
-vector(Icon i) = tsVector(label(i), terms(i), synonyms(i));
+vector '{icon.vector}' (Icon i) = tsVector(label(i), terms(i), synonyms(i));
 rank(STRING s, Icon i) = tsRank(vector(i), splitCamelCase(s, ' | '));
 
 // Searching the best icon
@@ -60,7 +60,7 @@ free(STRING iconName) = GROUP CONCAT free(INTEGER i) IF data_id_free(i) == iconN
 
 iconName = GROUP MAX STRING s BY label(s);
 iconsImport() {
-    readResource('/web/bootstrap/classic/iconsSearch/icons_with_synonyms.json');
+    readResource('/web/icons_with_synonyms.json');
     IF resource() THEN {
         IMPORT importIcons JSON FROM resource();
 
@@ -92,7 +92,7 @@ FORM icons '{navigator.icon}'
         }
     }, bestIconClass  READONLY IMAGE bestIconClass(), bestIconRank READONLY 
     OBJECTS i = Icon 
-    PROPERTIES iconImage 'Icon' = message(i) IMAGE iconClass(i) GRID, rank 'Rank' = rank(search(), i) 
+    PROPERTIES iconImage '{icon.icon}' = message(i) IMAGE iconClass(i) GRID, rank '{icon.rank}' = rank(search(), i) 
     PROPERTIES(i) READONLY iconName, label, terms, synonyms, free, vector
     PROPERTIES (i) DELETE
 ;
@@ -101,25 +101,25 @@ DESIGN icons {
     OBJECTS {
         NEW import {
             MOVE PROPERTY(iconsImport()) {
-                caption = 'import JSON';
+                caption = '{icon.import.json}';
                 fontSize = 36;
             }
         }
         NEW search {
             MOVE PROPERTY(search()) {
-                caption = 'action name';
+                caption = '{icon.action.name}';
                 fontSize = 36;
                 width = 500;
             }
         }
         NEW bestIcon {
             MOVE PROPERTY(bestIconClass()) {
-                caption = 'best icon name';
+                caption = '{icon.best.icon.name}';
                 fontSize = 36;
                 width = 500;
             }
             MOVE PROPERTY(bestIconRank()) {
-                caption = 'best icon rank';
+                caption = '{icon.best.icon.rank}';
                 fontSize = 36;
                 width = 500;
             }
@@ -133,8 +133,6 @@ DESIGN icons {
 
 NAVIGATOR {
     system {
-        NEW FOLDER icon '{navigator.icon}' AFTER metadata {
-            NEW icons;
-        }
+        NEW icons AFTER metadata;
     }
 }
