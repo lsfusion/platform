@@ -1,6 +1,6 @@
-MODULE IconsSearch;
+MODULE Icon;
 
-REQUIRE Utils;
+REQUIRE Utils, Reflection;
 
 // Icon properties
 
@@ -60,20 +60,21 @@ free(STRING iconName) = GROUP CONCAT free(INTEGER i) IF data_id_free(i) == iconN
 
 iconName = GROUP MAX STRING s BY label(s);
 iconsImport() {
-    INPUT j = JSONFILE DO {
-        IMPORT importIcons JSON FROM j;
-        
+    readResource('/web/bootstrap/classic/iconsSearch/icons_with_synonyms.json');
+    IF resource() THEN {
+        IMPORT importIcons JSON FROM resource();
+
         FOR iconName(STRING s) AND NOT icon(iconName(s)) NEW icn = Icon DO {
             iconName(icn) <- iconName(s);
         }
 
-        FOR iconName(Icon icn) == iconName(STRING s) DO {            
+        FOR iconName(Icon icn) == iconName(STRING s) DO {
             label(icn) <- lower(s);
             terms(icn) <- lower(terms(iconName(icn)));
             synonyms(icn) <- lower(synonyms(iconName(icn)));
             free(icn) <-  free(iconName(icn));
         }
-        
+
         DELETE Icon icn WHERE icn IS Icon AND NOT [ GROUP SUM 1 BY iconName(STRING s)](iconName(icn));
 
         APPLY;
@@ -84,7 +85,7 @@ iconsImport() {
 
 search = DATA LOCAL STRING ();
 message(Icon i) { MESSAGE iconName(i); }
-FORM icons 
+FORM icons '{navigator.icon}' 
     PROPERTIES() iconsImport, search ON CHANGE {
         INPUT s = search() CHANGE DO {
             getBestIcon(s);
@@ -131,5 +132,9 @@ DESIGN icons {
 }
 
 NAVIGATOR {
-    NEW icons;
+    system {
+        NEW FOLDER icon '{navigator.icon}' AFTER metadata {
+            NEW icons;
+        }
+    }
 }

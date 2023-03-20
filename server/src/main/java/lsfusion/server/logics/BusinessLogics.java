@@ -102,6 +102,7 @@ import lsfusion.server.physics.dev.i18n.DefaultLocalizer;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.i18n.ResourceBundleGenerator;
 import lsfusion.server.physics.dev.i18n.ReversedI18NDictionary;
+import lsfusion.server.physics.dev.icon.IconLogicsModule;
 import lsfusion.server.physics.dev.id.name.CanonicalNameUtils;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import lsfusion.server.physics.dev.id.name.DuplicateElementsChecker;
@@ -162,6 +163,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public SecurityLogicsModule securityLM;
     public SystemEventsLogicsModule systemEventsLM;
     public EmailLogicsModule emailLM;
+    public IconLogicsModule iconLM;
     public SchedulerLogicsModule schedulerLM;
     public TimeLogicsModule timeLM;
     public UtilsLogicsModule utilsLM;
@@ -313,6 +315,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         securityLM = addModule(new SecurityLogicsModule(this, LM));
         systemEventsLM = addModule(new SystemEventsLogicsModule(this, LM));
         emailLM = addModule(new EmailLogicsModule(this, LM));
+        iconLM = addModule(new IconLogicsModule(this, LM));
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
         utilsLM = addModule(new UtilsLogicsModule(this, LM));        

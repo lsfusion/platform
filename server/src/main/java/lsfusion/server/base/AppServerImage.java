@@ -16,7 +16,6 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
@@ -26,6 +25,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.dev.icon.IconLogicsModule;
 
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -156,21 +156,20 @@ public class AppServerImage {
             // turn name into a phrase
             // and then search lsf by calling the icon with the maximum search for his word in this phrase (taking into account morphology, stop words and synonyms)
 
-//            try {
-//                BaseLogicsModule baseLM = ThreadLocalContext.getBaseLM();
-//                DataSession session = ThreadLocalContext.getDbManager().createSession();
-//                baseLM.getBestIconAction.execute(session, ThreadLocalContext.getStack(), new DataObject(String.join(" | ", splitCamelCase(name))));
-//
-//                Double bestIconRank = (Double) baseLM.bestIconRank.read(session);
-//                Object bestIconName = baseLM.bestIconName.read(session);
-//                result = bestIconRank != null && bestIconRank > rankingThreshold ? new AppServerImage(null, (String) bestIconName) : NULL;
-//
-//                System.out.println("formName = " + name + ", iconName = " + bestIconName + ", rank = " + bestIconRank);
-//
-//            } catch (SQLException | SQLHandledException e) {
-//                throw Throwables.propagate(e); // todo ??
-//            }
-            result = NULL;
+            try {
+                IconLogicsModule iconLM = ThreadLocalContext.getBusinessLogics().iconLM;
+                DataSession session = ThreadLocalContext.getDbManager().createSession();
+                iconLM.getBestIcon.execute(session, ThreadLocalContext.getStack(), new DataObject(String.join(" | ", splitCamelCase(name))));
+
+                Double bestIconRank = (Double) iconLM.bestIconRank.read(session);
+                Object bestIconName = iconLM.bestIconClass.read(session);
+                result = bestIconRank != null && bestIconRank > rankingThreshold ? new AppServerImage(null, (String) bestIconName) : NULL;
+
+                System.out.println("formName = " + name + ", iconName = " + bestIconName + ", rank = " + bestIconRank);
+
+            } catch (SQLException | SQLHandledException e) {
+                throw Throwables.propagate(e); // todo ??
+            }
 
             cachedDefaultImages.put(cacheKey, result);
         }
