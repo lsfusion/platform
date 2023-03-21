@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
+import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
@@ -27,7 +28,7 @@ public class ExcelMobileNavigatorView extends MobileNavigatorView {
         ComplexPanel navPanel = new ResizableComplexPanel(Document.get().createULElement());
         navElement.add(navPanel);
 
-        return new RootPanels(navElement, new Predicate[] {ANY}, new ComplexPanel[] { navPanel });
+        return new RootPanels(navElement, new Predicate[] {ANY}, new ComplexPanel[] { navPanel }, new GAbstractWindow[] { null });
     }
 
     protected ComplexPanel initFolderPanel(NavigatorImageButton button) {

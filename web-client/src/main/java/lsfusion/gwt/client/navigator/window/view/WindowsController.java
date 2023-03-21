@@ -425,8 +425,6 @@ public abstract class WindowsController {
 
     public void registerMobileWindow(GAbstractWindow window) {
         registerWindow(window, null);
-
-        updateElementClass(window);
     }
     public void registerWindow(GAbstractWindow window, WindowElement windowElement) {
         windowElementsMapping.put(window, windowElement);

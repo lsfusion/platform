@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
+import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -32,6 +33,7 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
 
         Predicate<GNavigatorWindow>[] windows = new Predicate[3];
         ComplexPanel[] windowPanels = new ComplexPanel[3];
+        GAbstractWindow[] cssWindows = new GAbstractWindow[3];
 
         for(int i=0;i<3;i++) {
             GNavigatorWindow cssWindow;
@@ -61,9 +63,10 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
 
             windows[i] = filterWindow;
             windowPanels[i] = main.panel;
+            cssWindows[i] = cssWindow;
         }
 
-        return new RootPanels(navWindowsPanel, windows, windowPanels);
+        return new RootPanels(navWindowsPanel, windows, windowPanels, cssWindows);
     }
 
     protected ComplexPanel initFolderPanel(NavigatorImageButton button) {
