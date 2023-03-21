@@ -29,9 +29,10 @@ logo() = defaultLogo();
 
 logoAction() {}
 logoActionClass = DATA STRING();
+logoHeader() = DATA STRING();
 
 NAVIGATOR {
-    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo() CLASS 'navbar-excel-mobile-hidden' + (IF pinNavbar() THEN '' ELSE (' ' + logoActionClass()));
+    NEW logoAction WINDOW logo PARENT HEADER logoHeader() IMAGE logo() CLASS logoActionClass();
 }
 
 userUseBootstrap = DATA TBOOLEAN (CustomUser);
@@ -80,17 +81,6 @@ pinNavbarCaption = IF pinNavbar() THEN '{system.events.navbar.unpin}' ELSE '{sys
 pinNavbarImage = IF pinNavbar() THEN 'navbarUnpin.png' ELSE 'navbarPin.png';
 togglePinNavbar () {
     userPinNavbar(currentUser()) <- IF pinNavbar() THEN TFALSE ELSE TTRUE;
-    apply();
-}
-
-onWebClientStarted() + {
-    IF verticalNavbar() THEN {
-        defaultLogo() <- 'logo.png';
-        logoActionClass() <- 'navbar-icon-large';
-    } ELSE {
-        defaultLogo() <- 'logoHorizontal.png';
-        logoActionClass() <- 'navbar-icon-xlarge';
-    }
     apply();
 }
 
@@ -368,6 +358,26 @@ onClientStarted () + {
     IF isWeb() THEN {
         onWebClientStarted(); 
     }
+}
+
+onWebClientStarted() + {
+    IF verticalNavbar() OR isWebMobile() THEN {
+        defaultLogo() <- 'logo.png';
+    } ELSE {
+        defaultLogo() <- 'logoHorizontal.png';
+    }
+
+    logoActionClass() <- 'navbar-icon-' + (IF verticalNavbar() THEN 'large' ELSE 'xlarge') +
+        (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
+    logoHeader() <- IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
+    
+    sytemWindowClass() <- 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') +
+        (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '');
+    
+    textOnHoverClass() <- IF isWebDesktop() THEN ' navbar-text-on-hover' ELSE '';
+    verticalTextOnHoverClass() <- IF isWebDesktop() AND verticalNavbar() THEN ' navbar-text-on-hover' ELSE ''; 
+
+    apply();
 }
 
 user '{system.events.user.session}' = DATA User (Session);

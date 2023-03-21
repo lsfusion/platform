@@ -21,7 +21,7 @@ public abstract class WindowsController {
     public FlexWindowElement rootElement;
     public GAbstractWindow formsWindow;
 
-    public static final String NAVBAR_TEXT_ON_HOVER = "navbar-desktop-text-on-hover";
+    public static final String NAVBAR_TEXT_ON_HOVER = "navbar-text-on-hover";
     public static final String BACKGROUND_PREFIX = "bg-";
 
     public void updateElementClass(GAbstractWindow window) {

@@ -1,11 +1,11 @@
 .navbar.navbar-vert {
     /* should look on drawScrollbars? */
-    overflow-x: auto;
+    overflow-y: auto;
 }
 
 .navbar.navbar-horz {
     /* should look on drawScrollbars? */
-    overflow-y: auto;
+    overflow-x: auto;
 }
 
 .navbar-nav.navbar-nav-horz,
@@ -74,28 +74,23 @@
     font-size: 1.5rem;
 }
 
-.nav-desktop .navbar-desktop-icon-large .nav-link > i,
-.nav-desktop .navbar-desktop-icon-large.nav-link > i {
-    font-size: 1.5rem;
-}
-
 .navbar-icon-xlarge .nav-link > i,
 .navbar-icon-xlarge.nav-link > i {
     font-size: 2.5rem
 }
 
-.nav-excel.nav-mobile .navbar-excel-mobile-hidden .nav-link,
-.nav-excel.nav-mobile .navbar-excel-mobile-hidden.nav-link {
+.navbar-hidden .nav-link,
+.navbar-hidden.nav-link {
     display: none;
 }
 
-.nav-desktop .navbar-desktop-text-hidden .nav-link,
-.nav-desktop .navbar-desktop-text-hidden.nav-link {
+.navbar-text-hidden .nav-link,
+.navbar-text-hidden.nav-link {
     font-size: 0;
 }
 /* removing margins, since text is actually hidden */
-.nav-desktop .navbar-desktop-text-hidden .nav-link > i.wrap-text-img,
-.nav-desktop .navbar-desktop-text-hidden.nav-link > i.wrap-text-img {
+.navbar-text-hidden .nav-link > i.wrap-text-img,
+.navbar-text-hidden.nav-link > i.wrap-text-img {
     margin-bottom: 0;
     margin-right: 0;
 }
@@ -114,10 +109,10 @@
 /*    height: 1rem;*/
 /*}*/
 
-/* we propagate navbar-desktop-text-on-hover to the parent flex panel of the same direction if it has all children with navbar-desktop-text-on-hover */
-/* so to make it work for the whole panel we need to add :not(.navbar-desktop-text-on-hover) */
+/* we propagate navbar-text-on-hover to the parent flex panel of the same direction if it has all children with navbar-text-on-hover */
+/* so to make it work for the whole panel we need to add :not(.navbar-text-on-hover) */
 
-.nav-desktop .navbar-desktop-text-on-hover {
+.navbar-text-on-hover {
     --text-hover-duration: 300ms;
     --text-hover-curve-horz: ease-out;
     --text-hover-curve-vert: linear;
@@ -125,28 +120,28 @@
 
 /* converting margins to "inner paddings" (to include margins into the transition) with the pseudo before element*/
 
-.nav-desktop .navbar-desktop-text-on-hover .wrap-text-not-empty.wrap-img-horz > .wrap-text-img {
+.navbar-text-on-hover .wrap-text-not-empty.wrap-img-horz > .wrap-text-img {
     margin-right: 0;
 }
-.nav-desktop .navbar-desktop-text-on-hover .wrap-text-not-empty.wrap-img-vert > .wrap-text-img {
+.navbar-text-on-hover .wrap-text-not-empty.wrap-img-vert > .wrap-text-img {
     margin-bottom: 0;
 }
-.nav-desktop .navbar-desktop-text-on-hover .wrap-img-horz > .wrap-text-div {
+.navbar-text-on-hover .wrap-img-horz > .wrap-text-div {
     display: inline-flex;
     align-items: center; /* needed to transit opposite direction width (when it's not auto) */
     flex-direction: row;
 }
-.nav-desktop .navbar-desktop-text-on-hover .wrap-img-horz > .wrap-text-div::before {
+.navbar-text-on-hover .wrap-img-horz > .wrap-text-div::before {
     content: '';
 
     min-width: var(--wrap-img-horz-margin);
 }
-.nav-desktop .navbar-desktop-text-on-hover .wrap-img-vert > .wrap-text-div {
+.navbar-text-on-hover .wrap-img-vert > .wrap-text-div {
     display: inline-flex;
     align-items: center; /* needed to transit opposite direction width (when it's not auto) */
     flex-direction: column;
 }
-.nav-desktop .navbar-desktop-text-on-hover .wrap-img-vert > .wrap-text-div::before {
+.navbar-text-on-hover .wrap-img-vert > .wrap-text-div::before {
     content: '';
 
     min-height: var(--wrap-img-vert-margin);
@@ -154,11 +149,11 @@
 
 /* hovering */
 
-.nav-desktop .navbar-desktop-text-on-hover .wrap-text-not-empty {
+.navbar-text-on-hover .wrap-text-not-empty {
     overflow: hidden; /* we need to set overflow: hidden, since we're using width / height */
 }
 
-.nav-desktop.forms-container-not-empty .navbar-desktop-text-on-hover:not(:hover) .wrap-text-div {
+.forms-container-not-empty .navbar-text-on-hover:not(:hover) .wrap-text-div {
     max-height: 0;
     max-width: 0;
 
@@ -170,11 +165,11 @@
 }
 
 /* to have "more aligned" elements */
-.nav-desktop .navbar-desktop-text-on-hover .wrap-img-vert .wrap-text-img {
+.navbar-text-on-hover .wrap-img-vert .wrap-text-img {
     width: 3em;
 }
 
-.nav-desktop .navbar-desktop-text-on-hover .wrap-text-div {
+.navbar-text-on-hover .wrap-text-div {
     /* we need to set inline-block or inline-flex (not inline) might be enough, since we're using width / height */
     display: inline-block; /* actually it is changed to inline-flex, when "moving margins" */
 
