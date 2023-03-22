@@ -367,12 +367,17 @@ onWebClientStarted() + {
         defaultLogo() <- 'logoHorizontal.png';
     }
 
+    logoWindowClass() <- 'bg-dark-subtle' + (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
     logoActionClass() <- 'navbar-icon-' + (IF verticalNavbar() THEN 'large' ELSE 'xlarge') +
         (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
     logoHeader() <- IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
+
+    rootWindowClass() <- 'bg-dark-subtle navbar-icon-large' +
+        (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
     
-    sytemWindowClass() <- 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') +
-        (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '');
+    systemWindowClass() <- 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') +
+        (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
+        (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
     
     textOnHoverClass() <- IF isWebDesktop() THEN ' navbar-text-on-hover' ELSE '';
     verticalTextOnHoverClass() <- IF isWebDesktop() AND verticalNavbar() THEN ' navbar-text-on-hover' ELSE ''; 

@@ -189,6 +189,10 @@
     white-space: nowrap; /* to avoid changing height while transitioning*/
 }
 
+.navbar-force-align-start .navbar-nav {
+    align-items: start !important; /* overrides BS !important */
+}
+
 .panelNavigatorView {
     display: block;
 }

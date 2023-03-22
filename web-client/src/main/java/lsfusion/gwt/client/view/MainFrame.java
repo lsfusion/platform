@@ -504,7 +504,6 @@ public class MainFrame implements EntryPoint {
                         if (toolbarWindow.isInRootNavBar()) {
                             toolbarWindow.vertical = true;
                             toolbarWindow.verticalTextPosition = GToolbarNavigatorWindow.CENTER;
-                            toolbarWindow.alignmentX = GToolbarNavigatorWindow.LEFT_ALIGNMENT;
                         }
                     }
                 }

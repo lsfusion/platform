@@ -1,7 +1,6 @@
 package lsfusion.gwt.client.navigator.view;
 
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
@@ -21,7 +20,7 @@ public class ToolbarPanel extends ResizableComplexPanel {
         panel.addStyleName("navbar-nav");
         panel.addStyleName(vertical ? "navbar-nav-vert" : "navbar-nav-horz");
 
-        setAlignment(true, panel, window);
+        setAlignment(vertical, panel, window);
 
         add(panel);
     }
