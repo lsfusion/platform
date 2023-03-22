@@ -7,7 +7,6 @@ import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
-import static lsfusion.gwt.client.view.StyleDefaults.CELL_VERTICAL_PADDING;
 
 public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 
@@ -65,7 +64,7 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 //        element.removeClassName("form-control");
     }
 
-    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
         return setInnerText(element, value != null ? format((T) value) : null);
     }
 

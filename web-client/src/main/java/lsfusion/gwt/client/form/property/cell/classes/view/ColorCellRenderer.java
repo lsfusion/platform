@@ -30,7 +30,7 @@ public class ColorCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
         String baseColor = getColorValue(value);
         element.setTitle(baseColor);
 

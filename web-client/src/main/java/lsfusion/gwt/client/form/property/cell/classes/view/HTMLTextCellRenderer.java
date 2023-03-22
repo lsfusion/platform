@@ -20,7 +20,7 @@ public class HTMLTextCellRenderer extends CellRenderer {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
         GwtClientUtils.setField(element, "controller", CustomCellRenderer.getController(property, updateContext, element));
         element.setInnerHTML((String)value);
         return true;

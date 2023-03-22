@@ -74,26 +74,27 @@ public class ActionCellRenderer extends CellRenderer {
     protected boolean renderedLoadingContent(UpdateContext updateContext) {
         return hasImage(updateContext) && property.isLoadingReplaceImage();
     }
+    @Override
+    protected BaseImage getExtraValue(UpdateContext updateContext) {
+        if(hasImage(updateContext)) {
+            if(updateContext.isLoading() && property.isLoadingReplaceImage())
+                return StaticImage.LOADING_IMAGE_PATH;
+            else if(property.hasDynamicImage())
+                return (AppBaseImage) updateContext.getImage(); // was converted in convertFileValue
+            else if(property.hasStaticImage())
+                return property.appImage;
+            else
+                return StaticImage.EXECUTE;
+        }
+        return null;
+    }
 
     @Override
-    public boolean updateContent(Element element, Object value, boolean loading, UpdateContext updateContext) {
+    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
+        if(extraValue != null)
+            BaseImage.updateImage((BaseImage) extraValue, element, property.panelCaptionVertical);
+
         boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
-
-        // we have it here and not in renderStaticContent because of using enabled
-        if(hasImage(updateContext)) {
-            BaseImage image;
-            if(updateContext.isLoading() && property.isLoadingReplaceImage())
-                image = StaticImage.LOADING_IMAGE_PATH;
-            else if(property.hasDynamicImage())
-                image = (AppBaseImage) updateContext.getImage(); // was converted in convertFileValue
-            else if(property.hasStaticImage())
-                image = property.appImage;
-            else
-                image = StaticImage.EXECUTE;
-
-            BaseImage.updateImage(image, element, property.panelCaptionVertical);
-        }
-
         element.setPropertyBoolean("disabled", !enabled);
 
         return false;
