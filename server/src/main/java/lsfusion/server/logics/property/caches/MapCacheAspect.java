@@ -565,17 +565,8 @@ public class MapCacheAspect {
 
         // if there is SessionModifier allow using cache (it is assumed that all other parameters used in allowPrereadValues are already included in the cache key)
         SessionModifier modifier = AutoHintsAspect.catchAutoHint.get();
-        if(modifier != null) {
-            if(modifier.allowPropertyPrereadValues(property))
-                return true;
-            else
-                // the problem with the property being pre-read
-                // if we return true, then we cache the result with hint enabled and the next time the result will be returned and hint will not work
-                // if we return false, then the result will be taken from the cache without the hint
-                // that is, in this case we need mixed behavior: we want cache as if true but cache as if false
-                // actually this could be solved if pre-read hint would be proceeded before MapCacheAspect, but in this case we would have to split aspects (this is cleaner solution, but more risky, so maybe should be done in some master branch)
-                return get;
-        }
+        if(modifier != null)
+            return true;
 
         // if there are no prereads we can use one cache
         return !property.hasPreread(propertyChanges);
