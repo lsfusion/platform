@@ -211,6 +211,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return "jsonb";
     }
 
+    public String getTSVector() {
+        return "tsvector";
+    }
+
     public int getColorSQL() {
         return Types.INTEGER;
     }

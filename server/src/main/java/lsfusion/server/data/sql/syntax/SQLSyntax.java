@@ -110,6 +110,8 @@ public interface SQLSyntax {
 
     String getJSON();
 
+    String getTSVector();
+
     default String getSelect(String from, String exprs, String where) {
         return getSelect(from, exprs, where, "", "", false);
     }

@@ -5702,7 +5702,8 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|   'RAWLINK' | 'LINK' | 'EXCELLINK' | 'TEXTLINK' | 'CSVLINK' | 'HTMLLINK' | 'JSONLINK' | 'XMLLINK' | 'TABLELINK'
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
-				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'));
+				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'))
+				|   'TSVECTOR';
 JSON_TYPE       :   'JSON';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';

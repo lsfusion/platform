@@ -876,7 +876,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
                 getLCPByUniqueName(namePrefix + "HtmlLink"),
                 getLCPByUniqueName(namePrefix + "JsonLink"),
                 getLCPByUniqueName(namePrefix + "XmlLink"),
-                getLCPByUniqueName(namePrefix + "TableLink")
+                getLCPByUniqueName(namePrefix + "TableLink"),
+                getLCPByUniqueName(namePrefix + "TSVectorLink")
                 );
     }
 

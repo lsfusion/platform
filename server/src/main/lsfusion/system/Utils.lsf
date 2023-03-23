@@ -151,6 +151,8 @@ splitCamelCase (STRING source, STRING delimiter) = regexpReplace(source, '([a-z]
 
 tsRank(STRING tsVector, STRING search) = FORMULA DOUBLE PG 'ts_rank($1::tsvector, to_tsquery($2))';
 tsVector(STRING A, STRING B, STRING C) = FORMULA PG 'setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\')';
+toTsVector(STRING dictionary, STRING text) = FORMULA TSVECTOR PG 'to_tsvector($1, coalesce($2, \'\'))';
+toTsVector(STRING s) = FORMULA TSVECTOR PG 'to_tsvector(coalesce($1, \'\'))';
 
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';
 substrFrom (TEXT p1, INTEGER p2) = FORMULA TEXT PG 'substring($1, $2)', MS 'substring($1, $2, len($1) - $2 + 1)'; 

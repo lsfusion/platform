@@ -6,6 +6,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.physics.admin.Settings;
 
 public class MatchWhere extends BinaryWhere<MatchWhere> {
@@ -33,17 +34,17 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
         throw new RuntimeException("not supported");
     }
 
-    public static String getPrefixSearchVector(SQLSyntax syntax, String source, String language) {
+    public static String getPrefixSearchVector(String source, String language) {
         return "to_tsvector('" + language + "', " + source + ")";
     }
     public static String getPrefixSearchQuery(SQLSyntax syntax, String source, String language) {
         return syntax.getPrefixSearchQuery() + "('" + language + "', " + source + ", '" + Settings.get().getMatchSearchSeparator() + "')";
     }
     public static String getMatch(SQLSyntax syntax, String search, String match, String language) {
-        return getPrefixSearchVector(syntax, search, language) + " @@ " + getPrefixSearchQuery(syntax, match, language);
+        return getPrefixSearchVector(search, language) + " @@ " + getPrefixSearchQuery(syntax, match, language);
     }
     public static String getRank(SQLSyntax syntax, String search, String match, String language) {
-        return "ts_rank(" + getPrefixSearchVector(syntax, search, language) + "," + getPrefixSearchQuery(syntax, match, language) + ")";
+        return "ts_rank(" + getPrefixSearchVector(search, language) + "," + getPrefixSearchQuery(syntax, match, language) + ")";
     }
     public static String getHighlight(SQLSyntax syntax, String search, String match, String language) {
         return "ts_headline('" + language + "'," + search + "," + getPrefixSearchQuery(syntax, match, language) + ")";
@@ -52,6 +53,10 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
     @Override
     protected String getBaseSource(CompileSource compile) {
         String source = operator1.getSource(compile);
+
+        if (operator1.getType(compile.keyType) instanceof TSVectorClass)
+            return source;
+
         String match = operator2.getSource(compile);
 
         String language = Settings.get().getFilterMatchLanguage();

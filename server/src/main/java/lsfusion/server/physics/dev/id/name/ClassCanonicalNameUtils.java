@@ -106,6 +106,7 @@ public final class ClassCanonicalNameUtils {
         put("RAWFILE", defaultRawFileClassObj);
         put("STRING", defaultStringClassObj);
         put("NUMERIC", defaultNumericClassObj);
+        put("TSVECTOR", TSVectorClass.instance);
     }};
 
     public static DataClass<?> getScriptedDataClass(String name) {
@@ -198,6 +199,7 @@ public final class ClassCanonicalNameUtils {
         put("STRING", StringClass.getv(ExtInt.UNLIMITED));
         put("ISTRING", StringClass.getv(true, ExtInt.UNLIMITED));
         put("NUMERIC", NumericClass.defaultNumeric);
+        put("TSVECTOR", TSVectorClass.instance);
     }};
 
     public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {

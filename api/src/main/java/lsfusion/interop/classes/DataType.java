@@ -56,4 +56,5 @@ public class DataType {
     public final static byte RICHTEXT = 53;
     public final static byte NAMEDFILE = 54;
     public final static byte JSON = 55;
+    public final static byte TSVECTOR = 56;
 }

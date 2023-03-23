@@ -128,3 +128,17 @@ ext = COALESCE(ext, 'dat');
 RETURN chr(length(name::bytea))::bytea || name::bytea || chr(length(ext::bytea))::bytea || ext::bytea || file;
 END;
 $$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION cast_string_to_ts_vector(dictionary VARCHAR, string VARCHAR) RETURNS tsvector AS
+$$
+BEGIN
+	RETURN to_tsvector(dictionary::regconfig, string);
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION cast_string_to_ts_vector(string VARCHAR) RETURNS tsvector AS
+$$
+BEGIN
+	RETURN to_tsvector(string);
+END;
+$$ LANGUAGE 'plpgsql' IMMUTABLE;

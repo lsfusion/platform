@@ -260,7 +260,8 @@ exportCsvLink = DATA LOCAL CSVLINK ();
 exportHtmlLink = DATA LOCAL HTMLLINK ();    
 exportJsonLink = DATA LOCAL JSONLINK ();    
 exportXmlLink = DATA LOCAL XMLLINK ();    
-exportTableLink = DATA LOCAL TABLELINK ();    
+exportTableLink = DATA LOCAL TABLELINK ();
+exportTSVectorLink = DATA LOCAL TSVECTOR ();
 
 importFile() = DATA LOCAL FILE ();
 imported = DATA LOCAL BOOLEAN (INTEGER);
@@ -353,7 +354,8 @@ requestedCsvLink = DATA LOCAL NESTED CSVLINK ();
 requestedHtmlLink = DATA LOCAL NESTED HTMLLINK ();    
 requestedJsonLink = DATA LOCAL NESTED JSONLINK ();    
 requestedXmlLink = DATA LOCAL NESTED XMLLINK ();    
-requestedTableLink = DATA LOCAL NESTED TABLELINK ();    
+requestedTableLink = DATA LOCAL NESTED TABLELINK ();
+requestedTSVectorLink = DATA LOCAL TSVECTOR ();    
 
 isActiveForm = DATA LOCAL BOOLEAN ();
 

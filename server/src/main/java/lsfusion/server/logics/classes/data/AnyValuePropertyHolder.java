@@ -77,6 +77,7 @@ public class AnyValuePropertyHolder {
     private final LP jsonLinkProperty;
     private final LP xmlLinkProperty;
     private final LP tableLinkProperty;
+    private final LP tsVectorProperty;
 
     public AnyValuePropertyHolder(LP<?> objectProperty, LP<?> stringProperty, LP<?> bpStringProperty, LP<?> textProperty, LP<?> richTextProperty, LP<?> htmlTextProperty,
                                   LP<?> intProperty, LP<?> longProperty, LP<?> doubleProperty, LP<?> numericProperty, LP<?> yearProperty, LP<?> dateTimeProperty,
@@ -87,7 +88,7 @@ public class AnyValuePropertyHolder {
                                   LP<?> htmlFileProperty, LP<?> jsonFileProperty, LP<?> xmlFileProperty, LP<?> tableFileProperty, LP<?> namedFileProperty,
                                   LP<?> wordLinkProperty, LP<?> imageLinkProperty, LP<?> pdfLinkProperty, LP<?> dbfLinkProperty, LP<?> rawLinkProperty,
                                   LP<?> customLinkProperty, LP<?> excelLinkProperty, LP<?> textLinkProperty, LP<?> csvLinkProperty,
-                                  LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty) {
+                                  LP<?> htmlLinkProperty, LP<?> jsonLinkProperty, LP<?> xmlLinkProperty, LP<?> tableLinkProperty, LP<?> tsVectorProperty) {
         assert objectProperty.property.getType() == ObjectType.instance
                 && stringProperty.property.getType().getCompatible(StringClass.get(1))!=null
                 && bpStringProperty.property.getType().getCompatible(StringClass.get(1))!=null
@@ -138,6 +139,7 @@ public class AnyValuePropertyHolder {
                 && jsonLinkProperty.property.getType() == JSONLinkClass.get(false)
                 && xmlLinkProperty.property.getType() == XMLLinkClass.get(false)
                 && tableLinkProperty.property.getType() == TableLinkClass.get(false)
+                && tsVectorProperty.property.getType() == TSVectorClass.instance
                 ;
 
         this.objectProperty = objectProperty;
@@ -190,6 +192,7 @@ public class AnyValuePropertyHolder {
         this.jsonLinkProperty = jsonLinkProperty;
         this.xmlLinkProperty = xmlLinkProperty;
         this.tableLinkProperty = tableLinkProperty;
+        this.tsVectorProperty = tsVectorProperty;
     }
 
     public LP<?> getLP(Type valueType) {
@@ -294,6 +297,8 @@ public class AnyValuePropertyHolder {
             return tableLinkProperty;
         } else if (valueType instanceof StaticFormatLinkClass) {
             return customLinkProperty;
+        } else if (valueType instanceof TSVectorClass) {
+            return tsVectorProperty;
         } else {
             throw new IllegalStateException(valueType + " is not supported by AnyValueProperty");
         }
@@ -316,7 +321,7 @@ public class AnyValuePropertyHolder {
                 customLinkProperty, rawLinkProperty, wordLinkProperty, imageLinkProperty, pdfLinkProperty, dbfLinkProperty, excelLinkProperty,
                 textLinkProperty, csvLinkProperty, htmlLinkProperty, jsonLinkProperty, xmlLinkProperty, tableLinkProperty,
                 // others
-                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, objectProperty
+                logicalProperty, tLogicalProperty, colorProperty, jsonProperty, objectProperty, tsVectorProperty
         ).mapOrderSetValues(value -> (SessionDataProperty) value.property);
     }
 
