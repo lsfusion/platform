@@ -2915,6 +2915,16 @@ public class Settings implements Cloneable {
     public void setFilterMatchLanguage(String filterMatchLanguage) {
         this.filterMatchLanguage = filterMatchLanguage;
     }
+
+    private String tsVectorDictionaryLanguage = "english";
+
+    public String getTsVectorDictionaryLanguage() {
+        return tsVectorDictionaryLanguage;
+    }
+
+    public void setTsVectorDictionaryLanguage(String tsVectorDictionaryLanguage) {
+        this.tsVectorDictionaryLanguage = tsVectorDictionaryLanguage;
+    }
     
     private boolean trueSerializable = false;
 

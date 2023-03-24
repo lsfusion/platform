@@ -66,7 +66,6 @@ public class TSVectorClass extends DataClass<Array>{
         return "TSVECTOR";
     }
 
-
     @Override
     public Array read(Object value) {
         return (Array) value;
@@ -102,7 +101,7 @@ public class TSVectorClass extends DataClass<Array>{
 
     @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        String language = Settings.get().getFilterMatchLanguage(); //todo какой язык использовать, или не использовать вообще?
-        return typeFrom instanceof StringClass ? "cast_string_to_ts_vector('" + language + "', " + value + ")" : super.getCast(value, syntax, typeEnv, typeFrom);
+        String language = Settings.get().getTsVectorDictionaryLanguage();
+        return typeFrom instanceof StringClass ? "to_tsvector('" + language + "'::regconfig, " + value + ")" : super.getCast(value, syntax, typeEnv, typeFrom);
     }
 }

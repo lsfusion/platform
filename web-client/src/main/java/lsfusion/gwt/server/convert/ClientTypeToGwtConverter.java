@@ -291,6 +291,11 @@ public class ClientTypeToGwtConverter extends ObjectConverter {
         return GJSONType.instance;
     }
 
+    @Converter(from = ClientTSVectorClass.class)
+    public GTSVectorType convertTSVectorClass(ClientTSVectorClass clientTSVectorClass) {
+        return GTSVectorType.instance;
+    }
+
     @Converter(from = ClientObjectType.class)
     public GObjectType convertObjectType(ClientObjectType clientObjectType) {
         return GObjectType.instance;

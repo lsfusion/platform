@@ -326,6 +326,10 @@ public class BaseUtils {
             return IOUtils.readImageIcon(inStream);
         }
 
+        if (objectType == 17) {
+            return deserializeString(inStream);
+        }
+
         throw new IOException();
     }
 
@@ -480,6 +484,12 @@ public class BaseUtils {
         if (object instanceof AppImage) {
             outStream.writeByte(16);
             IOUtils.writeImageIcon(outStream, (AppImage) object);
+            return;
+        }
+
+        if (object instanceof java.sql.Array) {
+            outStream.writeByte(17);
+            serializeString(outStream, object.toString());
             return;
         }
 

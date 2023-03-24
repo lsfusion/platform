@@ -40,8 +40,8 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
     public static String getPrefixSearchQuery(SQLSyntax syntax, String source, String language) {
         return syntax.getPrefixSearchQuery() + "('" + language + "', " + source + ", '" + Settings.get().getMatchSearchSeparator() + "')";
     }
-    public static String getMatch(SQLSyntax syntax, String search, String match, String language) {
-        return getPrefixSearchVector(search, language) + " @@ " + getPrefixSearchQuery(syntax, match, language);
+    public static String getMatch(SQLSyntax syntax, String search, String match, String language, boolean isTSVectorType) {
+        return (isTSVectorType ? search : getPrefixSearchVector(search, language)) + " @@ " + getPrefixSearchQuery(syntax, match, language);
     }
     public static String getRank(SQLSyntax syntax, String search, String match, String language) {
         return "ts_rank(" + getPrefixSearchVector(search, language) + "," + getPrefixSearchQuery(syntax, match, language) + ")";
@@ -53,14 +53,13 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
     @Override
     protected String getBaseSource(CompileSource compile) {
         String source = operator1.getSource(compile);
-
-        if (operator1.getType(compile.keyType) instanceof TSVectorClass)
-            return source;
-
         String match = operator2.getSource(compile);
 
+        boolean isTSVectorType = operator1.getType(compile.keyType) instanceof TSVectorClass;
         String language = Settings.get().getFilterMatchLanguage();
-        String matchString = getMatch(compile.syntax, source, match, language);
+        String matchString = getMatch(compile.syntax, source, match, language, isTSVectorType);
+        if (isTSVectorType)
+            return matchString;
 
         String likeString = source + (" " + compile.syntax.getInsensitiveLike() + " ")
                 + "(" + ("'%' " + compile.syntax.getStringConcatenate() + " ") + match + (" " + compile.syntax.getStringConcatenate() + " '%'") + ")";
