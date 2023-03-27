@@ -671,6 +671,8 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
+dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
+
 EXTEND FORM settings
     PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, serverUseBootstrap READONLY
 
@@ -711,7 +713,7 @@ DESIGN settings {
 EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
     PROPERTIES(u) fontSize, colorThemeName,
-                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab
     OBJECTS r = DateTimePickerRanges
     PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
     
@@ -737,6 +739,9 @@ DESIGN editProfile {
                 MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
+            }
+            NEW closeButton {
+                MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(u));
             }
             NEW predefinedRanges {
                 horizontal = TRUE;
@@ -795,7 +800,8 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         showNotDefinedStrings = valueSettingBoolean('showNotDefinedStrings'),
         pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
-        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator');
+        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
+        dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(user); 
 }
 
 getClientSettings() {
@@ -814,7 +820,7 @@ onStarted() + {
 }
 
 EXTEND FORM customUser
-    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab
 ;
 
 DESIGN customUser {
@@ -829,6 +835,9 @@ DESIGN customUser {
                 MOVE PROPERTY(focusedCellBackgroundColor(u));
                 MOVE PROPERTY(focusedCellBorderColor(u));
                 MOVE PROPERTY(tableGridColor(u));
+            }
+            NEW closeButton {
+                MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(u));
             }
         }
     }

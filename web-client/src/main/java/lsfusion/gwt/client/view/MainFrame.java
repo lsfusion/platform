@@ -86,6 +86,8 @@ public class MainFrame implements EntryPoint {
     public static String dateTimeFormat;
     public static String[] preDefinedDateRangesNames;
 
+    public static boolean dontShowCloseButtonOnInactiveTab;
+
     public static boolean useTextAsFilterSeparator;
 
     // async dispatch
@@ -586,6 +588,7 @@ public class MainFrame implements EntryPoint {
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
                 preDefinedDateRangesNames = gClientSettings.preDefinedDateRangesNames;
                 useTextAsFilterSeparator = gClientSettings.useTextAsFilterSeparator;
+                dontShowCloseButtonOnInactiveTab = gClientSettings.dontShowCloseButtonOnInactiveTab;
 
                 initializeFrame(result.navigatorInfo);
             }
