@@ -862,14 +862,19 @@ public class FormEntity implements FormSelector<ObjectEntity> {
                                                                                String propertySID, ActionOrProperty inheritedProperty, ComplexLocation<PropertyDrawEntity> location, Version version) {
         if(inheritedProperty == null)
             inheritedProperty = propertyImplement.property;
-        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), "propertyDraw" + version.getOrder() + propertyDraws.size(version), propertyImplement, inheritedProperty);
+
+        String integrationSID;
+        if(propertySID != null)
+            integrationSID = inheritedProperty.getName();
+        else {
+            propertySID = "propertyDraw" + version.getOrder() + propertyDraws.size(version);
+
+            integrationSID = propertySID;
+        }
+
+        final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertySID, integrationSID, propertyImplement, inheritedProperty);
         newPropertyDraw.proceedDefaultDraw(this);
 
-        if (propertySID != null) {
-            newPropertyDraw.setSID(propertySID);
-            
-            newPropertyDraw.setIntegrationSID(inheritedProperty.getName());
-        }
         propertyDraws.add(newPropertyDraw, location, version);
         newPropertyDraw.setFormPath(formPath);
         return newPropertyDraw;
@@ -1217,6 +1222,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 //            }
         }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
 //        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
+    }
+
+    public void prereadAutoIcons() {
+        getRichDesign().prereadAutoIcons();
     }
 
     private void checkInternalClientAction() {

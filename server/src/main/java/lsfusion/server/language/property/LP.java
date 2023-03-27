@@ -1,19 +1,25 @@
 package lsfusion.server.language.property;
 
 import lsfusion.base.col.ListFact;
+import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
+import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.language.action.LA;
@@ -26,6 +32,9 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.change.PropertyChange;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.changed.IncrementType;
+import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
+import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
+import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.event.Event;
@@ -39,6 +48,7 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
+import lsfusion.server.physics.admin.monitor.action.UpdateProcessMonitorAction;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 
 import java.math.BigDecimal;
@@ -47,6 +57,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
@@ -210,6 +221,47 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
             value = null;
         }
         property.change(keys, env, value);
+    }
+
+    public <K, V> void change(ExecutionContext context, ImMap<K, V> data, ConcreteClass keyClass, ConcreteClass valueClass) throws SQLException, SQLHandledException {
+        change(context.getSession(), context.getEnv(), data, keyClass, valueClass);
+    }
+
+    public static <K, V> void change(ExecutionContext context, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, UpdateProcessMonitorAction.GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
+        change(context.getSession(), context.getEnv(), props, data, keyClass, mapper);
+    }
+
+    // actually it is an "optimization" of the change for a set of properties
+    public <K, V> void change(DataSession session, ExecutionEnvironment env, ImMap<K, V> data, ConcreteClass keyClass, ConcreteClass valueClass) throws SQLException, SQLHandledException {
+
+        T propertyKey = listInterfaces.single();
+
+        SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("updpm:sp", property.interfaceTypeGetter.getType(propertyKey), property.getType());
+
+        table.writeRows(session.sql, session.getOwner(), data.mapKeyValues(key -> new DataObject(key, keyClass), (key, value) -> ObjectValue.getValue(value, valueClass)));
+
+        try {
+            env.change(property, SingleKeyPropertyUsage.getChange(table, propertyKey));
+        } finally {
+            table.drop(session.sql, session.getOwner());
+        }
+    }
+
+    public static <K, V> void change(DataSession session, ExecutionEnvironment env, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, UpdateProcessMonitorAction.GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
+
+        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", keyClass.getType(), props, key -> ((LP<?>)key).property.getType());
+
+        importTable.writeRows(session.sql, data.mapKeyValues(key -> MapFact.singleton("key", new DataObject(key, keyClass)), (key, value) -> props.getSet().mapValues((LP lp) -> mapper.get(key, value, lp))), session.getOwner());
+
+        ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
+        Join<LP> importJoin = importTable.join(mapKeys);
+        Where where = importJoin.getWhere();
+        try {
+            for (LP lp : props)
+                env.change(lp.property, new PropertyChange(MapFact.singletonRev(lp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lp), where));
+        } finally {
+            importTable.drop(session.sql, session.getOwner());
+        }
     }
 
     public void makeUserLoggable(BaseLogicsModule LM, SystemEventsLogicsModule systemEventsLM, DBNamingPolicy namingPolicy) {

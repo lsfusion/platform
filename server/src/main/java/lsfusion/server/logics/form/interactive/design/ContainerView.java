@@ -15,6 +15,7 @@ import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -32,6 +33,7 @@ public class ContainerView extends ComponentView {
     public NFComplexOrderSet<ComponentView> children = NFFact.complexOrderSet();
 
     public LocalizedString caption;
+    public String name; // actually used only for icons
     public AppServerImage image;
 
     public void setImage(String imagePath, FormView formView) {
@@ -46,7 +48,7 @@ public class ContainerView extends ComponentView {
     }
 
     public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon, FormView formView) {
-        return AppServerImage.createDefaultImage(rankingThreshold, main ? formView.entity.getName() : getSID(), () -> useDefaultIcon ?
+        return AppServerImage.createDefaultImage(rankingThreshold, main ? formView.entity.getName() : name, () -> useDefaultIcon ?
                 AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView) : null);
     }
 
@@ -156,7 +158,11 @@ public class ContainerView extends ComponentView {
     public void setCaption(LocalizedString caption) {
         this.caption = caption;
     }
-    
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setCollapsible(boolean collapsible) {
         this.collapsible = collapsible;
     }
@@ -457,6 +463,7 @@ public class ContainerView extends ComponentView {
         pool.serializeCollection(outStream, getChildrenList());
 
         pool.writeString(outStream, hasCaption() ? ThreadLocalContext.localize(caption) : null); // optimization
+        pool.writeString(outStream, name); // optimization
         AppServerImage.serialize(getImage(pool.context.view), outStream, pool);
 
         outStream.writeBoolean(isCollapsible());
@@ -543,6 +550,13 @@ public class ContainerView extends ComponentView {
                     "\tcontainer: " + getSID() + "\n" +
                     "\tchildren: " + childrenString.toString());
         }
+    }
+
+    @Override
+    public void prereadAutoIcons(FormView formView) {
+        getImage(formView);
+        for(ComponentView child : getChildrenIt())
+            child.prereadAutoIcons(formView);
     }
 
     @Override

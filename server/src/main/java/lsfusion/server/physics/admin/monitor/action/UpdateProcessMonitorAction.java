@@ -1,31 +1,23 @@
 package lsfusion.server.physics.admin.monitor.action;
 
 import com.google.common.base.Throwables;
-import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.base.controller.thread.ThreadUtils;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.formula.SQLSyntaxType;
-import lsfusion.server.data.expr.key.KeyExpr;
-import lsfusion.server.data.query.build.Join;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.data.where.Where;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
-import lsfusion.server.logics.action.session.change.PropertyChange;
-import lsfusion.server.logics.action.session.table.SingleKeyTableUsage;
 import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
@@ -42,7 +34,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.trimToEmpty;
 import static lsfusion.base.DateConverter.sqlTimestampToLocalDateTime;
@@ -114,19 +105,8 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
                 "isDisabledNestLoopProcess[STRING[10]]", "queryTimeoutProcess[STRING[10]]", "debugInfoSQLProcess[STRING[10]]",
                 "threadNameSQLProcess[STRING[10]]", "threadStackTraceSQLProcess[STRING[10]]"));
 
-        int rowsJava = writeRowsJava(context, propsJava, javaProcesses);
-        int rowsSQL = writeRowsSQL(context, propsSQL, sqlProcesses);
-        if (rowsJava == 0 && rowsSQL == 0)
-            findAction("formRefresh[]").execute(context);
-
-    }
-
-    private Function<LP, ObjectValue> getJavaMapValueGetter(final JavaProcess javaProcessValue, final String idThread) {
-        return prop -> getJavaMapValue(prop, javaProcessValue, idThread);
-    }
-
-    private Function<LP, ObjectValue> getSQLMapValueGetter(final SQLProcess sqlProcessValue, final String idThread) {
-        return prop -> getSQLMapValue(prop, sqlProcessValue, idThread);
+        LP.change(context, propsJava, javaProcesses, StringClass.get(10), (key, value, lp) -> getJavaMapValue(lp, value, key));
+        LP.change(context, propsSQL, sqlProcesses, StringClass.get(10), (key, value, lp) -> getSQLMapValue(lp, value, key));
     }
 
     private ObjectValue getJavaMapValue(LP<?> prop, JavaProcess javaProcess, String idThread) {
@@ -213,54 +193,8 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
         }
     }
 
-    private int writeRowsJava(ExecutionContext context, final ImOrderSet<LP> props, ImMap<String, JavaProcess> processes) throws SQLException, SQLHandledException {
-
-        ImMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> rows;
-
-        rows = processes.mapKeyValues(value -> MapFact.singleton("key", new DataObject(value, StringClass.get(10))), (key, value) -> props.getSet().mapValues(getJavaMapValueGetter(value, key)));
-
-        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, key -> ((LP<?>)key).property.getType());
-        OperationOwner owner = context.getSession().getOwner();
-        SQLSession sql = context.getSession().sql;
-        importTable.writeRows(sql, rows, owner);
-
-        ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<LP> importJoin = importTable.join(mapKeys);
-        Where where = importJoin.getWhere();
-        try {
-            for (LP lcp : props) {
-                PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                context.getEnv().change(lcp.property, propChange);
-            }
-        } finally {
-            importTable.drop(sql, owner);
-        }
-        return rows.size();
-    }
-
-    private int writeRowsSQL(ExecutionContext context, final ImOrderSet<LP> props, ImMap<String, SQLProcess> processes) throws SQLException, SQLHandledException {
-
-        ImMap<ImMap<String, DataObject>, ImMap<LP, ObjectValue>> rows;
-
-        rows = processes.mapKeyValues(value -> MapFact.singleton("key", new DataObject(value, StringClass.get(10))), (key, value) -> props.getSet().mapValues(getSQLMapValueGetter(value, key)));
-
-        SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", StringClass.get(10), props, key -> ((LP<?>)key).property.getType());
-        OperationOwner owner = context.getSession().getOwner();
-        SQLSession sql = context.getSession().sql;
-        importTable.writeRows(sql, rows, owner);
-
-        ImRevMap<String, KeyExpr> mapKeys = importTable.getMapKeys();
-        Join<LP> importJoin = importTable.join(mapKeys);
-        Where where = importJoin.getWhere();
-        try {
-            for (LP lcp : props) {
-                PropertyChange propChange = new PropertyChange(MapFact.singletonRev(lcp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lcp), where);
-                context.getEnv().change(lcp.property, propChange);
-            }
-        } finally {
-            importTable.drop(sql, owner);
-        }
-        return rows.size();
+    public interface GetLPValue<K, V> {
+        ObjectValue get(K key, V value, LP lp);
     }
 
     private ImOrderSet<LP> getProps(LP<?>[] properties) {

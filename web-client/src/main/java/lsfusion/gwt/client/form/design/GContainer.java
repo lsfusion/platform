@@ -22,6 +22,7 @@ import static lsfusion.gwt.client.base.GwtClientUtils.createTooltipHorizontalSep
 
 public class GContainer extends GComponent implements HasNativeSID {
     public String caption;
+    public String name;
     public BaseImage image;
 
     @Override

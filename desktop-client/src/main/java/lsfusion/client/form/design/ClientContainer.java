@@ -21,6 +21,7 @@ import java.util.Map;
 public class ClientContainer extends ClientComponent {
 
     public String caption;
+    public String name;
     public AppImage image;
     public boolean collapsible;
 
@@ -87,6 +88,7 @@ public class ClientContainer extends ClientComponent {
         children = pool.deserializeList(inStream);
 
         caption = pool.readString(inStream);
+        name = pool.readString(inStream);
         image = pool.readImageIcon(inStream);
 
         collapsible = inStream.readBoolean();

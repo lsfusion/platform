@@ -10,6 +10,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
@@ -104,12 +105,12 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
         return entity.getID();
     }
 
-    public ComponentView getGrid() {
+    public BaseComponentView getGrid() {
         return grid;
     }
 
     @Override
-    public ComponentView getToolbarSystem() {
+    public BaseComponentView getToolbarSystem() {
         return toolbarSystem;
     }
 
@@ -124,7 +125,7 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     }
 
     @Override
-    public ComponentView getCalculations() {
+    public BaseComponentView getCalculations() {
         return calculations;
     }
 
@@ -140,7 +141,12 @@ public class GroupObjectView extends ArrayList<ObjectView> implements ServerIden
     public String getPropertyGroupContainerSID() {
         return getSID();
     }
-    
+
+    @Override
+    public String getPropertyGroupContainerName() {
+        return getSID();
+    }
+
     public FilterView addFilter(PropertyDrawView property, Version version) {
         FilterView filter = new FilterView(idGen.idShift(), property);
         filters.add(filter, version);

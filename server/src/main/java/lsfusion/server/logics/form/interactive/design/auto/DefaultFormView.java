@@ -476,7 +476,7 @@ public class DefaultFormView extends FormView {
             // first we'll create containers for upper groups to get right component order
             getPropGroupContainer(propertyDraw, currentGroup.getNFParent(version), version);
 
-            propGroupContainer = createContainer(currentGroup.caption, getPropGroupContainerSID(currentGroup, propertyContainer), Version.global());
+            propGroupContainer = createContainer(currentGroup.caption, currentGroup.getName(), getPropGroupContainerSID(currentGroup, propertyContainer), Version.global());
             propGroupContainer.setType(ContainerType.COLUMNS);
             propGroupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
             propGroupContainer.setDebugPoint(currentGroup.getDebugPoint());

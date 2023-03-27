@@ -4,7 +4,13 @@ import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
 import lsfusion.base.Result;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.base.col.interfaces.immutable.ImSet;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
@@ -16,7 +22,11 @@ import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
+import lsfusion.server.logics.BusinessLogics;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
+import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -26,6 +36,7 @@ import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.icon.IconLogicsModule;
+import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
@@ -142,6 +153,48 @@ public class AppServerImage {
         }
     }
 
+    private final static ThreadLocal<MSet<Pair<String, Float>>> prereadDefault = new ThreadLocal<>();
+    public static void prereadDefaultImages(BusinessLogics BL, DBManager dbManager, Runnable run) {
+        prereadDefault.set(SetFact.mSet());
+        try {
+            run.run();
+
+            MSet<Pair<String, Float>> mImages = prereadDefault.get();
+            ImMap<Pair<String, Float>, AppServerImage> readImages = readDefaultImages(BL, dbManager, mImages.immutable());
+            for(int i = 0, size = readImages.size(); i < size; i++)
+                cachedDefaultImages.put(readImages.getKey(i), readImages.getValue(i));
+        } finally {
+            prereadDefault.set(null);
+        }
+    }
+
+    private static ImMap<Pair<String, Float>, AppServerImage> readDefaultImages(BusinessLogics BL, DBManager dbManager, ImSet<Pair<String, Float>> cacheKeys) {
+        IconLogicsModule iconLM = BL.iconLM;
+        if(iconLM.bestIconNames == null)
+            return cacheKeys.mapValues(() -> NULL);
+
+        ImSet<String> names = cacheKeys.mapMergeSetValues(cacheKey -> cacheKey.first);
+
+        try(DataSession session = dbManager.createSession()) {
+            ExecutionEnvironment env = session;
+
+            iconLM.bestIconNames.change(session, env, names.mapValues(() -> true), StringClass.instance, LogicalClass.instance);
+
+            iconLM.getBestIcons.execute(env, ThreadLocalContext.getStack());
+
+            ImMap<ImList<Object>, Object> bestIconRanks = iconLM.bestIconRanks.readAll(env);
+            ImMap<ImList<Object>, Object> bestIconClasses = iconLM.bestIconClasses.readAll(env);
+
+            return cacheKeys.mapValues((Pair<String, Float> key) -> {
+                ImList<Object> nameKey = ListFact.singleton(key.first);
+                Double bestIconRank = (Double) bestIconRanks.get(nameKey);
+                return bestIconRank != null && bestIconRank > key.second ? new AppServerImage(null, (String) bestIconClasses.get(nameKey)) : NULL;
+            });
+        } catch (SQLException | SQLHandledException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
     // should be cached because it is used in default images
     private static AppServerImage createDefaultImage(String name, float rankingThreshold) {
         if(rankingThreshold >= 1.0f) // optimization
@@ -153,23 +206,13 @@ public class AppServerImage {
         Pair<String, Float> cacheKey = new Pair<>(name, rankingThreshold);
         AppServerImage result = cachedDefaultImages.get(cacheKey);
         if(result == null) {
-            // turn name into a phrase
-            // and then search lsf by calling the icon with the maximum search for his word in this phrase (taking into account morphology, stop words and synonyms)
-
-            try {
-                IconLogicsModule iconLM = ThreadLocalContext.getBusinessLogics().iconLM;
-                DataSession session = ThreadLocalContext.getDbManager().createSession();
-                iconLM.getBestIcon.execute(session, ThreadLocalContext.getStack(), new DataObject(String.join(" | ", splitCamelCase(name))));
-
-                Double bestIconRank = (Double) iconLM.bestIconRank.read(session);
-                Object bestIconName = iconLM.bestIconClass.read(session);
-                result = bestIconRank != null && bestIconRank > rankingThreshold ? new AppServerImage(null, (String) bestIconName) : NULL;
-
-                System.out.println("formName = " + name + ", iconName = " + bestIconName + ", rank = " + bestIconRank);
-
-            } catch (SQLException | SQLHandledException e) {
-                throw Throwables.propagate(e); // todo ??
+            MSet<Pair<String, Float>> prereadSet = prereadDefault.get();
+            if(prereadSet != null) {
+                prereadSet.add(cacheKey);
+                return null;
             }
+
+            result = readDefaultImages(ThreadLocalContext.getBusinessLogics(), ThreadLocalContext.getDbManager(), SetFact.singleton(new Pair<>(name, rankingThreshold))).singleValue();
 
             cachedDefaultImages.put(cacheKey, result);
         }

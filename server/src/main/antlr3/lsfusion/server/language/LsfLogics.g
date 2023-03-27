@@ -1678,18 +1678,19 @@ relationalPE[List<TypedParameter> context, boolean dynamic] returns [LPWithParam
 likePE[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPNotExpr ci]
 @init {
 	LPWithParams leftProp = null, rightProp = null;
+	boolean match = false;
 }
 @after {
 	if (inMainParseState()) {
 	    if(rightProp != null)
-		    $property = self.addScriptedLikeProp(leftProp, rightProp);
+		    $property = self.addScriptedLikeProp(match, leftProp, rightProp);
 	    else
 		    $property = leftProp;
 	}
 }
 	:	lhs=additiveORPE[context, dynamic] { leftProp = $lhs.property; $ci = $lhs.ci; }
 		( { if(inMainParseState()) { $ci = self.checkNotExprInExpr($lhs.property, $ci); } }
-		'LIKE'
+		('LIKE' | 'MATCH' { match = true; })
 		rhs=additiveORPE[context, dynamic] { rightProp = $rhs.property; }
         { if(inMainParseState()) { self.checkNotExprInExpr($rhs.property, $rhs.ci); } })?
 	;

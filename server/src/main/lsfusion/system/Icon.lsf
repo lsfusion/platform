@@ -12,16 +12,18 @@ synonyms '{icon.synonyms}' = DATA STRING (Icon);
 free '{icon.free.class}' = DATA STRING (Icon);
 iconClass(Icon i) = (IF free(i) = 'brands' THEN 'fa-brands' ELSE 'fa') + ' fa-' + iconName(i);
 vector '{icon.vector}' (Icon i) = tsVector(label(i), terms(i), synonyms(i)) MATERIALIZED;
-rank(STRING s, Icon i) = tsRank(vector(i), splitCamelCase(s, ' | '));
+nameToIconQuery(STRING s) = splitCamelCase(s, ' | ');
+rank(STRING s, Icon i) = tsRank(vector(i), nameToIconQuery(s));
 
 // Searching the best icon
 
-bestIconClass = DATA LOCAL STRING();
-bestIconRank = DATA LOCAL DOUBLE();
-getBestIcon(STRING s) {
-    FOR Icon lastIcon = (GROUP LAST Icon icn IF rank(s, icn) ORDER rank(s, icn)) DO {
-        bestIconClass() <- iconClass(lastIcon);
-        bestIconRank() <- rank(s, lastIcon);
+bestIconNames = DATA LOCAL BOOLEAN (STRING); // input
+bestIconClasses = DATA LOCAL STRING (STRING); // output
+bestIconRanks = DATA LOCAL DOUBLE (STRING); // output
+getBestIcons() {
+    FOR bestIconNames(STRING s) AND Icon lastIcon = (GROUP LAST Icon icn IF vector(icn) MATCH nameToIconQuery(s) ORDER rank(s, icn)) DO {
+        bestIconClasses(s) <- iconClass(lastIcon);
+        bestIconRanks(s) <- rank(s, lastIcon);
     }
 }
 
@@ -59,7 +61,7 @@ synonyms(STRING iconName) = GROUP CONCAT synonym(INTEGER i) IF data_id_synonyms(
 free(STRING iconName) = GROUP CONCAT free(INTEGER i) IF data_id_free(i) == iconName, ' ' ORDER i;
 
 iconName = GROUP MAX STRING s BY label(s);
-iconsImport() {
+importIcons '{icon.import.json}' () {
     readResource('/web/icons_with_synonyms.json');
     IF resource() THEN {
         IMPORT importIcons JSON FROM resource();
@@ -83,14 +85,16 @@ iconsImport() {
 
 // Icons form
 
-search = DATA LOCAL STRING ();
+search '{icon.action.name}' = DATA LOCAL STRING ();
 message(Icon i) { MESSAGE iconName(i); }
 FORM icons '{navigator.icon}' 
-    PROPERTIES() iconsImport, search ON CHANGE {
+    PROPERTIES() importIcons, search ON CHANGE {
         INPUT s = search() CHANGE DO {
-            getBestIcon(s);
+            bestIconNames(s) <- TRUE;
+            getBestIcons();
         }
-    }, bestIconClass  READONLY IMAGE bestIconClass(), bestIconRank READONLY 
+    } 
+    PROPERTIES bestIconClass '{icon.best.icon.name}' = bestIconClasses(search())  READONLY IMAGE bestIconClasses(search()), bestIconRank '{icon.best.icon.rank}' = bestIconRanks(search()) READONLY 
     OBJECTS i = Icon 
     PROPERTIES iconImage '{icon.icon}' = message(i) IMAGE iconClass(i) GRID, rank '{icon.rank}' = rank(search(), i) 
     PROPERTIES(i) READONLY iconName, label, terms, synonyms, free, vector
@@ -100,26 +104,22 @@ FORM icons '{navigator.icon}'
 DESIGN icons {
     OBJECTS {
         NEW import {
-            MOVE PROPERTY(iconsImport()) {
-                caption = '{icon.import.json}';
+            MOVE PROPERTY(importIcons()) {
                 fontSize = 36;
             }
         }
         NEW search {
             MOVE PROPERTY(search()) {
-                caption = '{icon.action.name}';
                 fontSize = 36;
                 width = 500;
             }
         }
         NEW bestIcon {
-            MOVE PROPERTY(bestIconClass()) {
-                caption = '{icon.best.icon.name}';
+            MOVE PROPERTY(bestIconClass) {
                 fontSize = 36;
                 width = 500;
             }
-            MOVE PROPERTY(bestIconRank()) {
-                caption = '{icon.best.icon.rank}';
+            MOVE PROPERTY(bestIconRank) {
                 fontSize = 36;
                 width = 500;
             }

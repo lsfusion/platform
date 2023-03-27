@@ -72,7 +72,7 @@ public class ScriptingFormView {
             errLog.emitAlreadyDefinedError(parser, "component", sid);
         }
 
-        ContainerView container = view.createContainer(null, sid, version, debugPoint);
+        ContainerView container = view.createContainer(null, sid, sid, version, debugPoint);
 
         addOrMoveComponent(container, parentComponent, location, version);
 

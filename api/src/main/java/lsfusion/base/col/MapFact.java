@@ -120,6 +120,13 @@ public class MapFact {
         return mMap.immutable();
     }
 
+    public static <V> ImMap<Integer, V> toIndexedMap(V[] values) {
+        MExclMap<Integer, V> mMap = MapFact.mExclMap(values.length);
+        for(int i=0;i<values.length;i++)
+            mMap.exclAdd(i, values[i]);
+        return mMap.immutable();
+    }
+
     public static <K, V> ImMap<K, V> toMap(K[] keys, Function<K, V> values) {
         MExclMap<K, V> mMap = MapFact.mExclMap(keys.length);
         for(int i=0;i<keys.length;i++) {

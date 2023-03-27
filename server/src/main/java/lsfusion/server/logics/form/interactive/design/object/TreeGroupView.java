@@ -10,6 +10,7 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFSet;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
+import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -56,6 +57,11 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
         return TREE_PREFIX + " " + entity.getSID();
     }
 
+    @Override
+    public String getPropertyGroupContainerName() {
+        return entity.getSID();
+    }
+
     public TreeGroupView() {
         
     }
@@ -91,7 +97,7 @@ public class TreeGroupView extends GridPropertyView implements ServerIdentitySer
     }
 
     @Override
-    public ComponentView getToolbarSystem() {
+    public BaseComponentView getToolbarSystem() {
         return toolbarSystem;
     }
 

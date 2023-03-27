@@ -2,23 +2,18 @@ package lsfusion.server.physics.dev.integration.external.to.file;
 
 import com.google.common.base.Throwables;
 import lsfusion.base.col.MapFact;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
-import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.UtilsLogicsModule;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.session.DataSession;
-import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.classes.ConcreteClass;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.LongClass;
 import lsfusion.server.logics.classes.data.time.DateTimeClass;
-import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.data.DataProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -42,22 +37,6 @@ public class ListFilesAction extends InternalAction {
         pathInterface = i.next();
         recursiveInterface = i.next();
         isClientInterface = i.next();
-    }
-
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, LocalDateTime[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, DateTimeClass.instance);
-    }
-
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, String[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, StringClass.text);
-    }
-
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Boolean[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, LogicalClass.instance);
-    }
-
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Long[] values) throws SQLException, SQLHandledException {
-        writeProperty(session, property, values, LongClass.instance);
     }
 
     public void executeInternal(ExecutionContext<ClassPropertyInterface> context) {
@@ -86,10 +65,10 @@ public class ListFilesAction extends InternalAction {
                 context.getSession().dropChanges((DataProperty) findProperty("fileModifiedDateTime[INTEGER]").property);
                 context.getSession().dropChanges((DataProperty) findProperty("fileSize[INTEGER]").property);
 
-                writeProperty(context.getSession(), findProperty("fileName[INTEGER]"), (String[]) filesList.get(0));
-                writeProperty(context.getSession(), findProperty("fileIsDirectory[INTEGER]"), (Boolean[]) filesList.get(1));
-                writeProperty(context.getSession(), findProperty("fileModifiedDateTime[INTEGER]"), (LocalDateTime[]) filesList.get(2));
-                writeProperty(context.getSession(), findProperty("fileSize[INTEGER]"), (Long[]) filesList.get(3));
+                writeProperty(context, findProperty("fileName[INTEGER]"), (String[]) filesList.get(0), StringClass.text);
+                writeProperty(context, findProperty("fileIsDirectory[INTEGER]"), (Boolean[]) filesList.get(1), LogicalClass.instance);
+                writeProperty(context, findProperty("fileModifiedDateTime[INTEGER]"), (LocalDateTime[]) filesList.get(2), DateTimeClass.instance);
+                writeProperty(context, findProperty("fileSize[INTEGER]"), (Long[]) filesList.get(3), LongClass.instance);
 
             } else {
                 throw new RuntimeException("ListFiles Error. Path not specified.");
@@ -101,23 +80,8 @@ public class ListFilesAction extends InternalAction {
 
     }
 
-    public static <P extends PropertyInterface> void writeProperty(DataSession session, LP<P> property, Object[] values, ConcreteClass objectClass) throws SQLException, SQLHandledException {
-        Property<P> prop = property.property;
-        P name = property.listInterfaces.get(0);
-
-        SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("listFilesAction", prop.interfaceTypeGetter.getType(name), prop.getType());
-
-        MExclMap<DataObject, ObjectValue> mRows = MapFact.mExclMap();
-        for (int i = 0; i < values.length; i++) {
-            Object value = values[i];
-            mRows.exclAdd(new DataObject(i), value != null ? new DataObject(values[i], objectClass) : NullValue.instance);
-        }
-        try {
-            table.writeRows(session.sql, session.getOwner(), mRows.immutable());
-            session.change(prop, SingleKeyPropertyUsage.getChange(table, name));
-        } finally {
-            table.drop(session.sql, session.getOwner());
-        }
+    public static <P extends PropertyInterface> void writeProperty(ExecutionContext context, LP<P> property, Object[] values, ConcreteClass valueClass) throws SQLException, SQLHandledException {
+        property.change(context, MapFact.toIndexedMap(values), IntegerClass.instance, valueClass);
     }
 
     @Override

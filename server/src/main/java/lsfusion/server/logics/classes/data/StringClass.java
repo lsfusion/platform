@@ -31,6 +31,7 @@ public class StringClass extends TextBasedClass<String> {
     private final static Collection<StringClass> strings = new ArrayList<>();
 
     public final static StringClass text = getv(true, ExtInt.UNLIMITED);
+    public final static StringClass instance = getv(ExtInt.UNLIMITED);
     public final boolean blankPadded;
     public final boolean caseInsensitive;
     public final ExtInt length;

@@ -25,6 +25,7 @@ import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
 import lsfusion.server.logics.action.Action;
+import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
@@ -396,11 +397,12 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     }
 
     public void writeRequestInfo(DataSession session, Action<?> action, ExternalRequest request) throws SQLException, SQLHandledException {
+        ExecutionEnvironment env = session;
         if (action.uses(businessLogics.LM.headers.property)) {
-            ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.headers, request.headerNames, request.headerValues);
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.headers, request.headerNames, request.headerValues);
         }
         if (action.uses(businessLogics.LM.cookies.property)) {
-            ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.cookies, request.cookieNames, request.cookieValues);
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.cookies, request.cookieNames, request.cookieValues);
         }
         if (action.uses(businessLogics.LM.query.property)) {
             businessLogics.LM.query.change(request.query, session);
@@ -415,7 +417,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
                     paramValues.add(splittedParam[1]);
                 }
             }
-            ExternalHTTPAction.writePropertyValues(session, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
+            ExternalHTTPAction.writePropertyValues(session, env, businessLogics.LM.params, paramNames.toArray(new String[0]), paramValues.toArray(new String[0]));
         }
         if (action.uses(businessLogics.LM.contentType.property)) {
             businessLogics.LM.contentType.change(request.contentType, session);

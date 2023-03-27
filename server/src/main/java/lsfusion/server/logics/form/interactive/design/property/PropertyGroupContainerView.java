@@ -5,4 +5,6 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 public interface PropertyGroupContainerView extends ServerIdentitySerializable {
 
     String getPropertyGroupContainerSID();
+
+    String getPropertyGroupContainerName();
 }

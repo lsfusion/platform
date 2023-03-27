@@ -11,9 +11,12 @@ import java.io.IOException;
 
 public class IconLogicsModule extends ScriptingLogicsModule {
 
-    public LA getBestIcon;
-    public LP bestIconClass;
-    public LP bestIconRank;
+    public LP<?> bestIconNames;
+    public LA<?> getBestIcons;
+    public LP<?> bestIconClasses;
+    public LP<?> bestIconRanks;
+
+    public LA<?> importIcons;
 
     public IconLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Icon.lsf");
@@ -28,9 +31,11 @@ public class IconLogicsModule extends ScriptingLogicsModule {
     public void initMainLogic() throws RecognitionException {
         super.initMainLogic();
 
-        getBestIcon = findAction("getBestIcon[STRING]");
-        bestIconClass = findProperty("bestIconClass[]");
-        bestIconRank = findProperty("bestIconRank[]");
+        bestIconNames = findProperty("bestIconNames[STRING]");
+        getBestIcons = findAction("getBestIcons[]");
+        bestIconClasses = findProperty("bestIconClasses[STRING]");
+        bestIconRanks = findProperty("bestIconRanks[STRING]");
 
+        importIcons = findAction("importIcons[]");
     }
 }

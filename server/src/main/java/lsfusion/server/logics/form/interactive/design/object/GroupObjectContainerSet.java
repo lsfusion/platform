@@ -80,7 +80,8 @@ public class GroupObjectContainerSet {
         set.boxContainer.setDebugPoint(group.entity.getDebugPoint()); //set debugPoint to containers that have a caption
         set.boxContainer.setSID(DefaultFormView.getBoxContainerSID(sid));
         set.boxContainer.setCaption(group.getCaption());
-        
+        set.boxContainer.setName(group.getPropertyGroupContainerName());
+
         set.filterBoxContainer = factory.createContainer();
         set.filterBoxContainer.setSID(DefaultFormView.getFilterBoxContainerSID(sid));
 

@@ -418,4 +418,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public void finalizeAroundInit() {
         container.finalizeChanges();
     }
+
+    public void prereadAutoIcons(FormView formView) {
+    }
 }

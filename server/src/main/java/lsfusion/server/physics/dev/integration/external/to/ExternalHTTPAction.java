@@ -26,6 +26,7 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.table.SingleKeyPropertyUsage;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -156,14 +157,14 @@ public class ExternalHTTPAction extends CallAction {
                     String[] headerNames = responseHeaders.keySet().toArray(new String[0]);
                     String[] headerValues = getResponseHeaderValues(responseHeaders, headerNames);
 
-                    writePropertyValues(context.getSession(), headersToProperty, headerNames, headerValues);
+                    writePropertyValues(context, headersToProperty, headerNames, headerValues);
                 }
                 if(cookiesToProperty != null) {
                     Map<String, String> responseCookies = getResponseCookies(cookieStore);
                     String[] cookieNames = responseCookies.keySet().toArray(new String[0]);
                     String[] cookieValues = responseCookies.values().toArray(new String[0]);
 
-                    writePropertyValues(context.getSession(), cookiesToProperty, cookieNames, cookieValues);
+                    writePropertyValues(context, cookiesToProperty, cookieNames, cookieValues);
                 }
                 context.getBL().LM.statusHttp.change(response.statusCode, context);
                 if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -211,22 +212,11 @@ public class ExternalHTTPAction extends CallAction {
         return BaseUtils.immutableCast(property.readAll(env).mapKeys(value -> (String) value.single()));
     }
 
-    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
-        Property<P> prop = property.property;
-        P name = property.listInterfaces.get(0);
-
-        SingleKeyPropertyUsage table = new SingleKeyPropertyUsage("writePropertyValues", prop.interfaceTypeGetter.getType(name), prop.getType());
-
-        MExclMap<DataObject, ObjectValue> mRows = MapFact.mExclMap();
-        for (int i = 0; i < names.length; i++)
-            mRows.exclAdd(new DataObject(names[i]), new DataObject(values[i]));
-
-        try {
-            table.writeRows(session.sql, session.getOwner(), mRows.immutable());
-            session.change(prop, SingleKeyPropertyUsage.getChange(table, name));
-        } finally {
-            table.drop(session.sql, session.getOwner());
-        }
+    public static <P extends PropertyInterface> void writePropertyValues(ExecutionContext context, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
+        writePropertyValues(context.getSession(), context.getEnv(), property, names, values);
+    }
+    public static <P extends PropertyInterface> void writePropertyValues(DataSession session, ExecutionEnvironment env, LP<P> property, String[] names, String[] values) throws SQLException, SQLHandledException {
+        property.change(session, env, MapFact.toMap(names, values), StringClass.instance, StringClass.instance);
     }
 
 }

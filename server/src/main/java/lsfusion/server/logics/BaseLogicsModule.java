@@ -122,6 +122,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP object;
     public LP equals2, diff2;
     public LP like2;
+    public LP match2;
     public LP sum;
     public LP subtract;
     public LP multiply;
@@ -471,6 +472,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         less2 = addCFProp(Compare.LESS);
         diff2 = addCFProp(Compare.NOT_EQUALS);
         like2 = addCFProp(Compare.CONTAINS);
+        match2 = addCFProp(Compare.MATCH);
 
         // Математические операции
         sum = addSumProp();

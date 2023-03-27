@@ -395,20 +395,19 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
     }
 
     public ContainerView createContainer(LocalizedString caption, Version version) {
-        return createContainer(caption, null, version);
+        return createContainer(caption, null, null, version);
     }
 
-    public ContainerView createContainer(LocalizedString caption, String sID, Version version) {
-        return createContainer(caption, sID, version, null);
+    public ContainerView createContainer(LocalizedString caption, String name, String sID, Version version) {
+        return createContainer(caption, name, sID, version, null);
     }
 
-    public ContainerView createContainer(LocalizedString caption, String sID, Version version, DebugInfo.DebugPoint debugPoint) {
+    public ContainerView createContainer(LocalizedString caption, String name, String sID, Version version, DebugInfo.DebugPoint debugPoint) {
         ContainerView container = new ContainerView(idGenerator.idShift());
         container.setDebugPoint(debugPoint);
-        // Не используем здесь setCaption и setDescription из-за того, что они принимают на вход String.
-        // Изменить тип, принимаемый set методами не можем, потому что этот интерфейс используется и на клиенте, где
-        // LocalizedString отсутствует.
+
         container.caption = caption;
+        container.name = name;
 
         container.setSID(sID);
         if (sID != null) {
@@ -645,7 +644,13 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         getProperty(property).hide = hide;
     }
 
-    protected void setComponentSID(ComponentView component, String sid, Version version) {
+    protected void setComponentSID(ContainerView container, String sid, Version version) {
+        setComponentSID((ComponentView) container, sid, version);
+    }
+    protected void setComponentSID(BaseComponentView component, String sid, Version version) {
+        setComponentSID((ComponentView) component, sid, version);
+    }
+    private void setComponentSID(ComponentView component, String sid, Version version) {
         component.setSID(sid);
         addComponentToMapping(component, version);
     }
@@ -790,6 +795,14 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         for(ComponentView removedComponent : removedComponents)
             if(removedComponent.getContainer() == null)
                 removedComponent.finalizeAroundInit();
+    }
+
+
+    public void prereadAutoIcons() {
+        for(PropertyDrawView property : getPropertiesIt())
+            property.getImage();
+
+        mainContainer.prereadAutoIcons(this);
     }
 
     protected transient Set<ComponentView> removedComponents = new ConcurrentIdentityWeakHashSet<>();

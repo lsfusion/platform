@@ -30,7 +30,7 @@ public class UrlParseAction extends InternalAction {
                 names[i] = param.getName();
                 values[i] = param.getValue();
             }
-            ExternalHTTPAction.writePropertyValues(context.getSession(), findProperty("urlParsed[TEXT]"), names, values);
+            ExternalHTTPAction.writePropertyValues(context, findProperty("urlParsed[TEXT]"), names, values);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

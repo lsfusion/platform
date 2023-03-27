@@ -1724,8 +1724,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public LPWithParams addScriptedLikeProp(LPWithParams leftProp, LPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(baseLM.like2, asList(leftProp, rightProp));
+    public LPWithParams addScriptedLikeProp(boolean match, LPWithParams leftProp, LPWithParams rightProp) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(match ? baseLM.match2 : baseLM.like2, asList(leftProp, rightProp));
     }
 
     public LPWithParams addScriptedIfProp(List<LPWithParams> properties) throws ScriptingErrorLog.SemanticErrorException {

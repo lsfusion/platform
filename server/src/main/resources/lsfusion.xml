@@ -619,6 +619,42 @@
         </property>
     </bean>
 
+    <bean id="executeOnStartedTask" class="lsfusion.server.logics.controller.init.ExecuteOnStartedTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+                <ref bean="initDebugTask"/> <!-- we want the debugger to work in executing actions -->
+            </set>
+        </property>
+    </bean>
+
+    <bean id="executeImportIconsTask" class="lsfusion.server.logics.controller.init.ExecuteImportIconsTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+                <ref bean="initDebugTask"/> <!-- we want the debugger to work in executing actions -->
+            </set>
+        </property>
+    </bean>
+
+    <bean id="prereadIconsFormsTask" class="lsfusion.server.logics.form.controller.init.PrereadIconsFormsTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+                <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
+            </set>
+        </property>
+    </bean>
+
+    <bean id="prereadIconsNavigatorElementsTask" class="lsfusion.server.logics.navigator.controller.init.PrereadIconsNavigatorElementsTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+                <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
+            </set>
+        </property>
+    </bean>
+
     <!-- Самый верхний task -->
     <bean id="initBLTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
@@ -640,7 +676,9 @@
     <bean id="initRLTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
-                <ref bean="initDebugTask"/>
+                <ref bean="executeOnStartedTask"/>
+                <ref bean="prereadIconsFormsTask"/>
+                <ref bean="prereadIconsNavigatorElementsTask"/>
             </set>
         </property>
     </bean>

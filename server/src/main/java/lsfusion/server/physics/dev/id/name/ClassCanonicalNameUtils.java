@@ -196,7 +196,7 @@ public final class ClassCanonicalNameUtils {
         put("HTMLTEXT", HTMLTextClass.instance);
         put("BPSTRING", StringClass.get(ExtInt.UNLIMITED));
         put("BPISTRING", StringClass.get(true, ExtInt.UNLIMITED));
-        put("STRING", StringClass.getv(ExtInt.UNLIMITED));
+        put("STRING", StringClass.instance);
         put("ISTRING", StringClass.getv(true, ExtInt.UNLIMITED));
         put("NUMERIC", NumericClass.defaultNumeric);
         put("TSVECTOR", TSVectorClass.instance);
