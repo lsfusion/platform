@@ -129,9 +129,9 @@ EXTEND FORM onStock
 
 ### Синтаксис
 
-    ORDER formPropertyName1 [DESC] 
-          ...
-          formPropertyNameN [DESC]
+    ORDERS formPropertyName1 [DESC] 
+           ...
+           formPropertyNameN [DESC]
 
 ### Описание
 
