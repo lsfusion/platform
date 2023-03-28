@@ -351,6 +351,7 @@ public abstract class FilterController implements FilterConditionView.UIHandler,
         for (FilterConditionView conditionView : conditionViews.values()) {
             SwingUtils.setGridVisible(conditionView, visible);
         }
+        SwingUtils.setGridVisible(controlsView, visible && controlsVisible);
     }
     
     public boolean hasFilters() {
