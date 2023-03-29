@@ -16,6 +16,7 @@ import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.build.Join;
+import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
@@ -259,6 +260,27 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         try {
             for (LP lp : props)
                 env.change(lp.property, new PropertyChange(MapFact.singletonRev(lp.listInterfaces.single(), mapKeys.singleValue()), importJoin.getExpr(lp), where));
+        } finally {
+            importTable.drop(session.sql, session.getOwner());
+        }
+    }
+
+    public static <K> ImMap<String, Object> readAll(LP<?> lp, DataSession session, K[] data, ConcreteClass dataClass) throws SQLException, SQLHandledException {
+        // create a temporary table with one key (STRING type), without fields
+        SingleKeyTableUsage<Object> importTable = new SingleKeyTableUsage<>("updpm:wr", dataClass.getType(), SetFact.EMPTYORDER(), key -> null);
+        try {
+            // write the values from the array
+            importTable.writeRows(session.sql, SetFact.toExclSet(data).mapKeyValues(value -> MapFact.singleton("key", new DataObject(value, dataClass)), value -> MapFact.EMPTY()), session.getOwner());
+            // create a query
+            // with one key named key (however, it can be any name): property parameter and condition: in the created temporary table
+            KeyExpr keyExpr = new KeyExpr(0);
+            ImRevMap<String, KeyExpr> mapKeys = MapFact.singletonRev("key", keyExpr);
+            Join<Object> importJoin = importTable.join(mapKeys);
+            QueryBuilder<String, String> query = new QueryBuilder<>(mapKeys, importJoin.getWhere());
+            // with one field value (however, any name is possible): the passed property
+            query.addProperty("value", lp.getExpr(keyExpr));
+            // execute, re-mapping back to get map: property parameter -> value
+            return query.execute(session).keys().mapKeyValues(key -> (String)key.singleValue(), value -> value.singleValue());
         } finally {
             importTable.drop(session.sql, session.getOwner());
         }

@@ -62,49 +62,49 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("editReport.png", "bi bi-pencil-square");
         AppServerImage.predefinedFontClasses.exclAdd("refresh.png", "bi bi-arrow-repeat");
 
-        AppServerImage.predefinedFontClasses.exclAdd("add.png", "fa-solid fa-plus");
-        AppServerImage.predefinedFontClasses.exclAdd("edit.png", "fa-solid fa-pen");
-        AppServerImage.predefinedFontClasses.exclAdd("delete.png", "fa-solid fa-minus");
+        AppServerImage.predefinedFontClasses.exclAdd("add.png", "fa fa-plus");
+        AppServerImage.predefinedFontClasses.exclAdd("edit.png", "fa fa-pen");
+        AppServerImage.predefinedFontClasses.exclAdd("delete.png", "fa fa-minus");
 
-        AppServerImage.predefinedFontClasses.exclAdd("email.png", "fa-regular fa-envelope");
+        AppServerImage.predefinedFontClasses.exclAdd("email.png", "fa fa-envelope");
 
-        AppServerImage.predefinedFontClasses.exclAdd("dialog.png", "fa-solid fa-ellipsis");
-        AppServerImage.predefinedFontClasses.exclAdd("reset.png", "fa-solid fa-xmark");
+        AppServerImage.predefinedFontClasses.exclAdd("dialog.png", "fa fa-ellipsis");
+        AppServerImage.predefinedFontClasses.exclAdd("reset.png", "fa fa-xmark");
 
         AppServerImage.predefinedFontClasses.exclAdd("print.png", "bi bi-printer");
-        AppServerImage.predefinedFontClasses.exclAdd("form.png", "fa-regular fa-clone");
-        AppServerImage.predefinedFontClasses.exclAdd("formTop.png", "fa-regular fa-clone");
-        AppServerImage.predefinedFontClasses.exclAdd("action.png", "fa-regular fa-square-caret-right");
-        AppServerImage.predefinedFontClasses.exclAdd("actionTop.png", "fa-regular fa-square-caret-right");
-        AppServerImage.predefinedFontClasses.exclAdd("open.png", "fa-regular fa-folder");
+        AppServerImage.predefinedFontClasses.exclAdd("form.png", "fa fa-clone");
+        AppServerImage.predefinedFontClasses.exclAdd("formTop.png", "fa fa-clone");
+        AppServerImage.predefinedFontClasses.exclAdd("action.png", "fa fa-square-caret-right");
+        AppServerImage.predefinedFontClasses.exclAdd("actionTop.png", "fa fa-square-caret-right");
+        AppServerImage.predefinedFontClasses.exclAdd("open.png", "fa fa-folder");
 
-        AppServerImage.predefinedFontClasses.exclAdd("tools.png", "fa-solid fa-screwdriver-wrench");
-        AppServerImage.predefinedFontClasses.exclAdd("lock.png", "fa-solid bi-person-fill");
-        AppServerImage.predefinedFontClasses.exclAdd("search.png", "fa-solid fa-magnifying-glass");
+        AppServerImage.predefinedFontClasses.exclAdd("tools.png", "fa fa-screwdriver-wrench");
+        AppServerImage.predefinedFontClasses.exclAdd("lock.png", "fa bi-person-fill");
+        AppServerImage.predefinedFontClasses.exclAdd("search.png", "fa fa-magnifying-glass");
 
-        AppServerImage.predefinedFontClasses.exclAdd("relogin.png", "fa-solid fa-elevator");
-        AppServerImage.predefinedFontClasses.exclAdd("editProfile.png", "fa-solid fa-user-pen");
-        AppServerImage.predefinedFontClasses.exclAdd("changePassword.png", "fa-solid fa-key");
-        AppServerImage.predefinedFontClasses.exclAdd("logout.png", "fa-solid fa-right-from-bracket");
+        AppServerImage.predefinedFontClasses.exclAdd("relogin.png", "fa fa-elevator");
+        AppServerImage.predefinedFontClasses.exclAdd("editProfile.png", "fa fa-user-pen");
+        AppServerImage.predefinedFontClasses.exclAdd("changePassword.png", "fa fa-key");
+        AppServerImage.predefinedFontClasses.exclAdd("logout.png", "fa fa-right-from-bracket");
 
-        AppServerImage.predefinedFontClasses.exclAdd("chat.png", "fa-solid fa-comment");
-        AppServerImage.predefinedFontClasses.exclAdd("play.png", "fa-solid fa-play");
+        AppServerImage.predefinedFontClasses.exclAdd("chat.png", "fa fa-comment");
+        AppServerImage.predefinedFontClasses.exclAdd("play.png", "fa fa-play");
 
         AppServerImage.predefinedFontClasses.exclAdd("bootstrap.png", "fa-brands fa-bootstrap");
-        AppServerImage.predefinedFontClasses.exclAdd("excel.png", "fa-solid fa-table-list");
+        AppServerImage.predefinedFontClasses.exclAdd("excel.png", "fa fa-table-list");
 
-        AppServerImage.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid fa-sun");
-        AppServerImage.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid fa-moon");
+        AppServerImage.predefinedFontClasses.exclAdd("lightMode.png", "fa fa-sun");
+        AppServerImage.predefinedFontClasses.exclAdd("darkMode.png", "fa fa-moon");
 
-        AppServerImage.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
+        AppServerImage.predefinedFontClasses.exclAdd("catalog.png", "fa fa-list-check");
 
-        AppServerImage.predefinedFontClasses.exclAdd("inventory.png", "fa-solid fa-warehouse");
-        AppServerImage.predefinedFontClasses.exclAdd("invoicing.png", "fa-solid fa-money-bill");
-        AppServerImage.predefinedFontClasses.exclAdd("purchase.png", "fa-solid fa-cart-flatbed");
-        AppServerImage.predefinedFontClasses.exclAdd("sales.png", "fa-solid fa-hand-holding-dollar");
-        AppServerImage.predefinedFontClasses.exclAdd("manufacturing.png", "fa-solid fa-industry");
-        AppServerImage.predefinedFontClasses.exclAdd("retail.png", "fa-solid fa-bag-shopping");
-        AppServerImage.predefinedFontClasses.exclAdd("projectManagement.png", "fa-solid fa-diagram-project");
+        AppServerImage.predefinedFontClasses.exclAdd("inventory.png", "fa fa-warehouse");
+        AppServerImage.predefinedFontClasses.exclAdd("invoicing.png", "fa fa-money-bill");
+        AppServerImage.predefinedFontClasses.exclAdd("purchase.png", "fa fa-cart-flatbed");
+        AppServerImage.predefinedFontClasses.exclAdd("sales.png", "fa fa-hand-holding-dollar");
+        AppServerImage.predefinedFontClasses.exclAdd("manufacturing.png", "fa fa-industry");
+        AppServerImage.predefinedFontClasses.exclAdd("retail.png", "fa fa-bag-shopping");
+        AppServerImage.predefinedFontClasses.exclAdd("projectManagement.png", "fa fa-diagram-project");
 
         AppServerImage.predefinedFontClasses.exclAdd("logo.png", "lsfi lsfi-logo-horizontal");
     }

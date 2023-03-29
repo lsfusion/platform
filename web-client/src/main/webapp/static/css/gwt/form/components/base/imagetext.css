@@ -10,7 +10,7 @@
 }
 .wrap-text-not-empty.wrap-img-vert {
     display: flex;
-    justify-content: center;
+    justify-content: center; /* ????   */
     align-items: center;
 
     flex-direction: column;
