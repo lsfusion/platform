@@ -70,6 +70,7 @@ import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.action.session.change.modifier.SessionModifier;
 import lsfusion.server.logics.classes.data.ArrayClass;
+import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.logics.form.stat.struct.plain.JDBCTable;
 import lsfusion.server.logics.navigator.controller.env.SQLSessionContextProvider;
 import lsfusion.server.physics.admin.Settings;
@@ -934,8 +935,13 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         if (indexOptions.type.isLike()) {
             createLikeIndex(table, fields, columns, logger, ifNotExists);
         } else if (indexOptions.type.isMatch()) {
-            createLikeIndex(table, fields, columns, logger, ifNotExists);
-            createMatchIndex(table, fields, columns, indexOptions, logger, ifNotExists);
+            if (fields.size() == 1 && fields.singleKey().type instanceof TSVectorClass) {
+                createMatchIndexForTsVector(table, fields, columns, indexOptions, logger, ifNotExists);
+                return;
+            } else {
+                createLikeIndex(table, fields, columns, logger, ifNotExists);
+                createMatchIndex(table, fields, columns, indexOptions, logger, ifNotExists);
+            }
         }
         createDefaultIndex(table, fields, columns, logger, ifNotExists);
     }
@@ -959,6 +965,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             createIndex(table, getIndexName(table, syntax, fields, matchIndexSuffix),
                     " USING GIN (to_tsvector(" + (indexOptions.language != null ? ("'" + indexOptions.language + "', ") : "") + columns + "))", logger, ifNotExists);
         }
+    }
+
+    private void createMatchIndexForTsVector(NamedTable table, ImOrderMap<Field, Boolean> fields, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+        createIndex(table, getIndexName(table, syntax, fields, matchIndexSuffix),
+                " USING GIN (" + columns + ")", logger, ifNotExists);
     }
 
     private void createDefaultIndex(NamedTable table, ImOrderMap<Field, Boolean> fields, String columns, Logger logger, boolean ifNotExists) throws SQLException {
