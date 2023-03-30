@@ -189,6 +189,28 @@
     white-space: nowrap; /* to avoid changing height while transitioning*/
 }
 
+/* Chromium + Safari */
+@supports (not (-moz-appearance: none)) {
+    .navbar.navbar-auto-icon-font-size {
+        overflow: hidden; /*  */
+    }
+
+    .navbar.navbar-auto-icon-font-size .navbar-nav {
+        align-items: stretch !important; /* overrides BS !important */
+    }
+
+    .navbar.navbar-auto-icon-font-size .nav-link,
+    .navbar.navbar-auto-icon-font-size.nav-link {
+        container-type: inline-size;
+        writing-mode: vertical-lr;
+    }
+
+    .navbar.navbar-auto-icon-font-size .nav-link > i,
+    .navbar.navbar-auto-icon-font-size.nav-link > i{
+        font-size: 100cqh;
+    }
+}
+
 .navbar-force-align-start .navbar-nav {
     align-items: start !important; /* overrides BS !important */
 }

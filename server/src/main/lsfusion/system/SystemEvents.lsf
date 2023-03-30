@@ -361,14 +361,11 @@ onClientStarted () + {
 }
 
 onWebClientStarted() + {
-    IF verticalNavbar() OR isWebMobile() THEN {
-        defaultLogo() <- 'logo.png';
-    } ELSE {
-        defaultLogo() <- 'logoHorizontal.png';
-    }
+    defaultLogo() <- 'logo.png';
 
-    logoWindowClass() <- 'bg-dark-subtle' + (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
-    logoActionClass() <- 'navbar-icon-' + (IF verticalNavbar() THEN 'large' ELSE 'xlarge') +
+    logoWindowClass() <- 'bg-dark-subtle' + 
+        (IF isWebDesktop() THEN (IF verticalNavbar() THEN ' navbar-force-align-start' ELSE ' navbar-auto-icon-font-size') ELSE '');
+    logoActionClass() <- 'navbar-icon-large' +
         (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
     logoHeader() <- IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
 
