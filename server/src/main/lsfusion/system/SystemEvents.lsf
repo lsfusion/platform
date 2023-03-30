@@ -71,6 +71,7 @@ toggleVerticalNavbar () {
     APPLY;
     INTERNAL CLIENT 'reload';
 }
+verticalNavbarClass = DATA STRING();
 
 userPinNavbar '{navigator.navbar.pin}' = DATA TBOOLEAN (CustomUser);
 serverPinNavbar '{navigator.navbar.pin}' = DATA BOOLEAN ();
@@ -83,11 +84,12 @@ togglePinNavbar () {
     userPinNavbar(currentUser()) <- IF pinNavbar() THEN TFALSE ELSE TTRUE;
     apply();
 }
+pinNavbarClass = DATA STRING();
 
 NAVIGATOR {
     NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
-    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE toggleBootstrap HEADER verticalNavbarCaption() IMAGE verticalNavbarImage();
-    NEW togglePinNavbar WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER pinNavbarCaption() IMAGE pinNavbarImage();
+    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE toggleBootstrap HEADER verticalNavbarCaption() IMAGE verticalNavbarImage() CLASS verticalNavbarClass();
+    NEW togglePinNavbar WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER pinNavbarCaption() IMAGE pinNavbarImage() CLASS pinNavbarClass();
     NEW toggleColorTheme WINDOW system PARENT BEFORE togglePinNavbar HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
@@ -375,6 +377,9 @@ onWebClientStarted() + {
     systemWindowClass() <- 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') +
         (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
         (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
+
+    verticalNavbarClass() <- IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
+    pinNavbarClass() <- IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
     
     textOnHoverClass() <- IF isWebDesktop() THEN ' navbar-text-on-hover' ELSE '';
     verticalTextOnHoverClass() <- IF isWebDesktop() AND verticalNavbar() THEN ' navbar-text-on-hover' ELSE ''; 

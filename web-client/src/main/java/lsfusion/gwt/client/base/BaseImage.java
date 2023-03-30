@@ -119,10 +119,12 @@ public interface BaseImage extends Serializable {
     }
 
     static void applyClassChange(Element element, String aclass, Boolean add) {
-        if(add)
-            element.addClassName(aclass);
-        else
-            element.removeClassName(aclass);
+        if (!GwtSharedUtils.isRedundantString(aclass)) {
+            if (add)
+                element.addClassName(aclass);
+            else
+                element.removeClassName(aclass);
+        }
     }
 
     static void updateClasses(Element element, String classes) {
