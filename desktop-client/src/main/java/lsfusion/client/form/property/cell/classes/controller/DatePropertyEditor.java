@@ -37,6 +37,8 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
     public DatePropertyEditor(Object value, SimpleDateFormat format, ClientPropertyDraw property) {
         super(null, null, format.toPattern(), new DatePropertyEditorComponent(property, format));
         this.format = format;
+        
+        jcalendar.setWeekOfYearVisible(false);
 
         if (value != null) {
             setDate(valueToDate(value));
@@ -164,7 +166,6 @@ public class DatePropertyEditor extends JDateChooser implements PropertyEditor, 
         Date date = dateEditor.getDate();
         calendar.setTime(date != null ? date : new Date());
         jcalendar.setCalendar(calendar);
-        jcalendar.setWeekOfYearVisible(false);
         popup.show(calendarButton, x, y);
         dateSelected = false;
     }
