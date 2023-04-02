@@ -290,13 +290,13 @@ public class FormChanges {
             return getNeedImage(reader.getPropertyObjectInstance().getType(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
             ContainerView containerView = ((ContainerViewInstance.ExtraReaderInstance) reader).getContainerView();
-            return new NeedImage(reader.getPropertyObjectInstance().getType(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, formView));
+            return new NeedImage(reader.getPropertyObjectInstance().getType(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, formView).get());
         }
         return null;
     }
 
     private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw) {
-        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, propertyDraw));
+        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, propertyDraw).get());
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {

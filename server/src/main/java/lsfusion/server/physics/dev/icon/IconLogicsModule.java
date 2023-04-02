@@ -15,7 +15,6 @@ public class IconLogicsModule extends ScriptingLogicsModule {
     public LA<?> getBestIcons;
     public LP<?> bestIconClasses;
     public LP<?> bestIconRanks;
-
     public LA<?> importIcons;
 
     public IconLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {

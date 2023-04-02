@@ -114,7 +114,6 @@ import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
-import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -1124,16 +1123,21 @@ public abstract class LogicsModule {
         return addSFProp(formula, null, paramCount);
     }
 
-    protected LP addSFProp(CustomFormulaSyntax formula, int paramCount, boolean hasNotNull) {
-        return addSFProp(formula, null, paramCount, hasNotNull);
+    protected LP addSFProp(CustomFormulaSyntax formula, int paramCount, boolean valueNull, boolean paramsNull) {
+        return addSFProp(formula, null, paramCount, valueNull, paramsNull);
     }
 
     protected LP addSFProp(String formula, DataClass value, int paramCount) {
-        return addSFProp(new CustomFormulaSyntax(formula), value, paramCount, false);
+        return addSFProp(new CustomFormulaSyntax(formula), value, paramCount, false, false);
     }
     
-    protected LP addSFProp(CustomFormulaSyntax formula, DataClass value, int paramCount, boolean hasNotNull) {
-        return addProperty(null, new LP<>(new StringFormulaProperty(value, formula, paramCount, hasNotNull)));
+    protected LP addSFProp(CustomFormulaSyntax formula, DataClass value, int paramCount, boolean valueNull, boolean paramsNull) {
+        Property property;
+        if(paramsNull)
+            property = new FormulaUnionProperty(value, formula, paramCount);
+        else
+            property = new StringFormulaProperty(value, formula, paramCount, valueNull);
+        return addProperty(null, new LP<>(property));
     }
 
     // ------------------- Операции сравнения ----------------- //

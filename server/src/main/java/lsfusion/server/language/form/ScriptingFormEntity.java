@@ -456,7 +456,8 @@ public class ScriptingFormEntity {
             String appImage = propertyOptions.getAppImage();
             if(view != null) {
                 view.caption = caption;
-                view.setImage(appImage);
+                if(appImage != null)
+                    view.setImage(appImage);
             } else {
                 propertyDraw.initCaption = caption;
                 propertyDraw.initImage = appImage;

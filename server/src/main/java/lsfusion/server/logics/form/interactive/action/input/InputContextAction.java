@@ -19,10 +19,11 @@ import lsfusion.server.logics.property.oraction.PropertyInterface;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class InputContextAction<P extends PropertyInterface, V extends PropertyInterface> {
 
-    public final AppServerImage image;
+    public final Supplier<AppServerImage> image;
     public final String id;
     public final String keyStroke;
     public final Map<String, BindingMode> bindingModesMap;
@@ -36,7 +37,7 @@ public class InputContextAction<P extends PropertyInterface, V extends PropertyI
     public InputContextAction(String image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
         this(AppServerImage.createActionImage(image), id, keyStroke, bindingModesMap, priority, quickAccessList, action, mapValues);
     }
-    public InputContextAction(AppServerImage image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
+    public InputContextAction(Supplier<AppServerImage> image, String id, String keyStroke, Map<String, BindingMode> bindingModesMap, Integer priority, ImList<QuickAccess> quickAccessList, Action<P> action, ImRevMap<P, V> mapValues) {
         this.image = image;
         this.id = id;
         this.keyStroke = keyStroke;

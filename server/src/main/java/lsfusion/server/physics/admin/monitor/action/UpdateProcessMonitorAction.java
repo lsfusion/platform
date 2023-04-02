@@ -193,10 +193,6 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
         }
     }
 
-    public interface GetLPValue<K, V> {
-        ObjectValue get(K key, V value, LP lp);
-    }
-
     private ImOrderSet<LP> getProps(LP<?>[] properties) {
         return SetFact.fromJavaOrderSet(new ArrayList<LP>(Arrays.asList(properties))).addOrderExcl(LM.baseLM.importedString);
     }

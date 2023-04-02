@@ -15,6 +15,7 @@ import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
+import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInputList;
@@ -100,7 +101,7 @@ public class InputAction extends SystemExplicitAction {
 
     private AsyncMapInputList<ClassPropertyInterface> getMapInputList() {
         return new AsyncMapInputList<>(
-                contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image, value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, i)),
+                contextActions.mapListValues((i, value) -> new AsyncMapInputListAction<>(value.image.get(), value.id, value.getAsyncEventExec(), value.keyStroke, value.bindingModesMap, value.priority, value.quickAccessList, i)),
                 !(valueClass instanceof DataClass));
     }
 
@@ -110,7 +111,7 @@ public class InputAction extends SystemExplicitAction {
         Object oldValue = hasOldValue ? context.getKeyObject(oldValueInterface) : null;
 
         InputListEntity<?, ClassPropertyInterface> fullContextList = getFullContextList();
-        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getMapInputList().map());
+        InputResult userValue = context.inputUserData(getInputClass(fullContextList), oldValue, hasOldValue, fullContextList, customChangeFunction, getInputList());
 
         Integer contextAction;
         if(userValue != null && (contextAction = userValue.contextAction) != null)
@@ -125,6 +126,11 @@ public class InputAction extends SystemExplicitAction {
             }
             context.writeRequested(requestResults);
         }
+    }
+
+    @IdentityInstanceLazy
+    private InputList getInputList() {
+        return getMapInputList().map();
     }
 
     @Override

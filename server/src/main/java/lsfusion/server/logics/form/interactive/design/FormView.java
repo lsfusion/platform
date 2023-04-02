@@ -202,7 +202,9 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
             PropertyDrawEntity property = properties.first.get(i);
             PropertyDrawView view = addPropertyDrawBase(property, ComplexLocation.LAST(properties.second.get(i)), version);
             view.caption = property.initCaption;
-            view.setImage(property.initImage);
+            String initImage = property.initImage;
+            if(initImage != null)
+                view.setImage(initImage);
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.getNFRegularFilterGroupsListIt(version)) {

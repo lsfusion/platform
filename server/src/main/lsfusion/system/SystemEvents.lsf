@@ -29,7 +29,7 @@ logoAction() {}
 
 NAVIGATOR {
 //    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE logo();
-    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE 'logo.png' CLASS 'navbar-icon-xlarge navbar-excel-mobile-hidden';
+    NEW logoAction WINDOW logo PARENT HEADER NULL IMAGE 'logo.png;lsfi lsfi-logo-horizontal' CLASS 'navbar-icon-xlarge navbar-excel-mobile-hidden';
 }
 
 userUseBootstrap = DATA TBOOLEAN (CustomUser);

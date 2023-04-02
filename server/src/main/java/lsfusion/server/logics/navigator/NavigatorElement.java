@@ -6,7 +6,6 @@ import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.server.base.AppServerImage;
 import lsfusion.interop.form.remote.serialization.SerializationUtil;
 import lsfusion.interop.navigator.window.WindowType;
-import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.NFFact;
@@ -81,19 +80,19 @@ public abstract class NavigatorElement {
     }
 
     public AppServerImage getImage() {
-        AppServerImage image = this.image.get();
-        if(image != null)
+        AppServerImage image;
+        if(this.image != null && (image = this.image.get()) != null)
             return image;
 
         return getDefaultImage();
     }
 
-    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon) {
-        return AppServerImage.createDefaultImage(rankingThreshold, getName(), () -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this) : null);
+    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon) {
+        return AppServerImage.createDefaultImage(rankingThreshold, name.equals(AppServerImage.AUTO) ? getName() : name, AppServerImage.Style.NAVIGATORELEMENT, () -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this).get() : null);
     }
 
     private AppServerImage getDefaultImage() {
-        return getDefaultImage(Settings.get().getDefaultNavigatorImageRankingThreshold(), Settings.get().isDefaultNavigatorImage());
+        return getDefaultImage(AppServerImage.AUTO, Settings.get().getDefaultNavigatorImageRankingThreshold(), Settings.get().isDefaultNavigatorImage());
     }
 
     public int getID() {
@@ -230,8 +229,7 @@ public abstract class NavigatorElement {
     }
 
     public void setImage(String imagePath) {
-        AppServerImage image = AppServerImage.createNavigatorImage(imagePath, this);
-        this.image = () -> image;
+        image = AppServerImage.createNavigatorImage(imagePath, this);
     }
 
     public void setPropertyElementClass(Property elementClassProperty) {

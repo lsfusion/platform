@@ -70,8 +70,8 @@ messageCaughtException = DATA LOCAL TEXT();
 javaStackTraceCaughtException = DATA LOCAL TEXT();
 lsfStackTraceCaughtException = DATA LOCAL TEXT();
 
-upper = FORMULA 'upper($1)';    
-lower = FORMULA 'lower($1)';   
+upper = FORMULA STRING 'upper($1)';    
+lower = FORMULA STRING 'lower($1)';   
 
 formApply '{action.form.save}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormApplyAction' () CHANGEKEY 'alt ENTER' IMAGE 'apply.png';
 formCancel '{action.form.cancel}'  INTERNAL  'lsfusion.server.logics.form.interactive.action.lifecycle.FormCancelAction' () CHANGEKEY 'shift ESCAPE' IMAGE 'cancel.png';

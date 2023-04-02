@@ -261,16 +261,13 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     public static Expr createCustomFormula(final String formula, final FormulaClass valueClass, ImMap<String, ? extends Expr> params) {
-        return createCustomFormula(new CustomFormulaSyntax(formula), false, valueClass, params, false);
+        return createCustomFormula(new CustomFormulaSyntax(formula), valueClass, params, false);
     }
     
-    public static Expr createCustomFormula(final CustomFormulaSyntax formula, boolean union, final FormulaClass valueClass, ImMap<String, ? extends Expr> params, boolean hasNotNull) {
+    public static Expr createCustomFormula(final CustomFormulaSyntax formula, final FormulaClass valueClass, ImMap<String, ? extends Expr> params, boolean hasNotNull) {
         ImOrderSet<String> keys = params.keys().toOrderSet();
 
         ImList<Expr> exprs = keys.mapList(params);
-
-        if(union)
-            return FormulaUnionExpr.create(createUnionCustomFormulaImpl(formula, valueClass, keys), exprs);
 
         return create(createJoinCustomFormulaImpl(formula, valueClass, hasNotNull, keys), exprs);
     }

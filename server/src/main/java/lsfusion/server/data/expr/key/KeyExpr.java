@@ -1,5 +1,8 @@
 package lsfusion.server.data.expr.key;
 
+import lsfusion.base.col.ListFact;
+import lsfusion.base.col.SetFact;
+import lsfusion.base.col.interfaces.immutable.ImOrderSet;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MMap;
@@ -22,6 +25,9 @@ public class KeyExpr extends ParamExpr {
             return objects.mapRevValues((Function<T, KeyExpr>) genStringKeys);
 
         return objects.mapRevValues(genIndexKeys);
+    }
+    public static ImOrderSet<KeyExpr> getMapKeys(int keys) {
+        return SetFact.toOrderExclSet(keys, genIndexKeys);
     }
 
     private final Object name;

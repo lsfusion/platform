@@ -2312,19 +2312,21 @@ roundPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [
 formulaPropertyDefinition[List<TypedParameter> context, boolean innerPD] returns [LP property, List<ResolveClassSet> signature]
 @init {
 	String className = null;
-	boolean hasNotNullCondition = false;
+	boolean valueNull = false;
+	boolean paramsNull = false;
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, hasNotNullCondition);
+		$property = self.addScriptedSFProp(className, $synt.types, $synt.strings, valueNull, paramsNull);
 		List<ResolveClassSet> contextParams = self.getClassesFromTypedParams(context);
         $signature = innerPD || contextParams.isEmpty() ? Collections.<ResolveClassSet>nCopies($property.listInterfaces.size(), null) : contextParams;
 	}
 }
 	:	'FORMULA'
-		('NULL' { hasNotNullCondition = true; })?
+		('NULL' { valueNull = true; })?
 		(clsName=classId { className = $clsName.sid; })?
 		synt=formulaPropertySyntaxList
+		('NULL' { paramsNull = true; })?
 	;
 
 formulaPropertySyntaxList returns [List<SQLSyntaxType> types = new ArrayList<>(), List<String> strings = new ArrayList<>()]

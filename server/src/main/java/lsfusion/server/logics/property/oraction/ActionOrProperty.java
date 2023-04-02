@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 import static lsfusion.interop.action.ServerResponse.*;
 
@@ -75,12 +76,10 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
     public LocalizedString caption; // assert not null
 
-    public AppServerImage image;
-    public void setImage(AppServerImage image) {
-        this.image = image;
-    }
+    public Supplier<AppServerImage> image;
+
     public void setImage(String imagePath) {
-        setImage(AppServerImage.createPropertyImage(imagePath, this));
+        this.image = AppServerImage.createPropertyImage(imagePath, this);
     }
 
     public LocalizedString localizedToString() {
@@ -202,8 +201,8 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return null;
     }
 
-    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon) {
-        return AppServerImage.createDefaultImage(rankingThreshold, getName(), () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, ActionOrProperty.this) : null);
+    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon) {
+        return AppServerImage.createDefaultImage(rankingThreshold, name.equals(AppServerImage.AUTO) ? getName() : name, AppServerImage.Style.PROPERTY, () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, ActionOrProperty.this).get() : null);
     }
 
     public String getNamespace() {

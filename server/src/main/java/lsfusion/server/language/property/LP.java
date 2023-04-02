@@ -3,15 +3,10 @@ package lsfusion.server.language.property;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
-import lsfusion.base.col.interfaces.immutable.ImList;
-import lsfusion.base.col.interfaces.immutable.ImMap;
-import lsfusion.base.col.interfaces.immutable.ImOrderSet;
-import lsfusion.base.col.interfaces.immutable.ImRevMap;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.server.base.version.Version;
-import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.key.KeyExpr;
@@ -20,7 +15,6 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
-import lsfusion.server.data.value.NullValue;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.language.action.LA;
@@ -49,7 +43,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.admin.monitor.SystemEventsLogicsModule;
-import lsfusion.server.physics.admin.monitor.action.UpdateProcessMonitorAction;
 import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 
 import java.math.BigDecimal;
@@ -58,7 +51,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.BiFunction;
 
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.readCalcImplements;
 
@@ -228,7 +220,11 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         change(context.getSession(), context.getEnv(), data, keyClass, valueClass);
     }
 
-    public static <K, V> void change(ExecutionContext context, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, UpdateProcessMonitorAction.GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
+    public interface GetLPValue<K, V> {
+        ObjectValue get(K key, V value, LP lp);
+    }
+
+    public static <K, V> void change(ExecutionContext context, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
         change(context.getSession(), context.getEnv(), props, data, keyClass, mapper);
     }
 
@@ -248,7 +244,7 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         }
     }
 
-    public static <K, V> void change(DataSession session, ExecutionEnvironment env, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, UpdateProcessMonitorAction.GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
+    public static <K, V> void change(DataSession session, ExecutionEnvironment env, final ImOrderSet<LP> props, ImMap<K, V> data, ConcreteClass keyClass, GetLPValue<K, V> mapper) throws SQLException, SQLHandledException {
 
         SingleKeyTableUsage<LP> importTable = new SingleKeyTableUsage<>("updpm:wr", keyClass.getType(), props, key -> ((LP<?>)key).property.getType());
 
@@ -265,12 +261,27 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         }
     }
 
-    public static <K> ImMap<String, Object> readAll(LP<?> lp, DataSession session, K[] data, ConcreteClass dataClass) throws SQLException, SQLHandledException {
+    public static ImOrderMap<ImMap<Integer, Object>, ImMap<Integer, Object>> readAll(LP[] lps, ExecutionEnvironment env) throws SQLException, SQLHandledException {
+        ImOrderSet<KeyExpr> keySet = KeyExpr.getMapKeys(lps[0].listInterfaces.size());
+        KeyExpr[] keyArray = keySet.toArray(new KeyExpr[keySet.size()]);
+        QueryBuilder<Integer, Integer> readQuery = new QueryBuilder<>(keySet.toIndexedMap());
+        Where where = Where.FALSE();
+        for (int i = 0; i < lps.length; i++) {
+            Expr expr = lps[i].getExpr(env.getModifier(), keyArray);
+            readQuery.addProperty(i, expr);
+            where = where.or(expr.getWhere());
+        }
+        readQuery.and(where);
+        return readQuery.execute(env);
+
+    }
+    public <K> ImMap<String, Object> readAll(DataSession session, K[] data) throws SQLException, SQLHandledException {
         // create a temporary table with one key (STRING type), without fields
-        SingleKeyTableUsage<Object> importTable = new SingleKeyTableUsage<>("updpm:wr", dataClass.getType(), SetFact.EMPTYORDER(), key -> null);
+        ConcreteClass interfaceClass = (ConcreteClass)getInterfaceClasses(ClassType.iteratePolicy)[0];
+        SingleKeyTableUsage<Object> importTable = new SingleKeyTableUsage<>("updpm:wr", interfaceClass.getType(), SetFact.EMPTYORDER(), key -> null);
         try {
             // write the values from the array
-            importTable.writeRows(session.sql, SetFact.toExclSet(data).mapKeyValues(value -> MapFact.singleton("key", new DataObject(value, dataClass)), value -> MapFact.EMPTY()), session.getOwner());
+            importTable.writeRows(session.sql, SetFact.toExclSet(data).mapKeyValues(value -> MapFact.singleton("key", new DataObject(value, interfaceClass)), value -> MapFact.EMPTY()), session.getOwner());
             // create a query
             // with one key named key (however, it can be any name): property parameter and condition: in the created temporary table
             KeyExpr keyExpr = new KeyExpr(0);
@@ -278,7 +289,7 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
             Join<Object> importJoin = importTable.join(mapKeys);
             QueryBuilder<String, String> query = new QueryBuilder<>(mapKeys, importJoin.getWhere());
             // with one field value (however, any name is possible): the passed property
-            query.addProperty("value", lp.getExpr(keyExpr));
+            query.addProperty("value", getExpr(keyExpr));
             // execute, re-mapping back to get map: property parameter -> value
             return query.execute(session).keys().mapKeyValues(key -> (String)key.singleValue(), value -> value.singleValue());
         } finally {

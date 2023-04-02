@@ -3196,7 +3196,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(addDCCProp(index - 1), Collections.singletonList(ccProp));
     }
 
-    public LP addScriptedSFProp(String typeName, List<SQLSyntaxType> types, List<String> implTexts, boolean hasNotNull) throws ScriptingErrorLog.SemanticErrorException {
+    public LP addScriptedSFProp(String typeName, List<SQLSyntaxType> types, List<String> implTexts, boolean valueNull, boolean paramsNull) throws ScriptingErrorLog.SemanticErrorException {
         assert types.size() == implTexts.size();
         checks.checkSingleImplementation(types);
 
@@ -3225,9 +3225,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (typeName != null) {
             ValueClass cls = findClass(typeName);
             checks.checkFormulaClass(cls);
-            return addSFProp(formula, (DataClass) cls, params.size(), hasNotNull);
+            return addSFProp(formula, (DataClass) cls, params.size(), valueNull, paramsNull);
         } else {
-            return addSFProp(formula, params.size(), hasNotNull);
+            return addSFProp(formula, params.size(), valueNull, paramsNull);
         }
     }
 
@@ -4971,7 +4971,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (action != null) {
             newElement = createNavigatorAction(action, canonicalName);
             defaultCaption = () -> action.action.caption;
-            defaultImage = () -> action.action.image;
+            defaultImage = action.action.image;
         } else {
             newElement = createNavigatorFolder(canonicalName);
             defaultCaption = () -> LocalizedString.create(name); // CanonicalNameUtils.getName(newElement.getCanonicalName()));

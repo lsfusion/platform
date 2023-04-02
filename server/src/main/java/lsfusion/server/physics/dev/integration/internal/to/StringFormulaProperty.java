@@ -22,8 +22,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
 
     private final CustomFormulaSyntax formula;
     private final boolean valueNull;
-    private final boolean paramsNull;
-    
+
     public static String getParamName(String prmID) {
         return "prm" + prmID;
     }
@@ -54,7 +53,6 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
         super(LocalizedString.create(formula.getDefaultSyntax()),getInterfaces(paramCount),valueClass);
         this.formula = formula;
         this.valueNull = valueNull;
-        this.paramsNull = false;
 
         finalizeInit();
     }
@@ -63,7 +61,7 @@ public class StringFormulaProperty extends ValueFormulaProperty<StringFormulaPro
 
         ImMap<String, Expr> params = interfaces.mapKeyValues(Interface::getString, joinImplement::get);
 
-        return FormulaExpr.createCustomFormula(formula, paramsNull, value, params, valueNull);
+        return FormulaExpr.createCustomFormula(formula, value, params, valueNull);
     }
 
     @Override

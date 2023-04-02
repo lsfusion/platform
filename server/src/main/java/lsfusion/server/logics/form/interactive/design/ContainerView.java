@@ -15,7 +15,6 @@ import lsfusion.server.language.ScriptParsingException;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.interactive.design.property.PropertyGroupContainerView;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
@@ -25,6 +24,7 @@ import lsfusion.server.physics.dev.i18n.LocalizedString;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 import static lsfusion.interop.form.design.ContainerType.*;
 
@@ -34,26 +34,29 @@ public class ContainerView extends ComponentView {
 
     public LocalizedString caption;
     public String name; // actually used only for icons
-    public AppServerImage image;
+    public Supplier<AppServerImage> image;
 
     public void setImage(String imagePath, FormView formView) {
         image = AppServerImage.createContainerImage(imagePath, this, formView);
     }
 
     public AppServerImage getImage(FormView formView) {
-        if(image != null)
+        AppServerImage image;
+        if(this.image != null && (image = this.image.get()) != null)
             return image;
 
         return getDefaultImage(main ? formView : null);
     }
 
-    public AppServerImage getDefaultImage(float rankingThreshold, boolean useDefaultIcon, FormView formView) {
-        return AppServerImage.createDefaultImage(rankingThreshold, main ? formView.entity.getName() : name, () -> useDefaultIcon ?
-                AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView) : null);
+    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, FormView formView) {
+        return AppServerImage.createDefaultImage(rankingThreshold,
+                name.equals(AppServerImage.AUTO) ? (main ? formView.entity.getName() : this.name) : name,
+                main ? AppServerImage.Style.FORM : AppServerImage.Style.CONTAINER, () -> useDefaultIcon ?
+                AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView).get() : null);
     }
 
     private AppServerImage getDefaultImage(FormView formView) {
-        return getDefaultImage(main ? Settings.get().getDefaultFormImageRankingThreshold() : Settings.get().getDefaultContainerImageRankingThreshold(),
+        return getDefaultImage(AppServerImage.AUTO, main ? Settings.get().getDefaultFormImageRankingThreshold() : Settings.get().getDefaultContainerImageRankingThreshold(),
                  main ? Settings.get().isDefaultFormImage() : Settings.get().isDefaultContainerImage(), formView);
     }
 

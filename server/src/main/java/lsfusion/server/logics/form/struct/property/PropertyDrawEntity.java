@@ -617,7 +617,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public LocalizedString getCaption() {
         return getInheritedProperty().caption;
     }
-    public AppServerImage getImage() {
+    public Supplier<AppServerImage> getImage() {
         return getInheritedProperty().image;
     }
 

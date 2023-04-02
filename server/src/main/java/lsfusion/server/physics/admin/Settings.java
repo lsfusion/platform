@@ -3041,6 +3041,8 @@ public class Settings implements Cloneable {
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
     }
 
+    private float defaultImagePathRankingThreshold = 0.0f;
+
     private float defaultAutoImageRankingThreshold = 0.0f;
 
     private float defaultNavigatorImageRankingThreshold = 0.1f;
@@ -3054,6 +3056,14 @@ public class Settings implements Cloneable {
 
     private float defaultPropertyImageRankingThreshold = 0.8f;
     private boolean defaultPropertyImage = false;
+
+    public float getDefaultImagePathRankingThreshold() {
+        return defaultImagePathRankingThreshold;
+    }
+
+    public void setDefaultImagePathRankingThreshold(float defaultImagePathRankingThreshold) {
+        this.defaultImagePathRankingThreshold = defaultImagePathRankingThreshold;
+    }
 
     public float getDefaultAutoImageRankingThreshold() {
         return defaultAutoImageRankingThreshold;

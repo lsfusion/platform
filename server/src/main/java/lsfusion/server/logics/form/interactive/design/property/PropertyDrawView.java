@@ -53,6 +53,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.interop.action.ServerResponse.CHANGE;
@@ -108,7 +109,7 @@ public class PropertyDrawView extends BaseComponentView {
     public FlexAlignment valueAlignment;
 
     public LocalizedString caption;
-    public AppServerImage image;
+    public Supplier<AppServerImage> image;
     public boolean clearText;
     public boolean notSelectAll;
     public String toolTip;
@@ -258,18 +259,19 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     public AppServerImage getImage() {
-        if(image != null)
+        AppServerImage image;
+        if(this.image != null && (image = this.image.get()) != null)
             return image;
 
-        AppServerImage image = entity.getImage();
-        if(image != null)
+        Supplier<AppServerImage> entityImage = entity.getImage();
+        if(entityImage != null && (image = entityImage.get()) != null)
             return image;
 
         return getDefaultImage();
     }
 
     private AppServerImage getDefaultImage() {
-        return entity.getValueActionOrProperty().property.getDefaultImage(Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
+        return entity.getValueActionOrProperty().property.getDefaultImage(AppServerImage.AUTO, Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)

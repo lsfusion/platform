@@ -9,7 +9,7 @@ public class PrereadIconsFormsTask extends GroupFormsTask {
 
     @Override
     protected int getSplitCount() {
-        return 1000;
+        return 100;
     }
 
     @Override
@@ -24,6 +24,6 @@ public class PrereadIconsFormsTask extends GroupFormsTask {
 
     @Override
     protected void runGroupTask(ImSet<FormEntity> objSet, Logger logger) {
-        AppServerImage.prereadDefaultImages(getBL(), getDbManager(), () -> super.runGroupTask(objSet, logger));
+        AppServerImage.prereadBestIcons(getBL(), getDbManager(), () -> super.runGroupTask(objSet, logger));
     }
 }
