@@ -215,6 +215,10 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return "tsvector";
     }
 
+    public String getTSQuery() {
+        return "tsquery";
+    }
+
     public int getColorSQL() {
         return Types.INTEGER;
     }

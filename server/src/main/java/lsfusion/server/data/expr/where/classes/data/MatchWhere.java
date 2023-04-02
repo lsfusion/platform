@@ -6,6 +6,7 @@ import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.query.compile.CompileSource;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.where.Where;
+import lsfusion.server.logics.classes.data.TSQueryClass;
 import lsfusion.server.logics.classes.data.TSVectorClass;
 import lsfusion.server.physics.admin.Settings;
 
@@ -40,8 +41,8 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
     public static String getPrefixSearchQuery(SQLSyntax syntax, String source, String language) {
         return syntax.getPrefixSearchQuery() + "('" + language + "', " + source + ", '" + Settings.get().getMatchSearchSeparator() + "')";
     }
-    public static String getMatch(SQLSyntax syntax, String search, String match, String language, boolean isTSVectorType) {
-        return (isTSVectorType ? search : getPrefixSearchVector(search, language)) + " @@ " + getPrefixSearchQuery(syntax, match, language);
+    public static String getMatch(SQLSyntax syntax, String search, String match, String language, boolean isTSVectorType, boolean isTSQueryType) {
+        return (isTSVectorType ? search : getPrefixSearchVector(search, language)) + " @@ " + (isTSQueryType ? match : getPrefixSearchQuery(syntax, match, language));
     }
     public static String getRank(SQLSyntax syntax, String search, String match, String language) {
         return "ts_rank(" + getPrefixSearchVector(search, language) + "," + getPrefixSearchQuery(syntax, match, language) + ")";
@@ -56,9 +57,10 @@ public class MatchWhere extends BinaryWhere<MatchWhere> {
         String match = operator2.getSource(compile);
 
         boolean isTSVectorType = operator1.getType(compile.keyType) instanceof TSVectorClass;
+        boolean isTSQueryType = operator2.getType(compile.keyType) instanceof TSQueryClass;
         String language = Settings.get().getFilterMatchLanguage();
-        String matchString = getMatch(compile.syntax, source, match, language, isTSVectorType);
-        if (isTSVectorType)
+        String matchString = getMatch(compile.syntax, source, match, language, isTSVectorType, isTSQueryType);
+        if (isTSVectorType || isTSQueryType)
             return matchString;
 
         String likeString = source + (" " + compile.syntax.getInsensitiveLike() + " ")

@@ -112,6 +112,8 @@ public interface SQLSyntax {
 
     String getTSVector();
 
+    String getTSQuery();
+
     default String getSelect(String from, String exprs, String where) {
         return getSelect(from, exprs, where, "", "", false);
     }
