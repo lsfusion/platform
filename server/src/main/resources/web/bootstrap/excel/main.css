@@ -125,3 +125,13 @@ svg {
 .justify-content-center {
     justify-content: center !important;
 }
+
+.my-auto {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+}
+
+.mx-auto {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}

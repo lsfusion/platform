@@ -31,7 +31,8 @@ public class ToolbarPanel extends ResizableComplexPanel {
                     (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "align-items-end" :
                             "align-items-start"));
 
-            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+            // adding margin-auto to make all buttons visible when scroll appears
+            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center my-auto" :
                     (toolbarWindow.alignmentY == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
                             "justify-content-start"));
         } else {
@@ -39,7 +40,8 @@ public class ToolbarPanel extends ResizableComplexPanel {
                     (toolbarWindow.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
                             "align-items-start"));
 
-            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
+            // adding margin-auto to make all buttons visible when scroll appears
+            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center mx-auto" :
                     (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
                             "justify-content-start"));
         }
