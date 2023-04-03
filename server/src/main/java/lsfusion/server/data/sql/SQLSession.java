@@ -974,14 +974,14 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
         if (indexOptions.type.isLike()) {
             dropLikeIndex(table, keyFields, fields, indexOptions);
         } else if (indexOptions.type.isMatch()) {
             dropLikeIndex(table, keyFields, fields, indexOptions);
             dropMatchIndex(table, keyFields, fields, indexOptions);
         }
-        dropDefaultIndex(table, keyFields, fields, indexOptions);
+        dropDefaultIndex(table, keyFields, fields, indexOptions, ifExists);
     }
 
     public void dropLikeIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
@@ -1004,10 +1004,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void dropDefaultIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions) throws SQLException {
+    public void dropDefaultIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
         //ifExists true for both, because we don't know which of indexes exists
         ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
-        dropIndex(table, getIndexName(table, orderFields, null, false, true, syntax), true);
+        if (!ifExists)
+            dropIndex(table, getIndexName(table, orderFields, null, false, true, syntax), false);
         //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
         dropIndex(table, getIndexName(table, orderFields, null, false, false, syntax), true);
     }
