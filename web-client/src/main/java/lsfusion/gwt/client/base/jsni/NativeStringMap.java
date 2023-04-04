@@ -110,7 +110,7 @@ public class NativeStringMap<V> {
         var map = this.@lsfusion.gwt.client.base.jsni.NativeStringMap::map;
         var count = 0;
         for(var key in map) {
-            if (sKey.charCodeAt(0) == 58) ++count;
+            if (key.charCodeAt(0) == 58) ++count;
         }
         return count;
     }-*/;

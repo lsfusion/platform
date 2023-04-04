@@ -73,6 +73,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyCaptions = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyFooters = new NativeSIDMap<>();
 
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellValueElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellBackgroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellForegroundValues = new NativeSIDMap<>();
     protected NativeHashMap<GGroupObjectValue, Object> rowBackgroundValues = new NativeHashMap<>();
@@ -277,6 +278,9 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return null;
     }
 
+    public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        cellValueElementClasses.put(propertyDraw, values);
+    }
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         cellBackgroundValues.put(propertyDraw, values);
     }
@@ -684,6 +688,7 @@ protected Double getUserFlex(int i) {
         protected abstract Object getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
         protected abstract Object getImage(GPropertyDraw property, T record);
+        protected abstract String getValueElementClass(GPropertyDraw property, T record);
         protected abstract String getBackground(GPropertyDraw property, T record);
         protected abstract String getForeground(GPropertyDraw property, T record);
 
@@ -814,6 +819,12 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
+            public String getValueElementClass() {
+                T row = (T) cell.getRow();
+                return column.getValueElementClass(property, row);
+            }
+
+            @Override
             public String getBackground() {
                 T row = (T) cell.getRow();
                 String background = column.getBackground(property, row);
@@ -824,7 +835,7 @@ protected Double getUserFlex(int i) {
             public String getForeground() {
                 T row = (T) cell.getRow();
                 String foreground = column.getForeground(property, row);
-                return getThemedColor(foreground != null ? foreground : row.getRowForeground());
+                return foreground != null ? foreground : row.getRowForeground();
             }
         };
     }

@@ -40,7 +40,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         toolBarPanel.removeAll();
 
         for (ClientNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addElement(element, newElements, 0);
             }
         }

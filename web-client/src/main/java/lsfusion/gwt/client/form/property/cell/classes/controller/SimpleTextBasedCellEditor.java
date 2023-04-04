@@ -358,12 +358,14 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 new Timer() {
                     @Override
                     public void run() {
-                        if (emptyQuery && isThisCellEditor() && !suggestBox.isSuggestionListShowing()) {
-                            callback.onSuggestionsReady(request, new SuggestBox.Response(new ArrayList<>(), true));
-                            setMinWidth(element, suggestBox, false);
+                        if(isThisCellEditor()) {
+                            if (emptyQuery && !suggestBox.isSuggestionListShowing()) {
+                                callback.onSuggestionsReady(request, new SuggestBox.Response(new ArrayList<>(), true));
+                                setMinWidth(element, suggestBox, false);
+                            }
+                            if (!resultReceived.result)
+                                suggestBox.clearSelectedItem();
                         }
-                        if(!resultReceived.result)
-                            suggestBox.clearSelectedItem();
                     }
                 }.schedule(100);
 

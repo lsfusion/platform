@@ -4,15 +4,18 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.*;
-import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.GwtSharedUtils;
-import lsfusion.gwt.client.base.Result;
+import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.base.resize.ResizeHandler;
 import lsfusion.gwt.client.base.resize.ResizeHelper;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
+import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.design.view.flex.FlexTabBar;
+import lsfusion.gwt.client.form.design.view.flex.FlexTabbedPanel;
 import lsfusion.gwt.client.form.object.table.TableContainer;
+import lsfusion.gwt.client.navigator.view.ToolbarPanel;
+import lsfusion.gwt.client.navigator.window.view.FlexWindowElement;
+import lsfusion.gwt.client.navigator.window.view.TabbedWindowElement;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
@@ -77,13 +80,6 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public boolean isHorizontal() {
         return !isVertical();
-    }
-
-    public Border getOuterTopBorder() {
-        return null;
-    }
-    public Border getOuterRestBorder() {
-        return null;
     }
 
     @Override
@@ -478,6 +474,10 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
         }
     }
 
+    public void setFlex(Widget widget, double newFlex, GSize newPref) {
+        impl.setFlex(((WidgetLayoutData) widget.getLayoutData()).flex, widget.getElement(), newFlex, newPref, vertical, isGrid());
+    }
+
     public class FlexLine implements FlexStretchLine {
 
         private final List<Widget> widgets;
@@ -689,9 +689,11 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
     }
 
     private static void drawBorder(Widget widget, Border border, boolean start, boolean vertical) {
+        assert border != Border.HAS_MARGIN;
         if(border == Border.NO)
             return;
 
+        // here it's either NEED or HAS
         if (start) {
             if(border == Border.NEED) {
                 if(vertical)
@@ -700,10 +702,17 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                     widget.addStyleName("left-border");
             }
         } else {
-            if(vertical)
-                widget.addStyleName("bottom-margin");
-            else
-                widget.addStyleName("right-margin");
+            if(border == Border.NEED) { // i.e doesn't have
+                if (vertical)
+                    widget.addStyleName("bottom-padding");
+                else
+                    widget.addStyleName("right-padding");
+            } else {
+                if (vertical)
+                    widget.addStyleName("bottom-margin");
+                else
+                    widget.addStyleName("right-margin");
+            }
         }
     }
     private static void clearBorder(Widget widget, boolean start, boolean vertical) {
@@ -713,10 +722,13 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             else
                 widget.removeStyleName("left-border");
         } else {
-            if(vertical)
+            if(vertical) {
                 widget.removeStyleName("bottom-margin");
-            else
+                widget.removeStyleName("bottom-padding");
+            } else {
                 widget.removeStyleName("right-margin");
+                widget.removeStyleName("right-padding");
+            }
         }
     }
     private static void drawWrapBorder(Widget widget, Border border) {
@@ -1155,7 +1167,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
 
     public static PanelParams updatePanels(Widget widget) {
         // in a way similar to getParentSameFlexPanel (in web we assume that all intermediate panels are FlexPanel, in desktop we should do a recursion)
-        if(widget instanceof FlexPanel) {
+        if (widget instanceof FlexPanel && !(widget instanceof FormsController.Panel)) {
             FlexPanel flexPanel = (FlexPanel) widget;
             List<FlexLine> lines = flexPanel.getLines(null);
             boolean vertical = flexPanel.vertical;
@@ -1169,22 +1181,46 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
             }
 
             boolean collapsed = flexPanel instanceof CollapsiblePanel && ((CollapsiblePanel) flexPanel).collapsed;
-            return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, flexPanel.getOuterTopBorder(), flexPanel.getOuterRestBorder(), !collapsed, collapsed, wrap ? flexPanel : null);
-        } else { // lead components semantics
+            Border top = null;
+            Border rest = null;
+            if ((widget instanceof FlexWindowElement.Panel || widget instanceof TabbedWindowElement.Panel) && ToolbarPanel.hasBorder(widget)) {
+                top = Border.HAS_MARGIN;
+                rest = Border.HAS_MARGIN;
+            } else if (flexPanel instanceof CaptionPanel) {
+                if (((CaptionPanel) flexPanel).border) {
+                    top = Border.HAS;
+                    rest = Border.HAS;
+                } else {
+                    top = Border.HAS_MARGIN; // captioned not bordered container already "margined" (with min-height, label paddings)
+                    rest = Border.NEED;
+                }
+            } else if (flexPanel instanceof FlexTabbedPanel) {
+                top = Border.HAS_MARGIN; // .nav-tabs-vert has top padding
+                rest = Border.NEED;
+            }
+            return updatePanels(grid, vertical, flexPanel.flexAlignment, lines, top, rest, !collapsed, collapsed, wrap ? flexPanel : null);
+        } else { // leaf components semantics
             Border top = Border.NO;
             Border bottom = Border.NO;
+            Border left = Border.NO;
+            Border right = Border.NO;
             InnerAlignment horzAlignment = InnerAlignment.DIFF;
             InnerAlignment vertAlignment = InnerAlignment.DIFF;
 
             if(widget instanceof TableContainer && ((TableContainer) widget).getTableComponent() instanceof DataGrid)
                 top = Border.HAS;
-            if(widget instanceof CaptionPanelHeader)
+            else if(widget instanceof CaptionPanelHeader)
                 bottom = Border.HAS_MARGIN;
-            if(widget instanceof FlexTabBar) {
+            else if(widget instanceof FlexTabBar) {
                 if(((FlexTabBar) widget).end)
                     top = Border.HAS;
                 else
                     bottom = Border.HAS;
+            } else if (widget instanceof ToolbarPanel || widget instanceof FormsController.Panel) {
+                // toolbarPanel has paddings / margins with the nav-expand (however they are inner paddings, so we might want to have more paddings, but considering that toolbars has no innerborders and scrollable it would be better to have no more paddings)
+                // Forms.Panel has paddings / margins (with form-shrink-padded-container and the same rule for the tabs bar)
+                top = bottom = left = right = ToolbarPanel.hasBorder(widget) ? Border.HAS_MARGIN :
+                        Border.NEED; // actually we need something like NEED_MARGIN here. Moreover hasBackgroundClasses should be used for all the widgets and convert NEED to NEED_MARGIN when there is a background (however it will require some refactoring so we'll do it later)
             }
 
             if(widget instanceof CaptionPanelHeader) { // need this to auto stretch this headers
@@ -1192,7 +1228,7 @@ public class FlexPanel extends ComplexPanel implements RequiresResize, ProvidesR
                 vertAlignment = new InnerFlexAlignment(CaptionPanelHeader.VERT);
             }
 
-            return new PanelParams(top, bottom, Border.NO, Border.NO, false, horzAlignment, vertAlignment, false, false);
+            return new PanelParams(top, bottom, left, right, false, horzAlignment, vertAlignment, false, false);
         }
     }
 

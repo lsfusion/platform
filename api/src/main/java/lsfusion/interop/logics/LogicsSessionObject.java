@@ -21,13 +21,8 @@ import org.json.JSONObject;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static lsfusion.base.BaseUtils.trimToNull;
 
@@ -118,6 +113,8 @@ public class LogicsSessionObject {
 
         ColorTheme colorTheme = BaseUtils.nvl(ColorTheme.get(json.optString("colorThemeString")), ColorTheme.DEFAULT);
         boolean useBootstrap = json.optBoolean("useBootstrap");
+        
+        boolean verticalNavbar = json.optBoolean("verticalNavbar");
 
         String selectedRowBackground = json.optString("selectedRowBackground");
         String selectedCellBackground = json.optString("selectedCellBackground");
@@ -157,7 +154,8 @@ public class LogicsSessionObject {
 
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
                 projectLSFDir, showDetailedInfo, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
-                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, mainResourcesBeforeSystem, mainResourcesAfterSystem);
+                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, 
+                mainResourcesBeforeSystem, mainResourcesAfterSystem, verticalNavbar);
     }
 
     private static void fillRanges(JSONArray rangesJson, List<String> ranges) {

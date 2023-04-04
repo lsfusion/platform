@@ -1,11 +1,5 @@
 package lsfusion.gwt.client.navigator.view;
 
-import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
-import com.google.gwt.user.client.ui.ComplexPanel;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.Pair;
-import lsfusion.gwt.client.base.TooltipManager;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
 import lsfusion.gwt.client.base.view.ResizableComplexPanel;
@@ -16,7 +10,6 @@ import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import java.util.Set;
 
 public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindow> {
-    private final ResizableComplexPanel main;
 
     private final ResizableComplexPanel panel;
     private final boolean verticalTextAlign;
@@ -28,45 +21,11 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
 
         boolean vertical = window.isVertical();
 
-        Pair<ResizableComplexPanel, ResizableComplexPanel> toolbarPanel = createToolbarPanel(vertical);
-        this.main = toolbarPanel.first;
-        this.panel = toolbarPanel.second;
+        ToolbarPanel main = new ToolbarPanel(vertical, window);
 
-        setAlignment(vertical, this.main, this.panel, window);
+        setComponent(main);
 
-        setComponent(this.main);
-    }
-
-    public static Pair<ResizableComplexPanel, ResizableComplexPanel> createToolbarPanel(boolean vertical) {
-        ResizableComplexPanel main = new ResizableComplexPanel();
-        main.addStyleName("navbar navbar-expand p-0"); // navbar-expand to set horizontal paddings (vertical are set in navbar-text)
-
-        ResizableComplexPanel panel = new ResizableComplexPanel();
-        panel.addStyleName("navbar-nav");
-        panel.addStyleName(vertical ? "navbar-nav-vert" : "navbar-nav-horz");
-
-        main.add(panel);
-        return new Pair<>(main, panel);
-    }
-
-    public static void setAlignment(boolean vertical, ResizableComplexPanel main, ResizableComplexPanel panel, GToolbarNavigatorWindow toolbarWindow) {
-        if (vertical) {
-            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
-                    (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "align-items-end" :
-                            "align-items-start"));
-
-            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
-                    (toolbarWindow.alignmentY == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
-                            "justify-content-start"));
-        } else {
-            panel.addStyleName(toolbarWindow.alignmentY == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "align-items-center" :
-                    (toolbarWindow.alignmentY == GToolbarNavigatorWindow.BOTTOM_ALIGNMENT ? "align-items-end" :
-                            "align-items-start"));
-
-            panel.addStyleName(toolbarWindow.alignmentX == GToolbarNavigatorWindow.CENTER_ALIGNMENT ? "justify-content-center" :
-                    (toolbarWindow.alignmentX == GToolbarNavigatorWindow.RIGHT_ALIGNMENT ? "justify-content-end" :
-                            "justify-content-start"));
-        }
+        this.panel = main.panel;
     }
 
     @Override
@@ -74,7 +33,7 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
         panel.clear();
 
         for (GNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addElement(element, newElements, 0);
             }
         }
@@ -117,39 +76,6 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
     @Override
     public int getWidth() {
         return panel.getElement().getScrollWidth();
-    }
-
-    @Override
-    public int getAutoSize(boolean vertical) {
-        if (vertical != window.isVertical()) {
-            // as panel is stretched to the window size, the size returned for panel is the size of the window.
-            int result = getChildrenMaxSize(vertical, panel);
-
-            result += getScrollbarSizeIfNeeded(window.isVertical(), panel);
-            return result;
-        }
-        return super.getAutoSize(vertical);
-    }
-    
-    // if size provided by window is larger than total size (on main axis) of toolbar, a scrollbar is expected to appear
-    // add scrollbar width to the cross-axis size
-    // maybe should be adjusted after redraw as current window sizes are considered - after update no scrollbar may appear
-    public static int getScrollbarSizeIfNeeded(boolean vertical, Widget widget) {
-        int childrenTotalSize = vertical ? widget.getElement().getScrollHeight() : widget.getElement().getScrollWidth();
-        int parentSize = vertical ? widget.getOffsetHeight() : widget.getOffsetWidth();
-        if (childrenTotalSize > parentSize) {
-            return AbstractNativeScrollbar.getNativeScrollbarHeight();
-        }
-        return 0;            
-    }
-
-    public static int getChildrenMaxSize(boolean vertical, ComplexPanel panel) {
-        int size = 0;
-        for (int i = 0; i < panel.getWidgetCount(); i++) {
-            Widget child = panel.getWidget(i);
-            size = Math.max(size, vertical ? child.getOffsetHeight() : child.getOffsetWidth());
-        }
-        return size;
     }
 
     @Override

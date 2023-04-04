@@ -53,6 +53,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<NativeHashMap<GGroupObjectValue, Object>> showIfs = new ArrayList<>();
     protected NativeHashMap<GGroupObjectValue, Object> rowBackgroundValues = new NativeHashMap<>();
     protected NativeHashMap<GGroupObjectValue, Object> rowForegroundValues = new NativeHashMap<>();
+    protected List<NativeHashMap<GGroupObjectValue, Object>> cellValueElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, Object>> cellBackgroundValues = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, Object>> cellForegroundValues = new ArrayList<>();
 
@@ -178,6 +179,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
                 this.values.add(index, null);
                 this.readOnlys.add(index, null);
                 this.showIfs.add(index, null);
+                this.cellValueElementClasses.add(index, null);
                 this.cellBackgroundValues.add(index, null);
                 this.cellForegroundValues.add(index, null);
 
@@ -337,6 +339,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     }
 
     @Override
+    public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        this.cellValueElementClasses.set(properties.indexOf(propertyDraw), values);
+
+        this.dataUpdated = true;
+    }
+
+    @Override
     public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
         this.cellBackgroundValues.set(properties.indexOf(propertyDraw), values);
 
@@ -477,12 +486,24 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
         return readOnlyValues.get(GGroupObjectValue.getFullKey(rowKey, columnKey)) != null;
     }
 
+    protected Object getCellValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, Object> cellValueElementClass = cellValueElementClasses.get(properties.indexOf(property));
+        if(cellValueElementClass == null)
+            return null;
+
+        return cellValueElementClass.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
     protected Object getCellBackground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
         NativeHashMap<GGroupObjectValue, Object> cellBackground = cellBackgroundValues.get(properties.indexOf(property));
         if(cellBackground == null)
             return null;
 
         return cellBackground.get(GGroupObjectValue.getFullKey(rowKey, columnKey));
+    }
+
+    protected Object getValueElementClass(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {
+        return getCellValueElementClass(property, rowKey, columnKey);
     }
 
     protected Object getBackground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

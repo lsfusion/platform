@@ -3,12 +3,11 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.ComplexPanel;
-import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.ImageButton;
 import lsfusion.gwt.client.base.view.NavigatorImageButton;
-import lsfusion.gwt.client.base.view.ResizableComplexPanel;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
+import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
@@ -34,6 +33,7 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
 
         Predicate<GNavigatorWindow>[] windows = new Predicate[3];
         ComplexPanel[] windowPanels = new ComplexPanel[3];
+        GAbstractWindow[] cssWindows = new GAbstractWindow[3];
 
         for(int i=0;i<3;i++) {
             GNavigatorWindow cssWindow;
@@ -51,11 +51,7 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
                 filterWindow = navigatorWindow -> navigatorWindow == system;
             }
 
-            Pair<ResizableComplexPanel, ResizableComplexPanel> toolbarPanel = GToolbarNavigatorView.createToolbarPanel(true);
-            ResizableComplexPanel main = toolbarPanel.first;
-            ResizableComplexPanel panel = toolbarPanel.second;
-
-            GToolbarNavigatorView.setAlignment(true, main, panel, (GToolbarNavigatorWindow) toolbar);
+            ToolbarPanel main = new ToolbarPanel(true, (GToolbarNavigatorWindow) toolbar);
 
             if(flex)
                 navWindowsPanel.addFill(main);
@@ -66,10 +62,11 @@ public class BSMobileNavigatorView extends MobileNavigatorView {
             windowsController.registerMobileWindow(cssWindow);
 
             windows[i] = filterWindow;
-            windowPanels[i] = panel;
+            windowPanels[i] = main.panel;
+            cssWindows[i] = cssWindow;
         }
 
-        return new RootPanels(navWindowsPanel, windows, windowPanels);
+        return new RootPanels(navWindowsPanel, windows, windowPanels, cssWindows);
     }
 
     protected ComplexPanel initFolderPanel(NavigatorImageButton button) {

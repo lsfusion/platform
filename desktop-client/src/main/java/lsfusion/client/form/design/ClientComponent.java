@@ -235,6 +235,23 @@ public abstract class ClientComponent extends ContextIdentityObject implements I
         }
     };
 
+    public final ClientPropertyReader elementClassReader = new ClientPropertyReader() {
+        public ClientGroupObject getGroupObject() {
+            return null;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> values, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientComponent.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.COMPONENT_ELEMENTCLASS;
+        }
+    };
+
     public int getVerticalMargin() {
         return marginTop + marginBottom;
     }

@@ -13,15 +13,22 @@ public class TabbedWindowElement extends WindowElement {
     private List<WindowElement> children = new ArrayList<>();
     private List<WindowElement> visibleChildren = new ArrayList<>();
 
-    private FlexTabbedPanel tabPanel = new FlexTabbedPanel() {
+    private Panel tabPanel;
+
+    public static class Panel extends FlexTabbedPanel {
+        public Panel() {
+        }
+
         @Override
         public void checkResizeEvent(NativeEvent event, Element cursorElement) {
             // do nothing as it clashes with resize in CustomSplitLayoutPanel
         }
-    };
+    }
 
-    public TabbedWindowElement(WindowsController main, int x, int y, int width, int height) {
-        super(main, x, y, width, height);
+    public TabbedWindowElement(WindowsController controller, int x, int y, int width, int height) {
+        super(controller, x, y, width, height);
+
+        tabPanel = new Panel();
     }
 
     public Widget getView() {
@@ -29,9 +36,9 @@ public class TabbedWindowElement extends WindowElement {
     }
 
     @Override
-    public boolean isAutoSize() {
+    public boolean isAutoSize(boolean vertical) {
         for (WindowElement child : children) {
-            if (child.isAutoSize()) {
+            if (child.isAutoSize(vertical)) {
                 return true;
             }
         }
@@ -52,14 +59,23 @@ public class TabbedWindowElement extends WindowElement {
     }
 
     @Override
-    public Widget initializeView() {
+    public void initializeView(WindowsController controller) {
         for (WindowElement child : children) {
-            Widget windowView = child.initializeView();
+            child.initializeView(controller);
+
+            Widget windowView = child.getView();
+
             tabPanel.addTab(windowView, child.getCaption());
             visibleChildren.add(child);
             tabPanel.selectTab(visibleChildren.indexOf(child));
         }
-        return super.initializeView();
+    }
+
+    @Override
+    public void onAddView(WindowsController controller) {
+        for (WindowElement child : children) {
+            child.onAddView(controller);
+        }
     }
 
     @Override

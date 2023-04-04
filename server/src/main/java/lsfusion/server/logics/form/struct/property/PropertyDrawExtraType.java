@@ -70,6 +70,22 @@ public enum PropertyDrawExtraType {
             return "{logics.property.readonly}";
         }
     }, 
+    VALUEELEMENTCLASS {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.CELL_VALUEELEMENTCLASS;
+        }
+
+        @Override
+        public String getText() {
+            return "VALUEELEMENTCLASS";
+        }
+    }, 
     BACKGROUND {
         @Override
         public ReportFieldExtraType getReportExtraType() {
@@ -80,12 +96,12 @@ public enum PropertyDrawExtraType {
         public byte getPropertyReadType() {
             return PropertyReadType.CELL_BACKGROUND;
         }
-        
+
         @Override
         public String getText() {
             return "{logics.background}";
         }
-    }, 
+    },
     FOREGROUND {
         @Override
         public ReportFieldExtraType getReportExtraType() {

@@ -27,6 +27,11 @@ public class StaticImageButton extends ImageButton {
         return caption;
     }
 
+    @Override
+    protected boolean forceDiv() {
+        return false;
+    }
+
     public void changeImage(StaticImage image) {
         this.image = image;
         updateImage();

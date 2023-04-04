@@ -9,6 +9,7 @@ import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
 import lsfusion.gwt.client.navigator.controller.GINavigatorController;
+import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 
@@ -33,11 +34,13 @@ public abstract class MobileNavigatorView {
 
         Predicate<GNavigatorWindow>[] windows;
         ComplexPanel[] windowPanels;
+        GAbstractWindow[] cssWindows;
 
-        public RootPanels(ComplexPanel mainPanel, Predicate<GNavigatorWindow>[] windows, ComplexPanel[] windowPanels) {
+        public RootPanels(ComplexPanel mainPanel, Predicate<GNavigatorWindow>[] windows, ComplexPanel[] windowPanels, GAbstractWindow[] cssWindows) {
             this.mainPanel = mainPanel;
             this.windows = windows;
             this.windowPanels = windowPanels;
+            this.cssWindows = cssWindows;
         }
     }
 
@@ -60,8 +63,15 @@ public abstract class MobileNavigatorView {
             createChildrenMenuItems(rootPanels.windowPanels[i], rootPanels.windows[i], navigatorController.getRoot(), -1);
         }
 
-        RootLayoutPanel.get().add(rootPanels.mainPanel);
-        enable(rootPanels.mainPanel);
+        ComplexPanel mainPanel = rootPanels.mainPanel;
+        GAbstractWindow[] cssWindows = rootPanels.cssWindows;
+
+        if(cssWindows != null) // updating window classes after the windows have already added to the DOM
+            for(GAbstractWindow cssWindow : cssWindows)
+                windowsController.updateElementClass(cssWindow);
+        windowsController.initNavigatorRootView(mainPanel);
+        RootLayoutPanel.get().add(mainPanel);
+        enable(mainPanel);
     }
 
     private final NativeSIDMap<GNavigatorElement, NavigatorImageButton> navigatorItems = new NativeSIDMap<>();

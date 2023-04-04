@@ -274,13 +274,15 @@ public class MapFact {
         return result.immutableRev();
     }
 
-    public static int colHash(int h) { // копися с hashSet'а
-//        return h;
-        h ^= (h >>> 20) ^ (h >>> 12);
-        return (h ^ (h >>> 7) ^ (h >>> 4));
+    // https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
+    // Can return negative values!
+    public static int colHash(int h) {
+        h = ((h >>> 16) ^ h) * 0x45d9f3b;
+        h = ((h >>> 16) ^ h) * 0x45d9f3b;
+        return (h >>> 16) ^ h;
     }
 
-    public static int objHash(int h) { // копися с hashSet'а
+    public static int objHash(int h) {
         return h;
 //        h ^= (h >>> 20) ^ (h >>> 12);
 //        return (h ^ (h >>> 7) ^ (h >>> 4));

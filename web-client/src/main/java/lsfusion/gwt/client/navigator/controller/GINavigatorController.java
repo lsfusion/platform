@@ -21,7 +21,5 @@ public interface GINavigatorController {
 
     void updateVisibility(Map<GAbstractWindow, Boolean> visibleWindows);
 
-    void autoSizeWindows();
-
     void resetSelectedElements(GNavigatorElement newSelectedElement);
 }

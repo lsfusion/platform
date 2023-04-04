@@ -168,6 +168,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyShowIf;
     public final PropertyObjectInstance<?> propertyReadOnly;
     public final PropertyObjectInstance<?> propertyFooter;
+    public final PropertyObjectInstance<?> propertyValueElementClass;
     public final PropertyObjectInstance<?> propertyBackground;
     public final PropertyObjectInstance<?> propertyForeground;
     public final PropertyObjectInstance<?> propertyImage;
@@ -177,6 +178,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ShowIfReaderInstance showIfReader;
     public ExtraReaderInstance footerReader;
     public ExtraReaderInstance readOnlyReader;
+    public ExtraReaderInstance valueElementClassReader;
     public ExtraReaderInstance backgroundReader;
     public ExtraReaderInstance foregroundReader;
     public ExtraReaderInstance imageReader;
@@ -199,6 +201,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyShowIf = propertyExtras.get(PropertyDrawExtraType.SHOWIF);
         propertyReadOnly = propertyExtras.get(PropertyDrawExtraType.READONLYIF);
         propertyFooter = propertyExtras.get(PropertyDrawExtraType.FOOTER);
+        propertyValueElementClass = propertyExtras.get(PropertyDrawExtraType.VALUEELEMENTCLASS);
         propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
         propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
         propertyImage = propertyExtras.get(PropertyDrawExtraType.IMAGE);
@@ -208,6 +211,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         showIfReader = new ShowIfReaderInstance(PropertyDrawExtraType.SHOWIF, propertyShowIf);
         footerReader = new ExtraReaderInstance(PropertyDrawExtraType.FOOTER, propertyFooter);
         readOnlyReader = new ExtraReaderInstance(PropertyDrawExtraType.READONLYIF, propertyReadOnly);
+        valueElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.VALUEELEMENTCLASS, propertyValueElementClass);
         backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
         foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);
         imageReader = new ExtraReaderInstance(PropertyDrawExtraType.IMAGE, propertyImage);

@@ -164,7 +164,7 @@ public class GFormLayout extends ResizableComplexPanel {
             String caption = container.caption;
             BaseImage image = container.image;
             if(alreadyInitialized) {
-                BaseImage.updateText(captionWidget, caption);
+                BaseImage.updateText(captionWidget, caption, false);
                 BaseImage.updateImage(image, captionWidget, false);
             } else
                 BaseImage.initImageText(captionWidget, caption, image, false);
@@ -199,6 +199,15 @@ public class GFormLayout extends ResizableComplexPanel {
         Widget widget = baseComponentViews.get(component);
         if(widget != null) {
             GwtClientUtils.setShowIfVisible(widget, visible);
+        }
+    }
+
+    public void setElementClass(GComponent component, Object elementClass) {
+        component.elementClass = elementClass != null ? elementClass.toString() : null;
+
+        Widget widget = component instanceof GContainer ? containerViews.get((GContainer) component).getView() : baseComponentViews.get(component);
+        if(widget != null) {
+            BaseImage.updateClasses(widget, component.elementClass);
         }
     }
 

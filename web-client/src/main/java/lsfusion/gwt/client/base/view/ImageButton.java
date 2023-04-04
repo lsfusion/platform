@@ -2,8 +2,6 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.BaseImage;
-import lsfusion.gwt.client.view.ColorThemeChangeListener;
-import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class ImageButton extends FormButton {
 
@@ -26,13 +24,14 @@ public abstract class ImageButton extends FormButton {
 
     protected abstract BaseImage getImage();
     protected abstract String getCaption();
+    protected abstract boolean forceDiv();
 
     public void updateImage() {
         BaseImage.updateImage(getImage(), this, vertical);
     }
 
     public void updateText() {
-        BaseImage.updateText(this, getCaption());
+        BaseImage.updateText(this, getCaption(), vertical, forceDiv());
     }
 
     // call before attach

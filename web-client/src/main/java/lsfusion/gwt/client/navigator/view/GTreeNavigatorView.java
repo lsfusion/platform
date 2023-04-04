@@ -69,7 +69,7 @@ public class GTreeNavigatorView extends GNavigatorView<GTreeNavigatorWindow> {
 
         tree.clear();
         for (GNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addNavigatorElement(null, element, newElements);
             }
         }

@@ -31,6 +31,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     protected Object value;
     protected boolean loading;
     private Object image;
+    private Object valueElementClass;
     private Object background;
     private Object foreground;
     protected boolean readOnly;
@@ -73,7 +74,12 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public String getForeground() {
-        return getThemedColor(foreground != null ? foreground.toString() : null);
+        return foreground != null ? foreground.toString() : null;
+    }
+
+    @Override
+    public String getValueElementClass() {
+        return valueElementClass != null ? valueElementClass.toString() : null;
     }
 
     protected GPropertyDraw property;
@@ -272,10 +278,11 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     public abstract void pasteValue(final String value);
 
-    public void update(Object value, boolean loading, Object image, Object background, Object foreground, boolean readOnly) {
+    public void update(Object value, boolean loading, Object image, Object valueElementClass, Object background, Object foreground, boolean readOnly) {
         this.value = value;
         this.loading = loading;
         this.image = image;
+        this.valueElementClass = valueElementClass;
         this.background = background;
         this.foreground = foreground;
         this.readOnly = readOnly;

@@ -1646,7 +1646,7 @@ public class GFormController implements EditManager {
     public void updateCaption(GContainer container) {
         Widget captionWidget = getCaptionWidget(container);
         if(captionWidget != null)
-            BaseImage.updateText(captionWidget, container.caption);
+            BaseImage.updateText(captionWidget, container.caption, false);
     }
     public void updateImage(GContainer container) {
         Widget captionWidget = getCaptionWidget(container);

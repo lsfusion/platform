@@ -291,7 +291,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         dropActionPropertyDraw = addPropertyDraw(baseLM.getFormDrop(), version);
 
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
-        logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF);
+        logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF, version);
 
         addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied.action, MapFact.EMPTYREV()));
         addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
@@ -338,7 +338,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
             PropertyDrawEntity propertyDraw = addPropertyDraw(baseLM.count, version);
             propertyDraw.setToDraw(group);
             propertyDraw.setIntegrationSID(null); // we want to exclude this property from all integrations / apis / reports (use only in interactive view)
-            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType).property))), PropertyDrawExtraType.SHOWIF);
+            propertyDraw.setPropertyExtra(addPropertyObject(baseLM.addJProp(baseLM.isPivot, new LP(group.getListViewType(baseLM.listViewType).property))), PropertyDrawExtraType.SHOWIF, version);
             propertyDraw.ignoreHasHeaders = true;
 
             addPropertyDrawView(propertyDraw, ComplexLocation.DEFAULT(), version); // because it's called after form constructor
@@ -873,7 +873,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
 
         final PropertyDrawEntity<P> newPropertyDraw = new PropertyDrawEntity<>(genID(), propertySID, integrationSID, propertyImplement, inheritedProperty);
-        newPropertyDraw.proceedDefaultDraw(this);
+        newPropertyDraw.proceedDefaultDraw(this, version);
 
         propertyDraws.add(newPropertyDraw, location, version);
         newPropertyDraw.setFormPath(formPath);

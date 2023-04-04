@@ -547,7 +547,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
     public interface DefaultProcessor {
         // из-за inherit entity и view могут быть другого свойства
-        void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form);
+        void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version);
         void proceedDefaultDesign(PropertyDrawView propertyView);
     }
 
@@ -598,7 +598,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         // для всех 
         private ImList<DefaultProcessor> processors = ListFact.EMPTY();
         
-        public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form) {
+        public void proceedDefaultDraw(PropertyDrawEntity<?> entity, FormEntity form, Version version) {
             entity.viewType = viewType;
             entity.customRenderFunction = customRenderFunction;
             entity.customChangeFunction = customEditorFunction;
@@ -607,7 +607,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
             entity.eventID = eventID;
 
             for(DefaultProcessor processor : processors)
-                processor.proceedDefaultDraw(entity, form);
+                processor.proceedDefaultDraw(entity, form, version);
         }
 
         public void proceedDefaultDesign(PropertyDrawView propertyView) {

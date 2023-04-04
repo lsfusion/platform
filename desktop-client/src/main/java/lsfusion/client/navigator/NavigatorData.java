@@ -56,7 +56,7 @@ public class NavigatorData {
                 ClientNavigatorElement child = elementsMap.get(inStream.readUTF());
 
                 element.children.add(child);
-                child.parents.add(element);
+                child.parent = element;
             }
         }
 

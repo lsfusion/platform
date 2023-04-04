@@ -163,12 +163,14 @@ public class InstanceFactory {
     public ContainerViewInstance getInstance(ContainerView entity) {
         ContainerViewInstance containerViewInstance = containerViewInstances.get(entity);
         if (containerViewInstance == null) {
+            PropertyObjectEntity propertyElementClass = entity.propertyElementClass;
             containerViewInstance = new ContainerViewInstance(
                     entity,
                     ContainerViewExtraType.extras.mapValues((ContainerViewExtraType type) -> {
                         PropertyObjectEntity<?> extra = entity.getExtra(type);
                         return extra != null ? getInstance(extra) : null;
-                    })
+                    }),
+                    propertyElementClass != null ? getInstance(propertyElementClass) : null
             );
             containerViewInstances.exclAdd(entity, containerViewInstance);
         }
@@ -178,7 +180,8 @@ public class InstanceFactory {
     public BaseComponentViewInstance getInstance(ComponentView entity) {
         BaseComponentViewInstance baseComponentViewInstance = baseComponentViewInstances.get(entity);
         if (baseComponentViewInstance == null) {
-            baseComponentViewInstance = new BaseComponentViewInstance(entity);
+            PropertyObjectEntity propertyElementClass = entity.propertyElementClass;
+            baseComponentViewInstance = new BaseComponentViewInstance(entity, propertyElementClass != null ? getInstance(propertyElementClass) : null);
             baseComponentViewInstances.exclAdd(entity, baseComponentViewInstance);
         }
         return baseComponentViewInstance;

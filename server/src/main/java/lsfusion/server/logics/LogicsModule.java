@@ -1888,7 +1888,7 @@ public abstract class LogicsModule {
 
         if(objectEntity != null) {
             action.drawOptions.addProcessor(new ActionOrProperty.DefaultProcessor() {
-                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                         if(entity.toDraw == null)
                             entity.toDraw = objectEntity.groupTo;
                     }
