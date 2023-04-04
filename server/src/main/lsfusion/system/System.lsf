@@ -277,6 +277,9 @@ setExtension(RAWFILE rawFile, STRING extension) = FORMULA FILE 'cast_static_file
 namedFile(RAWFILE rawFile, STRING name, STRING extension) = FORMULA NAMEDFILE 'cast_static_file_to_named_file($1, $2, $3)';
 namedFile(FILE file, STRING name) = FORMULA NAMEDFILE 'cast_dynamic_file_to_named_file($1, $2)';
 
+// hashes
+md5(FILE file) = FORMULA STRING 'md5($1)';
+
 //get name and extension
 extension(FILE file) = FORMULA TEXT 'get_extension($1)';
 name(NAMEDFILE file) = FORMULA TEXT 'get_named_file_name($1)';

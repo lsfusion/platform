@@ -4,6 +4,7 @@ REQUIRE Utils, Reflection;
 
 // Icon properties
 
+TABLE icon () NODEFAULT;
 type(STRING styles) = IF styles = 'bi' THEN 'bi' ELSE ('fa' IF styles IS STRING); 
 
 CLASS Icon;
@@ -80,26 +81,34 @@ synonyms = GROUP CONCAT synonym(INTEGER i) , ' ' ORDER i BY synonymIcon(i);
 styles = GROUP CONCAT style(INTEGER i), ' ' ORDER i BY styleIcon(i);
 type (INTEGER i) = type(styles(i));
 
+importIconsHash = DATA STRING () TABLE icon; // to avoid update conflicts
+
 importIcons '{icon.import.json}' () {
     
     APPLY {
         readResource('/web/icons_with_synonyms.json');
+        
+        LOCAL newHash = STRING ();
+        newHash() <- md5(resource());
+        IF NOT newHash() = importIconsHash() THEN {
+            IMPORT importIcons JSON FROM resource();
 
-        IMPORT importIcons JSON FROM resource();
+            FOR name(INTEGER i) AND NOT icon(name(i), type(i)) INLINE NEW icn = Icon DO {
+                name(icn) <- name(i);
+                styles(icn) <- styles(i); // need this to fill the type
+            }
 
-        FOR name(INTEGER i) AND NOT icon(name(i), type(i)) INLINE NEW icn = Icon DO {
-            name(icn) <- name(i);
-            styles(icn) <- styles(i); // need this to fill the type
+            FOR name(Icon icn) = name(INTEGER i) AND type(icn) = type(i) INLINE DO {
+                label(icn) <- lower(label(i));
+                terms(icn) <- lower(terms(i));
+                synonyms(icn) <- lower(synonyms(i));
+                styles(icn) <- styles(i);
+            }
+
+            DELETE Icon icn WHERE icn IS Icon AND NOT [GROUP SUM 1 BY name(INTEGER i), type(i)](name(icn), type(icn));
+
+            importIconsHash() <- newHash();
         }
-
-        FOR name(Icon icn) = name(INTEGER i) AND type(icn) = type(i) INLINE DO {
-            label(icn) <- lower(label(i));
-            terms(icn) <- lower(terms(i));
-            synonyms(icn) <- lower(synonyms(i));
-            styles(icn) <- styles(i);
-        }
-
-        DELETE Icon icn WHERE icn IS Icon AND NOT [GROUP SUM 1 BY name(INTEGER i), type(i)](name(icn), type(icn));
     }
 
     // updating properties
