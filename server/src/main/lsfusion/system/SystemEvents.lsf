@@ -12,6 +12,11 @@ onWebClientLoad ABSTRACT LIST ();
 onLoginLoad = ABSTRACT CASE INTEGER(STRING);
 onWebClientLoad = ABSTRACT CASE INTEGER(STRING);
 
+onStartedApply() {
+    onStarted();
+    APPLY;
+}
+
 //todo logo() logic temporarily commented to use lsf-font .css class and AppImages.java
 
 //defaultLogo() = DATA IMAGEFILE ();

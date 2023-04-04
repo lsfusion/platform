@@ -4,19 +4,26 @@ REQUIRE Utils, Reflection;
 
 // Icon properties
 
+type(STRING styles) = IF styles = 'bi' THEN 'bi' ELSE ('fa' IF styles IS STRING); 
+
 CLASS Icon;
-iconName '{icon.name}' = DATA STRING (Icon) INDEXED;
+name '{icon.name}' = DATA STRING (Icon);
 explicit = DATA STRING (Icon);
 label '{icon.label}' = DATA STRING (Icon);
 terms '{icon.terms}' = DATA STRING (Icon);
 synonyms '{icon.synonyms}' = DATA STRING (Icon);
 styles '{icon.free.class}' = DATA STRING (Icon);
-searchStyles(Icon i) = IF styles(i) = 'bi' THEN 'lsfreg'
+
+type(Icon i) = type(styles(i)) MATERIALIZED;
+INDEX name(Icon i), type(i);
+icon = GROUP AGGR Icon icn BY name(icn), type(icn) MATERIALIZED INDEXED;
+
+searchStyles(Icon i) = IF type(i) = 'bi' THEN 'lsfreg'
                               ELSE IF styles(i) = 'brands' THEN '' 
                               ELSE 'lsfsol' + (IF styles(i) LIKE '%regular%' THEN ' lsfreg' ELSE ('' IF i IS Icon)) MATERIALIZED;  
-iconClass(STRING s, Icon i) = IF styles(i) = 'bi' THEN 'bi bi-' + iconName(i)
+iconClass(STRING s, Icon i) = IF type(i) = 'bi' THEN 'bi bi-' + name(i)
                               ELSE ((IF styles(i) = 'brands' THEN 'fa-brands'
-                              ELSE (IF endsWith(s, 'Lsfreg') AND styles(i) LIKE '%regular%' THEN 'fa-regular' ELSE 'fa')) + ' fa-' + iconName(i)); // should correspond AppServerImage.createDefaultImage -> getBestIcon param
+                              ELSE (IF endsWith(s, 'Lsfreg') AND styles(i) LIKE '%regular%' THEN 'fa-regular' ELSE 'fa')) + ' fa-' + name(i)); // should correspond AppServerImage.createDefaultImage -> getBestIcon param
 vector '{icon.vector}' (Icon i) = tsVector(explicit(i), label(i), terms(i), CONCAT ' ', synonyms(i), searchStyles(i)) MATERIALIZED INDEXED MATCH;
 nameToIconQuery(STRING s) = splitCamelCase(s, ' | ');
 
@@ -40,71 +47,61 @@ getBestIcons() {
 
 // Icon import
 
-data_id_terms = DATA LOCAL STRING (INTEGER);
-data_id_synonyms = DATA LOCAL STRING (INTEGER);
-data_id_free = DATA LOCAL STRING (INTEGER);
 term = DATA LOCAL STRING(INTEGER);
+termIcon = DATA LOCAL INTEGER (INTEGER);
 synonym = DATA LOCAL STRING(INTEGER);
-free = DATA LOCAL STRING(INTEGER);
-label = DATA LOCAL STRING(STRING);
+synonymIcon = DATA LOCAL INTEGER (INTEGER);
+style = DATA LOCAL STRING(INTEGER);
+styleIcon = DATA LOCAL INTEGER (INTEGER);
+
+label = DATA LOCAL STRING(INTEGER);
+name = DATA LOCAL STRING(INTEGER);
 
 FORM importIcons
-    OBJECTS data=STRING EXTKEY
+    OBJECTS value = INTEGER 
 
-    PROPERTIES(data) label
+    PROPERTIES(value) label, name
 
     OBJECTS terms=INTEGER
     PROPERTIES(terms) term EXTID 'value'
-    FILTERS data_id_terms(terms) == data
+    FILTERS termIcon(terms) = value
 
     OBJECTS synonyms=INTEGER
     PROPERTIES (synonyms) synonym EXTID 'value'
-    FILTERS data_id_synonyms(synonyms) == data
+    FILTERS synonymIcon(synonyms) = value
 
     OBJECTS free=INTEGER
-    PROPERTIES (free) free EXTID 'value'
-    FILTERS data_id_free(free) == data
+    PROPERTIES (free) style EXTID 'value'
+    FILTERS styleIcon(free) = value
 ;
 
-icon(iconName) = GROUP AGGR Icon icn BY iconName(icn);
-terms(STRING iconName) = GROUP CONCAT term(INTEGER i) IF data_id_terms(i) == iconName, ' ' ORDER i;
-synonyms(STRING iconName) = GROUP CONCAT synonym(INTEGER i) IF data_id_synonyms(i) == iconName, ' ' ORDER i;
-free(STRING iconName) = GROUP CONCAT free(INTEGER i) IF data_id_free(i) == iconName, ' ' ORDER i;
-
-iconName = GROUP MAX STRING s BY label(s);
-bi = DATA LOCAL BOOLEAN ();
-importIconsBI '{icon.import.json}' () {
-    readResource('/web/' + (IF bi() THEN 'bi_' ELSE '') + 'icons_with_synonyms.json');
-    IMPORT importIcons JSON FROM resource();
-
-    FOR iconName(STRING s) AND NOT icon(iconName(s)) NEW icn = Icon DO {
-        iconName(icn) <- iconName(s);
-
-        IF bi() THEN
-            styles(icn) <- 'bi';
-    }
-
-    FOR iconName(Icon icn) = iconName(STRING s) AND 
-        (IF bi() THEN styles(icn) = 'bi' ELSE NOT styles(icn) = 'bi') INLINE DO {
-        label(icn) <- lower(s);
-        terms(icn) <- lower(terms(iconName(icn)));
-        synonyms(icn) <- lower(synonyms(iconName(icn)));
-        IF NOT bi() THEN
-            styles(icn) <- free(iconName(icn));
-    }
-
-    DELETE Icon icn WHERE icn IS Icon AND 
-        (IF bi() THEN styles(icn) = 'bi' ELSE NOT styles(icn) = 'bi') AND 
-        NOT [ GROUP SUM 1 BY iconName(STRING s)](iconName(icn));
-
-    APPLY;
-}
+terms = GROUP CONCAT term(INTEGER i), ' ' ORDER i BY termIcon(i);
+synonyms = GROUP CONCAT synonym(INTEGER i) , ' ' ORDER i BY synonymIcon(i);
+styles = GROUP CONCAT style(INTEGER i), ' ' ORDER i BY styleIcon(i);
+type (INTEGER i) = type(styles(i));
 
 importIcons '{icon.import.json}' () {
-    importIconsBI(); // importing font awesome
-    bi() <- TRUE;
-    importIconsBI(); // importing bootstrap icons
     
+    APPLY {
+        readResource('/web/icons_with_synonyms.json');
+
+        IMPORT importIcons JSON FROM resource();
+
+        FOR name(INTEGER i) AND NOT icon(name(i), type(i)) INLINE NEW icn = Icon DO {
+            name(icn) <- name(i);
+            styles(icn) <- styles(i); // need this to fill the type
+        }
+
+        FOR name(Icon icn) = name(INTEGER i) AND type(icn) = type(i) INLINE DO {
+            label(icn) <- lower(label(i));
+            terms(icn) <- lower(terms(i));
+            synonyms(icn) <- lower(synonyms(i));
+            styles(icn) <- styles(i);
+        }
+
+        DELETE Icon icn WHERE icn IS Icon AND NOT [GROUP SUM 1 BY name(INTEGER i), type(i)](name(icn), type(icn));
+    }
+
     // updating properties
     LOCAL allProperties = STRING (STRING);
     readResourcePaths('/[^/]*Icons\\.properties');
@@ -116,8 +113,8 @@ importIcons '{icon.import.json}' () {
         allProperties(STRING s) <- properties(s) WHERE properties(s);        
     }
 
-    explicit(Icon icn) <- [GROUP CONCAT splitCamelCase(STRING s AS STRING, ' ') , ' ' ORDER s BY allProperties(s)](iconName(icn));
-    
+    explicit(Icon icn) <- [GROUP CONCAT splitCamelCase(STRING s AS STRING, ' ') , ' ' ORDER s BY allProperties(s)](name(icn));
+
     APPLY;
 }
 
@@ -134,8 +131,8 @@ FORM icons '{navigator.icon}'
     PROPERTIES bestIconClass '{icon.best.icon.name}' = bestIconClasses(search())  READONLY IMAGE bestIconClasses(search()), bestIconRank '{icon.best.icon.rank}' = bestIconRanks(search()) READONLY 
     OBJECTS i = Icon 
     PROPERTIES iconImage '{icon.icon}' = {} IMAGE iconClass(search(), i) GRID, rank '{icon.rank}' = tsRank(vector(i), nameToIconQuery(search())) 
-    PROPERTIES(i) READONLY iconName, explicit, label, terms, synonyms, styles, vector
-    PROPERTIES (i) DELETE
+    PROPERTIES(i) READONLY name, explicit, label, terms, synonyms, styles, vector
+    PROPERTIES(i) DELETE
 ;
 
 DESIGN icons {

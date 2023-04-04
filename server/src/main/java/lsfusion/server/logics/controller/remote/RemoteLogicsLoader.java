@@ -77,27 +77,20 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
     @Override
     protected void onStarted(LifecycleEvent event) {
 
-        boolean lightStart = SystemProperties.lightStart;
-        if(lightStart)
-            exportRmiObject();
-
-        // before executeOnStarted to initialize debugger
         try {
             new TaskRunner(getBusinessLogics()).runTask(initTask, logger);
         } catch (Exception e) {
             throw new RuntimeException("Error starting ReflectionManager: ", e);
         }
 
-        executeOnStarted();
-
-        if(!lightStart)
-            exportRmiObject();
-
         started = true;
     }
 
-    private void exportRmiObject() {
-        logger.info("Exporting RMI Logics object (port: " + rmiManager.getPort() + ")");
+    public int getPort() {
+        return rmiManager.getPort();
+    }
+
+    public void exportRmiObject() {
         try {
             rmiManager.export(remoteLogics);
             rmiManager.bindAndExport(EXPORT_NAME, this);
@@ -105,16 +98,6 @@ public class RemoteLogicsLoader extends LogicsManager implements RemoteLogicsLoa
             throw new RuntimeException("Port (" + rmiManager.getPort() + ") is already bound. Maybe another server is already running");
         } catch (Exception e) {
             throw new RuntimeException("Error binding Remote Logics Loader: ", e);
-        }
-    }
-
-    private void executeOnStarted() {
-        try(DataSession session = createSession()) {
-            logger.info("Executing onStarted action");
-            remoteLogics.businessLogics.systemEventsLM.onStarted.execute(session, getStack());
-            apply(session);
-        } catch (Exception e) {
-            throw new RuntimeException("Error executing onStarted: ", e);
         }
     }
 

@@ -141,7 +141,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
 
         super.initMainLogic();
 
-        onStarted = findAction("onStarted[]");
+        onStarted = findAction("onStartedApply[]");
 
         useBootstrap = findProperty("useBootstrap[CustomUser]");
         serverUseBootstrap = findProperty("serverUseBootstrap[]");

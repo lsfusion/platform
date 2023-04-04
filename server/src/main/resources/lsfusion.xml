@@ -632,7 +632,7 @@
         <property name="BL" ref="businessLogics"/>
         <property name="dependencies">
             <set>
-                <ref bean="initDebugTask"/> <!-- we want the debugger to work in executing actions -->
+<!--                <ref bean="initDebugTask"/> &lt;!&ndash; we want the debugger to work in executing actions &ndash;&gt;-->
             </set>
         </property>
     </bean>
@@ -648,6 +648,17 @@
 
     <bean id="prereadIconsNavigatorElementsTask" class="lsfusion.server.logics.navigator.controller.init.PrereadIconsNavigatorElementsTask">
         <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+                <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
+            </set>
+        </property>
+    </bean>
+
+    <bean id="exportRmiObjectTask" class="lsfusion.server.logics.navigator.controller.init.ExportRmiObjectTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="remoteLogicsLoader" ref="remoteLogicsLoader"/>
+        <property name="initDevTask" ref="initDevRLTask"/>
         <property name="dependencies">
             <set>
                 <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
@@ -673,12 +684,21 @@
         </property>
     </bean>
 
-    <bean id="initRLTask" class="lsfusion.server.base.task.GroupTask">
+    <bean id="initDevRLTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
                 <ref bean="prereadIconsFormsTask"/>
                 <ref bean="prereadIconsNavigatorElementsTask"/>
+            </set>
+        </property>
+    </bean>
+
+    <bean id="initRLTask" class="lsfusion.server.base.task.GroupTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="initDevRLTask"/>
+                <ref bean="exportRmiObjectTask"/>
             </set>
         </property>
     </bean>

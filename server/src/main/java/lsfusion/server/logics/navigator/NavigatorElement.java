@@ -74,8 +74,8 @@ public abstract class NavigatorElement {
         return parent == null || parent.getParent() == null;
     }
 
-    public LocalizedString getCaption() {
-        return caption.get(); // can not be null, see createNavigatorElement (forms and actions always have name)
+    public String getCaption() {
+        return ThreadLocalContext.localize(caption.get()); // can not be null, see createNavigatorElement (forms and actions always have name)
 //        return LocalizedString.create(CanonicalNameUtils.getName(getCanonicalName()));
     }
 
@@ -252,7 +252,7 @@ public abstract class NavigatorElement {
     @Override
     public String toString() {
         String result = getCanonicalName();
-        String caption = ThreadLocalContext.localize(getCaption());
+        String caption = getCaption();
         if (caption != null) {
             result += " '" + caption + "'";
         }
@@ -277,7 +277,7 @@ public abstract class NavigatorElement {
         SerializationUtil.writeString(outStream, getCreationPath());
         SerializationUtil.writeString(outStream, getPath());
 
-        outStream.writeUTF(ThreadLocalContext.localize(getCaption()));
+        outStream.writeUTF(getCaption());
         SerializationUtil.writeString(outStream, elementClass);
         outStream.writeBoolean(hasChildren());
         if (window == null) {
