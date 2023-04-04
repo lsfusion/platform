@@ -52,11 +52,11 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     public void updateValue(Object value) {
-        update(value, loading, null, null, null, false);
+        update(value, loading, null, null, null, null, false);
     }
 
     public void updateLoading(boolean loading) {
-        update(value, loading, null, null, null, false);
+        update(value, loading, null, null, null, null, false);
     }
 
     @Override

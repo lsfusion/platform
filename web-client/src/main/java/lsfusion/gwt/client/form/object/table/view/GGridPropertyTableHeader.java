@@ -197,7 +197,7 @@ public class GGridPropertyTableHeader extends Header<String> {
     }
 
     private static void renderCaption(Element captionElement, String caption) {
-        BaseImage.updateText(captionElement, caption);
+        BaseImage.updateText(captionElement, caption, false);
     }
     private static void renderImage(Element captionElement, AppBaseImage image) {
         BaseImage.updateImage(image, captionElement, false);

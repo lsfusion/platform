@@ -125,6 +125,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).showIfReader;
             case GPropertyReadType.READONLY:
                 return form.getProperty(readerId).readOnlyReader;
+            case GPropertyReadType.CELL_VALUEELEMENTCLASS:
+                return form.getProperty(readerId).valueElementClassReader;
             case GPropertyReadType.CELL_BACKGROUND:
                 return form.getProperty(readerId).backgroundReader;
             case GPropertyReadType.CELL_FOREGROUND:
@@ -147,6 +149,8 @@ public class GFormChanges {
                 return form.findContainerByID(readerId).customDesignReader;
             case GPropertyReadType.COMPONENT_SHOWIF:
                 return form.findComponentByID(readerId).showIfReader;
+            case GPropertyReadType.COMPONENT_ELEMENTCLASS:
+                return form.findComponentByID(readerId).elementClassReader;
             case GPropertyReadType.CUSTOM_OPTIONS:
                 return form.getGroupObject(readerId).customOptionsReader;
             default:
@@ -172,5 +176,7 @@ public class GFormChanges {
         public final static byte COMPONENT_SHOWIF = 13;
         public final static byte CUSTOM_OPTIONS = 14;
         public final static byte CONTAINER_IMAGE = 15;
+        public final static byte CELL_VALUEELEMENTCLASS = 16;
+        public final static byte COMPONENT_ELEMENTCLASS = 17;
     }
 }

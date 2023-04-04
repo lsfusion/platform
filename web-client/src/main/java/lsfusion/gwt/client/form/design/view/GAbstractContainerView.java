@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.design.view;
 
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.design.GComponent;
 import lsfusion.gwt.client.form.design.GContainer;
@@ -126,8 +127,7 @@ public abstract class GAbstractContainerView {
             view = wrapPanel;
         }
 
-        if(child.elementClass != null)
-            view.getElement().addClassName(child.elementClass);
+        BaseImage.updateClasses(view, child.elementClass);
 
         return view;
     }

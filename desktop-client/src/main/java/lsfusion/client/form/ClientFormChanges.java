@@ -145,6 +145,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt()).showIfReader;
             case PropertyReadType.FOOTER:
                 return clientForm.getProperty(inStream.readInt()).footerReader;
+            case PropertyReadType.CELL_VALUEELEMENTCLASS:
+                return clientForm.getProperty(inStream.readInt()).valueElementClassReader;
             case PropertyReadType.CELL_BACKGROUND:
                 return clientForm.getProperty(inStream.readInt()).backgroundReader;
             case PropertyReadType.CELL_FOREGROUND:
@@ -167,6 +169,8 @@ public class ClientFormChanges {
                 return clientForm.findContainerByID(inStream.readInt()).customPropertyDesignReader;
             case PropertyReadType.COMPONENT_SHOWIF:
                 return clientForm.findComponentByID(inStream.readInt()).showIfReader;
+            case PropertyReadType.COMPONENT_ELEMENTCLASS:
+                return clientForm.findComponentByID(inStream.readInt()).elementClassReader;
             case PropertyReadType.CUSTOM_OPTIONS:
                 return clientForm.getGroupObject(inStream.readInt()).customOptionsReader;
             default:

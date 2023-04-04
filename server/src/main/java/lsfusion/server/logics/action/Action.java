@@ -19,6 +19,7 @@ import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadUtils;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.DataObject;
@@ -99,7 +100,7 @@ public abstract class Action<P extends PropertyInterface> extends ActionOrProper
 
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                 if(entity.viewType == null)
                     entity.viewType = ClassViewType.PANEL;
             }

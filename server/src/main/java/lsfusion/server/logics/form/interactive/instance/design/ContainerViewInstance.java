@@ -3,14 +3,13 @@ package lsfusion.server.logics.form.interactive.instance.design;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.ContainerViewExtraType;
-import lsfusion.server.logics.form.interactive.instance.CellInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyReaderInstance;
 
-public class ContainerViewInstance extends CellInstance<ContainerView> {
+public class ContainerViewInstance extends ComponentViewInstance<ContainerView> {
 
-    public ContainerViewInstance(ContainerView entity, ImMap<ContainerViewExtraType, PropertyObjectInstance<?>> extras) {
-        super(entity);
+    public ContainerViewInstance(ContainerView entity, ImMap<ContainerViewExtraType, PropertyObjectInstance<?>> extras, PropertyObjectInstance propertyElementClass) {
+        super(entity, propertyElementClass);
 
         propertyCaption = extras.get(ContainerViewExtraType.CAPTION);
         captionReader = new ExtraReaderInstance(ContainerViewExtraType.CAPTION, propertyCaption);

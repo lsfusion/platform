@@ -70,3 +70,8 @@
 .mm-spn ul.mm-spn--parent {
     left: -130%;
 }
+
+.mm-spn li:has(.navbar-hidden):before,
+.mm-spn li:has(.navbar-hidden):after {
+    display: none;
+}

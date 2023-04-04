@@ -11,12 +11,12 @@ import lsfusion.server.logics.property.value.NullValueProperty;
 
 import static lsfusion.interop.form.property.PropertyReadType.COMPONENT_SHOWIF;
 
-public class BaseComponentViewInstance extends CellInstance<ComponentView> {
+public class BaseComponentViewInstance extends ComponentViewInstance<ComponentView> {
 
     public final ShowIfReaderInstance showIfReader;
 
-    public BaseComponentViewInstance(ComponentView entity) {
-        super(entity);
+    public BaseComponentViewInstance(ComponentView entity, PropertyObjectInstance propertyElementClass) {
+        super(entity, propertyElementClass);
 
         this.showIfReader = new ShowIfReaderInstance();
     }

@@ -35,10 +35,6 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
         return component;
     }
 
-    public int getAutoSize(boolean vertical) {
-        return vertical ? getHeight() : getWidth();
-    }
-
     public Widget getComponent() {
         return window.drawScrollBars ? ((ScrollPanel) component).getWidget() : component;
     }

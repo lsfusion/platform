@@ -1728,6 +1728,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         LM.logicsCaption.change(isRedundantString(logicsCaption) ? null : logicsCaption, session);
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
         systemEventsLM.serverUseBootstrap.change(useBootstrap ? true : null, session);
+        systemEventsLM.serverVerticalNavbar.change(businessLogics.verticalNavbar ? true : null, session);
+        systemEventsLM.serverPinNavbar.change(businessLogics.pinNavbar ? true : null, session);
         apply(session);
     }
 
@@ -2062,7 +2064,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             query.and(expr.getWhere());
             disableStatsTableColumnSet = query.execute(dataSession).keys().mapSetValues(value -> (String) value.singleValue());
 
-        } catch (SQLException | SQLHandledException e) {
+        } catch (SQLException e) {
+            serviceLogger.info(e.getMessage());
+        } catch (SQLHandledException e) {
             serviceLogger.info(e.getMessage());
         }
         return disableStatsTableColumnSet.toJavaSet();

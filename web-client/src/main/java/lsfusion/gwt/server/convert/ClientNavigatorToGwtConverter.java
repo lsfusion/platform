@@ -57,9 +57,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         }
         element.window = convertOrCast(clientElement.window);
         element.parentWindow = clientElement.parentWindow;
-        for (ClientNavigatorElement parent : clientElement.parents) {
-            element.parents.add((GNavigatorElement) convertOrCast(parent));
-        }
+        element.parent = convertOrCast(clientElement.parent);
         return element;
     }
 
@@ -121,7 +119,7 @@ public class ClientNavigatorToGwtConverter extends CachedObjectConverter {
         window.horizontalTextPosition = clientWindow.horizontalTextPosition;
         window.verticalTextPosition = clientWindow.verticalTextPosition;
         window.showSelect = clientWindow.showSelect;
-        window.type = clientWindow.type;
+        window.vertical = clientWindow.type == 1;
         return window;
     }
 

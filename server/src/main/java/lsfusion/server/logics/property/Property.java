@@ -18,6 +18,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.AbstractOuterContext;
@@ -399,7 +400,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                 if(entity.viewType == null)
                     entity.viewType = ClassViewType.LIST;
             }

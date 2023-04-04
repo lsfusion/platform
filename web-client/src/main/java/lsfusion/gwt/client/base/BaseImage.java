@@ -5,14 +5,16 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.CaptionPanelHeader;
+import lsfusion.gwt.client.base.view.FlexPanel;
 
 import java.io.Serializable;
 
 public interface BaseImage extends Serializable {
 
     String TEXT = "lsf-text-caption";
-    String HTML = "lsf-html-caption";
+    String DIV = "lsf-div-caption";
     String IMAGE = "lsf-image-caption";
 
     String getImageElementSrc(boolean enabled);
@@ -40,29 +42,115 @@ public interface BaseImage extends Serializable {
         if(useIcon != needIcon)
             return false;
 
-        if (useIcon) {
-            String fontClasses = ((BaseStaticImage)this).getFontClasses();
-            String prevFontClasses = element.getPropertyString(GwtClientUtils.FONT_CLASSES_ATTRIBUTE);
-            if(prevFontClasses != null)
-                GwtClientUtils.removeClassNames(element, prevFontClasses);
-
-            // it seems that enabled is not needed, since it is handled with the text color
-            if(!fontClasses.isEmpty())
-                GwtClientUtils.addClassNames(element, fontClasses);
-
-            element.setPropertyString(GwtClientUtils.FONT_CLASSES_ATTRIBUTE, fontClasses);
-        } else {
+        if (useIcon)
+            updateClasses(element, ((BaseStaticImage) this).getFontClasses());
+        else
             ((ImageElement) element).setSrc(getImageElementSrc(true));
-        }
+
         return true;
     }
+
+    static void updateClasses(Widget widget, String classes) {
+        updateClasses(widget.getElement(), classes);
+    }
+
+    interface PropagateClasses {
+        boolean is(Widget widget, Widget parent, String className);
+    }
+    static void updateClasses(Widget widget, String classes, PropagateClasses propagateClasses) {
+        updateClasses(widget, buildClassesChanges(widget.getElement(), classes), propagateClasses);
+    }
+    static void updateClasses(Widget widget, NativeStringMap<Boolean> classChanges, PropagateClasses propagateClasses) {
+        Widget parent = widget.getParent();
+
+        NativeStringMap<Boolean> propagateClassChanges = new NativeStringMap<>();
+        classChanges.foreachEntry((aclass, add) -> {
+            boolean propagated = false;
+            if (propagateClasses.is(widget, parent, aclass)) {
+                int prevAggrClasses = parent.getElement().getPropertyInt("PROPAGATE_CLASS_" + aclass);
+                int newAggrClasses = prevAggrClasses + (add ? 1 : -1);
+                parent.getElement().setPropertyInt("PROPAGATE_CLASS_" + aclass, newAggrClasses);
+
+                int childCount = ((FlexPanel) parent).getWidgetCount(); // parentElement.getChildCount
+                boolean prevNeedOnHover = prevAggrClasses == childCount;
+                boolean newNeedOnHover = newAggrClasses == childCount;
+                if (prevNeedOnHover != newNeedOnHover) { // changed status
+                    assert newNeedOnHover == add;
+                    propagated = true;
+                    for (int i = 0; i < childCount; i++) { // updating siblings
+                        Widget siblingWidget = ((FlexPanel) parent).getWidget(i); // parentElement.getChild()
+                        if (!widget.equals(siblingWidget))
+                            applyClassChange(siblingWidget.getElement(), aclass, !add);
+                    }
+                }
+            }
+            if (propagated) {
+                propagateClassChanges.put(aclass, add);
+            } else {
+                applyClassChange(widget.getElement(), aclass, add);
+            }
+        });
+
+        if(!propagateClassChanges.isEmpty()) { // optimization
+            // parents has classes only set with propagations (in this case we don't need to update LSF_CLASSES_ATTRIBUTE)
+            assert parent.getElement().getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE) == null;
+            updateClasses(parent, propagateClassChanges, propagateClasses);
+        }
+    }
+
+    static NativeStringMap<Boolean> buildClassesChanges(Element element, String newClasses) {
+        String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+        if(prevClasses == null)
+            prevClasses = new String[0];
+
+        NativeStringMap<Boolean> changes = new NativeStringMap<>();
+        for(String prevClass : prevClasses) {
+            changes.put(prevClass, false);
+        }
+
+        String[] classes = newClasses != null ? newClasses.split(" ") : new String[0];
+        for(String newClass : classes) {
+            if(changes.remove(newClass) == null)
+                changes.put(newClass, true);
+        }
+        element.setPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE, classes);
+
+        return changes;
+    }
+
+    static void applyClassChange(Element element, String aclass, Boolean add) {
+        if (!GwtSharedUtils.isRedundantString(aclass)) {
+            if (add)
+                element.addClassName(aclass);
+            else
+                element.removeClassName(aclass);
+        }
+    }
+
+    static void updateClasses(Element element, String classes) {
+        buildClassesChanges(element, classes).foreachEntry((aclass, add) -> {
+            applyClassChange(element, aclass, add);
+        });
+    }
+
+//    static boolean hasClassPrefix(Element element, String classPrefix) {
+//        // we're using lsf set (and not all) css  classes, to avoid unpredictable resulta
+//        String[] prevClasses = (String[]) element.getPropertyObject(GwtClientUtils.LSF_CLASSES_ATTRIBUTE);
+//        if(prevClasses != null) {
+//            for(String prevClass : prevClasses) {
+//                if(prevClass.startsWith(classPrefix))
+//                    return true;
+//            }
+//        }
+//        return false;
+//    }
 
     static void initImageText(Widget widget, String caption, BaseImage appImage, boolean vertical) {
         Element element = widget.getElement();
         // others image texts handle color themes changes with the explicit colorThemeChanged (rerendering the whole view)
         element.addClassName("img-text-widget");
         initImageText(element);
-        updateText(widget, caption);
+        updateText(widget, caption, vertical);
         updateImage(appImage, widget, vertical);
     }
 
@@ -75,7 +163,7 @@ public interface BaseImage extends Serializable {
 
     static void clearImageText(Element element, boolean vertical) {
         element.setPropertyObject(TEXT, null);
-        element.setPropertyObject(HTML, null);
+        element.setPropertyObject(DIV, null);
         element.setPropertyObject(IMAGE, null);
 
         element.removeClassName("wrap-text-not-empty");
@@ -85,34 +173,53 @@ public interface BaseImage extends Serializable {
             element.removeClassName("wrap-img-horz");
     }
 
-    static void updateText(Widget widget, String text) {
-        updateText(widget.getElement(), text);
+    static void updateText(Widget widget, String text, boolean vertical) {
+        updateText(widget, text, vertical, false);
+    }
+    static void updateText(Widget widget, String text, boolean vertical, boolean forceDiv) {
+        updateText(widget.getElement(), text, vertical, forceDiv);
 
         if(widget instanceof CaptionPanelHeader)
             widget.setVisible(text != null && !text.isEmpty());
     }
-    static void updateText(Element element, String text) {
+    static void updateText(Element element, String text, boolean vertical) {
+        updateText(element, text, vertical, false);
+    }
+    static void updateText(Element element, String text, boolean vertical, boolean forceDiv) {
         Node textNode = (Node) element.getPropertyObject(TEXT); // always present, since it is initialized in initImageText
-        Element htmlElement = (Element) element.getPropertyObject(HTML);
+        Element htmlElement = (Element) element.getPropertyObject(DIV);
 
         text = text == null ? "" : text;
-        if (EscapeUtils.isContainHtmlTag(text)) {
+        if ((forceDiv && !text.isEmpty()) || EscapeUtils.isContainHtmlTag(text)) {
             if(htmlElement == null) {
-                htmlElement = Document.get().createSpanElement(); // we want display inline just as regular text
+                htmlElement = Document.get().createDivElement();
+                htmlElement.addClassName("wrap-text-div");
+
+                if(vertical) {
+                    element.addClassName("wrap-div-vert");
+                } else {
+                    element.addClassName("wrap-div-horz");
+                }
+
                 element.appendChild(htmlElement);
-                element.setPropertyObject(HTML, htmlElement);
+                element.setPropertyObject(DIV, htmlElement);
             }
             htmlElement.setInnerHTML(text);
             textNode.setNodeValue("");
         } else {
             if(htmlElement != null) {
                 element.removeChild(htmlElement);
-                element.setPropertyObject(HTML, null);
+                if(vertical)
+                    element.removeClassName("wrap-div-vert");
+                else
+                    element.removeClassName("wrap-div-horz");
+
+                element.setPropertyObject(DIV, null);
             }
             textNode.setNodeValue(text);
         }
 
-        if (!text.equals("")) {
+        if (!text.isEmpty()) {
             element.addClassName("wrap-text-not-empty");
         } else {
             element.removeClassName("wrap-text-not-empty");

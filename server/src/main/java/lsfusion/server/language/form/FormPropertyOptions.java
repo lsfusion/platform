@@ -34,6 +34,7 @@ public class FormPropertyOptions {
     private Columns columns;
     private PropertyObjectEntity showIf;
     private PropertyObjectEntity readOnlyIf;
+    private PropertyObjectEntity valueElementClass;
     private PropertyObjectEntity background;
     private PropertyObjectEntity foreground;
     private PropertyObjectEntity image;
@@ -142,6 +143,14 @@ public class FormPropertyOptions {
 
     public void setReadOnlyIf(PropertyObjectEntity readOnlyIf) {
         this.readOnlyIf = readOnlyIf;
+    }
+
+    public PropertyObjectEntity getValueElementClass() {
+        return valueElementClass;
+    }
+
+    public void setValueElementClass(PropertyObjectEntity valueElementClass) {
+        this.valueElementClass = valueElementClass;
     }
 
     public PropertyObjectEntity getBackground() {
@@ -462,6 +471,7 @@ public class FormPropertyOptions {
         merged.setColumns(nvl(overrides.getColumns(), columns));
         merged.setShowIf(nvl(overrides.getShowIf(), showIf));
         merged.setReadOnlyIf(nvl(overrides.getReadOnlyIf(), readOnlyIf));
+        merged.setValueElementClass(nvl(overrides.getValueElementClass(), valueElementClass));
         merged.setBackground(nvl(overrides.getBackground(), background));
         merged.setForeground(nvl(overrides.getForeground(), foreground));
         merged.setImage(nvl(overrides.getImage(), image));
