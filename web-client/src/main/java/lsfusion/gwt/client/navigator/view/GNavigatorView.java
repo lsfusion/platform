@@ -51,6 +51,9 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
 
     public void resetSelectedElement(GNavigatorElement newSelectedElement) {
     }
+    
+    public void openFirstFolder() {
+    }
 
     protected void selectElement(GNavigatorElement element, NativeEvent event) {
         if(element instanceof GNavigatorFolder) {
