@@ -111,6 +111,8 @@ public class ApplyAction extends KeepContextAction {
 
     @Override
     public boolean hasFlow(ChangeFlowType type) {
+        if (type == ChangeFlowType.ANYEFFECT)
+            return true;
         if (type == ChangeFlowType.APPLY)
             return true;
         if (type == ChangeFlowType.READONLYCHANGE)

@@ -201,9 +201,14 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
 
         if (value instanceof StringWithFiles) {
             StringWithFiles stringWithFiles = (StringWithFiles) value;
-            String[] urls = new String[stringWithFiles.names.length];
-            for (int k = 0; k < stringWithFiles.names.length; k++) {
-                urls[k] = servlet.getFormProvider().getWebFile(sessionID, stringWithFiles.names[k], stringWithFiles.files[k]);
+            Serializable[] urls = new Serializable[stringWithFiles.files.length];
+            for (int k = 0; k < stringWithFiles.files.length; k++) {
+                Serializable data = stringWithFiles.files[k];
+                if(data instanceof StringWithFiles.File) { // image
+                    StringWithFiles.File file = (StringWithFiles.File) data;
+                    urls[k] = servlet.getFormProvider().getWebFile(sessionID, file.name, file.raw);
+                } else
+                    urls[k] = FileUtils.createImageFile(servlet, sessionID, (AppImage) data, false);;
             }
             return new GStringWithFiles(stringWithFiles.prefixes, urls);
         }

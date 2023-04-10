@@ -27,16 +27,6 @@ public class ClientHTMLTextClass extends ClientTextClass{
     }
 
     @Override
-    public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
-        return new TextPropertyEditor(ownerComponent, value, property.design);
-    }
-
-    @Override
-    public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
-        return new TextPropertyEditor(value, property.design);
-    }
-
-    @Override
     public boolean trimTooltip() {
         return false;
     }

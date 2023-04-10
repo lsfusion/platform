@@ -35,7 +35,8 @@ public class ActionCellRenderer extends CellRenderer {
 
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
-        element.addClassName("btn");
+        if(property.hasChangeAction)
+            element.addClassName("btn");
 
         BaseImage.initImageText(element);
 
@@ -53,7 +54,8 @@ public class ActionCellRenderer extends CellRenderer {
 
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
-        element.removeClassName("btn");
+        if(property.hasChangeAction)
+            element.removeClassName("btn");
 
         BaseImage.clearImageText(element, property.panelCaptionVertical);
 

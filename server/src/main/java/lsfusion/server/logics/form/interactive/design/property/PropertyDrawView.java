@@ -752,12 +752,18 @@ public class PropertyDrawView extends BaseComponentView {
     }
     
     public boolean hasChangeAction(ServerContext context) {
-        return entity.getEventAction(CHANGE, context.entity, context.securityPolicy) != null;
+        return hasAction(context, CHANGE);
     }
     public boolean hasEditObjectAction(ServerContext context) {
-        return entity.getEventAction(EDIT_OBJECT, context.entity, context.securityPolicy) != null;
+        return hasAction(context, EDIT_OBJECT);
     }
 
+    public boolean hasAction(ServerContext context, String actionID) {
+        ActionObjectEntity<?> eventAction = entity.getEventAction(actionID, context.entity, context.securityPolicy);
+        if(eventAction != null)
+            return eventAction.property.hasFlow(ChangeFlowType.ANYEFFECT);
+        return false;
+    }
     public boolean hasFlow(ServerContext context, ChangeFlowType type) {
         ActionObjectEntity<?> eventAction = entity.getEventAction(CHANGE, context.entity, context.securityPolicy);
         if(eventAction != null)
@@ -792,7 +798,7 @@ public class PropertyDrawView extends BaseComponentView {
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))
                 return "a";
         } else {
-            if(changeType == null)
+            if(changeType == null && hasFlow(context, ChangeFlowType.ANYEFFECT))
                 return "button";
         }
 
@@ -822,7 +828,8 @@ public class PropertyDrawView extends BaseComponentView {
             if(isLink(context))
                 return "btn-link text-decoration-none";
 
-            return "btn-outline-secondary";
+            if(hasFlow(context, ChangeFlowType.ANYEFFECT))
+                return "btn-outline-secondary";
         }
 
         return null;

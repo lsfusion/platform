@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static lsfusion.base.BaseUtils.inlineFileSeparator;
+import static lsfusion.base.BaseUtils.inlineImageSeparator;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.CLOSE_CH;
 import static lsfusion.server.physics.dev.i18n.LocalizedString.OPEN_CH;
 
@@ -20,6 +21,7 @@ public class ScriptedStringUtils {
     public static final char INTERP_CH = '$';
     public static final char INLINE_CH = 'I';
     public static final char RESOURCE_CH = 'R';
+    public static final char IMAGE_CH = 'M';
 
     public static final String INLINE_PREFIX = String.valueOf(INTERP_CH) + INLINE_CH + OPEN_CH; // $I{
 
@@ -295,7 +297,7 @@ public class ScriptedStringUtils {
         return true;
     }
 
-    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE }
+    private enum StringInterpolateState { PLAIN, INTERPOLATION, INLINE, RESOURCE, IMAGE }
 
     public static List<String> parseStringInterpolateProp(String source) throws TransformationError {
         List<String> literals = new ArrayList<>();
@@ -368,7 +370,14 @@ public class ScriptedStringUtils {
             literals.add(quote(INLINE_PREFIX + currentLiteral + CLOSE_CH));
         } else if (state == StringInterpolateState.RESOURCE) {
             literals.add(quote(inlineFileSeparator + currentLiteral + inlineFileSeparator));
-        } else assert false;
+        } else if (state == StringInterpolateState.IMAGE) {
+            literals.add(quote(wrapImage(currentLiteral)));
+        } else
+            assert false;
+    }
+
+    public static String wrapImage(String currentLiteral) {
+        return inlineFileSeparator + inlineImageSeparator + currentLiteral + inlineFileSeparator;
     }
 
     private static String flushCurrentLiteral(List<String> literals, String currentLiteral) {
@@ -453,6 +462,7 @@ public class ScriptedStringUtils {
         if (compareChar(s, pos + 1, OPEN_CH)) return StringInterpolateState.INTERPOLATION;
         if (compareChar(s, pos + 1, INLINE_CH) && compareChar(s, pos + 2, OPEN_CH)) return StringInterpolateState.INLINE;
         if (compareChar(s, pos + 1, RESOURCE_CH) && compareChar(s, pos + 2, OPEN_CH)) return StringInterpolateState.RESOURCE;
+        if (compareChar(s, pos + 1, IMAGE_CH) && compareChar(s, pos + 2, OPEN_CH)) return StringInterpolateState.IMAGE;
         return StringInterpolateState.PLAIN;
     }
 

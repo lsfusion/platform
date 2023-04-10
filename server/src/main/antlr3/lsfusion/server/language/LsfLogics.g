@@ -5543,7 +5543,7 @@ stringLiteral returns [String val]
 	;
 
 primitiveType returns [String val]
-	:	p=PRIMITIVE_TYPE | JSON_TYPE { $val = $p.text; }
+	:	p=PRIMITIVE_TYPE | JSON_TYPE | HTML_TYPE { $val = $p.text; }
 	;
 
 // there are some rules where ID is not desirable (see usages), where there is an ID
@@ -5707,8 +5707,9 @@ PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'TBOOLEAN' | 'DATE
 				|   ('BPSTRING' ('[' DIGITS ']')?) | ('BPISTRING' ('[' DIGITS ']')?)
 				|	('STRING' ('[' DIGITS ']')?) | ('ISTRING' ('[' DIGITS ']')?) | 'NUMERIC' ('[' DIGITS ',' DIGITS ']')? | 'COLOR'
 				|   ('INTERVAL' ('[' INTERVAL_TYPE ']'))
-				|   'TSVECTOR';
+				|   'TSVECTOR' | 'TSQUERY';
 JSON_TYPE       :   'JSON';
+HTML_TYPE       :   'HTML';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';
 T_LOGICAL_LITERAL:	'TTRUE' | 'TFALSE';
 NULL_LITERAL	:	'NULL';

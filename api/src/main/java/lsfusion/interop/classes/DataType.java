@@ -58,4 +58,5 @@ public class DataType {
     public final static byte JSON = 55;
     public final static byte TSVECTOR = 56;
     public final static byte TSQUERY = 57;
+    public final static byte HTMLSTRING = 58;
 }

@@ -46,8 +46,7 @@ import org.json.JSONObject;
 import java.io.*;
 import java.util.function.Function;
 
-import static lsfusion.base.BaseUtils.inlineFileSeparator;
-import static lsfusion.base.BaseUtils.serializeObject;
+import static lsfusion.base.BaseUtils.*;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
@@ -263,19 +262,21 @@ public class FormChanges {
 
             int length = parts.length / 2;
             String[] prefixes = new String[length + 1];
-            String[] names = new String[length];
-            RawFileData[] files = new RawFileData[length];
+            Serializable[] files = new Serializable[length];
             for (int k = 0; k < length + 1; k++) {
                 prefixes[k] = parts[k * 2];
                 if (k * 2 + 1 < parts.length) {
                     String name = parts[k * 2 + 1];
-                    Result<String> fullPath = new Result<>();
-                    files[k] = ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null);
-                    names[k] = fullPath.result;
+                    if(name.startsWith(inlineImageSeparator)) {
+                        files[k] = AppServerImage.getAppImage(AppServerImage.createActionImage(name.substring(inlineImageSeparator.length())).get());
+                    } else {
+                        Result<String> fullPath = new Result<>();
+                        files[k] = new StringWithFiles.File(ResourceUtils.findResourceAsFileData(name, false, true, fullPath, null), fullPath.result);
+                    }
                 }
             }
 
-            return new StringWithFiles(prefixes, names, files);
+            return new StringWithFiles(prefixes, files);
         }
 
         return value;

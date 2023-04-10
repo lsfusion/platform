@@ -1,5 +1,6 @@
 package lsfusion.gwt.client;
 
+import lsfusion.gwt.client.base.AppStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
@@ -103,8 +104,19 @@ public class GFormChanges {
             if (value instanceof GStringWithFiles) {
                 GStringWithFiles stringWithFiles = (GStringWithFiles) value;
                 StringBuilder result = new StringBuilder();
-                for (int j = 0; j < stringWithFiles.prefixes.length; j++)
-                    result.append(stringWithFiles.prefixes[j]).append(j < stringWithFiles.urls.length ? GwtClientUtils.getAppStaticWebURL(stringWithFiles.urls[j]) : "");
+                for (int j = 0; j < stringWithFiles.prefixes.length; j++) {
+                    result.append(stringWithFiles.prefixes[j]);
+                    if(j < stringWithFiles.urls.length) {
+                        Serializable url = stringWithFiles.urls[j];
+                        if(url instanceof String) // file
+                            result.append(GwtClientUtils.getAppStaticWebURL((String) url));
+                        else {
+                            AppStaticImage image = (AppStaticImage) url;
+                            if(image != null)
+                                result.append(image.createImageHTML());
+                        }
+                    }
+                }
                 values[i] = result.toString();
             }
         }

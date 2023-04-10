@@ -467,6 +467,9 @@ public class ForAction<I extends PropertyInterface> extends ExtendContextAction<
                 return true;
             if (type == ChangeFlowType.PRIMARY)
                 return true;
+        } else {
+            if (type == ChangeFlowType.ANYEFFECT)
+                return false;
         }
         return super.hasFlow(type);
     }

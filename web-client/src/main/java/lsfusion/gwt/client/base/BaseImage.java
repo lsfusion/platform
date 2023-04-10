@@ -23,6 +23,12 @@ public interface BaseImage extends Serializable {
         return false;
     }
 
+    default String createImageHTML() {
+        if(useIcon())
+            return "<i class=\"" + ((BaseStaticImage) this).getFontClasses() + " wrap-text-img\"></i>";
+        else
+            return "<img src=\"" + getImageElementSrc(true) + "\" class=\"wrap-text-img\"></img>";
+    }
     default Element createImage() {
         Element imageElement;
         if(useIcon()) {
@@ -171,6 +177,7 @@ public interface BaseImage extends Serializable {
             element.removeClassName("wrap-img-vert");
         else
             element.removeClassName("wrap-img-horz");
+        element.removeClassName("wrap-img-start");
     }
 
     static void updateText(Widget widget, String text, boolean vertical) {
@@ -242,6 +249,7 @@ public interface BaseImage extends Serializable {
                 element.removeClassName("wrap-img-vert");
             else
                 element.removeClassName("wrap-img-horz");
+            element.removeClassName("wrap-img-start");
 
             imageElement = null;
         }
@@ -255,6 +263,7 @@ public interface BaseImage extends Serializable {
                 } else {
                     element.addClassName("wrap-img-horz");
                 }
+                element.addClassName("wrap-img-start");
 
                 element.insertFirst(imageElement);
             }

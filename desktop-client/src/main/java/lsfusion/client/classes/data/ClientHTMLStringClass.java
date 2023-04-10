@@ -1,7 +1,6 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -17,17 +16,15 @@ import java.awt.*;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class ClientTextClass extends ClientStringClass implements ClientTypeClass {
-    private final String type;
+public class ClientHTMLStringClass extends ClientStringClass implements ClientTypeClass {
 
-    public ClientTextClass() {
-        this(null);
-    }
 
-    public ClientTextClass(String type) {
+    public final static ClientHTMLStringClass instance = new ClientHTMLStringClass();
+
+    public ClientHTMLStringClass() {
         super(false, false, ExtInt.UNLIMITED);
-        this.type = type;
     }
+
 
     @Override
     public void serialize(DataOutputStream outStream) throws IOException {
@@ -41,21 +38,11 @@ public class ClientTextClass extends ClientStringClass implements ClientTypeClas
 
     @Override
     public byte getTypeId() {
-        return DataType.TEXT;
-    }
-
-    @Override
-    public int getDefaultCharHeight() {
-        return 4;
-    }
-
-    @Override
-    public String toString() {
-        return ClientResourceBundle.getString("logics.classes.text") + (type != null ? " (" + type + ")" : "");
+        return DataType.HTMLSTRING;
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new TextPropertyRenderer(property, false);
+        return new TextPropertyRenderer(property, true);
     }
 
     @Override
@@ -67,5 +54,4 @@ public class ClientTextClass extends ClientStringClass implements ClientTypeClas
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
         return  new TextPropertyEditor(value, property.design);
     }
-
 }

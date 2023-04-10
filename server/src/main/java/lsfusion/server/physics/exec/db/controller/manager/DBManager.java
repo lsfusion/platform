@@ -1285,12 +1285,14 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public final ConcreteCustomClass customClass;
         public final String sID;
         public final String caption;
+        public final String image;
 
-        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String caption) {
+        public IDAdd(long object, ConcreteCustomClass customClass, String sID, String caption, String image) {
             this.object = object;
             this.customClass = customClass;
             this.sID = sID;
             this.caption = caption;
+            this.image = image;
         }
     }
 
@@ -1312,17 +1314,19 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         public final Map<DataObject, String> modifiedSIDs = new HashMap<>();
         public final Map<DataObject, String> modifiedCaptions = new HashMap<>();
+        public final Map<DataObject, String> modifiedImages = new HashMap<>();
 
         public void apply(DataSession session, BaseLogicsModule LM, boolean isFirstStart) throws SQLException, SQLHandledException {
             LM.fillingIDs.change(true, session); // need this to avoid constraint on staticName changing
 
             for (IDAdd addedObject : added) {
                 if(!isFirstStart)
-                    startLogger.info("adding static object with id " + addedObject.object + ", sid " + addedObject.sID + " and name " + addedObject.caption);
+                    startLogger.info("adding static object with id " + addedObject.object + ", sid " + addedObject.sID + ", name " + addedObject.caption + ", image " + addedObject.image);
                 DataObject classObject = new DataObject(addedObject.object, LM.baseClass.unknown);
                 session.changeClass(classObject, addedObject.customClass);
                 LM.staticName.change(addedObject.sID, session, classObject);
                 LM.staticCaption.change(addedObject.caption, session, classObject);
+                LM.staticImage.change(addedObject.image, session, classObject);
             }
 
             for (Map.Entry<DataObject, String> modifiedSID : modifiedSIDs.entrySet()) {
@@ -1333,6 +1337,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (Map.Entry<DataObject, String> modifiedCaption : modifiedCaptions.entrySet()) {
                 startLogger.info("renaming static object with id " + modifiedCaption.getKey() + " to " + modifiedCaption.getValue());
                 LM.staticCaption.change(modifiedCaption.getValue(), session, modifiedCaption.getKey());
+            }
+
+            for (Map.Entry<DataObject, String> modifiedImage : modifiedImages.entrySet()) {
+                startLogger.info("changing image of static object with id " + modifiedImage.getKey() + " to " + modifiedImage.getValue());
+                LM.staticImage.change(modifiedImage.getValue(), session, modifiedImage.getKey());
             }
 
             for (IDRemove removedObject : removed) {
@@ -1613,10 +1622,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
-            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticName,
-                    migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion), 
-                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion), 
-                    idChanges);
+            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName,
+                    migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
+                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion), idChanges);
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;

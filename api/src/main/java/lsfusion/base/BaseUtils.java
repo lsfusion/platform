@@ -310,16 +310,17 @@ public class BaseUtils {
             for(int i = 0; i < size + 1; i++) {
                 prefixes[i] = inStream.readUTF();
             }
-            String[] names = new String[size];
+            Serializable[] files = new Serializable[size];
             for(int i = 0; i < size; i++) {
-                names[i] = inStream.readUTF();
-            }
-            RawFileData[] files = new RawFileData[size];
-            for(int i = 0; i < size; i++) {
-                files[i] = new RawFileData(IOUtils.readBytesFromStream(inStream, inStream.readInt()));
+                if(inStream.readBoolean()) {
+                    String name = inStream.readUTF();
+                    int fileLength = inStream.readInt();
+                    files[i] = new StringWithFiles.File(new RawFileData(IOUtils.readBytesFromStream(inStream, fileLength)), name);
+                } else
+                    files[i] = IOUtils.readImageIcon(inStream);
             }
 
-            return new StringWithFiles(prefixes, names, files);
+            return new StringWithFiles(prefixes, files);
         }
 
         if (objectType == 16) {
@@ -466,17 +467,27 @@ public class BaseUtils {
 
         if (object instanceof StringWithFiles) {
             outStream.writeByte(15);
-            outStream.writeInt(((StringWithFiles) object).names.length);
-            for(String prefix : ((StringWithFiles) object).prefixes) {
+
+            StringWithFiles stringWithFiles = (StringWithFiles) object;
+
+            outStream.writeInt(stringWithFiles.files.length);
+            for(String prefix : stringWithFiles.prefixes) {
                 outStream.writeUTF(prefix);
             }
-            for(String name : ((StringWithFiles) object).names) {
-                outStream.writeUTF(name);
-            }
-            for(RawFileData file : ((StringWithFiles) object).files) {
-                byte[] obj = file.getBytes();
-                outStream.writeInt(obj.length);
-                outStream.write(obj);
+            for(Serializable data : stringWithFiles.files) {
+                if (data instanceof StringWithFiles.File) {
+                    outStream.writeBoolean(true);
+
+                    StringWithFiles.File file = (StringWithFiles.File) data;
+                    outStream.writeUTF(file.name);
+                    byte[] obj = file.raw.getBytes();
+                    outStream.writeInt(obj.length);
+                    outStream.write(obj);
+                } else { // it's an image
+                    outStream.writeBoolean(false);
+
+                    IOUtils.writeImageIcon(outStream, (AppImage) data);
+                }
             }
             return;
         }
@@ -2038,6 +2049,8 @@ public class BaseUtils {
     public static final String impossibleString = "FDWREVSFFGFSDRSDR";
 
     public static final String inlineFileSeparator = "PQWERJUQMASPRETQT";
+
+    public static final String inlineImageSeparator = "GFDTRGDFSAFADXZW";
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {

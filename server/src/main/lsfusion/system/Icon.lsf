@@ -139,7 +139,7 @@ FORM icons '{navigator.icon}'
     } 
     PROPERTIES bestIconClass '{icon.best.icon.name}' = bestIconClasses(search())  READONLY IMAGE bestIconClasses(search()), bestIconRank '{icon.best.icon.rank}' = bestIconRanks(search()) READONLY 
     OBJECTS i = Icon 
-    PROPERTIES iconImage '{icon.icon}' = {} IMAGE iconClass(search(), i) GRID, rank '{icon.rank}' = tsRank(vector(i), nameToIconQuery(search())) 
+    PROPERTIES iconImage '{icon.icon}' = {} IMAGE iconClass(search(), i) GRID, rank '{icon.rank}' = tsRank(vector(i), toTsQuery(nameToIconQuery(search()))) 
     PROPERTIES(i) READONLY name, explicit, label, terms, synonyms, styles, vector
     PROPERTIES(i) DELETE
 ;
@@ -179,3 +179,20 @@ NAVIGATOR {
         NEW icons AFTER metadata;
     }
 }
+
+// icon utility properties
+
+badge(STRING badgeText) = HTML('$I{badge.html}');
+// usage example: imaged($M{myimage},'mytext', TRUE, TRUE)
+imaged(STRING imageHTML, STRING text, BOOLEAN vertical, BOOLEAN start) = HTML('$I{imaged.html}');
+badged(STRING badgeText, STRING text, BOOLEAN vertical, BOOLEAN start) = imaged(badge(badgeText), text, vertical, start);
+
+imaged(STRING imageHTML, STRING text) = imaged(imageHTML, text, NULL, TRUE);
+badged(STRING text, STRING badgeText) = badged(badgeText, text, NULL, NULL);
+
+badged(STRING text, INTEGER badgeNumber) = badged(text, STRING(badgeNumber));
+
+// plugin bug
+//imaged(STRING imageHTML, STRING text, BOOLEAN vertical) = '<div class = "${IF text != \'\' THEN \'wrap-text-not-empty \' ELSE \'\'}${IF imageHTML THEN \'wrap-img-\' + (IF vertical THEN \'vert\' ELSE \'horz\'})">\r\n    ${CONCAT \'\', imageHTML, text}\r\n</div>\r\n'
+
+imagedCaption(StaticObject object) = imaged(image(object), staticCaption(object));

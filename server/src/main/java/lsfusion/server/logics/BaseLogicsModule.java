@@ -197,7 +197,9 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP objectClassName;
     public LP staticName;
     public LP staticCaption;
-    public LP statCustomObjectClass; 
+
+    public LP staticImage;
+    public LP statCustomObjectClass;
 
     private LP addedObject;
     private LP beforeCanceled;
@@ -568,7 +570,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         staticName = findProperty("staticName[StaticObject]");
         staticCaption = findProperty("staticCaption[StaticObject]");
-        
+        staticImage = findProperty("image[StaticObject]");
+
         sessionOwners = findProperty("sessionOwners[]");
         ((SessionDataProperty)sessionOwners.property).noNestingInNestedSession = true;
 

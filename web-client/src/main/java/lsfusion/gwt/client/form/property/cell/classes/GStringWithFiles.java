@@ -4,13 +4,13 @@ import java.io.Serializable;
 
 public class GStringWithFiles implements Serializable {
     public String[] prefixes;
-    public String[] urls;
+    public Serializable[] urls; // String or AppStaticImage
 
 
     public GStringWithFiles() {
     }
 
-    public GStringWithFiles(String[] prefixes, String[] urls) {
+    public GStringWithFiles(String[] prefixes, Serializable[] urls) {
         this.prefixes = prefixes;
         this.urls = urls;
     }

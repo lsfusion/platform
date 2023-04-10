@@ -108,6 +108,7 @@ public final class ClassCanonicalNameUtils {
         put("NUMERIC", defaultNumericClassObj);
         put("TSVECTOR", TSVectorClass.instance);
         put("TSQUERY", TSQueryClass.instance);
+        put("HTML", HTMLStringClass.instance);
     }};
 
     public static DataClass<?> getScriptedDataClass(String name) {
@@ -202,6 +203,7 @@ public final class ClassCanonicalNameUtils {
         put("NUMERIC", NumericClass.defaultNumeric);
         put("TSVECTOR", TSVectorClass.instance);
         put("TSQUERY", TSQueryClass.instance);
+        put("HTML", HTMLStringClass.instance);
     }};
 
     public static List<ResolveClassSet> getResolveList(ValueClass[] classes) {

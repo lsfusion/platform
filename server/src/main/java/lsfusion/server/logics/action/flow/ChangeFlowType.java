@@ -9,7 +9,8 @@ public enum ChangeFlowType {
     INPUT, // has input inside
     HASSESSIONUSAGES, // checks if action uses this session (used for formAction WAIT | NOWAIT heuristic)
     NEEDMORESESSIONUSAGES, // optimization, checks if action needs to fill moreSessionUsages (used for formAction WAIT | NOWAIT heuristic),
-    INTERNALASYNC // checks if InternalClientAction is async
+    INTERNALASYNC, // checks if InternalClientAction is async
+    ANYEFFECT, // check if this is not a "shallow" action
     ; 
 
     public boolean isChange() {

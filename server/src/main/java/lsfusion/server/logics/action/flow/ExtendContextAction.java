@@ -83,6 +83,13 @@ public abstract class ExtendContextAction<I extends PropertyInterface> extends F
         return null;
     }
 
+    @Override
+    public boolean hasFlow(ChangeFlowType type) {
+        if(type == ChangeFlowType.ANYEFFECT)
+            return true;
+        return super.hasFlow(type);
+    }
+
     public ActionMapImplement<?, I> replaceExtend(ActionReplacer replacer) {
         return null;
     }
