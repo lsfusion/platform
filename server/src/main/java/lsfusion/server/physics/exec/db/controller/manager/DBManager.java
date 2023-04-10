@@ -2617,7 +2617,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private class NewDBStructure extends DBStructure<Field> {
         
         public NewDBStructure(MigrationVersion migrationVersion) {
-            version = 35; // need this for migration
+            version = newDBStructureVersion;
             this.migrationVersion = migrationVersion;
 
             tables.putAll(getIndicesMap());
@@ -2669,6 +2669,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
+    public static int newDBStructureVersion = 35;
 
     private class OldDBStructure extends DBStructure<String> {
 
