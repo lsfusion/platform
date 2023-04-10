@@ -26,6 +26,11 @@ public class HTMLTextClass extends TextClass{
     }
 
     @Override
+    public boolean useInputTag(boolean isPanel, boolean useBootstrap) {
+        return false;
+    }
+
+    @Override
     protected boolean markupHtml() {
         return true;
     }

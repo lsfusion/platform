@@ -24,9 +24,11 @@ public class GContainer extends GComponent implements HasNativeSID {
     public String caption;
     public BaseImage image;
 
+    public String nativeSID;
+
     @Override
     public String getNativeSID() {
-        return sID;
+        return nativeSID;
     }
 
     public boolean collapsible;

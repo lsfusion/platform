@@ -91,10 +91,6 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         component.shrink = clientComponent.shrink;
         component.alignShrink = clientComponent.alignShrink;
         component.alignCaption = clientComponent.alignCaption;
-        component.marginTop = clientComponent.marginTop;
-        component.marginBottom = clientComponent.marginBottom;
-        component.marginLeft = clientComponent.marginLeft;
-        component.marginRight = clientComponent.marginRight;
 
         if (clientComponent.design.getBackground() != null) {
             component.background = convertColor(clientComponent.design.getBackground());
@@ -137,6 +133,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
     public GContainer convertContainer(ClientContainer clientContainer) throws IOException {
         GContainer container = initGwtComponent(clientContainer,  new GContainer());
 
+        container.nativeSID = "c" + clientContainer.ID;
         container.caption = clientContainer.caption;
         container.image = createImage(clientContainer.image, false);
         container.collapsible = clientContainer.collapsible;
@@ -342,6 +339,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.showIfReader = convertShowIfReader(clientPropertyDraw.showIfReader);
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
+        propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
@@ -486,6 +484,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GLastReader convertLastReader(ClientPropertyDraw.LastReader reader) {
         return reader == null ? null : new GLastReader(reader.getID(), reader.index, reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GValueElementClassReader convertValueElementClassReader(ClientPropertyDraw.ValueElementClassReader reader) {
+        return reader == null ? null : new GValueElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GBackgroundReader convertBackgroundReader(ClientPropertyDraw.BackgroundReader reader) {

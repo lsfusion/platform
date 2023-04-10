@@ -7,8 +7,13 @@
     border-left: var(--border-width) solid var(--panel-border-color);
 }
 
+/* it makes sense to use padding when there is no border, otherwise scrolling will be odd (for example in toolbar), as well as background */
 .right-margin {
     margin-right: var(--border-cont-horz-padding);
+}
+
+.right-padding {
+    padding-right: var(--border-cont-vert-padding);
 }
 
 .top-border {
@@ -17,10 +22,15 @@
     border-top: var(--border-width) solid var(--panel-border-color);
 }
 
+/* it makes sense to use padding when there is no border, otherwise scrolling will be odd (for example in toolbar), as well as background */
 .bottom-margin,
 .bottom-margin.nav /* nov sets margin-bottom:0 somewhy */
 {
     margin-bottom: var(--border-cont-vert-padding);
+}
+
+.bottom-padding {
+    padding-bottom: var(--border-cont-vert-padding);
 }
 
 .left-border-wrap {

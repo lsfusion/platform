@@ -1,6 +1,7 @@
 package lsfusion.server.logics.form.interactive.design;
 
 import lsfusion.base.col.MapFact;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.identity.IdentityObject;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.AbstractComponent;
@@ -40,6 +41,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public ComponentDesign design = new ComponentDesign();
 
+    public PropertyObjectEntity propertyElementClass;
     public String elementClass;
 
     public Integer width;
@@ -211,6 +213,10 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.elementClass = elementClass;
     }
 
+    public void setPropertyElementClass(PropertyObjectEntity<?> propertyElementClass) {
+        this.propertyElementClass = propertyElementClass;
+    }
+
     public void setAlignCaption(boolean alignCaption) {
         this.alignCaption = alignCaption;
     }
@@ -341,6 +347,15 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             return true;
 
         return false;
+    }
+
+    protected boolean hasPropertyComponent() {
+        return showIf != null || propertyElementClass != null;
+    }
+
+    public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
+        if(hasPropertyComponent())
+            mComponents.exclAdd(this);
     }
 
     public boolean isAncestorOf(ComponentView container) {

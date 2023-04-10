@@ -3,27 +3,46 @@ package lsfusion.gwt.client.navigator.window.view;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
-import lsfusion.gwt.client.base.GwtSharedUtils;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
+import lsfusion.gwt.client.base.view.FlexPanel;
+import lsfusion.gwt.client.base.view.ResizableSimplePanel;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.navigator.GNavigatorElement;
-import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
-public abstract class WindowsController extends CustomSplitLayoutPanel {
+public abstract class WindowsController {
     private NativeSIDMap<GAbstractWindow, WindowElement> windowElementsMapping = new NativeSIDMap<>();
-    private SplitWindowElement rootElement;
+    public FlexWindowElement rootElement;
+    public GAbstractWindow formsWindow;
+
+    public static final String NAVBAR_TEXT_ON_HOVER = "navbar-text-on-hover";
+    public static final String BACKGROUND_PREFIX = "bg-";
 
     public void updateElementClass(GAbstractWindow window) {
+        Widget windowView = getWindowView(window);
         String elementClass = window.elementClass;
-        if (!GwtSharedUtils.isRedundantString(elementClass)) {
-            getWindowView(window).addStyleName(elementClass);
-        }
+
+//        we still need NEED_MARGINS for formscontroller, so it's a question if it's right
+//        we still need bg_ to HAS (however here we should use paddings ???) be converted to respect margins ???
+
+        BaseImage.updateClasses(windowView, elementClass, (widget, parent, className) -> {
+            if(className.equals(NAVBAR_TEXT_ON_HOVER)) {
+                boolean isWindow = widget.equals(windowView);
+                if((isWindow || widget instanceof FlexPanel) && parent instanceof FlexPanel) {
+                    boolean thisVertical = isWindow ? window instanceof GToolbarNavigatorWindow && ((GToolbarNavigatorWindow) window).isVertical() : ((FlexPanel) widget).isVertical();
+                    return ((FlexPanel) parent).isVertical() == thisVertical;
+                }
+            } else if(className.startsWith(BACKGROUND_PREFIX))
+                return true;
+
+            return false;
+        });
     }
 
     public GAbstractWindow findWindowByCanonicalName(String canonicalName) {
@@ -38,25 +57,29 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     public void initializeWindows(List<GAbstractWindow> allWindows, GAbstractWindow formsWindow) {
 
         WindowNode rootNode = new WindowNode(0, 0, 100, 100);
+        rootNode.isFlex = true;
 
-        initializeNodes(allWindows, rootNode);
+        initializeNodes(allWindows, rootNode, formsWindow);
 
-        rootElement = (SplitWindowElement) fillWindowChildren(rootNode);
-        rootElement.addElement(new SimpleWindowElement(this, formsWindow, -1, -1, -1, -1));
+        if (MainFrame.verticalNavbar) {
+            rootNode = rotateNavbar(rootNode);
+        }
+        
+        rootElement = (FlexWindowElement) fillWindowChildren(rootNode);
+        rootElement.initializeView(this);
+        rootElement.onAddView(this);
+        initNavigatorRootView(rootElement.getView());
 
-        Widget rootView = rootElement.initializeView();
+        this.formsWindow = formsWindow;
 
         setDefaultVisible();
 
-        // don't restore windows sizes on style change as we need to auto adjust sizes   
-        if (restoreBootstrapStyle() == MainFrame.useBootstrap) {
-            restoreWindowsSizes();
-        }
+        restoreWindowsSizes();
 
-        RootLayoutPanel.get().add(rootView);
+        RootLayoutPanel.get().add(rootElement.getView());
     }
 
-    private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode) {
+    private void initializeNodes(List<GAbstractWindow> windows, WindowNode rootNode, GAbstractWindow formsWindow) {
         List<WindowNode> nodes = new ArrayList<>();
 
         // все окна с одинаковыми координатами складываем в табы
@@ -83,7 +106,7 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
                     WindowNode tabbed = new WindowNode(first.x, first.y, first.width, first.height);
                     tabbed.isTabbed = true;
                     for (GAbstractWindow tabChild : tabChildren) {
-                        new WindowNode(tabChild).setParent(tabbed);
+                        new WindowNode(tabChild).changeParent(tabbed);
                     }
                     nodes.add(tabbed);
                 } else {
@@ -119,12 +142,12 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
                 if (node.isTabbed) {
                     WindowNode newTab = new WindowNode(node.x, node.y, node.width, node.height);
                     for (WindowNode child : newChildren) {
-                        child.setParent(newTab);
+                        child.changeParent(newTab);
                     }
-                    newTab.setParent(node);
+                    newTab.changeParent(node);
                 } else {
                     for (WindowNode child : newChildren) {
-                        child.setParent(node);
+                        child.changeParent(node);
                     }
                 }
             }
@@ -135,6 +158,9 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         for (WindowNode childNode : new ArrayList<>(rootNode.children)) {
             createTabsIfNecessary(childNode);
         }
+
+        fillWithChildren(rootNode, rootNode.children, rootNode.x, rootNode.y, rootNode.width, rootNode.height);
+        deepestFlexWindow.addChild(new WindowNode(formsWindow));
     }
 
     private void createTabsIfNecessary(WindowNode node) {
@@ -142,18 +168,239 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
             WindowNode parent = node.parent;
             WindowNode tabWindow = new WindowNode(node.x, node.y, node.width, node.height);
             tabWindow.isTabbed = true;
-            parent.removeChild(node);
-            node.setParent(tabWindow);
+            node.changeParent(tabWindow);
             WindowNode midNode = new WindowNode(node.x, node.y, node.width, node.height);
             for (WindowNode child : new ArrayList<>(node.children)) {
-                node.removeChild(child);
-                child.setParent(midNode);
+                child.changeParent(midNode);
 
                 createTabsIfNecessary(child);
             }
-            midNode.setParent(tabWindow);
-            tabWindow.setParent(parent);
+            midNode.changeParent(tabWindow);
+            tabWindow.changeParent(parent);
         }
+    }
+
+    // ported from former split/dock layout logics
+    WindowNode deepestFlexWindow;
+    private void fillWithChildren(WindowNode parent, List<WindowNode> leftToPut, int rectX, int rectY, int rectWidth, int rectHeight) {
+        if (leftToPut.isEmpty()) {
+            return;
+        }
+
+        List<WindowNode> windowsLeft = new ArrayList<>(leftToPut);
+        for (WindowNode window : leftToPut) {
+            if (windowsLeft.size() == 1) {
+                WindowNode lastWindow = windowsLeft.get(0);
+                lastWindow.changeParent(parent);
+                return;
+            }
+
+            boolean attached = false;
+            if (windowsLeft.contains(window)) {
+                if (window.height == rectHeight) {
+                    attached = attachHorizontally(window, rectX, rectWidth);
+                    if (attached) {
+                        parent = addToParentNode(parent, window, false, rectX, rectY, rectWidth, rectHeight);
+
+                        rectWidth -= window.width;
+                        if (window.x == rectX) {
+                            rectX += window.width;
+                        }
+                    }
+                } else if (window.width == rectWidth) {
+                    attached = attachVertically(window, rectY, rectHeight);
+                    if (attached) {
+                        parent = addToParentNode(parent, window, true, rectX, rectY, rectWidth, rectHeight);
+                        
+                        rectHeight -= window.height;
+                        if (window.y == rectY) {
+                            rectY += window.height;
+                        }
+                    }
+                }
+                if (attached) {
+                    windowsLeft.remove(window);
+                }
+            }
+        }
+
+        if (windowsLeft.size() < leftToPut.size()) {
+            // какое-то окно нашло своё место - делаем ещё круг
+            fillWithChildren(parent, windowsLeft, rectX, rectY, rectWidth, rectHeight);
+        } else {
+            // иначе пробуем сложить часть окон в гор.или верт. сплит
+            WindowNode split = putInSplit(windowsLeft, rectX, rectY, rectWidth, rectHeight);
+            if (split != null) {
+                split.changeParent(parent);
+
+                for (WindowNode splitChild : split.children) {
+                    windowsLeft.remove(splitChild);
+                }
+
+                if (split.x == rectX && split.width == rectWidth) {
+                    boolean attached = attachVertically(split, rectY, rectHeight);
+                    if (attached) {
+                        parent = addToParentNode(parent, split, true, rectX, rectY, rectWidth, rectHeight);
+                            
+                        rectHeight -= split.height;
+                        if (split.y == rectY) {
+                            rectY += split.height;
+                        }
+                    }
+                } else if (split.y == rectY && split.height == rectHeight) {
+                    boolean attached = attachHorizontally(split, rectX, rectWidth);
+                    if (attached) {
+                        parent = addToParentNode(parent, split, false, rectX, rectY, rectWidth, rectHeight);
+
+                        rectWidth -= split.width;
+                        if (split.x == rectX) {
+                            rectX += split.width;
+                        }
+                    }
+                }
+
+                // если нашёлся такой набор окон, снова пробуем найти место для одного окна
+                fillWithChildren(parent, windowsLeft, rectX, rectY, rectWidth, rectHeight);
+            }
+        }
+    }
+
+    private WindowNode addToParentNode(WindowNode parent, WindowNode window, boolean vertical, int rectX, int rectY, int rectWidth, int rectHeight) {
+        // create new panel if direction changes
+        if (parent.vertical != vertical) {
+            WindowNode newParent = new WindowNode(rectX, rectY, rectWidth, rectHeight);
+            newParent.isFlex = true;
+            newParent.vertical = vertical;
+            newParent.changeParent(parent);
+            parent = newParent;
+            deepestFlexWindow = parent;
+        }
+        window.changeParent(parent);
+        return parent;
+    }
+
+    private WindowNode putInSplit(List<WindowNode> windows, int rectX, int rectY, int rectWidth, int rectHeight) {
+        WindowNode flexWindow = null;
+        List<WindowNode> splitChildren = null;
+
+        // vertical
+        for (int i = 0; i < windows.size() - 1; i++) {
+            WindowNode first = windows.get(i);
+            List<WindowNode> inOneLine = new ArrayList<>(Arrays.asList(first));
+            for (int j = i + 1; j < windows.size(); j++) {
+                WindowNode second = windows.get(j);
+                if (first.x == second.x && first.width == second.width && first.y != second.y) {
+                    inOneLine.add(second);
+                }
+            }
+            if (inOneLine.size() > 1) {
+                List<WindowNode> winds = findLineFilling(inOneLine, true, rectHeight);
+                if (winds != null) {
+                    WindowNode firstWindow = winds.get(0);
+                    // дополнительно проверим, что ряд окон прижат к одному из краёв
+                    if (firstWindow.x == rectX || firstWindow.x + firstWindow.width == rectX + rectWidth) {
+                        flexWindow = new WindowNode(firstWindow.x, rectY, firstWindow.width, rectHeight);
+                        flexWindow.isFlex = true;
+                        flexWindow.vertical = true;
+                        splitChildren = winds;
+                    }
+                }
+            }
+        }
+        // horizontal
+        if (flexWindow == null) {
+            for (int i = 0; i < windows.size() - 1; i++) {
+                WindowNode first = windows.get(i);
+                List<WindowNode> inOneLine = new ArrayList<>(Arrays.asList(first));
+                for (int j = i + 1; j < windows.size(); j++) {
+                    WindowNode second = windows.get(j);
+                    if (first.y == second.y && first.height == second.height && first.x != second.x) {
+                        inOneLine.add(second);
+                    }
+                }
+                if (inOneLine.size() > 1) {
+                    List<WindowNode> winds = findLineFilling(inOneLine, false, rectWidth);
+                    if (winds != null) {
+                        WindowNode firstWindow = winds.get(0);
+                        if (firstWindow.y == rectY || firstWindow.y + firstWindow.height == rectY + rectHeight) {
+                            flexWindow = new WindowNode(rectX, firstWindow.y, rectWidth, firstWindow.height);
+                            flexWindow.isFlex = true;
+                            flexWindow.vertical = false;
+                            splitChildren = winds;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (splitChildren != null) {
+            for (WindowNode window : splitChildren) {
+                window.changeParent(flexWindow);
+            }
+        }
+
+        return flexWindow;
+    }
+
+    private List<WindowNode> findLineFilling(List<WindowNode> windows, boolean vertical, int dimension) {
+        // здесь подразумевается, что все найденные окна одной ширины/высоты, расположены в один ряд без наложений и пробелов
+        int sum = 0;
+        List<WindowNode> result = new ArrayList<>();
+
+        for (WindowNode window : windows) {
+            sum += vertical ? window.height : window.width;
+            result.add(window);
+        }
+        return sum == dimension ? result : null;
+    }
+
+    private boolean attachHorizontally(WindowNode window, int rectX, int rectWidth) {
+        return window.x == rectX || window.x + window.width == rectX + rectWidth;
+    }
+
+    private boolean attachVertically(WindowNode window, int rectY, int rectHeight) {
+        return window.y == rectY || window.y + window.height == rectY + rectHeight;
+    }
+    
+    // rotates navbar and returns new root node
+    private WindowNode rotateNavbar(WindowNode rootNode) {
+        WindowNode navbarNode = findNavbarWindow(rootNode);
+        assert navbarNode != null;
+
+        navbarNode.vertical = true;
+        navbarNode.x = -1; // to be sure it goes first (left), as children are ordered by x/y coordinates
+
+        // change children orientation
+        for (WindowNode child : navbarNode.children) {
+            child.y = child.x;
+            child.x = 0;
+            int tmp = child.width;
+            child.width = child.height;
+            child.height = tmp;
+        }
+
+        // create new horizontal root flex panel
+        WindowNode newRootNode = new WindowNode(0, 0, 100, 100);
+        newRootNode.isFlex = true;
+        newRootNode.vertical = false;
+        navbarNode.changeParent(newRootNode);
+        rootNode.changeParent(newRootNode);
+        
+        return newRootNode;
+    }
+    
+    private WindowNode findNavbarWindow(WindowNode parent) {
+        for (WindowNode child : parent.children) {
+            if (child.window instanceof GNavigatorWindow && ((GNavigatorWindow) child.window).isRoot()) {
+                return parent;
+            } else {
+                WindowNode maybeRoot = findNavbarWindow(child);
+                if (maybeRoot != null) {
+                    return maybeRoot;
+                }
+            }
+        }
+        return null;
     }
 
     private WindowElement fillWindowChildren(WindowNode node) {
@@ -171,7 +418,8 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         } else if (node.children.isEmpty()) {
             return new SimpleWindowElement(this, node.window, node.x, node.y, node.width, node.height);
         } else {
-            return new SplitWindowElement(this, node.x, node.y, node.width, node.height);
+            assert node.isFlex;
+            return new FlexWindowElement(node.vertical, this, node.x, node.y, node.width, node.height);
         }
     }
 
@@ -180,8 +428,6 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
     }
     public void registerWindow(GAbstractWindow window, WindowElement windowElement) {
         windowElementsMapping.put(window, windowElement);
-
-        updateElementClass(window);
     }
 
     public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {
@@ -191,12 +437,21 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
                 windowElement.setVisible(entry.getValue());
             }
         }
+
+        updatePanels();
     }
-    
+
+    private void updatePanels() {
+        FlexPanel.updatePanels(rootElement.getView());
+
+        RootLayoutPanel.get().onResize();
+    }
+
     public void resetLayout() {
         setDefaultVisible();
         rootElement.resetWindowSize();
-        autoSizeWindows();
+
+        updatePanels();
     }
 
     private void setDefaultVisible() {
@@ -207,29 +462,28 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         });
     }
 
-    public void autoSizeWindows() {
-        // we have to wait until windows are really visible and filled
-        // as setting calculated or auto sizes are in one method and auto sizing needs windows to be drawn
-        if (rootElement.getView().getOffsetWidth() > 0) {
-            rootElement.autoSizeWindows();
+    // in current layout formsWindow is always added as the CENTER widget.
+    // so to enable full screen mode we only need to hide all non-CENTER windows in root split panel
+    private Widget formsWidget;
+    public void setFullScreenMode(boolean fullScreen) {
+        ResizableSimplePanel formsPanel = (ResizableSimplePanel) getWindowView(formsWindow);
+        if(fullScreen) {
+            RootLayoutPanel.get().remove(rootElement.getView());
+            formsWidget = formsPanel.getWidget();
+            RootLayoutPanel.get().add(formsWidget);
+        } else {
+            formsPanel.setWidget(formsWidget);
+            formsWidget = null;
+            RootLayoutPanel.get().add(rootElement.getView());
         }
     }
 
-    // in current layout formsWindow is always added as the CENTER widget.
-    // so to enable full screen mode we only need to hide all non-CENTER windows in root split panel
-    public void setFullScreenMode(boolean fullScreen) {
-        rootElement.setBorderWindowsHidden(fullScreen);
-    }
-
     public abstract Widget getWindowView(GAbstractWindow window);
-    public abstract GNavigatorView getNavigatorView(GNavigatorWindow window);
 
     public void storeWindowsSizes() {
         Storage storage = Storage.getLocalStorageIfSupported();
-        if (storage != null) {
-            if (rootElement != null) {
-                rootElement.storeWindowsSizes(storage);
-            }
+        if (storage != null && rootElement != null) {
+            rootElement.storeWindowsSizes(storage);
         }
     }
     
@@ -258,16 +512,9 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         return 0;
     }
 
-    public void storeBootstrapStyle() {
-        Storage storage = Storage.getLocalStorageIfSupported();
-        if (storage != null) {
-            storage.setItem("bootstrapStyle", String.valueOf(MainFrame.useBootstrap));
-        }
-    }
-
-    public boolean restoreBootstrapStyle() {
-        Storage storage = Storage.getLocalStorageIfSupported();
-        return storage != null && Boolean.parseBoolean(storage.getItem("bootstrapStyle"));
+    public void initNavigatorRootView(Widget navRootWidget) {
+//        if(MainFrame.useBootstrap)
+//            navRootWidget.addStyleName("bg-body-secondary");
     }
 
     private class WindowNode {
@@ -276,6 +523,8 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
         private List<WindowNode> children = new ArrayList<>();
 
         public boolean isTabbed = false;
+        public boolean isFlex = false;
+        public boolean vertical = true;
 
         private int x;
         private int y;
@@ -306,7 +555,10 @@ public abstract class WindowsController extends CustomSplitLayoutPanel {
             return x <= node.x && y <= node.y && x + width >= node.x + node.width && y + height >= node.y + node.height;
         }
 
-        public void setParent(WindowNode parent) {
+        public void changeParent(WindowNode parent) {
+            if (this.parent != null) {
+                this.parent.removeChild(this);
+            }
             this.parent = parent;
             parent.addChild(this);
         }

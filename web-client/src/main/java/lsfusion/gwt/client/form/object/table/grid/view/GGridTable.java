@@ -428,6 +428,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                     NativeHashMap<GGroupObjectValue, Object> propValues = values.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propLoadings = loadings.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propReadOnly = readOnlyValues.get(property);
+                    NativeHashMap<GGroupObjectValue, Object> propertyValueElementClasses = cellValueElementClasses.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propertyBackgrounds = cellBackgroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, Object> propertyForegrounds = cellForegroundValues.get(property);
                     NativeHashMap<GGroupObjectValue, Object> actionImages = property.isAction() ? cellImages.get(property) : null;
@@ -444,6 +445,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                             column.setValue(record, propValues.get(fullKey));
                             column.setLoading(record, propLoadings != null && propLoadings.get(fullKey) != null);
                             record.setReadOnly(column.columnSID, propReadOnly == null ? null : propReadOnly.get(fullKey));
+                            Object valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
+                            record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : valueElementClass);
                             Object background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
                             record.setBackground(column.columnSID, background == null ? property.background : background);
                             Object foreground = propertyForegrounds == null ? null : propertyForegrounds.get(fullKey);
@@ -624,6 +627,13 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     @Override
     public void updateLastValues(GPropertyDraw property, int index, NativeHashMap<GGroupObjectValue, Object> values) {
+    }
+
+    @Override
+    public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+        super.updateCellValueElementClasses(propertyDraw, values);
+        updatedProperties.put(propertyDraw, TRUE);
+        dataUpdated = true;
     }
 
     @Override
@@ -1192,6 +1202,12 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         protected Object getImage(GPropertyDraw property, GridDataRecord record) {
             return record.getImage(columnSID);
         }
+
+        @Override
+        protected String getValueElementClass(GPropertyDraw property, GridDataRecord record) {
+            return record.getValueElementClass(columnSID);
+        }
+
         @Override
         protected String getBackground(GPropertyDraw property, GridDataRecord record) {
             return record.getBackground(columnSID);

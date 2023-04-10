@@ -40,7 +40,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         toolBarPanel.removeAll();
 
         for (ClientNavigatorElement element : newElements) {
-            if (!element.containsParent(newElements)) {
+            if (!newElements.contains(element.parent)) {
                 addElement(element, newElements, 0);
             }
         }
@@ -53,7 +53,7 @@ public class ToolBarNavigatorView extends NavigatorView {
     }
 
     //open first folder at start
-    boolean firstFolder = true;
+    ClientNavigatorElement firstFolder = null;
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int indent) {
         ToggleButtonWidget button = new ToggleButtonWidget(element.toString()) {
@@ -124,9 +124,8 @@ public class ToolBarNavigatorView extends NavigatorView {
                 button.setSelected(true);
             }
 
-            if (window.isRoot() && firstFolder) {
-                firstFolder = false;
-                click(element, 0);
+            if (window.isRoot() && firstFolder == null) {
+                firstFolder = element;
             }
         }
 
@@ -164,6 +163,16 @@ public class ToolBarNavigatorView extends NavigatorView {
         ClientNavigatorElement selectedElement = getSelectedElement();
         if(selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
             setSelectedElement(null);
+        }
+    }
+
+    @Override
+    public void openFirstFolder() {
+        super.openFirstFolder();
+
+        if (firstFolder != null) {
+            click(firstFolder, 0);
+            firstFolder = null;
         }
     }
 

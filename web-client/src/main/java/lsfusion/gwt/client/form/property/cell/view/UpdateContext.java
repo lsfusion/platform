@@ -23,4 +23,8 @@ public interface UpdateContext {
     default String getBackground() { return null; }
 
     default String getForeground() { return null; }
+
+    default String getValueElementClass() {
+        return null;
+    }
 }

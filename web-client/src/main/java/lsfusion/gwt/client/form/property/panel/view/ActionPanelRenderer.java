@@ -4,7 +4,6 @@ import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
-import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
 public class ActionPanelRenderer extends PanelRenderer {
@@ -32,7 +31,7 @@ public class ActionPanelRenderer extends PanelRenderer {
     // hack, assert that render element is rendered with ActionCellRenderer
     @Override
     protected void setLabelText(String text) {
-        BaseImage.updateText(value.getRenderElement(), text);
+        BaseImage.updateText(value.getRenderElement(), text, property.panelCaptionVertical);
     }
 
     // interface for refresh button

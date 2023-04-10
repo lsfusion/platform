@@ -40,10 +40,10 @@ import lsfusion.gwt.client.navigator.controller.dispatch.GNavigatorActionDispatc
 import lsfusion.gwt.client.navigator.controller.dispatch.NavigatorDispatchAsync;
 import lsfusion.gwt.client.navigator.view.BSMobileNavigatorView;
 import lsfusion.gwt.client.navigator.view.ExcelMobileNavigatorView;
-import lsfusion.gwt.client.navigator.view.GNavigatorView;
 import lsfusion.gwt.client.navigator.view.MobileNavigatorView;
 import lsfusion.gwt.client.navigator.window.GAbstractWindow;
 import lsfusion.gwt.client.navigator.window.GNavigatorWindow;
+import lsfusion.gwt.client.navigator.window.GToolbarNavigatorWindow;
 import lsfusion.gwt.client.navigator.window.view.WindowsController;
 import net.customware.gwt.dispatch.shared.Result;
 
@@ -87,6 +87,8 @@ public class MainFrame implements EntryPoint {
     public static String[] preDefinedDateRangesNames;
 
     public static boolean useTextAsFilterSeparator;
+    
+    public static boolean verticalNavbar;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -280,11 +282,6 @@ public class MainFrame implements EntryPoint {
                 }
                 return view;
             }
-
-            @Override
-            public GNavigatorView getNavigatorView(GNavigatorWindow window) {
-                return navigatorControllerLink.link.getNavigatorView(window);
-            }
         };
 
         final Linker<GNavigatorActionDispatcher> actionDispatcherLink = new Linker<>();
@@ -316,7 +313,6 @@ public class MainFrame implements EntryPoint {
                         windowsController.storeWindowsSizes();
                     }
                     windowsController.storeEditMode();
-                    windowsController.storeBootstrapStyle();
                 } finally {
                     clean();
                 }
@@ -333,11 +329,6 @@ public class MainFrame implements EntryPoint {
             @Override
             public void updateVisibility(Map<GAbstractWindow, Boolean> windows) {
                 windowsController.updateVisibility(windows);
-            }
-
-            @Override
-            public void autoSizeWindows() {
-                windowsController.autoSizeWindows();
             }
         };
         navigatorControllerLink.link = navigatorController;
@@ -491,8 +482,8 @@ public class MainFrame implements EntryPoint {
 
         navigatorController.setRoot(result.root);
 
-        RootPanel.getBodyElement().addClassName(useBootstrap ? "nav-bootstrap" : "nav-excel");
-        RootPanel.getBodyElement().addClassName(mobile ? "nav-mobile" : "nav-desktop");
+        FormsController.setGlobalClassName(true, useBootstrap ? "nav-bootstrap" : "nav-excel");
+        FormsController.setGlobalClassName(true, mobile ? "nav-mobile" : "nav-desktop");
 
         if (mobile) {
             if (useBootstrap) {
@@ -505,6 +496,19 @@ public class MainFrame implements EntryPoint {
 
             RootLayoutPanel.get().add(windowsController.getWindowView(formsWindow));
         } else {
+            if (MainFrame.verticalNavbar) {
+                // change navbar navigators orientation
+                for (GAbstractWindow window : result.navigatorWindows) {
+                    if (window instanceof GToolbarNavigatorWindow) {
+                        GToolbarNavigatorWindow toolbarWindow = (GToolbarNavigatorWindow) window;
+                        if (toolbarWindow.isInRootNavBar()) {
+                            toolbarWindow.vertical = true;
+                            toolbarWindow.verticalTextPosition = GToolbarNavigatorWindow.CENTER;
+                        }
+                    }
+                }
+            }
+            
             navigatorController.initializeNavigatorViews(navigatorWindows);
 
             List<GAbstractWindow> allWindows = new ArrayList<>();
@@ -512,8 +516,6 @@ public class MainFrame implements EntryPoint {
             allWindows.addAll(commonWindows.keySet());
 
             windowsController.initializeWindows(allWindows, formsWindow);
-
-            navigatorController.update();
         }
 
         formsController.initRoot();
@@ -586,6 +588,8 @@ public class MainFrame implements EntryPoint {
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
                 preDefinedDateRangesNames = gClientSettings.preDefinedDateRangesNames;
                 useTextAsFilterSeparator = gClientSettings.useTextAsFilterSeparator;
+                
+                verticalNavbar = gClientSettings.verticalNavbar;
 
                 initializeFrame(result.navigatorInfo);
             }

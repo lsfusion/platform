@@ -116,7 +116,7 @@ public class GwtClientUtils {
         return getURL("uploadFile" + (fileName != null ? "?sid=" + fileName : ""));
     }
 
-    public static final String FONT_CLASSES_ATTRIBUTE = "font_icon_attr";
+    public static final String LSF_CLASSES_ATTRIBUTE = "lsf_classes_attribute";
 
     public static void setThemeImage(String imagePath, Consumer<String> modifier) {
         assert imagePath != null;
@@ -156,6 +156,36 @@ public class GwtClientUtils {
     }
     public static void removeClassNames(Element element, String classNames) {
         element.removeClassName(classNames);
+    }
+
+    public static String removeClassName(String classNames, String removeClassName, Result<Boolean> removed) {
+        removed.set(false);
+
+        String result = classNames;
+        if(classNames != null && classNames.contains(removeClassName)) { // optimization
+            String[] aClassNames = classNames.split(" ");
+            result = "";
+            for(int i = 0; i <aClassNames.length ;i++) {
+                String className = aClassNames[i];
+                if(className.equals(removeClassName))
+                    removed.set(true);
+                else
+                    result += (i != 0 ? " " : "") + className;
+            }
+        }
+        return result;
+    }
+
+    public static boolean hasClassNamePrefix(String classNames, String classNamePrefix) {
+        if(classNames != null && classNames.contains(classNamePrefix)) { // optimization
+            String[] aClassNames = classNames.split(" ");
+            for(int i = 0; i <aClassNames.length ;i++) {
+                String className = aClassNames[i];
+                if(className.startsWith(classNamePrefix))
+                    return true;
+            }
+        }
+        return false;
     }
 
     public static String getPageParameter(String parameterName) {

@@ -404,17 +404,14 @@ public class ContainerView extends ComponentView {
         add(comp, ComplexLocation.AFTER(compAfter), version);
     }
 
+    protected boolean hasPropertyComponent() {
+        return super.hasPropertyComponent() || propertyCaption != null || propertyImage != null || propertyCustomDesign != null;
+    }
     public void fillPropertyComponents(MExclSet<ComponentView> mComponents) {
-        if(showIf != null || propertyCaption != null || propertyImage != null || propertyCustomDesign != null)
-            mComponents.exclAdd(this);
+        super.fillPropertyComponents(mComponents);
 
-        for (ComponentView child : getChildrenIt()) {
-            if (child instanceof ContainerView) {
-                ((ContainerView) child).fillPropertyComponents(mComponents);
-            } else if (child.showIf != null) {
-                mComponents.exclAdd(child);
-            }
-        }
+        for (ComponentView child : getChildrenIt())
+            child.fillPropertyComponents(mComponents);
     }
 
     public void fillBaseComponents(MExclSet<ComponentView> mComponents, boolean parentShowIf) {

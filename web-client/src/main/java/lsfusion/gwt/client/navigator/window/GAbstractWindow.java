@@ -27,4 +27,8 @@ public class GAbstractWindow implements Serializable, com.google.gwt.user.client
     public String getNativeSID() {
         return canonicalName;
     }
+
+    public boolean isAutoSize(boolean vertical) {
+        return autoSize;
+    }
 }

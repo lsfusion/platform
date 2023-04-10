@@ -20,4 +20,12 @@ public class GPanelNavigatorWindow extends GNavigatorWindow {
     public GNavigatorView createView(GINavigatorController navigatorController) {
         return new GPanelNavigatorView(this, navigatorController);
     }
+
+    @Override
+    public boolean isAutoSize(boolean vertical) {
+        if (isVertical() == vertical) {
+            return false;
+        }
+        return super.isAutoSize(vertical);
+    }
 }

@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -14,10 +15,7 @@ import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
 import lsfusion.gwt.client.base.*;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.PopupDialogPanel;
-import lsfusion.gwt.client.base.view.WindowHiddenHandler;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
@@ -58,7 +56,9 @@ import static lsfusion.gwt.client.form.event.GKeyStroke.isTabEvent;
 public abstract class FormsController {
     private final ClientMessages messages = ClientMessages.Instance.get();
 
-    private final FlexTabbedPanel tabsPanel;
+    private final ResizableSimplePanel container; // used for / in the setFullScreenMode, and it is assumed that it is returned in getView
+
+    private final Panel tabsPanel;
 
     private final List<FormContainer> formContainers = new ArrayList<>();
 
@@ -75,6 +75,12 @@ public abstract class FormsController {
     private boolean fullScreenMode = false;
     
     private GToolbarButton mobileMenuButton;
+
+    public static class Panel extends FlexTabbedPanel {
+        public Panel(Widget extraTabWidget, boolean end) {
+            super(extraTabWidget, end);
+        }
+    }
 
     public FormsController(WindowsController windowsController) {
         this.windowsController = windowsController;
@@ -132,7 +138,7 @@ public abstract class FormsController {
             toolbarView.addComponent(mobileMenuButton);
         }
 
-        tabsPanel = new FlexTabbedPanel(toolbarView, MainFrame.mobile);
+        tabsPanel = new Panel(toolbarView, MainFrame.mobile);
 
         // unselected (but not removed)
         tabsPanel.setBeforeSelectionHandler(index -> {
@@ -151,6 +157,10 @@ public abstract class FormsController {
         });
 
         tabsPanel.addStyleName("forms-container");
+
+        container = new ResizableSimplePanel();
+        container.setSizedWidget(tabsPanel, true);
+        container.addStyleName("forms-container-window");
 
         initEditModeTimer();
     }
@@ -261,10 +271,10 @@ public abstract class FormsController {
     private void updateForceLinkModeStyles(EditMode editMode, boolean forceLinkMode) {
         boolean linkMode = editMode == EditMode.LINK;
         if(!isForceLinkMode() && forceLinkMode) {
-            scheduleLinkModeStylesTimer(() -> setLinkModeStyles(linkMode));
+            scheduleLinkModeStylesTimer(() -> setLinkModeClassName(linkMode));
         } else {
             cancelLinkModeStylesTimer();
-            setLinkModeStyles(linkMode);
+            setLinkModeClassName(linkMode);
         }
     }
 
@@ -288,12 +298,20 @@ public abstract class FormsController {
         }
     }
 
-    private void setLinkModeStyles(boolean linkMode) {
+    private void setLinkModeClassName(boolean linkMode) {
+        setGlobalClassName(linkMode, "linkMode");
+    }
+
+    private void updateFormsNotEmptyClassName() {
+        setGlobalClassName(!forms.isEmpty(), "forms-container-not-empty");
+    }
+
+    public static void setGlobalClassName(boolean set, String elementClass) {
         Element globalElement = RootPanel.get().getElement();
-        if(linkMode)
-            globalElement.addClassName("linkMode");
+        if(set)
+            globalElement.addClassName(elementClass);
         else
-            globalElement.removeClassName("linkMode");
+            globalElement.removeClassName(elementClass);
     }
 
     private static Timer editModeTimer;
@@ -347,7 +365,7 @@ public abstract class FormsController {
     }
 
     public Widget getView() {
-        return tabsPanel;
+        return container;
     }
 
     public FormContainer openForm(GAsyncFormController asyncFormController, GForm form, GShowFormType showFormType, boolean forbidDuplicate, Event editEvent, EditContext editContext, GFormController formController, WindowHiddenHandler hiddenHandler, String formId) {
@@ -503,6 +521,8 @@ public abstract class FormsController {
             formFocusOrder.add(null);
         }
 
+        updateFormsNotEmptyClassName();
+
         FlexPanel contentWidget = dockable.getContentWidget();
 
         FlexPanel header = new FlexPanel();
@@ -533,6 +553,8 @@ public abstract class FormsController {
 
         forms.remove(index);
         formFocusOrder.remove(index);
+
+        updateFormsNotEmptyClassName();
 
         ensureTabSelected();
     }

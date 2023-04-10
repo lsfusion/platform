@@ -432,7 +432,7 @@ public class MapCacheAspect {
             for(CacheResult<QueryInterfaceImplement<K>, ValuesContext> cache : hashCaches.it()) {
                 for(MapValuesTranslate mapValues : new MapValuesIterable(cache.implement, implement)) {
                     if(cache.implement.translateValues(mapValues).equals(implement)) {
-                        if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges, calcType, true)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
+                        if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges, calcType)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
                             cachedImplement = cache.implement;
                             break;
                         }
@@ -455,10 +455,9 @@ public class MapCacheAspect {
                     if(!(checkCaches && cacheQuery!=null)) {
                         cacheNoBig(implement, hashCaches, query);
                     }
-                    cachedImplement = implement;
-                }
-
-                cachedImplement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges, calcType, false);
+                    implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges, calcType);
+                } else
+                    cachedImplement.cachedPrereadHintEnabled = true;
 
                 logger.debug("getExpr - not cached "+property);
                 incrementMissed(CacheType.EXPR);
@@ -559,7 +558,7 @@ public class MapCacheAspect {
     
     // has to be consistent с SessionModifier.allowPrereadValues
     // we need this check to avoid using caches, that where calculated when hints were disabled
-    private static boolean prereadHintEnabled(Property<?> property, PropertyChanges propertyChanges, CalcType calcType, boolean get) {
+    private static boolean prereadHintEnabled(Property<?> property, PropertyChanges propertyChanges, CalcType calcType) {
         if(!calcType.isExpr()) // if it is not calculating data, we don't care about the hints, and the calctype is in the cache key
             return true;
 
@@ -589,7 +588,7 @@ public class MapCacheAspect {
             for(CacheResult<JoinExprInterfaceImplement<K>, ExprResult> cache : hashCaches.it()) {
                 MapTranslate translator;
                 if((translator=cache.implement.mapInner(implement, true))!=null) {
-                    if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges, calcType, true)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
+                    if(!cache.implement.cachedPrereadHintEnabled && prereadHintEnabled(property, implement.usedChanges, calcType)) { // нашли кэш, но он не подходит, так как могут быть hint'ы
                         cachedImplement = cache.implement;
                         break;
                     }
@@ -612,10 +611,9 @@ public class MapCacheAspect {
             logger.debug("getExpr - not cached "+property);
             if(cachedImplement == null) { // если кэша не было
                 cacheNoBig(implement, hashCaches, new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null));
-                cachedImplement = implement;
-            }
-
-            cachedImplement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges, calcType, false);
+                implement.cachedPrereadHintEnabled = prereadHintEnabled(property, implement.usedChanges, calcType);
+            } else
+                cachedImplement.cachedPrereadHintEnabled = true;
 
             if(checkCaches && cacheResult != null)
                 logCaches(cacheResult, expr, thisJoinPoint, "JOINEXPR", property);

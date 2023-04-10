@@ -3,13 +3,14 @@ package lsfusion.server.language.proxy;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.design.FontInfo;
+import lsfusion.server.language.ElementClassProxy;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;
 
-public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
+public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> implements ElementClassProxy {
     public ComponentViewProxy(T target) {
         super(target);
     }
@@ -97,8 +98,11 @@ public class ComponentViewProxy<T extends ComponentView> extends ViewProxy<T> {
         target.design.setFont(font);
     }
 
-    public void setClass(String elementClass) {
-        target.setElementClass(elementClass);
+    public void setClass(Object elementClass) {
+        if(elementClass instanceof LocalizedString)
+            target.setElementClass(elementClass.toString());
+        else
+            target.setPropertyElementClass((PropertyObjectEntity<?>) elementClass);
     }
 
     public void setFontSize(int fontSize) {

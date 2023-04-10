@@ -32,4 +32,8 @@ public class PropertyReadType {
     public final static byte CUSTOM_OPTIONS = 14;
 
     public final static byte CONTAINER_IMAGE = 15;
+
+    public final static byte CELL_VALUEELEMENTCLASS = 16;
+
+    public final static byte COMPONENT_ELEMENTCLASS = 17;
 }

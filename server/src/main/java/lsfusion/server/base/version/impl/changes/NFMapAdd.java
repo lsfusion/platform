@@ -1,8 +1,10 @@
 package lsfusion.server.base.version.impl.changes;
 
+import lsfusion.base.col.interfaces.mutable.MMap;
+
 import java.util.List;
 
-public class NFMapAdd<K, V> implements NFOrderMapChange<K, V> {
+public class NFMapAdd<K, V> implements NFOrderMapChange<K, V>, NFMapChange<K, V> {
     public final K key;
     public final V value;
 
@@ -17,5 +19,10 @@ public class NFMapAdd<K, V> implements NFOrderMapChange<K, V> {
             keysList.add(key);
             valuesList.add(value);
         }
+    }
+
+    @Override
+    public void proceedMap(MMap<K, V> map) {
+        map.add(key, value);
     }
 }

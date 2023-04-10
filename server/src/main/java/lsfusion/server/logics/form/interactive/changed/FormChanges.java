@@ -259,7 +259,7 @@ public class FormChanges {
         }
 
         if (value instanceof String && ((String) value).contains(inlineFileSeparator)) {
-            String[] parts = ((String) value).split(inlineFileSeparator);
+            String[] parts = ((String) value).split(inlineFileSeparator, -1);
 
             int length = parts.length / 2;
             String[] prefixes = new String[length + 1];

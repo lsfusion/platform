@@ -114,7 +114,6 @@ import lsfusion.server.logics.navigator.NavigatorAction;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
-import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.ActionCase;
 import lsfusion.server.logics.property.cases.CalcCase;
@@ -1884,7 +1883,7 @@ public abstract class LogicsModule {
 
         if(objectEntity != null) {
             action.drawOptions.addProcessor(new ActionOrProperty.DefaultProcessor() {
-                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+                    public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                         if(entity.toDraw == null)
                             entity.toDraw = objectEntity.groupTo;
                     }

@@ -18,6 +18,7 @@ import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.Version;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.QueryEnvironment;
 import lsfusion.server.data.caches.AbstractOuterContext;
@@ -399,7 +400,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         drawOptions.addProcessor(new DefaultProcessor() {
             @Override
-            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form) {
+            public void proceedDefaultDraw(PropertyDrawEntity entity, FormEntity form, Version version) {
                 if(entity.viewType == null)
                     entity.viewType = ClassViewType.LIST;
             }
@@ -1148,9 +1149,30 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         fieldClassWhere = getClassWhere(mapTable, field);
 //        if(!fieldClassWhere.filterKeys(mapTable.table.getTableKeys()).meansCompatible(mapTable.table.getClasses()))
 //            field = field;
+        checkDuplicateFieldNames(field);
         mapTable.table.addField(field, fieldClassWhere);
 
         this.field = field;
+    }
+
+    public static class DuplicateFieldNameException extends RuntimeException {
+        DuplicateFieldNameException(String message) {
+            super(message);
+        }
+    }
+
+    private void checkDuplicateFieldNames(PropertyField addedField) {
+        assert addedField.getName() != null;
+        final String formatStr = "Field '%s' was already added to '%s' table. The reason might be that the field " +
+                "names are limited in length, and as a result two different canonical names are converted " +
+                "to the same field name due to length truncation. In this case you can either change " +
+                "the property name(s) or change the naming policy (see documentation for details)";
+
+        for (PropertyField field : mapTable.table.properties) {
+            if (addedField.getName().equals(field.getName())) {
+                throw new DuplicateFieldNameException(String.format(formatStr, addedField.getName(), mapTable.table.getName()));
+            }
+        }
     }
 
     public void markIndexed(final ImRevMap<T, String> mapping, ImList<PropertyObjectInterfaceImplement<String>> index, IndexType indexType) {

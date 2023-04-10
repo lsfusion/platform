@@ -74,6 +74,12 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("lightMode.png", "fa-solid fa-sun");
         AppServerImage.predefinedFontClasses.exclAdd("darkMode.png", "fa-solid fa-moon");
 
+        AppServerImage.predefinedFontClasses.exclAdd("navbarVert.png", "fa-solid fa-window-maximize fa-rotate-270");
+        AppServerImage.predefinedFontClasses.exclAdd("navbarHorz.png", "fa-solid fa-window-maximize");
+
+        AppServerImage.predefinedFontClasses.exclAdd("navbarPin.png", "fa-solid fa-thumbtack");
+        AppServerImage.predefinedFontClasses.exclAdd("navbarUnpin.png", "fa-solid fa-thumbtack fa-rotate-90");
+
         AppServerImage.predefinedFontClasses.exclAdd("catalog.png", "fa-solid fa-list-check");
 
         AppServerImage.predefinedFontClasses.exclAdd("inventory.png", "fa-solid fa-warehouse");
@@ -84,7 +90,8 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("retail.png", "fa-solid fa-bag-shopping");
         AppServerImage.predefinedFontClasses.exclAdd("projectManagement.png", "fa-solid fa-diagram-project");
 
-        AppServerImage.predefinedFontClasses.exclAdd("logo.png", "lsfi lsfi-logo-horizontal");
+        AppServerImage.predefinedFontClasses.exclAdd("logo.png", "lsfi lsfi-logo-vertical");
+        AppServerImage.predefinedFontClasses.exclAdd("logoHorizontal.png", "lsfi lsfi-logo-horizontal");
     }
 
     private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G2);

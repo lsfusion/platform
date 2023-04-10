@@ -27,7 +27,7 @@ public class ExcelMobileNavigatorView extends MobileNavigatorView {
         ComplexPanel navPanel = new ResizableComplexPanel(Document.get().createULElement());
         navElement.add(navPanel);
 
-        return new RootPanels(navElement, new Predicate[] {ANY}, new ComplexPanel[] { navPanel });
+        return new RootPanels(navElement, new Predicate[] {ANY}, new ComplexPanel[] { navPanel }, null);
     }
 
     protected ComplexPanel initFolderPanel(NavigatorImageButton button) {

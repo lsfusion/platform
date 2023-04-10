@@ -21,6 +21,7 @@ public abstract class GPropertyController {
         return formController.formLayout;
     }
 
+    public abstract void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values);
     public abstract void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values);

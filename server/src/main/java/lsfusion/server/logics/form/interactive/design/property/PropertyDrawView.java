@@ -807,11 +807,10 @@ public class PropertyDrawView extends BaseComponentView {
 
         if (isProperty()) {
             String tag = getTag(context);
-            if(tag == null) {
-                if (hasFlow(context, ChangeFlowType.INPUT)) {
-                    if(!entity.isList(context.entity))
-                        return "form-control";
-                } else if (hasChangeAction(context))
+            if(tag == null && !entity.isList(context.entity)) {
+                if (hasFlow(context, ChangeFlowType.INPUT))
+                    return "form-control";
+                else if (hasChangeAction(context))
                     return "btn btn-light";
             }
         } else {

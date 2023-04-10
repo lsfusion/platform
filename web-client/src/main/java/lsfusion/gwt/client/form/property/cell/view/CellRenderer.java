@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.ClientMessages;
+import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
@@ -38,10 +39,6 @@ public abstract class CellRenderer<T> {
         return property.tag;
     }
 
-    protected String getValueElementClass() {
-        return property.valueElementClass;
-    }
-
     public Element createRenderElement() {
         assert !isTagInput();
 
@@ -53,10 +50,6 @@ public abstract class CellRenderer<T> {
         else
             renderElement = Document.get().createDivElement();
 
-        String valueElementClass = getValueElementClass();
-        if(valueElementClass != null)
-            GwtClientUtils.addClassNames(renderElement, valueElementClass);
-
         return renderElement;
     }
     public boolean canBeRenderedInTD() {
@@ -67,6 +60,8 @@ public abstract class CellRenderer<T> {
     // and with TextBasedCellEditor.renderStaticContent
     public void render(Element element, RenderContext renderContext) {
         boolean renderedAlignment = renderContent(element, renderContext);
+
+//        BaseImage.setClasses(element, getValueElementClass());
 
 //        SimpleTextBasedCellRenderer.getSizeElement(element).addClassName("prop-value");
 
@@ -287,18 +282,23 @@ public abstract class CellRenderer<T> {
 
         public boolean readonly;
 
+        public String valueElementClass;
+
         public boolean rerender;
 
         public ToolbarState toolbar;
     }
-    private boolean equalsDynamicState(RenderedState state, Object value, Object extraValue, GColorTheme colorTheme) {
+    private static boolean equalsDynamicState(RenderedState state, Object value, Object extraValue, GColorTheme colorTheme) {
         return GwtClientUtils.nullEquals(state.value, value) && GwtClientUtils.nullEquals(state.extraValue, extraValue) && state.colorTheme == colorTheme && !state.rerender;
     }
-    private boolean equalsColorState(RenderedState state, String background, String foreground) {
+    private static boolean equalsColorState(RenderedState state, String background, String foreground) {
         return GwtClientUtils.nullEquals(state.background, background) && GwtClientUtils.nullEquals(state.foreground, foreground);
     }
-    private boolean equalsReadonlyState(RenderedState state, boolean readonly) {
+    private static boolean equalsReadonlyState(RenderedState state, boolean readonly) {
         return state.readonly == readonly;
+    }
+    private static boolean equalsValueElementClassState(RenderedState state, String elementClass) {
+        return GwtClientUtils.nullEquals(state.valueElementClass, elementClass);
     }
 
     private static final String RENDERED = "rendered";
@@ -342,6 +342,13 @@ public abstract class CellRenderer<T> {
 
                 inputElement.setReadOnly(readonly);
             }
+        }
+
+        String valueElementClass = updateContext.getValueElementClass();
+        if(isNew || !equalsValueElementClassState(renderedState, valueElementClass)) {
+            renderedState.valueElementClass = valueElementClass;
+
+            BaseImage.updateClasses(element, valueElementClass);
         }
 
         // already themed colors expected

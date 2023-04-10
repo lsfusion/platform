@@ -365,7 +365,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public Inferred<Interface> calcInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {
         if(implement.property instanceof CompareFormulaProperty) {
             CompareFormulaProperty compareProperty = (CompareFormulaProperty) implement.property;
-            return compareProperty.inferJoinInterfaceClasses(implement.mapping.getValue(0), implement.mapping.getValue(1), inferType);
+            if(compareProperty.inferSameClassCompare())
+                return compareProperty.inferJoinInterfaceClasses(implement.mapping.getValue(0), implement.mapping.getValue(1), inferType);
         }
         
 //        if(implement.property instanceof FormulaUnionProperty) {

@@ -10,7 +10,6 @@ import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MMap;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
 import lsfusion.server.base.AppServerImage;
@@ -23,7 +22,9 @@ import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.base.version.interfaces.NFMap;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
@@ -65,6 +66,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static lsfusion.interop.action.ServerResponse.*;
@@ -111,21 +113,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String columnsName;
     public ImOrderSet<GroupObjectEntity> columnGroupObjects = SetFact.EMPTYORDER();
 
-    private Object propertyExtras = MapFact.mMap(MapFact.override());
-    private boolean finalizedPropertyExtras;
+    private NFMap<PropertyDrawExtraType, PropertyObjectEntity<?>> propertyExtras = NFFact.map();
 
-    @LongMutable
     public ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>> getPropertyExtras() {
-        if(!finalizedPropertyExtras) {
-            finalizedPropertyExtras = true;
-            propertyExtras = ((MMap<PropertyDrawExtraType, PropertyObjectEntity<?>>)propertyExtras).immutable();
-        }
-        return (ImMap<PropertyDrawExtraType, PropertyObjectEntity<?>>) propertyExtras;
+        return propertyExtras.getMap();
     }
-    public void setPropertyExtra(PropertyObjectEntity<?> property, PropertyDrawExtraType type) {
-        assert !finalizedPropertyExtras;
+    public PropertyObjectEntity<?> getNFPropertyExtra(PropertyDrawExtraType type, Version version) {
+        return propertyExtras.getNFValue(type, version);
+    }
+    public void setPropertyExtra(PropertyObjectEntity<?> property, PropertyDrawExtraType type, Version version) {
         if(property != null)
-            ((MMap<PropertyDrawExtraType, PropertyObjectEntity<?>>) propertyExtras).add(type, property);
+            propertyExtras.add(type, property, version);
     }
 
     public boolean hasDynamicImage() {
@@ -469,7 +467,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public PropertyObjectEntity<?> getPropertyExtra(PropertyDrawExtraType type) {
         return getPropertyExtras().get(type);
     }
-    
+
     public boolean hasPropertyExtra(PropertyDrawExtraType type) {
         return getPropertyExtra(type) != null;
     }
@@ -494,8 +492,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         getInheritedProperty().drawOptions.proceedDefaultDesign(propertyView);
     }
 
-    public void proceedDefaultDraw(FormEntity form) {
-        getInheritedProperty().drawOptions.proceedDefaultDraw(this, form);
+    public void proceedDefaultDraw(FormEntity form, Version version) {
+        getInheritedProperty().drawOptions.proceedDefaultDraw(this, form, version);
     }
 
     @Override
@@ -517,16 +515,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public GroupObjectEntity getNFApplyObject(FormEntity form, ImSet<GroupObjectEntity> excludeGroupObjects, boolean supportGroupColumns, Version version) {
         if(supportGroupColumns)
             excludeGroupObjects = excludeGroupObjects.merge(getColumnGroupObjects().getSet());
-        return form.getNFApplyObject(getObjectInstances(), excludeGroupObjects, version);
+        return form.getNFApplyObject(getNFObjectInstances(version), excludeGroupObjects, version);
     }
 
-    @IdentityStartLazy
-    public ImSet<ObjectEntity> getObjectInstances() { 
+    public ImSet<ObjectEntity> getObjectInstances(Function<PropertyDrawExtraType, PropertyObjectEntity<?>> getProperty) {
         MAddSet<ActionOrPropertyObjectEntity<?, ?>> propertyObjects = SetFact.mAddSet();
 
-        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, BACKGROUND, FOREGROUND, IMAGE, READONLYIF};
+        PropertyDrawExtraType[] neededTypes = {CAPTION, FOOTER, SHOWIF, VALUEELEMENTCLASS, BACKGROUND, FOREGROUND, IMAGE, READONLYIF};
         for (PropertyDrawExtraType type : neededTypes) {
-            PropertyObjectEntity<?> prop = getPropertyExtra(type);
+            PropertyObjectEntity<?> prop = getProperty.apply(type);
             if (prop != null) {
                 propertyObjects.add(prop);
             }
@@ -539,6 +536,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         if(toDraw != null)
             mObjects.addAll(toDraw.getObjects());
         return mObjects.immutable();
+    }
+
+    @IdentityStartLazy
+    public ImSet<ObjectEntity> getObjectInstances() {
+        return getObjectInstances(this::getPropertyExtra);
+    }
+    public ImSet<ObjectEntity> getNFObjectInstances(Version version) {
+        return getObjectInstances(type -> getNFPropertyExtra(type, version));
     }
 
     public GroupObjectEntity getNFToDraw(FormEntity form, Version version) {

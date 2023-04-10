@@ -202,8 +202,8 @@ grammar LsfLogics;
 		return getCurrentDebugPoint();
 	}
 
-	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
-        $designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue, debugPoint);
+	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue, Version version, Supplier<DebugInfo.DebugPoint> debugPoint) throws ScriptingErrorLog.SemanticErrorException {
+        $designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue, version, debugPoint);
 	}
 
 	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids, Version version) throws ScriptingErrorLog.SemanticErrorException {
@@ -846,6 +846,7 @@ formPropertyOptionsList returns [FormPropertyOptions options]
 		|	'COLUMNS' (columnsName=stringLiteral)? '(' ids=nonEmptyIdList ')' { $options.setColumns($columnsName.text, getGroupObjectsList($ids.ids, self.getVersion())); }
 		|	'SHOWIF' propObj=formPropertyObject { $options.setShowIf($propObj.property); }
 		|	'READONLYIF' propObj=formPropertyObject { $options.setReadOnlyIf($propObj.property); }
+		|	'CLASS' propObj=formPropertyObject { $options.setValueElementClass($propObj.property); }
 		|	'BACKGROUND' propObj=formPropertyObject { $options.setBackground($propObj.property); }
 		|	'FOREGROUND' propObj=formPropertyObject { $options.setForeground($propObj.property); }
 		|	'IMAGE' (propObj=formPropertyObject)? { $options.setImage($propObj.literal, $propObj.property); }
@@ -5125,7 +5126,7 @@ filterSelector[ScriptingFormView formView] returns [FilterView filterView = null
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
 	:	ID EQ componentPropertyValue ';'  {
             if(inMainParseState())
-	            setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value, () -> getCurrentDebugPoint());
+	            setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value, self.getVersion(), () -> getCurrentDebugPoint());
         }
 	;
 

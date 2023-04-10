@@ -32,6 +32,7 @@ public class NavigatorController implements INavigatorController {
         }
     }
 
+    boolean firstUpdate = true;
     public void update() {
         Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result = new HashMap<>();
 
@@ -50,6 +51,15 @@ public class NavigatorController implements INavigatorController {
                 if (dockable != null) {
                     assert entry.getKey().visible; 
                     dockable.setVisible(entry.getValue().size() != 0);
+                }
+            }
+        }
+
+        if (firstUpdate) {
+            firstUpdate = false;
+            for (ClientNavigatorWindow navigatorWindow : views.keySet()) {
+                if (navigatorWindow.isRoot()) {
+                    views.get(navigatorWindow).openFirstFolder();
                 }
             }
         }

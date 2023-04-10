@@ -29,11 +29,6 @@ public class GComponent implements Serializable {
     public boolean alignShrink;
     public Boolean alignCaption;
 
-    public int marginTop;
-    public int marginBottom;
-    public int marginLeft;
-    public int marginRight;
-
     public ColorDTO background;
     public ColorDTO foreground;
 
@@ -106,22 +101,6 @@ public class GComponent implements Serializable {
         this.alignment = alignment;
     }
 
-    public boolean hasMargins() {
-        return marginTop != 0 || marginBottom != 0 || marginLeft != 0 || marginRight != 0;
-    }
-
-    public int getVerticalMargin() {
-        return marginTop + marginBottom;
-    }
-
-    public int getHorizontalMargin() {
-        return marginLeft + marginRight;
-    }
-
-    public int getMargins(boolean vertical) {
-        return vertical ? getVerticalMargin() : getHorizontalMargin();
-    }
-
     public boolean isAlignCaption() {
         if(alignCaption != null)
             return alignCaption;
@@ -157,4 +136,25 @@ public class GComponent implements Serializable {
         }
     }
     public final GPropertyReader showIfReader = new GShowIfReader();
+
+    private class GElementClassReader implements GPropertyReader {
+        private String sID;
+
+        public GElementClassReader() {
+        }
+
+        @Override
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+            controller.getFormLayout().setElementClass(GComponent.this, values.get(GGroupObjectValue.EMPTY));
+        }
+
+        @Override
+        public String getNativeSID() {
+            if(sID == null) {
+                sID = "_COMPONENT_" + "ELEMENTCLASSREADER" + "_" + GComponent.this.sID;
+            }
+            return sID;
+        }
+    }
+    public final GPropertyReader elementClassReader = new GElementClassReader();
 }

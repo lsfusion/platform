@@ -151,11 +151,18 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelColumnVertical = panelColumnVertical;
     }
 
+    public void setValueClass(Object valueClass) {
+        if(valueClass instanceof LocalizedString)
+            target.valueElementClass = ((LocalizedString) valueClass).getSourceString();
+        else
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) valueClass, PropertyDrawExtraType.VALUEELEMENTCLASS, getVersion());
+    }
+
     public void setCaption(Object caption) {
         if(caption instanceof LocalizedString)
             target.caption = (LocalizedString) caption;
         else
-            target.entity.setPropertyExtra((PropertyObjectEntity<?>) caption, PropertyDrawExtraType.CAPTION);
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) caption, PropertyDrawExtraType.CAPTION, getVersion());
     }
 
     public void setImagePath(LocalizedString image) {
@@ -166,7 +173,7 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         if(image instanceof LocalizedString)
             target.setImage(((LocalizedString) image).getSourceString());
         else
-            target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE);
+            target.entity.setPropertyExtra((PropertyObjectEntity<?>) image, PropertyDrawExtraType.IMAGE, getVersion());
     }
 
     public void setValueAlignment(FlexAlignment valueAlignment) {
