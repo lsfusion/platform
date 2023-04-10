@@ -44,4 +44,6 @@ public abstract class NavigatorView {
     public void resetSelectedElement(ClientNavigatorElement newSelectedElement) {
     }
 
+    public void openFirstFolder() {
+    }
 }

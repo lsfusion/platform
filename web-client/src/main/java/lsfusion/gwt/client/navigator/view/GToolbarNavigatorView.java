@@ -40,7 +40,7 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
     }
 
     //open first folder at start
-    boolean firstFolder = true;
+    GNavigatorElement firstFolder = null;
 
     private void addElement(final GNavigatorElement element, Set<GNavigatorElement> newElements, int step) {
         FormButton button = new NavigatorImageButton(element, verticalTextAlign, step);
@@ -51,9 +51,8 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
             button.addStyleName("active");
         }
 
-        if (element.isFolder() && window.isRoot() && firstFolder) {
-            firstFolder = false;
-            selectElement(element, null);
+        if (firstFolder == null && element.isFolder() && window.isRoot()) {
+            firstFolder = element;
         }
 
         panel.add(button);
@@ -83,6 +82,16 @@ public class GToolbarNavigatorView extends GNavigatorView<GToolbarNavigatorWindo
         GNavigatorElement selectedElement = getSelectedElement();
         if(selectedElement != null && selectedElement.findChild(newSelectedElement) == null) {
             selected = null;
+        }
+    }
+
+    @Override
+    public void openFirstFolder() {
+        super.openFirstFolder();
+
+        if (firstFolder != null) {
+            selectElement(firstFolder, null);
+            firstFolder = null;
         }
     }
 }

@@ -59,6 +59,7 @@ public abstract class GNavigatorController implements GINavigatorController {
         return views.get(window);
     }
 
+    boolean firstUpdate = true;
     @Override
     public void update() {
         Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result = new HashMap<>();
@@ -79,6 +80,15 @@ public abstract class GNavigatorController implements GINavigatorController {
             }
         }
         updateVisibility(visibleElements);
+        
+        if (firstUpdate) {
+            firstUpdate = false;
+            for (GNavigatorWindow navigatorWindow : views.keySet()) {
+                if (navigatorWindow.isRoot()) {
+                    views.get(navigatorWindow).openFirstFolder();
+                }
+            }
+        }
     }
 
     private void dfsAddElements(GNavigatorElement currentElement, GNavigatorWindow currentWindow, Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result) {
