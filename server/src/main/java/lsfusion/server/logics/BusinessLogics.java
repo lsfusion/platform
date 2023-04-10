@@ -307,6 +307,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         schedulerLM = addModule(new SchedulerLogicsModule(this, LM));
         timeLM = addModule(new TimeLogicsModule(this, LM));
         utilsLM = addModule(new UtilsLogicsModule(this, LM));        
+        addModule(new ScriptingLogicsModule(LM, this, "/system/Icon.lsf"));
     }
 
     protected void addModulesFromResource(List<String> includePaths, List<String> excludePaths) throws IOException {
