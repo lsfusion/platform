@@ -14,6 +14,8 @@ public class AbstractWindow {
     
     public LocalizedString caption = LocalizedString.NONAME;
 
+    public boolean drawScrollBars = true;
+
     public int position;
 
     public int x;

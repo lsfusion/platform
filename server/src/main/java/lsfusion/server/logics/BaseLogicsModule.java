@@ -692,37 +692,22 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // Окна
         baseWindows = new Windows();
 
-        String navBarCss = "bg-dark-subtle"; // alternative: bg-dark / navbar-dark -> bg-dark-subtle -> bg-body-secondary
-        String restCss = "bg-body-secondary";
-        String formsCss = "bg-body-tertiary"; // it makes sense to be equal to the class in the ModalWindow constructor
-
         baseWindows.logo = (ToolBarNavigatorWindow) findWindow("logo");
- //        baseWindows.logo.elementClass = navBarCss; // set in lsf code
         baseWindows.logo.autoSize = true;
 
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
-//        baseWindows.root.elementClass = navBarCss + " navbar-icon-large"; // set in lsf code
         baseWindows.root.autoSize = true;
 
         baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
-//         baseWindows.system.elementClass = navBarCss + " navbar-desktop-icon-large navbar-desktop-text-hidden"; // set in lsf code
         baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
-//        baseWindows.toolbar.elementClass = restCss; // set in lsf code
 
         baseWindows.tree = (NavigatorWindow) findWindow("tree");
-//        baseWindows.tree.elementClass = restCss; // set in lsf code
 
-        baseWindows.forms = addWindow(new AbstractWindow(elementCanonicalName("forms"), LocalizedString.create("{logics.window.forms}"), 20, 20, 80, 79));
-        baseWindows.forms.elementClass = formsCss;
-
-        baseWindows.log = addWindow(new AbstractWindow(elementCanonicalName("log"), LocalizedString.create("{logics.window.log}"), 0, 70, 20, 29));
-        baseWindows.log.elementClass = restCss;
-
-        baseWindows.status = addWindow(new AbstractWindow(elementCanonicalName("status"), LocalizedString.create("{logics.window.status}"), 0, 99, 100, 1));
-        baseWindows.status.elementClass = restCss;
-        baseWindows.status.titleShown = false;
+        baseWindows.forms = findWindow("forms");
+        baseWindows.log = findWindow("log");
+        baseWindows.status = findWindow("status");
 
         // todo : перенести во внутренний класс Navigator, как в Windows
         // Навигатор
