@@ -1,0 +1,23 @@
+MODULE Icon;
+
+REQUIRE Utils, Reflection;
+
+// FUTURE BACKWARD COMPATIBILITY
+
+// icon utility properties
+
+badge(STRING badgeText) = '(' + badgeText + ')';
+// usage example: imaged($M{myimage},'mytext', TRUE, TRUE)
+imaged(STRING imageHTML, STRING text, BOOLEAN vertical, BOOLEAN start) = text AS STRING;
+badged(STRING badgeText, STRING text, BOOLEAN vertical, BOOLEAN start) = CONCAT ' ', text, badge(badgeText);
+
+imaged(STRING imageHTML, STRING text) = imaged(imageHTML, text, NULL, TRUE);
+badged(STRING text, STRING badgeText) = badged(badgeText, text, NULL, NULL);
+
+badged(STRING text, INTEGER badgeNumber) = badged(text, STRING(badgeNumber));
+
+// plugin bug
+//imaged(STRING imageHTML, STRING text, BOOLEAN vertical) = '<div class = "${IF text != \'\' THEN \'wrap-text-not-empty \' ELSE \'\'}${IF imageHTML THEN \'wrap-img-\' + (IF vertical THEN \'vert\' ELSE \'horz\'})">\r\n    ${CONCAT \'\', imageHTML, text}\r\n</div>\r\n'
+
+image(StaticObject o) = '';
+imagedCaption(StaticObject object) = imaged(image(object), staticCaption(object));
