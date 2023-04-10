@@ -34,11 +34,7 @@ public class ShowRecDepAction extends SystemExplicitAction {
                 if (actionOrProp instanceof Action)
                     ((Action)actionOrProp).showRec = props.contains(actionOrProp);
         } else {
-            try {
-                bl.LM.findProperty("showResult[]").change(bl.buildShowDeps(props, global ? ApplyFilter.NO : ApplyFilter.SESSION), context);
-            } catch (ScriptingErrorLog.SemanticErrorException e) {
-                throw Throwables.propagate(e);
-            }
+            bl.LM.showResult.change(bl.buildShowDeps(props, global ? ApplyFilter.NO : ApplyFilter.SESSION), context);
         }
     }
 }

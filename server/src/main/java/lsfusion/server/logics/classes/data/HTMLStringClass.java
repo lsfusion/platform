@@ -35,6 +35,11 @@ public class HTMLStringClass extends StringClass {
     }
 
     @Override
+    public boolean useInputTag(boolean isPanel, boolean useBootstrap) {
+        return false;
+    }
+
+    @Override
     protected boolean markupHtml() {
         return true;
     }

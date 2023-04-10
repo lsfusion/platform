@@ -181,6 +181,7 @@ public class GGridPropertyTableHeader extends Header<String> {
         th.addClassName("wrap-wrapimgdiv");
         th.addClassName("wrap-text-not-empty");
         th.addClassName("wrap-img-horz");
+        th.addClassName("wrap-img-start");
 
         Element img = (sortDir ? StaticImage.SORTUP : StaticImage.SORTDOWN).createImage();
         img.addClassName("sort-img");

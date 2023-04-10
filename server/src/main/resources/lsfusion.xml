@@ -655,6 +655,15 @@
         </property>
     </bean>
 
+    <bean id="prereadIconsClassesTask" class="lsfusion.server.logics.classes.controller.init.PrereadIconsClassesTask">
+        <property name="BL" ref="businessLogics"/>
+        <property name="dependencies">
+            <set>
+                <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
+            </set>
+        </property>
+    </bean>
+
     <bean id="exportRmiObjectTask" class="lsfusion.server.logics.navigator.controller.init.ExportRmiObjectTask">
         <property name="BL" ref="businessLogics"/>
         <property name="remoteLogicsLoader" ref="remoteLogicsLoader"/>
@@ -690,6 +699,7 @@
                 <ref bean="executeOnStartedTask"/>
                 <ref bean="prereadIconsFormsTask"/>
                 <ref bean="prereadIconsNavigatorElementsTask"/>
+                <ref bean="prereadIconsClassesTask"/>
             </set>
         </property>
     </bean>

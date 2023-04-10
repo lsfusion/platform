@@ -9,6 +9,8 @@ public abstract class TextBasedClass<T> extends DataClass<T> {
         super(caption);
     }
 
+    // all children that has renderers not inherited from SimpleTextBasedCellRenderer should return false
+    // otherwise CellRendererer.createCellRenderer !isTagInput assertion will be broken
     @Override
     public boolean useInputTag(boolean isPanel, boolean useBootstrap) {
         if(!isPanel)

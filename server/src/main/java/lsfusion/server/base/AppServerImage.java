@@ -119,7 +119,7 @@ public class AppServerImage {
         return () -> fResult;
     }
 
-    private final static ThreadLocal<MSet<String>> prereadBestIcons = new ThreadLocal<>();
+    public final static ThreadLocal<MSet<String>> prereadBestIcons = new ThreadLocal<>();
     public static void prereadBestIcons(BusinessLogics BL, DBManager dbManager, Runnable run) {
         prereadBestIcons.set(SetFact.mSet());
         try {

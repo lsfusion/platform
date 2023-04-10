@@ -227,6 +227,11 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         }
     }
 
+    public void fillIcons(MSet<String> mImages) {
+        for(ObjectInfo object : getStaticObjectsInfoIt())
+            mImages.add(object.image);
+    }
+
     public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP caption, LP image, LP name, Map<String, ConcreteCustomClass> usedSIds, Set<Long> usedIds, Map<String, String> sidChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {
 
         // Получаем старые sid и name
