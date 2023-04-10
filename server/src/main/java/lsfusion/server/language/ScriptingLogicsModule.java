@@ -4917,6 +4917,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (dp != null)
             window.setDockPosition(dp.x, dp.y, dp.width, dp.height);
 
+        window.propertyElementClass = options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null;
         window.elementClass = options.elementClass;
         return window;
     }

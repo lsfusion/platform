@@ -7,7 +7,6 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.view.FormContainer;
-import lsfusion.gwt.client.view.MainFrame;
 
 public abstract class WidgetForm extends FormContainer {
     protected Widget captionWidget;
@@ -111,9 +110,6 @@ public abstract class WidgetForm extends FormContainer {
 
             addStyleName("btn-close");
             addStyleName("tab-close-button");
-
-            if (MainFrame.dontShowCloseButtonOnInactiveTab)
-                addStyleName("dont-show-close-button");
 
             addClickHandler(event -> {
                 event.stopPropagation();

@@ -96,6 +96,6 @@
     display: none; /* hide scrollbars in Safari and Chrome */
 }
 
-.nav-link:not(.active) .tab-close-button.dont-show-close-button {
+.dont-show-close-button .nav-link:not(.active) .tab-close-button {
     display: none;
 }

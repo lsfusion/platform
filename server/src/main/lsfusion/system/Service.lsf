@@ -671,8 +671,6 @@ overrideTableGridColor '{service.table.grid.color}' = OVERRIDE tableGridColor(cu
 
 resetWindowsLayout '{service.reset.windows.layout}' INTERNAL 'lsfusion.server.logics.navigator.ResetWindowsLayoutAction';
 
-dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
-
 EXTEND FORM settings
     PROPERTIES() selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, serverUseBootstrap READONLY
 
@@ -800,8 +798,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         showNotDefinedStrings = valueSettingBoolean('showNotDefinedStrings'),
         pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
-        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
-        dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(user); 
+        useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator');
 }
 
 getClientSettings() {

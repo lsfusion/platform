@@ -23,7 +23,6 @@ public class GClientSettings implements Serializable {
     public String staticImagesURL;
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
-    public boolean dontShowCloseButtonOnInactiveTab;
 
     @SuppressWarnings("unused")
     public GClientSettings() {
@@ -32,7 +31,7 @@ public class GClientSettings implements Serializable {
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms,
                            boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
-                           boolean useTextAsFilterSeparator, boolean dontShowCloseButtonOnInactiveTab) {
+                           boolean useTextAsFilterSeparator) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -49,6 +48,5 @@ public class GClientSettings implements Serializable {
         this.staticImagesURL = staticImagesURL;
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
-        this.dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab;
     }
 }

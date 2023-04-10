@@ -154,11 +154,10 @@ public class LogicsSessionObject {
         boolean pivotOnlySelectedColumn = json.optBoolean("pivotOnlySelectedColumn");
         String matchSearchSeparator = json.optString("matchSearchSeparator");
         boolean useTextAsFilterSeparator = json.optBoolean("useTextAsFilterSeparator");
-        boolean dontShowCloseButtonOnInactiveTab = json.optBoolean("dontShowCloseButtonOnInactiveTab");
 
-        return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode, projectLSFDir, showDetailedInfo,
-                forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator, colorTheme, useBootstrap, colorPreferences,
-                preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, mainResourcesBeforeSystem, mainResourcesAfterSystem, dontShowCloseButtonOnInactiveTab);
+        return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, busyDialogTimeout, useRequestTimeout, devMode,
+                projectLSFDir, showDetailedInfo, forbidDuplicateForms, showNotDefinedStrings, pivotOnlySelectedColumn, matchSearchSeparator,
+                colorTheme, useBootstrap, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), useTextAsFilterSeparator, mainResourcesBeforeSystem, mainResourcesAfterSystem);
     }
 
     private static void fillRanges(JSONArray rangesJson, List<String> ranges) {

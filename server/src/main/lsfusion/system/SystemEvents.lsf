@@ -321,6 +321,9 @@ isMobile() = isNativeMobile() OR isWebMobile();
 isNative() = isNativeDesktop() OR isNativeMobile();
 isWeb() = isWebDesktop() OR isWebMobile();
 
+dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
+dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
+
 onClientStarted () + {
     IF isNativeDesktop() THEN {
         onDesktopClientStarted();
@@ -328,6 +331,11 @@ onClientStarted () + {
     IF isWeb() THEN {
         onWebClientStarted(); 
     }
+}
+
+onWebClientStarted() + {
+    formsWindowClass() <- 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
+    printToLog(formsWindowClass());
 }
 
 user '{system.events.user.session}' = DATA User (Session);
