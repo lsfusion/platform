@@ -4784,6 +4784,7 @@ windowType returns [WindowType type]
 	|	'PANEL'		{ $type = PANEL; }
 	|	'TOOLBAR'	{ $type = TOOLBAR; }
 	|	'TREE'		{ $type = TREE; }
+	|	'NATIVE'	{ $type = NATIVE; }
 	;
 
 windowOptions returns [NavigatorWindowOptions options]

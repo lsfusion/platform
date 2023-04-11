@@ -451,6 +451,7 @@ systemWindowClass = DATA STRING();
 pinNavbar = ABSTRACT BOOLEAN ();
 textOnHoverClass = DATA STRING();
 verticalTextOnHoverClass = DATA STRING();
+formsWindowClass = DATA STRING();
 
 WINDOW logo TOOLBAR HORIZONTAL POSITION(0, 0, 10, 6) VALIGN (CENTER) HALIGN (START) HIDETITLE HIDESCROLLBARS CLASS (logoWindowClass() + (IF pinNavbar() THEN '' ELSE verticalTextOnHoverClass()));
 WINDOW root TOOLBAR HORIZONTAL POSITION(10, 0, 70, 6) VALIGN (CENTER) HALIGN (CENTER) HIDETITLE HIDESCROLLBARS CLASS (rootWindowClass() + (IF pinNavbar() THEN '' ELSE textOnHoverClass()));
@@ -458,6 +459,10 @@ WINDOW system TOOLBAR HORIZONTAL POSITION(80, 0, 20, 6) VALIGN (CENTER) HALIGN (
 
 WINDOW toolbar TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE CLASS 'bg-body-secondary';
 WINDOW tree  TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE CLASS 'bg-body-secondary';
+
+WINDOW forms NATIVE POSITION(20, 20, 80, 79) CLASS formsWindowClass();
+WINDOW log NATIVE POSITION(0, 70, 20, 29) CLASS 'bg-body-secondary';
+WINDOW status NATIVE POSITION(0, 99, 100, 1) HIDETITLE CLASS 'bg-body-secondary';
 
 NAVIGATOR {
     NEW FOLDER root '{navigator.forms}' WINDOW root {

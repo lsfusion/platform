@@ -353,6 +353,9 @@ isMobile() = isNativeMobile() OR isWebMobile();
 isNative() = isNativeDesktop() OR isNativeMobile();
 isWeb() = isWebDesktop() OR isWebMobile();
 
+dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
+dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
+
 onClientStarted () + {
     IF isNativeDesktop() THEN {
         onDesktopClientStarted();
@@ -382,8 +385,9 @@ onWebClientStarted() + {
     pinNavbarClass() <- IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
     
     textOnHoverClass() <- IF isWebDesktop() THEN ' navbar-text-on-hover' ELSE '';
-    verticalTextOnHoverClass() <- IF isWebDesktop() AND verticalNavbar() THEN ' navbar-text-on-hover' ELSE ''; 
+    verticalTextOnHoverClass() <- IF isWebDesktop() AND verticalNavbar() THEN ' navbar-text-on-hover' ELSE '';
 
+    formsWindowClass() <- 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
     apply();
 }
 
