@@ -1,12 +1,13 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 
 import java.io.Serializable;
 
 public class GAsync implements IsSerializable, Serializable {
-    public String displayString;
+    public Serializable displayString; // String or GStringWithFiles
     public String rawString;
 
     public GGroupObjectValue key;
@@ -17,11 +18,15 @@ public class GAsync implements IsSerializable, Serializable {
     public GAsync() {
     }
 
-    public GAsync(String displayString, String rawString, GGroupObjectValue key) {
+    public GAsync(Serializable displayString, String rawString, GGroupObjectValue key) {
         this.displayString = displayString;
         this.rawString = rawString;
 
         this.key = key;
+    }
+
+    public String getDisplayString() {
+        return (String) GFormChanges.remapValue(displayString);
     }
 
     @Override

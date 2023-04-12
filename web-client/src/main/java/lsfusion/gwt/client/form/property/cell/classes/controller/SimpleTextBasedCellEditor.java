@@ -402,7 +402,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                                     suggestionList.add(new PopupMenuItemValue() {
                                         @Override
                                         public String getDisplayString() {
-                                            return suggestion.displayString;
+                                            return suggestion.getDisplayString();
                                         }
 
                                         @Override

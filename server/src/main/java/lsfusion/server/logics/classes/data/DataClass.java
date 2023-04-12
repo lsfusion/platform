@@ -14,7 +14,6 @@ import lsfusion.server.data.expr.key.KeyType;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.expr.value.ValueExpr;
 import lsfusion.server.data.sql.SQLSession;
-import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.AbstractType;
 import lsfusion.server.data.type.Type;
@@ -194,7 +193,7 @@ public abstract class DataClass<T> extends AbstractType<T> implements StaticClas
 
     protected abstract Class getReportJavaClass();
 
-    protected boolean markupHtml() {
+    public boolean markupHtml() {
         return false;
     }
 

@@ -260,11 +260,11 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
     }
 
     @Converter(from = ClientAsync.class)
-    public GAsync convertAsync(ClientAsync async) {
+    public GAsync convertAsync(ClientAsync async, FormSessionObject sessionObject, MainDispatchServlet servlet) throws IOException {
         if(async.equals(ClientAsync.CANCELED))
             return GAsync.CANCELED;
         if(async.equals(ClientAsync.RECHECK))
             return GAsync.RECHECK;
-        return new GAsync(async.displayString, async.rawString, convertOrCast(async.key));
+        return new GAsync(convertFileValue(convertOrCast(async.displayString), sessionObject, servlet, sessionObject.navigatorID), async.rawString, convertOrCast(async.key));
     }
 }

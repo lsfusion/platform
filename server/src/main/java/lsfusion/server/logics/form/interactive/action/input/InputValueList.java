@@ -14,10 +14,12 @@ import lsfusion.server.data.expr.key.KeyExpr;
 import lsfusion.server.data.query.compile.CompiledQuery;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.parse.ValueParseInterface;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
+import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.property.CurrentEnvironmentProperty;
 import lsfusion.server.logics.property.Property;
@@ -62,6 +64,11 @@ public class InputValueList<P extends PropertyInterface> {
 
     public Stat getSelectStat() {
         return property.getSelectStat(mapValues.keys());
+    }
+
+    public boolean isHighlight() {
+        Type type = property.getType();
+        return !(type instanceof DataClass && ((DataClass<?>) type).markupHtml()); // ts_headline breaks html : https://stackoverflow.com/questions/40263956/why-is-postgresql-stripping-html-entities-in-ts-headline
     }
 
     public ImSet<Property> getChangeProps() {

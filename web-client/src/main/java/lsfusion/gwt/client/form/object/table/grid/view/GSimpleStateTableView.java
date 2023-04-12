@@ -450,7 +450,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 for (int i = 0; i < result.first.size(); i++) {
                     JavaScriptObject object = GwtClientUtils.newObject();
                     GAsync suggestion = result.first.get(i);
-                    GwtClientUtils.setField(object, "displayString", fromString(suggestion.displayString));
+                    GwtClientUtils.setField(object, "displayString", fromString(suggestion.getDisplayString()));
                     GwtClientUtils.setField(object, "rawString", fromString(suggestion.rawString));
                     GwtClientUtils.setField(object, "key", fromObject(suggestion.key));
                     results[i] = object;

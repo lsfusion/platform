@@ -40,7 +40,7 @@ public class HTMLStringClass extends StringClass {
     }
 
     @Override
-    protected boolean markupHtml() {
+    public boolean markupHtml() {
         return true;
     }
 }

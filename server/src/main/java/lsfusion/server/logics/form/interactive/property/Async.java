@@ -1,5 +1,6 @@
 package lsfusion.server.logics.form.interactive.property;
 
+import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
@@ -38,7 +39,7 @@ public class Async {
     }
 
     public void serialize(DataOutputStream dataStream) throws IOException {
-        dataStream.writeUTF(displayString);
+        BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, displayString));
         dataStream.writeUTF(rawString);
         dataStream.writeBoolean(key != null);
         if(key != null)

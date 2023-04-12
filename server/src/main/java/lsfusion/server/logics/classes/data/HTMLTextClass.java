@@ -31,7 +31,7 @@ public class HTMLTextClass extends TextClass{
     }
 
     @Override
-    protected boolean markupHtml() {
+    public boolean markupHtml() {
         return true;
     }
 }

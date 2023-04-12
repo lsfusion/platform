@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public class ClientAsync implements Serializable {
-    public final String displayString;
+    public final Serializable displayString;
     public final String rawString;
 
     public final ClientGroupObjectValue key;
@@ -26,7 +26,7 @@ public class ClientAsync implements Serializable {
     }
 
     public ClientAsync(DataInputStream inStream, ClientForm form) throws IOException {
-        displayString = inStream.readUTF();
+        displayString = (Serializable) BaseUtils.deserializeObject(inStream);
         rawString = inStream.readUTF();
         if(inStream.readBoolean())
             key = new ClientGroupObjectValue(inStream, form);

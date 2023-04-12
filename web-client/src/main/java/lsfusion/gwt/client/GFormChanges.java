@@ -99,28 +99,31 @@ public class GFormChanges {
     }
 
     private static Serializable[] remapValues(Serializable[] values) {
-        for (int i = 0; i < values.length; i++) {
-            Serializable value = values[i];
-            if (value instanceof GStringWithFiles) {
-                GStringWithFiles stringWithFiles = (GStringWithFiles) value;
-                StringBuilder result = new StringBuilder();
-                for (int j = 0; j < stringWithFiles.prefixes.length; j++) {
-                    result.append(stringWithFiles.prefixes[j]);
-                    if(j < stringWithFiles.urls.length) {
-                        Serializable url = stringWithFiles.urls[j];
-                        if(url instanceof String) // file
-                            result.append(GwtClientUtils.getAppStaticWebURL((String) url));
-                        else {
-                            AppStaticImage image = (AppStaticImage) url;
-                            if(image != null)
-                                result.append(image.createImageHTML());
-                        }
+        for (int i = 0; i < values.length; i++)
+            values[i] = remapValue(values[i]);
+        return values;
+    }
+
+    public static Serializable remapValue(Serializable value) {
+        if (value instanceof GStringWithFiles) {
+            GStringWithFiles stringWithFiles = (GStringWithFiles) value;
+            StringBuilder result = new StringBuilder();
+            for (int j = 0; j < stringWithFiles.prefixes.length; j++) {
+                result.append(stringWithFiles.prefixes[j]);
+                if(j < stringWithFiles.urls.length) {
+                    Serializable url = stringWithFiles.urls[j];
+                    if(url instanceof String) // file
+                        result.append(GwtClientUtils.getAppStaticWebURL((String) url));
+                    else {
+                        AppStaticImage image = (AppStaticImage) url;
+                        if(image != null)
+                            result.append(image.createImageHTML());
                     }
                 }
-                values[i] = result.toString();
             }
+            return result.toString();
         }
-        return values;
+        return value;
     }
 
     private static GPropertyReader remapPropertyReader(GForm form, GPropertyReaderDTO readerDTO) {

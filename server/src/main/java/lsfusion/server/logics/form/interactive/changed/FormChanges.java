@@ -192,7 +192,7 @@ public class FormChanges {
 
                 Object value = rows.getValue(j).getValue();
 
-                BaseUtils.serializeObject(outStream, convertFileValue(needImage, value));
+                serializeObject(outStream, convertFileValue(needImage, value));
             }
         }
 
