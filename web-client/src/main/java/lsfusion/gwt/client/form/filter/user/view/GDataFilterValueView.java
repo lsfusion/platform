@@ -47,13 +47,10 @@ public class GDataFilterValueView extends SizedFlexPanel {
         sizedView.widget.addStyleName("filter-data-property-value form-control");
         sizedView.addFill(this);
 
-        Object value;
-        if (readSelectedValue) {
-            value = GwtClientUtils.escapeSeparator(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
-        } else {
-            value = filterValue.value;
-        }
-        cell.updateValue(value);
+        if (readSelectedValue)
+            filterValue.value = (Serializable) GwtClientUtils.escapeSeparator(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
+
+        cell.updateValue(filterValue.value);
     }
 
     public void valueChanged(Object value) {
