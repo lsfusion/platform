@@ -512,7 +512,7 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	('IMAGE' (img=stringLiteral)? { image = BaseUtils.nvl($img.val, AppServerImage.AUTO); })
+		(	(img=imageStatement { image = BaseUtils.nvl($img.image, AppServerImage.AUTO); })
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
 		|	('LOCALASYNC' { localAsync = true; })
 		)*
@@ -2918,10 +2918,10 @@ charWidthSetting [LAP property]
 imageSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setImage(property, BaseUtils.nvl($path.val, AppServerImage.AUTO));
+		self.setImage(property, BaseUtils.nvl($img.image, AppServerImage.AUTO));
 	}
 }
-	:	'IMAGE' (path=stringLiteral)?
+	:   img=imageStatement
 	;
 
 defaultCompareSetting [LAP property]
@@ -5290,7 +5290,7 @@ typedParameter returns [TypedParameter param]
 	;
 
 imageStatement returns [String image]
-    :   'IMAGE' img=stringLiteral {$image = $img.val; }
+    :   'IMAGE' (img=stringLiteral)? {$image = $img.val; }
     ;
 
 simpleNameWithCaption returns [String name, LocalizedString caption] 
