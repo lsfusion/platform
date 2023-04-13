@@ -429,7 +429,7 @@ public class ScriptingFormEntity {
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, location, version);
             else
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, location, version);
-            propertyDraw.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
+            propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
             if(forceChangeAction != null)
                 propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction, true);
