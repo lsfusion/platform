@@ -56,9 +56,9 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public BaseClass(String canonicalName, LocalizedString caption, String staticCanonicalName, LocalizedString staticCanonicalCaption, Version version) {
-        super(canonicalName, caption, version, ListFact.EMPTY());
+        super(canonicalName, caption, null, version, ListFact.EMPTY());
         unknown = new UnknownClass(this);
-        staticObjectClass = new AbstractCustomClass(staticCanonicalName, staticCanonicalCaption, version, ListFact.singleton(this));
+        staticObjectClass = new AbstractCustomClass(staticCanonicalName, staticCanonicalCaption, null, version, ListFact.singleton(this));
     }
 
     @Override
@@ -96,19 +96,21 @@ public class BaseClass extends AbstractCustomClass {
     }
 
     public void initObjectClass(Version version, String canonicalName) { // чтобы сохранить immutability классов
-        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), version, ListFact.singleton(staticObjectClass));
+        objectClass = new ConcreteCustomClass(canonicalName, LocalizedString.create("{classes.object.class}"), null, version, ListFact.singleton(staticObjectClass));
 
         ImSet<CustomClass> allClasses = getAllClasses().remove(SetFact.singleton(objectClass));
 
         // сначала обрабатываем baseClass.objectClass чтобы классы
         List<String> sidClasses = new ArrayList<>();
         List<LocalizedString> nameClasses = new ArrayList<>();
+        List<String> images = new ArrayList<>();
         for(CustomClass customClass : allClasses)
             if(customClass instanceof ConcreteCustomClass) {
                 sidClasses.add(customClass.getSID());
                 nameClasses.add(customClass.caption);
+                images.add(customClass.image);
             }
-        ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, version);
+        ConcreteCustomClass.fillObjectClass(objectClass, sidClasses, nameClasses, images, version);
     }
 
     public void fillIDs(SQLSession sql, QueryEnvironment env, SQLCallable<Long> idGen, LP staticCaption, LP staticImage, LP<?> staticName, Map<String, String> sidChanges, Map<String, String> objectSIDChanges, DBManager.IDChanges dbChanges) throws SQLException, SQLHandledException {

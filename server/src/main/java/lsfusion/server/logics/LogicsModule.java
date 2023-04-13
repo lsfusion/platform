@@ -428,12 +428,12 @@ public abstract class LogicsModule {
         }
     }
 
-    protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, List<String> objNames, List<LocalizedString> objCaptions, ImList<CustomClass> parents) {
+    protected ConcreteCustomClass addConcreteClass(String name, LocalizedString caption, String image, List<String> objNames, List<LocalizedString> objCaptions, List<String> images, ImList<CustomClass> parents) {
         if(!objNames.isEmpty())
             parents = parents.addList(getBaseClass().staticObjectClass);
         parents = checkEmptyParents(parents);
-        ConcreteCustomClass customClass = new ConcreteCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
-        customClass.addStaticObjects(objNames, objCaptions, getVersion());
+        ConcreteCustomClass customClass = new ConcreteCustomClass(elementCanonicalName(name), caption, image, getVersion(), parents);
+        customClass.addStaticObjects(objNames, objCaptions, images, getVersion());
         storeCustomClass(customClass);
         return customClass;
     }
@@ -444,9 +444,9 @@ public abstract class LogicsModule {
         return parents;
     }
 
-    protected AbstractCustomClass addAbstractClass(String name, LocalizedString caption, ImList<CustomClass> parents) {
+    protected AbstractCustomClass addAbstractClass(String name, LocalizedString caption, String image, ImList<CustomClass> parents) {
         parents = checkEmptyParents(parents);
-        AbstractCustomClass customClass = new AbstractCustomClass(elementCanonicalName(name), caption, getVersion(), parents);
+        AbstractCustomClass customClass = new AbstractCustomClass(elementCanonicalName(name), caption, image, getVersion(), parents);
         storeCustomClass(customClass);
         return customClass;
     }

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
+import lsfusion.server.data.expr.where.classes.data.MatchWhere;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -88,4 +89,9 @@ public class TSQueryClass extends DataClass<String> {
         return String.class;
     }
 
+    @Override
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+        String language = Settings.get().getTsVectorDictionaryLanguage();
+        return typeFrom instanceof StringClass ? MatchWhere.getPrefixSearchQuery(syntax, value, language) : super.getCast(value, syntax, typeEnv, typeFrom);
+    }
 }
