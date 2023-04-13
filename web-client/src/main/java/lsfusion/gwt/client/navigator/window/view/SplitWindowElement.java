@@ -56,78 +56,108 @@ public class SplitWindowElement extends WindowElement {
             return;
         }
 
-        List<WindowElement> windowsLeft = new ArrayList<>(leftToPut);
-        for (WindowElement window : leftToPut) {
-            if (windowsLeft.size() == 1) {
-                splitPanel.add(windowsLeft.get(0).initializeView());
-                windowDirections.put(windowsLeft.get(0), CENTER);
-                return;
-            }  
+        if (leftToPut.size() == 1) {
+            splitPanel.add(leftToPut.get(0).initializeView());
+            windowDirections.put(leftToPut.get(0), CENTER);
+            return;
+        }
 
-            boolean attached = false;
+        // attach windows/splits one by one
+        boolean attachedH = false;
+        boolean attachedV = false;
+        WindowElement attachedWindow = null;
+        List<WindowElement> windowsLeft = new ArrayList<>(leftToPut);
+        //searching for single full-width/height window
+        for (WindowElement window : leftToPut) {
             if (windowsLeft.contains(window)) {
-                if (window.height == rectHeight) {
-                    attached = attachHorizontally(window, rectX, rectWidth);
-                    if (attached) {
-                        rectWidth -= window.width;
-                        if (window.x == rectX) {
-                            rectX += window.width;
-                        }
-                    }
-                } else if (window.width == rectWidth) {
-                    attached = attachVertically(window, rectY, rectHeight);
-                    if (attached) {
-                        rectHeight -= window.height;
-                        if (window.y == rectY) {
-                            rectY += window.height;
-                        }
-                    }
+                attachedH = attachSingleH(window, rectX, rectWidth, rectHeight, true);
+                if (!attachedH) {
+                    attachedV = attachSingleV(window, rectY, rectWidth, rectHeight, true);
                 }
-                if (attached) {
+                if (attachedH || attachedV) {
+                    attachedWindow = window;
                     windowsLeft.remove(window);
+                    break;
                 }
             }
         }
-        
-        if (windowsLeft.size() < leftToPut.size()) {
-            // какое-то окно нашло своё место - делаем ещё круг
-            fillWithChildren(windowsLeft, rectX, rectY, rectWidth, rectHeight);
-        } else {
-            // иначе пробуем сложить часть окон в гор.или верт. сплит
-            SplitWindowElement split = putInSplit(windowsLeft, rectX, rectY, rectWidth, rectHeight); 
-            if (split != null) {
-                addElement(split);
-                
-                for (WindowElement splitChild : split.children.keySet()) {
-                    children.remove(splitChild);
-                    windowsLeft.remove(splitChild);
-                }
-                
-                if (split.x == rectX && split.width == rectWidth) {
-                    boolean attached = attachVertically(split, rectY, rectHeight);
-                    if (attached) {
-                        rectHeight -= split.height;
-                        if (split.y == rectY) {
-                            rectY += split.height;
-                        }
-                    }
-                } else if (split.y == rectY && split.height == rectHeight) {
-                    boolean attached = attachHorizontally(split, rectX, rectWidth);
-                    if (attached) {
-                        rectWidth -= split.width;
-                        if (split.x == rectX) {
-                            rectX += split.width;
-                        }
-                    }
-                }
-                
-                // если нашёлся такой набор окон, снова пробуем найти место для одного окна
-                fillWithChildren(windowsLeft, rectX, rectY, rectWidth, rectHeight);
+
+        if (!attachedH && !attachedV) {
+            // if no single window found, try to find full-width/height split
+            SplitWindowElement split = putInSplit(windowsLeft, rectX, rectY, rectWidth, rectHeight, true);
+            if (split == null) {
+                // then try to attach split not stretched on full width/height
+                split = putInSplit(windowsLeft, rectX, rectY, rectWidth, rectHeight, false);
             }
+            if (split != null) {
+                if (split.x == rectX && split.width == rectWidth) {
+                    attachedV = attachVertically(split, rectY, rectHeight);
+                } else if (split.y == rectY && split.height == rectHeight) {
+                    attachedH = attachHorizontally(split, rectX, rectWidth);
+                }
+                if (attachedH || attachedV) {
+                    attachedWindow = split;
+
+                    addElement(split);
+                    for (WindowElement splitChild : split.children.keySet()) {
+                        children.remove(splitChild);
+                        windowsLeft.remove(splitChild);
+                    }
+                }
+            }
+        }
+
+        // in the end add any window attached to the border of free space
+        if (!attachedH && !attachedV) {
+            for (WindowElement window : leftToPut) {
+                if (windowsLeft.contains(window)) {
+                    attachedH = attachSingleH(window, rectX, rectWidth, rectHeight, false);
+                    if (!attachedH) {
+                        attachedV = attachSingleV(window, rectY, rectWidth, rectHeight, false);
+                    }
+                    if (attachedH || attachedV) {
+                        attachedWindow = window;
+                        windowsLeft.remove(window);
+                        break;
+                    }
+                }
+            }
+        }
+
+        //adjust free space
+        if (attachedH) {
+            rectWidth -= attachedWindow.width;
+            if (attachedWindow.x == rectX) {
+                rectX += attachedWindow.width;
+            }
+        } else if (attachedV) {
+            rectHeight -= attachedWindow.height;
+            if (attachedWindow.y == rectY) {
+                rectY += attachedWindow.height;
+            }
+        }
+
+        // find place for the next window
+        if (attachedH || attachedV) {
+            fillWithChildren(windowsLeft, rectX, rectY, rectWidth, rectHeight);
         }
     }
     
-    private SplitWindowElement putInSplit(List<WindowElement> windows, int rectX, int rectY, int rectWidth, int rectHeight) {
+    private boolean attachSingleH(WindowElement window, int rectX, int rectWidth, int rectHeight, boolean fullLine) {
+        if (window.height == rectHeight || !fullLine) {
+            return attachHorizontally(window, rectX, rectWidth);
+        }
+        return false;
+    }
+
+    private boolean attachSingleV(WindowElement window, int rectY, int rectWidth, int rectHeight, boolean fullLine) {
+        if (window.width == rectWidth || !fullLine) {
+            return attachVertically(window, rectY, rectHeight);
+        }
+        return false;
+    }
+    
+    private SplitWindowElement putInSplit(List<WindowElement> windows, int rectX, int rectY, int rectWidth, int rectHeight, boolean fullLine) {
         SplitWindowElement splitWindow = null;
         List<WindowElement> splitChildren = null;
 
@@ -142,7 +172,7 @@ public class SplitWindowElement extends WindowElement {
                 }
             }
             if (inOneLine.size() > 1) {
-                List<WindowElement> winds = findLineFilling(inOneLine, true, rectHeight);
+                List<WindowElement> winds = fullLine ? findLineFilling(inOneLine, true, rectHeight) : inOneLine;
                 if (winds != null) {
                     WindowElement firstWindow = winds.get(0);
                     // дополнительно проверим, что ряд окон прижат к одному из краёв
@@ -165,7 +195,7 @@ public class SplitWindowElement extends WindowElement {
                     }
                 }
                 if (inOneLine.size() > 1) {
-                    List<WindowElement> winds = findLineFilling(inOneLine, false, rectWidth);
+                    List<WindowElement> winds = fullLine ? findLineFilling(inOneLine, false, rectWidth) : inOneLine;
                     if (winds != null) {
                         WindowElement firstWindow = winds.get(0);
                         if (firstWindow.y == rectY || firstWindow.y + firstWindow.height == rectY + rectHeight) {
