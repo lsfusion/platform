@@ -101,7 +101,7 @@ public class ScriptingFormEntity {
 
     private GroupObjectEntity addScriptingGroupObject(ScriptingGroupObject groupObject, TreeGroupEntity treeGroup, ComplexLocation<GroupObjectEntity> location, Version version, DebugInfo.DebugPoint debugPoint) throws ScriptingErrorLog.SemanticErrorException {
         GroupObjectEntity groupObj = new GroupObjectEntity(form.genID(), treeGroup);
-        groupObj.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
+        groupObj.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
         for (int j = 0; j < groupObject.objects.size(); j++) {
             String className = groupObject.classes.get(j);
@@ -429,7 +429,7 @@ public class ScriptingFormEntity {
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, location, version);
             else
                 propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, location, version);
-            propertyDraw.setScriptIndex(Pair.create(debugPoint.line, debugPoint.offset));
+            propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
             if(forceChangeAction != null)
                 propertyDraw.setEventAction(ServerResponse.CHANGE, forceChangeAction, true);
