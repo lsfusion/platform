@@ -507,12 +507,12 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	(img=imageStatement { image = BaseUtils.nvl($img.image, AppServerImage.AUTO); })
+		(	img=imageStatement
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
 		|	('LOCALASYNC' { localAsync = true; })
 		)*
@@ -2918,7 +2918,7 @@ charWidthSetting [LAP property]
 imageSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setImage(property, BaseUtils.nvl($img.image, AppServerImage.AUTO));
+		self.setImage(property, $img.image);
 	}
 }
 	:   img=imageStatement
@@ -5290,7 +5290,7 @@ typedParameter returns [TypedParameter param]
 	;
 
 imageStatement returns [String image]
-    :   'IMAGE' (img=stringLiteral)? {$image = $img.val; }
+    :   'IMAGE' (img=stringLiteral)? {$image = BaseUtils.nvl($img.val, AppServerImage.AUTO); }
     ;
 
 simpleNameWithCaption returns [String name, LocalizedString caption] 
