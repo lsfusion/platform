@@ -150,6 +150,7 @@ public class NavigatorsManager extends LogicsManager implements InitializingBean
             businessLogics.systemEventsLM.webHostConnection.change(navigatorInfo.session.externalRequest.webHost, session, newConnection);
             businessLogics.systemEventsLM.webPortConnection.change(navigatorInfo.session.externalRequest.webPort, session, newConnection);
             businessLogics.systemEventsLM.contextPathConnection.change(navigatorInfo.session.externalRequest.contextPath, session, newConnection);
+            businessLogics.systemEventsLM.scheme.change(navigatorInfo.session.externalRequest.scheme, session, newConnection);
             businessLogics.systemEventsLM.launchConnection.change(businessLogics.systemEventsLM.currentLaunch.readClasses(session), session, newConnection);
             String result = session.applyMessage(businessLogics, stack);
             if(result != null)
