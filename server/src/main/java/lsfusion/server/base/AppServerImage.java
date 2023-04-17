@@ -57,7 +57,7 @@ public class AppServerImage {
         AppServerImage.predefinedFontClasses.exclAdd("open.png", "fa-regular fa-folder");
 
         AppServerImage.predefinedFontClasses.exclAdd("tools.png", "fa-solid fa-screwdriver-wrench");
-        AppServerImage.predefinedFontClasses.exclAdd("lock.png", "fa-solid bi-person-fill");
+        AppServerImage.predefinedFontClasses.exclAdd("lock.png", "bi bi-person-fill");
         AppServerImage.predefinedFontClasses.exclAdd("search.png", "fa-solid fa-magnifying-glass");
 
         AppServerImage.predefinedFontClasses.exclAdd("relogin.png", "fa-solid fa-elevator");

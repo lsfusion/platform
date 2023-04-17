@@ -225,3 +225,8 @@
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
+
+/* to correspond Font Awesome icons line height */
+.bi {
+    line-height: 1;
+}
