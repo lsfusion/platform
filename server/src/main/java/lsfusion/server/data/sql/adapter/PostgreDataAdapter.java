@@ -69,8 +69,19 @@ public class PostgreDataAdapter extends DataAdapter {
         this.dumpDir = dumpDir != null ? dumpDir : defaultDumpDir;
     }
 
-    private Connection getConnection(String database) throws SQLException {
-        return DriverManager.getConnection("jdbc:postgresql://" + server + "/" + database + "?user=" + userID + "&password=" + password); //  + "&loggerLevel=TRACE&loggerFile=pgjdbc.log"
+    private Connection getConnection(String dataBase) throws SQLException {
+        Connection connection;
+        try {
+            connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase + "?user=" + userID + "&password=" + password); //  + "&loggerLevel=TRACE&loggerFile=pgjdbc.log"
+        } catch (PSQLException e) {
+            String sqlState = e.getSQLState();
+            if (sqlState != null && sqlState.equals("3D000")) //3D000 database from properties does not exist
+                connection = getConnection(DB_NAME); // try to connect to default db
+            else
+                throw e;
+        }
+
+        return connection;
     }
 
     public void ensureDB(boolean cleanDB) throws Exception {
@@ -83,14 +94,11 @@ public class PostgreDataAdapter extends DataAdapter {
             } catch (PSQLException e) {
                 ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
                 logger.error("EnsureDB error: ", e);
-                String sqlState = e.getSQLState();
                 //08001 = connection refused (database is not started), 57P03 = the database system is starting up
+                String sqlState = e.getSQLState();
                 if (sqlState != null && (sqlState.equals("08001") || sqlState.equals("57P03"))) {
                     Thread.sleep(connectTimeout);
-                } else if (sqlState != null && sqlState.equals("3D000")) { //3D000 database from properties does not exist
-                    connect = getConnection(DB_NAME); // try to connect to default db
-                } else
-                    throw e;
+                } else throw e;
             }
         }
         if (cleanDB) {
