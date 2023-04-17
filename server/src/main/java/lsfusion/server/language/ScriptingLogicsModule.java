@@ -540,8 +540,8 @@ public class ScriptingLogicsModule extends LogicsModule {
         return valueClass;
     }
 
-    public void addScriptedClass(String className, LocalizedString captionStr, boolean isAbstract,
-                                 List<String> instNames, List<LocalizedString> instCaptions, List<String> parentNames, boolean isComplex,
+    public void addScriptedClass(String className, LocalizedString captionStr, String image, boolean isAbstract,
+                                 List<String> instNames, List<LocalizedString> instCaptions, List<String> images, List<String> parentNames, boolean isComplex,
                                  DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateClass(className);
         checks.checkStaticClassConstraints(isAbstract, instNames, instCaptions);
@@ -558,9 +558,9 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         CustomClass cls;
         if (isAbstract) {
-            cls = addAbstractClass(className, caption, parents);
+            cls = addAbstractClass(className, caption, image, parents);
         } else {
-            cls = addConcreteClass(className, caption, instNames, captions, parents);
+            cls = addConcreteClass(className, caption, image, instNames, captions, images, parents);
         }
         cls.isComplex = isComplex;
 
@@ -571,7 +571,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void extendClass(String className, List<String> instNames, List<LocalizedString> instCaptions, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
+    public void extendClass(String className, List<String> instNames, List<LocalizedString> instCaptions, List<String> images, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
         Version version = getVersion();
 
         CustomClass cls = (CustomClass) findClass(className);
@@ -580,7 +580,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         List<String> names = instNames;
         List<LocalizedString> captions = instCaptions;
         if (!isAbstract) {
-            ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions, version);
+            ((ConcreteCustomClass) cls).addStaticObjects(instNames, instCaptions, images, version);
 
             if(!instNames.isEmpty())
                 cls.addParentClass(getBaseClass().staticObjectClass, version);

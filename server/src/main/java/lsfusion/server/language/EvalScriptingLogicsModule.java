@@ -29,8 +29,8 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void addScriptedClass(String className, LocalizedString captionStr, boolean isAbstract,
-                                 List<String> instNames, List<LocalizedString> instCaptions, List<String> parentNames, boolean isComplex,
+    public void addScriptedClass(String className, LocalizedString captionStr, String image, boolean isAbstract,
+                                 List<String> instNames, List<LocalizedString> instCaptions, List<String> images, List<String> parentNames, boolean isComplex,
                                  DebugInfo.DebugPoint point) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("CLASS statement");
     }

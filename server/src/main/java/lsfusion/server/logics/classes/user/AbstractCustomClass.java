@@ -7,9 +7,9 @@ import lsfusion.server.base.version.Version;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 public class AbstractCustomClass extends CustomClass {
-    
-    public AbstractCustomClass(String canonicalName, LocalizedString caption, Version version, ImList<CustomClass> parents) {
-        super(canonicalName, caption, version, parents);
+
+    public AbstractCustomClass(String canonicalName, LocalizedString caption, String image, Version version, ImList<CustomClass> parents) {
+        super(canonicalName, caption, image, version, parents);
     }
 
     public void fillNextConcreteChilds(MSet<ConcreteCustomClass> mClassSet) {

@@ -327,20 +327,21 @@ classStatement
 @after {
 	if (inMetaClassTableParseState()) {
 	    if (!isNative)
-		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, isAbstract, $classData.names, $classData.captions, $classData.parents, isComplex, point);
+		    self.addScriptedClass($nameCaption.name, $nameCaption.caption, $image.image, isAbstract, $classData.names, $classData.captions, $classData.images, $classData.parents, isComplex, point);
 	}
 }
 	:	'CLASS'
 		('ABSTRACT' {isAbstract = true;} | 'NATIVE' {isNative = true;})?
 		('COMPLEX' { isComplex = true; })?
 		nameCaption=simpleNameWithCaption
+		(image=imageStatement)?
 		classData=classInstancesAndParents
 	;
 
 extendClassStatement
 @after {
 	if (inMetaClassTableParseState()) {
-		self.extendClass($className.sid, $classData.names, $classData.captions, $classData.parents);
+		self.extendClass($className.sid, $classData.names, $classData.captions, $classData.images, $classData.parents);
 	}
 }
 	:	'EXTEND' 'CLASS' 
@@ -348,16 +349,19 @@ extendClassStatement
 		classData=classInstancesAndParents 
 	;
 
-classInstancesAndParents returns [List<String> names, List<LocalizedString> captions, List<String> parents] 
+classInstancesAndParents returns [List<String> names, List<LocalizedString> captions, List<String> images, List<String> parents]
 @init {
 	$parents = new ArrayList<>();
 	$names = new ArrayList<>();
 	$captions = new ArrayList<>();
+	$images = new ArrayList<>();
 }
 	:	(
 			'{'
 				(firstInstData=simpleNameWithCaption { $names.add($firstInstData.name); $captions.add($firstInstData.caption); }
-				(',' nextInstData=simpleNameWithCaption { $names.add($nextInstData.name); $captions.add($nextInstData.caption); })*)?
+				(firstInstImg = imageStatement)? {$images.add($firstInstImg.image);}
+				(',' nextInstData=simpleNameWithCaption { $names.add($nextInstData.name); $captions.add($nextInstData.caption); }
+				(nextInstImg = imageStatement)? {$images.add($nextInstImg.image); })*)?
 			'}'
 			(clist=classParentsList ';' { $parents = $clist.list; })?
 		|
@@ -503,12 +507,12 @@ formDeclaration returns [ScriptingFormEntity form]
 }
 @after {
 	if (inMainParseState()) {
-		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, image, autoRefresh, localAsync);
+		$form = self.createScriptedForm($formNameCaption.name, $formNameCaption.caption, point, $img.image, autoRefresh, localAsync);
 	}
 }
 	:	'FORM' 
 		formNameCaption=simpleNameWithCaption
-		(	('IMAGE' (img=stringLiteral)? { image = BaseUtils.nvl($img.val, AppServerImage.AUTO); })
+		(	img=imageStatement
 		|	('AUTOREFRESH' refresh=intLiteral { autoRefresh = $refresh.val; })
 		|	('LOCALASYNC' { localAsync = true; })
 		)*
@@ -2914,10 +2918,10 @@ charWidthSetting [LAP property]
 imageSetting [LAP property]
 @after {
 	if (inMainParseState()) {
-		self.setImage(property, BaseUtils.nvl($path.val, AppServerImage.AUTO));
+		self.setImage(property, $img.image);
 	}
 }
-	:	'IMAGE' (path=stringLiteral)?
+	:   img=imageStatement
 	;
 
 defaultCompareSetting [LAP property]
@@ -5284,6 +5288,10 @@ typedParameter returns [TypedParameter param]
 }
 	:	(cname=classId)? pname=ID
 	;
+
+imageStatement returns [String image]
+    :   'IMAGE' (img=stringLiteral)? {$image = BaseUtils.nvl($img.val, AppServerImage.AUTO); }
+    ;
 
 simpleNameWithCaption returns [String name, LocalizedString caption] 
 	:	simpleName=ID { $name = $simpleName.text; }

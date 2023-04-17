@@ -34,12 +34,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass, ConcreteObjectClass, ObjectValueClassSet, StaticClass {
-    public ConcreteCustomClass(String canonicalName, LocalizedString caption, Version version, ImList<CustomClass> parents) {
-        super(canonicalName, caption, version, parents);
+    public ConcreteCustomClass(String canonicalName, LocalizedString caption, String image, Version version, ImList<CustomClass> parents) {
+        super(canonicalName, caption, image, version, parents);
     }
 
-    public static void fillObjectClass(ConcreteCustomClass objectClass, List<String> names, List<LocalizedString> captions, Version version) {
-        objectClass.addStaticObjects(names, captions, version);
+    public static void fillObjectClass(ConcreteCustomClass objectClass, List<String> names, List<LocalizedString> captions, List<String> images, Version version) {
+        objectClass.addStaticObjects(names, captions, images, version);
         for (ObjectInfo info : objectClass.getNFStaticObjectsInfoIt(version))
             info.sid = info.name;
     }
@@ -193,10 +193,10 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         throw new RuntimeException("name not found");
     }
 
-    public final void addStaticObjects(List<String> names, List<LocalizedString> captions, Version version) {
+    public final void addStaticObjects(List<String> names, List<LocalizedString> captions, List<String> images, Version version) {
         assert names.size() == captions.size();
         for (int i = 0; i < names.size(); i++) {
-            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), null), version);
+            staticObjectsInfo.add(new ObjectInfo(createStaticObjectSID(names.get(i)), names.get(i), captions.get(i), images.get(i)), version);
         }
     }
 

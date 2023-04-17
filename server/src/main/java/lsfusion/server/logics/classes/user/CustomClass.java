@@ -122,9 +122,11 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
     }
 
     public LocalizedString caption;
-    public CustomClass(String canonicalName, LocalizedString caption, Version version, ImList<CustomClass> parents) {
+    public String image;
+    public CustomClass(String canonicalName, LocalizedString caption, String image, Version version, ImList<CustomClass> parents) {
         this.canonicalName = canonicalName;
         this.caption = caption;
+        this.image = image;
 
         for (CustomClass parent : parents) {
             addParentClass(parent, version);
