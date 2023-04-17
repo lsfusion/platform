@@ -227,6 +227,6 @@
 }
 
 /* to correspond Font Awesome icons line height */
-.bi {
+.bi.wrap-text-img {
     line-height: 1;
 }
