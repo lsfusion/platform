@@ -64,6 +64,7 @@ uploadHost '{service.upload.host}' = DATA STRING[100] ();
 uploadUser '{service.upload.user}' = DATA STRING[100] ();
 uploadPassword '{service.upload.password}' = DATA STRING[100] ();
 uploadInstance '{service.upload.instance}' = DATA STRING[100] ();
+connectionDataBase = DATA STRING[100] (); //todo нигде не используется  
 onStarted() + { 
     uploadType() <- DBType.MSSQL;
     uploadHost() <- 'localhost';
