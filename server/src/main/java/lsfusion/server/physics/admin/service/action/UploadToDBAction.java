@@ -2,14 +2,12 @@ package lsfusion.server.physics.admin.service.action;
 
 import lsfusion.base.ExceptionUtils;
 import lsfusion.interop.action.MessageClientAction;
-import lsfusion.server.data.sql.SQLSession;
 import lsfusion.server.data.sql.adapter.DataAdapter;
 import lsfusion.server.data.sql.adapter.PostgreDataAdapter;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.property.classes.ClassPropertyInterface;
-import lsfusion.server.physics.admin.service.RunService;
 import lsfusion.server.physics.admin.service.ServiceLogicsModule;
 import lsfusion.server.physics.dev.integration.internal.to.InternalAction;
 
@@ -33,12 +31,11 @@ public class UploadToDBAction extends InternalAction {
             String password = (String) findProperty("uploadPassword[]").read(context);
             String db = (String) findProperty("uploadDB[]").read(context);
             String instance = (String) findProperty("uploadInstance[]").read(context);
-            String connectionDataBase = (String) findProperty("connectionDataBase[]").read(context);
     
             final DataAdapter adapter;
             try {
                 if(type.trim().equals("Service_DBType.POSTGRE"))
-                    adapter = new PostgreDataAdapter(db, host, connectionDataBase, user, password);
+                    adapter = new PostgreDataAdapter(db, host, user, password);
 //                else if(type.trim().equals("Service_DBType.MSSQL"))
 //                    adapter = new MSSQLDataAdapter(db, host, user, password, instance);
                 else

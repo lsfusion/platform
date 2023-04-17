@@ -1,6 +1,5 @@
 package lsfusion.server.data.sql.adapter;
 
-import lsfusion.base.BaseUtils;
 import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
@@ -38,30 +37,28 @@ public class PostgreDataAdapter extends DataAdapter {
     private String binPath;
     private String dumpDir;
     protected static final String DB_NAME = "postgres";
-    public String connectionDataBase;
 
     private int dbMajorVersion;
 
-    public PostgreDataAdapter(String dataBase, String server, String connectionDataBase, String userID, String password) throws Exception {
-        this(dataBase, server, connectionDataBase, userID, password, false);
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception {
+        this(dataBase, server, userID, password, false);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String connectionDataBase, String userID, String password, boolean cleanDB) throws Exception{
-        this(dataBase, server, connectionDataBase, userID, password, null, null, null, cleanDB);
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception{
+        this(dataBase, server, userID, password, null, null, null, cleanDB);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String connectionDataBase, String userID, String password, Long connectTimeout, String binPath, String dumpDir) throws Exception {
-        this(dataBase, server, connectionDataBase, userID, password, connectTimeout, binPath, dumpDir, false);
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir) throws Exception {
+        this(dataBase, server, userID, password, connectTimeout, binPath, dumpDir, false);
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String connectionDataBase, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, Long connectTimeout, String binPath, String dumpDir, boolean cleanDB) throws Exception {
         super(PostgreSQLSyntax.instance, dataBase, server, null, userID, password, connectTimeout, cleanDB);
 
         this.defaultBinPath = binPath;
         this.defaultDumpDir = dumpDir;
         this.binPath = binPath;
         this.dumpDir = dumpDir;
-        this.connectionDataBase = connectionDataBase;
     }
 
     public void setBinPath(String binPath) {
@@ -81,7 +78,7 @@ public class PostgreDataAdapter extends DataAdapter {
         Connection connect = null;
         while(connect == null) {
             try {
-                connect = getConnection(BaseUtils.nvl(connectionDataBase, DB_NAME));
+                connect = getConnection(dataBase);
                 dbMajorVersion = connect.getMetaData().getDatabaseMajorVersion();
             } catch (PSQLException e) {
                 ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
@@ -90,7 +87,7 @@ public class PostgreDataAdapter extends DataAdapter {
                 //08001 = connection refused (database is not started), 57P03 = the database system is starting up
                 if (sqlState != null && (sqlState.equals("08001") || sqlState.equals("57P03"))) {
                     Thread.sleep(connectTimeout);
-                } else if (sqlState != null && sqlState.equals("42501")) { //42501 permission denied for database "postgres", User does not have CONNECT privilege
+                } else if (sqlState != null && sqlState.equals("3D000")) { //3D000 database from properties does not exist
                     connect = getConnection(DB_NAME); // try to connect to default db
                 } else
                     throw e;
