@@ -6,7 +6,6 @@ import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.form.controller.FormsController;
-import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.view.FormContainer;
 
 public abstract class WidgetForm extends FormContainer {

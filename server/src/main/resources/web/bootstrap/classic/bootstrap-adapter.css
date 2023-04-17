@@ -226,6 +226,11 @@
     border-top-right-radius: 0;
 }
 
+/* to correspond Font Awesome icons line height */
+.bi {
+    line-height: 1;
+}
+
 /* we don't want the badge to have it's own color */
 
 .badge.wrap-text-img {

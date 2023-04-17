@@ -72,7 +72,8 @@ public interface BaseImage extends Serializable {
         NativeStringMap<Boolean> propagateClassChanges = new NativeStringMap<>();
         classChanges.foreachEntry((aclass, add) -> {
             boolean propagated = false;
-            if (propagateClasses.is(widget, parent, aclass)) {
+            // in mobile forms window is added directly into RootLayoutPanel
+            if (parent instanceof FlexPanel && propagateClasses.is(widget, parent, aclass)) {
                 int prevAggrClasses = parent.getElement().getPropertyInt("PROPAGATE_CLASS_" + aclass);
                 int newAggrClasses = prevAggrClasses + (add ? 1 : -1);
                 parent.getElement().setPropertyInt("PROPAGATE_CLASS_" + aclass, newAggrClasses);

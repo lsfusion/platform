@@ -713,7 +713,7 @@ DESIGN settings {
 EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
     PROPERTIES(u) fontSize, colorThemeName,
-                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab
     OBJECTS r = DateTimePickerRanges
     PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
     
@@ -739,6 +739,9 @@ DESIGN editProfile {
                 MOVE PROPERTY(focusedCellBackgroundColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
+            }
+            NEW closeButton {
+                MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(u));
             }
             NEW predefinedRanges {
                 horizontal = TRUE;
@@ -818,7 +821,7 @@ onStarted() + {
 }
 
 EXTEND FORM customUser
-    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab
 ;
 
 DESIGN customUser {
@@ -833,6 +836,9 @@ DESIGN customUser {
                 MOVE PROPERTY(focusedCellBackgroundColor(u));
                 MOVE PROPERTY(focusedCellBorderColor(u));
                 MOVE PROPERTY(tableGridColor(u));
+            }
+            NEW closeButton {
+                MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(u));
             }
         }
     }

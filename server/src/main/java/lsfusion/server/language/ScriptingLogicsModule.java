@@ -198,7 +198,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private String lastOptimizedJPropSID = null;
 
     public enum ConstType { STATIC, INT, REAL, NUMERIC, STRING, LOGICAL, TLOGICAL, LONG, DATE, DATETIME, TIME, COLOR, NULL }
-    public enum WindowType {MENU, PANEL, TOOLBAR, TREE}
+    public enum WindowType {MENU, PANEL, TOOLBAR, TREE, NATIVE}
     public enum GroupingType {SUM, MAX, MIN, CONCAT, AGGR, EQUAL, LAST, NAGGR}
 
    public ScriptingLogicsModule(BaseLogicsModule baseModule, BusinessLogics BL, String lsfPath) {
@@ -4803,7 +4803,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkDuplicateWindow(name);
 
         LocalizedString caption = (captionStr == null ? LocalizedString.create(name) : captionStr);
-        NavigatorWindow window = null;
+        AbstractWindow window = null;
 
         switch (type) {
             case MENU:
@@ -4817,6 +4817,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                 break;
             case TREE:
                 window = createTreeWindow(name, caption, options);
+                break;
+            case NATIVE:
+                window = createNativeWindow(name, caption, options);
                 break;
         }
 
@@ -4908,6 +4911,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return window;
     }
 
+    private AbstractWindow createNativeWindow(String name, LocalizedString caption, NavigatorWindowOptions options) {
+        AbstractWindow window = new AbstractWindow(elementCanonicalName(name), caption);
+        DockPosition dp = options.getDockPosition();
+        if (dp != null)
+            window.setDockPosition(dp.x, dp.y, dp.width, dp.height);
+
+        window.propertyElementClass = options.elementClassProperty != null ? options.elementClassProperty.getLP().property : null;
+        window.elementClass = options.elementClass;
+        return window;
+    }
 
     public void hideWindow(String name) throws ScriptingErrorLog.SemanticErrorException {
         findWindow(name).visible = false;

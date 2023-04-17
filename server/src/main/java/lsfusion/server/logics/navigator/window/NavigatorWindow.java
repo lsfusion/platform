@@ -7,8 +7,6 @@ import java.io.IOException;
 
 public abstract class NavigatorWindow extends AbstractWindow {
 
-    public boolean drawScrollBars = true;
-
     public NavigatorWindow(String canonicalName, LocalizedString caption, int x, int y, int width, int height) {
         super(canonicalName, caption, x, y, width, height);
     }

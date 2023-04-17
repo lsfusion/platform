@@ -19,7 +19,7 @@ onStartedApply() {
 
 //todo logo() logic temporarily commented to use lsf-font .css class and AppImages.java
 
-defaultLogo() = DATA STRING();
+defaultLogo() = 'logo.png;lsfi lsfi-logo-vertical';
 //defaultLogo() = DATA IMAGEFILE ();
 //onStarted() + {
 //    IF NOT defaultLogo() THEN {
@@ -33,8 +33,8 @@ logo() = defaultLogo();
 //logo() = OVERRIDE logicsLogo(), defaultLogo();
 
 logoAction() {}
-logoActionClass = DATA STRING();
-logoHeader() = DATA STRING();
+logoActionClass = ABSTRACT STRING();
+logoHeader() = ABSTRACT STRING();
 
 NAVIGATOR {
     NEW logoAction WINDOW logo PARENT HEADER logoHeader() IMAGE logo() CLASS logoActionClass();
@@ -76,12 +76,12 @@ toggleVerticalNavbar () {
     APPLY;
     INTERNAL CLIENT 'reload';
 }
-verticalNavbarClass = DATA STRING();
+verticalNavbarClass = ABSTRACT STRING();
 
 userPinNavbar '{navigator.navbar.pin}' = DATA TBOOLEAN (CustomUser);
 serverPinNavbar '{navigator.navbar.pin}' = DATA BOOLEAN ();
 pinNavbar '{navigator.navbar.pin}' (CustomUser u) = IF userPinNavbar(u) THEN userPinNavbar(u) == TTRUE ELSE serverPinNavbar();
-pinNavbar() += pinNavbar(currentUser());
+pinNavbar() = pinNavbar(currentUser());
 
 pinNavbarCaption = IF pinNavbar() THEN '{system.events.navbar.unpin}' ELSE '{system.events.navbar.pin}';
 pinNavbarImage = IF pinNavbar() THEN 'navbarUnpin.png;fa-solid fa-thumbtack fa-rotate-90' ELSE 'navbarPin.png;fa-solid fa-thumbtack';
@@ -89,7 +89,7 @@ togglePinNavbar () {
     userPinNavbar(currentUser()) <- IF pinNavbar() THEN TFALSE ELSE TTRUE;
     apply();
 }
-pinNavbarClass = DATA STRING();
+pinNavbarClass = ABSTRACT STRING();
 
 NAVIGATOR {
     NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
@@ -358,6 +358,9 @@ isMobile() = isNativeMobile() OR isWebMobile();
 isNative() = isNativeDesktop() OR isNativeMobile();
 isWeb() = isWebDesktop() OR isWebMobile();
 
+dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
+dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
+
 onClientStarted () + {
     IF isNativeDesktop() THEN {
         onDesktopClientStarted();
@@ -367,30 +370,21 @@ onClientStarted () + {
     }
 }
 
-onWebClientStarted() + {
-    defaultLogo() <- 'logo.png;lsfi lsfi-logo-vertical';
+textOnHoverClass() = IF isWebDesktop() AND NOT pinNavbar() THEN ' navbar-text-on-hover' ELSE '';
+verticalTextOnHoverClass() = IF isWebDesktop() AND verticalNavbar() AND NOT pinNavbar() THEN ' navbar-text-on-hover' ELSE '';
 
-    logoWindowClass() <- 'bg-dark-subtle' + 
-        (IF isWebDesktop() THEN (IF verticalNavbar() THEN ' navbar-force-align-start' ELSE ' navbar-auto-icon-font-size') ELSE '');
-    logoActionClass() <- 'navbar-icon-large' +
-        (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
-    logoHeader() <- IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
-
-    rootWindowClass() <- 'bg-dark-subtle navbar-icon-large' +
-        (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
-    
-    systemWindowClass() <- 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') +
-        (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
-        (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
-
-    verticalNavbarClass() <- IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
-    pinNavbarClass() <- IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
-    
-    textOnHoverClass() <- IF isWebDesktop() THEN ' navbar-text-on-hover' ELSE '';
-    verticalTextOnHoverClass() <- IF isWebDesktop() AND verticalNavbar() THEN ' navbar-text-on-hover' ELSE ''; 
-
-    apply();
-}
+verticalNavbarClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
+pinNavbarClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
+logoActionClass() += 'navbar-icon-large' + (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
+logoHeader() += IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
+logoWindowClass() += 'bg-dark-subtle' + verticalTextOnHoverClass() + 
+        IF isWebDesktop() THEN (IF verticalNavbar() THEN ' navbar-force-align-start' ELSE ' navbar-auto-icon-font-size') ELSE '';
+rootWindowClass() += 'bg-dark-subtle navbar-icon-large' + textOnHoverClass() +
+    (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
+systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-large' ELSE '') + verticalTextOnHoverClass() +
+    (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
+    (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
+formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session));
