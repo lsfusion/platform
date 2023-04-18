@@ -69,18 +69,34 @@ public class PostgreDataAdapter extends DataAdapter {
         this.dumpDir = dumpDir != null ? dumpDir : defaultDumpDir;
     }
 
+    private Connection getConnection(String dataBase) throws SQLException {
+        Connection connection;
+        try {
+            connection = DriverManager.getConnection("jdbc:postgresql://" + server + "/" + dataBase + "?user=" + userID + "&password=" + password); //  + "&loggerLevel=TRACE&loggerFile=pgjdbc.log"
+        } catch (PSQLException e) {
+            String sqlState = e.getSQLState();
+            if (sqlState != null && sqlState.equals("3D000")) //3D000 database from properties does not exist
+                connection = getConnection(DB_NAME); // try to connect to default db
+            else
+                throw e;
+        }
+
+        return connection;
+    }
+
     public void ensureDB(boolean cleanDB) throws Exception {
 
         Connection connect = null;
         while(connect == null) {
             try {
-                connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password); //  + "&loggerLevel=TRACE&loggerFile=pgjdbc.log"
+                connect = getConnection(dataBase);
                 dbMajorVersion = connect.getMetaData().getDatabaseMajorVersion();
             } catch (PSQLException e) {
                 ServerLoggers.startLogger.error(String.format("%s (host: %s, user: %s)", e.getMessage(), server, userID));
                 logger.error("EnsureDB error: ", e);
                 //08001 = connection refused (database is not started), 57P03 = the database system is starting up
-                if (e.getSQLState() != null && (e.getSQLState().equals("08001") || e.getSQLState().equals("57P03"))) {
+                String sqlState = e.getSQLState();
+                if (sqlState != null && (sqlState.equals("08001") || sqlState.equals("57P03"))) {
                     Thread.sleep(connectTimeout);
                 } else throw e;
             }
