@@ -3,7 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 
-public class RichTextCellRenderer extends TextBasedCellRenderer{
+public class RichTextCellRenderer extends TextCellRenderer {
 
     public RichTextCellRenderer(GPropertyDraw property) {
         super(property);
@@ -13,11 +13,6 @@ public class RichTextCellRenderer extends TextBasedCellRenderer{
     protected boolean setInnerContent(Element element, String innerText) {
         initQuill(element, innerText);
         return true;
-    }
-
-    @Override
-    public String format(Object value) {
-        return (String) value;
     }
 
     protected native void initQuill(Element element, String innerText)/*-{

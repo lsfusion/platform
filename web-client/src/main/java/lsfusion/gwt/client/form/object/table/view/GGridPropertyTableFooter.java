@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.TableCellElement;
 import lsfusion.gwt.client.base.view.grid.Header;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 import lsfusion.gwt.client.form.property.table.view.GPropertyTableBuilder;
@@ -15,18 +16,18 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     private GGridPropertyTable table;
     protected GPropertyDraw property;
 
-    protected Object prevValue;
-    protected Object value;
+    protected PValue prevValue;
+    protected PValue value;
     private boolean sticky;
 
-    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, Object value, String toolTip, boolean sticky) {
+    public GGridPropertyTableFooter(GGridPropertyTable table, GPropertyDraw property, PValue value, String toolTip, boolean sticky) {
         this.table = table;
         this.property = property;
         this.value = value;
         this.sticky = sticky;
     }
 
-    public void setValue(Object value) {
+    public void setValue(PValue value) {
         this.value = value;
     }
 
@@ -46,7 +47,7 @@ public class GGridPropertyTableFooter extends Header<String> implements RenderCo
     }
 
     @Override
-    public Object getValue() {
+    public PValue getValue() {
         return value;
     }
 

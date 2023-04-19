@@ -23,10 +23,10 @@ public abstract class GRowPropertyReader implements GPropertyReader {
         return sID;
     }
 
-    protected abstract void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys);
+    protected abstract void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys);
 
     @Override
-    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         update(controller.getGroupObjectController(controller.getGroupObject(groupObjectID)), values, updateKeys);
     }
 }

@@ -12,8 +12,6 @@ import lsfusion.gwt.client.base.jsni.HasNativeSID;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
-import lsfusion.gwt.client.base.view.SizedWidget;
-import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
@@ -21,6 +19,7 @@ import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.gwt.client.view.MainFrame;
@@ -170,7 +169,7 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
 
         valueView = new GDataFilterValueView(condition.value, logicsSupplier) {
             @Override
-            public void valueChanged(Object value) {
+            public void valueChanged(PValue value) {
                 super.valueChanged(value);
                 enableApplyButton();
                 if (cell.enterPressed || !GFilterConditionView.this.controlsVisible) {
@@ -300,8 +299,8 @@ public class GFilterConditionView extends FlexPanel implements HasNativeSID {
     }
     
     private void propertyChanged() {
-        valueView.changeProperty(condition);
-        
+        valueView.changeProperty(condition, true);
+
         GCompare oldCompare = condition.compare;
         GCompare[] filterCompares = condition.property.getFilterCompares();
         compareView.set(filterCompares);

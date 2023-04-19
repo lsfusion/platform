@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.GZDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -25,13 +26,13 @@ public class GZDateTimeType extends GDateTimeType {
     }
 
     @Override
-    public Object fromDate(Date date) {
+    public PValue fromDate(Date date) {
         return GZDateTimeDTO.fromDate(date);
     }
 
     @Override
-    public Date toDate(Object value) {
-        return ((GZDateTimeDTO) value).toDateTime();
+    public Date toDate(PValue value) {
+        return PValue.getZDateTimeValue(value).toDateTime();
     }
 
     @Override

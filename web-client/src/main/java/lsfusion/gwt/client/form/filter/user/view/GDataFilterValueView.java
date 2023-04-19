@@ -11,9 +11,8 @@ import lsfusion.gwt.client.form.filter.user.GDataFilterValue;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
-
-import java.io.Serializable;
 
 import static lsfusion.gwt.client.form.event.GKeyStroke.isAddUserFilterKeyEvent;
 import static lsfusion.gwt.client.form.event.GKeyStroke.isReplaceUserFilterKeyEvent;
@@ -27,11 +26,6 @@ public class GDataFilterValueView extends SizedFlexPanel {
     public GDataFilterValueView(GDataFilterValue filterValue, GTableController logicsSupplier) {
         this.filterValue = filterValue != null ? filterValue : new GDataFilterValue();
         this.logicsSupplier = logicsSupplier;
-    }
-
-    public void changeProperty(GPropertyFilter condition) {
-        filterValue.value = null;
-        changeProperty(condition, true);
     }
 
     private SizedWidget sizedView; // needed only to remove previous widget when changing properties
@@ -48,13 +42,13 @@ public class GDataFilterValueView extends SizedFlexPanel {
         sizedView.addFill(this);
 
         if (readSelectedValue)
-            filterValue.value = (Serializable) GwtClientUtils.escapeSeparator(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
+            filterValue.value = PValue.escapeSeparator(logicsSupplier.getSelectedValue(property, condition.columnKey), condition.compare);
 
         cell.updateValue(filterValue.value);
     }
 
-    public void valueChanged(Object value) {
-        filterValue.value = (Serializable) value;
+    public void valueChanged(PValue value) {
+        filterValue.value = value;
     }
     
     public void changeCompare(GCompare compare) {
@@ -62,7 +56,8 @@ public class GDataFilterValueView extends SizedFlexPanel {
     }
     
     public void editingCancelled(CancelReason cancelReason) {
-        cell.updateValue(filterValue.value);
+        // in theory not needed, because will be updated in finishEditing
+//        cell.updateValue(filterValue.value);
     }
 
     public void onAdd() {
@@ -84,7 +79,7 @@ public class GDataFilterValueView extends SizedFlexPanel {
                 }
             } else {
                 // to be able to apply on Enter
-                filterValue.value = (Serializable) cell.getValue();
+                filterValue.value = cell.getValue();
             }
         }
     }

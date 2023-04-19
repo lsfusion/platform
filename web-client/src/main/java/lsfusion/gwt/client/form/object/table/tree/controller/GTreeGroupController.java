@@ -90,12 +90,12 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateProperty(property, columnKeys, updateKeys, values);
     }
 
     @Override
-    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+    public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
         return tree.setLoadingValueAt(property, fullCurrentKey, value);
     }
 
@@ -135,65 +135,65 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateCellValueElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateCellForegroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateLoadings(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
-    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updatePropertyFooters(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
-    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateRowBackgroundValues(values);
     }
 
     @Override
-    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         tree.updateRowForegroundValues(values);
     }
 
     @Override
-    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
@@ -240,7 +240,7 @@ public class GTreeGroupController extends GAbstractTableController {
     }
 
     @Override
-    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         return tree.getSelectedValue(property);
     }
 

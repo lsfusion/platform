@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.view.MainFrame;
@@ -27,8 +28,8 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
-        initAceEditor(parent, oldValue, colorThemeName);
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
+        initAceEditor(parent, PValue.getStringValue(oldValue), colorThemeName);
     }
 
     @Override
@@ -37,12 +38,12 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
     }
 
     @Override
-    public Object getValue(Element parent, Integer contextAction) {
-        return getEditorValue(parent);
+    public PValue getCommitValue(Element parent, Integer contextAction) {
+        return PValue.getPValue(getEditorValue(parent));
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
 
     }
 
@@ -54,7 +55,7 @@ public class HTMLTextCellEditor extends RequestReplaceValueCellEditor {
         }
     }-*/;
 
-    protected native void initAceEditor(Element element, Object oldValue, String colorTheme)/*-{
+    protected native void initAceEditor(Element element, String oldValue, String colorTheme)/*-{
         var aceEditor = $wnd.ace.edit(element, {
             enableLiveAutocompletion: true,
             mode: 'ace/mode/html',

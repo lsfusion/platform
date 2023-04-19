@@ -3,6 +3,7 @@ package lsfusion.gwt.client.classes;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -39,7 +40,7 @@ public class GObjectType extends GType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public PValue parseString(String s, String pattern) throws ParseException {
         throw new ParseException("Object class doesn't support conversion from string", 0);
     }
 

@@ -1,6 +1,5 @@
 package lsfusion.gwt.client.form.controller.dispatch;
 
-import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.action.*;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.log.GLog;
@@ -13,6 +12,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestAsyncCallback;
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EndReason;
 import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
@@ -152,7 +152,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
         Result<Object> result = new Result<>();
         // we'll be optimists and assume that this value will stay
         long dispatchingIndex = getDispatchingIndex();
-        form.edit(action.readType, editEventHandler, action.hasOldValue, action.oldValue, action.inputList,
+        form.edit(action.readType, editEventHandler, action.hasOldValue, PValue.remapValue(action.oldValue), action.inputList,
                 (value, onExec) -> {
                     onExec.accept(dispatchingIndex);
 
@@ -165,7 +165,7 @@ public class GFormActionDispatcher extends GwtActionDispatcher {
     @Override
     public void execute(GUpdateEditValueAction action) {
         if(editContext != null) {
-            form.setValue(editContext, action.value);
+            form.setValue(editContext, PValue.remapValue(action.value));
         }
     }
 

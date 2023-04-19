@@ -434,14 +434,14 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         private void updateSelectedEditorText() {
             ClientAsync selectedItem = (ClientAsync) comboBox.getSelectedItem();
             if(selectedItem != null)
-                setComboBoxEditorText((String) SwingUtils.escapeSeparator(selectedItem.rawString, compare));
+                setComboBoxEditorText((String) SwingUtils.escapeSeparator(selectedItem.getReplacementString(), compare));
         }
 
         public void updateItems(List<ClientAsync> result, boolean selectFirst) {
             items.clear();
             comboBox.getModel().setSelectedItem(null);
             items.addAll(GlazedLists.eventList(result));
-            latestSuggestions = result.stream().map(async -> async.rawString).collect(Collectors.toList());
+            latestSuggestions = result.stream().map(ClientAsync::getReplacementString).collect(Collectors.toList());
             comboBox.setMaximumRowCount(result.size());
             //hide and show to call computePopupBounds
             suggestBox.comboBox.hidePopup();
@@ -472,7 +472,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                 public String getPreferredStringForItem(Object item) { // need this, because otherwise combobox editor text will be set to toString (ie formatted text)
                     if(item == null)
                         return null;
-                    return ((ClientAsync)item).rawString;
+                    return ((ClientAsync)item).getReplacementString();
                 }
             }));
 

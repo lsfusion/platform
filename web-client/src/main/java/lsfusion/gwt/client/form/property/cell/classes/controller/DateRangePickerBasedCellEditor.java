@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.SimplePanel;
 import lsfusion.gwt.client.controller.SmartScheduler;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
@@ -25,17 +26,17 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         //when auto-apply selects a date, at the end a mousedown occurs and takes the focus to a nothing
         SmartScheduler.getInstance().scheduleDeferred(true, () -> {
             if (editManager.isThisCellEditing(this))
-                commitValue(parent, getInputValue());
+                commitValue(parent, getDateInputValue());
         });
     }
 
-    protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
+    protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         //to be able to enter the date from keyboard
-        return onCommit ? super.tryParseInputText(inputText, true) : inputText;
+        return onCommit ? super.tryParseInputText(inputText, true) : PValue.getPValue(inputText);
     }
 
     @Override
-    public SimplePanel createPopupComponent(Element parent, Object oldValue) {
+    public SimplePanel createPopupComponent(Element parent, PValue oldValue) {
         assert oldValue != null;
         createPicker(parent, getStartDate(oldValue), getEndDate(oldValue), getPattern(), isSinglePicker(), isTimeEditor(), isDateEditor());
 
@@ -45,16 +46,16 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
         return new SimplePanel();
     }
 
-    protected abstract JsDate getStartDate(Object oldValue);
-    protected abstract JsDate getEndDate(Object oldValue);
+    protected abstract JsDate getStartDate(PValue oldValue);
+    protected abstract JsDate getEndDate(PValue oldValue);
     protected abstract String getPattern();
     protected abstract boolean isTimeEditor();
     protected abstract boolean isDateEditor();
-    protected abstract Object getInputValue();
+    protected abstract PValue getDateInputValue();
     protected abstract boolean isSinglePicker();
 
     private void setInputValue(Element parent) {
-        setInputValue(parent, tryFormatInputText(getInputValue()));
+        setInputValue(parent, tryFormatInputText(getDateInputValue()));
     }
 
     protected native void removePicker()/*-{

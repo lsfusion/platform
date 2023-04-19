@@ -9,7 +9,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -47,12 +47,12 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
         CustomCellEditor.super.render(cellParent, renderContext, renderedSize, oldValue);
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         // we'll assume that everything is done in render method
     }
 
@@ -138,7 +138,7 @@ public class CustomReplaceCellEditor extends RequestReplaceValueCellEditor imple
         return customEditor.getValue !== undefined;
     }-*/;
 
-    public static native Object getValue(JavaScriptObject customEditor, Element element)/*-{
+    public static native JavaScriptObject getValue(JavaScriptObject customEditor, Element element)/*-{
         return customEditor.getValue(element);
     }-*/;
 

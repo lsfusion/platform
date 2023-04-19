@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.object.table.grid.GGrid;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.ArrayList;
@@ -251,10 +252,9 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
-            Object value = values.firstValue();
-            controller.setContainerCaption(GContainer.this, value != null ? value.toString() : null);
+            controller.setContainerCaption(GContainer.this, PValue.getCaptionStringValue(values.firstValue()));
         }
 
         private String sID;
@@ -274,10 +274,9 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
-            Object value = values.firstValue();
-            controller.setContainerImage(GContainer.this, value);
+            controller.setContainerImage(GContainer.this, PValue.getImageValue(values.firstValue()));
         }
 
         private String sID;
@@ -298,9 +297,9 @@ public class GContainer extends GComponent implements HasNativeSID {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
             assert values.firstKey().isEmpty();
-            controller.setContainerCustomDesign(GContainer.this, values.firstValue().toString());
+            controller.setContainerCustomDesign(GContainer.this, PValue.getCustomStringValue(values.firstValue()));
         }
 
         @Override

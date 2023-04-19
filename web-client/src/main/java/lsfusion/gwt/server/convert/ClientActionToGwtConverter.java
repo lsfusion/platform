@@ -35,6 +35,7 @@ import lsfusion.interop.session.HttpClientAction;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -276,7 +277,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
     @Converter(from = ClientWebAction.class)
     public GClientWebAction convertAction(ClientWebAction action, FormSessionObject formSessionObject, String realHostName, MainDispatchServlet servlet) throws IOException {
-        ArrayList<Object> values = new ArrayList<>();
+        ArrayList<Serializable> values = new ArrayList<>();
         ArrayList<Object> types = new ArrayList<>();
 
         ArrayList<byte[]> actionTypes = action.types;
@@ -284,7 +285,7 @@ public class ClientActionToGwtConverter extends ObjectConverter {
 
         for (int i = 0; i < actionTypes.size(); i++) {
             types.add(typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(actionTypes.get(i))));
-            values.add(deserializeServerValue(actionValues.get(i)));
+            values.add((Serializable) deserializeServerValue(actionValues.get(i)));
         }
 
         GType returnType = action.returnType != null ? typeConverter.convertOrCast(ClientTypeSerializer.deserializeClientType(action.returnType)) : null;

@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.design.view.ComponentWidget;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
 
@@ -35,16 +36,16 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     private ArrayList<GGroupObjectValue> columnKeys;
     // it doesn't make sense to make this maps Native since they come from server and are built anyway
-    private NativeHashMap<GGroupObjectValue, Object> values;
-    private NativeHashMap<GGroupObjectValue, Object> captions;
-    private NativeHashMap<GGroupObjectValue, Object> loadings;
-    private NativeHashMap<GGroupObjectValue, Object> showIfs;
-    private NativeHashMap<GGroupObjectValue, Object> readOnly;
-    private NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues;
-    private NativeHashMap<GGroupObjectValue, Object> cellForegroundValues;
-    private NativeHashMap<GGroupObjectValue, Object> cellValueElementClasses;
+    private NativeHashMap<GGroupObjectValue, PValue> values;
+    private NativeHashMap<GGroupObjectValue, PValue> captions;
+    private NativeHashMap<GGroupObjectValue, PValue> loadings;
+    private NativeHashMap<GGroupObjectValue, PValue> showIfs;
+    private NativeHashMap<GGroupObjectValue, PValue> readOnly;
+    private NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues;
+    private NativeHashMap<GGroupObjectValue, PValue> cellForegroundValues;
+    private NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses;
 
-    private NativeHashMap<GGroupObjectValue, Object> images;
+    private NativeHashMap<GGroupObjectValue, PValue> images;
 
     public GPropertyPanelController(GPropertyDraw property, GFormController form) {
         this.property = property;
@@ -78,7 +79,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         NativeHashMap<GGroupObjectValue, Integer> newRenderedColumnKeys = new NativeHashMap<>();
         for (int i = 0; i < columnKeys.size(); i++) {
             GGroupObjectValue columnKey = columnKeys.get(i);
-            if (showIfs == null || showIfs.get(columnKey) != null) {
+            if (showIfs == null || PValue.getBooleanValue(showIfs.get(columnKey))) {
                 Integer oldColumnKeyOrder = renderedColumnKeys.remove(columnKey);
                 if (oldColumnKeyOrder != null) {
                     if (i != oldColumnKeyOrder) {
@@ -148,25 +149,25 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     private void updateRenderer(GGroupObjectValue columnKey, PanelRenderer renderer) {
-        Object valueElementClass = null;
+        PValue valueElementClass = null;
         if(cellValueElementClasses != null) {
             valueElementClass = cellValueElementClasses.get(columnKey);
         }
-        Object background = null;
+        PValue background = null;
         if (cellBackgroundValues != null) {
             background = cellBackgroundValues.get(columnKey);
         }
-        Object foreground = null;
+        PValue foreground = null;
         if (cellForegroundValues != null) {
             foreground = cellForegroundValues.get(columnKey);
         }
         renderer.update(values.get(columnKey),
-                loadings != null && loadings.get(columnKey) != null,
-                images != null ? images.get(columnKey) : null,
-                valueElementClass == null ? property.valueElementClass : valueElementClass,
-                background == null ? property.background : background,
-                foreground == null ? property.foreground : foreground,
-                readOnly != null && readOnly.get(columnKey) != null);
+                loadings != null && PValue.getBooleanValue(loadings.get(columnKey)),
+                images != null ? PValue.getImageValue(images.get(columnKey)) : null,
+                valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass),
+                background == null ? property.getBackground() : PValue.getColorStringValue(background),
+                foreground == null ? property.getForeground() : PValue.getColorStringValue(foreground),
+                readOnly != null && PValue.getBooleanValue(readOnly.get(columnKey)));
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
@@ -186,24 +187,24 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     }
 
     @Override
-    public void setValue(GGroupObjectValue columnKey, Object value) {
+    public void setValue(GGroupObjectValue columnKey, PValue value) {
         values.put(columnKey, value);
     }
 
     @Override
-    public void setLoading(GGroupObjectValue columnKey, Object value) {
+    public void setLoading(GGroupObjectValue columnKey, PValue value) {
         if(loadings == null)
             loadings = new NativeHashMap<>();
         loadings.put(columnKey, value);
     }
 
-    public void setLoadings(NativeHashMap<GGroupObjectValue, Object> loadingMap) {
+    public void setLoadings(NativeHashMap<GGroupObjectValue, PValue> loadingMap) {
         if(loadings == null)
             loadings = new NativeHashMap<>();
         loadings.putAll(loadingMap);
     }
 
-    public void setPropertyValues(NativeHashMap<GGroupObjectValue, Object> valueMap, boolean updateKeys) {
+    public void setPropertyValues(NativeHashMap<GGroupObjectValue, PValue> valueMap, boolean updateKeys) {
         if (updateKeys) {
             values.putAll(valueMap);
         } else {
@@ -211,15 +212,15 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         }
     }
 
-    public void setPropertyCaptions(NativeHashMap<GGroupObjectValue, Object> captions) {
+    public void setPropertyCaptions(NativeHashMap<GGroupObjectValue, PValue> captions) {
         this.captions = captions;
     }
 
-    public void setReadOnlyValues(NativeHashMap<GGroupObjectValue, Object> readOnly) {
+    public void setReadOnlyValues(NativeHashMap<GGroupObjectValue, PValue> readOnly) {
         this.readOnly = readOnly;
     }
 
-    public void setShowIfs(NativeHashMap<GGroupObjectValue, Object> showIfs) {
+    public void setShowIfs(NativeHashMap<GGroupObjectValue, PValue> showIfs) {
         if (!GwtSharedUtils.nullEquals(this.showIfs, showIfs)) {
             this.showIfs = showIfs;
 
@@ -235,23 +236,23 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         }
     }
 
-    public void setCellValueElementClasses(NativeHashMap<GGroupObjectValue, Object> cellValueElementClasses) {
+    public void setCellValueElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses) {
         this.cellValueElementClasses = cellValueElementClasses;
     }
 
-    public void setCellBackgroundValues(NativeHashMap<GGroupObjectValue, Object> cellBackgroundValues) {
+    public void setCellBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues) {
         this.cellBackgroundValues = cellBackgroundValues;
     }
 
-    public void setCellForegroundValues(NativeHashMap<GGroupObjectValue, Object> cellForegroundValues) {
+    public void setCellForegroundValues(NativeHashMap<GGroupObjectValue, PValue> cellForegroundValues) {
         this.cellForegroundValues = cellForegroundValues;
     }
 
-    public void setImages(NativeHashMap<GGroupObjectValue, Object> images) {
+    public void setImages(NativeHashMap<GGroupObjectValue, PValue> images) {
         this.images = images;
     }
 
-    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GGroupObjectValue fullCurrentKey, Object value) {
+    public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GGroupObjectValue fullCurrentKey, PValue value) {
         GGroupObjectValue propertyColumnKey = property.filterColumnKeys(fullCurrentKey);
         if(propertyColumnKey == null)
             return null;

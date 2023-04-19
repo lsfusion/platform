@@ -9,6 +9,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
@@ -25,21 +26,21 @@ import java.util.function.Consumer;
 
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
-    private final Consumer<Object> afterCommit;
+    private final Consumer<PValue> afterCommit;
     private final Consumer<CancelReason> onCancel;
     
     private GInputList inputList;
     
     public boolean enterPressed;
 
-    public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<Object> afterCommit, Consumer<CancelReason> onCancel) {
+    public GDataFilterPropertyValue(GPropertyFilter condition, GFormController form, Consumer<PValue> afterCommit, Consumer<CancelReason> onCancel) {
         super(condition.property, condition.columnKey, form, false, new ActionOrPropertyValueController() {
             @Override
-            public void setValue(GGroupObjectValue columnKey, Object value) {
+            public void setValue(GGroupObjectValue columnKey, PValue value) {
             }
 
             @Override
-            public void setLoading(GGroupObjectValue columnKey, Object value) {
+            public void setLoading(GGroupObjectValue columnKey, PValue value) {
                 throw new UnsupportedOperationException();
             }
         });
@@ -51,7 +52,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         render();
     }
 
-    public void updateValue(Object value) {
+    public void updateValue(PValue value) {
         update(value, loading, null, null, null, null, false);
     }
 
@@ -61,7 +62,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
     @Override
     public void pasteValue(String stringValue) {
-        updateAndCommit(property.parsePaste(stringValue, property.baseType));
+        updateAndCommit(PValue.escapeSeparator(property.parsePaste(stringValue, property.baseType), inputList.compare));
     }
 
     @Override
@@ -98,10 +99,10 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         }
     }
 
-    private Object getValue(GUserInputResult result) {
+    private PValue getValue(GUserInputResult result) {
         if(result.getContextAction() != null) // assert that reset is called
             return null;
-        return result.getValue();
+        return result.getPValue();
     }
 
     protected void startEditing(EventHandler handler) {
@@ -114,17 +115,17 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 (result, commitReason) -> acceptCommit(getValue(result), commitReason.equals(CommitReason.ENTERPRESSED)),
                 onCancel,
                 this,
-                inputList.completionType.isAnyStrict() ? ServerResponse.STRICTVALUES : ServerResponse.VALUES, null);
+                inputList.completionType.isExactMatchNeeded() ? ServerResponse.STRICTVALUES : ServerResponse.VALUES, null);
     }
 
-    private void acceptCommit(Object result, boolean enterPressed) {
+    private void acceptCommit(PValue result, boolean enterPressed) {
         this.enterPressed = enterPressed;
         afterCommit.accept(result);
         this.enterPressed = false;
     }
 
     @Override
-    public void changeProperty(Object result) {
+    public void changeProperty(PValue result) {
         updateAndCommit(result);
     }
 
@@ -133,10 +134,9 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
         throw new UnsupportedOperationException();
     }
 
-    private void updateAndCommit(Object value) {
-        value = GwtClientUtils.escapeSeparator(value, inputList.compare);
-        updateValue(value);
-        afterCommit.accept(value);
+    private void updateAndCommit(PValue pValue) {
+        updateValue(pValue);
+        afterCommit.accept(pValue);
     }
 
     public void setApplied(boolean applied) {

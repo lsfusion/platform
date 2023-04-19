@@ -16,6 +16,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.ProgressBar;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.GFilesDTO;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -75,14 +76,14 @@ public class FileCellEditor extends ARequestValueCellEditor implements KeepCellE
     private boolean uploaded = false;
 
     @Override
-    public Object getValue(Element parent, Integer contextAction) {
+    public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
         if(!uploaded)
-            return RequestValueCellEditor.invalid;
-        return new GFilesDTO(fileInfo.filePrefix + "_" + fileInfo.fileName, fileInfo.fileName, storeName, validExtensions == null, named);
+            throw new InvalidEditException();
+        return PValue.getPValue(new GFilesDTO(fileInfo.filePrefix + "_" + fileInfo.fileName, fileInfo.fileName, storeName, validExtensions == null, named));
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         Event event;
         if(handler != null && GKeyStroke.isDropEvent(event = handler.event)) {
             drop(event, parent);

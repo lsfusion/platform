@@ -1,14 +1,14 @@
 package lsfusion.gwt.client.base;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
-import lsfusion.gwt.client.GFormChanges;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
 
 public class GAsync implements IsSerializable, Serializable {
-    public Serializable displayString; // String or GStringWithFiles
-    public String rawString;
+    public Serializable displayValue; // String or GStringWithFiles
+    public Serializable rawValue;
 
     public GGroupObjectValue key;
 
@@ -18,24 +18,28 @@ public class GAsync implements IsSerializable, Serializable {
     public GAsync() {
     }
 
-    public GAsync(Serializable displayString, String rawString, GGroupObjectValue key) {
-        this.displayString = displayString;
-        this.rawString = rawString;
+    public GAsync(Serializable displayValue, Serializable rawValue, GGroupObjectValue key) {
+        this.displayValue = displayValue;
+        this.rawValue = rawValue;
 
         this.key = key;
     }
 
-    public String getDisplayString() {
-        return (String) GFormChanges.remapValue(displayString);
+    public PValue getDisplayValue() {
+        return PValue.remapValue(displayValue);
+    }
+
+    public PValue getRawValue() {
+        return PValue.remapValue(rawValue);
     }
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof GAsync && displayString.equals(((GAsync) o).displayString) && rawString.equals(((GAsync) o).rawString) && GwtClientUtils.nullEquals(key, ((GAsync) o).key);
+        return this == o || o instanceof GAsync && displayValue.equals(((GAsync) o).displayValue) && rawValue.equals(((GAsync) o).rawValue) && GwtClientUtils.nullEquals(key, ((GAsync) o).key);
     }
 
     @Override
     public int hashCode() {
-        return 31 * (displayString.hashCode() * 31 + rawString.hashCode()) + GwtClientUtils.nullHash(key);
+        return 31 * (displayValue.hashCode() * 31 + rawValue.hashCode()) + GwtClientUtils.nullHash(key);
     }
 }

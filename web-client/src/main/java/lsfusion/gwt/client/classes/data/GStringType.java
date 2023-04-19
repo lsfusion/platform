@@ -6,6 +6,7 @@ import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GExtInt;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.StringCellEditor;
@@ -31,8 +32,8 @@ public class GStringType extends GTextBasedType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
-        return s;
+    public PValue parseString(String s, String pattern) throws ParseException {
+        return PValue.getPValue(s);
     }
 
     public GStringType() {}

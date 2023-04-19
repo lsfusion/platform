@@ -4,6 +4,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.GDateTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateTimeCellEditor;
@@ -33,13 +34,13 @@ public class GDateTimeType extends GADateType {
     }
 
     @Override
-    public Object fromDate(Date date) {
-        return GDateTimeDTO.fromDate(date);
+    public PValue fromDate(Date date) {
+        return PValue.getPValue(GDateTimeDTO.fromDate(date));
     }
 
     @Override
-    public Date toDate(Object value) {
-        return ((GDateTimeDTO) value).toDateTime();
+    public Date toDate(PValue value) {
+        return PValue.getDateTimeValue(value).toDateTime();
     }
 
     @Override

@@ -18,6 +18,7 @@ import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
 import lsfusion.gwt.client.form.object.table.view.GridDataRecord;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -63,7 +64,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
 
     public abstract GGroupObjectValue getRowKey(Cell editCell);
 
-    public abstract void setValueAt(Cell cell, Object value);
+    public abstract void setValueAt(Cell cell, PValue value);
 
     public abstract void setLoadingAt(Cell cell);
 
@@ -121,7 +122,7 @@ public abstract class GPropertyTable<T extends GridDataRecord> extends DataGrid<
             }
 
             @Override
-            public void setValue(Object value) {
+            public void setValue(PValue value) {
                 setValueAt(editCell, value);
             }
 

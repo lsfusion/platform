@@ -2,13 +2,14 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
-public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
+public abstract class TextBasedCellRenderer extends CellRenderer {
 
     protected TextBasedCellRenderer(GPropertyDraw property) {
         super(property);
@@ -64,15 +65,15 @@ public abstract class TextBasedCellRenderer<T> extends CellRenderer<T> {
 //        element.removeClassName("form-control");
     }
 
-    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
-        return setInnerText(element, value != null ? format((T) value) : null);
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        return setInnerText(element, value != null ? format(value) : null);
     }
 
     protected String getTitle(Element element, String stringValue) {
         return stringValue;
     }
 
-    public abstract String format(T value);
+    public abstract String format(PValue value);
 
     protected boolean setInnerText(Element element, String innerText) {
         String title = property.echoSymbols ? "" : getTitle(element, innerText);

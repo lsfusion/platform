@@ -17,10 +17,12 @@ import lsfusion.gwt.client.base.view.popup.PopupMenuPanel;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
 
@@ -38,7 +40,8 @@ public abstract class SuggestBox {
     private final PopupMenuPanel suggestionPopup;
     private final InputElement inputElement;
     private ArrayList<Widget> bottomPanels;
-    private final boolean strict;
+
+    private final GCompletionType completionType;
 
     protected SuggestPopupButton refreshButton;
     protected boolean refreshButtonPressed;
@@ -49,24 +52,35 @@ public abstract class SuggestBox {
     
     private final Callback callback = new Callback() {
         public void onSuggestionsReady(Request request, Response response) {
-            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanels, popupMenuCallback);
+            showSuggestions(inputElement, response.initial, response.suggestions, selectsFirstItem, bottomPanels, itemValue -> onItemSelected(itemValue, CommitReason.FORCED));
         }
     };
 
-    private final PopupMenuCallback popupMenuCallback;
+    private final BiConsumer<PopupMenuItemValue, CommitReason> commitSelection;
 
-    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, boolean strict, PopupMenuCallback callback) {
+    public PopupMenuItemValue selectedItem;
+
+    private void onItemSelected(PopupMenuItemValue suggestion, CommitReason commitReason) {
+        focus();
+
+        if(completionType.isCommitSelectionAllowed()) {
+            selectedItem = suggestion;
+
+//        setInput(suggestion); we don't need it either, since update will be called, and getCommitValue will read selectedItem instead of inputValue
+//        suggestionPopup.hide();  we don't need it since validateAndCommit will stop editing
+
+            commitSelection.accept(suggestion, commitReason);
+        }
+    }
+
+    public SuggestBox(SuggestOracle oracle, InputElement inputElement, Element parent, GCompletionType completionType, BiConsumer<PopupMenuItemValue, CommitReason> commitSelection) {
         this.oracle = oracle;
         this.inputElement = inputElement;
-        this.strict = strict;
 
         this.suggestionPopup = new PopupMenuPanel();
-        this.popupMenuCallback = suggestion -> {
-            focus();
-            setNewSelection(suggestion);
 
-            callback.onMenuItemSelected(suggestion);
-        };
+        this.completionType = completionType;
+        this.commitSelection = commitSelection;
 
         this.bottomPanels = new ArrayList<>();
         bottomPanels.add(createButtonsPanel(parent));
@@ -228,8 +242,8 @@ public abstract class SuggestBox {
             case KeyCodes.KEY_ENTER:
             case KeyCodes.KEY_TAB:
                 PopupMenuItemValue suggestion = getCurrentSelection();
-                if (suggestion != null && strict) {
-                    setNewSelection(suggestion);
+                if (suggestion != null) { //  && completionType.commitSelectionOnEnter()
+                    onItemSelected(suggestion, CommitReason.ENTERPRESSED);
                 }
                 break;
         }
@@ -243,22 +257,12 @@ public abstract class SuggestBox {
     }
 
     private void updateSuggestBox() {
-        if (!strict) {
-            setSelection(getCurrentSelection());
+        if (completionType.changeInputOnKeySelectionMove()) {
+            setInput(getCurrentSelection());
         }
     }
 
-    /**
-     * Set the new suggestion in the text box.
-     *
-     * @param curSuggestion the new suggestion
-     */
-    private void setNewSelection(PopupMenuItemValue curSuggestion) {
-        setSelection(curSuggestion);
-        suggestionPopup.hide();
-    }
-
-    public void setSelection(PopupMenuItemValue suggestion) {
+    public void setInput(PopupMenuItemValue suggestion) {
         currentText = suggestion != null ? suggestion.getReplacementString() : null;
         SimpleTextBasedCellEditor.setInputValue(inputElement, currentText);
     }

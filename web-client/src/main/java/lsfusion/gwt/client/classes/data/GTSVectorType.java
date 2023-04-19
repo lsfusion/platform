@@ -4,6 +4,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 
@@ -28,7 +29,7 @@ public class GTSVectorType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public PValue parseString(String s, String pattern) throws ParseException {
         throw new ParseException("TSVector class doesn't support conversion from string", 0);
     }
 

@@ -38,7 +38,7 @@ public class GPanelController extends GPropertyController {
     }-*/;
 
     @Override
-    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setLoadings(values);
 
@@ -46,7 +46,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyPanelController propertyController = propertyControllers.get(property);
         if(!updateKeys) {
             if (propertyController == null) {
@@ -85,7 +85,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setCellValueElementClasses(values);
 
@@ -93,7 +93,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setCellBackgroundValues(values);
 
@@ -101,7 +101,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setCellForegroundValues(values);
 
@@ -109,7 +109,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setImages(values);
 
@@ -117,7 +117,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setPropertyCaptions(values);
 
@@ -125,7 +125,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setShowIfs(values);
 
@@ -133,11 +133,11 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     @Override
-    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         GPropertyDraw property = formController.getProperty(reader.propertyID);
         propertyControllers.get(property).setReadOnlyValues(values);
 
@@ -145,7 +145,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
     public void focusProperty(GPropertyDraw propertyDraw) {
@@ -173,7 +173,7 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
-    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+    public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
         GPropertyPanelController panelController = propertyControllers.get(property);
         return panelController != null ? panelController.setLoadingValueAt(fullCurrentKey, value) : null;
     }

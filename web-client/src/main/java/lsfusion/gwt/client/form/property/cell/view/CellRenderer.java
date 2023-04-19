@@ -13,12 +13,13 @@ import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.view.GColorTheme;
 import lsfusion.gwt.client.view.MainFrame;
 
-public abstract class CellRenderer<T> {
+public abstract class CellRenderer {
 
     protected final GPropertyDraw property;
 
@@ -273,7 +274,7 @@ public abstract class CellRenderer<T> {
 
     // in theory in most case we can get previous state without storing it in Element, but for now it's the easiest way
     private static class RenderedState {
-        public Object value;
+        public PValue value;
         public Object extraValue;
         public GColorTheme colorTheme; // for action and color cell renderer
 
@@ -288,7 +289,7 @@ public abstract class CellRenderer<T> {
 
         public ToolbarState toolbar;
     }
-    private static boolean equalsDynamicState(RenderedState state, Object value, Object extraValue, GColorTheme colorTheme) {
+    private static boolean equalsDynamicState(RenderedState state, PValue value, Object extraValue, GColorTheme colorTheme) {
         return GwtClientUtils.nullEquals(state.value, value) && GwtClientUtils.nullEquals(state.extraValue, extraValue) && state.colorTheme == colorTheme && !state.rerender;
     }
     private static boolean equalsColorState(RenderedState state, String background, String foreground) {
@@ -320,7 +321,7 @@ public abstract class CellRenderer<T> {
         else
             clearEditSelected(element, property);
 
-        Object value = updateContext.getValue();
+        PValue value = updateContext.getValue();
         Object extraValue = getExtraValue(updateContext); // in action we also use isLoading and getImage
 
         RenderedState renderedState = (RenderedState) element.getPropertyObject(RENDERED);
@@ -568,14 +569,14 @@ public abstract class CellRenderer<T> {
     }
 
     public abstract boolean renderContent(Element element, RenderContext renderContext);
-    public abstract boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext);
+    public abstract boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext);
     public abstract boolean clearRenderContent(Element element, RenderContext renderContext);
 
     public int getWidthPadding() {
         return 0;
     }
 
-    public abstract String format(T value);
+    public abstract String format(PValue value);
 
     public boolean isCustomRenderer() {
         return false;

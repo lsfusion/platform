@@ -2,7 +2,7 @@ package lsfusion.server.logics.form.interactive.property;
 
 public enum AsyncMode {
     VALUES, // getting distinct values
-    STRICTVALUES, // getting distance values, but it's important to have the exact match
+    STRICTVALUES, // getting distinct values, but it's important to have the exact match
     OBJECTVALUES, // getting distinct values, assuming that they are pretty unique
     OBJECTS; // getting objects with values (may be the same)
 

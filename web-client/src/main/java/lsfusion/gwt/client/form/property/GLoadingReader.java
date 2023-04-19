@@ -12,7 +12,7 @@ public class GLoadingReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "LOADING");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateLoadings(this, values);
     }
 

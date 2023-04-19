@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
@@ -20,13 +21,16 @@ public class StringCellEditor extends SimpleTextBasedCellEditor {
     }
 
     @Override
-    protected String tryFormatInputText(Object value) {
+    protected String tryFormatInputText(PValue value) {
         if (value == null) {
             return "";
         }
 
-        String stringValue = value.toString();
-        return isVarString ? stringValue : GwtSharedUtils.rtrim(stringValue);
+        String string = PValue.getStringValue(value);
+        if(isVarString)
+            string = GwtSharedUtils.rtrim(string);
+
+        return string;
     }
 
     @Override

@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.base.view.FormButton;
 import lsfusion.gwt.client.base.view.ResizableVerticalPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -24,7 +25,7 @@ public class ColorCellEditor extends PopupValueCellEditor {
     }
 
     @Override
-    protected Widget createPopupComponent(Element parent, Object oldValue) {
+    protected Widget createPopupComponent(Element parent) {
         colorPicker = new ColorPicker();
 
         FormButton btnOk = new FormButton(messages.ok(), event -> commit(parent, CommitReason.FORCED));
@@ -53,21 +54,21 @@ public class ColorCellEditor extends PopupValueCellEditor {
     }
 
     @Override
-    public Object getValue(Element parent, Integer contextAction) {
-        return new ColorDTO(colorPicker.getHexColor());
+    public PValue getCommitValue(Element parent, Integer contextAction) {
+        return PValue.getPValue(new ColorDTO(colorPicker.getHexColor()));
     }
 
     public void reset(Element parent) {
-        commitValue(parent, (ColorDTO) null);
+        commitValue(parent, (PValue) null);
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         super.start(handler, parent, oldValue);
 
-        if (oldValue instanceof ColorDTO) {
+        if (oldValue != null) {
             try {
-                colorPicker.setHex(((ColorDTO)oldValue).value);
+                colorPicker.setHex(PValue.getColorValue(oldValue).value);
             } catch (Exception e) {
                 throw new IllegalStateException("can't convert string value to color");
             }

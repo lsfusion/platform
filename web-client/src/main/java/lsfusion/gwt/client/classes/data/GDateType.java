@@ -5,6 +5,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateCellEditor;
@@ -34,13 +35,13 @@ public class GDateType extends GADateType {
     }
 
     @Override
-    public Object fromDate(Date date) {
-        return GDateDTO.fromDate(date);
+    public PValue fromDate(Date date) {
+        return PValue.getPValue(GDateDTO.fromDate(date));
     }
 
     @Override
-    public Date toDate(Object value) {
-        return ((GDateDTO) value).toDate();
+    public Date toDate(PValue value) {
+        return PValue.getDateValue(value).toDate();
     }
 
     @Override

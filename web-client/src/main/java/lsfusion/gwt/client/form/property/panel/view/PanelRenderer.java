@@ -2,6 +2,7 @@ package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.base.TooltipManager;
@@ -9,6 +10,7 @@ import lsfusion.gwt.client.base.view.SizedWidget;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
 
@@ -69,7 +71,7 @@ public abstract class PanelRenderer {
         return getSizedWidget().widget;
     }
 
-    public void update(Object value, boolean loading, Object image, Object valueElementClass, Object background, Object foreground, boolean readOnly) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly) {
         this.value.update(value, loading, image, valueElementClass, background, foreground, readOnly);
     }
 
@@ -95,7 +97,7 @@ public abstract class PanelRenderer {
         value.focus(reason);
     }
 
-    public Object setLoadingValue(Object value) {
+    public PValue setLoadingValue(PValue value) {
         return this.value.setLoadingValue(value);
     }
 }

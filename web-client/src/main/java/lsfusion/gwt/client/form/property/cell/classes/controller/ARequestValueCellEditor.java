@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.controller;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.controller.SmartScheduler;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
@@ -23,7 +24,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
     }
 
     // force commit with the specified value
-    public void commitValue(Element parent, Object value) {
+    public void commitValue(Element parent, PValue value) {
         commitFinish(parent, value, null, CommitReason.FORCED);
     }
 
@@ -43,7 +44,7 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         this.deferredCommitOnBlur = deferredCommitOnBlur;
     }
 
-    protected void commitFinish(Element parent, Object value, Integer contextAction, CommitReason commitReason) {
+    protected void commitFinish(Element parent, PValue value, Integer contextAction, CommitReason commitReason) {
         editManager.commitEditing(new GUserInputResult(value, contextAction), commitReason);
     }
 
@@ -67,15 +68,15 @@ public abstract class ARequestValueCellEditor implements RequestValueCellEditor 
         boolean blurred = commitReason.isBlurred();
         SmartScheduler.getInstance().scheduleDeferred(blurred && isDeferredCommitOnBlur(), () -> {
             if (editManager.isThisCellEditing(this)) {
-                Object value = getValue(parent, contextAction);
-                if (value != null && value.equals(RequestValueCellEditor.invalid)) {
-                    if (cancelIfInvalid)
-                        cancel(parent);
-                } else {
+                try {
+                    PValue value = getCommitValue(parent, contextAction);
                     if (cancelTheSameValueOnBlur && (blurred || commitReason.isForcedBlurred()) && GwtClientUtils.nullEquals(value, cancelTheSameValueOnBlurOldValue)) {
                         cancel(parent);
                     } else
                         commitFinish(parent, value, contextAction, commitReason);
+                } catch (InvalidEditException e) {
+                    if (cancelIfInvalid)
+                        cancel(parent);
                 }
             }
         });

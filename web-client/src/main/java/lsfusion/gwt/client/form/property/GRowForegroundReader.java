@@ -11,7 +11,7 @@ public class GRowForegroundReader extends GRowPropertyReader {
     public GRowForegroundReader(int readerID) {
         super(readerID, "FOREGROUND");
     }
-    public void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateRowForegroundValues(values);
     }
 }

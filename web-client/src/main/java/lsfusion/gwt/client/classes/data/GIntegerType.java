@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.IntegerCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -16,8 +17,8 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
-    public Object convertDouble(Double doubleValue) {
-        return doubleValue.intValue();
+    public PValue convertDouble(Double doubleValue) {
+        return PValue.getPValue(doubleValue.intValue());
     }
 
     @Override

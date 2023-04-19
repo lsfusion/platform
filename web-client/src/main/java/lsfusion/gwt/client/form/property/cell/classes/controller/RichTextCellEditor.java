@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
 
@@ -16,13 +17,17 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
-        String value = oldValue == null ? "" : oldValue.toString().replaceAll("<div>", "<p>").replaceAll("</div>", "</p>");
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         this.oldValue = getEditorValue(parent);
 
-        String startEventValue = handler != null ? checkStartEvent(handler.event, parent, null) : null;
-        boolean selectAll = startEventValue == null;
-        value = startEventValue != null ? startEventValue : value;
+        String value = handler != null ? checkStartEvent(handler.event, parent, null) : null;
+        boolean selectAll = value == null;
+
+        if(value == null) {
+            value = PValue.getStringValue(oldValue);
+            if (value != null)
+                value = value.replaceAll("<div>", "<p>").replaceAll("</div>", "</p>");
+        }
 
         enableEditing(parent, false);
 
@@ -86,8 +91,8 @@ public class RichTextCellEditor extends ARequestValueCellEditor implements Reque
     }
 
     @Override
-    public Object getValue(Element parent, Integer contextAction) {
-        return getEditorValue(parent);
+    public PValue getCommitValue(Element parent, Integer contextAction) {
+        return PValue.getPValue(getEditorValue(parent));
     }
 
     @Override

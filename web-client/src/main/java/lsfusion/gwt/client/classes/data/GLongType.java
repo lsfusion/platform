@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LongCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -16,8 +17,8 @@ public class GLongType extends GIntegralType {
     }
 
     @Override
-    public Object convertDouble(Double doubleValue) {
-        return doubleValue.longValue();
+    public PValue convertDouble(Double doubleValue) {
+        return PValue.getPValue(doubleValue.longValue());
     }
 
     @Override

@@ -13,7 +13,7 @@ public class GValueElementClassReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "VALUEELEMENTCLASS");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> keys) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> keys) {
         controller.updateCellValueElementClasses(this, keys);
     }
 }

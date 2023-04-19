@@ -1,7 +1,10 @@
 package lsfusion.client.form.property.cell.classes.controller.suggest;
 
+// see GCompletionType for extra description
 public enum CompletionType {
-    STRICT, NON_STRICT, SEMI_STRICT;
+    STRICT,
+    SEMI_STRICT,
+    NON_STRICT;
 
     public boolean isStrict() {
         return this == STRICT;

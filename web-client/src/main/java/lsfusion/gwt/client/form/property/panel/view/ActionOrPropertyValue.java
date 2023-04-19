@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.CopyPasteUtils;
@@ -16,6 +17,7 @@ import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -28,20 +30,20 @@ import static lsfusion.gwt.client.base.view.ColorUtils.getThemedColor;
 // property value renderer with editing
 public abstract class ActionOrPropertyValue extends Widget implements EditContext, RenderContext, UpdateContext, ColorThemeChangeListener {
 
-    protected Object value;
+    protected PValue value;
     protected boolean loading;
-    private Object image;
-    private Object valueElementClass;
-    private Object background;
+    private AppBaseImage image;
+    private String valueElementClass;
+    private String background;
     private Object foreground;
     protected boolean readOnly;
 
-    public Object getValue() {
+    public PValue getValue() {
         return value;
     }
 
     // editing set value (in EditContext), changes model and value itself
-    public void setValue(Object value) {
+    public void setValue(PValue value) {
         this.value = value; // updating inner model
 
         controller.setValue(columnKey, value); // updating outer model - controller
@@ -58,7 +60,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
     }
 
     @Override
-    public Object getImage() {
+    public AppBaseImage getImage() {
         return image;
     }
 
@@ -69,7 +71,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public String getBackground() {
-        return background != null ? background.toString() : null;
+        return background;
     }
 
     @Override
@@ -79,7 +81,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     @Override
     public String getValueElementClass() {
-        return valueElementClass != null ? valueElementClass.toString() : null;
+        return valueElementClass;
     }
 
     protected GPropertyDraw property;
@@ -278,7 +280,7 @@ public abstract class ActionOrPropertyValue extends Widget implements EditContex
 
     public abstract void pasteValue(final String value);
 
-    public void update(Object value, boolean loading, Object image, Object valueElementClass, Object background, Object foreground, boolean readOnly) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly) {
         this.value = value;
         this.loading = loading;
         this.image = image;

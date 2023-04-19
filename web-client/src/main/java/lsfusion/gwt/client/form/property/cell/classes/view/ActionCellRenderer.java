@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.*;
 import lsfusion.gwt.client.base.*;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -82,7 +83,7 @@ public class ActionCellRenderer extends CellRenderer {
             if(updateContext.isLoading() && property.isLoadingReplaceImage())
                 return StaticImage.LOADING_IMAGE_PATH;
             else if(property.hasDynamicImage())
-                return (AppBaseImage) updateContext.getImage(); // was converted in convertFileValue
+                return updateContext.getImage(); // was converted in convertFileValue
             else if(property.hasStaticImage())
                 return property.appImage;
             else
@@ -92,18 +93,22 @@ public class ActionCellRenderer extends CellRenderer {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         if(extraValue != null)
             BaseImage.updateImage((BaseImage) extraValue, element, property.panelCaptionVertical);
 
-        boolean enabled = !property.isReadOnly() && (value != null) && (Boolean) value;
+        boolean enabled = !property.isReadOnly() && getActionValue(value);
         element.setPropertyBoolean("disabled", !enabled);
 
         return false;
     }
 
     @Override
-    public String format(Object value) {
-        return (value != null) && ((Boolean) value) ? "..." : "";
+    public String format(PValue value) {
+        return getActionValue(value) ? "..." : "";
+    }
+
+    private boolean getActionValue(PValue value) {
+        return PValue.getBooleanValue(value);
     }
 }

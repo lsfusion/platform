@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
@@ -49,11 +50,11 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
     protected final GPropertyDraw property;
 
-    private final boolean hasList;
-    private final GCompletionType completionType;
-    private final GInputListAction[] actions;
-    private final GCompare compare;
-    private SuggestBox suggestBox = null;
+    private boolean hasList;
+    protected GCompletionType completionType;
+    private GInputListAction[] actions;
+    protected GCompare compare;
+    protected SuggestBox suggestBox = null;
 
     public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property) {
         this(editManager, property, null);
@@ -62,14 +63,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     public SimpleTextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
         super(editManager);
         this.property = property;
-        this.hasList = inputList != null && !disableSuggest() && !property.echoSymbols;
-        this.completionType = inputList != null ? inputList.completionType : GCompletionType.NON_STRICT;
-        this.actions = inputList != null ? inputList.actions : null;
-        this.compare = inputList != null ? inputList.compare : null;
-    }
 
-    protected boolean disableSuggest() {
-        return false;
+        if(inputList != null) {
+            this.hasList = true;
+            this.completionType = inputList.completionType;
+            this.actions = inputList.actions;
+            this.compare = inputList.compare;
+        }
     }
 
     private boolean isRenderInputElement(Element cellParent) {
@@ -87,13 +87,13 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     protected InputElement inputElement;
     private String oldStringValue;
 
-    protected void onInputReady(Element parent, Object oldValue) {
+    protected void onInputReady(Element parent, PValue oldValue) {
     }
 
     private boolean started;
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
 
         Integer dialogInputActionIndex = property.getDialogInputActionIndex(actions);
         if (dialogInputActionIndex != null) {
@@ -212,7 +212,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         super.onBrowserEvent(parent, handler);
     }
 
-    private boolean checkInputValidity(Element parent, String stringToAdd) {
+    protected boolean checkInputValidity(Element parent, String stringToAdd) {
         int cursorPosition = textBoxImpl.getCursorPos(inputElement);
         int selectionLength = textBoxImpl.getSelectionLength(inputElement);
         String currentValue = getInputValue();
@@ -262,7 +262,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
         assert !isRenderInputElement(cellParent);
 
         TextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
@@ -303,14 +303,24 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         super.clearRender(cellParent, renderContext, cancel);
     }
 
-    public Object getValue(Element parent, Integer contextAction) {
+    public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
+        if (hasList) {
+            PopupMenuItemValue selectedItem = suggestBox.selectedItem;
+            if (selectedItem != null)
+                return selectedItem.getPValue();
+
+            if(contextAction == null && completionType.isOnlyCommitSelection())
+                throw new InvalidEditException();
+        }
+
         String stringValue = getInputValue();
-        if(hasList && completionType.isStrict() && contextAction == null && !suggestBox.isValidValue(stringValue))
-            return RequestValueCellEditor.invalid;
+        if (hasList && contextAction == null && completionType.isCheckCommitInputInList() && !suggestBox.isValidValue(stringValue)) {
+            throw new InvalidEditException();
+        }
         try {
             return tryParseInputText(stringValue, true); //if button pressed, input element is button
         } catch (ParseException e) {
-            return RequestValueCellEditor.invalid;
+            throw new InvalidEditException();
         }
     }
 
@@ -391,23 +401,30 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     @Override
                     public void onSuccess(Pair<ArrayList<GAsync>, Boolean> result) {
                         if (isThisCellEditor()) { //  && suggestBox.isSuggestionListShowing() in desktop this check leads to "losing" result, since suggest box can be not shown yet (!), however maybe in web-client it's needed for some reason (but there can be the risk of losing result)
-                            suggestBox.setAutoSelectEnabled((completionType.isStrict() || (completionType.isSemiStrict() && !query.contains(MainFrame.matchSearchSeparator))) && !emptyQuery);
+                            suggestBox.setAutoSelectEnabled(completionType.isAutoSelection() && !(isFilterList() && query.contains(MainFrame.matchSearchSeparator)) && !emptyQuery);
 
                             boolean succeededEmpty = false;
                             if(result.first != null) {
                                 List<String> rawSuggestions = new ArrayList<>();
                                 ArrayList<PopupMenuItemValue> suggestionList = new ArrayList<>();
                                 for (GAsync suggestion : result.first) {
-                                    rawSuggestions.add(suggestion.rawString);
+                                    PValue rawValue = PValue.escapeSeparator(suggestion.getRawValue(), compare);
+                                    String rawString = PValue.getStringValue(rawValue);
+                                    rawSuggestions.add(rawString);
                                     suggestionList.add(new PopupMenuItemValue() {
                                         @Override
                                         public String getDisplayString() {
-                                            return suggestion.getDisplayString();
+                                            return PValue.getStringValue(suggestion.getDisplayValue());
+                                        }
+
+                                        @Override
+                                        public PValue getPValue() {
+                                            return rawValue;
                                         }
 
                                         @Override
                                         public String getReplacementString() {
-                                            return (String) GwtClientUtils.escapeSeparator(suggestion.rawString, compare);
+                                            return rawString;
                                         }
                                     });
                                 }
@@ -459,7 +476,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                     item.style.minWidth = minWidth + "px";
                 });
             }-*/;
-        }, element, parent, completionType.isAnyStrict(), suggestion -> validateAndCommit(parent, true, CommitReason.FORCED)) {
+        }, element, parent, completionType, (suggestion, commitReason) -> validateAndCommit(parent, true, commitReason)) {
 
             @Override
             protected Widget createButtonsPanel(Element parent) {
@@ -508,7 +525,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             }
 
             protected Widget createInfoPanel(Element parent) {
-                if (compare != null && compare.escapeSeparator()) {
+                if (isFilterList()) {
                     HTML tip = new HTML(compare == CONTAINS ? messages.suggestBoxContainsTip() : messages.suggestBoxMatchTip(MainFrame.matchSearchSeparator));
                     tip.getElement().addClassName("dropdown-menu-tip");
                     tip.getElement().addClassName("text-secondary");
@@ -538,7 +555,11 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         };
     }
 
-    protected Object tryParseInputText(String inputText, boolean onCommit) throws ParseException {
+    private boolean isFilterList() {
+        return compare != null && compare.escapeSeparator();
+    }
+
+    protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         if(inputText == null || inputText.isEmpty())
             return null;
 
@@ -546,10 +567,10 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
             return formatType.parseString(inputText, property.pattern);
         }
-        return inputText;
+        return PValue.getPValue(inputText);
     }
 
-    protected String tryFormatInputText(Object value) {
+    protected String tryFormatInputText(PValue value) {
         if(value == null)
             return "";
 
@@ -557,6 +578,6 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
             GFormatType formatType = ((FormatCellEditor) this).getFormatType();
             return formatType.formatString(value, property.pattern);
         }
-        return value.toString();
+        return PValue.getStringValue(value);
     }
 }

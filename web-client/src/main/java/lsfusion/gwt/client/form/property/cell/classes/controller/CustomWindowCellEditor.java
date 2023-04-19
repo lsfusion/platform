@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.WindowValueCellEditor;
 
@@ -42,7 +43,7 @@ public class CustomWindowCellEditor extends WindowValueCellEditor implements Cus
     }
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         render(parent, null, null, oldValue);
     }
 

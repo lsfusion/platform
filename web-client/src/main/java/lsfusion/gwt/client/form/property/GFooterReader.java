@@ -11,7 +11,7 @@ public class GFooterReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "FOOTER");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateFooterValues(this, values);
     }
 }

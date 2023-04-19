@@ -419,71 +419,71 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateCellValueElementClasses(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateCellBackgroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateCellForegroundValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateImageValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GCaptionReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updatePropertyCaptions(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateLoadings(GLoadingReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateLoadings(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateShowIfValues(GShowIfReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateShowIfValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updatePropertyFooters(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateReadOnlyValues(GReadOnlyReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateReadOnlyValues(formController.getProperty(reader.propertyID), values);
     }
 
     @Override
-    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateLastValues(formController.getProperty(reader.propertyID), reader.index, values);
     }
 
     @Override
-    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         if (isList()) {
             table.updateRowBackgroundValues(values);
         }
     }
 
     @Override
-    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         if (isList()) {
             table.updateRowForegroundValues(values);
         }
     }
 
     @Override
-    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         if (isList()) {
             table.updateCustomOptionsValues(values);
         }
@@ -528,7 +528,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
+    public PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey) {
         return table.getSelectedValue(property, columnKey);
     }
 
@@ -540,7 +540,7 @@ public class GGridController extends GAbstractTableController {
 
 
     @Override
-    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateProperty(GPropertyDraw property, ArrayList<GGroupObjectValue> columnKeys, boolean updateKeys, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateProperty(property, columnKeys, updateKeys, values);
     }
 
@@ -692,7 +692,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
-    public Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, Object value) {
+    public Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue fullCurrentKey, PValue value) {
         if(table instanceof GGridTable) {
             GGridTable gridTable = (GGridTable) table;
             return gridTable.setLoadingValueAt(property, fullCurrentKey, value);

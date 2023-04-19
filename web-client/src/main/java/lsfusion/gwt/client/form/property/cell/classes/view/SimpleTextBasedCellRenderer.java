@@ -11,7 +11,7 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
 // the renderer which may be renderered as plain input (or td in table)
-public abstract class SimpleTextBasedCellRenderer<T> extends TextBasedCellRenderer<T> {
+public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer {
 
     public SimpleTextBasedCellRenderer(GPropertyDraw property) {
         super(property);

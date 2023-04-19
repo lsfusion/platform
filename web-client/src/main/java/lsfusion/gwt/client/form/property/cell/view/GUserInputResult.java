@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
+import lsfusion.gwt.client.form.property.PValue;
+
 import java.io.Serializable;
 
 public class GUserInputResult implements Serializable {
@@ -12,17 +14,21 @@ public class GUserInputResult implements Serializable {
     @SuppressWarnings("UnusedDeclaration")
     public GUserInputResult() {}
 
-    public GUserInputResult(Object value) {
+//    paste / custom
+    public GUserInputResult(PValue value) {
         this(value, null);
     }
 
-    public GUserInputResult(Object value, Integer contextAction) {
+    // editor + context (value = null) + paste / custom
+    public GUserInputResult(PValue value, Integer contextAction) {
         this(false, value, contextAction);
     }
-    public GUserInputResult(boolean canceled, Object value, Integer contextAction) {
+    public GUserInputResult(boolean canceled, PValue value, Integer contextAction) {
         this.editCanceled = canceled;
-        this.value = (Serializable) value;
+        this.value = PValue.remapValueBack(value);
         this.contextAction = contextAction;
+
+        this.pValue = value;
     }
 
     public boolean isCanceled() {
@@ -31,6 +37,11 @@ public class GUserInputResult implements Serializable {
 
     public Serializable getValue() {
         return value;
+    }
+
+    private transient PValue pValue;
+    public PValue getPValue() {
+        return pValue;
     }
 
     public Integer getContextAction() {

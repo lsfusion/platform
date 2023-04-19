@@ -6,9 +6,11 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
+import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.property.PValue;
 
 public class GCustom extends GTippySimpleStateTableView {
     private final JavaScriptObject renderFunction;
@@ -20,10 +22,10 @@ public class GCustom extends GTippySimpleStateTableView {
         this.renderFunctionWithoutArguments = !GwtClientUtils.isFunctionContainsArguments(this.renderFunction);
     }
 
-    private Object customOptions;
+    private JavaScriptObject customOptions;
     @Override
-    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values) {
-        customOptions = values.firstValue();
+    public void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values) {
+        customOptions = GSimpleStateTableView.convertToJSValue(GJSONType.instance, values.firstValue()); // for now we're assuming that custom options is json
         dataUpdated = true;
     }
 
@@ -60,7 +62,7 @@ public class GCustom extends GTippySimpleStateTableView {
         renderFunction().render(element, controller, event);
     }-*/;
 
-    protected native void update(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, JsArray<JavaScriptObject> list, Object customOptions)/*-{
+    protected native void update(JavaScriptObject renderFunction, Element element, JavaScriptObject controller, JsArray<JavaScriptObject> list, JavaScriptObject customOptions)/*-{
         renderFunction().update(element, controller, list, customOptions);
     }-*/;
 

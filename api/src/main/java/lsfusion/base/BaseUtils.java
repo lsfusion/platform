@@ -319,8 +319,9 @@ public class BaseUtils {
                 } else
                     files[i] = IOUtils.readImageIcon(inStream);
             }
+            String rawString = inStream.readUTF();
 
-            return new StringWithFiles(prefixes, files);
+            return new StringWithFiles(prefixes, files, rawString);
         }
 
         if (objectType == 16) {
@@ -489,6 +490,7 @@ public class BaseUtils {
                     IOUtils.writeImageIcon(outStream, (AppImage) data);
                 }
             }
+            outStream.writeUTF(stringWithFiles.rawString);
             return;
         }
 
@@ -2048,9 +2050,9 @@ public class BaseUtils {
 
     public static final String impossibleString = "FDWREVSFFGFSDRSDR";
 
-    public static final String inlineFileSeparator = "PQWERJUQMASPRETQT";
+    public static final String inlineFileSeparator = "<PQWERJUQMASPRETQT/>"; // we want separators as tags to have no problem with ts vectors
 
-    public static final String inlineImageSeparator = "GFDTRGDFSAFADXZW";
+    public static final String inlineImageSeparator = "<GFDTRGDFSAFADXZW/>";
 
     public static Object executeWithTimeout(Callable<Object> callable, Integer timeout) {
         if (timeout != null) {

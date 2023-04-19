@@ -8,6 +8,7 @@ import lsfusion.gwt.client.form.object.GGroupObject;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
 
 import java.util.LinkedHashMap;
@@ -21,7 +22,7 @@ public interface GTableController {
     List<GPropertyDraw> getPropertyDraws();
     GPropertyDraw getSelectedFilterProperty();
     GGroupObjectValue getSelectedColumnKey();
-    Object getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
+    PValue getSelectedValue(GPropertyDraw property, GGroupObjectValue columnKey);
     List<Pair<Column, String>> getFilterColumns();
     GContainer getFiltersContainer();
     GFilterControls getFilterControls();

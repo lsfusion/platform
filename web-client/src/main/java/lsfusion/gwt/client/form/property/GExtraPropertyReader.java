@@ -21,10 +21,10 @@ public abstract class GExtraPropertyReader implements GPropertyReader {
         this.sID = "_PROPERTY_" + prefix + "_" + propertyID;
     }
 
-    protected abstract void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values);
+    protected abstract void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values);
 
     @Override
-    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         update(controller.getPropertyController(controller.getProperty(propertyID)), values);
     }
 

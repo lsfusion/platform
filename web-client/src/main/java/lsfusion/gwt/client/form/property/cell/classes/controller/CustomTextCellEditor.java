@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
@@ -45,18 +46,18 @@ public class CustomTextCellEditor extends SimpleTextBasedCellEditor implements C
     }
 
     @Override
-    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, Object oldValue) {
+    public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
         super.render(cellParent, renderContext, renderedSize, oldValue);
 
         CustomCellEditor.super.render(cellParent, renderContext, renderedSize, oldValue);
     }
 
     @Override
-    public Object getValue(Element parent, Integer contextAction) {
+    public PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException {
         if(CustomReplaceCellEditor.hasGetValue(customEditor))
-            return CustomCellEditor.super.getValue(parent, contextAction);
+            return CustomCellEditor.super.getCommitValue(parent, contextAction);
 
-        return super.getValue(parent, contextAction);
+        return super.getCommitValue(parent, contextAction);
     }
 
     @Override

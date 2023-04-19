@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -71,7 +72,7 @@ public abstract class GType implements Serializable {
     }
 
     public abstract GCompare[] getFilterCompares();
-    public abstract Object parseString(String s, String pattern) throws ParseException;
+    public abstract PValue parseString(String s, String pattern) throws ParseException;
 
     public GEditBindingMap.EditEventFilter getEditEventFilter() {
         return null;

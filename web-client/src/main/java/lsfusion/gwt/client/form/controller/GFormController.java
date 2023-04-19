@@ -60,14 +60,10 @@ import lsfusion.gwt.client.form.object.table.grid.user.design.GFormUserPreferenc
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGridUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.grid.view.GListViewType;
-import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.tree.GTreeGroup;
 import lsfusion.gwt.client.form.object.table.tree.controller.GTreeGroupController;
 import lsfusion.gwt.client.form.order.user.GOrder;
-import lsfusion.gwt.client.form.property.GExtraPropertyReader;
-import lsfusion.gwt.client.form.property.GPropertyDraw;
-import lsfusion.gwt.client.form.property.GPropertyGroupType;
-import lsfusion.gwt.client.form.property.GPropertyReader;
+import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.property.async.*;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
@@ -90,7 +86,6 @@ import lsfusion.gwt.client.view.MainFrame;
 import net.customware.gwt.dispatch.shared.Result;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -748,7 +743,7 @@ public class GFormController implements EditManager {
                 removeFromDoubleMap(pendingChangePropertyRequests, property, keys);
 
                 if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
-                    NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyValues = fc.properties.get(property);
                     if (propertyValues == null) {
                         // включаем изменение на старое значение, если ответ с сервера пришел, а новое значение нет
                         propertyValues = new NativeHashMap<>();
@@ -764,7 +759,7 @@ public class GFormController implements EditManager {
         }));
 
         pendingChangePropertyRequests.foreachEntry((property, values) -> {
-            final NativeHashMap<GGroupObjectValue, Object> propertyValues = fc.properties.get(property);
+            final NativeHashMap<GGroupObjectValue, PValue> propertyValues = fc.properties.get(property);
             if (propertyValues != null) {
                 values.foreachEntry((key, change) -> {
                     propertyValues.put(key, change.newValue);
@@ -780,7 +775,7 @@ public class GFormController implements EditManager {
                 removeFromDoubleMap(pendingLoadingPropertyRequests, property, keys);
 
                 if(getPropertyController(property).isPropertyShown(property) && !fc.dropProperties.contains(property)) {
-                    NativeHashMap<GGroupObjectValue, Object> propertyLoadings = fc.properties.get(property.loadingReader);
+                    NativeHashMap<GGroupObjectValue, PValue> propertyLoadings = fc.properties.get(property.loadingReader);
                     if (propertyLoadings == null) {
                         propertyLoadings = new NativeHashMap<>();
                         fc.properties.put(property.loadingReader, propertyLoadings);
@@ -886,7 +881,7 @@ public class GFormController implements EditManager {
                 GType externalType = property.getExternalChangeType();
                 if(externalType == null)
                     externalType = property.baseType;
-                valueRow.add(property.parsePaste(sCell, externalType));
+                valueRow.add(PValue.remapValueBack(property.parsePaste(sCell, externalType)));
                 rawValueRow.add(sCell);
             }
             values.add(valueRow);
@@ -905,9 +900,7 @@ public class GFormController implements EditManager {
         GPropertyDraw property = editContext.getProperty();
         GType externalType = property.getExternalChangeType();
         if(externalType != null) {
-            Serializable value = (Serializable) property.parsePaste(sValue, externalType);
-
-            changeProperty(editContext, value);
+            changeProperty(editContext, property.parsePaste(sValue, externalType));
         } else {
             ArrayList<GPropertyDraw> propertyList = new ArrayList<>();
             propertyList.add(property);
@@ -1207,9 +1200,9 @@ public class GFormController implements EditManager {
     }
 
     // for custom renderer, paste
-    public void changeProperty(ExecuteEditContext editContext, Object value) {
-        lsfusion.gwt.client.base.Result<Object> oldValue = value != GSimpleStateTableView.UNDEFINED ? setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), value) : null;
-        executePropertyEventAction(null, editContext, value == GSimpleStateTableView.UNDEFINED ? null : new GUserInputResult(value), requestIndex -> {
+    public void changeProperty(ExecuteEditContext editContext, PValue value) {
+        lsfusion.gwt.client.base.Result<PValue> oldValue = value != PValue.UNDEFINED ? setLocalValue(editContext, editContext.getProperty().getExternalChangeType(), value) : null;
+        executePropertyEventAction(null, editContext, value == PValue.UNDEFINED ? null : new GUserInputResult(value), requestIndex -> {
             setRemoteValue(editContext, oldValue, value, requestIndex);
         });
     }
@@ -1232,9 +1225,9 @@ public class GFormController implements EditManager {
         });
     }
 
-    public lsfusion.gwt.client.base.Result<Object> setLocalValue(EditContext editContext, GType type, Object result) {
+    public lsfusion.gwt.client.base.Result<PValue> setLocalValue(EditContext editContext, GType type, PValue result) {
         if(editContext.canUseChangeValueForRendering(type)) {
-            Object oldValue = editContext.getValue();
+            PValue oldValue = editContext.getValue();
 
             editContext.setValue(result);
 
@@ -1243,12 +1236,12 @@ public class GFormController implements EditManager {
         return null;
     }
 
-    public void setRemoteValue(EditContext editContext, lsfusion.gwt.client.base.Result<Object> oldValue, Object result, long requestIndex) {
+    public void setRemoteValue(EditContext editContext, lsfusion.gwt.client.base.Result<PValue> oldValue, PValue result, long requestIndex) {
         if(oldValue != null)
-            pendingChangeProperty(editContext.getProperty(), editContext.getFullKey(), (Serializable) result, oldValue.result, requestIndex);
+            pendingChangeProperty(editContext.getProperty(), editContext.getFullKey(), result, oldValue.result, requestIndex);
     }
 
-    public void pendingChangeProperty(GPropertyDraw property, GGroupObjectValue fullKey, Serializable value, Object oldValue, long changeRequestIndex) {
+    public void pendingChangeProperty(GPropertyDraw property, GGroupObjectValue fullKey, PValue value, PValue oldValue, long changeRequestIndex) {
         putToDoubleNativeMap(pendingChangePropertyRequests, property, fullKey, new Change(changeRequestIndex, value, oldValue));
     }
 
@@ -1259,7 +1252,7 @@ public class GFormController implements EditManager {
     public void asyncChange(EditContext editContext, ExecContext execContext, EventHandler handler, String actionSID, GAsyncChange asyncChange, GPushAsyncInput pushAsyncResult, boolean externalChange, Consumer<Long> onExec) {
         asyncExecutePropertyEventAction(actionSID, editContext, execContext, handler, pushAsyncResult, externalChange, requestIndex -> {
             for (int propertyID : asyncChange.propertyIDs)
-                setLoadingValueAt(propertyID, editContext.getFullKey(), asyncChange.value, requestIndex);
+                setLoadingValueAt(propertyID, editContext.getFullKey(), PValue.remapValue(asyncChange.value), requestIndex);
         }, onExec);
     }
 
@@ -1380,10 +1373,10 @@ public class GFormController implements EditManager {
         getPropertyController(propertyDraw).focusProperty(propertyDraw);
     }
 
-    public void setLoadingValueAt(int propertyID, GGroupObjectValue fullKey, Serializable value, long requestIndex) {
+    public void setLoadingValueAt(int propertyID, GGroupObjectValue fullKey, PValue value, long requestIndex) {
         GPropertyDraw property = getProperty(propertyID);
         GGroupObjectValue fullCurrentKey = getFullCurrentKey(property, fullKey);
-        Pair<GGroupObjectValue, Object> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
+        Pair<GGroupObjectValue, PValue> propertyCell = getPropertyController(property).setLoadingValueAt(property, fullCurrentKey, value);
 
         if(propertyCell != null) {
             pendingChangeProperty(property, propertyCell.first, value, propertyCell.second, requestIndex);
@@ -1633,8 +1626,8 @@ public class GFormController implements EditManager {
         updateCaption(container);
     }
 
-    public void setContainerImage(GContainer container, Object value) {
-        container.image = (AppBaseImage) value; // was converted in convertFileValue
+    public void setContainerImage(GContainer container, AppBaseImage image) {
+        container.image = image;
 
         updateImage(container);
     }
@@ -1661,10 +1654,10 @@ public class GFormController implements EditManager {
 
     private static final class Change {
         public final long requestIndex;
-        public final Object newValue;
-        public final Object oldValue;
+        public final PValue newValue;
+        public final PValue oldValue;
 
-        private Change(long requestIndex, Object newValue, Object oldValue) {
+        private Change(long requestIndex, PValue newValue, PValue oldValue) {
             this.requestIndex = requestIndex;
             this.newValue = newValue;
             this.oldValue = oldValue;
@@ -2098,16 +2091,16 @@ public class GFormController implements EditManager {
             getPessimisticValues(property.ID, currentKey, actionSID, value, editIndex, fCallback);
     }
 
-    public void edit(GType type, EventHandler handler, boolean hasOldValue, Object setOldValue, GInputList inputList, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue setOldValue, GInputList inputList, BiConsumer<GUserInputResult, Consumer<Long>> afterCommit, Consumer<CancelReason> cancel, EditContext editContext, String actionSID, String customChangeFunction) {
         assert type != null;
-        lsfusion.gwt.client.base.Result<lsfusion.gwt.client.base.Result<Object>> oldValue = new lsfusion.gwt.client.base.Result<>();
+        lsfusion.gwt.client.base.Result<lsfusion.gwt.client.base.Result<PValue>> oldValue = new lsfusion.gwt.client.base.Result<>();
         edit(type, handler, hasOldValue, setOldValue, inputList, // actually it's assumed that actionAsyncs is used only here, in all subsequent calls it should not be referenced
-                (inputResult, commitReason) -> oldValue.set(setLocalValue(editContext, type, inputResult.getValue())),
-                (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, oldValue.result, inputResult.getValue(), requestIndex)),
+                (inputResult, commitReason) -> oldValue.set(setLocalValue(editContext, type, inputResult.getPValue())),
+                (inputResult, commitReason) -> afterCommit.accept(inputResult, requestIndex -> setRemoteValue(editContext, oldValue.result, inputResult.getPValue(), requestIndex)),
                 cancel, editContext, actionSID, customChangeFunction);
     }
 
-    public void edit(GType type, EventHandler handler, boolean hasOldValue, Object oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
+    public void edit(GType type, EventHandler handler, boolean hasOldValue, PValue oldValue, GInputList inputList, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, String customChangeFunction) {
         GPropertyDraw property = editContext.getProperty();
 
@@ -2115,8 +2108,12 @@ public class GFormController implements EditManager {
         boolean hasCustomEditor = customChangeFunction != null && !customChangeFunction.equals("DEFAULT");
         if (hasCustomEditor) // see LsfLogics.g propertyCustomView rule
             cellEditor = CustomReplaceCellEditor.create(this, property, type, customChangeFunction);
-        else
+        else {
+            if(property.echoSymbols) // disabling dropdown if echo
+                inputList = null;
+
             cellEditor = type.createCellEditor(this, property, inputList);
+        }
 
         if (cellEditor != null) {
             if(editContext.canUseChangeValueForRendering(type))
@@ -2140,7 +2137,7 @@ public class GFormController implements EditManager {
             cancel.accept(CancelReason.OTHER);
     }
 
-    public void edit(CellEditor cellEditor, EventHandler handler, Object oldValue, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
+    public void edit(CellEditor cellEditor, EventHandler handler, PValue oldValue, BiConsumer<GUserInputResult, CommitReason> beforeCommit, BiConsumer<GUserInputResult, CommitReason> afterCommit,
                      Consumer<CancelReason> cancel, EditContext editContext, String editAsyncValuesSID, long editRequestIndex) {
         // because for example embedded / popup (that use edit) forms are opened with a timer, there can be some pending edit calls so we need to avoid this
         checkCommitEditing();
@@ -2307,7 +2304,7 @@ public class GFormController implements EditManager {
         pendingLoadingFilterRequests.put(filterView, requestIndex);
     }
     // "external" update - paste + server update edit value
-    public void setValue(EditContext editContext, Object value) {
+    public void setValue(EditContext editContext, PValue value) {
         editContext.setValue(value);
 
         update(editContext);

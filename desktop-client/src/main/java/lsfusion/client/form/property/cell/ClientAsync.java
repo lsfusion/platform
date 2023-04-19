@@ -11,23 +11,27 @@ import java.io.IOException;
 import java.io.Serializable;
 
 public class ClientAsync implements Serializable {
-    public final Serializable displayString;
-    public final String rawString;
+    public final Serializable displayValue;
+    public final Serializable rawValue;
 
     public final ClientGroupObjectValue key;
 
     public static final ClientAsync RECHECK = new ClientAsync("RECHECK", "RECHECK", null);
     public static final ClientAsync CANCELED = new ClientAsync("CANCELED", "CANCELED", null);
 
-    private ClientAsync(String displayString, String rawString, ClientGroupObjectValue key) {
-        this.displayString = displayString;
-        this.rawString = rawString;
+    private ClientAsync(String displayValue, String rawValue, ClientGroupObjectValue key) {
+        this.displayValue = displayValue;
+        this.rawValue = rawValue;
         this.key = key;
     }
 
+    public String getReplacementString() {
+        return rawValue.toString();
+    }
+
     public ClientAsync(DataInputStream inStream, ClientForm form) throws IOException {
-        displayString = (Serializable) BaseUtils.deserializeObject(inStream);
-        rawString = inStream.readUTF();
+        displayValue = (Serializable) BaseUtils.deserializeObject(inStream);
+        rawValue = (Serializable) BaseUtils.deserializeObject(inStream);
         if(inStream.readBoolean())
             key = new ClientGroupObjectValue(inStream, form);
         else
@@ -51,16 +55,16 @@ public class ClientAsync implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        return this == o || o instanceof ClientAsync && displayString.equals(((ClientAsync) o).displayString) && rawString.equals(((ClientAsync) o).rawString) && BaseUtils.nullEquals(key, ((ClientAsync) o).key);
+        return this == o || o instanceof ClientAsync && displayValue.equals(((ClientAsync) o).displayValue) && rawValue.equals(((ClientAsync) o).rawValue) && BaseUtils.nullEquals(key, ((ClientAsync) o).key);
     }
 
     @Override
     public int hashCode() {
-        return 31 * (displayString.hashCode() * 31 + rawString.hashCode()) + BaseUtils.nullHash(key);
+        return 31 * (displayValue.hashCode() * 31 + rawValue.hashCode()) + BaseUtils.nullHash(key);
     }
 
     @Override
     public String toString() {
-        return "<html>" + displayString + "</html>";
+        return "<html>" + displayValue + "</html>";
     }
 }

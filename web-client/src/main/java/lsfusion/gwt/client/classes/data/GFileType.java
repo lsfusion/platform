@@ -4,6 +4,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.FileCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -38,7 +39,7 @@ public abstract class GFileType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public PValue parseString(String s, String pattern) throws ParseException {
         throw new ParseException("File class doesn't support conversion from string", 0);
     }
 

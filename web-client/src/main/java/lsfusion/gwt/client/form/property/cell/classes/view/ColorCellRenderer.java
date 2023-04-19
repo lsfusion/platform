@@ -3,11 +3,12 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
-public class ColorCellRenderer extends CellRenderer<Object> {
+public class ColorCellRenderer extends CellRenderer {
 
     public ColorCellRenderer(GPropertyDraw property) {
         super(property);
@@ -30,7 +31,7 @@ public class ColorCellRenderer extends CellRenderer<Object> {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         String baseColor = getColorValue(value);
         element.setTitle(baseColor);
 
@@ -49,12 +50,12 @@ public class ColorCellRenderer extends CellRenderer<Object> {
         return super.getBackground(updateContext);
     }
 
-    private String getColorValue(Object value) {
-        return value == null ? null : value.toString();
+    private String getColorValue(PValue value) {
+        return PValue.getColorStringValue(value);
     }
 
     @Override
-    public String format(Object value) {
+    public String format(PValue value) {
         return getColorValue(value);
     }
 }

@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
@@ -100,11 +101,18 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         InputElement input = getInputElement(element);
-        boolean newValue = value != null && (Boolean) value;
+
+        boolean newValue;
+        if(threeState) {
+            Boolean value3s = get3sBooleanValue(value);
+            newValue = value3s != null && value3s;
+            input.setDisabled(value3s == null);
+        } else
+            newValue = getBooleanValue(value);
+
         setChecked(input, newValue);
-        input.setDisabled(threeState && value == null);
 
         return false;
     }
@@ -132,7 +140,19 @@ public class LogicalCellRenderer extends CellRenderer {
 //    }
 
     @Override
-    public String format(Object value) {
-        return (value != null) && ((Boolean) value) ? "TRUE" : "FALSE";
+    public String format(PValue value) {
+        if(threeState) {
+            Boolean value3s = get3sBooleanValue(value);
+            return value3s != null ? (value3s ? "TRUE" : "FALSE") : "NULL";
+        } else
+            return getBooleanValue(value) ? "TRUE" : "FALSE";
+    }
+
+    private boolean getBooleanValue(PValue value) {
+        return PValue.getBooleanValue(value);
+    }
+
+    private Boolean get3sBooleanValue(PValue value) {
+        return PValue.get3SBooleanValue(value);
     }
 }

@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
@@ -25,8 +26,8 @@ public interface EditContext extends ExecContext {
 
     Element getEditElement();
 
-    default Object getValue() { return getUpdateContext().getValue(); }
-    void setValue(Object value);
+    default PValue getValue() { return getUpdateContext().getValue(); }
+    void setValue(PValue value);
 
     Element getFocusElement();
     boolean isFocusable();

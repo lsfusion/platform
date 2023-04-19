@@ -1,5 +1,7 @@
 package lsfusion.gwt.client.form.property.cell.classes;
 
+import lsfusion.gwt.client.form.property.PValue;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -14,8 +16,8 @@ public class GZDateTimeDTO implements Serializable {
         this.instant = instant;
     }
 
-    public static GZDateTimeDTO fromDate(Date date) {
-        return new GZDateTimeDTO(date.getTime());
+    public static PValue fromDate(Date date) {
+        return PValue.getPValue(new GZDateTimeDTO(date.getTime()));
     }
 
     public Timestamp toDateTime() {

@@ -1,8 +1,10 @@
 package lsfusion.gwt.client.form.object.table.view;
 
+import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.jsni.NativeStringMap;
 import lsfusion.gwt.client.base.view.grid.RowIndexHolder;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.PValue;
 
 public class GridDataRecord implements RowIndexHolder {
     public int rowIndex;
@@ -38,12 +40,12 @@ public class GridDataRecord implements RowIndexHolder {
         return values == null ? null : values.get(key);
     }
 
-    public void setValue(String column, Object value) {
+    public void setValue(String column, PValue value) {
         setAttribute(column, value);
     }
 
-    public Object getValue(String column) {
-        return getAttribute(column);
+    public PValue getValue(String column) {
+        return (PValue) getAttribute(column);
     }
 
     public void setLoading(String column, boolean loading) {
@@ -54,17 +56,17 @@ public class GridDataRecord implements RowIndexHolder {
         return getAttribute(column + "_loading") != null;
     }
 
-    public Object getImage(String column) {
-        return getAttribute(column + "_image");
+    public AppBaseImage getImage(String column) {
+        return (AppBaseImage) getAttribute(column + "_image");
     }
 
-    public void setImage(String column, Object image) {
+    public void setImage(String column, AppBaseImage image) {
         setAttribute(column + "_image", image);
     }
 
-    public void setValueElementClass(String column, Object elementClass) {
+    public void setValueElementClass(String column, String elementClass) {
         if (elementClass != null) {
-            createValueElementClasses().put(column, elementClass.toString());
+            createValueElementClasses().put(column, elementClass);
         } else if (valueElementClasses != null) {
             valueElementClasses.remove(column);
         }
@@ -74,9 +76,9 @@ public class GridDataRecord implements RowIndexHolder {
         return valueElementClasses != null ? valueElementClasses.get(column) : null;
     }
 
-    public void setBackground(String column, Object color) {
+    public void setBackground(String column, String color) {
         if (color != null) {
-            createBackgrounds().put(column, color.toString());
+            createBackgrounds().put(column, color);
         } else if (backgrounds != null) {
             backgrounds.remove(column);
         }
@@ -87,9 +89,9 @@ public class GridDataRecord implements RowIndexHolder {
         return background != null ? background : rowBackground;
     }
 
-    public void setForeground(String column, Object color) {
+    public void setForeground(String column, String color) {
         if (color != null) {
-            createForegrounds().put(column, color.toString());
+            createForegrounds().put(column, color);
         } else if (foregrounds != null) {
             foregrounds.remove(column);
         }
@@ -100,9 +102,9 @@ public class GridDataRecord implements RowIndexHolder {
         return foreground != null ? foreground : rowForeground;
     }
 
-    public void setReadOnly(String column, Object readOnly) {
+    public void setReadOnly(String column, Boolean readOnly) {
         if (readOnly != null) {
-            createReadOnlys().put(column, Boolean.TRUE);
+            createReadOnlys().put(column, readOnly);
         } else if (readOnlys != null) {
             readOnlys.remove(column);
         }
@@ -112,16 +114,16 @@ public class GridDataRecord implements RowIndexHolder {
         return readOnlys != null && readOnlys.get(column) != null;
     }
 
-    public void setRowBackground(Object newRowBackground) {
-        rowBackground = newRowBackground == null ? null : newRowBackground.toString();
+    public void setRowBackground(PValue newRowBackground) {
+        rowBackground = PValue.getColorStringValue(newRowBackground);
     }
 
     public String getRowBackground() {
         return rowBackground;
     }
 
-    public void setRowForeground(Object newRowForeground) {
-        rowForeground = newRowForeground == null ? null : newRowForeground.toString();
+    public void setRowForeground(PValue newRowForeground) {
+        rowForeground = PValue.getColorStringValue(newRowForeground);
     }
 
     public String getRowForeground() {
@@ -170,12 +172,6 @@ public class GridDataRecord implements RowIndexHolder {
             readOnlys = new NativeStringMap<>();
         }
         return readOnlys;
-    }
-
-    public void reinit(GGroupObjectValue newKey, Object newRowBackground, Object newRowForeground) {
-        setKey(newKey);
-        setRowBackground(newRowBackground);
-        setRowForeground(newRowForeground);
     }
 
     public void setKey(GGroupObjectValue newKey) {

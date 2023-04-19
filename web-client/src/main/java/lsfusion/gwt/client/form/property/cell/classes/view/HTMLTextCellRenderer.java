@@ -3,6 +3,7 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CustomCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -20,9 +21,9 @@ public class HTMLTextCellRenderer extends CellRenderer {
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         GwtClientUtils.setField(element, "controller", CustomCellRenderer.getController(property, updateContext, element));
-        element.setInnerHTML((String)value);
+        element.setInnerHTML(getHTMLValue(value));
         return true;
     }
 
@@ -34,7 +35,11 @@ public class HTMLTextCellRenderer extends CellRenderer {
     }
 
     @Override
-    public String format(Object value) {
-        return (String) value;
+    public String format(PValue value) {
+        return getHTMLValue(value);
+    }
+
+    private String getHTMLValue(PValue value) {
+        return PValue.getStringValue(value);
     }
 }

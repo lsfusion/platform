@@ -40,7 +40,7 @@ public class Async {
 
     public void serialize(DataOutputStream dataStream) throws IOException {
         BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, displayString));
-        dataStream.writeUTF(rawString);
+        BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, rawString));
         dataStream.writeBoolean(key != null);
         if(key != null)
             FormChanges.serializeGroupObjectValue(dataStream, key);

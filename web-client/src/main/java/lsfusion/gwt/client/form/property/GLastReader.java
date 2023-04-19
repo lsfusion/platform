@@ -17,7 +17,7 @@ public class GLastReader extends GExtraPropertyReader {
     }
 
     @Override
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateLastValues(this, values);
     }
 }

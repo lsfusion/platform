@@ -534,7 +534,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
             this.pattern = pattern != null ? pattern : defaultPattern;
     }
 
-    public Object parsePaste(String s, GType parseType) {
+    public PValue parsePaste(String s, GType parseType) {
         if (s == null) {
             return null;
         }
@@ -736,7 +736,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     @Override
-    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.getPropertyController(this).updateProperty(this, getColumnKeys(this, controller.getCurrentGridObjects()), updateKeys, values);
     }
 

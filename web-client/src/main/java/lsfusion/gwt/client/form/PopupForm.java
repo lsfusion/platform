@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.controller.FormsController;
 import lsfusion.gwt.client.form.controller.GFormController;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.PopupCellEditor;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditContext;
@@ -50,7 +51,7 @@ public class PopupForm extends EditingForm {
         }
 
         @Override
-        public void start(EventHandler handler, Element parent, Object oldValue) {
+        public void start(EventHandler handler, Element parent, PValue oldValue) {
             PopupCellEditor.super.start(handler, parent, oldValue);
 
             Event event;

@@ -4,6 +4,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.TimeZone;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.IntervalCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -46,8 +47,8 @@ public abstract class GIntervalType extends GFormatType {
     }
 
     @Override
-    protected Object getDefaultWidthValue() {
-        return new BigDecimal("1636629071.1636629071");
+    protected PValue getDefaultWidthValue() {
+        return PValue.getPValue(1636629071L, 1636629071L);
     }
 
     protected Long parse(String date, String pattern) throws ParseException {
@@ -65,11 +66,11 @@ public abstract class GIntervalType extends GFormatType {
     protected abstract GADateType getTimeSeriesType();
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public PValue parseString(String s, String pattern) throws ParseException {
         if(s.isEmpty())
             return null;
 
-        Object parsedObject;
+        PValue parsedObject;
         try {
             parsedObject = GwtClientUtils.parseInterval(s, date -> GIntervalType.this.parse(date, pattern));
             if (parsedObject == null)
@@ -82,7 +83,7 @@ public abstract class GIntervalType extends GFormatType {
     }
 
     @Override
-    public String formatString(Object value, String pattern) {
+    public String formatString(PValue value, String pattern) {
         if(value == null)
             return null;
 
@@ -91,11 +92,11 @@ public abstract class GIntervalType extends GFormatType {
 
     public abstract String getIntervalType();
 
-    public Date toDate(Object value, boolean from) {
+    public Date toDate(PValue value, boolean from) {
         if(value == null)
             return new Date();
 
-        return toDate(getEpoch(value, from));
+        return toDate(PValue.getIntervalValue(value, from));
     }
 
     private static transient TimeZone UTCZone = TimeZone.createTimeZone(0);
@@ -120,17 +121,11 @@ public abstract class GIntervalType extends GFormatType {
         return date.getTime();
     }
 
-    public Object fromDate(Date from, Date to) {
+    public PValue fromDate(Date from, Date to) {
         if(from == null || to == null)
             return null;
 
-        return new BigDecimal(fromDate(from) + "." + fromDate(to));
+        return PValue.getPValue(fromDate(from), fromDate(to));
     }
 
-    public static long getEpoch(Object value, boolean from) {
-        assert value instanceof BigDecimal;
-        String object = String.valueOf(value);
-        int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
-    }
 }

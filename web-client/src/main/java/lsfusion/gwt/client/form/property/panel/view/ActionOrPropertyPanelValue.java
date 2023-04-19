@@ -7,6 +7,7 @@ import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.ExecuteEditContext;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.view.MainFrame;
@@ -72,11 +73,11 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     public void setLoading() {
         this.loading = true;
 
-        controller.setLoading(columnKey, true);
+        controller.setLoading(columnKey, PValue.getPValue(true));
     }
 
-    public Object setLoadingValue(Object value) {
-        Object oldValue = getValue();
+    public PValue setLoadingValue(PValue value) {
+        PValue oldValue = getValue();
 
         setLoading();
         setValue(value);
@@ -132,7 +133,7 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void changeProperty(Object result) {
+    public void changeProperty(PValue result) {
         form.changeProperty(this, result);
     }
 

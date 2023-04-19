@@ -1,14 +1,13 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.form.property.PValue;
 
 public interface RequestValueCellEditor extends RequestCellEditor {
 
-    String invalid = "INVALID";
+    PValue getCommitValue(Element parent, Integer contextAction) throws InvalidEditException;
 
-    Object getValue(Element parent, Integer contextAction);
-
-    void commitValue(Element parent, Object value);
+    void commitValue(Element parent, PValue value);
 
     void setDeferredCommitOnBlur(boolean deferredCommitOnBlur);
 

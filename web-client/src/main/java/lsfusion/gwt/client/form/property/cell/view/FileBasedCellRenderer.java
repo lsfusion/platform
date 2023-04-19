@@ -7,15 +7,16 @@ import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.grid.DataGrid;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 
-public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
+public abstract class FileBasedCellRenderer extends CellRenderer {
     @Override
     public boolean renderContent(Element element, RenderContext renderContext) {
         return false;
     }
 
     @Override
-    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         element.setInnerText(null); // remove all
 
         Element img = null;
@@ -79,13 +80,13 @@ public abstract class FileBasedCellRenderer extends CellRenderer<Object> {
         element.addClassName("requiredValueString");
     }
 
-    protected abstract BaseImage getBaseImage(Object value);
+    protected abstract BaseImage getBaseImage(PValue value);
 
     protected FileBasedCellRenderer(GPropertyDraw property) {
         super(property);
     }
 
-    public String format(Object value) {
+    public String format(PValue value) {
         return value == null ? "" : value.toString();
     }
 }

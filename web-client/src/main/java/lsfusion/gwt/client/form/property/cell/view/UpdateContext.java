@@ -1,19 +1,22 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
+import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.form.property.PValue;
+
 public interface UpdateContext {
     
-    default void changeProperty(Object result) {}
+    default void changeProperty(PValue result) {}
     default void executeContextAction(int action) {}
 
     default boolean isPropertyReadOnly() { return true; }
 
     boolean globalCaptionIsDrawn();
 
-    Object getValue();
+    PValue getValue();
 
     default boolean isLoading() { return false; }
 
-    default Object getImage() { return null; }
+    default AppBaseImage getImage() { return null; }
 
     boolean isSelectedRow();
     default boolean isSelectedLink() { return isSelectedRow(); }

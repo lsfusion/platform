@@ -2,6 +2,7 @@ package lsfusion.gwt.client.action;
 
 import lsfusion.gwt.client.classes.GType;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class GClientWebAction implements GAction {
@@ -9,7 +10,7 @@ public class GClientWebAction implements GAction {
     public String resource;
     public String resourceName;
     public String originalResourceName;
-    public ArrayList<Object> values;
+    public ArrayList<Serializable> values;
     public ArrayList<Object> types;
     public GType returnType;
     public boolean isFile;
@@ -20,7 +21,7 @@ public class GClientWebAction implements GAction {
     @SuppressWarnings("UnusedDeclaration")
     public GClientWebAction() {}
 
-    public GClientWebAction(String resource, String resourceName, String originalResourceName, ArrayList<Object> values, ArrayList<Object> types, GType returnType, boolean isFile, boolean syncType) {
+    public GClientWebAction(String resource, String resourceName, String originalResourceName, ArrayList<Serializable> values, ArrayList<Object> types, GType returnType, boolean isFile, boolean syncType) {
         this.resource = resource;
         this.resourceName = resourceName;
         this.originalResourceName = originalResourceName;

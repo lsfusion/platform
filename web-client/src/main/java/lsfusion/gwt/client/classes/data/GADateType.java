@@ -2,6 +2,7 @@ package lsfusion.gwt.client.classes.data;
 
 import com.google.gwt.i18n.client.DateTimeFormat;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.DateCellRenderer;
 
@@ -23,19 +24,19 @@ public abstract class GADateType extends GFormatType {
     private static Date wideFormattableDateTime = null;
 
     @Override
-    protected Object getDefaultWidthValue() {
+    protected PValue getDefaultWidthValue() {
         if(wideFormattableDateTime == null)
             wideFormattableDateTime = com.google.gwt.i18n.shared.DateTimeFormat.getFormat("yyyy-MM-dd HH:mm:ss").parse("1991-11-21 10:55:55");
         return fromDate(wideFormattableDateTime);
     }
 
     @Override
-    public Object parseString(String value, String pattern) throws ParseException {
+    public PValue parseString(String value, String pattern) throws ParseException {
         return value.isEmpty() ? null : fromDate(GDateType.parseDate(value, getFormats(pattern)));
     }
 
     @Override
-    public String formatString(Object value, String pattern) {
+    public String formatString(PValue value, String pattern) {
         return value == null ? "" : getFormat(pattern).format(toDate(value));
     }
 
@@ -46,7 +47,7 @@ public abstract class GADateType extends GFormatType {
 
     public abstract DateTimeFormat getFormat(String pattern);
 
-    public abstract Object fromDate(Date date);
+    public abstract PValue fromDate(Date date);
 
-    public abstract Date toDate(Object value);
+    public abstract Date toDate(PValue value);
 }

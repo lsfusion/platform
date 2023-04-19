@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.LogicalCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
@@ -48,9 +49,13 @@ public class GLogicalType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public PValue parseString(String s, String pattern) throws ParseException {
         try {
-            return GwtSharedUtils.nullBoolean(Boolean.parseBoolean(s));
+            if(threeState) {
+                return PValue.getPValue(s != null ? Boolean.parseBoolean(s) : null);
+            } else {
+                return PValue.getPValue(Boolean.parseBoolean(s));
+            }
         } catch (NumberFormatException nfe) {
             throw new ParseException("string " + s + "can not be converted to logical", 0);
         }

@@ -26,6 +26,7 @@ import lsfusion.gwt.client.controller.remote.action.RequestErrorHandlingCallback
 import lsfusion.gwt.client.controller.remote.action.form.ServerResponseResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.LogClientExceptionAction;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.FormContainer;
 import lsfusion.gwt.client.form.view.FormDockable;
 import lsfusion.gwt.client.navigator.controller.GAsyncFormController;
@@ -445,12 +446,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
             JsArray<JavaScriptObject> arguments = JavaScriptObject.createArray().cast();
             ArrayList<Object> types = action.types;
             for (int i = 0; i < types.size(); i++) {
-                arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), action.values.get(i)));
+                arguments.push(GSimpleStateTableView.convertToJSValue((GType) types.get(i), PValue.remapValue(action.values.get(i))));
             }
             String function = action.resource;
-            Object currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
+            PValue currentActionResult = GSimpleStateTableView.convertFromJSValue(action.returnType,
                     GwtClientUtils.call(GwtClientUtils.getGlobalField(function), arguments));
-            onActionExecuted(action, currentActionResult);
+            onActionExecuted(action, PValue.remapValueBack(currentActionResult));
         }
     }
 

@@ -1,10 +1,11 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.property.PValue;
 
 public interface ActionOrPropertyValueController {
 
-    void setValue(GGroupObjectValue columnKey, Object value);
+    void setValue(GGroupObjectValue columnKey, PValue value);
 
-    void setLoading(GGroupObjectValue columnKey, Object value);
+    void setLoading(GGroupObjectValue columnKey, PValue value);
 }

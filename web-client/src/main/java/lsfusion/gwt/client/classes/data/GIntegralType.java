@@ -4,6 +4,7 @@ import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.i18n.client.NumberFormat;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
 import lsfusion.gwt.client.form.property.cell.classes.view.IntegralCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -33,7 +34,7 @@ public abstract class GIntegralType extends GFormatType {
 
     // paste, edit
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
+    public PValue parseString(String s, String pattern) throws ParseException {
         if(s.isEmpty())
             return null;
 
@@ -44,16 +45,16 @@ public abstract class GIntegralType extends GFormatType {
         }
     }
 
-    public abstract Object convertDouble(Double doubleValue);
+    public abstract PValue convertDouble(Double doubleValue);
 
     // render, edit
     @Override
-    public String formatString(Object value, String pattern) {
+    public String formatString(PValue value, String pattern) {
         if(value == null)
             return null;
 
         // there was doubleValue before, but not sure what for
-        return getFormat(pattern).format((Number) value);
+        return getFormat(pattern).format(PValue.getNumberValue(value));
     }
 
     @Override

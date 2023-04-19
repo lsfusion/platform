@@ -10,6 +10,7 @@ import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.StyleDefaults;
 
 import java.io.Serializable;
@@ -59,11 +60,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     }
 
     protected void changePointProperty(JavaScriptObject object, Double lat, Double lng) {
-        changeProperties(new String[]{"latitude", "longitude"}, new JavaScriptObject[]{object, object}, new Serializable[]{lat, lng});
+        changeProperties(new String[]{"latitude", "longitude"}, new JavaScriptObject[]{object, object}, new PValue[]{PValue.getPValue(lat), PValue.getPValue(lng)});
     }
 
     protected void changePolygonProperty(JavaScriptObject object, JsArray<WrapperObject> latlngs) {
-        changeProperty("polygon", object, getPolygon(latlngs));
+        changeProperty("polygon", object, PValue.getPValue(getPolygon(latlngs)));
     }
 
     private static String getPolygon(JsArray<WrapperObject> latlngs) {
@@ -122,9 +123,9 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
             GroupMarker groupMarker = new GroupMarker(object);
             if (groupMarker.color == null) {
-                Object rowBackgroundColor = getRowBackgroundColor(getKey(object));
+                String rowBackgroundColor = getRowBackgroundColor(getKey(object));
                 if (rowBackgroundColor != null) {
-                    groupMarker.color = rowBackgroundColor.toString();
+                    groupMarker.color = rowBackgroundColor;
                 }
             }
             groupMarker.isCurrent = isCurrentKey(key);

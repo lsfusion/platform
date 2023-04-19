@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 
@@ -26,14 +27,14 @@ public abstract class TextBasedPopupCellEditor extends SimpleTextBasedCellEditor
 
     // it seems that it's needed only for editBox.click() and selectAll
     @Override
-    protected void onInputReady(Element parent, Object oldValue) {
+    protected void onInputReady(Element parent, PValue oldValue) {
         editBox = inputElement;
 
         GwtClientUtils.showPopupInWindow(popup, createPopupComponent(parent, oldValue), parent.getAbsoluteLeft(), parent.getAbsoluteBottom());
         popup.addAutoHidePartner(editBox);
     }
 
-    protected abstract Widget createPopupComponent(Element parent, Object oldValue);
+    protected abstract Widget createPopupComponent(Element parent, PValue oldValue);
 
     @Override
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {

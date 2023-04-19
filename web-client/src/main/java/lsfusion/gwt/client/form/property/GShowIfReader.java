@@ -12,7 +12,7 @@ public class GShowIfReader extends GExtraPropertyReader {
         super(readerID, groupObjectID, "SHOWIF");
     }
 
-    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void update(GPropertyController controller, NativeHashMap<GGroupObjectValue, PValue> values) {
         controller.updateShowIfValues(this, values);
     }
 }

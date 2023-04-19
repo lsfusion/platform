@@ -5,11 +5,12 @@ import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 
 import java.util.function.Consumer;
 
-public class CustomCellRenderer extends CellRenderer<Object> {
+public class CustomCellRenderer extends CellRenderer {
     private final JavaScriptObject customRenderer;
 
     public CustomCellRenderer(GPropertyDraw property, String customRenderFunction) {
@@ -29,7 +30,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }-*/;
 
     @Override
-    public boolean updateContent(Element element, Object value, Object extraValue, UpdateContext updateContext) {
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
         setRendererValue(customRenderer, element, getController(property, updateContext, element), GSimpleStateTableView.convertToJSValue(property, value));
 
         return false;
@@ -52,18 +53,18 @@ public class CustomCellRenderer extends CellRenderer<Object> {
     }-*/;
 
     @Override
-    public String format(Object value) {
-        return value == null ? "" : value.toString();
+    public String format(PValue value) {
+        return PValue.getStringValue(value);
     }
 
-    protected static void changeValue(Element element, Consumer<Object> valueChangeConsumer, JavaScriptObject value, GPropertyDraw property) {
+    protected static void changeValue(Element element, Consumer<PValue> valueChangeConsumer, JavaScriptObject value, GPropertyDraw property) {
         GType externalChangeType = property.getExternalChangeType();
 
         boolean canUseChangeValueForRendering = property.canUseChangeValueForRendering(externalChangeType);
         if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
             rerenderState(element, false);
 
-        valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSValue(externalChangeType, value));
+        valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSUndefValue(externalChangeType, value));
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)
         // there might be a problem that this change might be grouped with the another change that will change the state to the previous value, but update won't be called (because of caching), which is usually an "unexpected behaviour"
@@ -80,7 +81,7 @@ public class CustomCellRenderer extends CellRenderer<Object> {
         return getController(property, updateContext::changeProperty, element, updateContext.isPropertyReadOnly());
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, Consumer<Object> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, Consumer<PValue> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
         return {
             change: function (value) {
                 if(value === undefined) // not passed

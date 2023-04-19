@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.lambda.EFunction;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.PopupDialogPanel;
 import lsfusion.gwt.client.form.filter.user.GCompare;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 
 import java.math.BigDecimal;
@@ -258,6 +259,10 @@ public class GwtClientUtils {
     public static final native TableSectionElement createTBody(TableElement element) /*-{
         return element.createTBody();
     }-*/;
+
+    public static boolean isString(JavaScriptObject object, String string) {
+        return object != null && object.toString().equals(string);
+    }
 
     public static Widget createHorizontalStrut(int size) {
         SimplePanel strut = new SimplePanel();
@@ -919,21 +924,15 @@ public class GwtClientUtils {
         return null;
     }
 
-    public static <E extends Exception> Object parseInterval(String s, EFunction<String, Long, E> parseFunction) throws E {
+    public static <E extends Exception> PValue parseInterval(String s, EFunction<String, Long, E> parseFunction) throws E {
         String[] dates = s.split(" - ");
         Long epochFrom = parseFunction.apply(dates[0]);
         Long epochTo = parseFunction.apply(dates[1]);
-        return epochFrom <= epochTo ? new BigDecimal(epochFrom + "." + epochTo) : null;
+        return epochFrom <= epochTo ? PValue.getPValue(epochFrom, epochTo) : null;
     }
 
-    public static String formatInterval(Object obj, Function<Long, String> formatFunction) {
-        return formatFunction.apply(getIntervalPart(obj, true)) + " - " + formatFunction.apply(getIntervalPart(obj, false));
-    }
-
-    public static Long getIntervalPart(Object o, boolean from) {
-        String object = String.valueOf(o);
-        int indexOfDecimal = object.indexOf(".");
-        return Long.parseLong(indexOfDecimal < 0 ? object : from ? object.substring(0, indexOfDecimal) : object.substring(indexOfDecimal + 1));
+    public static String formatInterval(PValue obj, Function<Long, String> formatFunction) {
+        return formatFunction.apply(PValue.getIntervalValue(obj, true)) + " - " + formatFunction.apply(PValue.getIntervalValue(obj, false));
     }
 
     //  will wrap with div, because otherwise other wrappers will add and not remove classes after update
@@ -1187,14 +1186,11 @@ public class GwtClientUtils {
         return isRedundantString(value) || Boolean.parseBoolean(value);
     }
 
-    public static Object escapeSeparator(Object value, GCompare compare) {
-        if(value instanceof String && compare != null) {
-            if(compare.escapeSeparator())
-                value = ((String) value).replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
-            if(compare == GCompare.CONTAINS)
-                value = ((String) value).replace("%", "\\%").replace("_", "\\_");
-            return value;
-        }
+    public static String escapeSeparator(String value, GCompare compare) {
+        if(compare.escapeSeparator())
+            value = value.replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
+        if(compare == GCompare.CONTAINS)
+            value = value.replace("%", "\\%").replace("_", "\\_");
         return value;
     }
 

@@ -2,10 +2,11 @@ package lsfusion.gwt.client.form.property.cell.controller;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.view.EventHandler;
+import lsfusion.gwt.client.form.property.PValue;
 
 public interface CellEditor {
 
-    void start(EventHandler handler, Element parent, Object oldValue);
+    void start(EventHandler handler, Element parent, PValue oldValue);
 
-    default Object getDefaultNullValue() { return null; };
+    default PValue getDefaultNullValue() { return null; };
 }

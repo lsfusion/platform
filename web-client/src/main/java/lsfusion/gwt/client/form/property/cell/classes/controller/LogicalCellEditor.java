@@ -1,19 +1,15 @@
 package lsfusion.gwt.client.form.property.cell.classes.controller;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.view.EventHandler;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.LogicalCellRenderer;
-import lsfusion.gwt.client.form.property.cell.controller.CancelReason;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.KeepCellEditor;
-import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.view.MainFrame;
-
-import java.util.Arrays;
 
 public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCellEditor {
 
@@ -28,11 +24,10 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
     protected EditManager editManager;
 
     @Override
-    public void start(EventHandler handler, Element parent, Object oldValue) {
+    public void start(EventHandler handler, Element parent, PValue oldValue) {
         MainFrame.preventDblClickAfterClick(parent);
 
-        Boolean nextValue = getNextValue(oldValue, threeState);
-        value = threeState ? nextValue : (nextValue != null && nextValue ? true : null);
+        value = getNextValue(oldValue, threeState);
 
         // there are two ways to make checkbox readonly (and we need this, since we use "different" events as a change events)
         // pointer-events:none, but in that case mouse events won't work without a wrapper
@@ -48,9 +43,9 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
         commit(parent, CommitReason.FORCED);
     }
 
-    private Object value;
+    private PValue value;
     @Override
-    public Object getValue(Element parent, Integer contextAction) {
+    public PValue getCommitValue(Element parent, Integer contextAction) {
         return value;
     }
 
@@ -67,13 +62,19 @@ public class LogicalCellEditor extends ARequestValueCellEditor implements KeepCe
         }
     }
 
-    private Boolean getNextValue(Object value, boolean threeState) {
+    private PValue getNextValue(PValue value, boolean threeState) {
         if (threeState) {
-            if (value == null) return true;
-            if ((boolean) value) return false;
-            return null;
+            Boolean value3s = PValue.get3SBooleanValue(value);
+            Boolean nextValue3s;
+            if (value3s == null)
+                nextValue3s = true;
+            else if (value3s)
+                nextValue3s = false;
+            else
+                nextValue3s = null;
+            return PValue.getPValue(nextValue3s);
         } else {
-            return value == null || !(boolean) value;
+            return PValue.getPValue(!PValue.getBooleanValue(value));
         }
     }
 }

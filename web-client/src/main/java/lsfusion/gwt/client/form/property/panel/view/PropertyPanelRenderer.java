@@ -13,6 +13,7 @@ import lsfusion.gwt.client.form.design.view.CaptionWidget;
 import lsfusion.gwt.client.form.design.view.GFormLayout;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 
 public class PropertyPanelRenderer extends PanelRenderer {
 
@@ -43,12 +44,12 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     @Override
-    public void update(Object value, boolean loading, Object image, Object valueElementClass, Object background, Object foreground, boolean readOnly) {
+    public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly) {
         // we don't need image in value
         super.update(value, loading, null, valueElementClass, background, foreground, readOnly);
 
         if(property.hasDynamicImage())
-            BaseImage.updateImage((AppBaseImage)image, label, property.panelCaptionVertical);
+            BaseImage.updateImage(image, label, property.panelCaptionVertical);
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {

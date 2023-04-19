@@ -10,12 +10,7 @@ import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 public class TextCellEditor extends SimpleTextBasedCellEditor {
 
     public TextCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
-        super(editManager, property, inputList);
-    }
-
-    @Override
-    protected boolean disableSuggest() {
-        return true;
+        super(editManager, property, null); // disabling dropdown in text
     }
 
     @Override

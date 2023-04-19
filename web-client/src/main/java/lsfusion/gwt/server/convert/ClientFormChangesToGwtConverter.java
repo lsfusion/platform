@@ -210,7 +210,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
                 } else
                     urls[k] = FileUtils.createImageFile(servlet, sessionID, (AppImage) data, false);;
             }
-            return new GStringWithFiles(stringWithFiles.prefixes, urls);
+            return new GStringWithFiles(stringWithFiles.prefixes, urls, stringWithFiles.rawString);
         }
 
         if(value instanceof AppImage) { //static image
@@ -265,6 +265,7 @@ public class ClientFormChangesToGwtConverter extends ObjectConverter {
             return GAsync.CANCELED;
         if(async.equals(ClientAsync.RECHECK))
             return GAsync.RECHECK;
-        return new GAsync(convertFileValue(convertOrCast(async.displayString), sessionObject, servlet, sessionObject.navigatorID), async.rawString, convertOrCast(async.key));
+        return new GAsync(convertFileValue(convertOrCast(async.displayValue), sessionObject, servlet, sessionObject.navigatorID),
+                convertFileValue(convertOrCast(async.rawValue), sessionObject, servlet, sessionObject.navigatorID), convertOrCast(async.key));
     }
 }

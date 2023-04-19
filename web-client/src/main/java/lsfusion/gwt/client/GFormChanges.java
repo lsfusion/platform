@@ -1,7 +1,5 @@
 package lsfusion.gwt.client;
 
-import lsfusion.gwt.client.base.AppStaticImage;
-import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.base.jsni.NativeSIDMap;
 import lsfusion.gwt.client.form.design.GComponent;
@@ -11,7 +9,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.GPropertyReader;
 import lsfusion.gwt.client.form.property.GPropertyReaderDTO;
-import lsfusion.gwt.client.form.property.cell.classes.GStringWithFiles;
+import lsfusion.gwt.client.form.property.PValue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,7 +22,7 @@ public class GFormChanges {
     public final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> gridObjects = new NativeSIDMap<>();
     public final NativeSIDMap<GGroupObject, ArrayList<GGroupObjectValue>> parentObjects = new NativeSIDMap<>();
     public final NativeSIDMap<GGroupObject, NativeHashMap<GGroupObjectValue, Integer>> expandables = new NativeSIDMap<>();
-    public final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, Object>> properties = new NativeSIDMap<>();
+    public final NativeSIDMap<GPropertyReader, NativeHashMap<GGroupObjectValue, PValue>> properties = new NativeSIDMap<>();
     public final HashSet<GPropertyDraw> dropProperties = new HashSet<>();
 
     public final NativeSIDMap<GGroupObject, Boolean> updateStateObjects = new NativeSIDMap<>();
@@ -98,34 +96,6 @@ public class GFormChanges {
         return result;
     }
 
-    private static Serializable[] remapValues(Serializable[] values) {
-        for (int i = 0; i < values.length; i++)
-            values[i] = remapValue(values[i]);
-        return values;
-    }
-
-    public static Serializable remapValue(Serializable value) {
-        if (value instanceof GStringWithFiles) {
-            GStringWithFiles stringWithFiles = (GStringWithFiles) value;
-            StringBuilder result = new StringBuilder();
-            for (int j = 0; j < stringWithFiles.prefixes.length; j++) {
-                result.append(stringWithFiles.prefixes[j]);
-                if(j < stringWithFiles.urls.length) {
-                    Serializable url = stringWithFiles.urls[j];
-                    if(url instanceof String) // file
-                        result.append(GwtClientUtils.getAppStaticWebURL((String) url));
-                    else {
-                        AppStaticImage image = (AppStaticImage) url;
-                        if(image != null)
-                            result.append(image.createImageHTML());
-                    }
-                }
-            }
-            return result.toString();
-        }
-        return value;
-    }
-
     private static GPropertyReader remapPropertyReader(GForm form, GPropertyReaderDTO readerDTO) {
         return remapPropertyReader(form, readerDTO.type, readerDTO.readerID, readerDTO.index);
     }
@@ -171,6 +141,13 @@ public class GFormChanges {
             default:
                 return null;
         }
+    }
+
+    public static PValue[] remapValues(Serializable[] values) {
+        PValue[] mappedValues = new PValue[values.length];
+        for (int i = 0; i < values.length; i++)
+            mappedValues[i] = PValue.remapValue(values[i]);
+        return mappedValues;
     }
 
     // should correspond PropertyReadType

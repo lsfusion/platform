@@ -23,11 +23,11 @@ import lsfusion.gwt.client.form.object.GObject;
 import lsfusion.gwt.client.form.object.table.GToolbar;
 import lsfusion.gwt.client.form.object.table.TableComponent;
 import lsfusion.gwt.client.form.object.table.TableContainer;
-import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GFooterReader;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -163,12 +163,12 @@ public abstract class GAbstractTableController extends GPropertyController imple
     public abstract GComponent getGridComponent();
 
     @Override
-    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateFooterValues(GFooterReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 
-    public abstract void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values);
-    public abstract void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values);
-    public abstract void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, Object> values);
+    public abstract void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateCustomOptionsValues(NativeHashMap<GGroupObjectValue, PValue> values);
 
     // вызов focus() у getFocusHolderElement() грида по какой-то причине приводит к подскролливанию нашего скролла
     // (если грид заключён в скролл и не влезает по высоте) до первого ряда таблицы, скрывая заголовок (видимо вызывается scrollIntoView(), 

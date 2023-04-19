@@ -12,7 +12,7 @@ public class GRowBackgroundReader extends GRowPropertyReader {
         super(readerID, "BACKGROUND");
     }
 
-    public void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
+    public void update(GAbstractTableController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
         controller.updateRowBackgroundValues(values);
     }
 }

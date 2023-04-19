@@ -4,6 +4,7 @@ import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.controller.RequestValueCellEditor;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TextCellEditor;
@@ -37,8 +38,8 @@ public class GJSONType extends GDataType {
     }
 
     @Override
-    public Object parseString(String s, String pattern) throws ParseException {
-        return s;
+    public PValue parseString(String s, String pattern) throws ParseException {
+        return PValue.getPValue(s);
     }
 
     @Override

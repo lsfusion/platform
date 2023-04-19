@@ -23,6 +23,7 @@ import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.controller.GAbstractTableController;
 import lsfusion.gwt.client.form.order.user.GGridSortableHeaderManager;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
@@ -70,30 +71,31 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return rows;
     }
 
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyCaptions = new NativeSIDMap<>();
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> propertyFooters = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyCaptions = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyFooters = new NativeSIDMap<>();
 
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellValueElementClasses = new NativeSIDMap<>();
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellBackgroundValues = new NativeSIDMap<>();
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellForegroundValues = new NativeSIDMap<>();
-    protected NativeHashMap<GGroupObjectValue, Object> rowBackgroundValues = new NativeHashMap<>();
-    protected NativeHashMap<GGroupObjectValue, Object> rowForegroundValues = new NativeHashMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new NativeSIDMap<>();
+    protected NativeHashMap<GGroupObjectValue, PValue> rowBackgroundValues = new NativeHashMap<>();
+    protected NativeHashMap<GGroupObjectValue, PValue> rowForegroundValues = new NativeHashMap<>();
 
-    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, Object>> cellImages = new NativeSIDMap<>();
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellImages = new NativeSIDMap<>();
 
-    public static String getDynamicCaption(Object caption) {
-        return caption != null ? caption.toString().trim() : null;
+    public static String getDynamicCaption(PValue captionObject) {
+        String caption = PValue.getCaptionStringValue(captionObject);
+        return caption != null ? caption.trim() : null;
     }
 
-    public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, Object> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public static String getPropertyCaption(NativeHashMap<GGroupObjectValue, PValue> propCaptions, GPropertyDraw property, GGroupObjectValue columnKey) {
         if (propCaptions != null)
             return getDynamicCaption(propCaptions.get(columnKey));
 
         return property.caption;
     }
-    public static AppBaseImage getPropertyImage(NativeHashMap<GGroupObjectValue, Object> propImages, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public static AppBaseImage getPropertyImage(NativeHashMap<GGroupObjectValue, PValue> propImages, GPropertyDraw property, GGroupObjectValue columnKey) {
         if (propImages != null)
-            return (AppBaseImage) propImages.get(columnKey); // was converted in convertFileValue
+            return PValue.getImageValue(propImages.get(columnKey)); // was converted in convertFileValue
 
         return property.appImage;
     }
@@ -278,35 +280,35 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return null;
     }
 
-    public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellValueElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellValueElementClasses.put(propertyDraw, values);
     }
-    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellBackgroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellBackgroundValues.put(propertyDraw, values);
     }
 
-    public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateCellForegroundValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellForegroundValues.put(propertyDraw, values);
     }
 
-    public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateImageValues(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         cellImages.put(propertyDraw, values);
     }
 
-    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateRowBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         rowBackgroundValues = values;
     }
 
-    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updateRowForegroundValues(NativeHashMap<GGroupObjectValue, PValue> values) {
         rowForegroundValues = values;
     }
 
-    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         propertyCaptions.put(propertyDraw, values);
         captionsUpdated = true;
     }
 
-    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, Object> values) {
+    public void updatePropertyFooters(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         propertyFooters.put(propertyDraw, values);
         footersUpdated = true;
     }
@@ -559,7 +561,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         }
     }
 
-    protected Pair<GGroupObjectValue, Object> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue propertyRowKey, int columnIndex, GGroupObjectValue propertyColumnKey, Object value) {
+    protected Pair<GGroupObjectValue, PValue> setLoadingValueAt(GPropertyDraw property, GGroupObjectValue propertyRowKey, int columnIndex, GGroupObjectValue propertyColumnKey, PValue value) {
         if(propertyRowKey == null)
             return null;
 
@@ -574,7 +576,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         T rowRecord = getRowValue(rowIndex);
         Cell cell = new Cell(rowIndex, columnIndex, column, rowRecord);
 
-        Object oldValue = column.getValue(property, rowRecord);
+        PValue oldValue = column.getValue(property, rowRecord);
 
         setLoadingAt(cell);
         setValueAt(cell, value);
@@ -604,8 +606,8 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return getPropertyImage(cellImages.get(property), property, columnKey);
     }
 
-    protected Object getPropertyFooter(GPropertyDraw property, GGroupObjectValue columnKey) {
-        NativeHashMap<GGroupObjectValue, Object> propFooters = propertyFooters.get(property);
+    protected PValue getPropertyFooter(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> propFooters = propertyFooters.get(property);
         return propFooters != null ? propFooters.get(columnKey) : null;
     }
 
@@ -685,9 +687,9 @@ protected Double getUserFlex(int i) {
 
     public abstract class GridPropertyColumn extends Column<T, Object> {
 
-        protected abstract Object getValue(GPropertyDraw property, T record);
+        protected abstract PValue getValue(GPropertyDraw property, T record);
         protected abstract boolean isLoading(GPropertyDraw property, T record);
-        protected abstract Object getImage(GPropertyDraw property, T record);
+        protected abstract AppBaseImage getImage(GPropertyDraw property, T record);
         protected abstract String getValueElementClass(GPropertyDraw property, T record);
         protected abstract String getBackground(GPropertyDraw property, T record);
         protected abstract String getForeground(GPropertyDraw property, T record);
@@ -770,7 +772,7 @@ protected Double getUserFlex(int i) {
     public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public void changeProperty(Object result) {
+            public void changeProperty(PValue result) {
                 form.changeProperty(getEditContext(cell, renderElement), result);
             }
 
@@ -790,7 +792,7 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
-            public Object getValue() {
+            public PValue getValue() {
                 return column.getValue(property, (T) cell.getRow());
             }
 
@@ -809,7 +811,7 @@ protected Double getUserFlex(int i) {
             }
 
             @Override
-            public Object getImage() {
+            public AppBaseImage getImage() {
                 return column.getImage(property, (T) cell.getRow());
             }
 

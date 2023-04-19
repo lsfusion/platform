@@ -168,11 +168,6 @@ public class GwtSharedUtils {
             return obj1.equals(obj2);
     }
 
-    public static Object nullBoolean(Boolean b) {
-        if (b) return true;
-        else return null;
-    }
-
     public static String nullTrim(String string) {
         if (string == null)
             return "";

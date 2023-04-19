@@ -6,6 +6,7 @@ import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.property.GPropertyReader;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.ColorDTO;
 
 import java.io.Serializable;
@@ -31,6 +32,14 @@ public class GComponent implements Serializable {
 
     public ColorDTO background;
     public ColorDTO foreground;
+
+    public String getBackground() {
+        return background != null ? background.toString() : null;
+    }
+
+    public String getForeground() {
+        return foreground != null ? foreground.toString() : null;
+    }
 
     public GFont font;
     public GFont captionFont;
@@ -123,8 +132,8 @@ public class GComponent implements Serializable {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
-            controller.getFormLayout().setShowIfVisible(GComponent.this, values.get(GGroupObjectValue.EMPTY) == null);
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+            controller.getFormLayout().setShowIfVisible(GComponent.this, !PValue.getBooleanValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
         @Override
@@ -144,8 +153,8 @@ public class GComponent implements Serializable {
         }
 
         @Override
-        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, Object> values, boolean updateKeys) {
-            controller.getFormLayout().setElementClass(GComponent.this, values.get(GGroupObjectValue.EMPTY));
+        public void update(GFormController controller, NativeHashMap<GGroupObjectValue, PValue> values, boolean updateKeys) {
+            controller.getFormLayout().setElementClass(GComponent.this, PValue.getClassStringValue(values.get(GGroupObjectValue.EMPTY)));
         }
 
         @Override

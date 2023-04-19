@@ -7,6 +7,8 @@ public class StringWithFiles implements Serializable {
 
     public Serializable[] files; // File or AppImage
 
+    public String rawString;
+
     public static class File implements Serializable {
         public final String name;
         public final RawFileData raw;
@@ -17,8 +19,9 @@ public class StringWithFiles implements Serializable {
         }
     }
 
-    public StringWithFiles(String[] prefixes, Serializable[] files) {
+    public StringWithFiles(String[] prefixes, Serializable[] files, String rawString) {
         this.prefixes = prefixes;
         this.files = files;
+        this.rawString = rawString;
     }
 }
