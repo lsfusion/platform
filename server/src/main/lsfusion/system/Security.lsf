@@ -505,6 +505,10 @@ META addRoleApplicationSetting (name, caption, type)
     
     EXTEND FORM securityPolicy PROPERTIES (ur) PANEL name;
     DESIGN securityPolicy { roleApplicationSettings { MOVE PROPERTY(name(ur)); }}
+
+    copy (UserRole from, UserRole to) + {
+        name(to) <- name(from);
+    }
 END
 
 copy '{security.copy.role}' (UserRole from)  { 
