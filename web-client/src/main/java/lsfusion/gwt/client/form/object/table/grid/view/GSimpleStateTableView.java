@@ -74,7 +74,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return;
 
         Element cellParent = getCellParent(target);
-        form.onPropertyBrowserEvent(new EventHandler(event), cellParent, cellParent != null, getFocusedElement(),
+        form.onPropertyBrowserEvent(new EventHandler(event), cellParent, cellParent != null, getTableDataFocusElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
@@ -83,7 +83,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         );
     }
 
-    private Element getFocusedElement() {
+    public Element getTableDataFocusElement() {
         return tableContainer.getElement();
     }
 
