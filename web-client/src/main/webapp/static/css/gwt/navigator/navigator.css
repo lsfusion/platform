@@ -120,10 +120,14 @@
 
 /* converting margins to "inner paddings" (to include margins into the transition) with the pseudo before element*/
 
-.navbar-text-on-hover .wrap-text-not-empty.wrap-img-horz > .wrap-text-img {
+.navbar-text-on-hover .wrap-text-not-empty.wrap-img-horz > .wrap-text-img,
+.navbar-text-hidden .wrap-text-not-empty.wrap-img-horz > .wrap-text-img
+{
     margin-right: 0;
 }
-.navbar-text-on-hover .wrap-text-not-empty.wrap-img-vert > .wrap-text-img {
+.navbar-text-on-hover .wrap-text-not-empty.wrap-img-vert > .wrap-text-img,
+.navbar-text-hidden .wrap-text-not-empty.wrap-img-vert > .wrap-text-img
+{
     margin-bottom: 0;
 }
 .navbar-text-on-hover .wrap-img-horz > .wrap-text-div {

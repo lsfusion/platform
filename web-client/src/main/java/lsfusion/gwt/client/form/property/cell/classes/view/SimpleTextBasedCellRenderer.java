@@ -111,9 +111,11 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
 
         boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
         boolean isInput = isTagInput();
+        boolean multiLine = isMultiLine();
+
         if(isInput && (isTDOrTH || isToolbarContainer(element))) {
             // assert isTDOrTH != isToolbarContainer(element);
-            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, isMultiLine(), renderContext, isTDOrTH, true);
+            inputElement = SimpleTextBasedCellEditor.renderInputElement(element, property, multiLine, renderContext, isTDOrTH, true);
             renderedAlignment = true;
         } else {
             // otherwise we'll use flex alignment (however text alignment would also do)
@@ -122,7 +124,7 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
                 renderTextAlignment(property, element, isInput);
                 renderedAlignment = true;
             }
-            SimpleTextBasedCellRenderer.render(property, element, renderContext, isMultiLine());
+            SimpleTextBasedCellRenderer.render(property, element, renderContext, multiLine);
 
             if(isInput)
                 inputElement = (InputElement) element;

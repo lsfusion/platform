@@ -154,12 +154,12 @@ splitCamelCase (STRING source, STRING delimiter) = lower(regexpReplace(source, '
 
 tsRank(TSVECTOR tsVector, TSQUERY search) = FORMULA DOUBLE PG 'ts_rank($1, $2)';
 tsRankCD(TSVECTOR tsVector, TSQUERY search) = FORMULA DOUBLE PG 'ts_rank_cd($1, $2)';
-tsRankNormalization(TSVECTOR tsVector, TSQUERY search, INTEGER normalization) = FORMULA DOUBLE PG 'ts_rank($1, $2, $3)';
-tsRankNormalizationCD(TSVECTOR tsVector, TSQUERY search, INTEGER normalization) = FORMULA DOUBLE PG 'ts_rank_cd($1, $2, $3)';
-tsVector(STRING A, STRING B, STRING C, STRING d) = FORMULA TSVECTOR PG 'setweight(to_tsvector(\'english\', coalesce($1, \'\')), \'A\') || setweight(to_tsvector(\'english\', coalesce($2, \'\')), \'B\') || setweight(to_tsvector(\'english\', coalesce($3, \'\')), \'C\') || setweight(to_tsvector(\'english\', coalesce($4, \'\')), \'D\')' NULL;
+tsRank(TSVECTOR tsVector, TSQUERY search, INTEGER normalization) = FORMULA DOUBLE PG 'ts_rank($1, $2, $3)';
+tsRankCD(TSVECTOR tsVector, TSQUERY search, INTEGER normalization) = FORMULA DOUBLE PG 'ts_rank_cd($1, $2, $3)';
 
 setWeight(TSVECTOR tsVector, STRING group) = FORMULA TSVECTOR PG 'setweight($1, $2::"char")';
 toTsVector(STRING dictionary, STRING text) = FORMULA TSVECTOR PG 'to_tsvector($1::regconfig, coalesce($2, \'\'))';
+toTsVector(STRING text) = toTsVector('english', text);
 toTsQuery(STRING text) = FORMULA TSQUERY PG 'to_tsquery($1)';
 
 substr (TEXT p1, INTEGER p2, INTEGER p3) = FORMULA TEXT 'substring($1, $2, $3)';

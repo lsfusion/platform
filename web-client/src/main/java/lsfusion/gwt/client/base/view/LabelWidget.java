@@ -11,8 +11,4 @@ public class LabelWidget extends Widget {
         setElement(Document.get().createLabelElement());
         setStyleName("gwt-Label");
     }
-
-    public void setWordWrap(boolean wrap) {
-        getElement().getStyle().setWhiteSpace(wrap ? Style.WhiteSpace.NORMAL : Style.WhiteSpace.NOWRAP);
-    }
 }
