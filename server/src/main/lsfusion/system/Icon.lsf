@@ -149,7 +149,6 @@ FORM icons '{navigator.icon}'
     PROPERTIES bestIconClass '{icon.best.icon.name}' = bestIconClasses(search())  READONLY IMAGE bestIconClasses(search()), bestIconRank '{icon.best.icon.rank}' = bestIconRanks(search()) READONLY 
     OBJECTS i = Icon 
     PROPERTIES iconImage '{icon.icon}' = {} IMAGE iconClass(search(), i) GRID, rank '{icon.rank}' = tsRank(i, nameToIconQuery(search()))
-    PROPERTIES =tsExplicitRank(i, nameToIconQuery(search())), =tsLabelRank(i, nameToIconQuery(search())), =tsTermsRank(i, nameToIconQuery(search())), =tsSynonymsRank(i, nameToIconQuery(search())), =tsSearchStylesRank(i, nameToIconQuery(search()))
     PROPERTIES(i) READONLY name, explicit, label, terms, synonyms, styles, vector
     PROPERTIES(i) DELETE
 ;
