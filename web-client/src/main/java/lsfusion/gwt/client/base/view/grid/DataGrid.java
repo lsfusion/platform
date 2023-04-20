@@ -145,7 +145,6 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         // INITIALIZING FOOTERS
         footerBuilder = new DefaultHeaderBuilder<>(this, true);
 
-        getTableDataFocusElement().setTabIndex(0);
         initSinkEvents(tableContainer);
 
         MainFrame.addColorThemeChangeListener(this);

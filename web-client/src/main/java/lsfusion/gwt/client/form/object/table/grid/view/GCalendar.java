@@ -8,6 +8,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.view.ColorThemeChangeListener;
 import lsfusion.gwt.client.view.MainFrame;
@@ -24,8 +25,8 @@ public class GCalendar extends GTippySimpleStateTableView implements ColorThemeC
     private final String calendarDateType;
     private JavaScriptObject calendar;
 
-    public GCalendar(GFormController form, GGridController grid, String calendarDateType) {
-        super(form, grid);
+    public GCalendar(GFormController form, GGridController grid, TableContainer tableContainer, String calendarDateType) {
+        super(form, grid, tableContainer);
         this.calendarDateType = calendarDateType;
 
         MainFrame.addColorThemeChangeListener(this);

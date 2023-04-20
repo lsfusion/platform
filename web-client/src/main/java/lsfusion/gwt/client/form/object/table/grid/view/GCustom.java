@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.data.GJSONType;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.PValue;
 
@@ -16,8 +17,8 @@ public class GCustom extends GTippySimpleStateTableView {
     private final JavaScriptObject renderFunction;
     private final boolean renderFunctionWithoutArguments; //backward compatibility
 
-    public GCustom(GFormController form, GGridController grid, String renderFunction) {
-        super(form, grid);
+    public GCustom(GFormController form, GGridController grid, TableContainer tableContainer, String renderFunction) {
+        super(form, grid, tableContainer);
         this.renderFunction = GwtClientUtils.getGlobalField(renderFunction);
         this.renderFunctionWithoutArguments = !GwtClientUtils.isFunctionContainsArguments(this.renderFunction);
     }

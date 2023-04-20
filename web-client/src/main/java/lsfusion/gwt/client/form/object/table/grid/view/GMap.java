@@ -9,6 +9,7 @@ import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.GwtSharedUtils;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.StyleDefaults;
@@ -24,8 +25,8 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
     // No need to support color themes here as we apply svg filters to the icon anyway.
     private final String DEFAULT_MARKER_ICON = "map_marker.png";
 
-    public GMap(GFormController form, GGridController grid) {
-        super(form, grid);
+    public GMap(GFormController form, GGridController grid, TableContainer tableContainer) {
+        super(form, grid, tableContainer);
     }
 
     private static class GroupMarker {

@@ -33,14 +33,7 @@ public class TableContainer extends ResizableSimplePanel implements HasMaxPrefer
         setStyleName("tableContainer");
 
         this.form = form;
-
-        Style style = getElement().getStyle();
-        style.setOutlineStyle(Style.OutlineStyle.NONE);
-        style.setOverflow(AUTO);
-        
-        if (MainFrame.useBootstrap) {
-            style.setProperty("borderBottom", "1px solid var(--bs-border-color)");
-        }
+        getElement().setTabIndex(0);
 
         DataGrid.initSinkFocusEvents(this);
     }
