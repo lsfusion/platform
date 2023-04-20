@@ -148,7 +148,7 @@ public class GGridController extends GAbstractTableController {
             calendarTableButton.showBackground(false);
     }
     private void setMapTableView() {
-        changeTableView(new GMap(formController, this));
+        changeTableView(new GMap(formController, this, gridView));
         mapTableButton.showBackground(true);
         gridTableButton.showBackground(false);
         pivotTableButton.showBackground(false);
@@ -170,7 +170,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void setCalendarTableView() {
-        changeTableView(new GCalendar(formController, this, getCalendarDateType()));
+        changeTableView(new GCalendar(formController, this, gridView, getCalendarDateType()));
         calendarTableButton.showBackground(true);
         pivotTableButton.showBackground(false);
         gridTableButton.showBackground(false);
@@ -181,7 +181,7 @@ public class GGridController extends GAbstractTableController {
     }
 
     private void setCustomTableView() {
-        changeTableView(new GCustom(formController, this, groupObject.customRenderFunction));
+        changeTableView(new GCustom(formController, this, gridView, groupObject.customRenderFunction));
         if(mapTableButton != null)
             mapTableButton.showBackground(false);
         if (calendarTableButton != null)

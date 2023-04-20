@@ -22,6 +22,7 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.filter.user.GFilter;
 import lsfusion.gwt.client.form.filter.user.GPropertyFilter;
 import lsfusion.gwt.client.form.object.GGroupObjectValue;
+import lsfusion.gwt.client.form.object.table.TableContainer;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -47,14 +48,15 @@ import static lsfusion.gwt.client.base.view.grid.DataGrid.initSinkEvents;
 public abstract class GSimpleStateTableView<P> extends GStateTableView {
 
     protected final JavaScriptObject controller;
+    private final TableContainer tableContainer;
 
-    public GSimpleStateTableView(GFormController form, GGridController grid) {
+    public GSimpleStateTableView(GFormController form, GGridController grid, TableContainer tableContainer) {
         super(form, grid);
 
         this.controller = getController();
+        this.tableContainer = tableContainer;
         GwtClientUtils.setZeroZIndex(getDrawElement());
 
-        getElement().setTabIndex(0);
         initSinkEvents(this);
     }
 
@@ -72,13 +74,17 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return;
 
         Element cellParent = getCellParent(target);
-        form.onPropertyBrowserEvent(new EventHandler(event), cellParent, cellParent != null, getElement(),
+        form.onPropertyBrowserEvent(new EventHandler(event), cellParent, cellParent != null, getFocusedElement(),
                 handler -> {}, // no outer context
                 handler -> {}, // no edit
                 handler -> {}, // no outer context
                 handler -> {}, handler -> {}, // no copy / paste for now
                 false, true
         );
+    }
+
+    private Element getFocusedElement() {
+        return tableContainer.getElement();
     }
 
     protected abstract Element getCellParent(Element target);

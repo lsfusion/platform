@@ -1,6 +1,8 @@
 
 .tableContainer {
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+    outline-style: none;
+    overflow: auto;
 }
 
  /*Hide scrollbar for Chrome, Safari and Opera */
