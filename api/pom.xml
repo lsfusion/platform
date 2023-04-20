@@ -110,6 +110,11 @@
             <groupId>org.eclipse.jdt</groupId>
             <artifactId>ecj</artifactId>
         </dependency>
+        <!-- added for backward compatibility when upgrading jasperreports dependency 6.12.2->6.20.1 -->
+        <dependency>
+            <groupId>org.codehaus.castor</groupId>
+            <artifactId>castor-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>

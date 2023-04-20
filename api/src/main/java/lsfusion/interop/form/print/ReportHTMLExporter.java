@@ -14,10 +14,10 @@ public class ReportHTMLExporter extends HtmlExporter {
     @Override
     protected void writeEmptyCell(int colSpan, int rowSpan) throws IOException
     {
-        startCell(colSpan, rowSpan);
+        startCell(colSpan, rowSpan, null);
         finishStartCell();
         writer.write("&nbsp;");
-        endCell();
+        endCell(null);
     }
     
 //    protected void writeEmptyCell(JRExporterGridCell cell, int rowHeight) throws IOException
