@@ -2,7 +2,7 @@ function option() {
     return {
         render: function (element, controller) {
             let options = document.createElement('options');
-            options.classList.add("btn-group", "options")
+            options.classList.add("btn-group", "option-container")
 
             element.appendChild(options);
             element.options = options;
@@ -34,7 +34,7 @@ function option() {
                 option.innerText = rawOption.name;
                 option.selected = rawOption.selected;
 
-                option.classList.add("btn", "btn-outline-primary", "option")
+                option.classList.add("btn", "btn-outline-primary", "option-item")
                 if(rawOption.selected)
                     option.classList.add("active")
 

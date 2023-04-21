@@ -126,15 +126,13 @@ onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'toolbar.css' THEN 
 onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'pivot.css' THEN 20;
 
 onWebClientLoad(STRING s) += WHEN s = 'scrollbar.css' THEN 21; //for bootstrap and excell themes
+onWebClientLoad(STRING s) += WHEN s = 'input-quill.js' THEN 22; //for bootstrap and excell themes
+onWebClientLoad(STRING s) += WHEN s = 'input-quill.css' THEN 23; //for bootstrap and excell themes
+onWebClientLoad(STRING s) += WHEN s = 'option.js' THEN 24; //for bootstrap and excell themes
+onWebClientLoad(STRING s) += WHEN NOT useBootstrap() AND s = 'option.css' THEN 25;
 
 onWebClientStarted () +{ 
     onWebClientLoad();
-
-    INTERNAL CLIENT 'input-quill.js';
-    INTERNAL CLIENT 'input-quill.css';
-
-    INTERNAL CLIENT 'option.js';
-    IF NOT useBootstrap() THEN INTERNAL CLIENT 'option.css';
     
     INTERNAL CLIENT WAIT 'input.js';
 }
