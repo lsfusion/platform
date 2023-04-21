@@ -206,12 +206,8 @@ tsQueryStr(Query q) = STRING(tsQuery(q));
 
 queryValue = DATA INTEGER (Query);
 
-sum = GROUP SUM queryValue(Query q) IF q IS Query;
-countAll = GROUP SUM 1 IF Query q IS Query AND queryValue(q) > 0;
-sum02 = GROUP SUM queryValue(Query q) IF q IS Query AND bestIconRank(q) >= 0.2;
-count02 = GROUP SUM 1 IF Query q IS Query AND queryValue(q) > 0 AND bestIconRank(q) >= 0.2;
-sum05 = GROUP SUM queryValue(Query q) IF q IS Query AND bestIconRank(q) >= 0.5;
-count05 = GROUP SUM 1 IF Query q IS Query AND queryValue(q) > 0 AND bestIconRank(q) >= 0.5;
+countCoeff(DOUBLE threshold) = GROUP SUM 1 IF Query q IS Query AND queryValue(q) > 0 AND bestIconRank(q) > threshold; 
+sumCoeff(DOUBLE threshold) = GROUP SUM queryValue(Query q) IF q IS Query AND queryValue(q) > 0 AND bestIconRank(q) > threshold;
 
 FORM icons_test 
     OBJECTS q = Query
@@ -220,10 +216,11 @@ FORM icons_test
     
     OBJECTS i = Icon
     PROPERTIES iconImage '{icon.icon}' = {} IMAGE iconClass(text(q), i) GRID, rank '{icon.rank}' = iconRank(q, i)
-    PROPERTIES(i) READONLY label, terms, synonyms, styles, vector
+    PROPERTIES(i) READONLY label, explicit, terms, synonyms, styles, vector
     PROPERTIES (i) DELETE
     
-    PROPERTIES sum(), countAll(), sum02(), count02(), sum05(), count05()
+    PROPERTIES sumAll = sumCoeff(0.0), countAll = countCoeff(0.0), sum02 = sumCoeff(0.2), 
+               count02 = countCoeff(0.2), sum05 = sumCoeff(0.5), count05 = countCoeff(0.5)
     ORDERS rank DESC
     FILTERS iconRank(q, i) > 0
 ;
