@@ -588,7 +588,7 @@ public class PopupMenuPanel extends ComplexPanel {
 
     private UListElement createULElement() {
         UListElement element = Document.get().createULElement();
-        element.addClassName("dropdown-menu show");
+        element.addClassName("dropdown-menu show lsf-dropdown");
         return element;
     }
 }

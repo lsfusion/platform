@@ -2,10 +2,7 @@ function option() {
     return {
         render: function (element, controller) {
             let options = document.createElement('options');
-            options.classList.add("option-container")
-            // options.style.borderRadius = 'var(--table-border-radius)';
-            // options.style.border = '1px solid var(--grid-separator-border-color)';
-            // options.style.padding = 'var(--border-padding) 4px';
+            options.classList.add("btn-group", "option-container")
 
             element.appendChild(options);
             element.options = options;
@@ -37,9 +34,9 @@ function option() {
                 option.innerText = rawOption.name;
                 option.selected = rawOption.selected;
 
-                option.classList.add("option-item")
+                option.classList.add("btn", "btn-outline-primary", "option-item")
                 if(rawOption.selected)
-                    option.classList.add("option-item-selected")
+                    option.classList.add("active")
 
                 if(isList) {
                     option.key = rawOption;
@@ -62,9 +59,9 @@ function option() {
                 option.selected = rawOption.selected;
 
                 if(rawOption.selected)
-                    option.classList.add("option-item-selected");
+                    option.classList.add("active");
                 else
-                    option.classList.remove("option-item-selected");
+                    option.classList.remove("active");
             });
 
             if(isList)

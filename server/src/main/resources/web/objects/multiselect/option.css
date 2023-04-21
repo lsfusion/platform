@@ -1,5 +1,5 @@
 
-.option-container {
+.btn-group.option-container {
     display: flex;
     flex-flow: row wrap;
 
@@ -7,7 +7,7 @@
     cursor: pointer;
 }
 
-.option-item {
+.btn.btn-outline-primary.option-item {
     flex: 0 0 auto;
     align-self: center;
 
@@ -23,16 +23,16 @@
     align-items: center;
 }
 
-.option-item:hover {
+.btn.btn-outline-primary.option-item:hover {
     border: 1px solid var(--component-hover-border-color);
     background: var(--component-hover-background-color);
 }
 
-.option-item-selected {
+.btn.btn-outline-primary.option-item.active {
     background: var(--selection-color);
 }
 
-.option-item-selected:hover {
+.btn.btn-outline-primary.option-item.active:hover {
     background: var(--option-selected-hover-color);
 }
 
