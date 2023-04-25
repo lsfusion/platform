@@ -88,7 +88,7 @@ public class GroupObjectEntity extends IdentityObject implements Instantiable<Gr
 
     public void setDebugPoint(DebugInfo.DebugPoint debugPoint) {
         this.debugPoint = debugPoint;
-        this.scriptIndex = Pair.create(debugPoint.line, debugPoint.offset);
+        this.scriptIndex = Pair.create(debugPoint.getScriptLine(), debugPoint.offset);
     }
 
     public DebugInfo.DebugPoint getDebugPoint() {

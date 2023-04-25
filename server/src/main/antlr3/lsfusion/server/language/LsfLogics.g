@@ -2803,7 +2803,7 @@ inSetting [ActionOrPropertySettings ps]
 	;
 
 persistentSetting [PropertySettings ps]
-	:	'MATERIALIZED' { ps.isPersistent = true; }
+	:	'MATERIALIZED' (name=stringLiteral)? { ps.isPersistent = true; ps.field = $name.val; }
 	;
 
 complexSetting [PropertySettings ps]
@@ -3016,10 +3016,10 @@ indexSetting [LP property]
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex(property, indexType);
+		self.addScriptedIndex(property, $dbName.val, indexType);
 	}
 }
-	:	'INDEXED' (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
+	:	'INDEXED' (dbName=stringLiteral)? (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
@@ -4723,10 +4723,10 @@ tableStatement
 }
 @after {
 	if (inMetaClassTableParseState()) {
-		self.addScriptedTable($name.text, $list.ids, isFull, isNoDefault);
+		self.addScriptedTable($name.text, $dbName.val, $list.ids, isFull, isNoDefault);
 	}
 }
-	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
+	:	'TABLE' name=ID (dbName = stringLiteral)? '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// INDEX STATEMENT /////////////////////////////
@@ -4752,10 +4752,10 @@ indexStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex(context, $list.props);
+		self.addScriptedIndex($dbName.val, context, $list.props);
 	}	
 }
-	:	'INDEX' list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
+	:	'INDEX' (dbName=stringLiteralNoID)? list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
 	;
 
 
@@ -5547,7 +5547,7 @@ multilineStringLiteral returns [String val]
 	;
 
 stringLiteral returns [String val]
-	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.val); }
+	:	s=stringLiteralNoID { $val = $s.val; }
     |   id=ID { $val = null; }
 	;
 
@@ -5559,6 +5559,9 @@ primitiveType returns [String val]
 // it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
 localizedStringLiteralNoID returns [LocalizedString val]
 	:	s=multilineStringLiteral { $val = self.transformLocalizedStringLiteral($s.val); }
+	;
+stringLiteralNoID returns [String val]
+	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.text); }
 	;
 
 localizedStringLiteral returns [LocalizedString val]

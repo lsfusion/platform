@@ -16,6 +16,10 @@ public class DebugInfo {
         
         public String topName;
         public LocalizedString topCaption;
+
+        public int getScriptLine() {
+            return globalLine;
+        }
         
         public DebugPoint(String moduleName, String path, int line, int offset, boolean isInsideNonEnabledMeta, int globalLine, String topName, LocalizedString topCaption) {
             this.moduleName = moduleName;

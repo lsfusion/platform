@@ -63,6 +63,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP webHostConnection;
     public LP webPortConnection;
     public LP contextPathConnection;
+    public LP scheme;
     public LP userConnection;
     public LP userLoginConnection;
     public LP osVersionConnection;
@@ -164,6 +165,7 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         webHostConnection = findProperty("webHost[Connection]");
         webPortConnection = findProperty("webPort[Connection]");
         contextPathConnection = findProperty("contextPath[Connection]");
+        scheme = findProperty("scheme[Connection]");
         userConnection = findProperty("user[Connection]");
         userLoginConnection = findProperty("userLogin[Connection]");
         osVersionConnection = findProperty("osVersion[Connection]");
