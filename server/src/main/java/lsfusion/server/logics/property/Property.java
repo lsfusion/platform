@@ -1135,6 +1135,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
     }
 
+    public String mapDbName;
+
     public String getDBName() {
         return field.getName();
     }
@@ -1143,7 +1145,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(mapTable == null)
             mapTable = tableFactory.getMapTable(getOrderTableInterfaceClasses(AlgType.storedResolveType), policy);
 
-        String dbName = policy.transformActionOrPropertyCNToDBName(this.canonicalName);
+        String dbName = mapDbName != null ? mapDbName : policy.transformActionOrPropertyCNToDBName(this.canonicalName);
 
         PropertyField field = new PropertyField(dbName, getType());
         fieldClassWhere = getClassWhere(mapTable, field);

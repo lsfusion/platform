@@ -451,9 +451,10 @@ public abstract class LogicsModule {
         return customClass;
     }
 
-    protected ImplementTable addTable(String name, boolean isFull, boolean isExplicit, DBNamingPolicy namingPolicy, ValueClass... classes) {
+    protected ImplementTable addTable(String name, String dbName, boolean isFull, boolean isExplicit, DBNamingPolicy namingPolicy, ValueClass... classes) {
         String canonicalName = elementCanonicalName(name);
-        String dbName = namingPolicy.transformTableCNToDBName(canonicalName);
+        if(dbName == null)
+            dbName = namingPolicy.transformTableCNToDBName(canonicalName);
         ImplementTable table = baseLM.tableFactory.include(dbName, getVersion(), classes);
         table.setCanonicalName(canonicalName);
         addModuleTable(table);

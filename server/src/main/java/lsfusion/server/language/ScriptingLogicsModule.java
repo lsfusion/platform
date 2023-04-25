@@ -250,12 +250,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void initIndexes(DBManager dbManager) throws RecognitionException {
         for (TemporaryIndexInfo info : tempIndicies) {
             checkIndexDifferentTables(info.params);
-            dbManager.addIndex(info.keyNames, info.params);
+            dbManager.addIndex(info.keyNames, info.dbName, info.params);
         }
         tempIndicies.clear();
 
         for (int i = 0; i < indexedProperties.size(); i++) {
-            dbManager.addIndex(indexedProperties.get(i), indexTypes.get(i));
+            dbManager.addIndex(indexedProperties.get(i), indexNames.get(i), indexTypes.get(i));
         }
         indexedProperties.clear();
     }
@@ -1225,6 +1225,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (property.property instanceof StoredDataProperty || (ps.isPersistent && (property.property instanceof AggregateProperty))) {
             property.property.markStored(targetTable);
         }
+        property.property.mapDbName = ps.field;
 
         if(ps.isComplex != null)
             property.property.setComplex(ps.isComplex);
@@ -4710,7 +4711,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAspectEvent(mainActionLA.action, actionImplements.get(0), before);
     }
 
-    public void addScriptedTable(String name, List<String> classIds, boolean isFull, boolean isExplicit) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedTable(String name, String dbName, List<String> classIds, boolean isFull, boolean isExplicit) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateTable(name);
 
         // todo [dale]: Hack. Class CustomObjectClass is created after all in InitObjectClassTask 
@@ -4723,7 +4724,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         
-        tempTables.add(new TemporaryTableInfo(name, classes, isFull, isExplicit, isCustomObjectClassTable));
+        tempTables.add(new TemporaryTableInfo(name, dbName, classes, isFull, isExplicit, isCustomObjectClassTable));
     }
 
     private boolean isCustomObjectClassTable(String name, List<String> classIds) {
@@ -4736,7 +4737,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (info.isCustomObjectClassTable) {
                 classes = new ValueClass[] {baseLM.baseClass.objectClass};
             }
-            addTable(info.name, info.isFull, info.isExplicit, namingPolicy, classes);
+            addTable(info.name, info.dbName, info.isFull, info.isExplicit, namingPolicy, classes);
         }
         tempTables.clear(); 
     } 
@@ -4745,12 +4746,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     private static class TemporaryTableInfo {
         public final String name;
+        public final String dbName;
         public final ValueClass[] classes;
         public final boolean isFull, isExplicit;
         public final boolean isCustomObjectClassTable;
         
-        public TemporaryTableInfo(String name, ValueClass[] classes, boolean isFull, boolean isExplicit, boolean isCustomObjectClassTable) {
+        public TemporaryTableInfo(String name, String dbName, ValueClass[] classes, boolean isFull, boolean isExplicit, boolean isCustomObjectClassTable) {
             this.name = name;
+            this.dbName = dbName;
             this.classes = classes;
             this.isFull = isFull;
             this.isExplicit = isExplicit;
@@ -4759,17 +4762,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     }  
 
     private List<LP> indexedProperties = new ArrayList<>();
+    private List<String> indexNames = new ArrayList<>();
     private List<IndexType> indexTypes = new ArrayList<>();
     private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
             
-    public void addScriptedIndex(LP lp, IndexType indexType) {
+    public void addScriptedIndex(LP lp, String dbName, IndexType indexType) {
         indexedProperties.add(lp);
+        indexNames.add(dbName);
         indexTypes.add(indexType);
 
         ImSet<StoredDataProperty> fullAggrProps;
         if(lp.property instanceof AggregateGroupProperty && (fullAggrProps = ((AggregateGroupProperty) lp.property).getFullAggrProps()) != null) {
             for(StoredDataProperty fullAggrProp : fullAggrProps) {
                 indexedProperties.add(new LP<>(fullAggrProp));
+                indexNames.add(null);
                 indexTypes.add(indexType);
             }
         }
@@ -4780,20 +4786,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
 
-    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkIndexNecessaryProperty(lps);
         checks.checkMarkStoredProperties(lps);
         checks.checkDistinctParametersList(lps);
         checks.checkIndexNumberOfParameters(params.size(), lps);
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(value -> value.paramName);
-        tempIndicies.add(new TemporaryIndexInfo(keyNames, getParamsPlainList(lps).toArray()));
+        tempIndicies.add(new TemporaryIndexInfo(dbName, keyNames, getParamsPlainList(lps).toArray()));
     }
 
     private static class TemporaryIndexInfo {
+        public String dbName;
         public ImOrderSet<String> keyNames;
         public Object[] params;
         
-        public TemporaryIndexInfo(ImOrderSet<String> keyNames, Object[] params) {
+        public TemporaryIndexInfo(String dbName, ImOrderSet<String> keyNames, Object[] params) {
+            this.dbName = dbName;
             this.keyNames = keyNames;
             this.params = params;
         }

@@ -182,21 +182,21 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public void addIndex(LP lp) {
-        addIndex(lp, IndexType.DEFAULT);
+        addIndex(lp, null, IndexType.DEFAULT);
     }
 
-    public void addIndex(LP lp, IndexType indexType) {
+    public void addIndex(LP lp, String dbName, IndexType indexType) {
         ImOrderSet<String> keyNames = SetFact.toOrderExclSet(lp.listInterfaces.size(), i -> "key"+i);
-        addIndex(keyNames, indexType, directLI(lp));
+        addIndex(keyNames, dbName, indexType, directLI(lp));
     }
 
-    public void addIndex(ImOrderSet<String> keyNames, Object... params) {
-        addIndex(keyNames, IndexType.DEFAULT, params);
+    public void addIndex(ImOrderSet<String> keyNames, String dbName, Object... params) {
+        addIndex(keyNames, dbName, IndexType.DEFAULT, params);
     }
 
-    public void addIndex(ImOrderSet<String> keyNames, IndexType indexType, Object... params) {
+    public void addIndex(ImOrderSet<String> keyNames, String dbName, IndexType indexType, Object... params) {
         ImList<PropertyObjectInterfaceImplement<String>> index = ActionOrPropertyUtils.readObjectImplements(keyNames, params);
-        addIndex(index, indexType);
+        addIndex(index, dbName, indexType);
     }
 
     public void initReflectionEvents() {
@@ -2294,10 +2294,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     @NFLazy
-    public <Z extends PropertyInterface> void addIndex(ImList<PropertyObjectInterfaceImplement<String>> index, IndexType indexType) {
+    public <Z extends PropertyInterface> void addIndex(ImList<PropertyObjectInterfaceImplement<String>> index, String dbName, IndexType indexType) {
         PropertyRevImplement<Z, String> propertyImplement = (PropertyRevImplement<Z, String>) findProperty(index);
         if(propertyImplement != null) {
-            indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, Settings.get().getFilterMatchLanguage()));
+            indexes.put(index, new IndexOptions(propertyImplement.property.getType() instanceof DataClass, indexType, Settings.get().getFilterMatchLanguage(), dbName));
             propertyImplement.property.markIndexed(propertyImplement.mapping, index, indexType);
         }
     }
@@ -2661,7 +2661,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     public static int oldDBStructureVersion = 0;
-    public static int newDBStructureVersion = 35;
+    public static int newDBStructureVersion = 36;
 
     private class OldDBStructure extends DBStructure<String> {
 
@@ -2688,10 +2688,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         for (int k = inputDB.readInt(); k > 0; k--) {
                             index.add(inputDB.readUTF());
                         }
-                        if (version >= 32) {
-                            indices.put(index, IndexOptions.deserialize(inputDB));
-                        } else {
+                        if (version < 32) {
                             indices.put(index, new IndexOptions(inputDB.readBoolean()));
+                        } else if (version < 36) {
+                            indices.put(index, IndexOptions.deserialize35(inputDB));
+                        } else {
+                            indices.put(index, IndexOptions.deserialize(inputDB));
                         }
 
                     }
