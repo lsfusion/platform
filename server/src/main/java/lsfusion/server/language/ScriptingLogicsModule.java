@@ -251,12 +251,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void initIndexes(DBManager dbManager) throws RecognitionException {
         for (TemporaryIndexInfo info : tempIndicies) {
             checkIndexDifferentTables(info.params);
-            dbManager.addIndex(info.keyNames, info.params);
+            dbManager.addIndex(info.keyNames, info.dbName, info.params);
         }
         tempIndicies.clear();
 
         for (int i = 0; i < indexedProperties.size(); i++) {
-            dbManager.addIndex(indexedProperties.get(i), indexTypes.get(i));
+            dbManager.addIndex(indexedProperties.get(i), indexNames.get(i), indexTypes.get(i));
         }
         indexedProperties.clear();
     }
@@ -4757,17 +4757,20 @@ public class ScriptingLogicsModule extends LogicsModule {
     }  
 
     private List<LP> indexedProperties = new ArrayList<>();
+    private List<String> indexNames = new ArrayList<>();
     private List<IndexType> indexTypes = new ArrayList<>();
     private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
             
-    public void addScriptedIndex(LP lp, IndexType indexType) {
+    public void addScriptedIndex(LP lp, String dbName, IndexType indexType) {
         indexedProperties.add(lp);
+        indexNames.add(dbName);
         indexTypes.add(indexType);
 
         ImSet<StoredDataProperty> fullAggrProps;
         if(lp.property instanceof AggregateGroupProperty && (fullAggrProps = ((AggregateGroupProperty) lp.property).getFullAggrProps()) != null) {
             for(StoredDataProperty fullAggrProp : fullAggrProps) {
                 indexedProperties.add(new LP<>(fullAggrProp));
+                indexNames.add(null);
                 indexTypes.add(indexType);
             }
         }
@@ -4778,20 +4781,22 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
 
-    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkIndexNecessaryProperty(lps);
         checks.checkMarkStoredProperties(lps);
         checks.checkDistinctParametersList(lps);
         checks.checkIndexNumberOfParameters(params.size(), lps);
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(value -> value.paramName);
-        tempIndicies.add(new TemporaryIndexInfo(keyNames, getParamsPlainList(lps).toArray()));
+        tempIndicies.add(new TemporaryIndexInfo(dbName, keyNames, getParamsPlainList(lps).toArray()));
     }
 
     private static class TemporaryIndexInfo {
+        public String dbName;
         public ImOrderSet<String> keyNames;
         public Object[] params;
         
-        public TemporaryIndexInfo(ImOrderSet<String> keyNames, Object[] params) {
+        public TemporaryIndexInfo(String dbName, ImOrderSet<String> keyNames, Object[] params) {
+            this.dbName = dbName;
             this.keyNames = keyNames;
             this.params = params;
         }

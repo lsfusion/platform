@@ -3007,10 +3007,10 @@ indexSetting [LP property]
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex(property, indexType);
+		self.addScriptedIndex(property, $dbName.val, indexType);
 	}
 }
-	:	'INDEXED' (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
+	:	'INDEXED' (dbName=stringLiteral)? (('LIKE' { indexType = IndexType.LIKE; }) | ('MATCH' { indexType = IndexType.MATCH; }))?
 	;
 
 notNullDeleteSetting returns [DebugInfo.DebugPoint debugPoint, Event event]
@@ -4743,10 +4743,10 @@ indexStatement
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex(context, $list.props);
+		self.addScriptedIndex($dbName.val, context, $list.props);
 	}	
 }
-	:	'INDEX' list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
+	:	'INDEX' (dbName=stringLiteralNoID)? list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
 	;
 
 
@@ -5506,7 +5506,7 @@ multilineStringLiteral returns [String val]
 	;
 
 stringLiteral returns [String val]
-	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.val); }
+	:	s=stringLiteralNoID { $val = $s.val; }
     |   id=ID { $val = null; }
 	;
 
@@ -5518,6 +5518,9 @@ primitiveType returns [String val]
 // it makes sense to be synchronized with noIDCheck in LSF.bnf in idea-plugin
 localizedStringLiteralNoID returns [LocalizedString val]
 	:	s=multilineStringLiteral { $val = self.transformLocalizedStringLiteral($s.val); }
+	;
+stringLiteralNoID returns [String val]
+	:	s=multilineStringLiteral { $val = self.transformStringLiteral($s.text); }
 	;
 
 localizedStringLiteral returns [LocalizedString val]

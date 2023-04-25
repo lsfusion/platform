@@ -36,7 +36,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void addScriptedIndex(List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("INDEX statement");
     }
 
