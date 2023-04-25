@@ -2794,7 +2794,7 @@ inSetting [ActionOrPropertySettings ps]
 	;
 
 persistentSetting [PropertySettings ps]
-	:	'MATERIALIZED' { ps.isPersistent = true; }
+	:	'MATERIALIZED' (name=stringLiteral)? { ps.isPersistent = true; ps.field = $name.val; }
 	;
 
 complexSetting [PropertySettings ps]
@@ -4714,10 +4714,10 @@ tableStatement
 }
 @after {
 	if (inMetaClassTableParseState()) {
-		self.addScriptedTable($name.text, $list.ids, isFull, isNoDefault);
+		self.addScriptedTable($name.text, $dbName.val, $list.ids, isFull, isNoDefault);
 	}
 }
-	:	'TABLE' name=ID '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
+	:	'TABLE' name=ID (dbName = stringLiteral)? '(' list=classIdList ')' ('FULL' {isFull = true;} | 'NODEFAULT' { isNoDefault = true; } )? ';';
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// INDEX STATEMENT /////////////////////////////

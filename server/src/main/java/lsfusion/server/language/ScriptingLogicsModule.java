@@ -1226,6 +1226,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (property.property instanceof StoredDataProperty || (ps.isPersistent && (property.property instanceof AggregateProperty))) {
             property.property.markStored(targetTable);
         }
+        property.property.mapDbName = ps.field;
 
         if(ps.isComplex != null)
             property.property.setComplex(ps.isComplex);
@@ -4705,7 +4706,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAspectEvent(mainActionLA.action, actionImplements.get(0), before);
     }
 
-    public void addScriptedTable(String name, List<String> classIds, boolean isFull, boolean isExplicit) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedTable(String name, String dbName, List<String> classIds, boolean isFull, boolean isExplicit) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkDuplicateTable(name);
 
         // todo [dale]: Hack. Class CustomObjectClass is created after all in InitObjectClassTask 
@@ -4718,7 +4719,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
         }
         
-        tempTables.add(new TemporaryTableInfo(name, classes, isFull, isExplicit, isCustomObjectClassTable));
+        tempTables.add(new TemporaryTableInfo(name, dbName, classes, isFull, isExplicit, isCustomObjectClassTable));
     }
 
     private boolean isCustomObjectClassTable(String name, List<String> classIds) {
@@ -4731,7 +4732,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (info.isCustomObjectClassTable) {
                 classes = new ValueClass[] {baseLM.baseClass.objectClass};
             }
-            addTable(info.name, info.isFull, info.isExplicit, namingPolicy, classes);
+            addTable(info.name, info.dbName, info.isFull, info.isExplicit, namingPolicy, classes);
         }
         tempTables.clear(); 
     } 
@@ -4740,12 +4741,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     
     private static class TemporaryTableInfo {
         public final String name;
+        public final String dbName;
         public final ValueClass[] classes;
         public final boolean isFull, isExplicit;
         public final boolean isCustomObjectClassTable;
         
-        public TemporaryTableInfo(String name, ValueClass[] classes, boolean isFull, boolean isExplicit, boolean isCustomObjectClassTable) {
+        public TemporaryTableInfo(String name, String dbName, ValueClass[] classes, boolean isFull, boolean isExplicit, boolean isCustomObjectClassTable) {
             this.name = name;
+            this.dbName = dbName;
             this.classes = classes;
             this.isFull = isFull;
             this.isExplicit = isExplicit;
