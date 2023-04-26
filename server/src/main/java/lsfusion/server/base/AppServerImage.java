@@ -10,7 +10,6 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.base.col.lru.LRUSVSMap;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.file.AppImage;
@@ -26,7 +25,6 @@ import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.StringClass;
-import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -41,7 +39,6 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +54,7 @@ public class AppServerImage {
     private final static LRUSVSMap<String, AppServerImage> cachedImages = new LRUSVSMap<>(LRUUtil.G2);
     private final static LRUSVSMap<String, Pair<String, Double>> cachedBestIcons = new LRUSVSMap<>(LRUUtil.G2);
     private final static LRUSVSMap<Pair<String, Float>, AppServerImage> cachedDefaultImages = new LRUSVSMap<>(LRUUtil.G2);
-    private static final AppServerImage NULL = new AppServerImage();
+    private static final AppServerImage NULLIMAGE = new AppServerImage();
 
     public AppServerImage() {
     }
@@ -187,30 +184,27 @@ public class AppServerImage {
         public static final Style NAVIGATORELEMENT = SOLID;
 
         public String getSearchName() { // should correspond Icon.searchStyles / Icon.iconClass properties
-            return this == REGULAR ? "Lsfreg" : "Lsfsol";
+            return this == REGULAR ? "regular" : "solid";
         }
     }
 
     // should be cached because it is used in default images
     private static AppServerImage createDefaultImage(String name, Style style, boolean path, float rankingThreshold) {
-        if(rankingThreshold >= 1.0f) // optimization
-            return null;
-
-        Pair<String, Float> cacheKey = new Pair<>(name + "<->" + style, rankingThreshold);
+        Pair<String, Float> cacheKey = new Pair<>(name + "," + style, rankingThreshold);
         AppServerImage result = cachedDefaultImages.get(cacheKey);
         if(result == null) {
-            Pair<String, Double> bestIcon = getBestIcon((path ? BaseUtils.getFileName(name) : name) + style.getSearchName()); // should correspond Icon.iconClass / Icon.match
+            Pair<String, Double> bestIcon = getBestIcon((path ? BaseUtils.getFileName(name) : name) + "," + style.getSearchName());
             if(bestIcon == null)
                 return null;
 
-            if(bestIcon.first == null || bestIcon.second < rankingThreshold)
-                result = path ? new AppServerImage(name, null) : NULL;
+            if(bestIcon.first == null || bestIcon.second < rankingThreshold || bestIcon.first.equals(AppServerImage.NULL))
+                result = path ? new AppServerImage(name, null) : NULLIMAGE;
             else
                 result = new AppServerImage(path ? name : null, bestIcon.first);
 
             cachedDefaultImages.put(cacheKey, result);
         }
-        return result == NULL ? null : result;
+        return result == NULLIMAGE ? null : result;
     }
 
     private static final Pattern camelCasePattern = Pattern.compile("(([A-Z]?[a-z]+)|([A-Z]))");
@@ -223,9 +217,18 @@ public class AppServerImage {
         return words;
     }
 
-    public static AppServerImage createDefaultImage(float rankingThreshold, String name, Style style, Supplier<AppServerImage> defaultImage) {
-        if(name == null)
+    public static AppServerImage createDefaultImage(float rankingThreshold, String name, Style style, Supplier<String> autoName, Supplier<AppServerImage> defaultImage) {
+        if(name.equals(AppServerImage.NULL))
             return null;
+        else if(name.equals(AppServerImage.AUTO)) {
+            name = autoName.get();
+
+            if(name == null)
+                return null;
+
+            if(name.length() <= 2) // we don't want auto short names (like i, b, ac, which are often used for the object aliasing)
+                return null;
+        }
 
         AppServerImage autoImage = createDefaultImage(name, style, false, rankingThreshold);
         if(autoImage != null)
@@ -235,6 +238,7 @@ public class AppServerImage {
     }
     
     public static final String AUTO = "auto";
+    public static final String NULL = "null";
     private static final boolean AUTO_ICON = true;
 
     public static final String ADD = "add.png"; // also is used in the input action
@@ -273,7 +277,7 @@ public class AppServerImage {
     public static final String RESET = "reset.png";
 
     public static Supplier<AppServerImage> createActionImage(String imagePath) {
-        return createImage(imagePath, Style.PROPERTY, name -> AppServerImage.createDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), name, Style.PROPERTY, () -> AUTO_ICON ? createActionImage(ACTION).get() : null));
+        return createImage(imagePath, Style.PROPERTY, name -> AppServerImage.createDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), name, Style.PROPERTY, () -> name, () -> AUTO_ICON ? createActionImage(ACTION).get() : null));
     }
 
     @ManualLazy

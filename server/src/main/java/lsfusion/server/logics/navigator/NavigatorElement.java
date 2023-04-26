@@ -88,7 +88,7 @@ public abstract class NavigatorElement {
     }
 
     public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon) {
-        return AppServerImage.createDefaultImage(rankingThreshold, name.equals(AppServerImage.AUTO) ? getName() : name, AppServerImage.Style.NAVIGATORELEMENT, () -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this).get() : null);
+        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.NAVIGATORELEMENT, this::getName, () -> useDefaultIcon ? AppServerImage.createNavigatorImage(getDefaultIcon(), NavigatorElement.this).get() : null);
     }
 
     private AppServerImage getDefaultImage() {

@@ -94,4 +94,13 @@ public class TSQueryClass extends DataClass<String> {
         String language = Settings.get().getTsVectorDictionaryLanguage();
         return typeFrom instanceof StringClass ? MatchWhere.getPrefixSearchQuery(syntax, value, language) : super.getCast(value, syntax, typeEnv, typeFrom);
     }
+
+    public boolean isSafeType() {
+        return false;
+    }
+
+    @Override
+    public boolean isSafeString(Object value) {
+        return false;
+    }
 }

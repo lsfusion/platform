@@ -202,7 +202,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     }
 
     public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon) {
-        return AppServerImage.createDefaultImage(rankingThreshold, name.equals(AppServerImage.AUTO) ? getName() : name, AppServerImage.Style.PROPERTY, () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, ActionOrProperty.this).get() : null);
+        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.PROPERTY, this::getName, () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, ActionOrProperty.this).get() : null);
     }
 
     public String getNamespace() {

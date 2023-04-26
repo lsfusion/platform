@@ -613,7 +613,7 @@ public class Scheduler extends MonitorServer implements InitializingBean {
         }
 
         private void logClientTask(DataSession session, DataObject taskLog, AbstractContext.LogMessage logMessage) throws SQLException, SQLHandledException {            
-            ServerLoggers.serviceLogger.info(logMessage.message);
+            ServerLoggers.schedulerLogger.info(logMessage.message);
             
             DataObject clientTaskLog = session.addObject(BL.schedulerLM.scheduledClientTaskLog);
             BL.schedulerLM.scheduledTaskLogScheduledClientTaskLog

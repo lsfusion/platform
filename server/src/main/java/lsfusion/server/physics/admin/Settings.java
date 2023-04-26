@@ -3048,9 +3048,6 @@ public class Settings implements Cloneable {
     private float defaultNavigatorImageRankingThreshold = 0.1f;
     private boolean defaultNavigatorImage = true;
 
-    private float defaultFormImageRankingThreshold = 0.4f;
-    private boolean defaultFormImage = true;
-
     private float defaultContainerImageRankingThreshold = 0.6f;
     private boolean defaultContainerImage = false;
 
@@ -3087,22 +3084,6 @@ public class Settings implements Cloneable {
 
     public void setDefaultNavigatorImage(boolean defaultNavigatorImage) {
         this.defaultNavigatorImage = defaultNavigatorImage;
-    }
-
-    public float getDefaultFormImageRankingThreshold() {
-        return defaultFormImageRankingThreshold;
-    }
-
-    public void setDefaultFormImageRankingThreshold(float defaultFormImageRankingThreshold) {
-        this.defaultFormImageRankingThreshold = defaultFormImageRankingThreshold;
-    }
-
-    public boolean isDefaultFormImage() {
-        return defaultFormImage;
-    }
-
-    public void setDefaultFormImage(boolean defaultFormImage) {
-        this.defaultFormImage = defaultFormImage;
     }
 
     public float getDefaultContainerImageRankingThreshold() {

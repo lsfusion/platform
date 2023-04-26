@@ -938,7 +938,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
             createLikeIndex(table, fields, indexOptions.dbName, columns, logger, ifNotExists);
         } else if (indexOptions.type.isMatch()) {
             if (fields.size() == 1 && fields.singleKey().type instanceof TSVectorClass) {
-                createMatchIndexForTsVector(table, fields, columns, indexOptions, logger, ifNotExists);
+                createMatchIndexForTsVector(table, indexOptions.dbName, fields, columns, indexOptions, logger, ifNotExists);
                 return;
             } else {
                 createLikeIndex(table, fields, indexOptions.dbName, columns, logger, ifNotExists);
@@ -969,8 +969,8 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    private void createMatchIndexForTsVector(NamedTable table, ImOrderMap<Field, Boolean> fields, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
-        createIndex(table, getIndexName(table, syntax, fields, matchIndexSuffix),
+    private void createMatchIndexForTsVector(NamedTable table, String dbName, ImOrderMap<Field, Boolean> fields, String columns, IndexOptions indexOptions, Logger logger, boolean ifNotExists) throws SQLException {
+        createIndex(table, getIndexName(table, syntax, dbName, fields, matchIndexSuffix),
                 " USING GIN (" + columns + ")", logger, ifNotExists);
     }
 

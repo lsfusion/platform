@@ -100,6 +100,16 @@ public class TSVectorClass extends DataClass<Array>{
     }
 
     @Override
+    public boolean isSafeType() {
+        return false;
+    }
+
+    @Override
+    public boolean isSafeString(Object value) {
+        return false;
+    }
+
+    @Override
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
         String language = Settings.get().getTsVectorDictionaryLanguage();
         return typeFrom instanceof StringClass ? "to_tsvector('" + language + "'::regconfig, " + value + ")" : super.getCast(value, syntax, typeEnv, typeFrom);
