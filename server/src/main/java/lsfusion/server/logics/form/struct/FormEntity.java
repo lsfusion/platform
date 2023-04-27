@@ -1168,7 +1168,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return false;
     }
 
+    private boolean finalizedChanges;
+
     public void finalizeAroundInit() {
+        // we need this synchronization since forms finalization first marks modules, and only then reads all unnamed forms (so form can be finalized twice)
+        // unlike properties finalization it seems that here we can solve finalization problem another way (by adding synchronized to the addAutoFormEntity, getAllModuleForms methods)
+        // however a) it won't be that pretty either b) the used approach is similar to the one used for properties finalization
+        if (!finalizedChanges) {
+            synchronized (this) { // in theory there can be separate lock, but for now there is no need for this
+                if (!finalizedChanges) {
+                    finalizeChanges();
+                    finalizedChanges = true;
+                }
+            }
+        }
+    }
+
+    private void finalizeChanges() {
 
         for(GroupObjectEntity group : getGroupsIt()) {
             if(group.listViewType.isMap() && !isMap(group)) {
