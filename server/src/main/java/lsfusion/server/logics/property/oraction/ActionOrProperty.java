@@ -389,6 +389,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
 
 //        notFinalized.remove(this);
         // we need this synchronization since property finalization first marks modules, and only then reads all properties (so property can be finalized twice)
+        // the same approach is used in FormEntity
         if(!finalizedChanges) {
             synchronized (this) { // in theory there can be separate lock, but for now there is no need for this
                 if(!finalizedChanges) {
