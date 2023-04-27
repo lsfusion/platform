@@ -37,6 +37,15 @@ public class IndexOptions {
         return new IndexOptions(order, indexType, language);
     }
 
+    public static IndexOptions deserialize36(DataInputStream inStream) throws IOException {
+        boolean order = inStream.readBoolean();
+        IndexType indexType = IndexType.deserialize(inStream.readByte());
+        String language = inStream.readUTF();
+        String dbName = inStream.readBoolean() ? inStream.readUTF() : null;
+        return new IndexOptions(order, indexType, language);
+    }
+
+
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof IndexOptions && order == ((IndexOptions) o).order && type.equals(((IndexOptions) o).type)
