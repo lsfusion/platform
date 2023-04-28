@@ -117,18 +117,22 @@ public class AppServerImage {
     }
 
     public final static ThreadLocal<MSet<String>> prereadBestIcons = new ThreadLocal<>();
-    public static void prereadBestIcons(BusinessLogics BL, DBManager dbManager, Runnable run) {
-        prereadBestIcons.set(SetFact.mSet());
+    public static void prereadBestIcons(BusinessLogics BL, DBManager dbManager, Runnable run, String type) {
+        MSet<String> mImages = SetFact.mSet();
+        prereadBestIcons.set(mImages);
         try {
             run.run();
-
-            MSet<String> mImages = prereadBestIcons.get();
-            ImMap<String, Pair<String, Double>> readImages = readBestIcons(BL, dbManager, mImages.immutable());
-            for(int i = 0, size = readImages.size(); i < size; i++)
-                cachedBestIcons.put(readImages.getKey(i), readImages.getValue(i));
         } finally {
             prereadBestIcons.set(null);
         }
+
+        prereadBestIcons(BL, dbManager, mImages.immutable());
+    }
+
+    public static void prereadBestIcons(BusinessLogics BL, DBManager dbManager, ImSet<String> images) {
+        ImMap<String, Pair<String, Double>> readImages = readBestIcons(BL, dbManager, images);
+        for(int i = 0, size = readImages.size(); i < size; i++)
+            cachedBestIcons.put(readImages.getKey(i), readImages.getValue(i));
     }
 
     public static Pair<String, Double> getBestIcon(String name) {

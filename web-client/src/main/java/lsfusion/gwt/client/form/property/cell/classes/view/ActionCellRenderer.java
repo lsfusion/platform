@@ -26,10 +26,6 @@ public class ActionCellRenderer extends CellRenderer {
         return globalCaptionIsDrawn || property.hasStaticImage() || property.hasDynamicImage();
     }
 
-    protected boolean hasImage(RenderContext renderContext) {
-        return hasImage(renderContext.globalCaptionIsDrawn());
-    }
-
     protected boolean hasImage(UpdateContext updateContext) {
         return hasImage(updateContext.globalCaptionIsDrawn());
     }

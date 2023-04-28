@@ -637,25 +637,7 @@
         </property>
     </bean>
 
-    <bean id="prereadIconsFormsTask" class="lsfusion.server.logics.form.controller.init.PrereadIconsFormsTask">
-        <property name="BL" ref="businessLogics"/>
-        <property name="dependencies">
-            <set>
-                <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
-            </set>
-        </property>
-    </bean>
-
-    <bean id="prereadIconsNavigatorElementsTask" class="lsfusion.server.logics.navigator.controller.init.PrereadIconsNavigatorElementsTask">
-        <property name="BL" ref="businessLogics"/>
-        <property name="dependencies">
-            <set>
-                <ref bean="executeImportIconsTask"/> <!-- icons should be synchronized first -->
-            </set>
-        </property>
-    </bean>
-
-    <bean id="prereadIconsClassesTask" class="lsfusion.server.logics.classes.controller.init.PrereadIconsClassesTask">
+    <bean id="prereadIconsTask" class="lsfusion.server.logics.form.controller.init.PrereadIconsTask">
         <property name="BL" ref="businessLogics"/>
         <property name="dependencies">
             <set>
@@ -697,9 +679,7 @@
         <property name="dependencies">
             <set>
                 <ref bean="executeOnStartedTask"/>
-                <ref bean="prereadIconsFormsTask"/>
-                <ref bean="prereadIconsNavigatorElementsTask"/>
-                <ref bean="prereadIconsClassesTask"/>
+                <ref bean="prereadIconsTask"/>
             </set>
         </property>
     </bean>

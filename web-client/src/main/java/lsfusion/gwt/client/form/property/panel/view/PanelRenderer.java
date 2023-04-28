@@ -25,12 +25,12 @@ public abstract class PanelRenderer {
 
     public ArrayList<Integer> bindingEventIndices;
 
-    public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey) {
+    public PanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, boolean globalCaptionIsDrawn) {
         this.form = form;
         this.property = property;
         this.columnKey = columnKey;
 
-        value = new ActionOrPropertyPanelValue(property, columnKey, form, false, controller); // captionContainer != null, now we use different approach when button is renderered as caption
+        value = new ActionOrPropertyPanelValue(property, columnKey, form, globalCaptionIsDrawn, controller); // captionContainer != null, now we use different approach when button is renderered as caption
     }
 
     protected void finalizeInit() {

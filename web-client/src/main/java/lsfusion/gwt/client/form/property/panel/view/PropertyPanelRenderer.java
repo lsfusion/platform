@@ -22,7 +22,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     private Widget label;
 
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
-        super(form, controller, property, columnKey);
+        super(form, controller, property, columnKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
 
 //        value.getElement().setAttribute("id", property.sID);
         value.getElement().setId(property.propertyFormName);
@@ -45,11 +45,13 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     @Override
     public void update(PValue value, boolean loading, AppBaseImage image, String valueElementClass, String background, String foreground, boolean readOnly) {
-        // we don't need image in value
-        super.update(value, loading, null, valueElementClass, background, foreground, readOnly);
-
-        if(property.hasDynamicImage())
+        if(property.hasDynamicImage() && !property.isAction()) {
             BaseImage.updateImage(image, label, property.panelCaptionVertical);
+            image = null;
+        }
+
+        // we don't need image in value
+        super.update(value, loading, image, valueElementClass, background, foreground, readOnly);
     }
 
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {

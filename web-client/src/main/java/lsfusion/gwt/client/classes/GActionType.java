@@ -16,6 +16,7 @@ import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.panel.view.ActionOrPropertyValueController;
 import lsfusion.gwt.client.form.property.panel.view.ActionPanelRenderer;
 import lsfusion.gwt.client.form.property.panel.view.PanelRenderer;
+import lsfusion.gwt.client.form.property.panel.view.PropertyPanelRenderer;
 
 import java.text.ParseException;
 
@@ -24,6 +25,8 @@ public class GActionType extends GDataType {
 
     @Override
     public PanelRenderer createPanelRenderer(GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
+        if(property.isAlignCaption() && captionContainer != null)
+            return new PropertyPanelRenderer(form, controller, property, columnKey, captionContainer);
         return new ActionPanelRenderer(form, controller, property, columnKey);
     }
 

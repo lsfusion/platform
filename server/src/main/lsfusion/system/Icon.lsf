@@ -1,6 +1,6 @@
 MODULE Icon;
 
-REQUIRE Utils, Reflection;
+REQUIRE Utils, Reflection, SystemEvents;
 
 // Icon properties
 
@@ -19,9 +19,9 @@ styles '{icon.free.class}' = DATA STRING (Icon);
 EXTEND CLASS Icon {
     null
 }
-onStarted() {
-    name(Icon.null) <- 'none';
-    explicit(Icon.null) <- 'none';
+onStarted() + {
+    name(Icon.null) <- 'null';
+    explicit(Icon.null) <- 'null';
 }
 
 type(Icon i) = type(styles(i)) MATERIALIZED;
@@ -157,15 +157,16 @@ importIcons '{icon.import.json}' () {
 
 // Icons form
 
-search '{icon.action.name}' = DATA LOCAL STRING ();
+search '{icon.action.name}' = DATA LOCAL STRING () CHARWIDTH 30;
 style 'Style' = DATA LOCAL STRING ();
+searchAndStyle = search() + ',' + style();
 WHEN LOCAL CHANGED(search()) OR CHANGED (style()) DO {
-    bestIconNames(search() + ',' + style()) <- TRUE;
+    bestIconNames(searchAndStyle()) <- TRUE;
     getBestIcons();
 }
 FORM icons '{navigator.icon}' 
-    PROPERTIES() importIcons, search, style
-    PROPERTIES bestIconClass '{icon.best.icon.name}' = bestIconClasses(search())  READONLY IMAGE bestIconClasses(search()), bestIconRank '{icon.best.icon.rank}' = bestIconRanks(search()) READONLY 
+    PROPERTIES() search, style
+    PROPERTIES bestIconImage 'Best icon' = {} IMAGE bestIconClasses(searchAndStyle()), bestIconClass '{icon.best.icon.name}' = bestIconClasses(searchAndStyle())  READONLY, bestIconRank '{icon.best.icon.rank}' = bestIconRanks(searchAndStyle()) READONLY 
     OBJECTS i = Icon 
     PROPERTIES iconImage '{icon.icon}' = {} IMAGE iconClass(i, style()) GRID, rank '{icon.rank}' = tsRank(i, nameToIconQuery(search()), style())
     PROPERTIES(i) READONLY name, explicit, label, terms, synonyms, styles, search
@@ -174,25 +175,18 @@ FORM icons '{navigator.icon}'
 
 DESIGN icons {
     OBJECTS {
-        NEW import {
-            MOVE PROPERTY(importIcons()) {
-                fontSize = 36;
+        NEW iconSearch {
+            horizontal = TRUE;
+            NEW search {
+                MOVE PROPERTY(search());
+                MOVE PROPERTY(style());
             }
-        }
-        NEW search {
-            MOVE PROPERTY(search()) {
-                fontSize = 36;
-                width = 500;
-            }
-        }
-        NEW bestIcon {
-            MOVE PROPERTY(bestIconClass) {
-                fontSize = 36;
-                width = 500;
-            }
-            MOVE PROPERTY(bestIconRank) {
-                fontSize = 36;
-                width = 500;
+            NEW bestIcon {
+                MOVE PROPERTY(bestIconImage) {
+                    alignCaption = TRUE;
+                }
+                MOVE PROPERTY(bestIconClass);
+                MOVE PROPERTY(bestIconRank);
             }
         }
         NEW icons {
@@ -248,11 +242,12 @@ FORM icons_test
     FILTERS iconRank(q, i) > 0
 ;
 
-NAVIGATOR {
-    system {
-        NEW icons_test;
-    }
-}
+// for debug purposes
+//NAVIGATOR {
+//    system {
+//        NEW icons_test;
+//    }
+//}
 
 // icon utility properties
 
