@@ -2287,7 +2287,7 @@ signaturePropertyDefinition[List<TypedParameter> context, boolean dynamic] retur
 		$property = self.addScriptedSignatureProp($expr.property);
 	}
 } 
-	: 	'CLASS' '(' expr=propertyExpression[context, dynamic] ')'
+	: 	('CLASS' | 'ISCLASS') '(' expr=propertyExpression[context, dynamic] ')'
 	;
 
 activeTabPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property]
