@@ -24,6 +24,8 @@ onStarted() + {
     explicit(Icon.null) <- 'null';
 }
 
+isIconModuleAvailable() += TRUE;
+
 type(Icon i) = type(styles(i)) MATERIALIZED;
 INDEX name(Icon i), type(i);
 icon = GROUP AGGR Icon icn BY name(icn), type(icn) MATERIALIZED INDEXED;

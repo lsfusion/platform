@@ -17,9 +17,12 @@ onStartedApply() {
     APPLY;
 }
 
+isIconModuleAvailable = ABSTRACT BOOLEAN ();
+iconIfAvailable(STRING imagePath, STRING fontClasses) = imagePath + (IF isIconModuleAvailable() THEN ';' + fontClasses ELSE '');
+
 //todo logo() logic temporarily commented to use lsf-font .css class and AppImages.java
 
-defaultLogo() = 'logo.png;lsfi lsfi-logo-vertical';
+defaultLogo() = iconIfAvailable('logo.png','lsfi lsfi-logo-vertical');
 //defaultLogo() = DATA IMAGEFILE ();
 //onStarted() + {
 //    IF NOT defaultLogo() THEN {
@@ -70,7 +73,7 @@ verticalNavbar '{navigator.navbar.vertical}' (CustomUser u) = IF userVerticalNav
 verticalNavbar = verticalNavbar(currentUser());
 
 verticalNavbarCaption = IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}';
-verticalNavbarImage = IF verticalNavbar() THEN 'navbarHorz.png;fa-solid fa-window-maximize' ELSE 'navbarVert.png;fa-solid fa-window-maximize fa-rotate-270';
+verticalNavbarImage = IF verticalNavbar() THEN iconIfAvailable('navbarHorz.png', 'fa-solid fa-window-maximize') ELSE iconIfAvailable('navbarVert.png', 'fa-solid fa-window-maximize fa-rotate-270');
 toggleVerticalNavbar () {
     userVerticalNavbar(currentUser()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
     APPLY;
@@ -84,7 +87,7 @@ pinNavbar '{navigator.navbar.pin}' (CustomUser u) = IF userPinNavbar(u) THEN use
 pinNavbar() = pinNavbar(currentUser());
 
 pinNavbarCaption = IF pinNavbar() THEN '{system.events.navbar.unpin}' ELSE '{system.events.navbar.pin}';
-pinNavbarImage = IF pinNavbar() THEN 'navbarUnpin.png;fa-solid fa-thumbtack fa-rotate-90' ELSE 'navbarPin.png;fa-solid fa-thumbtack';
+pinNavbarImage = IF pinNavbar() THEN iconIfAvailable('navbarUnpin.png','fa-solid fa-thumbtack fa-rotate-90') ELSE iconIfAvailable('navbarPin.png','fa-solid fa-thumbtack');
 togglePinNavbar () {
     userPinNavbar(currentUser()) <- IF pinNavbar() THEN TFALSE ELSE TTRUE;
     apply();
