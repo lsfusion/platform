@@ -8,11 +8,11 @@ REQUIRE Utils, Reflection;
 
 badge(STRING badgeText) = '(' + badgeText + ')';
 // usage example: imaged($M{myimage},'mytext', TRUE, TRUE)
-imaged(STRING imageHTML, STRING text, BOOLEAN vertical, BOOLEAN start) = text AS STRING;
-badged(STRING badgeText, STRING text, BOOLEAN vertical, BOOLEAN start) = CONCAT ' ', text, badge(badgeText);
+imaged(STRING imageHTML, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN noWrap) = text AS STRING;
+badged(STRING badgeText, STRING text, BOOLEAN vertical, BOOLEAN start, BOOLEAN noWrap) = CONCAT ' ', text, badge(badgeText);
 
-imaged(STRING imageHTML, STRING text) = imaged(imageHTML, text, NULL, TRUE);
-badged(STRING text, STRING badgeText) = badged(badgeText, text, NULL, NULL);
+imaged(STRING imageHTML, STRING text) = imaged(imageHTML, text, NULL, TRUE, TRUE);
+badged(STRING text, STRING badgeText) = badged(badgeText, text, NULL, NULL, TRUE);
 
 badged(STRING text, INTEGER badgeNumber) = badged(text, STRING(badgeNumber));
 
