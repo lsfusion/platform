@@ -29,7 +29,6 @@ import lsfusion.gwt.client.form.property.async.GInputListAction;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.GCompletionType;
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.SuggestBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.SimpleTextBasedCellRenderer;
-import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
@@ -265,7 +264,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     public void render(Element cellParent, RenderContext renderContext, Pair<Integer, Integer> renderedSize, PValue oldValue) {
         assert !isRenderInputElement(cellParent);
 
-        TextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
+        SimpleTextBasedCellRenderer.setPadding(cellParent); // paddings should be for the element itself (and in general do not change), because the size is set for this element and reducing paddings will lead to changing element size
 
         boolean needRenderedSize = property.autoSize;
         boolean multiLine = isMultiLine();
@@ -290,7 +289,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     public void clearRender(Element cellParent, RenderContext renderContext, boolean cancel) {
         assert !isRenderInputElement(cellParent);
 
-        TextBasedCellRenderer.clearPadding(cellParent);
+        SimpleTextBasedCellRenderer.clearPadding(cellParent);
 
         boolean needRenderedSize = property.autoSize;
 

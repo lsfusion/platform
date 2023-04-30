@@ -24,7 +24,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
             setBasedEmptyElement(element);
         } else {
             element.getStyle().clearPadding();
-            element.removeClassName("requiredValueString");
+            element.removeClassName("text-based-value-required");
             element.setTitle("");
 
             img = (value != null ? getBaseImage(value) : StaticImage.EMPTY).createImage();
@@ -67,7 +67,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
     @Override
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
         element.getStyle().clearPadding();
-        element.removeClassName("requiredValueString");
+        element.removeClassName("text-based-value-required");
         element.setTitle("");
 
         return false;
@@ -77,7 +77,7 @@ public abstract class FileBasedCellRenderer extends CellRenderer {
         element.getStyle().setPaddingRight(4, Style.Unit.PX);
         element.getStyle().setPaddingLeft(4, Style.Unit.PX);
         element.setTitle(REQUIRED_VALUE);
-        element.addClassName("requiredValueString");
+        element.addClassName("text-based-value-required");
     }
 
     protected abstract BaseImage getBaseImage(PValue value);

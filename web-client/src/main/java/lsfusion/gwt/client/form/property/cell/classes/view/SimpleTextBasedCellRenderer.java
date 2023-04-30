@@ -6,12 +6,16 @@ import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
 import lsfusion.gwt.client.form.property.cell.view.CellRenderer;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
+
+import static lsfusion.gwt.client.view.StyleDefaults.CELL_HORIZONTAL_PADDING;
 
 // the renderer which may be renderered as plain input (or td in table)
-public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer {
+public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
 
     public SimpleTextBasedCellRenderer(GPropertyDraw property) {
         super(property);
@@ -20,7 +24,23 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
     public static void render(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine) {
         CellRenderer.setBasedTextFonts(property, element, renderContext);
 
-        element.getStyle().setWhiteSpace(multiLine ? Style.WhiteSpace.PRE_WRAP : Style.WhiteSpace.PRE);
+        element.addClassName("text-based-prop-value");
+        if(multiLine)
+            element.addClassName("text-based-prop-wrap");
+    }
+
+    public static void clearRender(GPropertyDraw property, Element element, RenderContext renderContext, boolean multiLine) {
+        element.removeClassName("text-based-prop-value");
+        if(multiLine)
+            element.removeClassName("text-based-prop-wrap");
+    }
+
+    public static void setPadding(Element element) {
+        element.addClassName("text-based-prop-sized");
+    }
+
+    public static void clearPadding(Element element) {
+        element.removeClassName("text-based-prop-sized");
     }
 
     @Override
@@ -83,10 +103,6 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
         element.setPropertyObject(inputElementProp, inputElement);
     }
 
-    public static void setSizeElement(Element element, InputElement inputElement) {
-        element.setPropertyObject(inputElementProp, inputElement);
-    }
-
     private final static String toolbarContainerProp = "toolbarContainer";
 
     private static void setToolbarContainer(Element element) {
@@ -133,7 +149,10 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
         if(inputElement != null)
             setInputElement(element, inputElement);
 
-        super.renderContent(element, renderContext);
+        setPadding(getSizeElement(element));
+
+        if(property.isEditableNotNull())
+            element.addClassName("text-based-value-required");
 
         return renderedAlignment;
     }
@@ -142,12 +161,14 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
     public boolean clearRenderContent(Element element, RenderContext renderContext) {
 
 //        boolean renderedAlignment = false;
-        boolean inputElement = false;
+        boolean isInputElement = false;
 
         boolean isTDOrTH = GwtClientUtils.isTDorTH(element); // because canBeRenderedInTD can be true
         boolean isInput = isTagInput();
-        if (isInput && (isTDOrTH || needToRenderToolbarContent())) {
-            inputElement = true;
+        boolean multiLine = isMultiLine();
+
+        if (isInput && (isTDOrTH || isToolbarContainer(element))) { // needToRenderToolbarContent()
+            isInputElement = true;
             SimpleTextBasedCellEditor.clearInputElement(element, true);
 //            renderedAlignment = true;
         } else {
@@ -157,21 +178,68 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
 //            }
 
             if(isInput)
-                inputElement = true;
+                isInputElement = true;
 
             CellRenderer.clearBasedTextFonts(property, element, renderContext);
-            SimpleTextBasedCellRenderer.clearRender(property, element, renderContext);
+            clearRender(property, element, renderContext, multiLine);
         }
 
-        if(inputElement)
+        if(isInputElement)
             setInputElement(element, null);
 
-        super.clearRenderContent(element, renderContext);
+        clearPadding(getSizeElement(element));
+
+        if (property.isEditableNotNull())
+            element.removeClassName("text-based-value-required");
+
+        element.removeClassName("text-based-value-null");
+        element.removeClassName("text-based-value-empty");
+
+        if(property.isEditableNotNull()) {
+            Element inputElement = getInputElement(element);
+            if(inputElement != null) {
+                inputElement.removeClassName("is-invalid");
+            }
+        }
+
+        element.removeClassName("text-based-value-multi-line");
 
         return true; // renderedAlignment;
     }
 
-    protected boolean setInnerContent(Element element, String innerText) {
+    protected boolean isMultiLine() {
+        return false;
+    }
+
+    @Override
+    public int getWidthPadding() {
+        return CELL_HORIZONTAL_PADDING;
+    }
+
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        String innerText = value != null ? format(value) : null;
+
+        String title;
+        title = property.echoSymbols ? "" : innerText;
+        if(innerText == null) {
+            element.addClassName("text-based-value-null");
+            if(property.isEditableNotNull())
+                title = REQUIRED_VALUE;
+            innerText = "";
+        } else {
+            element.removeClassName("text-based-value-null");
+            if(innerText.isEmpty()) {
+                innerText = EMPTY_VALUE;
+                element.addClassName("text-based-value-empty");
+            } else
+                element.removeClassName("text-based-value-empty");
+        }
+
+        element.setTitle(title);
+
+        if(innerText.contains("\n"))
+            element.addClassName("text-based-value-multi-line");
+
         Element inputElement = getInputElement(element);
         if(inputElement != null) {
             assert isTagInput();
@@ -190,4 +258,6 @@ public abstract class SimpleTextBasedCellRenderer extends TextBasedCellRenderer 
         element.setInnerText(innerText.isEmpty() ? EscapeUtils.UNICODE_NBSP : innerText);
         return true;
     }
+
+    public abstract String format(PValue value);
 }

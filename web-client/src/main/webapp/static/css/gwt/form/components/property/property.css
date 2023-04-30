@@ -17,11 +17,23 @@
     /*color: var(--text-color);*/
 }
 
-.text-based-prop:not(.prop-input) {
+.text-based-prop-sized:not(.prop-input) {
     cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
 }
 
-.emptyValueString {
+/* we set pre to preserve white spaces and line preaks in prop data*/
+.text-based-prop-value {
+    white-space: pre;
+}
+.text-based-prop-value.text-based-prop-wrap {
+    white-space: pre-wrap;
+}
+/* when we have string and \n inside we still don't want it to wrap, so we have to set nowrap for that (we loose pre, but there is no pre-nowrap for now)*/
+.text-based-prop-value.text-based-value-multi-line:not(.text-based-prop-wrap) {
+    white-space: pre-wrap;
+}
+
+.text-based-value-empty {
     color: var(--null-value-string-color);
 }
 

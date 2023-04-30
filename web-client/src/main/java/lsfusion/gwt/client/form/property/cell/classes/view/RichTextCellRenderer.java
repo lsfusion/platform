@@ -2,6 +2,8 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
+import lsfusion.gwt.client.form.property.PValue;
+import lsfusion.gwt.client.form.property.cell.view.UpdateContext;
 
 public class RichTextCellRenderer extends TextCellRenderer {
 
@@ -10,8 +12,12 @@ public class RichTextCellRenderer extends TextCellRenderer {
     }
 
     @Override
-    protected boolean setInnerContent(Element element, String innerText) {
+    public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        String innerText = value != null ? format(value) : null;
+
+        element.setTitle(innerText);
         initQuill(element, innerText);
+
         return true;
     }
 
@@ -55,11 +61,6 @@ public class RichTextCellRenderer extends TextCellRenderer {
             Quill.register(blot, true);
         }
     }-*/;
-
-    @Override
-    protected String getTitle(Element element, String stringValue) {
-        return element.getInnerText();
-    }
 
     @Override
     public boolean isCustomRenderer() {

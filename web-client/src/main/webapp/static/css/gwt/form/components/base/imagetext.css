@@ -36,3 +36,7 @@
     /* we want display inline just as regular text */
     display: inline;
 }
+
+.wrap-text-nowrap {
+    white-space: nowrap;
+}

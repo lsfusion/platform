@@ -1,7 +1,7 @@
 
 /* text */
 
-.text-based-prop, .text-based-prop.dataGridCell {
+.text-based-prop-sized, .text-based-prop-sized.dataGridCell {
     padding: 2px 3px;
 }
 
@@ -32,11 +32,11 @@
     border-color: transparent transparent var(--not-null-corner-triangle-color) transparent;
 }
 
-.nullValueString.requiredValueString {
+.text-based-value-null.text-based-value-required {
     /*color: var(--required-value-string-color);*/
     position: relative;
 }
-.nullValueString.requiredValueString::before { /* using ::before to do not conflict with triangles  */
+.text-based-value-null.text-based-value-required::before { /* using ::before to do not conflict with triangles  */
     content: "";
     background: var(--not-null-line-color);
     height: 1px;

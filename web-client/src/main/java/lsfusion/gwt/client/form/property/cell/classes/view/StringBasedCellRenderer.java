@@ -22,16 +22,6 @@ public abstract class StringBasedCellRenderer extends SimpleTextBasedCellRendere
     }
 
     @Override
-    protected boolean setInnerContent(Element element, String innerText) {
-        // it's tricky, since we use simpleText and thus put everything in td
-        // so we cannot use max-height for cutting extra text (td doesn't respect it), so we'll have to set NOWRAP whitespace
-        if(!isMultiLine())
-            element.getStyle().setWhiteSpace(innerText.contains("\n") ? Style.WhiteSpace.NOWRAP : Style.WhiteSpace.PRE);
-
-        return super.setInnerContent(element, innerText);
-    }
-
-    @Override
     public String format(PValue value) {
         if (echoSymbols)
             return multiplyString(EscapeUtils.UNICODE_BULLET, 6);
