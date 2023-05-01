@@ -33,7 +33,7 @@ a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for 
 }
 /* when we have string and \n inside we still don't want it to wrap, so we have to set nowrap for that (we loose pre, but there is no pre-nowrap for now)*/
 .text-based-prop-value.text-based-value-multi-line:not(.text-based-prop-wrap) {
-    white-space: pre-wrap;
+    white-space: nowrap;
 }
 
 .text-based-value-empty {
