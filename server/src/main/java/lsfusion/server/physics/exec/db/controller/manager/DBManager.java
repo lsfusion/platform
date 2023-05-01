@@ -2686,7 +2686,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         }
                         if(version >= 36) {
                             indices.put(index, IndexOptions.deserialize36(inputDB));
-                        } if (version >= 32) {
+                        } else if (version >= 32) {
                             indices.put(index, IndexOptions.deserialize(inputDB));
                         } else {
                             indices.put(index, new IndexOptions(inputDB.readBoolean()));
