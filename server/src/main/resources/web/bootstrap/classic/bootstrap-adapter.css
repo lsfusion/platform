@@ -48,11 +48,6 @@
 
 /* we don't want to use accordion, so we'll use the card class, but in this case we have to implement collapsible manually */
 
-.caption-panel-header, .card-header {
-    /* h6 has textbox cursor by default*/
-    cursor: default;
-}
-
 /* we want to have the same width for expanded and collapsed folders*/
 .caption-panel-header.collapsible::before,
 .card-header.collapsible::before,
@@ -101,7 +96,7 @@
 }
 
 /* the problem that for toolbar there is no appropriate class in bootstrap, default toolbar with "regular" (not solid) icons looks pretty awkward */
-/* so we increase their size, remove paddings / borders to look more autnentic / similar to regular buttons */
+/* so we increase their size, remove paddings / borders to look more authentic / similar to regular buttons */
 
 .btn-toolbar .btn {
     border: 0;
@@ -245,4 +240,10 @@
     We manually set z-index in lsf-dropdown to 1070*/
 .dropdown-menu.lsf-dropdown {
     --bs-dropdown-zindex: 1070;
+}
+
+/* wrapping is not desirable behaviour for the toolbar, at least in property toolbar (when toolbar is too large and more than a half of the property width) */
+
+.btn-toolbar.property-toolbar {
+    flex-wrap: nowrap;
 }

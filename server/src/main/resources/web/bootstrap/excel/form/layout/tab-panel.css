@@ -67,10 +67,6 @@
     background: var(--selection-color);
 }
 
-.nav-tabs .nav-item-disabled {
-    color: #999999;
-}
-
 .nav-tabs .nav-link:hover {
     /*background: var(--component-hover-background-color);*/
 }

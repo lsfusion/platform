@@ -48,7 +48,9 @@ public class SetAction<P extends PropertyInterface, W extends PropertyInterface,
     
     public static boolean hasFlow(PropertyMapImplement<?,?> writeTo, ChangeFlowType type) {
         if(type.isChange() && writeTo.property.canBeGlobalChanged())
-            return true;             
+            return true;
+        if(type == ChangeFlowType.ANYEFFECT)
+            return true;
         return false;
     }
 

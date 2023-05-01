@@ -235,6 +235,8 @@ public class ChangeClassAction<T extends PropertyInterface, I extends PropertyIn
             return true;
         if(type == ChangeFlowType.PRIMARY && valueClass instanceof CustomClass)
             return true;
+        if(type == ChangeFlowType.ANYEFFECT)
+            return true;
         return super.hasFlow(type);
     }
 

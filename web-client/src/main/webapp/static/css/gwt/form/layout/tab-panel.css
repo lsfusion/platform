@@ -48,20 +48,6 @@
 /*    padding-left: var(--border-cont-horz-padding);*/
 /*}*/
 
-/* cursors - now the captions are not <a> so we'll change the cursor explicitly */
-
-.nav-link {
-    cursor: pointer;
-}
-
-.nav-tabs .nav-link.active {
-    cursor: default;
-}
-
-.nav-tabs .nav-item-disabled {
-    cursor: default;
-}
-
 .tab-panel {
 }
 /* if there are no tabs, we want the bar to be at the start / end */

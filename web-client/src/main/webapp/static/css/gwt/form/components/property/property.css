@@ -17,8 +17,11 @@
     /*color: var(--text-color);*/
 }
 
-.text-based-prop-sized:not(.prop-input) {
+.text-based-prop-value:not(.prop-input) {
     cursor: default; /* need this since text by default gets "editing" cursor, however it overrides for example resize cursor, but it's not clear what to do with it */
+}
+a.text-based-prop-value:not(.prop-input) { /* we have to set cursor pointer for a since we don't set href and thus UA doesn't set cursor pointer */
+    cursor: pointer;
 }
 
 /* we set pre to preserve white spaces and line preaks in prop data*/

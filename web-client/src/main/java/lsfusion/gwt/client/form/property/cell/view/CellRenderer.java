@@ -12,6 +12,7 @@ import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.design.GFont;
 import lsfusion.gwt.client.form.event.GKeyStroke;
+import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.GEditBindingMap;
@@ -469,6 +470,7 @@ public abstract class CellRenderer {
                 toolbarElement = Document.get().createDivElement();
                 toolbarElement.addClassName(start ? "property-toolbar-start" : "property-toolbar-end");
                 toolbarElement.addClassName("property-toolbar");
+                GToolbarView.styleToolbar(toolbarElement);
                 // we need background-inherit for hover components because of transition (toolbar gets all the width immediately which leads to some annoying blinking)
 //                toolbarElement.addClassName("background-inherit");
                 element.appendChild(toolbarElement);
@@ -500,12 +502,14 @@ public abstract class CellRenderer {
                 int hoverCount = 0;
                 for (ToolbarAction toolbarAction : toolbarActions) {
                     // there is an assertion that the DOM structure will be exactly like that in setOnPressed / for optimization reasons
-                    DivElement actionDivElement = Document.get().createDivElement();
+                    ButtonElement actionDivElement = Document.get().createPushButtonElement();
+                    actionDivElement.addClassName("btn");
 
                     Element actionImgElement = toolbarAction.getImage().createImage();
 
                     actionDivElement.appendChild(actionImgElement);
                     actionDivElement.addClassName("property-toolbar-item"); // setting paddings
+                    GToolbarView.styleToolbarItem(actionDivElement);
                     actionDivElement.addClassName("background-inherit");
 
                     toolbarAction.setOnPressed(actionImgElement, updateContext);

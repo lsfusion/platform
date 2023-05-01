@@ -2,3 +2,8 @@
     border: 0;
     padding: 0 0.25em;
 }
+
+.btn-toolbar {
+    display: flex;
+    justify-content: flex-start;
+}

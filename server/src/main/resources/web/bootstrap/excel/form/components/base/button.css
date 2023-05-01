@@ -49,10 +49,6 @@
 .btn-image {
 }
 
-.btn-image > .btn-image-img {
-    margin-bottom: 0.125em; /*center image */
-}
-
 .btn-group {
     position: relative;
     display: inline-flex;

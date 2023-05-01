@@ -3,6 +3,8 @@
 .wrap-text-not-empty {
     --wrap-img-horz-margin: 0.375rem;
     --wrap-img-vert-margin: 0.25rem;
+
+    cursor: default; /* we don't want to use edit cursor, as UA does for the text by default */
 }
 .wrap-text-not-empty.wrap-img-horz.wrap-img-start > .wrap-text-img {
     margin-right: var(--wrap-img-horz-margin);

@@ -2,6 +2,7 @@ package lsfusion.gwt.client.base.view;
 
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.form.object.table.view.GToolbarView;
 
 public abstract class ImageButton extends FormButton {
 
@@ -12,14 +13,12 @@ public abstract class ImageButton extends FormButton {
     public ImageButton(String caption, BaseImage image, boolean vertical, Element element) {
         super(element);
 
-        addStyleName("btn-image");
-        addStyleName("btn-outline-secondary");
+        if(element == null)
+            GToolbarView.styleToolbarItem(getElement());
 
         this.vertical = vertical;
 
         BaseImage.initImageText(this, caption, image, vertical);
-
-//        imgElement.addClassName("btn-image-img"); ???
     }
 
     protected abstract BaseImage getImage();

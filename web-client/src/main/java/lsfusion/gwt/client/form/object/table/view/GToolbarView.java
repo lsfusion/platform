@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form.object.table.view;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.Dimension;
 import lsfusion.gwt.client.base.GwtClientUtils;
@@ -11,7 +12,15 @@ public class GToolbarView extends ResizableComplexPanel {
 
     public GToolbarView() {
         super();
-        setStyleName("btn-toolbar");
+        styleToolbar(getElement());
+    }
+
+    public static void styleToolbar(Element element) {
+        element.addClassName("btn-toolbar");
+    }
+    public static void styleToolbarItem(Element element) {
+        element.addClassName("btn-image");
+        element.addClassName("btn-outline-secondary");
     }
 
     private boolean isEmpty = true;

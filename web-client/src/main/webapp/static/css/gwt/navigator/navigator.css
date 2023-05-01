@@ -222,3 +222,10 @@
 .panelNavigatorView {
     display: block;
 }
+
+/* cursors - links and dropdown items are not <a with href> or <button> (and can have <label> inside for example) so we'll change the cursor explicitly */
+.nav-link:not(.active),
+.nav-link:not(.active) *,
+.nav-link:not(.active) .wrap-text-not-empty {
+    cursor: pointer;
+}

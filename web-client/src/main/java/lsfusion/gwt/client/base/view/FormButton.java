@@ -10,20 +10,20 @@ public class FormButton extends ButtonBase {
     public FormButton(Element element) {
         super(element == null ? Document.get().createPushButtonElement() : element);
         if (element == null)
-            setStyleName("btn");
+            addStyleName("btn");
     }
 
     public FormButton() {
-        this(null);
+        this((Element)null);
     }
 
-    public FormButton(Element element, String html) {
-        this(element);
+    public FormButton(String html) {
+        this();
         setHTML(html);
     }
     
     public FormButton(String html, ButtonStyle style) {
-        this(null, html);
+        this(html);
         setStyle(style);
     }
 

@@ -12,8 +12,7 @@ import lsfusion.gwt.client.base.view.FlexPanel;
 import lsfusion.gwt.client.view.MainFrame;
 
 public class PopupMenuItem extends SimplePanel {
-    private static final String DEPENDENT_STYLENAME_SELECTED_ITEM = "selected";
-    
+
     private PopupMenuItemValue itemValue;
     private Scheduler.ScheduledCommand command;
     private boolean interactive;
@@ -51,14 +50,6 @@ public class PopupMenuItem extends SimplePanel {
 
     public boolean isInteractive() {
         return interactive;
-    }
-
-    protected void setSelectionStyle(boolean selected) {
-        if (selected) {
-            addStyleDependentName(DEPENDENT_STYLENAME_SELECTED_ITEM);
-        } else {
-            removeStyleDependentName(DEPENDENT_STYLENAME_SELECTED_ITEM);
-        }
     }
 
     private static LIElement createLIElement(String text, boolean interactive) {

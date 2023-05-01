@@ -148,7 +148,7 @@ public class TooltipManager {
                 verticalPanel.add(userPathPanel);
                 verticalPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
-                FormButton button = new FormButton(null, messages.applyLabel());
+                FormButton button = new FormButton(messages.applyLabel());
             button.getElement().getStyle().setProperty("padding", "0px 3px");
             button.getElement().getStyle().setMarginTop(5, Style.Unit.PX);
                 verticalPanel.add(button);
