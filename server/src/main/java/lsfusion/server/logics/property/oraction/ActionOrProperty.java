@@ -10,9 +10,6 @@ import lsfusion.base.col.implementations.simple.EmptyOrderMap;
 import lsfusion.base.col.implementations.simple.EmptyRevMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.base.col.interfaces.mutable.add.MAddCol;
-import lsfusion.base.col.lru.LRUSVSMap;
-import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.comb.ListPermutations;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.event.BindingMode;
@@ -608,9 +605,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         public void proceedDefaultDesign(PropertyDrawView propertyView) {
             if(propertyView.isProperty()) {
                 if (propertyView.getType() instanceof LogicalClass) 
-                    propertyView.changeOnSingleClick = Settings.get().getEditBooleanOnSingleClick();
+                    propertyView.changeOnSingleClick = Settings.get().getChangeBooleanOnSingleClick();
             } else
-                propertyView.changeOnSingleClick = Settings.get().getEditActionOnSingleClick();
+                propertyView.changeOnSingleClick = Settings.get().getChangeActionOnSingleClick();
 
             if(propertyView.getCharWidth() == 0)
                 propertyView.setCharWidth(charWidth);
