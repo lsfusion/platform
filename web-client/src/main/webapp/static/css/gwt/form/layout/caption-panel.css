@@ -64,3 +64,10 @@
 
     padding: var(--border-cont-vert-padding) var(--border-cont-horz-padding);
 }
+
+.caption-panel-header.collapsible,
+.caption-panel-header.collapsible.wrap-text-not-empty,
+.card-header.collapsible,
+.card-header.collapsible.wrap-text-not-empty {
+    cursor: pointer;
+}
