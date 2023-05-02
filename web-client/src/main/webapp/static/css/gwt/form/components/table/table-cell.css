@@ -5,7 +5,12 @@
 /* we want to turn cell to hyper link*/
 .linkMode .selectedCellHasEdit {
     color: var(--link-color) !important;
-    cursor: pointer !important;
+}
+
+.linkMode .selectedCellHasEdit,
+.linkMode .selectedCellHasEdit *,
+.linkMode .selectedCellHasEdit .wrap-text-not-empty{
+    cursor: pointer;
 }
 
 .linkMode .selectedCellHasEdit:hover {
