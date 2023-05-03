@@ -278,9 +278,13 @@ public abstract class LogicsModule {
 
     private <T extends LAP<?, ?>> void putLAPToMap(Map<String, List<T>> moduleMap, T lap, String name) {
         if (!moduleMap.containsKey(name)) {
-            moduleMap.put(name, new ArrayList<>());
+            moduleMap.put(name, createLAPList());
         }
         moduleMap.get(name).add(lap);
+    }
+
+    protected <T extends LAP<?, ?>> List<T> createLAPList() {
+        return new ArrayList<>();
     }
 
     protected <P extends PropertyInterface, T extends LAP<P, ?>> void makeActionOrPropertyPublic(T lp, String name, List<ResolveClassSet> signature) {
