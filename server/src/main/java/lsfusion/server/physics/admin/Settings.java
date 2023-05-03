@@ -67,9 +67,9 @@ public class Settings implements Cloneable {
     private boolean enableApplySingleStored = true;
     private boolean enableApplySingleRemoveClasses = true;
 
-    private Boolean editBooleanOnSingleClick;
+    private Boolean changeBooleanOnSingleClick;
 
-    private Boolean editActionOnSingleClick = true;
+    private Boolean changeActionOnSingleClick = true;
 
     private int freeConnections = 12;
 
@@ -421,20 +421,20 @@ public class Settings implements Cloneable {
         this.simpleCheckCompare = simpleCheckCompare;
     }
 
-    public Boolean getEditBooleanOnSingleClick() {
-        return editBooleanOnSingleClick;
+    public Boolean getChangeBooleanOnSingleClick() {
+        return changeBooleanOnSingleClick;
     }
 
-    public void setEditBooleanOnSingleClick(boolean editLogicalOnSingleClick) {
-        this.editBooleanOnSingleClick = editLogicalOnSingleClick;
+    public void setChangeBooleanOnSingleClick(boolean editLogicalOnSingleClick) {
+        this.changeBooleanOnSingleClick = editLogicalOnSingleClick;
     }
 
-    public Boolean getEditActionOnSingleClick() {
-        return editActionOnSingleClick;
+    public Boolean getChangeActionOnSingleClick() {
+        return changeActionOnSingleClick;
     }
 
-    public void setEditActionOnSingleClick(boolean editActionOnSingleClick) {
-        this.editActionOnSingleClick = editActionOnSingleClick;
+    public void setChangeActionOnSingleClick(boolean changeActionOnSingleClick) {
+        this.changeActionOnSingleClick = changeActionOnSingleClick;
     }
 
     public boolean isCheckFollowsWhenObjects() {

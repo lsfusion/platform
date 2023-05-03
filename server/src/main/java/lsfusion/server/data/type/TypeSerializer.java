@@ -172,8 +172,8 @@ public class TypeSerializer {
         if (type == DataType.DBFLINK) return DBFLinkClass.get(inStream.readBoolean());
         if (type == DataType.JDBC) return new JDBCTable.JDBCDataClass(inStream.readInt(), inStream.readUTF());
 
-//        if (DBManager.oldDBStructureVersion > DBManager.newDBStructureVersion)
-//            return TextClass.instance;
+        if (DBManager.oldDBStructureVersion > DBManager.newDBStructureVersion)
+            return TextClass.instance;
 
         throw new IOException();
     }
