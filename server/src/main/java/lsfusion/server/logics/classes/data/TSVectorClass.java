@@ -2,6 +2,7 @@ package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.physics.admin.Settings;
@@ -13,7 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public class TSVectorClass extends DataClass<Array>{
+public class TSVectorClass extends DataClass<Array> implements DBType {
 
     private TSVectorClass() {
         super(LocalizedString.create("{classes.tsvector}"));
@@ -32,7 +33,11 @@ public class TSVectorClass extends DataClass<Array>{
     }
 
     @Override
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public DBType getDBType() {
+        return this;
+    }
+    @Override
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getTSVector();
     }
 
@@ -110,8 +115,11 @@ public class TSVectorClass extends DataClass<Array>{
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        String language = Settings.get().getTsVectorDictionaryLanguage();
-        return typeFrom instanceof StringClass ? "to_tsvector('" + language + "'::regconfig, " + value + ")" : super.getCast(value, syntax, typeEnv, typeFrom);
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+        if(typeFrom instanceof StringClass) {
+            String language = Settings.get().getTsVectorDictionaryLanguage();
+            return "to_tsvector('" + language + "'::regconfig, " + value + ")";
+        }
+        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
     }
 }

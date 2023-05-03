@@ -1,12 +1,14 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
 import lsfusion.base.col.interfaces.immutable.ImMap;
+import lsfusion.server.data.expr.BaseExpr;
 
 public class JoinCustomFormulaImpl extends CustomFormulaImpl implements FormulaJoinImpl {
 
     private final boolean hasNotNull;
 
-    public boolean hasNotNull() {
+    public boolean hasNotNull(ImList<BaseExpr> exprs) {
         return hasNotNull;
     }
 

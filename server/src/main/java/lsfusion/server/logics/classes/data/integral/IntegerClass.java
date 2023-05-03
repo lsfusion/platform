@@ -49,7 +49,7 @@ public class IntegerClass extends IntClass<Integer> {
         return value > 0;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getIntegerType();
     }
 

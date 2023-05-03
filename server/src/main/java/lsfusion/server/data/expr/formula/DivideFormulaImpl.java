@@ -1,5 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -52,7 +54,7 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
                         src2 = type2.getCast(src2, syntax, env);
                 }
 
-                return type.getSafeCast("(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")", syntax, env, null, true);
+                return type.getArithCast("(" + src1 + "/" + syntax.getNotZero(src2, type, env) + ")", syntax, env);
             }
             return null;
         }
@@ -64,7 +66,7 @@ public class DivideFormulaImpl extends ScaleFormulaImpl {
         super(DivideTypeConversion.instance, DivideConversionSource.instance);
     }
 
-    public boolean hasNotNull() {
+    public boolean hasNotNull(ImList<BaseExpr> exprs) {
         return true;
     }
 }

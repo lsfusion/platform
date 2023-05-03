@@ -1,10 +1,12 @@
 package lsfusion.server.logics.classes.data.time;
 
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.TextBasedClass;
+import lsfusion.server.logics.classes.data.integral.NumericClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.math.BigDecimal;
@@ -45,8 +47,8 @@ public abstract class IntervalClass<T> extends TextBasedClass<BigDecimal> {
     }
 
     @Override
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getIntervalType();
+    public DBType getDBType() {
+        return NumericClass.defaultNumeric;
     }
 
     @Override

@@ -145,10 +145,6 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
         return Types.TIME;
     }
 
-    @Override
-    public String getIntervalType() {
-        return "numeric";
-    }
 
     @Override
     public int getIntervalSQL() {
@@ -169,10 +165,6 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
 
     public int getDoubleSQL() {
         return Types.DOUBLE;
-    }
-
-    public String getBitType() {
-        return "integer";
     }
 
     public int getBitSQL() {
@@ -201,10 +193,6 @@ public abstract class DefaultSQLSyntax implements SQLSyntax {
 
     public int getByteArraySQL() {
         return Types.LONGVARBINARY;
-    }
-
-    public String getColorType() {
-        return "integer";
     }
 
     public String getJSON() {

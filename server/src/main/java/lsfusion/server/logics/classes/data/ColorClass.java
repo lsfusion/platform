@@ -2,7 +2,9 @@ package lsfusion.server.logics.classes.data;
 
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.awt.*;
@@ -36,8 +38,8 @@ public class ColorClass extends DataClass<Color> {
     }
 
     @Override
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getColorType();
+    public DBType getDBType() {
+        return IntegerClass.instance;
     }
     @Override
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

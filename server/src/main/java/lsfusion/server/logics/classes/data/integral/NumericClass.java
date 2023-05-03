@@ -133,7 +133,7 @@ public class NumericClass extends IntegralClass<BigDecimal> {
         return isUnlimited() ? Settings.get().getMaxNumericScale() : scale.value;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getNumericType(precision, scale);
     }
 

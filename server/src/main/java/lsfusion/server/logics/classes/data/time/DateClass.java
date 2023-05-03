@@ -66,7 +66,7 @@ public class DateClass extends TimeSeriesClass<LocalDate> {
         return LocalDate.now();
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDateType();
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

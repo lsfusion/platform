@@ -6,7 +6,9 @@ import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.dbf.OverJDBField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
@@ -66,8 +68,9 @@ public class LogicalClass extends DataClass<Boolean> {
         return true;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getBitType();
+    @Override
+    public DBType getDBType() {
+        return IntegerClass.instance;
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

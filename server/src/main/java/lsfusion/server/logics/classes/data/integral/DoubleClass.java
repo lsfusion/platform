@@ -50,7 +50,7 @@ public class DoubleClass extends IntegralClass<Double> {
         return obj > 0.0;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDoubleType();
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

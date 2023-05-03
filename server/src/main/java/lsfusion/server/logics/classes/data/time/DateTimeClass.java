@@ -72,7 +72,7 @@ public class DateTimeClass extends HasTimeClass<LocalDateTime> {
         return LocalDateTime.now();
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getDateTimeType(millisLength);
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

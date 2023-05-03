@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Function;
 
-public class ConcatenateType extends AbstractType<Object[]> {
+public class ConcatenateType extends AbstractType<Object[]> implements DBType {
 
     private Type[] types;
     private boolean[] desc;
@@ -69,7 +69,12 @@ public class ConcatenateType extends AbstractType<Object[]> {
         return types.length;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    @Override
+    public DBType getDBType() {
+        return this;
+    }
+
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         typeEnv.addNeedType(this);
         return syntax.getConcTypeName(this);
     }

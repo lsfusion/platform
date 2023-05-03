@@ -5,7 +5,10 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -28,8 +31,9 @@ public abstract class FileClass<T> extends DataClass<T> {
         this.storeName = storeName;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return syntax.getByteArrayType();
+    @Override
+    public DBType getDBType() {
+        return ByteArrayClass.instance;
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return "SqlBinary";

@@ -1,7 +1,8 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.Expr;
-import lsfusion.server.data.expr.value.AbstractValueExpr;
 import lsfusion.server.data.expr.value.StaticValueExpr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
@@ -46,7 +47,7 @@ public class RoundFormulaImpl implements FormulaJoinImpl {
         return source.getExprCount() == 2;
     }
 
-    public boolean hasNotNull() {
-        return true;
+    public boolean hasNotNull(ImList<BaseExpr> exprs) {
+        return false;
     }
 }

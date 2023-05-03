@@ -44,7 +44,7 @@ public class SumFormulaImpl extends ArithmeticFormulaImpl {
         public String getSource(DataClass type1, DataClass type2, String src1, String src2, SQLSyntax syntax, MStaticExecuteEnvironment env, boolean isToString) {
             Type type = conversion.getType(type1, type2);
             if (type != null || isToString) {
-                return "(" + src1 + "+" + src2 + ")";
+                return "(" + src1 + "+" + src2 + ")"; // here also cast maybe should be used
             }
             return null;
         }

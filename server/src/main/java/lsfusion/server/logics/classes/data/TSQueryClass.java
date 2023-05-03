@@ -3,6 +3,7 @@ package lsfusion.server.logics.classes.data;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.expr.where.classes.data.MatchWhere;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.physics.admin.Settings;
@@ -11,7 +12,7 @@ import org.postgresql.util.PGobject;
 
 import java.sql.*;
 
-public class TSQueryClass extends DataClass<String> {
+public class TSQueryClass extends DataClass<String> implements DBType {
 
     private TSQueryClass() {
         super(LocalizedString.create("{classes.tsvector}"));
@@ -30,7 +31,11 @@ public class TSQueryClass extends DataClass<String> {
     }
 
     @Override
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public DBType getDBType() {
+        return this;
+    }
+    @Override
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getTSQuery();
     }
 
@@ -90,9 +95,12 @@ public class TSQueryClass extends DataClass<String> {
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
-        String language = Settings.get().getTsVectorDictionaryLanguage();
-        return typeFrom instanceof StringClass ? MatchWhere.getPrefixSearchQuery(syntax, value, language) : super.getCast(value, syntax, typeEnv, typeFrom);
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+        if(typeFrom instanceof StringClass) {
+            String language = Settings.get().getTsVectorDictionaryLanguage();
+            return MatchWhere.getPrefixSearchQuery(syntax, value, language);
+        }
+        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
     }
 
     public boolean isSafeType() {

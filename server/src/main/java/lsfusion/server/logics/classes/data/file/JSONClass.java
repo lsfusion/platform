@@ -4,10 +4,10 @@ import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
-import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.postgresql.util.PGobject;
 
@@ -16,7 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public class JSONClass extends DataClass<String> {
+public class JSONClass extends DataClass<String> implements DBType {
 
     public JSONClass() {
         super(LocalizedString.create("{classes.json}"));
@@ -25,13 +25,13 @@ public class JSONClass extends DataClass<String> {
     public final static JSONClass instance = new JSONClass();
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
         if (typeFrom instanceof StaticFormatFileClass) {
             return "cast_static_file_to_json(" + value + ")";
-        }else if (typeFrom instanceof DynamicFormatFileClass) {
+        } else if (typeFrom instanceof DynamicFormatFileClass) {
             return "cast_dynamic_file_to_json(" + value + ")";
         }
-        return super.getCast(value, syntax, typeEnv, typeFrom);
+        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
     }
 
     static {
@@ -49,7 +49,12 @@ public class JSONClass extends DataClass<String> {
     }
 
     @Override
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public DBType getDBType() {
+        return this;
+    }
+
+    @Override
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getJSON();
     }
 

@@ -15,6 +15,7 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.data.type.exec.TypeEnvironment;
@@ -49,7 +50,7 @@ public class JDBCTable {
         this.set = set;
     }
 
-    public static class JDBCDataClass extends DataClass<Object> {
+    public static class JDBCDataClass extends DataClass<Object> implements DBType {
         private final int sqlType;
         private final String sqlName; // тут конечно стремновато, в разных СУБД могут разные имена, но чудес не бывает
         
@@ -98,7 +99,10 @@ public class JDBCTable {
             throw new UnsupportedOperationException();
         }
 
-        public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        public DBType getDBType() {
+            return this;
+        }
+        public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
             return sqlName;
         }
         public int getSQL(SQLSyntax syntax) {

@@ -108,7 +108,8 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
         if(compile instanceof ToString)
             return toString(expr);
 
-        return expr.getFormula().getSource(new ListExprSource(expr.getFParams(), needValue || expr.getFormula().hasNotNull()) {
+        ImList<BaseExpr> params = expr.getFParams();
+        return expr.getFormula().getSource(new ListExprSource(params, needValue || expr.getFormula().hasNotNull(params)) {
             public CompileSource getCompileSource() {
                 return compile;
             }
@@ -291,7 +292,7 @@ public class FormulaExpr extends StaticClassExpr implements FormulaExprInterface
     }
 
     private static Expr createBase(ImList<BaseExpr> exprs, final FormulaJoinImpl formula) {
-        return BaseExpr.create(formula.hasNotNull() ? new FormulaNullableExpr(exprs, formula) : new FormulaExpr(exprs, formula));
+        return BaseExpr.create(formula.hasNotNull(exprs) ? new FormulaNullableExpr(exprs, formula) : new FormulaExpr(exprs, formula));
     }
 }
 

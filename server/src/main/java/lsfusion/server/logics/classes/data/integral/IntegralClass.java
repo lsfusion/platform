@@ -3,6 +3,10 @@ package lsfusion.server.logics.classes.data.integral;
 import lsfusion.base.BaseUtils;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.ObjectType;
+import lsfusion.server.data.type.Type;
+import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.TextBasedClass;
@@ -19,7 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 // класс который можно сравнивать
-public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> {
+public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> implements DBType {
 
     public int getReportMinimumWidth() { return 30; }
     public int getReportPreferredWidth() { return 50; }
@@ -35,8 +39,36 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     }
 
     @Override
-    public boolean hasSafeCast() {
-        return true;
+    public DBType getDBType() {
+        return this;
+    }
+
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+        if(typeFrom != null && equalsDB(typeFrom))
+            return value;
+
+        boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
+        if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
+            typeEnv.addNeedSafeCast(this, isInt);
+            return syntax.getSafeCastNameFnc(this, isInt) + "(" + value + ")";
+        }
+
+        return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+    }
+
+    @Override
+    public boolean isCastNotNull(Type typeFrom, boolean isArith) {
+        if(typeFrom == null) // we don't know the type it can be any type
+            return true;
+
+        if(equalsDB(typeFrom))
+            return false;
+
+        boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
+        if(!(isInt && Settings.get().getSafeCastIntType() == 2))
+            return true;
+
+        return super.isCastNotNull(typeFrom);
     }
 
     @Override

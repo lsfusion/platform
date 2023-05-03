@@ -43,7 +43,7 @@ public class FormulaNullableExpr extends StaticClassNullableExpr implements Form
     }
 
     public FormulaNullableExpr(ImList<BaseExpr> exprs, FormulaJoinImpl formula) {
-        assert formula.hasNotNull();
+        assert formula.hasNotNull(exprs);
         this.exprs = exprs;
         this.formula = formula;
     }

@@ -81,7 +81,7 @@ public class TimeClass extends HasTimeClass<LocalTime> {
                 : ThreadLocalContext.getTFormats().timeFormatter)) : null;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getTimeType(millisLength);
     }
 

@@ -13,6 +13,7 @@ import lsfusion.server.data.expr.formula.FormulaUnionImpl;
 import lsfusion.server.data.query.compile.CompileOrder;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.ConcatenateType;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -129,7 +130,8 @@ public class OrderClass extends DataClass<Object> implements FormulaUnionImpl {
         throw new UnsupportedOperationException();
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    @Override
+    public DBType getDBType() {
         throw new UnsupportedOperationException();
     }
 

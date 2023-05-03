@@ -82,7 +82,6 @@ public interface SQLSyntax {
     String getTimeType(ExtInt millisLength);
     int getTimeSQL();
 
-    String getIntervalType();
     int getIntervalSQL();
 
     String getLongType();
@@ -91,7 +90,6 @@ public interface SQLSyntax {
     String getDoubleType();
     int getDoubleSQL();
 
-    String getBitType();
     int getBitSQL();
 
     String getBitString(Boolean value);
@@ -105,7 +103,6 @@ public interface SQLSyntax {
     String getByteArrayType();
     int getByteArraySQL();
 
-    String getColorType();
     int getColorSQL();
 
     String getJSON();

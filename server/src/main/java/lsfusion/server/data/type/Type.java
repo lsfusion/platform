@@ -39,11 +39,37 @@ public interface Type<T> extends ClassReader<T>, FunctionType {
 
     T getInfiniteValue(boolean min);
 
-    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv); // как правило нужен, чтобы указать СУБД класс, а не реально прокастить 
-    String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom);
-    String getSafeCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith);
+    default boolean equalsDB(Type typeFrom) { // private
+        return typeFrom != null && getDBType().equals(typeFrom.getDBType());
+    }
 
-    String getDB(SQLSyntax syntax, TypeEnvironment typeEnv);
+    default boolean isCastNotNull(Type typeFrom) {
+        return isCastNotNull(typeFrom, false);
+    }
+    default String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+        return getCast(value, syntax, typeEnv, typeFrom, false);
+    }
+
+    default String getArithCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return getCast(value, syntax, typeEnv, null, true);
+    }
+    default boolean isCastNotNull(Type typeFrom, boolean isArith) { // returns true if cast can return NULL for the non-NULL value
+        return false;
+    }
+    default String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
+        if(typeFrom != null && equalsDB(typeFrom))
+            return value;
+
+        return getCast(value, syntax, typeEnv);
+    }
+    default String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return "CAST(" + value + " AS " + getDB(syntax, typeEnv) + ")";
+    }
+
+    DBType getDBType();
+    default String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        return getDBType().getDBString(syntax, typeEnv);
+    }
     String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv); // for ms sql
     String getDotNetRead(String reader); // for ms sql
     String getDotNetWrite(String writer, String value); // for ms sql

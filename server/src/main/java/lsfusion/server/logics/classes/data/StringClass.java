@@ -7,6 +7,7 @@ import lsfusion.interop.form.property.Compare;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.stat.Stat;
+import lsfusion.server.data.type.DBType;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.ValueClass;
@@ -26,7 +27,7 @@ import java.util.Collection;
 import static java.lang.Math.max;
 import static lsfusion.base.BaseUtils.cmp;
 
-public class StringClass extends TextBasedClass<String> {
+public class StringClass extends TextBasedClass<String> implements DBType {
 
     private final static Collection<StringClass> strings = new ArrayList<>();
 
@@ -54,12 +55,12 @@ public class StringClass extends TextBasedClass<String> {
     }
 
     @Override
-    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom) {
+    public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
         if (typeFrom instanceof TXTClass || typeFrom instanceof CSVClass || typeFrom instanceof HTMLClass || typeFrom instanceof JSONFileClass || typeFrom instanceof XMLClass) {
             return "cast_file_to_string(" + value + ")";
         }
-        String result = super.getCast(value, syntax, typeEnv, typeFrom);
-        if(!blankPadded && typeFrom != null && syntax.doesNotTrimWhenCastToVarChar() && typeFrom instanceof StringClass && ((StringClass) typeFrom).blankPadded)
+        String result = super.getCast(value, syntax, typeEnv, typeFrom, isArith);
+        if(typeFrom instanceof StringClass && !blankPadded && ((StringClass) typeFrom).blankPadded && syntax.doesNotTrimWhenCastToVarChar())
             result = ((StringClass)typeFrom).getRTrim(result);
         return result;
     }
@@ -124,7 +125,19 @@ public class StringClass extends TextBasedClass<String> {
                    length.cmp(stringClass.length, or));
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    private boolean isDBType() {
+        return !caseInsensitive && getClass() == StringClass.class;
+    }
+    @Override
+    public DBType getDBType() {
+        if(isDBType()) // optimization
+            return this;
+
+        return get(blankPadded, false, length);
+    }
+
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
+        assert isDBType();
         boolean isUnlimited = length.isUnlimited();
         if(blankPadded) {
             if(isUnlimited)

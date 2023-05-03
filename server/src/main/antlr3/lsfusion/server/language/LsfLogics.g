@@ -454,7 +454,7 @@ editFormDeclaration
 	;
 	
 reportFilesDeclaration
-	:	'REPORTFILES' reportPath (',' reportPath)*
+	:	('REPORTS' | 'REPORTFILES') reportPath (',' reportPath)*
 	;
 	
 reportPath

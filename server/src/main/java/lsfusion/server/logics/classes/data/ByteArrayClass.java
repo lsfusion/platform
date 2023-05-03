@@ -5,7 +5,10 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.classes.DataType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
+import lsfusion.server.data.type.DBType;
+import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
+import lsfusion.server.logics.classes.data.file.FileClass;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.apache.commons.net.util.Base64;
 
@@ -16,7 +19,7 @@ import java.sql.SQLException;
 
 //import net.sourceforge.jtds.jdbc.BlobImpl;
 
-public class ByteArrayClass extends DataClass<RawFileData> {
+public class ByteArrayClass extends DataClass<RawFileData> implements DBType {
 
     public final static ByteArrayClass instance = new ByteArrayClass();
 
@@ -42,7 +45,11 @@ public class ByteArrayClass extends DataClass<RawFileData> {
         return DataType.BYTEARRAY;
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    @Override
+    public DBType getDBType() {
+        return this;
+    }
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getByteArrayType();
     }
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

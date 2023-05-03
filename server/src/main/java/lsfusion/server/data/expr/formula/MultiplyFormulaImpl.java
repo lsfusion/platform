@@ -1,5 +1,7 @@
 package lsfusion.server.data.expr.formula;
 
+import lsfusion.base.col.interfaces.immutable.ImList;
+import lsfusion.server.data.expr.BaseExpr;
 import lsfusion.server.data.expr.formula.conversion.IntegralTypeConversion;
 import lsfusion.server.data.query.exec.MStaticExecuteEnvironment;
 import lsfusion.server.data.sql.syntax.SQLSyntax;
@@ -34,14 +36,14 @@ public class MultiplyFormulaImpl extends ScaleFormulaImpl {
 
             Type type = conversion.getType(type1, type2);
             if (type != null) {
-                return type.getSafeCast("(" + src1 + "*" + src2 + ")", syntax, env, null, true); // since type can be limited by max values + double / int / long
+                return type.getArithCast("(" + src1 + "*" + src2 + ")", syntax, env); // since type can be limited by max values + double / int / long
             }
             return null;
         }
     }
 
     @Override
-    public boolean hasNotNull() {
+    public boolean hasNotNull(ImList<BaseExpr> exprs) {
         return true;
     }
 

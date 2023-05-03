@@ -54,8 +54,9 @@ public class ObjectType extends AbstractType<Long> {
     public static final ObjectType instance = new ObjectType();
     public static final LongClass idClass = LongClass.instance;
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
-        return idClass.getDB(syntax, typeEnv);
+    @Override
+    public DBType getDBType() {
+        return idClass;
     }
 
     public String getDotNetType(SQLSyntax syntax, TypeEnvironment typeEnv) {

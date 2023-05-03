@@ -75,7 +75,7 @@ public class ZDateTimeClass extends HasTimeClass<Instant> {
         return Instant.now();
     }
 
-    public String getDB(SQLSyntax syntax, TypeEnvironment typeEnv) {
+    public String getDBString(SQLSyntax syntax, TypeEnvironment typeEnv) {
         return syntax.getZDateTimeType(millisLength);
     }
 
