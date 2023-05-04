@@ -44,11 +44,11 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
     }
 
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
-        if(typeFrom != null && equalsDB(typeFrom))
-            return value;
-
         boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
         if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
+            if(typeFrom != null && equalsDB(typeFrom))
+                return value;
+
             typeEnv.addNeedSafeCast(this, isInt);
             return syntax.getSafeCastNameFnc(this, isInt) + "(" + value + ")";
         }
