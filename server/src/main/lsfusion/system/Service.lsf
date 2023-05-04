@@ -419,18 +419,18 @@ getServerSettings() ABSTRACT CASE @@noauth;
 getServerSettings() + WHEN TRUE THEN {
     LOCAL loginLoadedResources = RAWFILE(STRING);
     LOCAL loginLoadedResourcesOrder = INTEGER(STRING);
-    FOR onLoginLoad(STRING s) ORDER onLoginLoad(s) DO {
+    FOR INTEGER order = onLoginLoad(STRING s) ORDER order DO {
         readResource(s);
         loginLoadedResources(resourcePath()) <- RAWFILE (resource());
-        loginLoadedResourcesOrder(resourcePath()) <- onLoginLoad(s); 
+        loginLoadedResourcesOrder(resourcePath()) <- order; 
     }
      
     LOCAL webClientLoadedResources = RAWFILE(STRING);
     LOCAL webClientLoadedResourcesOrder = INTEGER(STRING);
-    FOR onWebClientLoad(STRING s) ORDER onWebClientLoad(s) DO {
+    FOR INTEGER order = onWebClientLoad(STRING s) ORDER order DO {
         readResource(s);
         webClientLoadedResources(resourcePath()) <- RAWFILE (resource());
-        webClientLoadedResourcesOrder(resourcePath()) <- onWebClientLoad(s);
+        webClientLoadedResourcesOrder(resourcePath()) <- order;
     }
     
     generateJnlpUrls();

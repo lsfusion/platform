@@ -130,6 +130,11 @@ public class JSONClass extends DataClass<String> {
     }
 
     @Override
+    public boolean isFlex() {
+        return true;
+    }
+
+    @Override
     public String getString(Object value, SQLSyntax syntax) {
         return "'" + value + "'";
     }
