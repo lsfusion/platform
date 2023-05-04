@@ -26,6 +26,7 @@ import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
+import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.implement.ActionMapImplement;
@@ -1220,5 +1221,10 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         LogFormEntity logFormEntity = new LogFormEntity(LocalizedString.create("{logics.property.log.form}"), lp, logValueProperty, logWhereProperty, this, systemEventsLM.session);
         addAutoFormEntity(logFormEntity);
         return addMFAProp(LocalizedString.create("{logics.property.log.action}"), logFormEntity, logFormEntity.params, true);
+    }
+
+    @Override
+    protected <T extends LAP<?, ?>> List<T> createLAPList() {
+        return Collections.synchronizedList(super.createLAPList());
     }
 }
