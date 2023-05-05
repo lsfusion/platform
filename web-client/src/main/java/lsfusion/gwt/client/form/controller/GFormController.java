@@ -31,8 +31,8 @@ import lsfusion.gwt.client.controller.remote.action.form.*;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
-import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.ContainerForm;
+import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
@@ -2112,7 +2112,7 @@ public class GFormController implements EditManager {
             if(property.echoSymbols) // disabling dropdown if echo
                 inputList = null;
 
-            cellEditor = type.createCellEditor(this, property, inputList);
+            cellEditor = type.createCellEditor(this, property, inputList, editContext);
         }
 
         if (cellEditor != null) {

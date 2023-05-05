@@ -39,4 +39,6 @@ public interface EditContext extends ExecContext {
     default void stopEditing() {}
 
     boolean canUseChangeValueForRendering(GType type);
+
+    default Object modifyPastedString(String pastedText) { return pastedText; }
 }

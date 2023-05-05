@@ -15,7 +15,6 @@ import lsfusion.gwt.client.form.filter.user.GCompare;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.MainFrame;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -1187,10 +1186,12 @@ public class GwtClientUtils {
     }
 
     public static String escapeSeparator(String value, GCompare compare) {
-        if(compare.escapeSeparator())
-            value = value.replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
-        if(compare == GCompare.CONTAINS)
-            value = value.replace("%", "\\%").replace("_", "\\_");
+        if (value != null) {
+            if (compare.escapeSeparator())
+                value = value.replace(MainFrame.matchSearchSeparator, "\\" + MainFrame.matchSearchSeparator);
+            if (compare == GCompare.CONTAINS)
+                value = value.replace("%", "\\%").replace("_", "\\_");
+        }
         return value;
     }
 

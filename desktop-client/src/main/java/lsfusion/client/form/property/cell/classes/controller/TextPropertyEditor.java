@@ -5,11 +5,15 @@ import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.ClientColorUtils;
 import lsfusion.client.base.view.SwingDefaults;
 import lsfusion.client.form.property.cell.controller.PropertyTableCellEditor;
+import lsfusion.client.form.property.table.view.AsyncChangeInterface;
 import lsfusion.client.form.property.table.view.ClientPropertyTableEditorComponent;
 import lsfusion.interop.form.design.ComponentDesign;
 import lsfusion.interop.form.event.KeyStrokes;
 
 import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -18,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.util.EventObject;
 
 import static lsfusion.client.base.view.SwingDefaults.getTableCellMargins;
+import static lsfusion.client.form.property.cell.classes.controller.TextFieldPropertyEditor.modifyInsertString;
 
 
 @SuppressWarnings({"FieldCanBeLocal"})
@@ -39,7 +44,17 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditor, P
     }
 
     public TextPropertyEditor(Component owner, Object value, ComponentDesign design) {
-        textArea = new JTextArea(value != null ? value.toString() : "");
+        this(owner, value, design, null);
+    }
+    
+    public TextPropertyEditor(Component owner, Object value, ComponentDesign design, AsyncChangeInterface asyncChange) {
+        textArea = new JTextArea(new PlainDocument() {
+            @Override
+            public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
+                str = modifyInsertString(asyncChange, str);
+                super.insertString(offs, str, a);
+            }
+        }, value != null ? value.toString() : "", 0, 0);
         textArea.setWrapStyleWord(true);
         textArea.setLineWrap(true);
 

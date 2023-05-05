@@ -31,8 +31,15 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicComboBoxEditor;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -499,6 +506,13 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
 //            });
 
             comboBoxEditorComponent = (JTextField) comboBox.getEditor().getEditorComponent();
+            comboBoxEditorComponent.setDocument(new PlainDocument() {
+                @Override
+                public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
+                    str = modifyInsertString(asyncChange, str);
+                    super.insertString(offs, str, a);
+                }
+            });
             EditorContextMenu contextMenu = new EditorContextMenu(comboBoxEditorComponent);
             comboBoxEditorComponent.addMouseListener(new MouseAdapter() {
                 @Override
@@ -594,6 +608,26 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             if (e.isPopupTrigger())
                 contextMenu.show(comboBoxEditorComponent, e.getX(), e.getY());
         }
+    }
+
+    public static String modifyInsertString(AsyncChangeInterface asyncChange, String str) {
+        if (str != null && asyncChange != null) {
+            try {
+                Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                Object clipboardData = systemClipboard.getData(DataFlavor.stringFlavor);
+                
+                if (clipboardData != null) {
+                    String cpString = clipboardData.toString();
+                    if (str.equals(cpString)) { // if equal consider it paste event
+                        String newPastedString = (String) asyncChange.modifyPastedString(str);
+                        if (newPastedString != null) {
+                            str = newPastedString;
+                        }
+                    }
+                }
+            } catch (UnsupportedFlavorException | IOException ignored) {}
+        }
+        return str;
     }
 
     private class SuggestPopupButton extends JButton {

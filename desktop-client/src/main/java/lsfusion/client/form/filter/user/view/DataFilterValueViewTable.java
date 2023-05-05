@@ -300,6 +300,11 @@ class DataFilterValueViewTable extends TableWidget implements TableTransferHandl
     }
 
     @Override
+    public Object modifyPastedString(String pastedText) {
+        return SwingUtils.escapeSeparator(pastedText, inputList.compare);
+    }
+
+    @Override
     public void updateUI() {
         super.updateUI();
 
