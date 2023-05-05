@@ -8,8 +8,9 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.GDateDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.DateCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -24,7 +25,7 @@ public class GDateType extends GADateType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {
         return new DateCellEditor(this, editManager, editProperty);
     }
 

@@ -17,4 +17,6 @@ public interface AsyncChangeInterface {
 
     ClientFormController getForm();
     boolean isEditing();
+    
+    default Object modifyPastedString(String pastedText) { return null; }
 }

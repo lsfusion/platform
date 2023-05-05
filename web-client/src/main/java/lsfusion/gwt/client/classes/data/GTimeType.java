@@ -8,12 +8,14 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.async.GInputList;
 import lsfusion.gwt.client.form.property.cell.classes.GTimeDTO;
 import lsfusion.gwt.client.form.property.cell.classes.controller.TimeCellEditor;
-import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.controller.CellEditor;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
+import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 
 import java.util.Date;
 
-import static lsfusion.gwt.client.base.GwtSharedUtils.*;
+import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeFormat;
+import static lsfusion.gwt.client.base.GwtSharedUtils.getDefaultTimeShortFormat;
 
 public class GTimeType extends GADateType {
     public static GTimeType instance = new GTimeType();
@@ -24,7 +26,7 @@ public class GTimeType extends GADateType {
     }
 
     @Override
-    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList) {
+    public CellEditor createGridCellEditor(EditManager editManager, GPropertyDraw editProperty, GInputList inputList, EditContext editContext) {
         return new TimeCellEditor(this, editManager, editProperty);
     }
 

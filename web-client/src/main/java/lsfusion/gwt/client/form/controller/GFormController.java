@@ -2094,7 +2094,7 @@ public class GFormController implements EditManager {
         if (hasCustomEditor) // see LsfLogics.g propertyCustomView rule
             cellEditor = CustomReplaceCellEditor.create(this, property, type, customChangeFunction);
         else
-            cellEditor = type.createGridCellEditor(this, property, inputList);
+            cellEditor = type.createGridCellEditor(this, property, inputList, editContext);
 
         if (cellEditor != null) {
             if(!hasOldValue) { // property.baseType.equals(type) actually there should be something like compatible, but there is no such method for now, so we'll do this check in editors

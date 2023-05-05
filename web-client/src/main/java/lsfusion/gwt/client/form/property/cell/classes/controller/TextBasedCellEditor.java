@@ -32,6 +32,7 @@ import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.Suggest
 import lsfusion.gwt.client.form.property.cell.classes.controller.suggest.TextBox;
 import lsfusion.gwt.client.form.property.cell.classes.view.TextBasedCellRenderer;
 import lsfusion.gwt.client.form.property.cell.controller.CommitReason;
+import lsfusion.gwt.client.form.property.cell.controller.EditContext;
 import lsfusion.gwt.client.form.property.cell.controller.EditManager;
 import lsfusion.gwt.client.form.property.cell.view.RenderContext;
 import lsfusion.gwt.client.view.MainFrame;
@@ -42,6 +43,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.google.gwt.dom.client.BrowserEvents.BLUR;
+import static com.google.gwt.user.client.Event.ONPASTE;
 import static lsfusion.gwt.client.base.GwtClientUtils.isShowing;
 import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
 import static lsfusion.gwt.client.form.filter.user.GCompare.CONTAINS;
@@ -53,6 +55,7 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     private static TextBoxImpl textBoxImpl = GWT.create(TextBoxImpl.class);
 
     protected final GPropertyDraw property;
+    private final EditContext editContext;
 
     boolean hasList;
     GCompletionType completionType;
@@ -65,8 +68,12 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     }
 
     public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList) {
+        this(editManager, property, inputList, null);
+    }
+    public TextBasedCellEditor(EditManager editManager, GPropertyDraw property, GInputList inputList, EditContext editContext) {
         super(editManager);
         this.property = property;
+        this.editContext = editContext;
         this.hasList = inputList != null && !disableSuggest() && !property.echoSymbols;
         this.completionType = inputList != null ? inputList.completionType : GCompletionType.NON_STRICT;
         this.actions = inputList != null ? inputList.actions : null;
@@ -109,6 +116,40 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
     protected void setInputValue(InputElement element, String value) {
         element.setValue(value);
     }
+
+    private void addPasteListener(Element inputElement) {
+        GwtClientUtils.setEventListener(inputElement, ONPASTE, event -> {
+            if (event.getTypeInt() == ONPASTE) {
+                onPaste(event);
+            }
+        });
+    }
+    
+    private void onPaste(Event event) {
+        if (editContext != null) {
+            String cbText = CopyPasteUtils.getEventClipboardData(event);
+            String modifiedPastedText = (String) editContext.modifyPastedString(cbText);
+            if (modifiedPastedText != null && !modifiedPastedText.equals(cbText)) { // to paste via default mechanism otherwise
+                pasteClipboardText(event, modifiedPastedText);
+            }
+        }
+    }
+
+    protected native boolean pasteClipboardText(Event event, String pastedText)/*-{
+        var eventTarget = event.target;
+        var cursorPosStart = eventTarget.selectionStart;
+        var cursorPosEnd = eventTarget.selectionEnd;
+        var v = eventTarget.value;
+        var mergedText = v.substring(0, cursorPosStart) + pastedText + v.substring(cursorPosEnd, v.length);
+        if (this.@TextBasedCellEditor::isStringValid(*)(mergedText)) {
+            event.stopPropagation();
+            event.preventDefault();
+            eventTarget.value = mergedText;
+            eventTarget.selectionStart = eventTarget.selectionEnd = cursorPosStart + pastedText.length;
+            return true;
+        }
+        return false;
+    }-*/;
 
     @Override
     public void onBrowserEvent(Element parent, EventHandler handler) {
@@ -415,7 +456,9 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
             return suggestBox.getElement();
         } else {
-            return createTextInputElement();
+            Element inputElement = createTextInputElement();
+            addPasteListener(inputElement);
+            return inputElement;
         }
     }
 
@@ -460,6 +503,15 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             this.display = display;
             onAttach();
             getElement().removeClassName("gwt-SuggestBox");
+            sinkEvents(ONPASTE);
+        }
+
+        @Override
+        public void onBrowserEvent(Event event) {
+            if (event.getTypeInt() == ONPASTE) {
+                onPaste(event);
+            }
+            super.onBrowserEvent(event);
         }
 
         public void setLatestSuggestions(List<String> latestSuggestions) {
