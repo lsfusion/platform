@@ -1,3 +1,3 @@
-`<div class = "${IF text != '' THEN 'wrap-text-not-empty ' ELSE ''}${IF imageHTML THEN ((IF vertical THEN 'wrap-img-vert' ELSE 'wrap-img-horz') + ' ' + (IF start THEN 'wrap-img-start ' ELSE 'wrap-img-end ')) ELSE ''}${IF noWrap THEN 'wrap-text-nowrap ' ELSE ''}">
+<div class = "${IF text != '' THEN 'wrap-text-not-empty ' ELSE ''}${IF imageHTML THEN ((IF vertical THEN 'wrap-img-vert' ELSE 'wrap-img-horz') + ' ' + (IF start THEN 'wrap-img-start ' ELSE 'wrap-img-end ')) ELSE ''}${IF noWrap THEN 'wrap-text-nowrap ' ELSE ''}">
     ${IF start THEN (CONCAT '', imageHTML, text) ELSE (CONCAT '', text, imageHTML)}
 </div>
