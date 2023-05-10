@@ -240,6 +240,11 @@
 /* cursors - links and dropdown items are not <a with href> or <button> (and can have <label> inside for example) so we'll change the cursor explicitly */
 .nav-link:not(.active),
 .nav-link:not(.active) *,
-.nav-link:not(.active) .wrap-text-not-empty {
+.nav-link:not(.active) .wrap-text-not-empty,
+/* we want even not active nav-links in the navbar to have pointer cursor because of was-selected-recently mechanisms */
+.navbar .nav-link,
+.navbar .nav-link *,
+.navbar .nav-link * .wrap-text-not-empty
+{
     cursor: pointer;
 }
