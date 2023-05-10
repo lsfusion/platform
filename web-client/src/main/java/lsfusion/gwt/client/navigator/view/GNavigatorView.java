@@ -3,6 +3,7 @@ package lsfusion.gwt.client.navigator.view;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
+import lsfusion.gwt.client.base.view.RecentlyEventClassHandler;
 import lsfusion.gwt.client.navigator.GNavigatorAction;
 import lsfusion.gwt.client.navigator.GNavigatorElement;
 import lsfusion.gwt.client.navigator.GNavigatorFolder;
@@ -29,7 +30,14 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
 
     public void setComponent(Widget component) {
         this.component = component;
+
+        // we want to propagate this classes, since window hover classes are also propagated
+        parentRecentlySelected = new RecentlyEventClassHandler(component, true, "parent-was-selected-recently", 3000);
+        recentlySelected = new RecentlyEventClassHandler(component, true, "was-selected-recently", 3000);
     }
+
+    private RecentlyEventClassHandler parentRecentlySelected;
+    private RecentlyEventClassHandler recentlySelected;
 
     public Widget getView() {
         return component;
@@ -49,6 +57,12 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
 
     public abstract int getWidth();
 
+    public void onParentSelected() {
+        parentRecentlySelected.onEvent();
+    }
+    public void onSelected() {
+        recentlySelected.onEvent();
+    }
     public void resetSelectedElement(GNavigatorElement newSelectedElement) {
     }
     
@@ -61,6 +75,8 @@ public abstract class GNavigatorView<T extends GNavigatorWindow> {
             selected = element;
 
             navigatorController.update();
+
+            navigatorController.onSelectedElement(element);
         } else
             navigatorController.openElement((GNavigatorAction) element, event);
     }

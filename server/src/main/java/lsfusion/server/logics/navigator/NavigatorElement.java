@@ -263,11 +263,11 @@ public abstract class NavigatorElement {
     }
 
     public String getCreationPath() {
-        return debugPoint.toString();
+        return debugPoint != null ? debugPoint.toString() : "";
     }
 
     public String getPath() {
-        return debugPoint.path;
+        return debugPoint != null ? debugPoint.path : "";
     }
     
     public void serialize(DataOutputStream outStream) throws IOException {

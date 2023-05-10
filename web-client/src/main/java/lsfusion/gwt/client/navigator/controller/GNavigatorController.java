@@ -15,8 +15,7 @@ import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 import java.util.function.Function;
-
-import static lsfusion.gwt.client.base.GwtClientUtils.nvl;
+import java.util.function.Predicate;
 
 public abstract class GNavigatorController implements GINavigatorController {
     private final FormsController formsController;
@@ -52,11 +51,7 @@ public abstract class GNavigatorController implements GINavigatorController {
         if(MainFrame.mobile)
             return mobileViews.get(window);
 
-        return getNavigatorView(window).getView();
-    }
-
-    public GNavigatorView getNavigatorView(GNavigatorWindow window) {
-        return views.get(window);
+        return views.get(window).getView();
     }
 
     boolean firstUpdate = true;
@@ -69,7 +64,8 @@ public abstract class GNavigatorController implements GINavigatorController {
         }
 
         // looking for "active" (selected) elements
-        dfsAddElements(root, null, result);
+        for (GNavigatorElement element : root.children)
+            fillSelectedElements(element, root.window, drawWindow -> false, result);
 
         Map<GAbstractWindow, Boolean> visibleElements = new HashMap<>();
         for (Map.Entry<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> entry : result.entrySet()) {
@@ -91,23 +87,26 @@ public abstract class GNavigatorController implements GINavigatorController {
         }
     }
 
-    private void dfsAddElements(GNavigatorElement currentElement, GNavigatorWindow currentWindow, Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result) {
-        GNavigatorWindow parentWindow = nvl(currentElement.window, currentWindow);
-        GNavigatorWindow window = currentElement.parentWindow ? parentWindow : currentWindow;
-        if(window != null) {
-            result.get(window).add(currentElement);
+    private void fillSelectedElements(GNavigatorElement currentElement, GNavigatorWindow drawWindow, Predicate<GNavigatorWindow> checkNotSelected, Map<GNavigatorWindow, LinkedHashSet<GNavigatorElement>> result) {
+        GNavigatorWindow drawChildrenWindow = drawWindow;
+
+        if(currentElement.window != null) {
+            drawChildrenWindow = currentElement.window;
+            if (currentElement.parentWindow)
+                drawWindow = drawChildrenWindow;
         }
 
-        if (currentElement.window == null
-                || currentWindow == null
-                || currentWindow.isSystem()
-                || currentElement == views.get(window).getSelectedElement()
-                || currentElement.window == currentWindow) {
-            for (GNavigatorElement element : currentElement.children) {
-                if (!result.get(parentWindow).contains(element)) {
-                    dfsAddElements(element, parentWindow, result);
-                }
-            }
+        if(checkNotSelected.test(drawWindow))
+            return;
+
+        result.get(drawWindow).add(currentElement);
+
+        final GNavigatorWindow fDrawWindow = drawWindow;
+        for (GNavigatorElement element : currentElement.children) {
+            fillSelectedElements(element, drawChildrenWindow,
+                    // if window has changed and the parent element is not selected - we're not drawing the child element
+                    childDrawWindow -> childDrawWindow != fDrawWindow && views.get(fDrawWindow).getSelectedElement() != currentElement,
+                    result);
         }
     }
 
@@ -122,6 +121,20 @@ public abstract class GNavigatorController implements GINavigatorController {
                 element.asyncExec.exec(formsController, null, null, nativeEvent instanceof Event ? (Event) nativeEvent : null, new GAsyncExecutor(formsController.getDispatcher(), asyncExec));
             }
         }
+    }
+
+    public void onSelectedElement(GNavigatorElement selectedElement) {
+        NativeSIDMap<GNavigatorWindow, Boolean> childrenWindows = new NativeSIDMap<>();
+        for (GNavigatorElement element : selectedElement.children) {
+            GNavigatorWindow elementWindow = element.getDrawWindow();
+            if(elementWindow != null)
+                childrenWindows.put(elementWindow, true);
+        }
+        childrenWindows.foreachKey(child -> views.get(child).onParentSelected());
+
+        GNavigatorWindow selectedWindow = selectedElement.getDrawWindow();
+        if(selectedWindow != null)
+            views.get(selectedWindow).onSelected();
     }
 
     public void resetSelectedElements(GNavigatorElement newSelectedElement) {

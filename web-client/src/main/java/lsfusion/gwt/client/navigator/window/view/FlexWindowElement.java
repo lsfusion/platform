@@ -15,15 +15,15 @@ public class FlexWindowElement extends WindowElement {
     private Panel panel;
 
     public static class Panel extends FlexPanel {
-        public Panel(boolean vertical, GFlexAlignment flexAlignment) {
-            super(vertical, flexAlignment);
+        public Panel(boolean vertical) {
+            super(vertical);
         }
     }
     
     public FlexWindowElement(boolean vertical, WindowsController controller, int x, int y, int width, int height) {
         super(controller, x, y, width, height);
         this.vertical = vertical;
-        panel = new Panel(vertical, GFlexAlignment.STRETCH);
+        panel = new Panel(vertical);
     }
 
     @Override

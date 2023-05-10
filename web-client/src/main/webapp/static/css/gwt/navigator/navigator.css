@@ -151,13 +151,18 @@
     min-height: var(--wrap-img-vert-margin);
 }
 
+/* to have "more aligned" elements */
+.navbar-text-on-hover .wrap-img-vert .wrap-text-img {
+    width: 3em;
+}
+
 /* hovering */
 
 .navbar-text-on-hover .wrap-text-not-empty {
     overflow: hidden; /* we need to set overflow: hidden, since we're using width / height */
 }
 
-.forms-container-not-empty .navbar-text-on-hover:not(:hover) .wrap-text-div {
+.forms-container-not-empty .navbar-text-on-hover:not(:hover):not(.was-selected-recently) .wrap-text-div {
     max-height: 0;
     max-width: 0;
 
@@ -166,11 +171,6 @@
     transition: max-height var(--text-hover-duration) var(--text-hover-curve-vert),
                 max-width var(--text-hover-duration) var(--text-hover-curve-horz),
                 color 0s linear var(--text-hover-duration); /* color hack */
-}
-
-/* to have "more aligned" elements */
-.navbar-text-on-hover .wrap-img-vert .wrap-text-img {
-    width: 3em;
 }
 
 .navbar-text-on-hover .wrap-text-div {
@@ -191,6 +191,20 @@
     /*overflow-x/y: clip;*/
 
     white-space: nowrap; /* to avoid changing height while transitioning*/
+}
+
+/* popup selected hover */
+
+.forms-container-not-empty .navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently) {
+    max-width: 0;
+}
+
+.navbar-popup-selected-hover {
+    --popup-hover-duration: 1000ms;
+    --popup-hover-curve: ease-out;
+
+    max-width: 30em;
+    transition: max-width var(--popup-hover-duration) var(--popup-hover-curve);
 }
 
 /* Chromium + Safari */

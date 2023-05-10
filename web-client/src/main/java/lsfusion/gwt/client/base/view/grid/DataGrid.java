@@ -24,7 +24,6 @@ import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.AbstractNativeScrollbar;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -32,10 +31,7 @@ import lsfusion.gwt.client.base.FocusUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
-import lsfusion.gwt.client.base.view.CopyPasteUtils;
-import lsfusion.gwt.client.base.view.EventHandler;
-import lsfusion.gwt.client.base.view.FlexPanel;
-import lsfusion.gwt.client.base.view.HasMaxPreferredSize;
+import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
@@ -139,6 +135,8 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         // INITIALIZING MAIN DATA
         tableWidget = new TableWidget();
 
+        recentlyScrolledClassHandler = new RecentlyEventClassHandler(tableWidget, false, "was-scrolled-recently", 1000);
+
         // INITIALIZING HEADERS
         headerBuilder = new DefaultHeaderBuilder<>(this, false);
 
@@ -150,12 +148,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
         MainFrame.addColorThemeChangeListener(this);
     }
 
-    private final Timer recentlyScrolledTimer = new Timer() {
-        @Override
-        public void run() {
-            tableWidget.setStyleName("was-scrolled-recently", false);
-        }
-    };
+    private final RecentlyEventClassHandler recentlyScrolledClassHandler;
 
     @Override
     public ScrollHandler getScrollHandler() {
@@ -178,11 +171,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     private void onHumanInputEvent() {
-        tableWidget.setStyleName("was-scrolled-recently", true);
-        if (recentlyScrolledTimer.isRunning())
-            recentlyScrolledTimer.cancel();
-
-        recentlyScrolledTimer.schedule(1000);
+        recentlyScrolledClassHandler.onEvent();
     }
 
     protected abstract void scrollToEnd(boolean toEnd);
