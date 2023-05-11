@@ -1023,7 +1023,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //ifExists true for both, because we don't know which of indexes exists
         ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
         if (!ifExists)
-            dropIndex(table, getIndexName(table, orderFields, indexOptions.dbName, null, false, true, syntax), false);
+            dropIndex(table, getIndexName(table, orderFields, indexOptions.dbName, null, false, true, syntax), true);
         //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
         dropIndex(table, getIndexName(table, orderFields, indexOptions.dbName, null, false, false, syntax), true);
     }
