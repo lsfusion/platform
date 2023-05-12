@@ -200,7 +200,7 @@
 }
 
 .navbar-popup-selected-hover {
-    --popup-hover-duration: 1000ms;
+    --popup-hover-duration: 400ms;
     --popup-hover-curve: ease-out;
 
     max-width: 30em;
