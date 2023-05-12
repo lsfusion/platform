@@ -31,7 +31,7 @@ public class LSFUrlAuthenticationFilter extends OncePerRequestFilter {
                 redirectUrl = request.getRequestURI();
             } catch (Exception e) {
                 request.getSession(true).setAttribute("SPRING_SECURITY_LAST_EXCEPTION", e);
-                redirectUrl = "/login";
+                redirectUrl = "login";
             }
             response.sendRedirect(MainController.getURLPreservingParameters(redirectUrl, Arrays.asList("user", "password"), request));
             return;
