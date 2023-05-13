@@ -254,6 +254,10 @@ public class PropertyDrawView extends BaseComponentView {
                 : entity.getCaption();
     }
 
+    public Supplier<String> getAutoName() {
+        return AppServerImage.getAutoName(this::getCaption, entity.getInheritedProperty()::getName);
+    }
+
     public void setImage(String image) {
         this.image = AppServerImage.createPropertyImage(image, this);
     }
@@ -271,7 +275,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     private AppServerImage getDefaultImage() {
-        return entity.getValueActionOrProperty().property.getDefaultImage(AppServerImage.AUTO, Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
+        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)

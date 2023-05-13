@@ -287,9 +287,9 @@ public class FormChanges {
         Type readerType;
         if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty() && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
             PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
-            return getNeedImage(readerType, propertyDraw);
+            return getNeedImage(readerType, propertyDraw, formView);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
-            return getNeedImage(reader.getPropertyObjectInstance().getType(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity);
+            return getNeedImage(reader.getPropertyObjectInstance().getType(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, formView);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
             ContainerView containerView = ((ContainerViewInstance.ExtraReaderInstance) reader).getContainerView();
             return new NeedImage(reader.getPropertyObjectInstance().getType(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, formView).get());
@@ -297,8 +297,8 @@ public class FormChanges {
         return null;
     }
 
-    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw) {
-        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, propertyDraw).get());
+    private static NeedImage getNeedImage(Type type, PropertyDrawEntity<?> propertyDraw, FormView formView) {
+        return new NeedImage(type, imagePath -> AppServerImage.createPropertyImage(imagePath, formView.get(propertyDraw)).get());
     }
 
     public static void serializeGroupObjectValue(DataOutputStream outStream, ImMap<ObjectInstance,? extends ObjectValue> values) throws IOException {

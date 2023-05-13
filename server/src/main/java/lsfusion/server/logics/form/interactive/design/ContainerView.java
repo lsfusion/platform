@@ -50,8 +50,12 @@ public class ContainerView extends ComponentView {
 
     public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon, FormView formView) {
         return AppServerImage.createDefaultImage(rankingThreshold,
-                name, main ? AppServerImage.Style.FORM : AppServerImage.Style.CONTAINER, () -> (main ? formView.entity.getName() : this.name),
+                name, main ? AppServerImage.Style.FORM : AppServerImage.Style.CONTAINER, getAutoName(formView),
                 () -> useDefaultIcon ? AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView).get() : null);
+    }
+
+    private Supplier<String> getAutoName(FormView formView) {
+        return AppServerImage.getAutoName(main ? formView::getCaption : () -> caption, main ? formView.entity::getName : () -> name);
     }
 
     private AppServerImage getDefaultImage(FormView formView) {

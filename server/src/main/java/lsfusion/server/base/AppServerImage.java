@@ -29,10 +29,10 @@ import lsfusion.server.logics.form.interactive.controller.remote.serialization.S
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.physics.admin.Settings;
+import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.dev.icon.IconLogicsModule;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 
@@ -40,10 +40,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -250,16 +247,44 @@ public class AppServerImage {
     public static final String DELETE = "delete.png";
     public static final String EMAIL = "email.png";
 
-    public static Supplier<AppServerImage> createPropertyImage(String imagePath, ActionOrProperty property) {
-        return createImage(imagePath, Style.PROPERTY, name -> property.getDefaultImage(name, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON));
+    private static final Pattern nonEnglishCaption = Pattern.compile("(\\w|\\s|\\p{Punct})+");
+    private static final Pattern toCamelCase = Pattern.compile("(\\s|\\p{Punct})+(\\w|\\z)");
+
+    private static String toCamelCase(String text) {
+        Matcher m = toCamelCase.matcher(text);
+
+        StringBuilder sb = new StringBuilder();
+        int last = 0;
+        while (m.find()) {
+            sb.append(text.substring(last, m.start()));
+            sb.append(m.group(2).toUpperCase());
+            last = m.end();
+        }
+        sb.append(text.substring(last));
+
+        return sb.toString();
+    }
+    public static Supplier<String> getAutoName(Supplier<LocalizedString> caption, Supplier<String> name) {
+        return () -> {
+            LocalizedString readCaption = caption.get();
+            if(readCaption != null && !readCaption.isEmpty()) {
+                String englishCaption = ThreadLocalContext.localize(readCaption, Locale.ENGLISH);
+                if(nonEnglishCaption.matcher(englishCaption).matches()) {
+                    return toCamelCase(englishCaption);
+//                    can't use it for now, because it requires Java 9
+//                    return toCamelCase.matcher(englishCaption).replaceAll(match -> match.group(2).toUpperCase());
+                }
+            }
+            return name.get();
+        };
     }
 
-    public static Supplier<AppServerImage> createPropertyImage(String imagePath, PropertyDrawEntity property) {
-        return createPropertyImage(imagePath, property.getInheritedProperty());
+    public static Supplier<AppServerImage> createPropertyImage(String imagePath, Supplier<String> autoName) {
+        return createImage(imagePath, Style.PROPERTY, name -> ActionOrProperty.getDefaultImage(name, autoName, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON));
     }
 
     public static Supplier<AppServerImage> createPropertyImage(String imagePath, PropertyDrawView property) {
-        return createPropertyImage(imagePath, property.entity);
+        return createPropertyImage(imagePath, property.getAutoName());
     }
 
     public static Supplier<AppServerImage> createContainerImage(String imagePath, ContainerView container, FormView formView) {
@@ -281,7 +306,7 @@ public class AppServerImage {
     public static final String RESET = "reset.png";
 
     public static Supplier<AppServerImage> createActionImage(String imagePath) {
-        return createImage(imagePath, Style.PROPERTY, name -> AppServerImage.createDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), name, Style.PROPERTY, () -> name, () -> AUTO_ICON ? createActionImage(ACTION).get() : null));
+        return createImage(imagePath, Style.PROPERTY, name -> AppServerImage.createDefaultImage(Settings.get().getDefaultAutoImageRankingThreshold(), name, Style.PROPERTY, AppServerImage.getAutoName(() -> null, () -> name), () -> AUTO_ICON ? createActionImage(ACTION).get() : null));
     }
 
     @ManualLazy
