@@ -113,6 +113,12 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     }
 
     protected FlexAlignment getDefaultAlignment(FormEntity formEntity) {
+        ContainerView container = getLayoutParamContainer();
+        if (container != null && container.isHorizontal())
+            // in horizontal containers base components better looks when they are aligned to the center
+            // it's important because form-control / buttons in the bootstrap theme has the height that is different from the height of text / boolean input   
+            return FlexAlignment.CENTER;
+
         return FlexAlignment.START;
     }
 

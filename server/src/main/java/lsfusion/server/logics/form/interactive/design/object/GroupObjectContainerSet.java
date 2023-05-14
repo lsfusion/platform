@@ -150,9 +150,7 @@ public class GroupObjectContainerSet {
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
 
         group.getToolbarSystem().setMargin(2);
-        group.getToolbarSystem().setAlignment(FlexAlignment.CENTER);
         group.getCalculations().setFlex(1);
-        group.getCalculations().setAlignment(FlexAlignment.CENTER);
 
         return set;
     }
