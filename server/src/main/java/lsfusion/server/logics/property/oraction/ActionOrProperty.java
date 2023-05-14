@@ -201,7 +201,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return null;
     }
 
-    public static AppServerImage getDefaultImage(String name, Supplier<String> autoName, float rankingThreshold, boolean useDefaultIcon) {
+    public static AppServerImage getDefaultImage(String name, AppServerImage.AutoName autoName, float rankingThreshold, boolean useDefaultIcon) {
         return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.PROPERTY, autoName,
                 () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, autoName).get() : null);
     }

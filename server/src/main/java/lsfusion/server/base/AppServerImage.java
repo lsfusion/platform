@@ -218,16 +218,12 @@ public class AppServerImage {
         return words;
     }
 
-    public static AppServerImage createDefaultImage(float rankingThreshold, String name, Style style, Supplier<String> autoName, Supplier<AppServerImage> defaultImage) {
+    public static AppServerImage createDefaultImage(float rankingThreshold, String name, Style style, AutoName autoName, Supplier<AppServerImage> defaultImage) {
         if(name.equals(AppServerImage.NULL))
             return null;
         else if(name.equals(AppServerImage.AUTO)) {
             name = autoName.get();
-
             if(name == null)
-                return null;
-
-            if(name.length() <= 2) // we don't want auto short names (like i, b, ac, which are often used for the object aliasing)
                 return null;
         }
 
@@ -248,38 +244,118 @@ public class AppServerImage {
     public static final String EMAIL = "email.png";
 
     private static final Pattern nonEnglishCaption = Pattern.compile("(\\w|\\s|\\p{Punct})+");
-    private static final Pattern toCamelCase = Pattern.compile("(\\s|\\p{Punct})+(\\w|\\z)");
-
-    private static String toCamelCase(String text) {
+    private static String replaceAll(String text, Function<Matcher, String> replace) {
         Matcher m = toCamelCase.matcher(text);
 
         StringBuilder sb = new StringBuilder();
         int last = 0;
         while (m.find()) {
             sb.append(text.substring(last, m.start()));
-            sb.append(m.group(2).toUpperCase());
+            sb.append(replace.apply(m));
             last = m.end();
         }
         sb.append(text.substring(last));
 
         return sb.toString();
     }
-    public static Supplier<String> getAutoName(Supplier<LocalizedString> caption, Supplier<String> name) {
+
+    private static final Pattern toCamelCase = Pattern.compile("(?:\\s|\\p{Punct})+(\\w|\\z)");
+    private static String toCamelCase(String text) {
+        return replaceAll(text, m -> m.group(1).toUpperCase());
+    }
+
+    // lowering sequential capital letters and removing words with length <= 2
+    private static String lowerSequentialAndRemoveShort(String string) {
+        if(string.isEmpty())
+            return string;
+
+        StringBuilder result = new StringBuilder();
+
+        int i = 0;
+        while(true) {
+            // we're at the capital
+            StringBuilder word = new StringBuilder();
+            word.append(Character.toUpperCase(string.charAt(i)));
+
+            // looking for the next character
+            i++;
+            if(i < string.length()) {
+                char c = string.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    while (true) {
+                        i++;
+                        if (i >= string.length()) {
+                            word.append(Character.toLowerCase(c));
+                            break;
+                        }
+
+                        char nextC = string.charAt(i);
+                        if (!Character.isUpperCase(nextC)) {
+                            i--;
+                            break;
+                        }
+
+                        word.append(Character.toLowerCase(c));
+                        c = nextC;
+                    }
+                } else {
+                    while (true) {
+                        word.append(c);
+
+                        i++;
+                        if (i >= string.length())
+                            break;
+
+                        char nextC = string.charAt(i);
+                        if (Character.isUpperCase(nextC))
+                            break;
+                        else
+                            c = nextC;
+                    }
+                }
+            }
+
+            // we don't want auto short names (like i, b, ac, which are often used for the object aliasing)
+            if(word.length() > 2)
+                result.append(word);
+
+            if(i >= string.length())
+                break;
+        }
+        return result.toString();
+    }
+
+    public interface AutoName {
+        String get();
+    }
+
+    public static AutoName getAutoName(Supplier<LocalizedString> caption, Supplier<String> name) {
         return () -> {
+            String camelCased = null;
             LocalizedString readCaption = caption.get();
             if(readCaption != null && !readCaption.isEmpty()) {
                 String englishCaption = ThreadLocalContext.localize(readCaption, Locale.ENGLISH);
                 if(nonEnglishCaption.matcher(englishCaption).matches()) {
-                    return toCamelCase(englishCaption);
+                    camelCased = toCamelCase(englishCaption);
 //                    can't use it for now, because it requires Java 9
-//                    return toCamelCase.matcher(englishCaption).replaceAll(match -> match.group(2).toUpperCase());
+//                  camelCased = toCamelCase.matcher(englishCaption).replaceAll(match -> match.group(2).toUpperCase());
                 }
             }
-            return name.get();
+            if(camelCased == null)
+                camelCased = name.get();
+
+            if(camelCased == null)
+                return null;
+
+            camelCased = lowerSequentialAndRemoveShort(camelCased);
+            if(camelCased.isEmpty())
+                return null;
+
+            return camelCased;
         };
     }
 
-    public static Supplier<AppServerImage> createPropertyImage(String imagePath, Supplier<String> autoName) {
+    public static Supplier<AppServerImage> createPropertyImage(String imagePath, AutoName autoName) {
         return createImage(imagePath, Style.PROPERTY, name -> ActionOrProperty.getDefaultImage(name, autoName, Settings.get().getDefaultAutoImageRankingThreshold(), AUTO_ICON));
     }
 

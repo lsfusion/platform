@@ -54,7 +54,7 @@ public class ContainerView extends ComponentView {
                 () -> useDefaultIcon ? AppServerImage.createContainerImage(AppServerImage.FORM, ContainerView.this, formView).get() : null);
     }
 
-    private Supplier<String> getAutoName(FormView formView) {
+    private AppServerImage.AutoName getAutoName(FormView formView) {
         return AppServerImage.getAutoName(main ? formView::getCaption : () -> caption, main ? formView.entity::getName : () -> name);
     }
 

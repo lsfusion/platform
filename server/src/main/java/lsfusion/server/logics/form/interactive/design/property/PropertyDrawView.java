@@ -254,7 +254,7 @@ public class PropertyDrawView extends BaseComponentView {
                 : entity.getCaption();
     }
 
-    public Supplier<String> getAutoName() {
+    public AppServerImage.AutoName getAutoName() {
         return AppServerImage.getAutoName(this::getCaption, entity.getInheritedProperty()::getName);
     }
 
