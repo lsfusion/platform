@@ -1737,7 +1737,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
         systemEventsLM.serverUseBootstrap.change(useBootstrap ? true : null, session);
         systemEventsLM.serverVerticalNavbar.change(businessLogics.verticalNavbar ? true : null, session);
-        systemEventsLM.serverPinNavbar.change(businessLogics.pinNavbar ? true : null, session);
+        systemEventsLM.serverPinNavbar.change(businessLogics.pinNavbar, session);
         apply(session);
     }
 

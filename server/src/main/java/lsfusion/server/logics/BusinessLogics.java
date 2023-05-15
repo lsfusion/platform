@@ -178,7 +178,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     
     public boolean verticalNavbar;
     
-    public boolean pinNavbar;
+    public Boolean pinNavbar;
 
     public String logicsCaption;
 
@@ -226,7 +226,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         this.verticalNavbar = verticalNavbar;
     }
     
-    public void setPinNavbar(boolean pinNavbar) {
+    public void setPinNavbar(Boolean pinNavbar) {
         this.pinNavbar = pinNavbar;
     }
 

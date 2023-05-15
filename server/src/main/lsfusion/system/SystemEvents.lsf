@@ -82,14 +82,22 @@ toggleVerticalNavbar () {
 verticalNavbarClass = ABSTRACT STRING();
 
 userPinNavbar '{navigator.navbar.pin}' = DATA TBOOLEAN (CustomUser);
-serverPinNavbar '{navigator.navbar.pin}' = DATA BOOLEAN ();
-pinNavbar '{navigator.navbar.pin}' (CustomUser u) = IF userPinNavbar(u) THEN userPinNavbar(u) == TTRUE ELSE serverPinNavbar();
+serverPinNavbar '{navigator.navbar.pin}' = DATA TBOOLEAN ();
+pinNavbar '{navigator.navbar.pin}' (CustomUser u) = IF userPinNavbar(u) THEN userPinNavbar(u) ELSE serverPinNavbar();
 pinNavbar() = pinNavbar(currentUser());
 
-pinNavbarCaption = IF pinNavbar() THEN '{system.events.navbar.unpin}' ELSE '{system.events.navbar.pin}';
-pinNavbarImage = IF pinNavbar() THEN iconIfAvailable('navbarUnpin.png','fa-solid fa-thumbtack fa-rotate-90') ELSE iconIfAvailable('navbarPin.png','fa-solid fa-thumbtack');
+pinNavbarCaption = IF pinNavbar()
+    THEN (IF pinNavbar() == TFALSE
+        THEN '{system.events.navbar.pin}'
+        ELSE '{system.events.navbar.unpin}')
+    ELSE '{system.events.navbar.pin.part}';
+pinNavbarImage = IF pinNavbar() 
+    THEN (IF pinNavbar() == TFALSE 
+        THEN iconIfAvailable('navbarPin.png','fa-solid fa-thumbtack') 
+        ELSE iconIfAvailable('navbarUnpin.png','fa-solid fa-thumbtack fa-rotate-90')) 
+    ELSE iconIfAvailable('navbarPinPart.png','fa-solid fa-thumbtack fa-rotate-45');
 togglePinNavbar () {
-    userPinNavbar(currentUser()) <- IF pinNavbar() THEN TFALSE ELSE TTRUE;
+    userPinNavbar(currentUser()) <- IF pinNavbar() THEN (IF pinNavbar() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
     apply();
 }
 pinNavbarClass = ABSTRACT STRING();
@@ -387,6 +395,7 @@ systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-
     (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
     (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
+toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT pinNavbar() == TTRUE THEN ' navbar-popup-selected-hover' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session));
