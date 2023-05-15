@@ -102,16 +102,12 @@ public class GridDataRecord implements RowIndexHolder {
         return foreground != null ? foreground : rowForeground;
     }
 
-    public void setReadOnly(String column, Boolean readOnly) {
-        if (readOnly != null) {
-            createReadOnlys().put(column, readOnly);
-        } else if (readOnlys != null) {
-            readOnlys.remove(column);
-        }
+    public void setReadOnly(String column, boolean readOnly) {
+        createReadOnlys().put(column, readOnly);
     }
 
     public boolean isReadonly(String column) {
-        return readOnlys != null && readOnlys.get(column) != null;
+        return readOnlys != null && readOnlys.get(column);
     }
 
     public void setRowBackground(PValue newRowBackground) {
