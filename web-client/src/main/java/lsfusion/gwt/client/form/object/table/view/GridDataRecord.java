@@ -14,10 +14,6 @@ public class GridDataRecord implements RowIndexHolder {
     private String rowForeground;
 
     private NativeStringMap<Object> values;
-    private NativeStringMap<Boolean> readOnlys;
-    private NativeStringMap<String> valueElementClasses;
-    private NativeStringMap<String> backgrounds;
-    private NativeStringMap<String> foregrounds;
 
     public GridDataRecord(int rowIndex) {
         this.rowIndex = rowIndex;
@@ -65,49 +61,37 @@ public class GridDataRecord implements RowIndexHolder {
     }
 
     public void setValueElementClass(String column, String elementClass) {
-        if (elementClass != null) {
-            createValueElementClasses().put(column, elementClass);
-        } else if (valueElementClasses != null) {
-            valueElementClasses.remove(column);
-        }
+        setAttribute(column + "_elementClass", elementClass);
     }
 
     public String getValueElementClass(String column) {
-        return valueElementClasses != null ? valueElementClasses.get(column) : null;
+        return (String) getAttribute(column + "_elementClass");
     }
 
     public void setBackground(String column, String color) {
-        if (color != null) {
-            createBackgrounds().put(column, color);
-        } else if (backgrounds != null) {
-            backgrounds.remove(column);
-        }
+        setAttribute(column + "_background", color);
     }
 
     public String getBackground(String column) {
-        String background = backgrounds != null ? backgrounds.get(column) : null;
+        String background = (String) getAttribute(column + "_background");
         return background != null ? background : rowBackground;
     }
 
     public void setForeground(String column, String color) {
-        if (color != null) {
-            createForegrounds().put(column, color);
-        } else if (foregrounds != null) {
-            foregrounds.remove(column);
-        }
+        setAttribute(column + "_foreground", color);
     }
 
     public String getForeground(String column) {
-        String foreground = foregrounds != null ? foregrounds.get(column) : null;
+        String foreground = (String) getAttribute(column + "_foreground");
         return foreground != null ? foreground : rowForeground;
     }
 
     public void setReadOnly(String column, boolean readOnly) {
-        createReadOnlys().put(column, readOnly);
+        setAttribute(column + "_readonly", readOnly ? true : null);
     }
 
     public boolean isReadonly(String column) {
-        return readOnlys != null && readOnlys.get(column);
+        return getAttribute(column + "_readonly") != null;
     }
 
     public void setRowBackground(PValue newRowBackground) {
@@ -140,34 +124,6 @@ public class GridDataRecord implements RowIndexHolder {
             values = new NativeStringMap<>();
         }
         return values;
-    }
-
-    private NativeStringMap<String> createValueElementClasses() {
-        if (valueElementClasses == null) {
-            valueElementClasses = new NativeStringMap<>();
-        }
-        return valueElementClasses;
-    }
-
-    private NativeStringMap<String> createBackgrounds() {
-        if (backgrounds == null) {
-            backgrounds = new NativeStringMap<>();
-        }
-        return backgrounds;
-    }
-
-    private NativeStringMap<String> createForegrounds() {
-        if (foregrounds == null) {
-            foregrounds = new NativeStringMap<>();
-        }
-        return foregrounds;
-    }
-
-    private NativeStringMap<Boolean> createReadOnlys() {
-        if (readOnlys == null) {
-            readOnlys = new NativeStringMap<>();
-        }
-        return readOnlys;
     }
 
     public void setKey(GGroupObjectValue newKey) {
