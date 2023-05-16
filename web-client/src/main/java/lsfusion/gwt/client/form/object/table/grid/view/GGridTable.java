@@ -444,7 +444,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                             column.setValue(record, propValues.get(fullKey));
                             column.setLoading(record, propLoadings != null && PValue.getBooleanValue(propLoadings.get(fullKey)));
-                            record.setReadOnly(column.columnSID, propReadOnly == null ? null : PValue.getBooleanValue(propReadOnly.get(fullKey)));
+                            record.setReadOnly(column.columnSID, propReadOnly != null && PValue.getBooleanValue(propReadOnly.get(fullKey)));
                             PValue valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
                             record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
                             PValue background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
