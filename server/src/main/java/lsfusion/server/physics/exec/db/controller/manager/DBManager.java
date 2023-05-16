@@ -120,6 +120,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -1137,10 +1138,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private static ImMap<String, ImRevMap<String, String>> getFieldToCanMap(DBStructure<?> dbStructure) {
-        return SetFact.fromJavaOrderSet(dbStructure.storedProperties).getSet().group(new BaseUtils.Group<String, DBStoredProperty>() {
-            public String group(DBStoredProperty value) {
-                return value.tableName;
-            }}).mapValues(value -> value.mapRevKeyValues(DBStoredProperty::getDBName, DBStoredProperty::getCanonicalName));
+        return SetFact.fromJavaOrderSet(dbStructure.storedProperties)
+                .getSet()
+                .group(value -> value.tableName)
+                .mapValues(value -> value.mapRevKeyValues(DBStoredProperty::getDBName, DBStoredProperty::getCanonicalName));
 
     }
 
@@ -1158,8 +1159,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         for (Map.Entry<NamedTable, Map<List<String>, IndexOptions>> oldTableIndices : oldDBStructure.tables.entrySet()) {
             NamedTable oldTable = oldTableIndices.getKey();
-            NamedTable newTable = newDBStructure.getTable(oldTable.getName());
-            Map<List<Field>, IndexOptions> newTableIndices = null; Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndicesNames = null; ImMap<String, String> fieldOldToNew = MapFact.EMPTY();
+            NamedTable newTable = newDBStructure.getTable(oldTable.getName()); // Что может произойти при миграции?
+            Map<List<Field>, IndexOptions> newTableIndices = null;
+            Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndicesNames = null;
+            ImMap<String, String> fieldOldToNew = MapFact.EMPTY();
+
             if(newTable != null) {
                 newTableIndices = newDBStructure.tables.get(newTable);
                 newTableIndicesNames = new HashMap<>();
@@ -1546,7 +1550,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
             ImMap<String, ImMap<String, ImSet<Long>>> toCopy = mToCopy.immutable();
-            for (int i = 0, size = toCopy.size(); i < size; i++) { // перенесем классы, которые сохранились но изменили поле
+            for (int i = 0, size = toCopy.size(); i < size; i++) { // перенесем классы, которые сохранились, но изменили поле
                 DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
                 NamedTable table = newDBStructure.getTable(classProp.tableName);
 
@@ -1622,9 +1626,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
-            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName,
+            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
                     migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
-                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion), idChanges);
+                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
+                    idChanges);
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;
@@ -2128,25 +2133,35 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
     
-    private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData) throws SQLException {
-        Map<String, String> propertyChanges = migrationManager.getStoredPropertyCNChangesAfter(oldData.migrationVersion);
-        for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
-            boolean found = false;
-            String newDBName = getNamingPolicy().transformActionOrPropertyCNToDBName(entry.getValue());
-            for (DBStoredProperty oldProperty : oldData.storedProperties) {
-                if (entry.getKey().equals(oldProperty.getCanonicalName())) {
-                    renameColumn(sql, oldData, oldProperty, newDBName);
-                    oldProperty.migrateNames(entry.getValue());
-                    found = true;
-                    break;
-                }
+    private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
+        Map<String, String> propertyCNChanges = migrationManager.getStoredPropertyCNChangesAfter(oldData.migrationVersion);
+        Map<String, DBStoredProperty> propByCN = storedPropertiesMap(newData.storedProperties);
+        Set<String> renamedCN = new HashSet<>();
+
+        for (DBStoredProperty oldProperty : oldData.storedProperties) {
+            String canonicalName = oldProperty.getCanonicalName();
+            if (propertyCNChanges.containsKey(canonicalName)) {
+                canonicalName = propertyCNChanges.get(canonicalName);
             }
-            if (!found) {
-                startLogger.warn("Property " + entry.getKey() + " was not found for renaming to " + entry.getValue());
+            DBStoredProperty newProperty = propByCN.get(canonicalName);
+            if (newProperty != null) {
+                renamedCN.add(oldProperty.getCanonicalName());
+                renameColumn(sql, oldData, oldProperty, newProperty.getDBName());
+                oldProperty.migrateNames(newProperty.getCanonicalName(), newProperty.getDBName());
             }
         }
+
+        propertyCNChanges.forEach((oldCN, newCN) -> {
+            if (!renamedCN.contains(oldCN)) {
+                startLogger.warn("Property " + oldCN + " was not found for renaming to " + newCN);
+            }
+        });
     }
-    
+
+    private Map<String, DBStoredProperty> storedPropertiesMap(List<DBStoredProperty> properties) {
+        return properties.stream().collect(Collectors.toMap(DBStoredProperty::getCanonicalName, property -> property));
+    }
+
     private void renameMigratingTables(SQLSession sql, OldDBStructure oldData) throws SQLException {
         Map<String, String> tableChanges = migrationManager.getTableSIDChangesAfter(oldData.migrationVersion);
         for (DBStoredProperty oldProperty : oldData.storedProperties) {
@@ -2208,25 +2223,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
     } 
-    
-    private void migrateDBNames(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
-        Map<String, DBStoredProperty> newProperties = new HashMap<>();
-        for (DBStoredProperty newProperty : newData.storedProperties) {
-            newProperties.put(newProperty.getCanonicalName(), newProperty);
-        }
 
-        for (DBStoredProperty oldProperty : oldData.storedProperties) {
-            DBStoredProperty newProperty;
-            if ((newProperty = newProperties.get(oldProperty.getCanonicalName())) != null) {
-                if (!newProperty.getDBName().equals(oldProperty.getDBName())) {
-                    renameColumn(sql, oldData, oldProperty, newProperty.getDBName());
-                    // переустанавливаем каноническое имя, чтобы получить новый dbName
-                    oldProperty.migrateNames(oldProperty.getCanonicalName());
-                }
-            }
-        }
-    }
-    
+
     // Временная реализация для переименования
     // issue #4672 Построение сигнатуры LOG-свойств
     // Проблема текущего способа: 
@@ -2275,19 +2273,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // Обязательно до renameMigratingProperties, потому что в storedPropertyCNChanges добавляются изменения для log-свойств 
         addLogPropertiesToMigration(oldData, newData.migrationVersion);
-        
-        // Изменяем в старой структуре свойства из скрипта миграции, переименовываем поля в таблицах
-        renameMigratingProperties(sql, oldData);
+
+        // Переименовываем поля в таблицах при изменении dbName (в том числе из-за изменения naming policy) и/или миграции
+        // При этом в старой структуре тоже все переименовываем: имя поля, каноническое имя свойства и dbName свойства
+        renameMigratingProperties(sql, oldData, newData);
         
         // Переименовываем таблицы из скрипта миграции, переустанавливаем ссылки на таблицы в свойствах
         renameMigratingTables(sql, oldData);
 
         // Переустановим имена классовым свойствам, если это необходимо. Также при необходимости переименуем поля в таблицах   
-        // Иимена полей могут измениться при переименовании таблиц (так как в именах классовых свойств есть имя таблицы) либо при изменении dbNamePolicy
+        // Имена полей могут измениться при переименовании таблиц (так как в именах классовых свойств есть имя таблицы) либо при изменении dbNamePolicy
         migrateClassProperties(sql, oldData, newData);        
-        
-        // При изменении dbNamePolicy необходимо также переименовать поля
-        migrateDBNames(sql, oldData, newData);
         
         // переименовываем классы из скрипта миграции
         renameMigratingClasses(oldData);
@@ -2473,7 +2469,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             this.dbName = property.getDBName();
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
-            mapKeys = ((Property<PropertyInterface>)property).mapTable.mapKeys.mapKeys(value -> value.ID);
+            this.mapKeys = property.mapTable.mapKeys.mapKeys(value -> value.ID);
             this.property = property;
         }
 
@@ -2496,6 +2492,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public void migrateNames(String canonicalName) {
             this.canonicalName = canonicalName;
             this.dbName = getNamingPolicy().transformActionOrPropertyCNToDBName(canonicalName);
+        }
+
+        public void migrateNames(String canonicalName, String dbName) {
+            this.canonicalName = canonicalName;
+            this.dbName = dbName;
         }
     }
 
@@ -2711,7 +2712,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 int prevStoredNum = inputDB.readInt();
                 for (int i = 0; i < prevStoredNum; i++) {
                     String canonicalName = inputDB.readUTF();
-                    String sID = inputDB.readUTF();
+                    String dbName = inputDB.readUTF();
                     boolean isDataProperty = inputDB.readBoolean();
                     
                     String tableName = inputDB.readUTF();
@@ -2720,7 +2721,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     for (int j = 0; j < prevTable.getTableKeys().size(); j++) {
                         mMapKeys.exclAdd(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
                     }
-                    storedProperties.add(new DBStoredProperty(canonicalName, sID, isDataProperty, tableName, mMapKeys.immutable()));
+                    storedProperties.add(new DBStoredProperty(canonicalName, dbName, isDataProperty, tableName, mMapKeys.immutable()));
                 }
 
                 int prevConcreteNum = inputDB.readInt();

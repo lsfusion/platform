@@ -6,18 +6,18 @@ import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
 import java.util.*;
 
 public class MigrationManager {
-    private static Comparator<MigrationVersion> migrationVersionComparator = MigrationVersion::compare;
+    private static final Comparator<MigrationVersion> migrationVersionComparator = MigrationVersion::compare;
 
-    private TreeMap<MigrationVersion, List<SIDChange>> propertyCNChanges = new TreeMap<>(migrationVersionComparator);
-    private TreeMap<MigrationVersion, List<SIDChange>> actionCNChanges = new TreeMap<>(migrationVersionComparator);
-    private TreeMap<MigrationVersion, List<SIDChange>> propertyDrawNameChanges = new TreeMap<>(migrationVersionComparator);
-    private TreeMap<MigrationVersion, List<SIDChange>> storedPropertyCNChanges = new TreeMap<>(migrationVersionComparator);
-    private TreeMap<MigrationVersion, List<SIDChange>> classSIDChanges = new TreeMap<>(migrationVersionComparator);
-    private TreeMap<MigrationVersion, List<SIDChange>> tableSIDChanges = new TreeMap<>(migrationVersionComparator);
-    private TreeMap<MigrationVersion, List<SIDChange>> objectSIDChanges = new TreeMap<>(migrationVersionComparator);
-    private TreeMap<MigrationVersion, List<SIDChange>> navigatorCNChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> propertyCNChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> actionCNChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> propertyDrawNameChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> storedPropertyCNChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> classSIDChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> tableSIDChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> objectSIDChanges = new TreeMap<>(migrationVersionComparator);
+    private final TreeMap<MigrationVersion, List<SIDChange>> navigatorCNChanges = new TreeMap<>(migrationVersionComparator);
 
-    private DBNamingPolicy policy;
+    private final DBNamingPolicy policy;
     
     public MigrationManager(DBNamingPolicy policy) {
         this.policy = policy;
