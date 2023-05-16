@@ -1,4 +1,4 @@
-MODULE Multiselect;
+MODULE MultiSelect;
 
 REQUIRE SystemEvents;
 
