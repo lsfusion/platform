@@ -192,6 +192,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                         tableBuilder.incDeleteRows(tableWidget.getSection(), i, i + 1);
                         rows.remove(i);
                         incUpdateRowIndices(i, -1);
+                        if(renderedSelectedRow == i)
+                            selectedRowChanged();
                     }
                 }
             } else {
