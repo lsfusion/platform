@@ -26,13 +26,18 @@ public class GPanelController extends GPropertyController {
     }
 
     private void selectNextElement(boolean forward) {
-        FocusUtils.focus(getNextSelectedElement(formController.getWidget().getElement(), forward), FocusUtils.Reason.KEYNEXTNAVIGATE);
+        Element nextFocusElement = getNextFocusElement(formController.getWidget().getElement(), forward);
+        if(nextFocusElement != null) {
+            FocusUtils.focus(nextFocusElement, FocusUtils.Reason.KEYNEXTNAVIGATE);
+        }
     }
 
-    private native Element getNextSelectedElement(Element formController, boolean forward) /*-{
-        var elements = Array.prototype.filter.call(formController.querySelectorAll('div'), function (item) {
+    public static native Element getNextFocusElement(Element formController, boolean forward) /*-{
+        var elements = Array.prototype.filter.call(formController.querySelectorAll('tableContainer,button,input'), function (item) {
             return item.tabIndex >= "0"
         });
+        if(elements.length === 0)
+            return null;
         var index = elements.indexOf($doc.activeElement);
         return forward ? (elements[index + 1] || elements[0]) : (elements[index - 1] || elements[elements.length - 1]);
     }-*/;
