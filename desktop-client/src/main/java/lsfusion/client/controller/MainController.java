@@ -320,12 +320,6 @@ public class MainController {
         new RichEditorPane();
     }
 
-    public static void setStatusText(String msg) {
-        if (MainFrame.instance != null) {
-            MainFrame.instance.statusComponent.setText(msg);
-        }
-    }
-
     public static long getBytesSent() {
         return ZipClientSocketFactory.outSum;
     }

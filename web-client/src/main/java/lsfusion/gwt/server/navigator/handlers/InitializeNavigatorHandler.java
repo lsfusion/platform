@@ -69,7 +69,6 @@ public class InitializeNavigatorHandler extends NavigatorActionHandler<Initializ
         //getting common windows
         List<GAbstractWindow> windows = new ArrayList<>();
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.logs));
-        windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.status));
         windows.add((GAbstractWindow) converter.convertOrCast(navigatorData.forms));
 
         //put in navigator info navigator data first changes

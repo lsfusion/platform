@@ -465,8 +465,7 @@ WINDOW toolbar TOOLBAR VERTICAL POSITION(0, 6, 20, 89) HIDETITLE CLASS toolbarWi
 WINDOW tree  TOOLBAR POSITION(0, 6, 20, 89) HIDETITLE CLASS 'bg-body-secondary';
 
 WINDOW forms NATIVE POSITION(20, 6, 80, 89) CLASS formsWindowClass();
-WINDOW log NATIVE POSITION(0, 95, 50, 5) CLASS 'bg-body-secondary';
-WINDOW status NATIVE POSITION(50, 95, 100, 5) HIDETITLE CLASS 'bg-body-secondary';
+WINDOW log NATIVE POSITION(0, 95, 100, 5) HIDETITLE CLASS 'bg-body-secondary';
 
 NAVIGATOR {
     NEW FOLDER administration '{navigator.administration}' LAST WINDOW system PARENT IMAGE 'tools.png' {

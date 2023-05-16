@@ -685,7 +685,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         public NavigatorWindow tree;
         public AbstractWindow forms;
         public AbstractWindow log;
-        public AbstractWindow status;
     }
 
     public Windows baseWindows;
@@ -722,7 +721,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         baseWindows.forms = findWindow("forms");
         baseWindows.log = findWindow("log");
-        baseWindows.status = findWindow("status");
 
         administration = findNavigatorElement("administration");
 
