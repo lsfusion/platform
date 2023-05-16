@@ -893,17 +893,7 @@ public class ReportGenerator {
     }
 
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, RemoteLogicsInterface remoteLogics) {
-        ClassLoader originalClassloader = Thread.currentThread().getContextClassLoader();
-
-        RemoteClassLoader remoteClassLoader = new RemoteClassLoader(originalClassloader);
-        remoteClassLoader.setRemoteLogics(remoteLogics);
-
-        Thread.currentThread().setContextClassLoader(remoteClassLoader);
-        try {
-            return exportToFileByteArray(generationData, type, null, null, remoteLogics);
-        } finally {
-            Thread.currentThread().setContextClassLoader(originalClassloader);
-        }
+        return exportToFileByteArray(generationData, type, null, null, remoteLogics);
     }
     
     public static RawFileData exportToFileByteArray(ReportGenerationData generationData, FormPrintType type, String sheetName, String password, RemoteLogicsInterface remoteLogics) {

@@ -6,6 +6,7 @@ import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ReadUsedClassLoader extends ClassLoader {
@@ -26,12 +27,32 @@ public class ReadUsedClassLoader extends ClassLoader {
         InputStream resourceAsStream = super.getResourceAsStream(name);
         if (resourceAsStream != null) { //call from the server. Save classes that are used in .jrxml
             try {
-                if (!name.startsWith("lsfusion/base") && !name.startsWith("java") && !name.startsWith("net/sf")) //save classes that will not be in the client's classpath
+                if (addClass(name))  //save classes that will not be in the client's classpath
                     classes.put(name, IOUtils.toByteArray(resourceAsStream));
+
             } catch (IOException e) {
                 Throwables.propagate(e);
             }
         }
         return super.getResourceAsStream(name);
+    }
+
+    private static final Map<String, Boolean> classesPermissions = new LinkedHashMap<>(); // Order is important.
+    static {
+        // Map store string that the package name starts with and permission to add or not to add it.
+        // Order is important because there may be overlaps in the package names.
+        classesPermissions.put("java/sql", true); //add classes from this package as in java 9 and above this package is not in the base module and not available when compiling reports on the desktop client when running from .jnlp because javawebstart uses its own classloader
+        classesPermissions.put("lsfusion/base", false);
+        classesPermissions.put("java", false);
+        classesPermissions.put("net/sf", false);
+    }
+
+    private boolean addClass(String name) {
+        for (Map.Entry<String, Boolean> stringBooleanEntry : classesPermissions.entrySet()) {
+            if (name.startsWith(stringBooleanEntry.getKey()))
+                return stringBooleanEntry.getValue();
+        }
+
+        return true;
     }
 }
