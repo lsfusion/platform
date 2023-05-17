@@ -481,7 +481,7 @@ seekChat (Chat chat) + { SEEK fullChat.c = chat; }
 seekLastMessage() + { SEEK LAST fullChat.m; }
 
 NAVIGATOR {
-    NEW fullChat WINDOW system PARENT AFTER toggleBootstrap IMAGE 'chat.png';
+    NEW fullChat WINDOW system PARENT AFTER toggleBootstrap HEADER '{chat.chat}' IF NOT noSystemToolbarCaptions() IMAGE 'chat.png';
 }
 
 //---------------------------- SHORT CHAT ----------------------------//
