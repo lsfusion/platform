@@ -48,6 +48,7 @@ serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
 useBootstrap '{system.events.use.bootstrap}' (CustomUser u) = IF userUseBootstrap(u) THEN userUseBootstrap(u) == TTRUE ELSE serverUseBootstrap();
 useBootstrap = useBootstrap(currentUser());
 
+bootstrapCaption = (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT noSystemToolbarCaptions();
 bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
 toggleBootstrap () {
     userUseBootstrap(currentUser()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
@@ -55,6 +56,7 @@ toggleBootstrap () {
     INTERNAL CLIENT 'reload';
 }
 
+colorThemeCaption = (IF colorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.light.mode}' ELSE '{system.events.dark.mode}') IF NOT noSystemToolbarCaptions();
 colorThemeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'lightMode.png' ELSE 'darkMode.png';
 toggleColorTheme() {
     IF colorTheme(currentUser()) == ColorTheme.dark THEN
@@ -70,6 +72,7 @@ serverVerticalNavbar '{navigator.navbar.vertical}' = DATA BOOLEAN ();
 verticalNavbar '{navigator.navbar.vertical}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
 verticalNavbar = verticalNavbar(currentUser());
 
+verticalNavbarCaption = (IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}') IF NOT noSystemToolbarCaptions();
 verticalNavbarImage = IF verticalNavbar() THEN iconIfAvailable('navbarHorz.png', 'fa-solid fa-window-maximize') ELSE iconIfAvailable('navbarVert.png', 'fa-solid fa-window-maximize fa-rotate-270');
 toggleVerticalNavbar () {
     userVerticalNavbar(currentUser()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
@@ -83,6 +86,7 @@ serverPinNavbar '{navigator.navbar.pin}' = DATA BOOLEAN ();
 pinNavbar '{navigator.navbar.pin}' (CustomUser u) = IF userPinNavbar(u) THEN userPinNavbar(u) == TTRUE ELSE serverPinNavbar();
 pinNavbar() = pinNavbar(currentUser());
 
+pinNavbarCaption = (IF pinNavbar() THEN '{system.events.navbar.unpin}' ELSE '{system.events.navbar.pin}') IF NOT noSystemToolbarCaptions();
 pinNavbarImage = IF pinNavbar() THEN iconIfAvailable('navbarUnpin.png','fa-solid fa-thumbtack fa-rotate-90') ELSE iconIfAvailable('navbarPin.png','fa-solid fa-thumbtack');
 togglePinNavbar () {
     userPinNavbar(currentUser()) <- IF pinNavbar() THEN TFALSE ELSE TTRUE;
@@ -90,16 +94,11 @@ togglePinNavbar () {
 }
 pinNavbarClass = ABSTRACT STRING();
 
-bootstrapHeader = ABSTRACT STRING();
-verticalNavbarHeader = ABSTRACT STRING();
-pinNavbarHeader = ABSTRACT STRING();
-colorThemeHeader = ABSTRACT STRING();
-
 NAVIGATOR {
-    NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapHeader() IMAGE bootstrapImage();
-    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE toggleBootstrap HEADER verticalNavbarHeader() IMAGE verticalNavbarImage() CLASS verticalNavbarClass();
-    NEW togglePinNavbar WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER pinNavbarHeader() IMAGE pinNavbarImage() CLASS pinNavbarClass();
-    NEW toggleColorTheme WINDOW system PARENT BEFORE togglePinNavbar HEADER colorThemeHeader() IMAGE colorThemeImage();
+    NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
+    NEW toggleVerticalNavbar WINDOW system PARENT BEFORE toggleBootstrap HEADER verticalNavbarCaption() IMAGE verticalNavbarImage() CLASS verticalNavbarClass();
+    NEW togglePinNavbar WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER pinNavbarCaption() IMAGE pinNavbarImage() CLASS pinNavbarClass();
+    NEW toggleColorTheme WINDOW system PARENT BEFORE togglePinNavbar HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.css' THEN 1;
@@ -361,13 +360,7 @@ isMobile() = isNativeMobile() OR isWebMobile();
 isNative() = isNativeDesktop() OR isNativeMobile();
 isWeb() = isWebDesktop() OR isWebMobile();
 
-bootstrapHeader() += (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT isNativeDesktop();
-verticalNavbarHeader() += (IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}') IF NOT isNativeDesktop();
-pinNavbarHeader() += (IF pinNavbar() THEN '{system.events.navbar.unpin}' ELSE '{system.events.navbar.pin}') IF NOT isNativeDesktop();
-colorThemeHeader() += (IF colorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.light.mode}' ELSE '{system.events.dark.mode}') IF NOT isNativeDesktop();
-
-administrationHeader() += '{navigator.administration}' IF NOT isNativeDesktop();
-accountHeader() += '{navigator.account}' IF NOT isNativeDesktop();
+noSystemToolbarCaptions() += isNativeDesktop();
 
 dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
 dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());

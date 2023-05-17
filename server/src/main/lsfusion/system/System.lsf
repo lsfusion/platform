@@ -467,11 +467,11 @@ WINDOW forms NATIVE POSITION(20, 20, 80, 79) CLASS formsWindowClass();
 WINDOW log NATIVE POSITION(0, 70, 20, 29) CLASS 'bg-body-secondary';
 WINDOW status NATIVE POSITION(0, 99, 100, 1) HIDETITLE CLASS 'bg-body-secondary';
 
-administrationHeader = ABSTRACT STRING();
+noSystemToolbarCaptions = ABSTRACT BOOLEAN();
 
 NAVIGATOR {
     NEW FOLDER root '{navigator.forms}' WINDOW root {
-        NEW FOLDER administration '{navigator.administration}' HEADER administrationHeader() LAST WINDOW system PARENT IMAGE 'tools.png' {
+        NEW FOLDER administration '{navigator.administration}' HEADER '{navigator.administration}' IF NOT noSystemToolbarCaptions() LAST WINDOW system PARENT IMAGE 'tools.png' {
             NEW FOLDER application '{navigator.application}' WINDOW toolbar PARENT {
                 NEW options;
                 NEW integrationData;
