@@ -685,7 +685,7 @@ DESIGN findNavigator {
 }
 
 NAVIGATOR {
-    NEW findNavigator LAST IMAGE 'search.png' WINDOW system PARENT;
+    NEW findNavigator LAST HEADER '{reflection.find.navigator}' IF NOT noSystemToolbarCaptions() IMAGE 'search.png' WINDOW system PARENT;
 }
 
 // extend reflection

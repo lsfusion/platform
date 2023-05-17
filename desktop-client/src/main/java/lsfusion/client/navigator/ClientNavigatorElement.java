@@ -155,10 +155,10 @@ public abstract class ClientNavigatorElement {
 
     public String getTooltip() {
         return MainController.showDetailedInfo && creationPath != null ?
-                String.format("<html><body>" +
-                        "<b>%s</b><br/><hr>" +
+                String.format("<html>" +
+                        (caption != null ? ("<b>" + caption + "</b><br/><hr>") : "") +
                         "<b>sID:</b> %s<br/>" +
                         "<b>" + getString("logics.scriptpath") + ":</b> %s<br/>" +
-                        "</body></html>", caption, canonicalName, creationPath) : caption;
+                        "</html>", canonicalName, creationPath) : caption;
     }
 }
