@@ -4,8 +4,6 @@ import com.google.common.base.Throwables;
 import lsfusion.base.Result;
 import lsfusion.base.col.interfaces.immutable.ImOrderMap;
 import lsfusion.base.file.RawFileData;
-import lsfusion.interop.action.ClientAction;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.exception.AuthenticationException;
 import lsfusion.interop.connection.AuthenticationToken;
 import lsfusion.interop.connection.ConnectionInfo;
@@ -94,7 +92,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             String hostName = connectionInfo.hostName;
             computer = dbManager.getComputer(hostName, session, stack); // can apply session
 
-            initUserContext(hostName, connectionInfo.hostAddress, connectionInfo.language, connectionInfo.country, connectionInfo.timeZone, connectionInfo.dateFormat, connectionInfo.timeFormat, stack, session);
+            initUserContext(hostName, connectionInfo.hostAddress, connectionInfo.language, connectionInfo.country, connectionInfo.timeZone, connectionInfo.dateFormat, connectionInfo.timeFormat, connectionInfo.preferredColorTheme, stack, session);
         }
     }
 
@@ -113,7 +111,8 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
 
     // in theory its possible to cache all this
     // locale + log info
-    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+    protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
+                                   String preferredColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         logInfo = readLogInfo(session, user, businessLogics, hostName, remoteAddress);
         locale = readLocale(session, user, businessLogics, clientLanguage, clientCountry, stack);
         userRole = (Long) businessLogics.securityLM.firstRoleUser.read(session, user);
@@ -123,7 +122,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     public boolean changeCurrentUser(DataObject user, ExecutionStack stack) throws SQLException, SQLHandledException {
         this.user = user;
         try(DataSession session = createSession()) {
-            initUserContext(logInfo.hostnameComputer, logInfo.remoteAddress, null, null, null, null, null, stack, session);
+            initUserContext(logInfo.hostnameComputer, logInfo.remoteAddress, null, null, null, null, null, null, stack, session);
         }
         return true;
     }

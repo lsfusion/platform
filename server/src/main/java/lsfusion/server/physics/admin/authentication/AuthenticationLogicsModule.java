@@ -103,6 +103,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP serverTimeFormat;
 
     public LP userFontSize;
+
+    public LP preferredColorTheme;
     
     public LA deliveredNotificationAction;
     
@@ -210,7 +212,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         serverTimeFormat = findProperty("serverTimeFormat[]");
 
         userFontSize = findProperty("fontSize[CustomUser]");
-        
+
+        preferredColorTheme = findProperty("preferredColorTheme[CustomUser]");
+
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
         
         syncUsers = findAction("syncUsers[ISTRING[100], JSONFILE]");

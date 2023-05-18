@@ -15,7 +15,9 @@ public class ConnectionInfo implements Serializable {
     public final String dateFormat;
     public final String timeFormat;
 
-    public ConnectionInfo(String hostName, String hostAddress, String language, String country, TimeZone timeZone, String dateFormat, String timeFormat) {
+    public final String preferredColorTheme;
+
+    public ConnectionInfo(String hostName, String hostAddress, String language, String country, TimeZone timeZone, String dateFormat, String timeFormat, String preferredColorTheme) {
         this.hostName = hostName;
         this.hostAddress = hostAddress;
         this.language = language;
@@ -23,5 +25,6 @@ public class ConnectionInfo implements Serializable {
         this.timeZone = timeZone;
         this.dateFormat = dateFormat;
         this.timeFormat = timeFormat;
+        this.preferredColorTheme = preferredColorTheme;
     }
 }
