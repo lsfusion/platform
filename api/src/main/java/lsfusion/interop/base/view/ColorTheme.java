@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ColorTheme {
-    LIGHT("light"), DARK("dark");
+    LIGHT("light"), DARK("dark"), AUTO("auto");
     
     public final static ColorTheme DEFAULT = LIGHT;
 

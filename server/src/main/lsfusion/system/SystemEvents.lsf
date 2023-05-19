@@ -56,13 +56,19 @@ toggleBootstrap () {
     INTERNAL CLIENT 'reload';
 }
 
-colorThemeCaption = (IF colorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.light.mode}' ELSE '{system.events.dark.mode}') IF NOT noSystemToolbarCaptions();
-colorThemeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'lightMode.png' ELSE 'darkMode.png';
+colorThemeCaption = (CASE
+    WHEN userColorTheme(currentUser()) == ColorTheme.light THEN '{system.events.dark.mode}'
+    WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.auto.mode}'
+    ELSE '{system.events.light.mode}') IF NOT noSystemToolbarCaptions();
+colorThemeImage = CASE 
+    WHEN userColorTheme(currentUser()) == ColorTheme.light THEN 'darkMode.png' 
+    WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN 'autoMode.png' 
+    ELSE 'lightMode.png';
 toggleColorTheme() {
-    IF colorTheme(currentUser()) == ColorTheme.dark THEN
-        colorTheme(currentUser()) <- ColorTheme.light;
-    ELSE
-        colorTheme(currentUser()) <- ColorTheme.dark;
+    userColorTheme(currentUser()) <- CASE
+        WHEN userColorTheme(currentUser()) == ColorTheme.light THEN ColorTheme.dark
+        WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN ColorTheme.auto
+        ELSE ColorTheme.light;
     apply();
     formRefresh();
 }

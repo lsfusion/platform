@@ -33,6 +33,7 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
+import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
@@ -129,13 +130,13 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
 
     @Override
     protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
-                                   String preferredColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
-        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, preferredColorTheme, stack, session);
+                                   String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+        super.initUserContext(hostName, remoteAddress, clientLanguage, clientCountry, clientTimeZone, clientDateFormat, clientTimeFormat, clientColorTheme, stack, session);
 
         useBootstrap = businessLogics.systemEventsLM.useBootstrap.read(session, user) != null;
         localePreferences = readLocalePreferences(session, user, businessLogics, clientTimeZone, clientDateFormat, clientTimeFormat, stack);
         securityPolicy = logicsInstance.getSecurityManager().getSecurityPolicy(session, user);
-        savePreferredColorTheme(session, user, businessLogics, preferredColorTheme, stack);
+        saveClientColorTheme(session, user, businessLogics, clientColorTheme, stack);
     }
 
     private static void saveClientTimeZone(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {
@@ -147,8 +148,8 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
     }
 
-    private static void savePreferredColorTheme(DataSession session, DataObject user, BusinessLogics businessLogics, String preferredColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
-        businessLogics.authenticationLM.preferredColorTheme.change(preferredColorTheme, session, user);
+    private static void saveClientColorTheme(DataSession session, DataObject user, BusinessLogics businessLogics, String clientColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
+        businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, user);
         session.applyException(businessLogics, stack);
     }
 

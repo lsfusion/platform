@@ -92,7 +92,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
             String hostName = connectionInfo.hostName;
             computer = dbManager.getComputer(hostName, session, stack); // can apply session
 
-            initUserContext(hostName, connectionInfo.hostAddress, connectionInfo.language, connectionInfo.country, connectionInfo.timeZone, connectionInfo.dateFormat, connectionInfo.timeFormat, connectionInfo.preferredColorTheme, stack, session);
+            initUserContext(hostName, connectionInfo.hostAddress, connectionInfo.language, connectionInfo.country, connectionInfo.timeZone, connectionInfo.dateFormat, connectionInfo.timeFormat, connectionInfo.clientColorTheme, stack, session);
         }
     }
 
@@ -112,7 +112,7 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
     // in theory its possible to cache all this
     // locale + log info
     protected void initUserContext(String hostName, String remoteAddress, String clientLanguage, String clientCountry, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat,
-                                   String preferredColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
+                                   String clientColorTheme, ExecutionStack stack, DataSession session) throws SQLException, SQLHandledException {
         logInfo = readLogInfo(session, user, businessLogics, hostName, remoteAddress);
         locale = readLocale(session, user, businessLogics, clientLanguage, clientCountry, stack);
         userRole = (Long) businessLogics.securityLM.firstRoleUser.read(session, user);

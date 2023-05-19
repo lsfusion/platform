@@ -89,6 +89,17 @@ function setCookie(name, value, options) {
     document.cookie = updatedCookie;
 }
 
+function setColorTheme() {
+    setColorThemeCookie();
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        setColorThemeCookie();
+    });
+}
+
+function setColorThemeCookie() {
+    setCookie('LSFUSION_CLIENT_COLOR_THEME', window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
+}
+
 function lsfController(callerElement) {
     let controller;
     while (!controller) {
