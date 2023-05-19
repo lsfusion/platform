@@ -415,7 +415,7 @@ colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(OVER
 isDarkTheme() = colorTheme(currentUser()) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
-WHEN CHANGED(userColorTheme(CustomUser user)) DO {
+WHEN CHANGED(colorTheme(CustomUser user)) DO {
     changeColorThemeAction(colorTheme(user));    
 }
 

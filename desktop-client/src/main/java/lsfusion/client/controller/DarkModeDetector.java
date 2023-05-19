@@ -2,6 +2,7 @@ package lsfusion.client.controller;
 
 import java.io.*;
 
+//copied from https://harmoniccode.blogspot.com/2021/02/poor-mans-dark-mode-detection.html
 public class DarkModeDetector {
     public enum OperatingSystem { WINDOWS, MACOS, LINUX, SOLARIS, NONE }
 
