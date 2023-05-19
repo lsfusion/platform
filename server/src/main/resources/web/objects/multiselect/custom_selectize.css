@@ -1,5 +1,4 @@
 .selectize-input {
-    z-index: unset;
     border: 1px solid var(--component-border-color);
     background: var(--component-background-color);
     position: unset;
@@ -37,4 +36,9 @@
 
 .selectize-dropdown, .selectize-input, .selectize-input input {
     color: var(--text-color);
+
+    /*in excel theme resizable-window.css .modal-form sets z-index to 1000, in bootstrap theme by default z-index of the modal-windows is 1055
+        as the selectize uses its own css-classes which do not overlap with excel and bootstrap css-classes,
+        we will use the z-index used for .dropdown-menu.lsf-dropdown in the bootstrap theme - 1070*/
+    z-index: 1070;
 }

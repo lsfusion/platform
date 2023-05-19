@@ -19,7 +19,7 @@
 
     --text-color: var(--bs-body-color);
     --background-color: var(--bs-body-bg);
-    --component-background-color: var(--bs-form-control-bg);
+    --component-background-color: var(--bs-body-bg);
     --grid-separator-border-color: var(--bs-table-border-color);
     --component-border-color: var(--panel-border-color);
 
