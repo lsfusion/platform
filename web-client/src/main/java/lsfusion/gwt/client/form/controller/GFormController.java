@@ -160,6 +160,10 @@ public class GFormController implements EditManager {
         containerForms.remove(containerForm);
     }
 
+    private static int idCounter = 0;
+    // we need the global id to make ids globally unique in some cases
+    public String globalID;
+
     public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, int dispatchPriority, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
@@ -167,6 +171,8 @@ public class GFormController implements EditManager {
         this.formContainer = formContainer;
         this.form = gForm;
         this.isDialog = isDialog;
+
+        this.globalID = "" + (idCounter++);
 
         dispatcher = new FormDispatchAsync(this, dispatchPriority);
 

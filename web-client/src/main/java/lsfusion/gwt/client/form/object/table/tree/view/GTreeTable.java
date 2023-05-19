@@ -79,7 +79,7 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
         tree = new GTreeTableTree(iform);
 
         Column<GTreeGridRecord, Object> column = new ExpandTreeColumn();
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, false);
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, messages.formTree(), null, null, null, false);
         addColumn(column, header, null);
 
         hierarchicalWidth = treeGroup.getExpandWidth();
@@ -163,8 +163,9 @@ public class GTreeTable extends GGridPropertyTable<GTreeGridRecord> {
             if (index > -1) {
                 GridColumn gridColumn = new GridColumn(property);
                 String propertyCaption = property.caption;
+                String captionElementClass = property.captionElementClass;
                 AppBaseImage propertyImage = !property.isAction() ? property.appImage : null;
-                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, propertyImage, property.getTooltip(propertyCaption), gridColumn.isSticky());
+                GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, propertyCaption, captionElementClass, propertyImage, property.getTooltip(propertyCaption), gridColumn.isSticky());
                 GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, gridColumn.isSticky());
 
                 insertColumn(index, gridColumn, header, footer);

@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.*;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.i18n.client.LocaleInfo;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.*;
 import lsfusion.gwt.client.ClientMessages;
@@ -1152,6 +1153,10 @@ public class GwtClientUtils {
         console.error(error);
     }-*/;
 
+    public static native void fireOnMouseDown(Element element)/*-{
+        element.dispatchEvent(new MouseEvent("mousedown"));
+    }-*/;
+
     public static native void setOnMouseDown(Element element, Consumer<NativeEvent> run)/*-{
         element.onmousedown = function(event) {
             run.@Consumer::accept(*)(event);
@@ -1163,6 +1168,13 @@ public class GwtClientUtils {
             run.@Consumer::accept(*)(event);
         }
     }-*/;
+
+    // should be used only once for elements that don't have widgets
+    public static void setEventListener(Element element, int eventID, com.google.gwt.user.client.EventListener listener) {
+        DOM.sinkEvents(element, eventID);
+        assert DOM.getEventListener(element) == null;
+        DOM.setEventListener(element, listener);
+    }
 
     private static String showIfVisible = "showIfVisible";
     public static void setShowIfVisible(Widget widget, boolean visible) {

@@ -74,6 +74,7 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyCaptions = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> propertyFooters = new NativeSIDMap<>();
 
+    protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellValueElementClasses = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellBackgroundValues = new NativeSIDMap<>();
     protected NativeSIDMap<GPropertyDraw, NativeHashMap<GGroupObjectValue, PValue>> cellForegroundValues = new NativeSIDMap<>();
@@ -92,6 +93,12 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             return getDynamicCaption(propCaptions.get(columnKey));
 
         return property.caption;
+    }
+    public static String getCaptionElementClass(NativeHashMap<GGroupObjectValue, PValue> propCaptionElementClasses, GPropertyDraw property, GGroupObjectValue columnKey) {
+        if (propCaptionElementClasses != null)
+            return PValue.getClassStringValue(propCaptionElementClasses.get(columnKey));
+
+        return property.captionElementClass;
     }
     public static AppBaseImage getPropertyImage(NativeHashMap<GGroupObjectValue, PValue> propImages, GPropertyDraw property, GGroupObjectValue columnKey) {
         if (propImages != null)
@@ -305,6 +312,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     public void updatePropertyCaptions(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
         propertyCaptions.put(propertyDraw, values);
+        captionsUpdated = true;
+    }
+
+    public void updateCaptionElementClasses(GPropertyDraw propertyDraw, NativeHashMap<GGroupObjectValue, PValue> values) {
+        captionElementClasses.put(propertyDraw, values);
         captionsUpdated = true;
     }
 
@@ -538,11 +550,11 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
 
     protected void updatePropertyHeader(GGroupObjectValue columnKey, GPropertyDraw property, int index) {
         String columnCaption = getPropertyCaption(property, columnKey);
-        AppBaseImage columnImage = !property.isAction() ? getPropertyImage(property, columnKey) : null;
         GGridPropertyTableHeader header = getGridHeader(index);
         if(header != null) {
             header.setCaption(columnCaption, property.notNull, property.hasChangeAction);
-            header.setImage(columnImage);
+            header.setCaptionElementClass(getCaptionElementClass(property, columnKey));
+            header.setImage(!property.isAction() ? getPropertyImage(property, columnKey) : null);
             header.setPaths(property.path, property.creationPath, property.formPath);
             header.setToolTip(property.getTooltip(columnCaption));
             header.setHeaderHeight(property.getHeaderCaptionHeight(this));
@@ -600,6 +612,10 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
             return userCaption;
 
         return getPropertyCaption(propertyCaptions.get(property), property, columnKey);
+    }
+
+    protected String getCaptionElementClass(GPropertyDraw property, GGroupObjectValue columnKey) {
+        return getCaptionElementClass(captionElementClasses.get(property), property, columnKey);
     }
 
     protected AppBaseImage getPropertyImage(GPropertyDraw property, GGroupObjectValue columnKey) {

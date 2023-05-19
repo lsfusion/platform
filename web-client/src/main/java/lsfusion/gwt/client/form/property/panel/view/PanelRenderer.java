@@ -35,6 +35,7 @@ public abstract class PanelRenderer {
 
     protected void finalizeInit() {
         setCaption(property.caption);
+        setCaptionElementClass(property.captionElementClass);
 
         Widget label = getTooltipWidget();
         TooltipManager.registerWidget(label, new TooltipManager.TooltipHelper() {
@@ -82,12 +83,20 @@ public abstract class PanelRenderer {
             setLabelText(property.getPanelCaption(caption));
         }
     }
+    private String captionElementClass;
+    public void setCaptionElementClass(String classes) {
+        if (!GwtSharedUtils.nullEquals(this.captionElementClass, classes)) {
+            this.captionElementClass = classes;
+            setLabelClasses(classes);
+        }
+    }
 
     protected Widget getTooltipWidget() {
         return getComponent();
     }
 
     protected abstract void setLabelText(String text);
+    protected abstract void setLabelClasses(String classes);
 
     public void onBinding(Event event) {
         value.onBinding(event);

@@ -189,8 +189,7 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
     }
 
     private void addPasteListener(InputElement inputElement) {
-        DOM.sinkEvents(inputElement, ONPASTE);
-        DOM.setEventListener(inputElement, event -> {
+        GwtClientUtils.setEventListener(inputElement, ONPASTE, event -> {
             if (editContext != null && event.getTypeInt() == ONPASTE) {
                 String cbText = CopyPasteUtils.getEventClipboardData(event);
                 String modifiedPastedText = (String) editContext.modifyPastedString(cbText);

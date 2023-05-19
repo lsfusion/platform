@@ -2,8 +2,8 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
@@ -66,13 +66,13 @@ public class LogicalCellRenderer extends CellRenderer {
         return renderedAlignment;
     }
 
-    public static InputElement renderInputElement(Element element) {
+    public InputElement renderInputElement(Element element) {
         InputElement inputElement = createCheckInput();
         element.appendChild(inputElement);
         return inputElement;
     }
 
-    public static InputElement createCheckInput() {
+    public InputElement createCheckInput() {
         InputElement input = Document.get().createCheckInputElement();
         input.setTabIndex(-1);
         input.addClassName("logicalRendererCheckBox");
@@ -81,13 +81,14 @@ public class LogicalCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderPanelLabel(LabelWidget label) {
-        label.addStyleName("form-check-label");
+    public void renderPanelLabel(Widget label) {
+//        label.addStyleName("form-check-label");
     }
 
     @Override
     public void renderPanelContainer(SizedFlexPanel panel) {
-        panel.addStyleName("form-check");
+        // we're not setting form-check since it's mostly used only for layouting, which we do ourselves
+//        panel.addStyleName("form-check");
     }
 
     @Override

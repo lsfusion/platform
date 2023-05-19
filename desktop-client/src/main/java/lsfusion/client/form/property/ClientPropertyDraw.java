@@ -55,6 +55,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public CaptionReader captionReader = new CaptionReader();
     public ShowIfReader showIfReader = new ShowIfReader();
     public ValueElementClassReader valueElementClassReader = new ValueElementClassReader();
+    public CaptionElementClassReader captionElementClassReader = new CaptionElementClassReader();
     public BackgroundReader backgroundReader = new BackgroundReader();
     public ForegroundReader foregroundReader = new ForegroundReader();
     public FooterReader footerReader = new FooterReader();
@@ -83,6 +84,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public String tag;
     public String valueElementClass;
+    public String captionElementClass;
     public boolean toolbar;
 
     public ClientType externalChangeType;
@@ -588,6 +590,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         tag = pool.readString(inStream);
         valueElementClass = pool.readString(inStream);
+        captionElementClass = pool.readString(inStream);
         toolbar = pool.readBoolean(inStream);
 
         if (inStream.readBoolean()) {
@@ -960,6 +963,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.CELL_VALUEELEMENTCLASS;
+        }
+    }
+
+    public class CaptionElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.CAPTIONELEMENTCLASS;
         }
     }
 

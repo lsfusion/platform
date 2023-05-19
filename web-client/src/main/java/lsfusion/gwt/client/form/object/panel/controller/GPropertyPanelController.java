@@ -44,6 +44,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
     private NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues;
     private NativeHashMap<GGroupObjectValue, PValue> cellForegroundValues;
     private NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses;
+    private NativeHashMap<GGroupObjectValue, PValue> cellCaptionElementClasses;
 
     private NativeHashMap<GGroupObjectValue, PValue> images;
 
@@ -171,6 +172,8 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
         if (captions != null)
             renderer.setCaption(GGridPropertyTable.getDynamicCaption(captions.get(columnKey)));
+        if (cellCaptionElementClasses != null)
+            renderer.setCaptionElementClass(PValue.getClassStringValue(cellCaptionElementClasses.get(columnKey)));
     }
 
     public boolean focus(FocusUtils.Reason reason) {
@@ -238,6 +241,10 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
 
     public void setCellValueElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellValueElementClasses) {
         this.cellValueElementClasses = cellValueElementClasses;
+    }
+
+    public void setCellCaptionElementClasses(NativeHashMap<GGroupObjectValue, PValue> cellCaptionElementClasses) {
+        this.cellCaptionElementClasses = cellCaptionElementClasses;
     }
 
     public void setCellBackgroundValues(NativeHashMap<GGroupObjectValue, PValue> cellBackgroundValues) {

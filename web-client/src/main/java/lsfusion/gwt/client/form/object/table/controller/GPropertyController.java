@@ -22,6 +22,7 @@ public abstract class GPropertyController {
     }
 
     public abstract void updateCellValueElementClasses(GValueElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
+    public abstract void updateCellCaptionElementClasses(GCaptionElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellBackgroundValues(GBackgroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateCellForegroundValues(GForegroundReader reader, NativeHashMap<GGroupObjectValue, PValue> values);
     public abstract void updateImageValues(GImageReader reader, NativeHashMap<GGroupObjectValue, PValue> values);

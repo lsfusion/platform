@@ -290,6 +290,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
         propertyDraw.tag = clientPropertyDraw.tag;
         propertyDraw.valueElementClass = clientPropertyDraw.valueElementClass;
+        propertyDraw.captionElementClass = clientPropertyDraw.captionElementClass;
         propertyDraw.toolbar = clientPropertyDraw.toolbar;
 
         propertyDraw.externalChangeType = typeConverter.convertOrCast(clientPropertyDraw.externalChangeType);
@@ -341,6 +342,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.footerReader = convertFooterReader(clientPropertyDraw.footerReader);
         propertyDraw.readOnlyReader = convertReadOnlyReader(clientPropertyDraw.readOnlyReader);
         propertyDraw.valueElementClassReader = convertValueElementClassReader(clientPropertyDraw.valueElementClassReader);
+        propertyDraw.captionElementClassReader = convertCaptionElementClassReader(clientPropertyDraw.captionElementClassReader);
         propertyDraw.backgroundReader = convertBackgroundReader(clientPropertyDraw.backgroundReader);
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
@@ -489,6 +491,10 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GValueElementClassReader convertValueElementClassReader(ClientPropertyDraw.ValueElementClassReader reader) {
         return reader == null ? null : new GValueElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GCaptionElementClassReader convertCaptionElementClassReader(ClientPropertyDraw.CaptionElementClassReader reader) {
+        return reader == null ? null : new GCaptionElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     public GBackgroundReader convertBackgroundReader(ClientPropertyDraw.BackgroundReader reader) {

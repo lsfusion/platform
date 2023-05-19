@@ -1,9 +1,11 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
 import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.view.GFlexAlignment;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
@@ -23,9 +25,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
-
-//        value.getElement().setAttribute("id", property.sID);
-        value.getElement().setId(property.propertyFormName);
 
         SizedWidget valueWidget = value.getSizedWidget();
 
@@ -65,7 +64,16 @@ public class PropertyPanelRenderer extends PanelRenderer {
             label.addStyleName("text-secondary");
 //        label.addStyleName("fw-semibold");
 
-        label.getElement().setAttribute("for", property.propertyFormName);
+        // id and for we need to support editing when clicking on the label
+        // however only CLICK and CHANGE (for boolean props) are propagated to the input, and not MOUSEDOWN
+        // but since we use MOUSEDOWN as a change event (so it starts editing) we need to propagate MOUSEDOWN manually
+        // we need id to be global (otherwise everything stops working if the same form is opened twice)
+        String globalID = form.globalID + "->" + property.propertyFormName;
+        value.getElement().setId(globalID);
+        label.getElement().setAttribute("for", globalID);
+        label.addDomHandler(event -> {
+            GwtClientUtils.fireOnMouseDown(value.getElement());
+        }, MouseDownEvent.getType());
 
         if (this.property.captionFont != null)
             this.property.captionFont.apply(label.getElement().getStyle());
@@ -89,6 +97,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         }
 
         SizedFlexPanel panel = new SizedFlexPanel(property.panelCaptionVertical);
+        panel.addStyleName("panel-container");
 
         if (!captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
@@ -122,5 +131,13 @@ public class PropertyPanelRenderer extends PanelRenderer {
         }
 
         BaseImage.updateText(label, text, property.panelCaptionVertical);
+    }
+
+    protected void setLabelClasses(String classes) {
+//        if(label == null) {
+//            return;
+//        }
+
+        BaseImage.updateClasses(label, classes);
     }
 }
