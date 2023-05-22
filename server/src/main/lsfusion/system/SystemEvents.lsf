@@ -67,7 +67,7 @@ colorThemeImage = CASE
 toggleColorTheme() {
     userColorTheme(currentUser()) <- CASE
         WHEN userColorTheme(currentUser()) == ColorTheme.light THEN ColorTheme.dark
-        WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN ColorTheme.auto
+        WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN NULL
         ELSE ColorTheme.light;
     apply();
     formRefresh();

@@ -149,8 +149,10 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
     }
 
     private static void saveClientColorTheme(DataSession session, DataObject user, BusinessLogics businessLogics, String clientColorTheme, ExecutionStack stack) throws SQLException, SQLHandledException {
-        businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, user);
-        session.applyException(businessLogics, stack);
+        if(clientColorTheme != null) {
+            businessLogics.authenticationLM.clientColorTheme.change(businessLogics.authenticationLM.colorTheme.getDataObject(clientColorTheme), session, user);
+            session.applyException(businessLogics, stack);
+        }
     }
 
     private LocalePreferences readLocalePreferences(DataSession session, DataObject user, BusinessLogics businessLogics, TimeZone clientTimeZone, String clientDateFormat, String clientTimeFormat, ExecutionStack stack) throws SQLException, SQLHandledException {

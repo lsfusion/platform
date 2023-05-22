@@ -90,14 +90,10 @@ function setCookie(name, value, options) {
 }
 
 function setColorTheme() {
-    setColorThemeCookie();
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        setColorThemeCookie();
-    });
-}
-
-function setColorThemeCookie() {
     setCookie('LSFUSION_CLIENT_COLOR_THEME', window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
+    //window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    //    //preferred color scheme changed
+    //});
 }
 
 function lsfController(callerElement) {

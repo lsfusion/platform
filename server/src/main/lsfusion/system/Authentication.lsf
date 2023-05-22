@@ -402,20 +402,19 @@ fontSize '{authentication.font.size.user}' = DATA INTEGER (CustomUser);
 
 CLASS ColorTheme '{authentication.color.theme}' {
     light '{authentication.color.theme.light}',
-    dark '{authentication.color.theme.dark}',
-    auto '{authentication.color.theme.auto}' 
+    dark '{authentication.color.theme.dark}'
 }
 TABLE colorTheme(ColorTheme);
 userColorTheme '{authentication.color.theme.user}' (CustomUser user) = DATA ColorTheme (CustomUser);
 clientColorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
-colorTheme '{authentication.color.theme.user}' (CustomUser user) = IF NOT userColorTheme(user) OR userColorTheme(user) == ColorTheme.auto THEN clientColorTheme(user) ELSE userColorTheme(user);  
+colorTheme '{authentication.color.theme.user}' (CustomUser user) = OVERRIDE userColorTheme(user), clientColorTheme(user);  
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
-colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(OVERRIDE userColorTheme(user), ColorTheme.auto);
+colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(userColorTheme(user));
 
 isDarkTheme() = colorTheme(currentUser()) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
-WHEN CHANGED(colorTheme(CustomUser user)) DO {
+WHEN CHANGED(userColorTheme(CustomUser user)) DO {
     changeColorThemeAction(colorTheme(user));    
 }
 
