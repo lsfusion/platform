@@ -89,6 +89,13 @@ function setCookie(name, value, options) {
     document.cookie = updatedCookie;
 }
 
+function setColorTheme() {
+    setCookie('LSFUSION_CLIENT_COLOR_THEME', window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
+    //window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+    //    //preferred color scheme changed
+    //});
+}
+
 function lsfController(callerElement) {
     let controller;
     while (!controller) {

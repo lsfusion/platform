@@ -43,7 +43,7 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
     public static SessionInfo getSessionInfo(Authentication auth, HttpServletRequest request) {
         Locale clientLocale = LocaleContextHolder.getLocale();
         return new SessionInfo(SystemUtils.getLocalHostName(), ((WebAuthenticationDetails) auth.getDetails()).getRemoteAddress(), clientLocale.getLanguage(), clientLocale.getCountry(),
-                LocaleContextHolder.getTimeZone(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), MainController.getExternalRequest(new Object[0], request));
+                LocaleContextHolder.getTimeZone(), BaseUtils.getDatePattern(), BaseUtils.getTimePattern(), null, MainController.getExternalRequest(new Object[0], request));
     }
 
     public static SessionInfo getSessionInfo(HttpServletRequest request) {
@@ -54,8 +54,12 @@ public class NavigatorProviderImpl implements NavigatorProvider, DisposableBean 
         Cookie timeZone = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_ZONE");
         Cookie timeFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_TIME_FORMAT");
         Cookie dateFormat = WebUtils.getCookie(request, "LSFUSION_CLIENT_DATE_FORMAT");
+
+        Cookie colorTheme = WebUtils.getCookie(request, "LSFUSION_CLIENT_COLOR_THEME");
+
         return new SessionInfo(hostName, request.getRemoteAddr(), null, null, timeZone != null ? TimeZone.getTimeZone(URLDecoder.decode(timeZone.getValue())) : null,
-                dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null, MainController.getExternalRequest(new Object[0], request));
+                dateFormat != null ? URLDecoder.decode(dateFormat.getValue()) : null, timeFormat != null ? URLDecoder.decode(timeFormat.getValue()) : null,
+                colorTheme != null ? colorTheme.getValue() : null, MainController.getExternalRequest(new Object[0], request));
     }
 
     private static NavigatorInfo getNavigatorInfo(HttpServletRequest request) {

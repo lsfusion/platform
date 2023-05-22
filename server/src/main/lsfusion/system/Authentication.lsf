@@ -405,14 +405,16 @@ CLASS ColorTheme '{authentication.color.theme}' {
     dark '{authentication.color.theme.dark}'
 }
 TABLE colorTheme(ColorTheme);
-colorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
+userColorTheme '{authentication.color.theme.user}' (CustomUser user) = DATA ColorTheme (CustomUser);
+clientColorTheme '{authentication.color.theme.user}' = DATA ColorTheme (CustomUser);
+colorTheme '{authentication.color.theme.user}' (CustomUser user) = OVERRIDE userColorTheme(user), clientColorTheme(user);  
 name '{authentication.color.theme}' (ColorTheme theme) = staticCaption(theme) IF theme IS ColorTheme;
-colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(colorTheme(user));
+colorThemeName '{authentication.color.theme.user}' (CustomUser user) = name(userColorTheme(user));
 
 isDarkTheme() = colorTheme(currentUser()) == ColorTheme.dark;
 
 changeColorThemeAction INTERNAL 'lsfusion.server.logics.navigator.ChangeColorThemeAction'(ColorTheme) NULL;
-WHEN CHANGED(colorTheme(CustomUser user)) DO {
+WHEN CHANGED(userColorTheme(CustomUser user)) DO {
     changeColorThemeAction(colorTheme(user));    
 }
 
