@@ -55,8 +55,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
     public LP verticalNavbar;
     public LP serverVerticalNavbar;
 
-    public LP pinNavbar;
-    public LP serverPinNavbar;
+    public LP pinMode;
+    public LP serverPinMode;
 
     public LP computerConnection;
     public LP remoteAddressConnection;
@@ -156,8 +156,8 @@ public class SystemEventsLogicsModule extends ScriptingLogicsModule {
         verticalNavbar = findProperty("verticalNavbar[CustomUser]");
         serverVerticalNavbar = findProperty("serverVerticalNavbar[]");
 
-        pinNavbar = findProperty("pinNavbar[CustomUser]");
-        serverPinNavbar = findProperty("serverPinNavbar[]");
+        pinMode = findProperty("pinMode[CustomUser]");
+        serverPinMode = findProperty("serverPinMode[]");
 
         // Подключения к серверу
         computerConnection = findProperty("computer[Connection]");
