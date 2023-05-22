@@ -195,16 +195,28 @@
 
 /* popup selected hover */
 
-.forms-container-not-empty .navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently) {
+.forms-container-not-empty .navbar-vert.navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently) {
     max-width: 0;
 }
 
-.navbar-popup-selected-hover {
+.navbar-vert.navbar-popup-selected-hover {
     --popup-hover-duration: 400ms;
     --popup-hover-curve: ease-out;
 
     max-width: 30em;
     transition: max-width var(--popup-hover-duration) var(--popup-hover-curve);
+}
+
+.forms-container-not-empty .navbar-horz.navbar-popup-selected-hover:not(:hover):not(.parent-was-selected-recently) {
+    max-height: 0;
+}
+
+.navbar-horz.navbar-popup-selected-hover {
+    --popup-hover-duration: 1300ms; /* slower as horizontal windows are supposed to be narrower */
+    --popup-hover-curve: ease-out;
+
+    max-height: 30em;
+    transition: max-height var(--popup-hover-duration) var(--popup-hover-curve);
 }
 
 /* Chromium + Safari */

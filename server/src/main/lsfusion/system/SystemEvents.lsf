@@ -396,6 +396,7 @@ systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-
     (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
 toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT pinNavbar() == TTRUE THEN ' navbar-popup-selected-hover' ELSE '');
+logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT pinNavbar() == TTRUE THEN ' navbar-horz navbar-popup-selected-hover' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session));
