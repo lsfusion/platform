@@ -2118,7 +2118,7 @@ public class GFormController implements EditManager {
                     oldValue = cellEditor.getDefaultNullValue();
                 else if(!editContext.canUseChangeValueForRendering(type) && !hasCustomEditor) {
                     try {
-                        oldValue = type.parseString(oldValue.toString(), property.pattern);
+                        oldValue = type.parseString(PValue.getStringValue(oldValue), property.pattern);
                     } catch (ParseException e) {
                         oldValue = null;
                     }
