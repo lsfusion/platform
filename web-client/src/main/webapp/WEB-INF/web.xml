@@ -111,6 +111,11 @@
         <url-pattern>/change-password</url-pattern>
     </servlet-mapping>
 
+    <error-page>
+        <error-code>404</error-code>
+        <location>/exec/</location>
+    </error-page>
+
 
     <!-- LOG4J configuration -->
     <context-param>
