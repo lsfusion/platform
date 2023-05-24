@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.list;
-import static lsfusion.base.BaseUtils.nvl;
 import static lsfusion.base.ServerMessages.getString;
 
 public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandler {
@@ -78,13 +77,10 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
             InputStream requestInputStream = getRequestInputStream(request, contentType, query);
 
-            //redirected by <error-page> at web.xml
-            String pathInfo = nvl((String) request.getAttribute("javax.servlet.forward.request_uri"), nvl(request.getPathInfo(), ""));
-
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, requestInputStream, contentType,
                     headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
                     request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
-                    pathInfo, query);
+                    request.getPathInfo() == null ? "" : request.getPathInfo(), query);
 
             if (responseHttpEntity.response != null) {
                 sendResponse(response, responseHttpEntity);
