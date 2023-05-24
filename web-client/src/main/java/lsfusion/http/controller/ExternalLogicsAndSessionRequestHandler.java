@@ -28,9 +28,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Collections.list;
 import static lsfusion.base.ServerMessages.getString;
@@ -155,8 +153,10 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
         return defaultServletName;
     }
 
+    private List<String> resourcePathes = Arrays.asList("/favicon.ico", "/app-not-available", "/client.jnlp", "/lsfusion.client");
     private boolean isResourcePath(String servletPath) {
-        return servletPath.endsWith(".js") || servletPath.endsWith(".jsp") || servletPath.endsWith(".map");
+        return servletPath.startsWith("/main") || servletPath.startsWith("/static") || resourcePathes.contains(servletPath)
+                || servletPath.endsWith(".js") || servletPath.endsWith(".jsp") || servletPath.endsWith(".map");
     }
 
     private boolean isPotentialExec(String servletPath) {
