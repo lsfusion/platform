@@ -12,14 +12,14 @@ import java.sql.SQLException;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
-public class CheckIndicesAction extends InternalAction {
-    public CheckIndicesAction(ServiceLogicsModule LM) {
+public class CheckIndexesAction extends InternalAction {
+    public CheckIndexesAction(ServiceLogicsModule LM) {
         super(LM);
     }
 
     @Override
     public void executeInternal(final ExecutionContext<ClassPropertyInterface> context) throws SQLException, SQLHandledException {
-        context.getDbManager().checkIndices(context.getSession().sql);
+        context.getDbManager().checkIndexes(context.getSession().sql);
         context.delayUserInterfaction(new MessageClientAction(localize(LocalizedString.createFormatted("{logics.check.completed}", localize("{logics.checking.indexes}"))), localize("{logics.checking.indexes}")));
     }
 }
