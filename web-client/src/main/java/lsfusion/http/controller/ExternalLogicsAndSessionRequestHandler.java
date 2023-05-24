@@ -16,6 +16,8 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,11 +40,30 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
     @Autowired
     SessionProvider sessionProvider;
 
+    @Autowired
+    private ServletContext servletContext;
+
+    private String defaultServletName;
+
     @Override
     protected void handleRequest(LogicsSessionObject sessionObject, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String sessionID = null;
         boolean closeSession = false;
         try {
+
+            String servletPath = request.getServletPath();
+
+            if (isResourcePath(servletPath)) {
+                //call default handler
+                RequestDispatcher rd = servletContext.getNamedDispatcher(getDefaulServletName());
+                if (rd != null) {
+                    rd.forward(request, response);
+                }
+                return;
+            } else if (isPotentialExec(servletPath)) {
+                servletPath = "/exec" + servletPath;
+            }
+
             String queryString = request.getQueryString();
             String query = queryString != null ? queryString : "";
             String contentTypeString = request.getContentType();
@@ -79,7 +100,7 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
 
             ExternalUtils.ExternalResponse responseHttpEntity = ExternalUtils.processRequest(remoteExec, requestInputStream, contentType,
                     headerNames, headerValues, cookieNames, cookieValues, logicsHost, sessionObject.connection.port, sessionObject.connection.exportName,
-                    request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), request.getServletPath(),
+                    request.getScheme(), request.getMethod(), request.getServerName(), request.getServerPort(), request.getContextPath(), servletPath,
                     request.getPathInfo() == null ? "" : request.getPathInfo(), query);
 
             if (responseHttpEntity.response != null) {
@@ -97,7 +118,51 @@ public class ExternalLogicsAndSessionRequestHandler extends ExternalRequestHandl
             }
         }
     }
-    
+
+    //modified from DefaultServletHttpRequestHandler
+
+    /** Default Servlet name used by Tomcat, Jetty, JBoss, and GlassFish */
+    private static final String COMMON_DEFAULT_SERVLET_NAME = "default";
+
+    /** Default Servlet name used by Google App Engine */
+    private static final String GAE_DEFAULT_SERVLET_NAME = "_ah_default";
+
+    /** Default Servlet name used by Resin */
+    private static final String RESIN_DEFAULT_SERVLET_NAME = "resin-file";
+
+    /** Default Servlet name used by WebLogic */
+    private static final String WEBLOGIC_DEFAULT_SERVLET_NAME = "FileServlet";
+
+    /** Default Servlet name used by WebSphere */
+    private static final String WEBSPHERE_DEFAULT_SERVLET_NAME = "SimpleFileServlet";
+
+    private String getDefaulServletName() {
+        if(defaultServletName == null) {
+            if (servletContext.getNamedDispatcher(COMMON_DEFAULT_SERVLET_NAME) != null) {
+                defaultServletName = COMMON_DEFAULT_SERVLET_NAME;
+            } else if (servletContext.getNamedDispatcher(GAE_DEFAULT_SERVLET_NAME) != null) {
+                defaultServletName = GAE_DEFAULT_SERVLET_NAME;
+            } else if (servletContext.getNamedDispatcher(RESIN_DEFAULT_SERVLET_NAME) != null) {
+                defaultServletName = RESIN_DEFAULT_SERVLET_NAME;
+            } else if (servletContext.getNamedDispatcher(WEBLOGIC_DEFAULT_SERVLET_NAME) != null) {
+                defaultServletName = WEBLOGIC_DEFAULT_SERVLET_NAME;
+            } else if (servletContext.getNamedDispatcher(WEBSPHERE_DEFAULT_SERVLET_NAME) != null) {
+                defaultServletName = WEBSPHERE_DEFAULT_SERVLET_NAME;
+            } else {
+                throw new IllegalStateException("Unable to locate the default servlet for serving static content. ");
+            }
+        }
+        return defaultServletName;
+    }
+
+    private boolean isResourcePath(String servletPath) {
+        return servletPath.endsWith(".js") || servletPath.endsWith(".jsp") || servletPath.endsWith(".map");
+    }
+
+    private boolean isPotentialExec(String servletPath) {
+        return !servletPath.equals("/exec") && !servletPath.equals("/eval");
+    }
+
     // if content type is 'application/x-www-form-urlencoded' the body of the request appears to be already read somewhere else. 
     // so we have empty InputStream and have to read body parameters from parameter map
     private InputStream getRequestInputStream(HttpServletRequest request, ContentType contentType, String query) throws IOException {
