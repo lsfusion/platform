@@ -677,7 +677,7 @@ EXTEND FORM settings
 
     OBJECTS uc = CustomUser
     PROPERTIES(uc) READONLY name, login, userRoles
-    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, pinMode, colorThemeName,
+    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, useClientPinMode, pinMode, colorThemeName,
                    selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
 ;
 

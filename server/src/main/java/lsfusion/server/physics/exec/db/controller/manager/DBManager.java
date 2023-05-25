@@ -9,7 +9,10 @@ import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.*;
+import lsfusion.base.col.interfaces.mutable.MExclMap;
+import lsfusion.base.col.interfaces.mutable.MExclSet;
+import lsfusion.base.col.interfaces.mutable.MMap;
+import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
@@ -1808,7 +1811,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         LM.topModule.change(isRedundantString(topModule) ? null : topModule, session);
         systemEventsLM.serverUseBootstrap.change(useBootstrap ? true : null, session);
         systemEventsLM.serverVerticalNavbar.change(businessLogics.verticalNavbar ? true : null, session);
-        systemEventsLM.serverPinMode.change(businessLogics.pinMode, session);
+        systemEventsLM.serverPinMode.change(businessLogics.pinMode, true, session);
         apply(session);
     }
 

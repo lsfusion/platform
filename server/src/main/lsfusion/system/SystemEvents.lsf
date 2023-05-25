@@ -87,9 +87,10 @@ toggleVerticalNavbar () {
 }
 verticalNavbarClass = ABSTRACT STRING();
 
+useClientPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (CustomUser);
 userPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (CustomUser);
 serverPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
-pinMode '{navigator.pin.mode}' (CustomUser u) = IF userPinMode(u) THEN userPinMode(u) ELSE serverPinMode();
+pinMode '{navigator.pin.mode}' (CustomUser u) = IF useClientPinMode(u) THEN userPinMode(u) ELSE serverPinMode();
 pinMode() = pinMode(currentUser());
 
 pinModeCaption = (IF pinMode()
@@ -104,6 +105,7 @@ pinModeImage = IF pinMode()
     ELSE iconIfAvailable('pinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
 togglePinMode () {
     userPinMode(currentUser()) <- IF pinMode() THEN (IF pinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
+    useClientPinMode(currentUser()) <- TRUE;
     apply();
 }
 pinModeClass = ABSTRACT STRING();
