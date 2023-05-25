@@ -1170,7 +1170,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 IndexOptions oldOptions = oldIndex.getValue();
                 ImOrderSet<String> oldIndexKeysSet = SetFact.fromJavaOrderSet(oldIndex.getKey());
 
-                ReplaceResult res = replaceIndexKeys(oldIndexKeys, fieldsOldToNew);
+                ReplaceResult res = replaceIndexKeys(oldIndexKeys, fieldsOldToNew, newTable.getTableKeys().toJavaSet());
     
                 Pair<IndexOptions, List<Field>> newIndex = newTableIndexesNames.get(oldIndexKeys);
                 if (res != ReplaceResult.FAILED && newIndex != null && newIndex.first.equalsWithoutDBName(oldOptions)) {
@@ -1189,11 +1189,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     private enum ReplaceResult {FAILED, REPLACED, OK}
     
-    private ReplaceResult replaceIndexKeys(List<String> oldIndexKeys, Map<String, String> fieldsOldToNew) {
+    private ReplaceResult replaceIndexKeys(List<String> oldIndexKeys, Map<String, String> fieldsOldToNew, Set<KeyField> tableKeys) {
         ReplaceResult res = ReplaceResult.OK;
+        Set<String> tableKeyNames = tableKeys.stream().map(Field::getName).collect(Collectors.toSet());
         for (int i = 0; i < oldIndexKeys.size(); ++i) {
             String oldKey = oldIndexKeys.get(i);
-            if (!oldKey.startsWith("key")) {
+            if (!tableKeyNames.contains(oldKey)) {
                 String newKey = fieldsOldToNew.get(oldKey);
                 if (newKey == null) {
                     return ReplaceResult.FAILED;
