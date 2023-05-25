@@ -1193,13 +1193,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         ReplaceResult res = ReplaceResult.OK;
         for (int i = 0; i < oldIndexKeys.size(); ++i) {
             String oldKey = oldIndexKeys.get(i);
-            String newKey = fieldsOldToNew.get(oldKey);
-            if (newKey == null) {
-                return ReplaceResult.FAILED;
-            }
-            if (!newKey.equals(oldKey)) {
-                oldIndexKeys.set(i, newKey);
-                res = ReplaceResult.REPLACED;
+            if (!oldKey.startsWith("key")) {
+                String newKey = fieldsOldToNew.get(oldKey);
+                if (newKey == null) {
+                    return ReplaceResult.FAILED;
+                }
+                if (!newKey.equals(oldKey)) {
+                    oldIndexKeys.set(i, newKey);
+                    res = ReplaceResult.REPLACED;
+                }
             }
         }
         return res;
