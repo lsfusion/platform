@@ -133,6 +133,11 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
                 suggestBox.showSuggestionList(allSuggestions);
             }
         }
+
+        if(property.mask != null) {
+            setMask(inputElement, property.mask);
+        }
+
     }
 
     private boolean hasList() {
@@ -282,6 +287,9 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
 
             if(contextAction == null && completionType.isOnlyCommitSelection())
                 throw new InvalidEditException();
+
+            if(property.mask != null && !isCompleteMask(inputElement))
+                throw new InvalidEditException();
         }
 
         String stringValue = getTextInputValue();
@@ -294,6 +302,14 @@ public abstract class TextBasedCellEditor extends InputBasedCellEditor {
             throw new InvalidEditException();
         }
     }
+
+    private native void setMask(Element element, String mask)/*-{
+        $wnd.$(element).inputmask(mask);
+    }-*/;
+
+    private native boolean isCompleteMask(Element element)/*-{
+        return $wnd.$(element).inputmask("isComplete");
+    }-*/;
 
     protected boolean isThisCellEditor() {
 //        assert hasList();

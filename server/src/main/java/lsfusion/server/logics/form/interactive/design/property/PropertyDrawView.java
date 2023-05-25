@@ -78,6 +78,7 @@ public class PropertyDrawView extends BaseComponentView {
     public boolean hide;
     public String regexp;
     public String regexpMessage;
+    public String mask;
     public Long maxValue;
     public Boolean echoSymbols;
     public boolean noSort;
@@ -455,6 +456,7 @@ public class PropertyDrawView extends BaseComponentView {
         AppServerImage.serialize(getImage(pool.context), outStream, pool);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
+        pool.writeString(outStream, mask);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
@@ -688,6 +690,7 @@ public class PropertyDrawView extends BaseComponentView {
         caption = LocalizedString.create(pool.readString(inStream));
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
+        mask = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();

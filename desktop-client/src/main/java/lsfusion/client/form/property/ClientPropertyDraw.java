@@ -115,6 +115,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public AppImage image;
     public String regexp;
     public String regexpMessage;
+    public String mask;
     public Long maxValue;
     public boolean echoSymbols;
     public boolean noSort;
@@ -526,6 +527,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeString(outStream, caption);
         pool.writeString(outStream, regexp);
         pool.writeString(outStream, regexpMessage);
+        pool.writeString(outStream, mask);
         pool.writeLong(outStream, maxValue);
         outStream.writeBoolean(echoSymbols);
         outStream.writeBoolean(noSort);
@@ -581,6 +583,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
+        mask = pool.readString(inStream);
         maxValue = pool.readLong(inStream);
         echoSymbols = inStream.readBoolean();
         noSort = inStream.readBoolean();

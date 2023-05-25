@@ -64,6 +64,10 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.regexpMessage = regexpMessage.getSourceString();
     }
 
+    public void setMask(LocalizedString mask) {
+        target.mask = mask.getSourceString();
+    }
+
     public void setPattern(LocalizedString lPattern) {
         target.pattern = lPattern.getSourceString();
     }

@@ -294,6 +294,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public boolean checkEquals;
     public GPropertyEditType editType = GPropertyEditType.EDITABLE;
 
+    public String mask;
     public boolean echoSymbols;
     public boolean noSort;
     public GCompare defaultCompare;

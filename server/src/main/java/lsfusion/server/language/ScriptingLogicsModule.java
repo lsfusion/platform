@@ -1481,6 +1481,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void setMask(LAP property, String mask) {
+        property.setMask(mask);
+    }
+
     public void setEchoSymbols(LAP property) {
         property.setEchoSymbols(true);
     }

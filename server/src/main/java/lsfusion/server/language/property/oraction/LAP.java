@@ -100,6 +100,10 @@ public abstract class LAP<T extends PropertyInterface, P extends ActionOrPropert
         getActionOrProperty().drawOptions.setRegexpMessage(regexpMessage);
     }
 
+    public void setMask(String mask) {
+        getActionOrProperty().drawOptions.setMask(mask);
+    }
+
     public void setEchoSymbols(boolean echoSymbols) {
         getActionOrProperty().drawOptions.setEchoSymbols(echoSymbols);
     }
