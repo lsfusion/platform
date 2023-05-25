@@ -135,6 +135,11 @@ public class JSONClass extends DataClass<String> implements DBType {
     }
 
     @Override
+    public boolean isFlex() {
+        return true;
+    }
+
+    @Override
     public String getString(Object value, SQLSyntax syntax) {
         return "'" + value + "'";
     }

@@ -468,8 +468,10 @@ WINDOW tree  TOOLBAR POSITION(0, 6, 20, 89) HIDETITLE CLASS 'bg-body-secondary';
 WINDOW forms NATIVE POSITION(20, 6, 80, 89) CLASS formsWindowClass();
 WINDOW log NATIVE POSITION(0, 95, 100, 5) HIDETITLE CLASS logsWindowClass();
 
+noSystemToolbarCaptions = ABSTRACT BOOLEAN();
+
 NAVIGATOR {
-    NEW FOLDER administration '{navigator.administration}' LAST WINDOW system PARENT IMAGE 'tools.png' {
+    NEW FOLDER administration '{navigator.administration}' HEADER '{navigator.administration}' IF NOT noSystemToolbarCaptions() LAST WINDOW system PARENT IMAGE 'tools.png' {
         NEW FOLDER application '{navigator.application}' WINDOW toolbar PARENT {
             NEW options;
             NEW integrationData;

@@ -9,10 +9,7 @@ import lsfusion.base.col.heavy.concurrent.weak.ConcurrentIdentityWeakHashSet;
 import lsfusion.base.col.implementations.abs.AMap;
 import lsfusion.base.col.implementations.abs.ASet;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.MExclMap;
-import lsfusion.base.col.interfaces.mutable.MExclSet;
-import lsfusion.base.col.interfaces.mutable.MMap;
-import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.base.col.interfaces.mutable.*;
 import lsfusion.base.col.lru.LRUUtil;
 import lsfusion.base.col.lru.LRUWVSMap;
 import lsfusion.base.col.lru.LRUWWEVSMap;
@@ -120,6 +117,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static lsfusion.base.BaseUtils.isRedundantString;
@@ -346,9 +344,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public void checkIndices(SQLSession session) throws SQLException, SQLHandledException {
+    public void checkIndexes(SQLSession session) throws SQLException, SQLHandledException {
         try {
-            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : getIndicesMap().entrySet()) {
+            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : getIndexesMap().entrySet()) {
                 session.startTransaction(START_TIL, OperationOwner.unknown);
                 NamedTable table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
@@ -356,7 +354,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     session.checkIndex(table, table.keys, fields, index.getValue());
                 }
                 session.addConstraint(table);
-                session.checkExtraIndices(getThreadLocalSql(), table, table.keys, BusinessLogics.sqlLogger);
+                session.checkExtraIndexes(getThreadLocalSql(), table, table.keys, BusinessLogics.sqlLogger);
                 session.commitTransaction();
             }
         } catch (Exception e) {
@@ -1136,75 +1134,147 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private static ImMap<String, ImRevMap<String, String>> getFieldToCanMap(DBStructure<?> dbStructure) {
-        return SetFact.fromJavaOrderSet(dbStructure.storedProperties).getSet().group(new BaseUtils.Group<String, DBStoredProperty>() {
-            public String group(DBStoredProperty value) {
-                return value.tableName;
-            }}).mapValues(value -> value.mapRevKeyValues(DBStoredProperty::getDBName, DBStoredProperty::getCanonicalName));
-
+    private static ImMap<String, ImRevMap<String, String>> getFieldToCNMaps(DBStructure<?> dbStructure) {
+        return SetFact.fromJavaOrderSet(dbStructure.storedProperties)
+                .getSet()
+                .group(value -> value.tableName)
+                .mapValues(value -> value.mapRevKeyValues(DBStoredProperty::getDBName, DBStoredProperty::getCanonicalName));
     }
 
-    // Удаляем несуществующие индексы и убираем из newDBStructure не изменившиеся индексы
+    // Удаляем несуществующие индексы и убираем из newDBStructure не изменившиеся индексы.
     // Делаем это до применения migration script, то есть не пытаемся сохранить все возможные индексы по максимуму
-    private void checkIndices(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+    private void checkIndexes(SQLSession sql, OldDBStructure oldDBStructure, NewDBStructure newDBStructure) throws SQLException {
+        ImMap<String, String> propertyCNChanges = getStoredOldToNewCNMapping(oldDBStructure, newDBStructure);
 
-        ImMap<String, String> propertyChanges = MapFact.fromJavaMap(migrationManager.getStoredPropertyCNChangesAfter(oldDBStructure.migrationVersion));
+        ImMap<String, ImRevMap<String, String>> oldTableFieldToCN = getFieldToCNMaps(oldDBStructure);
+        ImMap<String, ImRevMap<String, String>> newTableFieldToCN = getFieldToCNMaps(newDBStructure);
 
-        ImMap<String, ImRevMap<String, String>> oldTableFieldToCan = MapFact.EMPTY(); ImMap<String, ImRevMap<String, String>> newTableFieldToCan = MapFact.EMPTY();
-        if(!propertyChanges.isEmpty()) { // оптимизация
-            oldTableFieldToCan = getFieldToCanMap(oldDBStructure);
-            newTableFieldToCan = getFieldToCanMap(newDBStructure);
-        }
-
-        for (Map.Entry<NamedTable, Map<List<String>, IndexOptions>> oldTableIndices : oldDBStructure.tables.entrySet()) {
-            NamedTable oldTable = oldTableIndices.getKey();
-            NamedTable newTable = newDBStructure.getTable(oldTable.getName());
-            Map<List<Field>, IndexOptions> newTableIndices = null; Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndicesNames = null; ImMap<String, String> fieldOldToNew = MapFact.EMPTY();
-            if(newTable != null) {
-                newTableIndices = newDBStructure.tables.get(newTable);
-                newTableIndicesNames = new HashMap<>();
-                for (Map.Entry<List<Field>, IndexOptions> entry : newTableIndices.entrySet()) {
-                    List<String> names = new ArrayList<>();
-                    for (Field field : entry.getKey())
-                        names.add(field.getName());
-                    newTableIndicesNames.put(names, new Pair<>(entry.getValue(), entry.getKey()));
-                }
-
-                // old field -> old cn -> new cn -> ne field
-                if(!propertyChanges.isEmpty()) {
-                    ImRevMap<String, String> oldFieldToCan = oldTableFieldToCan.get(oldTable.getName());
-                    ImRevMap<String, String> newFieldToCan = newTableFieldToCan.get(newTable.getName());
-                    if(oldFieldToCan != null && newFieldToCan != null) // так как таблицы могут быть пустыми
-                        fieldOldToNew = oldFieldToCan.innerJoin(propertyChanges).innerCrossValues(newFieldToCan);
-                }
+        for (Map.Entry<NamedTable, Map<List<String>, IndexOptions>> oldTableIndexes : oldDBStructure.tables.entrySet()) {
+            NamedTable oldTable = oldTableIndexes.getKey();
+            Map<List<String>, IndexOptions> oldIndexes = oldTableIndexes.getValue();
+            NamedTable newTable = newDBStructure.getTable(oldTable.getName()); // Здесь никак не учитываем возможное изменение имени
+            
+            if (newTable == null) {
+                dropTableIndexes(sql, oldTable, oldIndexes);
+                continue;
             }
+            
+            Map<List<Field>, IndexOptions> newTableIndexes = newDBStructure.tables.get(newTable);
+            Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndexesNames = getTableIndexNames(newTableIndexes);
+    
+            Map<String, String> fieldsOldToNew = getOldToNewFieldsMap(oldTableFieldToCN.get(oldTable.getName()),
+                                                                        newTableFieldToCN.get(newTable.getName()),
+                                                                        propertyCNChanges);
+            for (Map.Entry<List<String>, IndexOptions> oldIndex : oldIndexes.entrySet()) {
+                List<String> oldIndexKeys = new ArrayList<>(oldIndex.getKey()); // делаем копию, потому что будем изменять
+                IndexOptions oldOptions = oldIndex.getValue();
+                ImOrderSet<String> oldIndexKeysSet = SetFact.fromJavaOrderSet(oldIndex.getKey());
 
-            for (Map.Entry<List<String>, IndexOptions> oldIndex : oldTableIndices.getValue().entrySet()) {
-                List<String> oldIndexKeys = oldIndex.getKey();
-                ImOrderSet<String> oldIndexKeysSet = SetFact.fromJavaOrderSet(oldIndexKeys);
-
-                boolean replaced = BaseUtils.replaceListElements(oldIndexKeys, fieldOldToNew);
-
-                boolean drop = (newTable == null); // ушла таблица
-                if (!drop) {
-                    Pair<IndexOptions, List<Field>> newIndex = newTableIndicesNames.get(oldIndexKeys);
-                    if (newIndex != null && newIndex.first.equals(oldIndex.getValue())) {
-                        newTableIndices.remove(newIndex.second); // не трогаем индекс
-                    } else {
-                        drop = true;
+                ReplaceResult res = replaceIndexKeys(oldIndexKeys, fieldsOldToNew);
+    
+                Pair<IndexOptions, List<Field>> newIndex = newTableIndexesNames.get(oldIndexKeys);
+                if (res != ReplaceResult.FAILED && newIndex != null && newIndex.first.equalsWithoutDBName(oldOptions)) {
+                    IndexOptions newOptions = newIndex.first;
+                    newTableIndexes.remove(newIndex.second); // удаляем, чтобы в дальнейшем не создавать этот индекс
+                    if (!BaseUtils.nullEquals(newOptions.dbName, oldOptions.dbName) || oldOptions.dbName == null && res == ReplaceResult.REPLACED) {
+                        ImOrderSet<String> newIndexKeysSet = SetFact.fromJavaOrderSet(oldIndexKeys);
+                        sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, newIndexKeysSet, oldOptions, newOptions, Settings.get().isStartServerAnyWay());
                     }
-                }
-
-                if (drop) {
-                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldIndex.getValue(), Settings.get().isStartServerAnyWay());
                 } else {
-                    if(replaced) // assert что keys совпадают
-                        sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, SetFact.fromJavaOrderSet(oldIndexKeys), oldIndex.getValue(), Settings.get().isStartServerAnyWay());
+                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldOptions, Settings.get().isStartServerAnyWay());
                 }
             }
         }
     }
 
+    private enum ReplaceResult {FAILED, REPLACED, OK}
+    
+    private ReplaceResult replaceIndexKeys(List<String> oldIndexKeys, Map<String, String> fieldsOldToNew) {
+        ReplaceResult res = ReplaceResult.OK;
+        for (int i = 0; i < oldIndexKeys.size(); ++i) {
+            String oldKey = oldIndexKeys.get(i);
+            String newKey = fieldsOldToNew.get(oldKey);
+            if (newKey == null) {
+                return ReplaceResult.FAILED;
+            }
+            if (!newKey.equals(oldKey)) {
+                oldIndexKeys.set(i, newKey);
+                res = ReplaceResult.REPLACED;
+            }
+        }
+        return res;
+    }
+    
+    private ImMap<String, String> getStoredOldToNewCNMapping(OldDBStructure oldDBStructure, NewDBStructure newDBStructure) {
+        Map<String, String> changes = migrationManager.getStoredPropertyCNChangesAfter(oldDBStructure.migrationVersion);
+        Set<String> newCanonicalNames = newDBStructure.storedProperties.stream().map(DBStoredProperty::getCanonicalName).collect(Collectors.toSet());
+        Set<String> oldCanonicalNames = oldDBStructure.storedProperties.stream().map(DBStoredProperty::getCanonicalName).collect(Collectors.toSet());
+        Map<String, String> result = new HashMap<>();
+        Set<String> usedNewCNs = new HashSet<>();
+        
+        changes.forEach((oldCN, newCN) -> {
+            if (oldCanonicalNames.contains(oldCN)) {
+                result.put(oldCN, newCN);
+                usedNewCNs.add(newCN);
+            }
+        });
+        
+        for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
+            String cn = oldProperty.getCanonicalName();
+            if (!result.containsKey(cn) && newCanonicalNames.contains(cn) && !usedNewCNs.contains(cn)) {
+                result.put(cn, cn);
+            }
+        }
+        return MapFact.fromJavaMap(result);
+    }
+
+    private void dropTableIndexes(SQLSession sql, NamedTable table, Map<List<String>, IndexOptions> indexes) throws SQLException {
+        for (Map.Entry<List<String>, IndexOptions> index : indexes.entrySet()) {
+            ImOrderSet<String> indexKeysSet = SetFact.fromJavaOrderSet(index.getKey());
+            sql.dropIndex(table, table.keys, indexKeysSet, index.getValue(), Settings.get().isStartServerAnyWay());
+        }
+    }
+    
+    // old field -> old cn -> new cn -> ne field
+    private Map<String, String> getOldToNewFieldsMap(ImRevMap<String, String> oldFieldToCN,
+                                                       ImRevMap<String, String> newFieldToCN,
+                                                       ImMap<String, String> propertyCNChanges) {
+        if (oldFieldToCN == null || newFieldToCN == null) { // tables can be empty
+            return new HashMap<>();
+        }
+        
+        Map<String, String> result = oldFieldToCN.innerJoin(propertyCNChanges).innerCrossValues(newFieldToCN).toJavaMap();
+        // class property canonical name may differ between server starts due to non-determinism in canonical name creation
+        for (int i = 0; i < oldFieldToCN.size(); ++i) {
+            String oldFieldName = oldFieldToCN.getKey(i);
+            if (!result.containsKey(oldFieldName)) {
+                String oldCN = oldFieldToCN.getValue(i);
+                if (isClassPropertyCN(oldCN) && newFieldToCN.containsKey(oldFieldName)) {
+                    result.put(oldFieldName, oldFieldName);
+                }
+            }
+        }
+        return result;
+    }
+    
+    private boolean isClassPropertyCN(String canonicalName) {
+        String propertyName = PropertyCanonicalNameParser.getName(canonicalName);
+        return propertyName.startsWith(PropertyCanonicalNameUtils.classDataPropPrefix);
+    }
+    
+    private Map<List<String>, Pair<IndexOptions, List<Field>>> getTableIndexNames(Map<List<Field>, IndexOptions> newTableIndexes) {
+        Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndexesNames = new HashMap<>();
+        
+        newTableIndexes.forEach((fields, options) -> {
+            List<String> names = new ArrayList<>();
+            for (Field field : fields) {
+                names.add(field.getName());
+            }
+            newTableIndexesNames.put(names, new Pair<>(options, fields));
+        });
+        return newTableIndexesNames;
+    }
+    
     private void checkUniqueDBName(NewDBStructure struct) {
         Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<>();
         for (DBStoredProperty property : struct.storedProperties) {
@@ -1404,9 +1474,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
             newDBStructure.write(outDB);
 
-            startLogger.info("Checking indices");
+            startLogger.info("Checking indexes");
 
-            checkIndices(sql, oldDBStructure, newDBStructure);
+            checkIndexes(sql, oldDBStructure, newDBStructure);
 
             if (!oldDBStructure.isEmpty()) {
                 startLogger.info("Applying migration script (" + oldDBStructure.migrationVersion + " -> " + newDBStructure.migrationVersion + ")");
@@ -1546,7 +1616,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
             }
             ImMap<String, ImMap<String, ImSet<Long>>> toCopy = mToCopy.immutable();
-            for (int i = 0, size = toCopy.size(); i < size; i++) { // перенесем классы, которые сохранились но изменили поле
+            for (int i = 0, size = toCopy.size(); i < size; i++) { // перенесем классы, которые сохранились, но изменили поле
                 DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
                 NamedTable table = newDBStructure.getTable(classProp.tableName);
 
@@ -1613,7 +1683,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             packTables(sql, mPackTables.immutable(), false); // упакуем таблицы
 
             // создадим индексы в базе
-            startLogger.info("Adding indices");
+            startLogger.info("Adding indexes");
             for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : newDBStructure.tables.entrySet())
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     NamedTable table = mapIndex.getKey();
@@ -1622,9 +1692,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
-            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage, LM.staticName,
+            LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
                     migrationManager.getClassSIDChangesAfter(oldDBStructure.migrationVersion),
-                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion), idChanges);
+                    migrationManager.getObjectSIDChangesAfter(oldDBStructure.migrationVersion),
+                    idChanges);
 
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;
@@ -2128,25 +2199,35 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
     
-    private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData) throws SQLException {
-        Map<String, String> propertyChanges = migrationManager.getStoredPropertyCNChangesAfter(oldData.migrationVersion);
-        for (Map.Entry<String, String> entry : propertyChanges.entrySet()) {
-            boolean found = false;
-            String newDBName = getNamingPolicy().transformActionOrPropertyCNToDBName(entry.getValue());
-            for (DBStoredProperty oldProperty : oldData.storedProperties) {
-                if (entry.getKey().equals(oldProperty.getCanonicalName())) {
-                    renameColumn(sql, oldData, oldProperty, newDBName);
-                    oldProperty.migrateNames(entry.getValue());
-                    found = true;
-                    break;
-                }
+    private void renameMigratingProperties(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
+        Map<String, String> propertyCNChanges = migrationManager.getStoredPropertyCNChangesAfter(oldData.migrationVersion);
+        Map<String, DBStoredProperty> propByCN = storedPropertiesMap(newData.storedProperties);
+        Set<String> renamedCN = new HashSet<>();
+
+        for (DBStoredProperty oldProperty : oldData.storedProperties) {
+            String canonicalName = oldProperty.getCanonicalName();
+            if (propertyCNChanges.containsKey(canonicalName)) {
+                canonicalName = propertyCNChanges.get(canonicalName);
             }
-            if (!found) {
-                startLogger.warn("Property " + entry.getKey() + " was not found for renaming to " + entry.getValue());
+            DBStoredProperty newProperty = propByCN.get(canonicalName);
+            if (newProperty != null) {
+                renamedCN.add(oldProperty.getCanonicalName());
+                renameColumn(sql, oldData, oldProperty, newProperty.getDBName());
+                oldProperty.migrateNames(newProperty.getCanonicalName(), newProperty.getDBName());
             }
         }
+
+        propertyCNChanges.forEach((oldCN, newCN) -> {
+            if (!renamedCN.contains(oldCN)) {
+                startLogger.warn("Property " + oldCN + " was not found for renaming to " + newCN);
+            }
+        });
     }
-    
+
+    private Map<String, DBStoredProperty> storedPropertiesMap(List<DBStoredProperty> properties) {
+        return properties.stream().collect(Collectors.toMap(DBStoredProperty::getCanonicalName, property -> property));
+    }
+
     private void renameMigratingTables(SQLSession sql, OldDBStructure oldData) throws SQLException {
         Map<String, String> tableChanges = migrationManager.getTableSIDChangesAfter(oldData.migrationVersion);
         for (DBStoredProperty oldProperty : oldData.storedProperties) {
@@ -2208,25 +2289,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             }
         }
     } 
-    
-    private void migrateDBNames(SQLSession sql, OldDBStructure oldData, NewDBStructure newData) throws SQLException {
-        Map<String, DBStoredProperty> newProperties = new HashMap<>();
-        for (DBStoredProperty newProperty : newData.storedProperties) {
-            newProperties.put(newProperty.getCanonicalName(), newProperty);
-        }
 
-        for (DBStoredProperty oldProperty : oldData.storedProperties) {
-            DBStoredProperty newProperty;
-            if ((newProperty = newProperties.get(oldProperty.getCanonicalName())) != null) {
-                if (!newProperty.getDBName().equals(oldProperty.getDBName())) {
-                    renameColumn(sql, oldData, oldProperty, newProperty.getDBName());
-                    // переустанавливаем каноническое имя, чтобы получить новый dbName
-                    oldProperty.migrateNames(oldProperty.getCanonicalName());
-                }
-            }
-        }
-    }
-    
+
     // Временная реализация для переименования
     // issue #4672 Построение сигнатуры LOG-свойств
     // Проблема текущего способа: 
@@ -2275,19 +2339,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // Обязательно до renameMigratingProperties, потому что в storedPropertyCNChanges добавляются изменения для log-свойств 
         addLogPropertiesToMigration(oldData, newData.migrationVersion);
-        
-        // Изменяем в старой структуре свойства из скрипта миграции, переименовываем поля в таблицах
-        renameMigratingProperties(sql, oldData);
+
+        // Переименовываем поля в таблицах при изменении dbName (в том числе из-за изменения naming policy) и/или миграции
+        // При этом в старой структуре тоже все переименовываем: имя поля, каноническое имя свойства и dbName свойства
+        renameMigratingProperties(sql, oldData, newData);
         
         // Переименовываем таблицы из скрипта миграции, переустанавливаем ссылки на таблицы в свойствах
         renameMigratingTables(sql, oldData);
 
         // Переустановим имена классовым свойствам, если это необходимо. Также при необходимости переименуем поля в таблицах   
-        // Иимена полей могут измениться при переименовании таблиц (так как в именах классовых свойств есть имя таблицы) либо при изменении dbNamePolicy
+        // Имена полей могут измениться при переименовании таблиц (так как в именах классовых свойств есть имя таблицы) либо при изменении dbNamePolicy
         migrateClassProperties(sql, oldData, newData);        
-        
-        // При изменении dbNamePolicy необходимо также переименовать поля
-        migrateDBNames(sql, oldData, newData);
         
         // переименовываем классы из скрипта миграции
         renameMigratingClasses(oldData);
@@ -2473,7 +2535,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             this.dbName = property.getDBName();
             this.isDataProperty = property instanceof DataProperty;
             this.tableName = property.mapTable.table.getName();
-            mapKeys = ((Property<PropertyInterface>)property).mapTable.mapKeys.mapKeys(value -> value.ID);
+            this.mapKeys = property.mapTable.mapKeys.mapKeys(value -> value.ID);
             this.property = property;
         }
 
@@ -2496,6 +2558,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public void migrateNames(String canonicalName) {
             this.canonicalName = canonicalName;
             this.dbName = getNamingPolicy().transformActionOrPropertyCNToDBName(canonicalName);
+        }
+
+        public void migrateNames(String canonicalName, String dbName) {
+            this.canonicalName = canonicalName;
+            this.dbName = dbName;
         }
     }
 
@@ -2561,7 +2628,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public <P extends PropertyInterface> Map<NamedTable, Map<List<Field>, IndexOptions>> getIndicesMap() {
+    public <P extends PropertyInterface> Map<NamedTable, Map<List<Field>, IndexOptions>> getIndexesMap() {
         Map<NamedTable, Map<List<Field>, IndexOptions>> res = new HashMap<>();
         for (ImplementTable table : LM.tableFactory.getImplementTablesMap().valueIt()) {
             res.put(table, new HashMap<>());
@@ -2620,7 +2687,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             version = newDBStructureVersion;
             this.migrationVersion = migrationVersion;
 
-            tables.putAll(getIndicesMap());
+            tables.putAll(getIndexesMap());
 
             for (Property<?> property : businessLogics.getStoredProperties()) {
                 storedProperties.add(new DBStoredProperty(property));
@@ -2642,10 +2709,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 outDB.writeUTF(logicsModule.getName());
 
             outDB.writeInt(tables.size());
-            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> tableIndices : tables.entrySet()) {
-                tableIndices.getKey().serialize(outDB);
-                outDB.writeInt(tableIndices.getValue().size());
-                for (Map.Entry<List<Field>, IndexOptions> index : tableIndices.getValue().entrySet()) {
+            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> tableIndexes : tables.entrySet()) {
+                tableIndexes.getKey().serialize(outDB);
+                outDB.writeInt(tableIndexes.getValue().size());
+                for (Map.Entry<List<Field>, IndexOptions> index : tableIndexes.getValue().entrySet()) {
                     outDB.writeInt(index.getKey().size());
                     for (Field indexField : index.getKey()) {
                         outDB.writeUTF(indexField.getName());
@@ -2690,28 +2757,28 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 for (int i = inputDB.readInt(); i > 0; i--) {
                     SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
-                    Map<List<String>, IndexOptions> indices = new HashMap<>();
+                    Map<List<String>, IndexOptions> indexes = new HashMap<>();
                     for (int j = inputDB.readInt(); j > 0; j--) {
                         List<String> index = new ArrayList<>();
                         for (int k = inputDB.readInt(); k > 0; k--) {
                             index.add(inputDB.readUTF());
                         }
                         if (version < 32) {
-                            indices.put(index, new IndexOptions(inputDB.readBoolean()));
+                            indexes.put(index, new IndexOptions(inputDB.readBoolean()));
                         } else if (version < 36) {
-                            indices.put(index, IndexOptions.deserialize35(inputDB));
+                            indexes.put(index, IndexOptions.deserialize35(inputDB));
                         } else {
-                            indices.put(index, IndexOptions.deserialize(inputDB));
+                            indexes.put(index, IndexOptions.deserialize(inputDB));
                         }
 
                     }
-                    tables.put(prevTable, indices);
+                    tables.put(prevTable, indexes);
                 }
 
                 int prevStoredNum = inputDB.readInt();
                 for (int i = 0; i < prevStoredNum; i++) {
                     String canonicalName = inputDB.readUTF();
-                    String sID = inputDB.readUTF();
+                    String dbName = inputDB.readUTF();
                     boolean isDataProperty = inputDB.readBoolean();
                     
                     String tableName = inputDB.readUTF();
@@ -2720,7 +2787,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     for (int j = 0; j < prevTable.getTableKeys().size(); j++) {
                         mMapKeys.exclAdd(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
                     }
-                    storedProperties.add(new DBStoredProperty(canonicalName, sID, isDataProperty, tableName, mMapKeys.immutable()));
+                    storedProperties.add(new DBStoredProperty(canonicalName, dbName, isDataProperty, tableName, mMapKeys.immutable()));
                 }
 
                 int prevConcreteNum = inputDB.readInt();

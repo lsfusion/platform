@@ -754,12 +754,12 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         }
     }
 
-    public void addExtraIndices(NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
+    public void addExtraIndexes(NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException {
         for(int i=1;i<keys.size();i++)
             addIndex(table, BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true), logger);
     }
 
-    public void checkExtraIndices(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
+    public void checkExtraIndexes(SQLSession threadLocalSQL, NamedTable table, ImOrderSet<KeyField> keys, Logger logger) throws SQLException, SQLHandledException {
         for(int i=1;i<keys.size();i++) {
             ImOrderMap<Field, Boolean> fields = BaseUtils.<ImOrderSet<Field>>immutableCast(keys).subOrder(i, keys.size()).toOrderMap(true);
             threadLocalSQL.checkDefaultIndex(table, fields, defaultIndexOptions);
@@ -790,7 +790,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         executeDDL("CREATE TABLE " + table.getName(syntax) + " (" + createString + ")", env.finish());
-        addExtraIndices(table, keys, null);
+        addExtraIndexes(table, keys, null);
     }
 
     public void renameTable(NamedTable table, String newTableName) throws SQLException {
@@ -1023,7 +1023,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         //ifExists true for both, because we don't know which of indexes exists
         ImOrderMap<String, Boolean> orderFields = getOrderFields(keyFields, fields, indexOptions);
         if (!ifExists)
-            dropIndex(table, getIndexName(table, orderFields, indexOptions.dbName, null, false, true, syntax), false);
+            dropIndex(table, getIndexName(table, orderFields, indexOptions.dbName, null, false, true, syntax), true);
         //deprecated old index name with idx in the end (before 2015)  (can be removed after checkIndices)
         dropIndex(table, getIndexName(table, orderFields, indexOptions.dbName, null, false, false, syntax), true);
     }
@@ -1032,12 +1032,11 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL("DROP INDEX " + (ifExists ? "IF EXISTS " : "") + indexName + (syntax.isIndexNameLocal() ? " ON " + table.getName(syntax) : ""));
     }
 
-    public void renameIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
-        renameIndex(table, indexOptions.dbName, getOrderFields(keyFields, oldFields, indexOptions), getOrderFields(keyFields, newFields, indexOptions), ifExists);
-    }
-
-    public void renameIndex(NamedTable table, String dbName, ImOrderMap<String, Boolean> oldFields, ImOrderMap<String, Boolean> newFields, boolean ifExists) throws SQLException {
-        executeDDL("ALTER INDEX " + (ifExists ? "IF EXISTS " : "" ) + getIndexName(table, dbName, oldFields, syntax) + " RENAME TO " + getIndexName(table, dbName, newFields, syntax));
+    public void renameIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> oldFields, ImOrderSet<String> newFields, IndexOptions oldOptions, IndexOptions newOptions, boolean ifExists) throws SQLException {
+        String oldIndexName = getIndexName(table, oldOptions.dbName, getOrderFields(keyFields, oldFields, oldOptions), syntax);
+        String newIndexName = getIndexName(table, newOptions.dbName, getOrderFields(keyFields, newFields, newOptions), syntax);
+        logger.info("Renaming index from " + oldIndexName + " to " + newIndexName);
+        executeDDL("ALTER INDEX " + (ifExists ? "IF EXISTS " : "" ) + oldIndexName + " RENAME TO " + newIndexName);
     }
 
     public void renameIndex(String oldIndexName, String newIndexName) throws SQLException {

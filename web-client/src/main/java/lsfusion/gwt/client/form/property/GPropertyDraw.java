@@ -60,6 +60,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public String namespace;
 
     public String caption;
+    public String captionElementClass;
     public AppStaticImage appImage;
 
     public String canonicalName;
@@ -320,6 +321,8 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFooterReader footerReader;
     public GReadOnlyReader readOnlyReader;
     public GValueElementClassReader valueElementClassReader;
+
+    public GCaptionElementClassReader captionElementClassReader;
     public GBackgroundReader backgroundReader;
     public GForegroundReader foregroundReader;
     public GImageReader imageReader;

@@ -19,7 +19,7 @@
 
     --text-color: var(--bs-body-color);
     --background-color: var(--bs-body-bg);
-    --component-background-color: var(--bs-form-control-bg);
+    --component-background-color: var(--bs-body-bg);
     --grid-separator-border-color: var(--bs-table-border-color);
     --component-border-color: var(--panel-border-color);
 
@@ -247,3 +247,21 @@
 .btn-toolbar.property-toolbar {
     flex-wrap: nowrap;
 }
+
+/* checkboxes uses it's own margins / paddings */
+
+.panelRendererValue.form-check-input, /* .form-check .form-check-input sets it's own margin-top */
+.form-switch .panelRendererValue.form-check-input /* .form-switch form-check-input sets it's own margin-left */
+{
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}
+
+/* have no idea, why .form-check .form-check-input margin-top doesn't break the center alignment, so we're changing only left margin in the form-switch */
+.form-switch.dataGridCell .form-check-input {
+    margin-left: unset;
+}
+
+.panel-container.form-switch {
+    padding-left: unset;
+}
+

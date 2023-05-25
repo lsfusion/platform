@@ -31,8 +31,8 @@ import lsfusion.gwt.client.controller.remote.action.form.*;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateID;
 import lsfusion.gwt.client.controller.remote.action.logics.GenerateIDResult;
 import lsfusion.gwt.client.controller.remote.action.navigator.GainedFocus;
-import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.ContainerForm;
+import lsfusion.gwt.client.form.GUpdateMode;
 import lsfusion.gwt.client.form.classes.view.ClassChosenHandler;
 import lsfusion.gwt.client.form.classes.view.GClassDialog;
 import lsfusion.gwt.client.form.controller.dispatch.FormDispatchAsync;
@@ -160,6 +160,10 @@ public class GFormController implements EditManager {
         containerForms.remove(containerForm);
     }
 
+    private static int idCounter = 0;
+    // we need the global id to make ids globally unique in some cases
+    public String globalID;
+
     public GFormController(FormsController formsController, FormContainer formContainer, GForm gForm, boolean isDialog, int dispatchPriority, Event editEvent) {
         actionDispatcher = new GFormActionDispatcher(this);
 
@@ -167,6 +171,8 @@ public class GFormController implements EditManager {
         this.formContainer = formContainer;
         this.form = gForm;
         this.isDialog = isDialog;
+
+        this.globalID = "" + (idCounter++);
 
         dispatcher = new FormDispatchAsync(this, dispatchPriority);
 
@@ -1683,26 +1689,13 @@ public class GFormController implements EditManager {
             return;
         }
 
-        for (GTreeGroupController treeController : treeControllers.values()) {
-            if (treeController.focusFirstWidget(reason)) {
-                treeController.scrollToTop();
-                return;
-            }
+        Element nextFocusElement = GPanelController.getNextFocusElement(getWidget().getElement(), true);
+        if(nextFocusElement != null) {
+            FocusUtils.focus(nextFocusElement, reason);
+        } else {
+            //focus form container if no one element is focusable
+            FocusUtils.focus(formContainer.getFocusedElement(), reason);
         }
-
-        for (GGridController controller : controllers.values()) { // в конце controllers лежит нулевой groupObject. его-то и следует оставить напоследок
-            if (controller.focusFirstWidget(reason)) {
-                controller.scrollToTop();
-                return;
-            }
-        }
-
-        if(panelController.focusFirstWidget(reason)) {
-           return;
-        }
-
-        //focus form container if no one element is focusable
-        FocusUtils.focus(formContainer.getFocusedElement(), reason);
     }
 
     private class ServerResponseCallback extends GwtActionDispatcher.ServerResponseCallback {
@@ -2112,7 +2105,7 @@ public class GFormController implements EditManager {
             if(property.echoSymbols) // disabling dropdown if echo
                 inputList = null;
 
-            cellEditor = type.createCellEditor(this, property, inputList);
+            cellEditor = type.createCellEditor(this, property, inputList, editContext);
         }
 
         if (cellEditor != null) {
@@ -2125,7 +2118,7 @@ public class GFormController implements EditManager {
                     oldValue = cellEditor.getDefaultNullValue();
                 else if(!editContext.canUseChangeValueForRendering(type) && !hasCustomEditor) {
                     try {
-                        oldValue = type.parseString(oldValue.toString(), property.pattern);
+                        oldValue = type.parseString(PValue.getStringValue(oldValue), property.pattern);
                     } catch (ParseException e) {
                         oldValue = null;
                     }

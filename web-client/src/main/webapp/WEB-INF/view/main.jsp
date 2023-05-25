@@ -223,6 +223,8 @@
                 momentLocale.locale(intlOptions.locale);
                 setCookie('LSFUSION_CLIENT_TIME_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('LT')));
                 setCookie('LSFUSION_CLIENT_DATE_FORMAT', momentLocale.toJDFString(momentLocale.localeData().longDateFormat('L')));
+
+                setColorTheme();
             }
         </script>
     </head>

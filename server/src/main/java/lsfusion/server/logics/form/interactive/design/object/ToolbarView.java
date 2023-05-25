@@ -1,8 +1,10 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
 import lsfusion.server.logics.form.interactive.design.ComponentView;
+import lsfusion.server.logics.form.struct.FormEntity;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -49,5 +51,11 @@ public class ToolbarView extends BaseComponentView {
         showGroupReport = inStream.readBoolean();
         showXls = inStream.readBoolean();
         showSettings = inStream.readBoolean();
+    }
+
+    @Override
+    protected FlexAlignment getDefaultAlignment(FormEntity formEntity) {
+        // we want the toolbar to always be on the same distance from the grid
+        return FlexAlignment.START;
     }
 }

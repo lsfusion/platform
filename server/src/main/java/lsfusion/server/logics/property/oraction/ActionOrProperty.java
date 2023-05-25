@@ -79,7 +79,7 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
     public Supplier<AppServerImage> image;
 
     public void setImage(String imagePath) {
-        this.image = AppServerImage.createPropertyImage(imagePath, this);
+        this.image = AppServerImage.createPropertyImage(imagePath, AppServerImage.getAutoName(() -> caption, this::getName));
     }
 
     public LocalizedString localizedToString() {
@@ -201,8 +201,9 @@ public abstract class ActionOrProperty<T extends PropertyInterface> extends Abst
         return null;
     }
 
-    public AppServerImage getDefaultImage(String name, float rankingThreshold, boolean useDefaultIcon) {
-        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.PROPERTY, this::getName, () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, ActionOrProperty.this).get() : null);
+    public static AppServerImage getDefaultImage(String name, AppServerImage.AutoName autoName, float rankingThreshold, boolean useDefaultIcon) {
+        return AppServerImage.createDefaultImage(rankingThreshold, name, AppServerImage.Style.PROPERTY, autoName,
+                () -> useDefaultIcon ? AppServerImage.createPropertyImage(AppServerImage.ACTION, autoName).get() : null);
     }
 
     public String getNamespace() {

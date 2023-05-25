@@ -2,9 +2,9 @@ package lsfusion.gwt.client.form.property.cell.classes.view;
 
 import com.google.gwt.dom.client.*;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.EscapeUtils;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.SimpleTextBasedCellEditor;
@@ -73,11 +73,12 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
     }
 
     @Override
-    public void renderPanelLabel(LabelWidget label) {
-        if(property.panelCaptionVertical)
-            label.addStyleName("form-label");
-        else
-            label.addStyleName("col-form-label");
+    public void renderPanelLabel(Widget label) {
+        // we're not setting form-label since it's mostly used only for layouting, which we do ourselves
+//        if(property.panelCaptionVertical)
+//            label.addStyleName("form-label");
+//        else
+//            label.addStyleName("col-form-label");
     }
 
     public static InputElement createInputElement(GPropertyDraw property) {

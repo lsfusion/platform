@@ -87,6 +87,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public String tag;
     public String valueElementClass;
+    public String captionElementClass;
 
     public KeyInputEvent changeKey;
     public Integer changeKeyPriority;
@@ -254,6 +255,10 @@ public class PropertyDrawView extends BaseComponentView {
                 : entity.getCaption();
     }
 
+    public AppServerImage.AutoName getAutoName() {
+        return AppServerImage.getAutoName(this::getCaption, entity.getInheritedProperty()::getName);
+    }
+
     public void setImage(String image) {
         this.image = AppServerImage.createPropertyImage(image, this);
     }
@@ -271,7 +276,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     private AppServerImage getDefaultImage() {
-        return entity.getValueActionOrProperty().property.getDefaultImage(AppServerImage.AUTO, Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
+        return ActionOrProperty.getDefaultImage(AppServerImage.AUTO, getAutoName(), Settings.get().getDefaultPropertyImageRankingThreshold(), Settings.get().isDefaultPropertyImage());
     }
 
     // we return to the client null, if we're sure that caption is always empty (so we don't need to draw label)
@@ -455,6 +460,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeString(outStream, getTag(pool.context));
         pool.writeString(outStream, getValueElementClass(pool.context));
+        pool.writeString(outStream, getCaptionElementClass(pool.context));
         pool.writeBoolean(outStream, hasToolbar(pool.context));
 
         Type externalChangeType = getExternalChangeType(pool.context);
@@ -807,6 +813,20 @@ public class PropertyDrawView extends BaseComponentView {
 
     private boolean isLink(ServerContext context) {
         return hasFlow(context, ChangeFlowType.INTERACTIVEFORM) && !hasFlow(context, ChangeFlowType.READONLYCHANGE);
+    }
+
+    public String getCaptionElementClass(ServerContext context) {
+        if (captionElementClass != null)
+            return captionElementClass;
+
+        if(isProperty()) {
+            String valueElementClass = getValueElementClass(context);
+            // shortcut for the toggle button checkbox
+            if(valueElementClass != null && valueElementClass.contains("btn-check"))
+                return "btn btn-outline-primary";
+        }
+
+        return null;
     }
 
     public String getValueElementClass(ServerContext context) {

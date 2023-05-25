@@ -1,7 +1,6 @@
 package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
-import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.ClientTypeClass;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.form.property.ClientPropertyDraw;
@@ -60,12 +59,12 @@ public class ClientTextClass extends ClientStringClass implements ClientTypeClas
 
     @Override
     public PropertyEditor getChangeEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, AsyncChangeInterface asyncChange, Object value) {
-        return new TextPropertyEditor(ownerComponent, value, property.design);
+        return new TextPropertyEditor(ownerComponent, value, property.design, asyncChange);
     }
 
     @Override
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw property, AsyncChangeInterface asyncChange) {
-        return  new TextPropertyEditor(value, property.design);
+        return  new TextPropertyEditor(null, value, property.design, asyncChange);
     }
 
 }

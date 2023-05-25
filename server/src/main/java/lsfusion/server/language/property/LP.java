@@ -138,10 +138,16 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         change((Object)value, context, objects);
     }
     public void change(Boolean value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
-        change((Object)value, session, objects);
+        change(value, false, session, objects);
+    }
+    public void change(Boolean value, boolean threeState, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
+        change(value, threeState, (ExecutionEnvironment) session, objects);
     }
     public void change(Boolean value, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
-        change((Object)value, context, objects);
+        change(value, false, context, objects);
+    }
+    public void change(Boolean value, boolean threeState, ExecutionContext context, DataObject... objects) throws SQLException, SQLHandledException {
+        change(value, threeState, context.getEnv(), objects);
     }
     public void change(LocalDate value, DataSession session, DataObject... objects) throws SQLException, SQLHandledException {
         change((Object)value, session, objects);
@@ -200,6 +206,13 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
         change(value, env, getMapDataValues(objects));
     }
 
+    public void change(Boolean value, boolean threeState, ExecutionEnvironment env, DataObject... objects) throws SQLException, SQLHandledException {
+        // change false to null
+        if (!threeState && value != null && !value) {
+            value = null;
+        }
+        change(value, env, objects);
+    }
     public void change(Object value, ExecutionEnvironment env, DataObject... objects) throws SQLException, SQLHandledException {
         change(value, env, getMapDataValues(objects));
     }
@@ -209,10 +222,6 @@ public class LP<T extends PropertyInterface> extends LAP<T, Property<T>> {
     }
 
     public void change(Object value, ExecutionEnvironment env, ImMap<T, DataObject> keys) throws SQLException, SQLHandledException {
-        //отдельно обрабатываем false-значения: используем null вместо false
-        if (value instanceof Boolean && !(Boolean)value) {
-            value = null;
-        }
         property.change(keys, env, value);
     }
 

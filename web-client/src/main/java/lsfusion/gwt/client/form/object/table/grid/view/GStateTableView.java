@@ -48,6 +48,7 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     protected List<GPropertyDraw> properties = new ArrayList<>();
     protected List<List<GGroupObjectValue>> columnKeys = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> captions = new ArrayList<>();
+    protected List<NativeHashMap<GGroupObjectValue, PValue>> captionElementClasses = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> values = new ArrayList<>();
     protected List<List<NativeHashMap<GGroupObjectValue, PValue>>> lastAggrs = new ArrayList<>();
     protected List<NativeHashMap<GGroupObjectValue, PValue>> readOnlys = new ArrayList<>();
@@ -208,6 +209,13 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public void updatePropertyCaptions(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values) {
         this.captions.set(properties.indexOf(property), values);
+
+        dataUpdated = true;
+    }
+
+    @Override
+    public void updateCaptionElementClasses(GPropertyDraw property, NativeHashMap<GGroupObjectValue, PValue> values) {
+        this.captionElementClasses.set(properties.indexOf(property), values);
 
         dataUpdated = true;
     }
@@ -493,6 +501,14 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
             return null;
 
         return PValue.getClassStringValue(cellValueElementClass.get(GGroupObjectValue.getFullKey(rowKey, columnKey)));
+    }
+
+    protected String getCaptionElementClass(GPropertyDraw property, GGroupObjectValue columnKey) {
+        NativeHashMap<GGroupObjectValue, PValue> cellCaptionElementClass = captionElementClasses.get(properties.indexOf(property));
+        if(cellCaptionElementClass == null)
+            return null;
+
+        return PValue.getClassStringValue(cellCaptionElementClass.get(columnKey));
     }
 
     protected PValue getCellBackground(GPropertyDraw property, GGroupObjectValue rowKey, GGroupObjectValue columnKey) {

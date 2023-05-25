@@ -112,6 +112,8 @@ public class GFormChanges {
                 return form.getProperty(readerId).readOnlyReader;
             case GPropertyReadType.CELL_VALUEELEMENTCLASS:
                 return form.getProperty(readerId).valueElementClassReader;
+            case GPropertyReadType.CAPTIONELEMENTCLASS:
+                return form.getProperty(readerId).captionElementClassReader;
             case GPropertyReadType.CELL_BACKGROUND:
                 return form.getProperty(readerId).backgroundReader;
             case GPropertyReadType.CELL_FOREGROUND:
@@ -170,5 +172,6 @@ public class GFormChanges {
         public final static byte CONTAINER_IMAGE = 15;
         public final static byte CELL_VALUEELEMENTCLASS = 16;
         public final static byte COMPONENT_ELEMENTCLASS = 17;
+        public final static byte CAPTIONELEMENTCLASS = 18;
     }
 }

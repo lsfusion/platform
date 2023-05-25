@@ -65,12 +65,15 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
 
     public FormEntity entity;
 
-    public LocalizedString caption = LocalizedString.NONAME;
     public String canonicalName = "";
     public String creationPath = "";
     public String path = "";
 
     public Integer overridePageWidth;
+
+    public LocalizedString getCaption() {
+        return mainContainer.caption;
+    }
 
     public NFOrderSet<FormScheduler> formSchedulers;
 

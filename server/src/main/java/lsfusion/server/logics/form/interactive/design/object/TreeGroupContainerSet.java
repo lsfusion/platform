@@ -133,7 +133,6 @@ public class TreeGroupContainerSet {
         set.groupContainer.setLines(DefaultFormView.GROUP_CONTAINER_LINES_COUNT);
 
         treeGroup.getToolbarSystem().setMargin(2);
-        treeGroup.getToolbarSystem().setAlignment(FlexAlignment.CENTER);
 
         return set;
     }

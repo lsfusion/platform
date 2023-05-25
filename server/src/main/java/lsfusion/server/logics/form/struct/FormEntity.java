@@ -1446,7 +1446,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public LocalizedString getCaption() {
-        return getRichDesign().mainContainer.caption;
+        return getRichDesign().getCaption();
     }
 
     public AppServerImage getImage() {

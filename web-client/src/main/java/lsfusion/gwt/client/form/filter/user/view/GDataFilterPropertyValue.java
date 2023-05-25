@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 
 public class GDataFilterPropertyValue extends ActionOrPropertyValue {
 
+    private final GPropertyFilter condition;
     private final Consumer<PValue> afterCommit;
     private final Consumer<CancelReason> onCancel;
     
@@ -44,6 +45,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 throw new UnsupportedOperationException();
             }
         });
+        this.condition = condition;
         this.afterCommit = afterCommit;
         this.onCancel = onCancel;
         
@@ -116,6 +118,11 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
                 onCancel,
                 this,
                 inputList.completionType.isExactMatchNeeded() ? ServerResponse.STRICTVALUES : ServerResponse.VALUES, null);
+    }
+
+    @Override
+    public Object modifyPastedString(String pastedText) {
+        return GwtClientUtils.escapeSeparator(pastedText, condition.compare);
     }
 
     private void acceptCommit(PValue result, boolean enterPressed) {

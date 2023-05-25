@@ -34,6 +34,9 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
                 if ((getLength() + str.length()) > length) { // если длина больше trim'им, потому как иначе из-за selectAll курсор будет вправо уплывать
                     str = str.substring(0, length - getLength());
                 }
+                
+                str = modifyInsertString(asyncChange, str);
+                
                 super.insertString(offset, str, attr);
             }
         });

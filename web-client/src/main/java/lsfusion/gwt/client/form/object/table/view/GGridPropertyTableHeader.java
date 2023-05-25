@@ -18,12 +18,14 @@ public class GGridPropertyTableHeader extends Header<String> {
     private final GGridPropertyTable table;
 
     private String renderedCaption;
+    private String renderedCaptionElementClass;
     private AppBaseImage renderedImage;
     private Boolean renderedSortDir;
 
     private Element renderedCaptionElement;
 
     private String caption;
+    private String captionElementClass;
     private AppBaseImage image;
     private String toolTip;
     private String path;
@@ -38,8 +40,9 @@ public class GGridPropertyTableHeader extends Header<String> {
 
     private boolean sticky;
 
-    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, AppBaseImage image, String toolTip, boolean sticky) {
+    public GGridPropertyTableHeader(GGridPropertyTable table, String caption, String captionElementClass, AppBaseImage image, String toolTip, boolean sticky) {
         this.caption = caption;
+        this.captionElementClass = captionElementClass;
         this.image = image;
         this.table = table;
         this.toolTip = toolTip;
@@ -85,6 +88,10 @@ public class GGridPropertyTableHeader extends Header<String> {
         this.hasChangeAction = hasChangeAction;
     }
 
+    public void setCaptionElementClass(String captionElementClass) {
+        this.captionElementClass = captionElementClass;
+    }
+
     public void setImage(AppBaseImage image) {
         this.image = image;
     }
@@ -119,9 +126,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     public void renderAndUpdateDom(TableCellElement th) {
         Boolean sortDir = table.getSortDirection(this);
 
-        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, image, false);
+        renderedCaptionElement = renderTD(th, headerHeight, sortDir, caption, captionElementClass, image, false);
         renderedSortDir = sortDir;
         renderedCaption = caption;
+        renderedCaptionElementClass = captionElementClass;
         renderedImage = image;
 
         if(sticky) {
@@ -135,10 +143,10 @@ public class GGridPropertyTableHeader extends Header<String> {
     public final static GSize DEFAULT_HEADER_HEIGHT = GSize.CONST(34);
 
     public static Element renderTD(Element th, boolean defaultHeaderHeight, Boolean sortDir, String caption) {
-        return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, null, true);
+        return renderTD(th, defaultHeaderHeight ? DEFAULT_HEADER_HEIGHT : null, sortDir, caption, null, null, true);
     }
 
-    public static Element renderTD(Element th, GSize height, Boolean sortDir, String caption, AppBaseImage image, boolean tableToExcel) {
+    public static Element renderTD(Element th, GSize height, Boolean sortDir, String caption, String captionElementClass, AppBaseImage image, boolean tableToExcel) {
 //        if(height != null)
 //            GPropertyTableBuilder.setRowHeight(th, height, tableToExcel);
 
@@ -160,6 +168,7 @@ public class GGridPropertyTableHeader extends Header<String> {
 
         BaseImage.initImageText(th);
         renderCaption(th, caption);
+        renderCaptionElementClass(th, captionElementClass);
         renderImage(th, image);
 
         return th;
@@ -200,6 +209,9 @@ public class GGridPropertyTableHeader extends Header<String> {
     private static void renderCaption(Element captionElement, String caption) {
         BaseImage.updateText(captionElement, caption, false);
     }
+    private static void renderCaptionElementClass(Element captionElement, String classes) {
+        BaseImage.updateClasses(captionElement, classes);
+    }
     private static void renderImage(Element captionElement, AppBaseImage image) {
         BaseImage.updateImage(image, captionElement, false);
     }
@@ -215,6 +227,10 @@ public class GGridPropertyTableHeader extends Header<String> {
             if (!nullEquals(this.caption, renderedCaption)) {
                 renderCaption(renderedCaptionElement, caption);
                 renderedCaption = caption;
+            }
+            if (!nullEquals(this.captionElementClass, renderedCaptionElementClass)) {
+                renderCaptionElementClass(renderedCaptionElement, captionElementClass);
+                renderedCaptionElementClass = captionElementClass;
             }
             if (!nullEquals(this.image, renderedImage)) {
                 renderImage(renderedCaptionElement, image);

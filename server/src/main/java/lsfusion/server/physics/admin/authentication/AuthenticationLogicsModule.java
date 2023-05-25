@@ -28,6 +28,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass customUser;
+    public ConcreteCustomClass colorTheme;
 
     public LP firstNameContact;
     public LP lastNameContact;
@@ -103,6 +104,8 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
     public LP serverTimeFormat;
 
     public LP userFontSize;
+
+    public LP clientColorTheme;
     
     public LA deliveredNotificationAction;
     
@@ -120,6 +123,7 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         user = (AbstractCustomClass) findClass("User");
         systemUser = (ConcreteCustomClass) findClass("SystemUser");
         customUser = (ConcreteCustomClass) findClass("CustomUser");
+        colorTheme = (ConcreteCustomClass) findClass("ColorTheme");
     }
 
     @Override
@@ -210,7 +214,9 @@ public class AuthenticationLogicsModule extends ScriptingLogicsModule{
         serverTimeFormat = findProperty("serverTimeFormat[]");
 
         userFontSize = findProperty("fontSize[CustomUser]");
-        
+
+        clientColorTheme = findProperty("clientColorTheme[CustomUser]");
+
         deliveredNotificationAction = findAction("deliveredNotificationAction[CustomUser]");
         
         syncUsers = findAction("syncUsers[ISTRING[100], JSONFILE]");

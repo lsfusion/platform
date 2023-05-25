@@ -48,7 +48,7 @@ serverUseBootstrap '{system.events.use.bootstrap}' = DATA BOOLEAN ();
 useBootstrap '{system.events.use.bootstrap}' (CustomUser u) = IF userUseBootstrap(u) THEN userUseBootstrap(u) == TTRUE ELSE serverUseBootstrap();
 useBootstrap = useBootstrap(currentUser());
 
-bootstrapCaption = IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}';
+bootstrapCaption = (IF useBootstrap() THEN '{system.events.excel.design}' ELSE '{system.events.bootstrap.design}') IF NOT noSystemToolbarCaptions();
 bootstrapImage = IF useBootstrap() THEN 'excel.png' ELSE 'bootstrap.png';
 toggleBootstrap () {
     userUseBootstrap(currentUser()) <- IF useBootstrap() THEN TFALSE ELSE TTRUE;
@@ -56,13 +56,19 @@ toggleBootstrap () {
     INTERNAL CLIENT 'reload';
 }
 
-colorThemeCaption = IF colorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.light.mode}' ELSE '{system.events.dark.mode}';
-colorThemeImage = IF colorTheme(currentUser()) == ColorTheme.dark THEN 'lightMode.png' ELSE 'darkMode.png';
+colorThemeCaption = (CASE
+    WHEN userColorTheme(currentUser()) == ColorTheme.light THEN '{system.events.dark.mode}'
+    WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN '{system.events.auto.mode}'
+    ELSE '{system.events.light.mode}') IF NOT noSystemToolbarCaptions();
+colorThemeImage = CASE 
+    WHEN userColorTheme(currentUser()) == ColorTheme.light THEN 'darkMode.png' 
+    WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN 'autoMode.png' 
+    ELSE 'lightMode.png';
 toggleColorTheme() {
-    IF colorTheme(currentUser()) == ColorTheme.dark THEN
-        colorTheme(currentUser()) <- ColorTheme.light;
-    ELSE
-        colorTheme(currentUser()) <- ColorTheme.dark;
+    userColorTheme(currentUser()) <- CASE
+        WHEN userColorTheme(currentUser()) == ColorTheme.light THEN ColorTheme.dark
+        WHEN userColorTheme(currentUser()) == ColorTheme.dark THEN NULL
+        ELSE ColorTheme.light;
     apply();
     formRefresh();
 }
@@ -72,7 +78,7 @@ serverVerticalNavbar '{navigator.navbar.vertical}' = DATA BOOLEAN ();
 verticalNavbar '{navigator.navbar.vertical}' (CustomUser u) = IF userVerticalNavbar(u) THEN userVerticalNavbar(u) == TTRUE ELSE serverVerticalNavbar();
 verticalNavbar = verticalNavbar(currentUser());
 
-verticalNavbarCaption = IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}';
+verticalNavbarCaption = (IF verticalNavbar() THEN '{system.events.navbar.horizontal}' ELSE '{system.events.navbar.vertical}') IF NOT noSystemToolbarCaptions();
 verticalNavbarImage = IF verticalNavbar() THEN iconIfAvailable('navbarHorz.png', 'fa-solid fa-window-maximize') ELSE iconIfAvailable('navbarVert.png', 'fa-solid fa-window-maximize fa-rotate-270');
 toggleVerticalNavbar () {
     userVerticalNavbar(currentUser()) <- IF verticalNavbar() THEN TFALSE ELSE TTRUE;
@@ -86,11 +92,11 @@ serverPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
 pinMode '{navigator.pin.mode}' (CustomUser u) = IF userPinMode(u) THEN userPinMode(u) ELSE serverPinMode();
 pinMode() = pinMode(currentUser());
 
-pinModeCaption = IF pinMode()
+pinModeCaption = (IF pinMode()
     THEN (IF pinMode() == TFALSE
         THEN '{system.events.navigator.pin.all}'
         ELSE '{system.events.navigator.pin.none}')
-    ELSE '{system.events.navigator.pin.navbar}';
+    ELSE '{system.events.navigator.pin.navbar}') IF NOT noSystemToolbarCaptions();
 pinModeImage = IF pinMode() 
     THEN (IF pinMode() == TFALSE 
         THEN iconIfAvailable('pinAll.png','fa-solid fa-thumbtack') 
@@ -367,6 +373,8 @@ isDesktop() = isNativeDesktop() OR isWebDesktop();
 isMobile() = isNativeMobile() OR isWebMobile();
 isNative() = isNativeDesktop() OR isNativeMobile();
 isWeb() = isWebDesktop() OR isWebMobile();
+
+noSystemToolbarCaptions() += isNativeDesktop();
 
 dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
 dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());

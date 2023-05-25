@@ -337,6 +337,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         return GGridTable.getPropertyCaption(captions.get(propertyIndex), columnProperty, column.columnKey);
     }
 
+    protected String getCaptionElementClass(String property) {
+        Column column = columnMap.get(property);
+        if(column == null)
+            return null;
+        return getCaptionElementClass(column.property, column.columnKey);
+    }
+
     protected boolean isReadOnly(String property, GGroupObjectValue object) {
         Column column = columnMap.get(property);
         if(column == null)
@@ -548,6 +555,9 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             },
             getCaption: function (property) {
                 return thisObj.@GSimpleStateTableView::getCaption(Ljava/lang/String;)(property);
+            },
+            getCaptionClass: function (property) {
+                return thisObj.@GSimpleStateTableView::getCaptionElementClass(Ljava/lang/String;)(property);
             },
             isPropertyReadOnly: function (property, object) {
                 return thisObj.@GSimpleStateTableView::isReadOnly(Ljava/lang/String;Lcom/google/gwt/core/client/JavaScriptObject;)(property, object);

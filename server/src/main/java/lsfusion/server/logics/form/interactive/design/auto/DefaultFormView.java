@@ -330,7 +330,6 @@ public class DefaultFormView extends FormView {
         ContainerView propertyContainer;
         if (propertyDraw.entity.isToolbar(entity)) {
             propertyContainer = getToolbarPropsContainer(drawEntity, version);
-            propertyDraw.setAlignment(FlexAlignment.CENTER);
         } else {
             // иерархическая структура контейнеров групп: каждый контейнер группы - это CONTAINERH,
             // в который сначала добавляется COLUMNS для свойств этой группы, а затем - контейнеры подгрупп
@@ -364,7 +363,6 @@ public class DefaultFormView extends FormView {
     @Override
     public RegularFilterGroupView addRegularFilterGroup(RegularFilterGroupEntity filterGroup, Version version) {
         RegularFilterGroupView view = super.addRegularFilterGroup(filterGroup, version);
-        view.setAlignment(FlexAlignment.CENTER);
         addRegularFilterGroupView(view, version);
         return view;
     }

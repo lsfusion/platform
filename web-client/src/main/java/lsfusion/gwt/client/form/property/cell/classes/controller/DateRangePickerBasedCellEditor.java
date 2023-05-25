@@ -32,7 +32,15 @@ public abstract class DateRangePickerBasedCellEditor extends TextBasedPopupCellE
 
     protected PValue tryParseInputText(String inputText, boolean onCommit) throws ParseException {
         //to be able to enter the date from keyboard
-        return onCommit ? super.tryParseInputText(inputText, true) : PValue.getPValue(inputText);
+        if (onCommit) {
+            try {
+                return super.tryParseInputText(inputText, true);
+            } catch (ParseException e) {
+                return getDateInputValue();
+            }
+        }
+
+        return PValue.getPValue(inputText);
     }
 
     @Override

@@ -98,7 +98,7 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
     }
 
     //focused cell indices local to table (aka real indices in rendered portion of the data)
-    int renderedSelectedRow = -1;
+    protected int renderedSelectedRow = -1;
     int renderedSelectedCol = -1;
     int renderedLeftStickyCol = -1;
     Object renderedSelectedKey = null; // needed for saving scroll position when keys are update

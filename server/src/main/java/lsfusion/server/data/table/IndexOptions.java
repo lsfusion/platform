@@ -50,6 +50,11 @@ public class IndexOptions {
         return new IndexOptions(order, indexType, language, dbName);
     }
 
+    public boolean equalsWithoutDBName(Object o) {
+        return this == o || o instanceof IndexOptions && order == ((IndexOptions) o).order && type.equals(((IndexOptions) o).type)
+                && (!type.isMatch() || BaseUtils.nullEquals(language, ((IndexOptions) o).language));
+    }
+    
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof IndexOptions && order == ((IndexOptions) o).order && type.equals(((IndexOptions) o).type)

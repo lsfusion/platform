@@ -192,6 +192,8 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
                         tableBuilder.incDeleteRows(tableWidget.getSection(), i, i + 1);
                         rows.remove(i);
                         incUpdateRowIndices(i, -1);
+                        if(renderedSelectedRow == i)
+                            selectedRowChanged();
                     }
                 }
             } else {
@@ -442,7 +444,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
                             column.setValue(record, propValues.get(fullKey));
                             column.setLoading(record, propLoadings != null && PValue.getBooleanValue(propLoadings.get(fullKey)));
-                            record.setReadOnly(column.columnSID, propReadOnly == null ? null : PValue.getBooleanValue(propReadOnly.get(fullKey)));
+                            record.setReadOnly(column.columnSID, propReadOnly != null && PValue.getBooleanValue(propReadOnly.get(fullKey)));
                             PValue valueElementClass = propertyValueElementClasses == null ? null : propertyValueElementClasses.get(fullKey);
                             record.setValueElementClass(column.columnSID, valueElementClass == null ? property.valueElementClass : PValue.getClassStringValue(valueElementClass));
                             PValue background = propertyBackgrounds == null ? null : propertyBackgrounds.get(fullKey);
@@ -476,7 +478,7 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
 
     private GridColumn insertGridColumn(int index, GPropertyDraw property, GGroupObjectValue columnKey) {
         GridColumn column = new GridColumn(property, columnKey);
-        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, null, null, null, column.isSticky());
+        GGridPropertyTableHeader header = noHeaders ? null : new GGridPropertyTableHeader(this, null, null, null, null, column.isSticky());
         GGridPropertyTableFooter footer = noFooters ? null : new GGridPropertyTableFooter(this, property, null, null, column.isSticky());
 
         insertColumn(index, column, header, footer);

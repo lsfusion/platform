@@ -1,13 +1,13 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.dom.client.*;
+import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
 import lsfusion.gwt.client.base.BaseImage;
 import lsfusion.gwt.client.base.BaseStaticImage;
 import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.ColorUtils;
-import lsfusion.gwt.client.base.view.LabelWidget;
 import lsfusion.gwt.client.base.view.SizedFlexPanel;
 import lsfusion.gwt.client.base.view.grid.AbstractDataGridBuilder;
 import lsfusion.gwt.client.form.design.GFont;
@@ -73,11 +73,12 @@ public abstract class CellRenderer {
         }
     }
 
-    public void renderPanelLabel(LabelWidget label) {
+    public void renderPanelLabel(Widget label) {
     }
 
     public void renderPanelContainer(SizedFlexPanel panel) {
-        panel.addStyleName("form-group");
+//        was removed in bootstrap 5
+//        panel.addStyleName("form-group");
     }
 
     public static void setBasedTextFonts(GPropertyDraw property, Element element, RenderContext renderContext) {
