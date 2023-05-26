@@ -71,7 +71,7 @@ public class GwtClientUtils {
 
     public static void downloadFile(String name, String displayName, String extension) {
         if (name != null)
-            downloadFile(getAppDownloadURL(name, displayName, extension), displayName);
+            downloadFile(getAppDownloadURL(name, displayName, extension));
     }
 
     public static native JavaScriptObject openWindow(String url)/*-{
@@ -79,10 +79,10 @@ public class GwtClientUtils {
     }-*/;
 
     //js does not allow to download files. use the solution from https://stackoverflow.com/questions/3916191/download-data-url-file
-    public static native void downloadFile(String url, String name)/*-{
+    public static native void downloadFile(String url)/*-{
         var document = $wnd.document;
         var downloadLink = document.createElement("a");
-        downloadLink.download = name;
+        downloadLink.setAttribute("download", "");
         downloadLink.href = url;
         document.body.appendChild(downloadLink);
         downloadLink.click();
