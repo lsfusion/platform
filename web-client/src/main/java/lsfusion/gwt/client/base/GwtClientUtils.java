@@ -61,7 +61,7 @@ public class GwtClientUtils {
         MainFrame.cleanRemote(() -> Window.open(GwtClientUtils.getLogoutUrl(), "_self", null), connectionLost);
     }
 
-    public static void downloadFile(String name, String displayName, String extension, boolean autoPrint, Integer autoPrintTimeout) {
+    public static void openFile(String name, String displayName, String extension, boolean autoPrint, Integer autoPrintTimeout) {
         if (name != null) {
             JavaScriptObject window = openWindow(getAppDownloadURL(name, displayName, extension));
             if (autoPrint)
@@ -69,8 +69,24 @@ public class GwtClientUtils {
         }
     }
 
+    public static void downloadFile(String name, String displayName, String extension) {
+        if (name != null)
+            downloadFile(getAppDownloadURL(name, displayName, extension), displayName);
+    }
+
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
+    }-*/;
+
+    //js does not allow to download files. use the solution from https://stackoverflow.com/questions/3916191/download-data-url-file
+    public static native void downloadFile(String url, String name)/*-{
+        var document = $wnd.document;
+        var downloadLink = document.createElement("a");
+        downloadLink.download = name;
+        downloadLink.href = url;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
     }-*/;
 
     public static native void print(JavaScriptObject window, Integer timeout)/*-{
