@@ -1,41 +1,56 @@
 
-.btn-group.option-container {
+.option-btn-container {
     display: flex;
     flex-flow: row wrap;
-
-    /*background: var(--component-background-color);*/
-    cursor: pointer;
 }
 
 .btn.btn-outline-primary.option-item {
-    flex: 0 0 auto;
-    align-self: center;
-
-    /*background: var(--component-background-color);*/
-    padding: 0 3px;
-    border: var(--border-width) solid var(--component-border-color);
-    border-radius: var(--button-border-radius);
     margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
-
-    min-height: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-.btn.btn-outline-primary.option-item:hover {
+.option-btn-container:not(.btn-group) .btn.btn-outline-primary.option-item:hover {
     border: 1px solid var(--component-hover-border-color);
     background: var(--component-hover-background-color);
 }
 
-.btn.btn-outline-primary.option-item.active {
+.btn-check.active + .btn.btn-outline-primary.option-item {
     background: var(--selection-color);
 }
 
-.btn.btn-outline-primary.option-item.active:hover {
+.btn-check.active + .btn.btn-outline-primary.option-item:hover {
     background: var(--option-selected-hover-color);
 }
 
-.option-item-current {
+/*set a border for all buttons except the .btn-group*/
+.option-btn-container:not(.btn-group) .btn.btn-outline-primary.option-item-current {
     border: var(--border-width) solid var(--focused-cell-border-color);
+}
+
+/*do not display <input> for all except standard views*/
+.option-btn-container input[type="radio"].btn-check, .option-btn-container input[type="checkbox"].btn-check {
+    display:none;
+}
+
+.option-btn-container.btn-group .btn.btn-outline-primary.option-item {
+    margin: 0;
+}
+
+/*todo ??*/
+.option-btn-container.btn-group {
+    padding: 0.5em;
+}
+
+.option-btn-container.btn-group label:not(:first-of-type) {
+    border-left: 0;
+    border-radius: 0;
+}
+
+.option-btn-container.btn-group label:first-of-type {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.option-btn-container.btn-group label:last-of-type {
+    border-top-right-radius: var(--button-border-radius);
+    border-bottom-right-radius: var(--button-border-radius);
 }
