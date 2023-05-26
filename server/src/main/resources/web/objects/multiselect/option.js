@@ -38,13 +38,16 @@ function option() {
                 if(rawOption.selected)
                     option.classList.add("active")
 
-                if(isList) {
+                // todo: get rid of index when there is no getDiff
+                // if(isList) {
                     option.key = rawOption;
                     option.addEventListener('click', function () {
                         controller.changeProperty('selected', this.key, !this.selected ? true : null);
-                        controller.changeObject(this.key);
+                        if(isList) {
+                            controller.changeObject(this.key);
+                        }
                     });
-                }
+                // }
 
                 let currentOptions = options.children;
                 if (rawOption.index === (currentOptions.length))

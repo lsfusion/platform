@@ -148,6 +148,10 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public final boolean isIdentity;
     
     private final boolean user;
+
+    private boolean isIdentityChange() {
+        return isIdentity;
+    }
     
     @Override
     protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
@@ -167,11 +171,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return SetFact.add(propChanges.getUsedDataChanges(type, mImplementDepends.immutable()), getUsedChanges(propChanges));
         }
 
-        Property<T> implementProperty = implement.property;
-        if(isIdentity) {
-            MSet<Property> mImplementProps = SetFact.mSet();
-            fillDepends(mImplementProps,implement.mapping.values());
-            return SetFact.add(implementProperty.getUsedDataChanges(propChanges, type), propChanges.getUsedChanges(mImplementProps.immutable()));
+        if(isIdentityChange()) {
+            return implement.property.getUsedDataChanges(propChanges, type);
         }
 
         return super.calculateUsedDataChanges(propChanges, type);
@@ -230,7 +231,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if(andInterface!=null)
             return implement.mapping.get(andInterface).mapChangeProps();
 
-        if(isIdentity)
+        if(isIdentityChange())
             return implement.property.getChangeProps();
 
         return super.getChangeProps();
@@ -253,7 +254,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             PropertyInterfaceImplement<Interface> andImplement = implement.mapping.get(andInterface);
             return andImplement instanceof PropertyMapImplement && ((PropertyMapImplement) andImplement).property.canBeHeurChanged(global);
         }
-        if(isIdentity) // groupBy'им выбирая max
+        if(isIdentityChange()) // groupBy'им выбирая max
             return implement.property.canBeHeurChanged(global); // пока implementChange = identity
         return false;
     }
@@ -289,7 +290,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return result;
         }
 
-        if(isIdentity) // groupBy'им выбирая max
+        if(isIdentityChange()) // groupBy'им выбирая max
             return implement.property.getJoinDataChanges(getJoinImplements(change.getMapExprs(), propChanges, null), change.expr, change.where, GroupType.ASSERTSINGLE_CHANGE(), propChanges, type, changedWhere); // пока implementChange = identity
         
         return super.calculateDataChanges(change, type, changedWhere, propChanges);
@@ -324,7 +325,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
                 return PropertyFact.createJoinAction(editImplement.map(implement.mapping));
         }
 
-        if (implement.mapping.size() == 1 && !isIdentity)
+        if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement)
             return implement.mapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(aggProp), customChangeFunction);
 
         return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);

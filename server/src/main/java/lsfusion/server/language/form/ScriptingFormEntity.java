@@ -349,6 +349,7 @@ public class ScriptingFormEntity {
             FormSessionScope scope = propertyOptions.getFormSessionScope();
             boolean isFormObjectAction = false;
 
+            Result<Pair<ActionOrProperty, List<String>>> inherited = new Result<>();
             LAP<?, ?> property = null;
             ImOrderSet<ObjectEntity> objects = null;
             String forceIntegrationSID = null;
@@ -399,10 +400,9 @@ public class ScriptingFormEntity {
                     Pair<LP, ActionObjectSelector> intervalProp = LM.getObjIntervalProp(form, objectFrom, objectTo, intProps[0], intProps[1], intProps[2]);
                     property = intervalProp.first;
                     forceChangeAction = intervalProp.second;
-                }
-            }
-            Result<Pair<ActionOrProperty, String>> inherited = new Result<>();
-            if(property == null) {
+                } else
+                    throw new UnsupportedOperationException();
+            } else {
                 MappedActionOrProperty prop = LM.getPropertyWithMapping(form, pDrawUsage, inherited);
                 checkPropertyParameters(prop.property, prop.mapping);
                 property = prop.property;
@@ -418,13 +418,7 @@ public class ScriptingFormEntity {
                 location = isFormObjectAction ? ComplexLocation.LAST() : ComplexLocation.DEFAULT();
 
             DebugInfo.DebugPoint debugPoint = points.get(i);
-            String formPath = debugPoint.getFullPath();
-            PropertyDrawEntity propertyDraw;
-            ActionOrPropertyObjectEntity propertyObject = property.createObjectEntity(objects);
-            if(inherited.result != null)
-                propertyDraw = form.addPropertyDraw(propertyObject, formPath, inherited.result.second, inherited.result.first, location, version);
-            else
-                propertyDraw = form.addPropertyDraw(propertyObject, formPath, property.listInterfaces, location, version);
+            PropertyDrawEntity propertyDraw = form.addPropertyDraw((ActionOrPropertyObjectEntity) property.createObjectEntity(objects), debugPoint.getFullPath(), inherited.result, property.listInterfaces, location, version);
             propertyDraw.setScriptIndex(Pair.create(debugPoint.getScriptLine(), debugPoint.offset));
 
             if(forceChangeAction != null)
@@ -440,7 +434,9 @@ public class ScriptingFormEntity {
                 propertyDraw.setIntegrationSID(forceIntegrationSID);
 
             try {
-                form.setFinalPropertyDrawSID(propertyDraw, alias, false);
+                form.checkAlreadyDefined(propertyDraw, alias);
+
+                form.setFinalPropertyDrawSID(propertyDraw, alias);
             } catch (FormEntity.AlreadyDefined alreadyDefined) {
                 LM.throwAlreadyDefinePropertyDraw(alreadyDefined);
             }
