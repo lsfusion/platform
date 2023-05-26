@@ -116,7 +116,7 @@ update: (element, controller, list) => {
 let diff = controller.getDiff(list);
 for (let object of diff.add) { ... }
 for (let object of diff.update) { ... }
-for (let option of diff.remove) { ... }
+for (let object of diff.remove) { ... }
 ```
 
 После удаления старых элементов для каждого объекта из массива _list_ создается свой _div_ _card_, в который помещаются нужные элементы отображения каждого свойства.

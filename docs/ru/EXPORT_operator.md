@@ -14,8 +14,8 @@ title: 'Оператор EXPORT'
     JSON [CHARSET charsetStr]
     XML [HEADER | NOHEADER] [ATTR] [CHARSET charsetStr]
     CSV [separator] [HEADER | NOHEADER] [ESCAPE | NOESCAPE] [CHARSET charsetStr]
-    XLS [HEADER | NOHEADER]
-    XLSX [HEADER | NOHEADER]
+    XLS [SHEET sheetProperty] [HEADER | NOHEADER]
+    XLSX [SHEET sheetProperty] [HEADER | NOHEADER]
     DBF [CHARSET charsetStr]
     TABLE
 
@@ -105,6 +105,10 @@ title: 'Оператор EXPORT'
     - `charsetStr`
     
         Cтроковый литерал, определяющий кодировку. 
+
+- `sheetProperty`
+
+  [Идентификатор свойства](IDs.md#propertyid), значение которого применяется в качестве названия листа в выгружаемом файле. У свойства не должно быть параметров. Используется для форматов экспорта `XLS`, `XLSX`.
 
 - `TOP n`
 
