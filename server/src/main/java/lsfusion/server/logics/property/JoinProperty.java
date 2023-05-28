@@ -148,7 +148,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     public final boolean isIdentity;
     
     private final boolean user;
-    
+
     @Override
     protected ImSet<Property> calculateUsedDataChanges(StructChanges propChanges, CalcDataType type) {
         if(implement.property instanceof CompareFormulaProperty && ((CompareFormulaProperty)implement.property).compare == Compare.EQUALS) { // если =
@@ -298,12 +298,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     @Override
     @IdentityStrongLazy // STRONG пришлось поставить из-за использования в политике безопасности
     public ActionMapImplement<?, Interface> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
-        Property<T> aggProp = implement.property;
+        Property<T> implementProperty = implement.property;
+        ImMap<T, PropertyInterfaceImplement<Interface>> implementMapping = implement.mapping;
 
-        if (aggProp instanceof AndFormulaProperty) {
-            final AndFormulaProperty andProperty = (AndFormulaProperty) aggProp;
-            ImCol<PropertyInterfaceImplement<Interface>> ands = implement.mapping.filterFn(element -> element != andProperty.objectInterface).values();
-            ActionMapImplement<?, Interface> implementEdit = implement.mapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
+        if (implementProperty instanceof AndFormulaProperty) {
+            final AndFormulaProperty andProperty = (AndFormulaProperty) implementProperty;
+            ImCol<PropertyInterfaceImplement<Interface>> ands = implementMapping.filterFn(element -> element != andProperty.objectInterface).values();
+            ActionMapImplement<?, Interface> implementEdit = implementMapping.get((T) andProperty.objectInterface).mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
             if (implementEdit != null) {
                 return PropertyFact.createIfAction(
                         interfaces,
@@ -314,18 +315,24 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }
         }
 
+        // we want "value edit object" to have "higher priority" than "value unique join edit object"
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
             if((editClass != null && editClass.getDefaultOpenAction(getBaseLM()) != null)) // just call open action (see super implementation)
                 return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
-
-            ActionMapImplement<?, T> editImplement = implement.property.getEventAction(eventActionSID, defaultChangeEventScope, ListFact.EMPTY(), customChangeFunction);
-            if(editImplement != null)
-                return PropertyFact.createJoinAction(editImplement.map(implement.mapping));
         }
 
-        if (implement.mapping.size() == 1 && !isIdentity)
-            return implement.mapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(aggProp), customChangeFunction);
+        if(isIdentity) {
+            ActionMapImplement<?, T> editImplement = implementProperty.getEventAction(eventActionSID, defaultChangeEventScope, ListFact.EMPTY(), customChangeFunction);
+            if(editImplement != null) {
+                ImRevMap<T, Interface> joinMapping = BaseUtils.immutableCast(implement.mapping.toRevExclMap());
+                return editImplement.map(joinMapping);
+//                return PropertyFact.createJoinAction(editImplement.map(implementMapping));
+            }
+        }
+
+        if (implementMapping.size() == 1 && implementProperty.isValueFullAndUnique(MapFact.EMPTY(), true))
+            return implementMapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(implementProperty), customChangeFunction);
 
         return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
     }
@@ -433,7 +440,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return true;
         }
         if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement &&
-                ((implement.property.isValueFull(MapFact.EMPTY()) && implement.property.isValueUnique(MapFact.EMPTY(), false)) || implement.property.isNotNull()))
+                (implement.property.isValueFullAndUnique(MapFact.EMPTY(), false) || implement.property.isNotNull()))
             return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();
         return false;
     }
