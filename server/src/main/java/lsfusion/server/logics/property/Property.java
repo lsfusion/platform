@@ -1663,8 +1663,23 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
             ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            LA<?> defaultOpenAction = editClass != null ? editClass.getDefaultOpenAction(lm) : null;
-            return defaultOpenAction != null ? PropertyFact.createJoinAction(defaultOpenAction.action, getImplement()) : null;
+            if(editClass != null) {
+                LA<?> defaultOpenAction = editClass.getDefaultOpenAction(lm);
+                if(defaultOpenAction != null)
+                    return PropertyFact.createJoinAction(defaultOpenAction.action, getImplement());
+            }
+
+            if (interfaces.size() == 1 && isValueFullAndUnique(MapFact.EMPTY(), true)) {
+                T singleInterface = interfaces.single();
+                ValueClass interfaceClass = getInterfaceClasses(ClassType.tryEditPolicy).get(singleInterface);
+                if(interfaceClass != null) {
+                    LA<?> defaultOpenAction = interfaceClass.getDefaultOpenAction(getBaseLM());
+                    if(defaultOpenAction != null)
+                        return defaultOpenAction.getImplement(singleInterface);
+                }
+            }
+
+            return null;
         }
 
         assert eventActionSID.equals(ServerResponse.CHANGE);
@@ -1688,7 +1703,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
 
             // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, MapFact.EMPTYREV(), objectEntity -> getCheckFilters(objectEntity), customChangeFunction, notNull);
+            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, objectEntity -> getCheckFilters(objectEntity), customChangeFunction, notNull);
 
             action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
         } else {
@@ -2350,6 +2365,10 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return true;
         return getSelectStat(fixedExprs).equals(Stat.ONE) &&
                 (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(getInterfaceStat(fixedExprs))));
+    }
+
+    public boolean isValueFullAndUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
+        return isValueFull(fixedExprs) && isValueUnique(fixedExprs, optimistic);
     }
 
     public boolean isValueFull(ImMap<T, StaticParamNullableExpr> fixedExprs) {
