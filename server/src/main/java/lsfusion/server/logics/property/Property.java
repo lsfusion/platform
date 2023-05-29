@@ -1669,7 +1669,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                     return PropertyFact.createJoinAction(defaultOpenAction.action, getImplement());
             }
 
-            if (interfaces.size() == 1 && isValueFullAndUnique(MapFact.EMPTY(), true)) {
+            if (interfaces.size() == 1) { //&& isValueFullAndUnique(MapFact.EMPTY(), true)) {
                 T singleInterface = interfaces.single();
                 ValueClass interfaceClass = getInterfaceClasses(ClassType.tryEditPolicy).get(singleInterface);
                 if(interfaceClass != null) {
