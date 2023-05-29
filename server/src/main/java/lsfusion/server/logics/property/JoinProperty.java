@@ -332,7 +332,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }
         }
 
-        if (implementMapping.size() == 1 && implementProperty.isValueFullAndUnique(MapFact.EMPTY(), true))
+        if (implementMapping.size() == 1) // && implementProperty.isValueFullAndUnique(MapFact.EMPTY(), true))
             return implementMapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(implementProperty), customChangeFunction);
 
         return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
