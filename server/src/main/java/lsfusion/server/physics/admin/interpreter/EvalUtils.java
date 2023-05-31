@@ -66,8 +66,10 @@ public class EvalUtils {
             module.runInit(ScriptingLogicsModule::initMainLogic);            
             // finalize forms task (other elements can't be created in script)
             module.markFormsForFinalization();
-            for(FormEntity form : module.getAllModuleForms())
+            for(FormEntity form : module.getAllModuleForms()) {
                 form.finalizeAroundInit();
+                form.prereadEventActions();
+            }
             for(LazyProperty property : module.lazyProps)
                 property.finalizeInit(); // needed at least for lazy properties
         } finally {
