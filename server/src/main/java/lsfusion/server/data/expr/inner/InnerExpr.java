@@ -91,7 +91,7 @@ public abstract class InnerExpr extends NullableExpr implements FJData {
     public ExprStatJoin getNotNullJoin(KeyStat keyStat, StatType statType) {
         if (this instanceof Table.Join.Expr) { // нет смысла вызывать getInnerStatValue лишний раз для QueryJoin {
             PropStat statValue = getInnerStatValue(keyStat, statType);
-            if (statValue != null && statValue.notNull != null) {
+            if (statValue.notNull != null) {
                 assert this instanceof Table.Join.Expr;
                 Stat joinStats = getInnerStatRows(statType);
                 if (statValue.notNull.less(joinStats))
