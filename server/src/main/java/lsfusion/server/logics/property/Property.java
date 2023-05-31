@@ -2298,12 +2298,13 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Expr expr = alotHeur ? aspectCalculateExpr(innerExprs, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(innerExprs); // check if is called after stats if filled
 //        Expr expr = calculateStatExpr(mapKeys, alotHeur);
 
-        Where where = expr.getWhere();
+        return ImplementTable.ignoreStatProps(alotHeur, () -> {
+            Where where = expr.getWhere();
 
-        innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
+            ImRevMap<T, KeyExpr> fInnerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
 
-        ImRevMap<T, KeyExpr> fInnerKeys = innerKeys;
-        return ImplementTable.ignoreStatProps(alotHeur, () -> getStatRows(fInnerKeys, where).getRows());
+            return getStatRows(fInnerKeys, where).getRows();
+        });
     }
 
     private Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
