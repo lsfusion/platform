@@ -68,6 +68,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 public class ImplementTable extends DBTable { // последний интерфейс assert что isFull
     private static double topCoefficient = 0.8;
@@ -463,16 +465,54 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     public TableStatKeys getTableStatKeys() {
-        if(statKeys!=null)
+        if(statKeys!=null) {
+            checkStatProps();
             return statKeys;
-        else
+        } else
             return SerializedTable.getStatKeys(this);
     }
 
+    public static boolean updatedStats;
+    private static final ThreadLocal<Boolean> ignoreStatProps = new ThreadLocal<>();
+
+    // it is assumed that statProps here are not important and they are not cached
+    // it is achieved by using specific calc types (STAT_ALOT, PREVSAMEKEEP_IS)
+    public static <T> T ignoreStatProps(boolean ignore, Supplier<T> supplier) {
+        Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
+        ImplementTable.ignoreStatProps.set(ignore ? true : null);
+        try {
+            return supplier.get();
+        } finally {
+            ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
+        }
+    }
+    private static final ThreadLocal<Boolean> reflectionStatProps = new ThreadLocal<>();
+    public static <T> T reflectionStatProps(Callable<T> callable) throws Exception {
+        ImplementTable.reflectionStatProps.set(true);
+        try {
+            return callable.call();
+        } finally {
+            ImplementTable.reflectionStatProps.set(null);
+        }
+    }
+
+    public static void checkStatProps(String name) {
+        if(SystemProperties.inTestMode && !updatedStats) {
+            if(!(ignoreStatProps.get() != null || (reflectionStatProps.get() != null && (name == null || name.startsWith("Reflection_") || name.startsWith("System_"))))) {
+                throw new RuntimeException("SHOULD NOT BE");
+            }
+        }
+    }
+
+    private void checkStatProps() {
+        checkStatProps(name);
+    }
+
     public ImMap<PropertyField,PropStat> getStatProps() {
-        if(statProps!=null)
+        if(statProps!=null) {
+            checkStatProps();
             return statProps;
-        else
+        } else
             return SerializedTable.getStatProps(this);
     }
 

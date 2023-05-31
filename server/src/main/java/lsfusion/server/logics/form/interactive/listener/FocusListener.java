@@ -5,7 +5,5 @@ import lsfusion.server.physics.admin.log.LogInfo;
 
 public interface FocusListener {
 
-    void gainedFocus(FormInstance form);
-
     LogInfo getLogInfo();    
 }

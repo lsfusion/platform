@@ -29,6 +29,7 @@ import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.user.ClassDataProperty;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import lsfusion.server.physics.exec.db.controller.manager.DBManager;
+import lsfusion.server.physics.exec.db.table.ImplementTable;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -114,6 +115,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     @Override
     public int getCount() {
+        ImplementTable.checkStatProps(null);
         return BaseUtils.max(stat != null ? stat : 0, 1);
     }
     
