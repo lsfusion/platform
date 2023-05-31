@@ -69,9 +69,10 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
         return div;
     }
 
-    function _changeProperty(controller, key, selected, event) {
+    function _changeProperty(controller, key, selected, isList, event) {
         controller.changeProperty('selected', key, !selected ? true : null);
-        controller.changeObject(key);
+        if (isList)
+            controller.changeObject(key);
 
         if (event != null)
             event.preventDefault(); // is needed to prevent the click event reaching the input element.
@@ -92,33 +93,17 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
         }, update: function (element, controller, list) {
             let options = element.options;
 
-            let isList;
-            let diff;
-            if (controller.getDiff !== undefined) {
-                diff = controller.getDiff(list, true);
-                isList = true;
+            let isList = controller.isList();
+            let diff = controller.getDiff(list, true);
 
-                diff.remove.forEach(rawOption => {
-                    if (isDefaultView) {
-                        options.removeChild(_getOptionElement(options, rawOption.index, false, false));
-                    } else {
-                        options.removeChild(_getOptionElement(options, rawOption.index, false, false));
-                        options.removeChild(_getOptionElement(options, rawOption.index, true, false));
-                    }
-                });
-            } else {
-                if (typeof list === 'string') {
-                    list = list.split(",").map((value, index) => {
-                        return {name: value, index: index, selected: false};
-                    })
-                } else if (list == null) {
-                    list = [];
+            diff.remove.forEach(rawOption => {
+                if (isDefaultView) {
+                    options.removeChild(_getOptionElement(options, rawOption.index, false, false));
+                } else {
+                    options.removeChild(_getOptionElement(options, rawOption.index, false, false));
+                    options.removeChild(_getOptionElement(options, rawOption.index, true, false));
                 }
-                diff = {add: list, update: []};
-                isList = false;
-
-                options.innerText = ""; // removing all children
-            }
+            });
 
             diff.add.forEach(rawOption => {
                 let input = document.createElement('input');
@@ -138,23 +123,21 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 label.innerText = rawOption.name;
                 label.selected = rawOption.selected
 
-                if (isList) {
-                    label.key = rawOption;
-                    label.addEventListener('click', function (event) {
-                        let input = this.previousElementSibling;
-                        if (!(input.type === 'radio' && input.checked)) // so that the "checked" attribute is not removed from the radiobutton. because in _setSelected we directly affect the checked attribute
-                            _changeProperty(controller, this.key, this.selected, event);
+
+                label.key = rawOption;
+                label.addEventListener('click', function (event) {
+                    let input = this.previousElementSibling;
+                    if (!(input.type === 'radio' && input.checked)) // so that the "checked" attribute is not removed from the radiobutton. because in _setSelected we directly affect the checked attribute
+                        _changeProperty(controller, this.key, this.selected, isList, event);
+                });
+
+                // is only used for the standard representation of radiobutton and checkbox
+                if (isDefaultView) {
+                    input.addEventListener('click', function () {
+                        let label = this.nextSibling;
+                        if(!(label.selected && this.checked))
+                            _changeProperty(controller, label.key, label.selected, isList);
                     });
-
-
-                    //todo is only used for the standard representation of radiobutton and checkbox
-                    if (isDefaultView) {
-                        input.addEventListener('click', function () {
-                            let label = this.nextSibling;
-                            if(!(label.selected && this.checked))
-                                _changeProperty(controller, label.key, label.selected);
-                        });
-                    }
                 }
 
                 let currentOptions = options.children;

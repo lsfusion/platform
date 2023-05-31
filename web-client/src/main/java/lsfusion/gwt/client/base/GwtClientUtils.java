@@ -1074,6 +1074,14 @@ public class GwtClientUtils {
         element.getStyle().setZIndex(0);
     }
 
+    public static Integer getIntegerField(JavaScriptObject object, String field) {
+        try {
+            return Integer.parseInt(getField(object, field).toString());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static native JavaScriptObject getGlobalField(String field)/*-{
         var jsField = $wnd[field];
         if (jsField != null)

@@ -1,13 +1,18 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
+import lsfusion.gwt.client.base.GwtClientUtils;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
+import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class CustomCellRenderer extends CellRenderer {
@@ -77,6 +82,52 @@ public class CustomCellRenderer extends CellRenderer {
             rerenderState(element, true);
     }
 
+    private static JavaScriptObject getOldValue(List<JavaScriptObject> oldOptionsList, int objectIndex) {
+        //find oldValue by index field
+        JavaScriptObject oldValue = null;
+        for (JavaScriptObject javaScriptObject : oldOptionsList) {
+            Integer index = GwtClientUtils.getIntegerField(javaScriptObject, "index");
+            if (index != null && index == objectIndex) {
+                oldValue = javaScriptObject;
+                oldOptionsList.remove(oldValue);
+                break;
+            }
+        }
+        return oldValue;
+    }
+
+    protected static JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering, JavaScriptObject element) {
+        List<JavaScriptObject> optionsToAdd = new ArrayList<>();
+        List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
+        List<JavaScriptObject> optionsToRemove = new ArrayList<>();
+
+        // to save a separate oldOptionsList for each element
+        JavaScriptObject oldOptionsListField = GwtClientUtils.getField(element, "oldOptionsList");
+        List<JavaScriptObject> oldOptionsList = oldOptionsListField != null ? GStateTableView.toObject(oldOptionsListField) : new ArrayList<>();
+
+        List<JavaScriptObject> mappedList = new ArrayList<>();
+        for (int i = 0; i < list.length(); i++) {
+            JavaScriptObject object = list.get(i);
+            GwtClientUtils.setField(object, "index", GStateTableView.fromDouble(i));
+            // "selected" field may be missing because in lsf field with null-value is not added to result JSON
+            if (GwtClientUtils.getField(object, "selected") == null)
+                GwtClientUtils.setField(object, "selected", GStateTableView.fromObject(false));
+
+            mappedList.add(object);
+
+            JavaScriptObject oldValue = getOldValue(oldOptionsList, i);
+            Integer oldIndex = GwtClientUtils.getIntegerField(oldValue, "index");
+            GSimpleStateTableView.fillOptions(oldValue, object, supportReordering && oldIndex != null && oldIndex != i, optionsToAdd, optionsToUpdate, optionsToRemove);
+        }
+
+        optionsToRemove.addAll(oldOptionsList);
+        oldOptionsList = mappedList;
+
+        GwtClientUtils.setField(element, "oldOptionsList", GStateTableView.fromObject(oldOptionsList));
+
+        return GSimpleStateTableView.getDiffObject(optionsToAdd, optionsToUpdate, optionsToRemove);
+    }
+
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
         return getController(property, updateContext::changeProperty, element, updateContext.isPropertyReadOnly());
     }
@@ -114,6 +165,23 @@ public class CustomCellRenderer extends CellRenderer {
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
+            },
+            getDiff: function (newList, supportReordering) {
+                if(typeof newList === 'string') {
+                    var strings = newList.split(",");
+                    var mappedList = [];
+                    for (var i = 0; i < strings.length; i++) {
+                        mappedList.push({name: strings[i], selected: false, index: i});
+                    }
+                    newList = mappedList;
+                } else if(newList == null) {
+                    newList = [];
+                }
+
+                return @CustomCellRenderer::getDiff(*)(newList, supportReordering, element);
+            },
+            isList: function () {
+                return false;
             }
         }
     }-*/;

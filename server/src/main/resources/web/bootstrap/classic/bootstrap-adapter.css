@@ -269,6 +269,6 @@
     box-shadow: unset;
 }
 
-.option-container:not(.btn-group) > .btn {
-    margin: 0.25rem 0.125rem;
+.option-btn-container:not(.btn-group) > .btn {
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
 }
