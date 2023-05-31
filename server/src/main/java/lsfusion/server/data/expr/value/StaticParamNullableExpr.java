@@ -10,7 +10,7 @@ import lsfusion.server.logics.classes.user.set.AndClassSet;
 public class StaticParamNullableExpr extends StaticNullableExpr {
 
     public StaticParamNullableExpr(ValueClass paramClass) {
-        super(paramClass.getUpSet());
+        super(paramClass != null ? paramClass.getUpSet() : null);
     }
 
     public int hash(HashContext hash) {
