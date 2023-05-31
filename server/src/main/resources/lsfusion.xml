@@ -190,6 +190,8 @@
         <property name="defaultUserTwoDigitYearStart" value="${user.defaultTwoDigitYearStart:#{null}}"/>
         <property name="defaultUserDateFormat" value="${user.defaultDateFormat:#{null}}"/>
         <property name="defaultUserTimeFormat" value="${user.defaultTimeFormat:#{null}}"/>
+
+        <property name="initTask" ref="initDBTask"/>
     </bean>
 
     <bean id="reflectionManager" class="lsfusion.server.physics.admin.reflection.controller.manager.ReflectionManager">
@@ -671,6 +673,32 @@
                 <ref bean="finalizeClassesTask"/>
                 <ref bean="finalizeTablesTask"/>
                 <ref bean="finalizeNavigatorElementsTask"/>
+            </set>
+        </property>
+    </bean>
+
+    <bean id="synchronizeDBTask" class="lsfusion.server.physics.exec.db.controller.init.SynchronizeDBTask">
+        <property name="dependencies">
+            <set>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <!-- we need tot execute it after synchronizeDB because updateStat is done there (and thus statProps are filled), and in the prereadEventActions -> getDefaultEventAction -> isValueUnique is used which uses / caches statProps  -->
+    <bean id="prereadFormEventsTask" class="lsfusion.server.logics.form.controller.init.PrereadFormEventsTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="synchronizeDBTask"/>
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="initDBTask" class="lsfusion.server.base.task.GroupTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="prereadFormEventsTask"/>
             </set>
         </property>
     </bean>

@@ -1239,20 +1239,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         } catch (ScriptParsingException e) {
             throw new ScriptParsingException("error finalizing form " + this + ":\n" + e.getMessage());
         }
-
-        // not sure if we need this, because the platform at first shows optimistic list, so we won't have much benefits from this
-//        MSet<Property> mAsyncInitPropertyChanges = SetFact.mSet();
-        proceedAllEventActions((action, property) -> {
-//            if(property != null) {
-//                AsyncMapEventExec<?> asyncEventExec = action.property.getAsyncEventExec(property.optimisticAsync);
-//                if(asyncEventExec instanceof AsyncMapInput) {
-//                    InputListEntity<?, ?> list = ((AsyncMapInput<?>) asyncEventExec).list;
-//                    if(list != null)
-//                        mAsyncInitPropertyChanges.add(list.getProperty());
-//                }
-//            }
-        }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
-//        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
     }
 
     public void prereadAutoIcons() {
@@ -1618,7 +1604,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new Pair<>(this, getObjects().toRevMap());
     }
 
-    public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
+    public void prereadEventActions() {
+        // not sure if we need this, because the platform at first shows optimistic list, so we won't have much benefits from this
+//        MSet<Property> mAsyncInitPropertyChanges = SetFact.mSet();
+        prereadEventActions((action, property) -> {
+//            if(property != null) {
+//                AsyncMapEventExec<?> asyncEventExec = action.property.getAsyncEventExec(property.optimisticAsync);
+//                if(asyncEventExec instanceof AsyncMapInput) {
+//                    InputListEntity<?, ?> list = ((AsyncMapInput<?>) asyncEventExec).list;
+//                    if(list != null)
+//                        mAsyncInitPropertyChanges.add(list.getProperty());
+//                }
+//            }
+        }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
+//        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
+    }
+
+    private void prereadEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
             for(String changeEvent : propertyDraw.getAllPropertyEventActions()) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);

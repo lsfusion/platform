@@ -1037,11 +1037,16 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return calculateUsedChanges(propChanges);
     }
 
+    protected Expr aspectCalculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
+        // usePrevHeur and noUsePrevHeur
+        return ImplementTable.ignoreStatProps(calcType == CalcType.STAT_ALOT || calcType == CalcClassType.prevSameKeepIS(), () -> calculateExpr(joinImplement, calcType, propChanges, changedWhere));
+    }
+
     protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);
 
     // чтобы не было рекурсии так сделано
     public Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType) {
-        return calculateExpr(joinImplement, calcType, PropertyChanges.EMPTY, null);
+        return aspectCalculateExpr(joinImplement, calcType, PropertyChanges.EMPTY, null);
     }
 
     public static <T extends PropertyInterface> ImMap<T, Expr> getJoinValues(ImMap<T, ? extends Expr> joinImplement) {
@@ -1084,7 +1089,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return getStoredExpr(joinImplement);
             if(useSimpleIncrement()) {
                 WhereBuilder changedExprWhere = new WhereBuilder();
-                Expr changedExpr = calculateExpr(joinImplement, calcType, propChanges, changedExprWhere);
+                Expr changedExpr = aspectCalculateExpr(joinImplement, calcType, propChanges, changedExprWhere);
                 if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
                 return changedExpr.ifElse(changedExprWhere.toWhere(), getPrevExpr(joinImplement, calcType, propChanges));
             }
@@ -1096,7 +1101,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             return getVirtualTableExpr(joinImplement, AlgType.statAlotType); // тут собственно смысл в том чтобы класс брать из сигнатуры и не высчитывать
         }                    
 
-        return calculateExpr(joinImplement, calcType, propChanges, changedWhere);
+        return aspectCalculateExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
     protected Expr getStoredExpr(ImMap<T, ? extends Expr> joinImplement) {
@@ -2267,16 +2272,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         }
         return null;
     }
-    
-    public Stat getInterfaceStat() {
-        return getInterfaceStat(false);
-    }
 
     private static <T> StatKeys<KeyExpr> getStatRows(ImRevMap<T, KeyExpr> mapKeys, Where where) {
         return where.getFullStatKeys(mapKeys.valuesSet(), StatType.PROP_STATS);
     }
 
-    private Stat getInterfaceStat(boolean alotHeur) {
+    public Stat getInterfaceStat(boolean alotHeur) {
         return getInterfaceStat(MapFact.EMPTYREV(), alotHeur);
     }
     
@@ -2292,14 +2293,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         ImMap<T, Expr> innerExprs = MapFact.addExcl(innerKeys, fixedExprs); // we need some virtual values
 
         // we don't need to fight with inconsistent caches, since now finalizeProps goes after initStoredTask (because now there is a dependency finalizeProps -> initIndices to avoid problems with getIndices cache)
-        // however it seems that STAT_ALOT is needed to lower complexity in light start mode 
-        Expr expr = alotHeur ? calculateExpr(innerExprs, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(innerExprs); // check if is called after stats if filled
+        // however it seems that STAT_ALOT is needed to lower complexity in light start mode
+        // PS: actually it is still needed to avoid inconsistent caches (since ImplementTable.statProps are used and they are filled in the synchronizeDB)
+        Expr expr = alotHeur ? aspectCalculateExpr(innerExprs, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(innerExprs); // check if is called after stats if filled
 //        Expr expr = calculateStatExpr(mapKeys, alotHeur);
 
         Where where = expr.getWhere();
 
         innerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
-        return getStatRows(innerKeys, where).getRows();
+
+        ImRevMap<T, KeyExpr> fInnerKeys = innerKeys;
+        return ImplementTable.ignoreStatProps(alotHeur, () -> getStatRows(fInnerKeys, where).getRows());
     }
 
     private Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
@@ -2390,7 +2394,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
                 return false;
             return aspectDebugHasAlotKeys();
         }
-        return hasAlotKeys(getInterfaceStat());
+        return hasAlotKeys(getInterfaceStat(false));
     }
 
     protected boolean aspectDebugHasAlotKeys() {
