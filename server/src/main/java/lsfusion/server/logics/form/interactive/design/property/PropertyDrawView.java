@@ -838,7 +838,7 @@ public class PropertyDrawView extends BaseComponentView {
             if(tag == null && !entity.isList(context.entity)) {
                 if (hasFlow(context, ChangeFlowType.INPUT))
                     return "form-control";
-                else if (hasChangeAction(context))
+                else if (hasChangeAction(context) && !isCustom())
                     return "btn btn-light";
             }
         } else {

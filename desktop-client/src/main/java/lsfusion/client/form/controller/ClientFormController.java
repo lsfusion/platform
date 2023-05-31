@@ -1602,17 +1602,6 @@ public class ClientFormController implements AsyncListener {
         });
     }
 
-    public void moveGroupObject(final ClientGroupObject parentGroup, final ClientGroupObjectValue parentKey, final ClientGroupObject childGroup, final ClientGroupObjectValue childKey, final int index) throws IOException {
-        commitOrCancelCurrentEditing();
-
-        rmiQueue.syncRequest(new ProcessServerResponseRmiRequest("moveGroupObject") {
-            @Override
-            protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
-                return remoteForm.moveGroupObject(requestIndex, lastReceivedRequestIndex, parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
-            }
-        });
-    }
-
     public void revalidate() {
         formLayout.revalidate();
     }

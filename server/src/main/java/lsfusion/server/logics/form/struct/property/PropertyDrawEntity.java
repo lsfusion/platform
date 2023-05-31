@@ -8,7 +8,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
-import lsfusion.base.col.interfaces.mutable.LongMutable;
 import lsfusion.base.col.interfaces.mutable.MExclSet;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.base.col.interfaces.mutable.add.MAddSet;
@@ -294,7 +293,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                 return eventAction;
         }
 
-        ActionOrProperty<P> eventProperty = getEventProperty();
+        ActionOrProperty<P> eventProperty = getEditProperty();
         ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
 
         ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
@@ -338,14 +337,17 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
             PropertyObjectEntity<X> listProperty = (PropertyObjectEntity<X>) getDrawProperty();
             ImRevMap<ObjectEntity, PropertyInterface> listMapObjects = mapObjects.removeRev(object);
-            InputListEntity<X, PropertyInterface> list = new InputListEntity<>(listProperty.property, listProperty.mapping.innerJoin(listMapObjects));
-            ImRevMap<PropertyInterface, StaticParamNullableExpr> listMapParamExprs = listMapObjects.reverse().mapRevValues(ObjectEntity::getParamExpr);
 
             // filter orderInterfaces to only used in view and filter
             ImOrderSet<PropertyInterface> orderUsedInterfaces = listMapObjects.valuesSet().toOrderSet();
 
+            ImRevMap<PropertyInterface, StaticParamNullableExpr> listMapParamExprs = listMapObjects.reverse().mapRevValues(ObjectEntity::getParamExpr);
+            InputListEntity<X, PropertyInterface> list = new InputListEntity<>(listProperty.property, listProperty.mapping.innerJoin(listMapObjects));
+            if(!list.isValueUnique(listMapParamExprs))
+                list = null;
+
             // first parameter - object, other used orderInterfaces
-            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, listMapParamExprs, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), null, false);
+            LA<?> dialogInput = lm.addDialogInputAProp(customClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, DEFAULT_SELECTOR_EVENTSCOPE), orderUsedInterfaces, list, objectEntity -> SetFact.singleton(filter.getFilter(objectEntity)), null, false);
 
             ImOrderSet<PropertyInterface> allOrderUsedInterfaces = SetFact.addOrderExcl(SetFact.singletonOrder(objectInterface), orderUsedInterfaces);
             ActionMapImplement<?, PropertyInterface> request = PropertyFact.createRequestAction(allOrderUsedInterfaces.getSet(), dialogInput.getImplement(allOrderUsedInterfaces),
@@ -407,10 +409,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public static FormSessionScope DEFAULT_OBJECTS_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
-    private ActionOrProperty<P> getEventProperty() {
+    public ActionOrProperty<P> getEditProperty() {
         return propertyObject.property;
     }     
-    private ImRevMap<P, ObjectEntity> getEditMapping() {
+    public ImRevMap<P, ObjectEntity> getEditMapping() {
         return propertyObject.mapping;
     }     
 
@@ -418,7 +420,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings().keySet()), getKeyBindings().valueIt());
     }
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEventProperty().getContextMenuBindings(); 
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEditProperty().getContextMenuBindings();
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
@@ -446,14 +448,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public ImMap<KeyStroke, String> getKeyBindings() {
-        ImMap<KeyStroke, String> propertyKeyBindings = getEventProperty().getKeyBindings();
+        ImMap<KeyStroke, String> propertyKeyBindings = getEditProperty().getKeyBindings();
         if(keyBindings != null)
             propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
         return propertyKeyBindings;
     }
 
     public String getMouseBinding() {
-        return mouseBinding != null ? mouseBinding : getEventProperty().getMouseBinding();
+        return mouseBinding != null ? mouseBinding : getEditProperty().getMouseBinding();
     }
 
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
@@ -582,12 +584,11 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return sidBuilder.toString();        
     }
 
-    public static <P extends PropertyInterface> String createSID(ActionOrPropertyObjectEntity<?, ?> property, ImOrderSet<P> interfaces) {
-        assert property.property.isNamed();
+    public static <P extends PropertyInterface> List<String> getMapping(ActionOrPropertyObjectEntity<P, ?> property, ImOrderSet<P> interfaces) {
         List<String> mapping = new ArrayList<>();
         for (P pi : interfaces)
             mapping.add(property.mapping.getObject(pi).getSID());
-        return createSID(property.property.getName(), mapping);
+        return mapping;
     }
 
     public String getFormPath() {

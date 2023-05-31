@@ -93,6 +93,13 @@ public class CustomCellRenderer extends CellRenderer {
                     value = @GSimpleStateTableView::UNDEFINED;
                 return @CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value, property);
             },
+            changeProperty: function (propertyName, object, newValue) {
+                return @CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, {
+                    property : propertyName,
+                    object : object,
+                    value : newValue
+                }, property);
+            },
             isReadOnly: function () {
                 return isReadOnly;
             },

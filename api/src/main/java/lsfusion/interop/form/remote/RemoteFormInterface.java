@@ -64,8 +64,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse collapseGroupObject(long requestIndex, long lastReceivedRequestIndex, int groupId, byte[] bytes) throws RemoteException;
 
-    ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
-
     // events : properties
 
     ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException;

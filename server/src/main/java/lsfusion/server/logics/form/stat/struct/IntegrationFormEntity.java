@@ -1,10 +1,13 @@
 package lsfusion.server.logics.form.stat.struct;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.base.version.Version;
+import lsfusion.server.language.ScriptingLogicsModule;
+import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
@@ -27,7 +30,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
             
-    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, List<String> aliases, List<Boolean> literals, ImList<PropertyInterfaceImplement<P>> properties, PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, List<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<PropertyInterfaceImplement<P>> properties, PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super(LocalizedString.NONAME, version);
 
         final ImMap<P, ValueClass> interfaceClasses;
@@ -60,6 +63,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         MAddExclMap<String, PropertyDrawEntity> mapAliases = MapFact.mAddExclMapMax(properties.size()); // for orders
         for(int i=0,size=properties.size();i<size;i++) {
             PropertyDrawEntity propertyDraw;
+            ScriptingLogicsModule.IntegrationPropUsage propUsage = propUsages.get(i);
 
             boolean isNamed = false;
             ImSet<ObjectEntity> addObjects;
@@ -68,18 +72,19 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 PropertyMapImplement<M, P> mapProperty = (PropertyMapImplement<M, P>) property;
                 Property<M> addProperty = mapProperty.property;
                 ImRevMap<M, ObjectEntity> addMapping = mapProperty.mapping.join(mapObjects);
-                propertyDraw = addPropertyDraw(addProperty, addMapping, version);
+                propertyDraw = addPropertyDraw(addProperty, propUsage.inherited, propUsage.listInterfaces, addMapping, version);
                 addObjects = addMapping.valuesSet();
                 isNamed = addProperty.isNamed();
             } else {
                 ObjectEntity object = mapObjects.get((P)property);
                 propertyDraw = addValuePropertyDraw(LM, object, version);
                 addObjects = SetFact.singleton(object);
+                propertyDraw.setIntegrationSID(object.getIntegrationSID()); // also sID can be set, but now it's not clear what for
             }
 
-            String alias = aliases.get(i);
+            String alias = propUsage.alias;
             if(alias != null) {
-                if(literals.get(i)) {
+                if(propUsage.literal) {
                     propertyDraw.setIntegrationSID(alias);
                     alias = null;
                 } else
@@ -88,7 +93,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
                 if(!isNamed && (properties.size() - orders.size()) == 1) // if there is only one property, without name, setting default name - value
                     alias = "value";
             }
-            setFinalPropertyDrawSID(propertyDraw, alias, true);
+            setFinalPropertyDrawSID(propertyDraw, alias);
 
             propertyDraw.group = Group.NOGROUP; // without group
 

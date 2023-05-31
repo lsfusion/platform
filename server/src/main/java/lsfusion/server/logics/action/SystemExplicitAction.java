@@ -20,10 +20,6 @@ public abstract class SystemExplicitAction extends ExplicitAction {
         super(classes);
     }
 
-    protected SystemExplicitAction(ImOrderSet interfaces) {
-        super(interfaces);
-    }
-
     @Override
     protected boolean allowNulls() {
         return true;

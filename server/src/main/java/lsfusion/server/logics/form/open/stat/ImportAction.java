@@ -56,7 +56,7 @@ public abstract class ImportAction extends SystemAction {
         this.charset = charset;
     }
 
-    protected static RawFileData readFile(ObjectValue value, String charset) {
+    public static RawFileData readFile(ObjectValue value, String charset) {
         if(value instanceof DataObject)
             return ((DataObject) value).objectClass.getType().readProp(((DataObject) value).object, charset);
         return null;

@@ -652,12 +652,20 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
         }
     }
 
-    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList) {
-        assertNotUserInteractionInTransaction();
+    public InputResult getPushedInput(DataClass dataClass) {
         if(pushedAsyncResult instanceof PushAsyncInput)
             return ((PushAsyncInput) pushedAsyncResult).value;
         if(pushedAsyncResult instanceof PushExternalInput)
             return new InputResult(ObjectValue.getValue(((PushExternalInput) pushedAsyncResult).value.apply(dataClass), dataClass), null);
+        return null;
+    }
+
+    public <T extends PropertyInterface> InputResult inputUserData(DataClass dataClass, Object oldValue, boolean hasOldValue, InputListEntity<T, P> list, String customChangeFunction, InputList inputList) {
+        assertNotUserInteractionInTransaction();
+
+        InputResult pushedInput = getPushedInput(dataClass);
+        if(pushedInput != null)
+            return pushedInput;
 
         InputContext<T> inputContext = null;
         if(list != null)
