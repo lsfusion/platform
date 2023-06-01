@@ -493,13 +493,15 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <!-- we want to execute getting property list after synchronizeDB because updateStat is done there (and thus statProps are filled) because usePrevHeur / noUsePrevHeur are used in the calculating links methods, and they call getExpr, which eventually call getStatProps  -->
     <bean id="prereadApplyLinksTask" class="lsfusion.server.logics.event.init.PrereadApplyLinksTask">
-        <property name="dependencies">
+    <property name="dependencies">
             <set>
-                <ref bean="initReflectionEventsTask"/> <!-- так как в этом задании добавляются события -->
-                <ref bean="initIndicesTask"/> <!-- hideOlds -> STAT calculation -> getIndices cache  -->
-                <ref bean="setupDrillDownTask"/>
-                <ref bean="setupResetFileTask"/>
+                <!-- we don't need this dependencies since we're moving all getList to the DBManager   -->
+<!--                <ref bean="initReflectionEventsTask"/> &lt;!&ndash; так как в этом задании добавляются события &ndash;&gt;-->
+<!--                <ref bean="initIndicesTask"/> &lt;!&ndash; hideOlds -> STAT calculation -> getIndices cache  &ndash;&gt;-->
+<!--                <ref bean="setupDrillDownTask"/>-->
+<!--                <ref bean="setupResetFileTask"/>-->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -586,7 +588,8 @@
     <bean id="initClassDialogFormsTask" class="lsfusion.server.logics.classes.controller.init.InitClassDialogFormsTask">
         <property name="dependencies">
             <set>
-                <ref bean="getApplyPropertyListTask"/> <!-- because init dialog forms (and finalize forms) generates event actions, which uses getCheckProperties, thus, getPropertyList (and we don't want to run it with prereadLinks since fill/dropActinChangeProps is not thread-safe) !!! now getCheckChangeProperties doesn't use getPropertyList so can this link in theory be removed -->
+<!--                <ref bean="finalizeClassesTask"/>-->
+                <ref bean="checkDuplicateSystemElements"/> <!-- otherwise concurrent modification would occur -->
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -665,7 +668,6 @@
             <set>
                 <ref bean="checkAbstractTask"/>
                 <ref bean="initClassAggrPropsTask"/>
-                <ref bean="getSessionPropertyListTask"/>
                 <ref bean="finalizePropsTask"/>
                 <ref bean="initIndicesTask"/>
                 <ref bean="initClassDataIndicesTask"/>
@@ -677,19 +679,10 @@
         </property>
     </bean>
 
-    <bean id="synchronizeDBTask" class="lsfusion.server.physics.exec.db.controller.init.SynchronizeDBTask">
-        <property name="dependencies">
-            <set>
-            </set>
-        </property>
-        <property name="BL" ref="businessLogics"/>
-    </bean>
-
-    <!-- we need tot execute it after synchronizeDB because updateStat is done there (and thus statProps are filled), and in the prereadEventActions -> getDefaultEventAction -> isValueUnique is used which uses / caches statProps  -->
+    <!-- we need to execute it after synchronizeDB because updateStat is done there (and thus statProps are filled), and in the prereadEventActions -> getDefaultEventAction -> isValueUnique is used which uses / caches statProps  -->
     <bean id="prereadFormEventsTask" class="lsfusion.server.logics.form.controller.init.PrereadFormEventsTask">
         <property name="dependencies">
             <set>
-                <ref bean="synchronizeDBTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -698,6 +691,7 @@
     <bean id="initDBTask" class="lsfusion.server.base.task.GroupTask">
         <property name="dependencies">
             <set>
+                <ref bean="getSessionPropertyListTask"/>
                 <ref bean="prereadFormEventsTask"/>
             </set>
         </property>

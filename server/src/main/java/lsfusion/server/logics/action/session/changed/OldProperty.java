@@ -120,12 +120,6 @@ public class OldProperty<T extends PropertyInterface> extends SessionProperty<T>
     }
 
     @Override
-    public void finalizeAroundInit() {
-        super.finalizeAroundInit();
-        noUsePrevHeur(); // для multi-threading'а, возможно правильнее подсчитывать getLinks в ActionProperty, но похоже что разницы никакой, а там небольшая проблема с кжшами (links)
-    }
-
-    @Override
     public ImSet<SessionProperty> getSessionCalcDepends(boolean events) {
         if(noUsePrevHeur())
             return SetFact.EMPTY();

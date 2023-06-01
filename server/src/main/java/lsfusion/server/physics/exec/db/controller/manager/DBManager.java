@@ -69,6 +69,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
@@ -351,9 +352,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void checkIndexes(SQLSession session) throws SQLException, SQLHandledException {
         try {
-            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : getIndexesMap().entrySet()) {
+            for (Map.Entry<ImplementTable, Map<List<Field>, IndexOptions>> mapIndex : getIndexesMap().entrySet()) {
                 session.startTransaction(START_TIL, OperationOwner.unknown);
-                NamedTable table = mapIndex.getKey();
+                ImplementTable table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     session.checkIndex(table, table.keys, fields, index.getValue());
@@ -768,7 +769,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
             Expr.useCasesCount = 5;
 
         try {
-            new TaskRunner(getBusinessLogics()).runTask(initTask, logger);
+            startLogger.info("Synchronizing DB");
+            synchronizeDB();
         } catch (Exception e) {
             throw new RuntimeException("Error starting DBManager: ", e);
         }
@@ -1627,7 +1629,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
                 NamedTable table = newDBStructure.getTable(classProp.tableName);
 
-                moveObjects(sql, oldDBStructure, toCopy, i, classProp, table);
+                moveObjects(table, sql, oldDBStructure, toCopy.getValue(i), classProp, LM.baseClass);
             }
             ImMap<String, ImSet<Long>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.addMergeSet());
             for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
@@ -1675,22 +1677,25 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
                 }
 
-            ImplementTable.ignoreStatProps(() -> {
-                if (isFirstStart) {
-                    try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
-                        startLogger.info("Recalculate class stats");
-                        recalculateClassStats(session, false);
-                        apply(session);
-                    }
-                }
-                return null;
-            });
+//            not sure that it is needed (and why only classes and not all stats)
+//            ImplementTable.ignoreStatProps(() -> {
+//                if (isFirstStart) {
+//                    try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
+//                        startLogger.info("Recalculate class stats");
+//                        recalculateClassStats(session, false);
+//                        apply(session);
+//                    }
+//                }
+//                return null;
+//            });
 
             ImMap<String, Integer> tableStats = ImplementTable.reflectionStatProps(() -> {
                 startLogger.info("Updating stats");
                 return updateStats(sql, true);
             });
             ImplementTable.updatedStats = true;
+
+            new TaskRunner(getBusinessLogics()).runTask(initTask, startLogger);
 
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
@@ -1710,6 +1715,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
                 startLogger.info("Migrating reflection properties and actions");
                 migrateReflectionProperties(session, oldDBStructure);
+                apply(session);
+
                 newDBStructure.writeConcreteClasses(outDB);
 
                 try {
@@ -1722,8 +1729,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 startLogger.info("Recalculating aggregations");
                 recalculateAggregations(session, getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
                 apply(session);
+
                 recalculateProperties.addAll(recalculateStatProperties);
                 updateAggregationStats(session,recalculateProperties, tableStats);
+                apply(session);
+
                 writeDroppedColumns(session, columnsToDrop);
                 apply(session);
             }
@@ -1752,12 +1762,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> toCopy, int i, DBStoredProperty classProp, NamedTable table) throws Exception {
+    public static void moveObjects(NamedTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws Exception {
         ImplementTable.ignoreStatProps(() -> {
             QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
             Expr keyExpr = copyObjects.getMapExprs().singleValue();
             Where moveWhere = Where.FALSE();
-            ImMap<String, ImSet<Long>> copyFrom = toCopy.getValue(i);
             CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
             MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
             for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
@@ -1768,7 +1777,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
                 Where moveExprWhere = Where.FALSE();
                 for (long prevID : copyFrom.getValue(j))
-                    moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
+                    moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, baseClass.objectClass), Compare.EQUALS));
                 mExpr.add(moveExprWhere, oldExpr);
                 moveWhere = moveWhere.or(moveExprWhere);
             }
@@ -2618,7 +2627,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public int version;
         public MigrationVersion migrationVersion;
         public List<String> modulesList = new ArrayList<>();
-        public Map<NamedTable, Map<List<F>, IndexOptions>> tables = new HashMap<>();
+        public Map<NamedTable, Map<List<F>, IndexOptions>> tables = new HashMap<>(); // actually it's only ImplementTable or SerializedTable
         public List<DBStoredProperty> storedProperties = new ArrayList<>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<>();
 
@@ -2650,8 +2659,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public <P extends PropertyInterface> Map<NamedTable, Map<List<Field>, IndexOptions>> getIndexesMap() {
-        Map<NamedTable, Map<List<Field>, IndexOptions>> res = new HashMap<>();
+    public <P extends PropertyInterface> Map<ImplementTable, Map<List<Field>, IndexOptions>> getIndexesMap() {
+        Map<ImplementTable, Map<List<Field>, IndexOptions>> res = new HashMap<>();
         for (ImplementTable table : LM.tableFactory.getImplementTablesMap().valueIt()) {
             res.put(table, new HashMap<>());
         }

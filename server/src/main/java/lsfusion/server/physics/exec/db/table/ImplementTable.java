@@ -489,17 +489,6 @@ public class ImplementTable extends DBTable { // последний интерф
         }
     }
 
-    // it is assumed that statProps here are not important and they are not cached
-    // it is achieved by using specific calc types (STAT_ALOT, PREVSAMEKEEP_IS)
-    public static <T> T ignoreStatProps(boolean ignore, Supplier<T> supplier) {
-        Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
-        ImplementTable.ignoreStatProps.set(ignore ? true : null);
-        try {
-            return supplier.get();
-        } finally {
-            ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
-        }
-    }
     private static final ThreadLocal<Boolean> reflectionStatProps = new ThreadLocal<>();
     public static <T> T reflectionStatProps(Callable<T> callable) throws Exception {
         ImplementTable.reflectionStatProps.set(true);

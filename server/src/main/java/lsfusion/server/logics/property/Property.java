@@ -1038,8 +1038,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     protected Expr aspectCalculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere) {
-        // usePrevHeur and noUsePrevHeur
-        return ImplementTable.ignoreStatProps(calcType == CalcType.STAT_ALOT || calcType == CalcClassType.prevSameKeepIS(), () -> calculateExpr(joinImplement, calcType, propChanges, changedWhere));
+        ImplementTable.checkStatProps(null);
+        return calculateExpr(joinImplement, calcType, propChanges, changedWhere);
     }
 
     protected abstract Expr calculateExpr(ImMap<T, ? extends Expr> joinImplement, CalcType calcType, PropertyChanges propChanges, WhereBuilder changedWhere);
@@ -2298,13 +2298,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Expr expr = alotHeur ? aspectCalculateExpr(innerExprs, CalcType.STAT_ALOT, PropertyChanges.EMPTY, null) : getExpr(innerExprs); // check if is called after stats if filled
 //        Expr expr = calculateStatExpr(mapKeys, alotHeur);
 
-        return ImplementTable.ignoreStatProps(alotHeur, () -> {
-            Where where = expr.getWhere();
+        Where where = expr.getWhere();
 
-            ImRevMap<T, KeyExpr> fInnerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
+        ImRevMap<T, KeyExpr> fInnerKeys = innerKeys.filterInclValuesRev(BaseUtils.immutableCast(where.getOuterKeys())); // ignoring "free" keys (having free keys breaks a lot of assertions in statistic calculations)
 
-            return getStatRows(fInnerKeys, where).getRows();
-        });
+        return getStatRows(fInnerKeys, where).getRows();
     }
 
     private Stat getSelectStat(ImMap<T, StaticParamNullableExpr> fixedExprs) {
