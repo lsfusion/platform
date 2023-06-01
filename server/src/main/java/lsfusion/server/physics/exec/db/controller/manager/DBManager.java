@@ -1675,7 +1675,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
                 }
 
-            ImMap<String, Integer> tableStats = ImplementTable.reflectionStatProps(() -> {
+            ImplementTable.ignoreStatProps(() -> {
                 if (isFirstStart) {
                     try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
                         startLogger.info("Recalculate class stats");
@@ -1683,7 +1683,10 @@ public class DBManager extends LogicsManager implements InitializingBean {
                         apply(session);
                     }
                 }
+                return null;
+            });
 
+            ImMap<String, Integer> tableStats = ImplementTable.reflectionStatProps(() -> {
                 startLogger.info("Updating stats");
                 return updateStats(sql, true);
             });
