@@ -511,11 +511,7 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     public static void checkStatProps(String name) {
-        if(SystemProperties.inTestMode && !updatedStats) {
-            if(!(ignoreStatProps.get() != null || (reflectionStatProps.get() != null && (name == null || name.startsWith("Reflection_") || name.startsWith("System_"))))) {
-                throw new RuntimeException("SHOULD NOT BE");
-            }
-        }
+        assert updatedStats || ignoreStatProps.get() != null || (reflectionStatProps.get() != null && (name == null || name.startsWith("Reflection_") || name.startsWith("System_")));
     }
 
     private void checkStatProps() {
