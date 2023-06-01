@@ -1668,7 +1668,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    private void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> toCopy, int i, DBStoredProperty classProp, NamedTable table) throws SQLException, SQLHandledException {
+    private void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> toCopy, int i, DBStoredProperty classProp, NamedTable table) throws Exception {
         ImplementTable.ignoreStatProps(() -> {
             QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
             Expr keyExpr = copyObjects.getMapExprs().singleValue();
