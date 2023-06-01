@@ -1627,29 +1627,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
                 NamedTable table = newDBStructure.getTable(classProp.tableName);
 
-                QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
-                Expr keyExpr = copyObjects.getMapExprs().singleValue();
-                Where moveWhere = Where.FALSE();
-                ImMap<String, ImSet<Long>> copyFrom = toCopy.getValue(i);
-                CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
-                MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
-                for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
-                    DBStoredProperty oldClassProp = oldDBStructure.getProperty(copyFrom.getKey(j));
-                    Table oldTable = oldDBStructure.getTable(oldClassProp.tableName);
-                    mCopyFromTables.add(oldClassProp.tableName);
-
-                    Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
-                    Where moveExprWhere = Where.FALSE();
-                    for (long prevID : copyFrom.getValue(j))
-                        moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
-                    mExpr.add(moveExprWhere, oldExpr);
-                    moveWhere = moveWhere.or(moveExprWhere);
-                }
-                copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
-                copyObjects.and(moveWhere);
-
-                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
-                sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
+                moveObjects(sql, oldDBStructure, toCopy, i, classProp, table);
             }
             ImMap<String, ImSet<Long>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.addMergeSet());
             for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
@@ -1769,6 +1747,35 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             classForNameSQL();
         }
+    }
+
+    private static void moveObjects(SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImMap<String, ImSet<Long>>> toCopy, int i, DBStoredProperty classProp, NamedTable table) throws SQLException, SQLHandledException {
+        ImplementTable.ignoreStatProps(() -> {
+            QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
+            Expr keyExpr = copyObjects.getMapExprs().singleValue();
+            Where moveWhere = Where.FALSE();
+            ImMap<String, ImSet<Long>> copyFrom = toCopy.getValue(i);
+            CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
+            MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
+            for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
+                DBStoredProperty oldClassProp = oldDBStructure.getProperty(copyFrom.getKey(j));
+                Table oldTable = oldDBStructure.getTable(oldClassProp.tableName);
+                mCopyFromTables.add(oldClassProp.tableName);
+
+                Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
+                Where moveExprWhere = Where.FALSE();
+                for (long prevID : copyFrom.getValue(j))
+                    moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
+                mExpr.add(moveExprWhere, oldExpr);
+                moveWhere = moveWhere.or(moveExprWhere);
+            }
+            copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
+            copyObjects.and(moveWhere);
+
+            startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
+            sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
+            return null;
+        });
     }
 
     private void classForNameSQL() {

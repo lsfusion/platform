@@ -162,12 +162,16 @@ public class ImplementTable extends DBTable { // последний интерф
         return changesQuery.getQuery();
     }
 
-    public void moveColumn(SQLSession sql, PropertyField field, NamedTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException, SQLHandledException {
-        QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
-        Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
-        moveColumn.addProperty(field, moveExpr);
-        moveColumn.and(moveExpr.getWhere());
-        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
+    public void moveColumn(SQLSession sql, PropertyField field, NamedTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws Exception {
+        ImplementTable.ignoreStatProps(() -> {
+            QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
+            Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
+            moveColumn.addProperty(field, moveExpr);
+            moveColumn.and(moveExpr.getWhere());
+
+            sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
+            return null;
+        });
     }
 
     @NFLazy
@@ -474,6 +478,16 @@ public class ImplementTable extends DBTable { // последний интерф
 
     public static boolean updatedStats;
     private static final ThreadLocal<Boolean> ignoreStatProps = new ThreadLocal<>();
+
+    public static <T> T ignoreStatProps(Callable<T> callable) throws Exception {
+        Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
+        ImplementTable.ignoreStatProps.set(true);
+        try {
+            return callable.call();
+        } finally {
+            ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
+        }
+    }
 
     // it is assumed that statProps here are not important and they are not cached
     // it is achieved by using specific calc types (STAT_ALOT, PREVSAMEKEEP_IS)
