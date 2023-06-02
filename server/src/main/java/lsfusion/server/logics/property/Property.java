@@ -2338,14 +2338,18 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     }
 
     // it's heuristics anyway, so why not to try to guess uniqueness by name
-    private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number");
+    private static ImSet<String> predefinedValueUniqueNames = SetFact.toSet("name", "id", "number", "caption");
+
+    private boolean isPredefineValueUnique() {
+        String name = getName();
+//        return name != null && predefinedValueUniqueNames.contains(name);
+        return name != null && BaseUtils.findInCamelCase(name, predefinedValueUniqueNames::contains);
+    }
+
     public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
         assert isValueFull(fixedExprs);
-        String name = getName();
-        if(name != null && predefinedValueUniqueNames.contains(name))
-            return true;
-        return getSelectStat(fixedExprs).equals(Stat.ONE) &&
-                (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(getInterfaceStat(fixedExprs))));
+        return isPredefineValueUnique() || (getSelectStat(fixedExprs).equals(Stat.ONE) &&
+                (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(getInterfaceStat(fixedExprs)))));
     }
 
     public boolean isValueFullAndUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
