@@ -87,34 +87,34 @@ toggleVerticalNavbar () {
 }
 verticalNavbarClass = ABSTRACT STRING();
 
-useClientPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (CustomUser);
-userPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (CustomUser);
-serverPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
-pinMode '{navigator.pin.mode}' (CustomUser u) = IF useClientPinMode(u) THEN userPinMode(u) ELSE serverPinMode();
-pinMode() = pinMode(currentUser());
+useClientNavigatorPinMode '{system.events.navigator.pin.use.client}' = DATA BOOLEAN (CustomUser);
+userNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN (CustomUser);
+serverNavigatorPinMode '{navigator.pin.mode}' = DATA TBOOLEAN ();
+navigatorPinMode '{navigator.pin.mode}' (CustomUser u) = IF useClientNavigatorPinMode(u) THEN userNavigatorPinMode(u) ELSE serverNavigatorPinMode();
+navigatorPinMode() = navigatorPinMode(currentUser());
 
-pinModeCaption = (IF pinMode()
-    THEN (IF pinMode() == TFALSE
+navigatorPinModeCaption = (IF navigatorPinMode()
+    THEN (IF navigatorPinMode() == TFALSE
         THEN '{system.events.navigator.pin.all}'
         ELSE '{system.events.navigator.pin.none}')
     ELSE '{system.events.navigator.pin.navbar}') IF NOT noSystemToolbarCaptions();
-pinModeImage = IF pinMode() 
-    THEN (IF pinMode() == TFALSE 
-        THEN iconIfAvailable('pinAll.png','fa-solid fa-thumbtack') 
-        ELSE iconIfAvailable('pinNone.png','fa-solid fa-thumbtack fa-rotate-90')) 
-    ELSE iconIfAvailable('pinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
-togglePinMode () {
-    userPinMode(currentUser()) <- IF pinMode() THEN (IF pinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
-    useClientPinMode(currentUser()) <- TRUE;
+navigatorPinModeImage = IF navigatorPinMode() 
+    THEN (IF navigatorPinMode() == TFALSE 
+        THEN iconIfAvailable('navigatorPinAll.png','fa-solid fa-thumbtack') 
+        ELSE iconIfAvailable('navigatorPinNone.png','fa-solid fa-thumbtack fa-rotate-90')) 
+    ELSE iconIfAvailable('navigatorPinNavbar.png','fa-solid fa-thumbtack fa-rotate-45');
+toggleNavigatorPinMode () {
+    userNavigatorPinMode(currentUser()) <- IF navigatorPinMode() THEN (IF navigatorPinMode() == TFALSE THEN TTRUE ELSE NULL) ELSE TFALSE;
+    useClientNavigatorPinMode(currentUser()) <- TRUE;
     apply();
 }
-pinModeClass = ABSTRACT STRING();
+navigatorPinModeClass = ABSTRACT STRING();
 
 NAVIGATOR {
     NEW toggleBootstrap WINDOW system PARENT BEFORE administration HEADER bootstrapCaption() IMAGE bootstrapImage();
     NEW toggleVerticalNavbar WINDOW system PARENT BEFORE toggleBootstrap HEADER verticalNavbarCaption() IMAGE verticalNavbarImage() CLASS verticalNavbarClass();
-    NEW togglePinMode WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER pinModeCaption() IMAGE pinModeImage() CLASS pinModeClass();
-    NEW toggleColorTheme WINDOW system PARENT BEFORE togglePinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
+    NEW toggleNavigatorPinMode WINDOW system PARENT BEFORE toggleVerticalNavbar HEADER navigatorPinModeCaption() IMAGE navigatorPinModeImage() CLASS navigatorPinModeClass();
+    NEW toggleColorTheme WINDOW system PARENT BEFORE toggleNavigatorPinMode HEADER colorThemeCaption() IMAGE colorThemeImage();
 }
 
 onWebClientLoad(STRING s) += WHEN useBootstrap() AND s = 'bootstrap.min.css' THEN 1;
@@ -390,11 +390,11 @@ onClientStarted () + {
     }
 }
 
-textOnHoverClass() = IF isWebDesktop() AND NOT pinMode() THEN ' navbar-text-on-hover' ELSE '';
-verticalTextOnHoverClass() = IF isWebDesktop() AND verticalNavbar() AND NOT pinMode() THEN ' navbar-text-on-hover' ELSE '';
+textOnHoverClass() = IF isWebDesktop() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';
+verticalTextOnHoverClass() = IF isWebDesktop() AND verticalNavbar() AND NOT navigatorPinMode() THEN ' navbar-text-on-hover' ELSE '';
 
 verticalNavbarClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
-pinModeClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
+navigatorPinModeClass() += IF isWebMobile() THEN 'navbar-hidden' ELSE NULL;
 logoActionClass() += 'navbar-icon-large' + (IF isWebMobile() AND NOT useBootstrap() THEN ' navbar-hidden' ELSE '');
 logoHeader() += IF isWebMobile() OR verticalNavbar() THEN displayName() ELSE NULL;
 logoWindowClass() += 'bg-dark-subtle' + verticalTextOnHoverClass() + 
@@ -405,8 +405,8 @@ systemWindowClass() += 'bg-dark-subtle' + (IF isWebDesktop() THEN ' navbar-icon-
     (IF isWebDesktop() AND NOT verticalNavbar() THEN ' navbar-text-hidden' ELSE '') +
     (IF isWebDesktop() AND verticalNavbar() THEN ' navbar-force-align-start' ELSE '');
 formsWindowClass() += 'bg-body-tertiary' + (IF isWebMobile() OR dontShowCloseButtonOnInactiveTab() THEN ' dont-show-close-button' ELSE '');
-toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT pinMode() == TTRUE THEN ' navbar-popup-selected-hover' ELSE '');
-logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT pinMode() == TTRUE THEN ' navbar-horz navbar-popup-selected-hover' ELSE '');
+toolbarWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-popup-selected-hover' ELSE '');
+logsWindowClass() += 'bg-body-secondary' + (IF isWebDesktop() AND NOT navigatorPinMode() == TTRUE THEN ' navbar-horz navbar-popup-selected-hover' ELSE '');
 
 user '{system.events.user.session}' = DATA User (Session);
 nameUser '{system.events.user.session}' (Session session) = name(user(session));

@@ -677,7 +677,7 @@ EXTEND FORM settings
 
     OBJECTS uc = CustomUser
     PROPERTIES(uc) READONLY name, login, userRoles
-    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, useClientPinMode, pinMode, colorThemeName,
+    PROPERTIES(uc) fontSize, userUseBootstrap, userVerticalNavbar, useClientNavigatorPinMode, navigatorPinMode, colorThemeName,
                    selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
 ;
 
@@ -802,7 +802,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
         useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
         verticalNavbar = verticalNavbar(),
-        pinMode = pinMode();
+        navigatorPinMode = navigatorPinMode();
 }
 
 getClientSettings() {
