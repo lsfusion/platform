@@ -588,12 +588,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         @IdentityLazy
         public TableStatKeys getTableStatKeys() {
-            return getStatKeys(this, 100);
+            return ImplementTable.ignoreStatPropsNoException(() -> getStatKeys(this, 100));
         }
 
         @IdentityLazy
         public ImMap<PropertyField,PropStat> getStatProps() {
-            return getStatProps(this);
+            return ImplementTable.ignoreStatPropsNoException(() -> getStatProps(this));
         }
     }
 
@@ -2370,8 +2370,19 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
     public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
         assert isValueFull(fixedExprs);
-        return isPredefineValueUnique() || (getSelectStat(fixedExprs).equals(Stat.ONE) &&
-                (optimistic || (isDefaultWYSInput(getValueClass(ClassType.typePolicy)) && new Stat(Settings.get().getMinInterfaceStatForValueUnique()).less(getInterfaceStat(fixedExprs)))));
+
+        if(!isDefaultWYSInput(getValueClass(ClassType.typePolicy)))
+            return false;
+
+        if(isPredefineValueUnique())
+            return true;
+
+        if(!optimistic) {
+            if(getInterfaceStat(fixedExprs).lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueUnique())))
+                return false;
+        }
+
+        return getSelectStat(fixedExprs).equals(Stat.ONE);
     }
 
     public boolean isValueFullAndUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {

@@ -17,6 +17,7 @@ import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;

@@ -1042,8 +1042,9 @@ public abstract class LogicsModule {
 //        if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
 //            viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
 
-        if(list != null && !list.isDefaultWYSInput())
-            list = null;
+        // already checked in the isValueUnique
+//        if(list != null && !list.isDefaultWYSInput())
+//            list = null;
 
         ClassFormEntity dialogForm = customClass.getDialogForm(baseLM);
         return addDialogInputAProp(dialogForm.form, targetProp, dialogForm.object, true, orderInterfaces, scope, list, BaseUtils.immutableCast(filters.apply(dialogForm.object)), customChangeFunction, notNull);
