@@ -159,7 +159,8 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     public LP statusHttp;
     public LP statusHttpTo;
     public LP timeoutHttp;
-    
+    public LP insecureSSL;
+
     public LP<?> headers;
     public LP<?> cookies;
     public LP<?> headersTo;
@@ -514,6 +515,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         statusHttp = findProperty("statusHttp[]");
         statusHttpTo = findProperty("statusHttpTo[]");
         timeoutHttp = findProperty("timeoutHttp[]");
+        insecureSSL = findProperty("insecureSSL[]");
 
         headers = findProperty("headers[TEXT]");
         cookies = findProperty("cookies[TEXT]");

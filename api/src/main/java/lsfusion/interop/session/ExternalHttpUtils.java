@@ -10,19 +10,25 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.ssl.SSLContextBuilder;
 
 import javax.servlet.http.Cookie;
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ExternalHttpUtils {
 
-    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, Integer timeout, byte[] body,
+    public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, Integer timeout, boolean insecureSSL, byte[] body,
                                                    Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) throws IOException {
         HttpUriRequest httpRequest;
         switch (method) {
@@ -59,6 +65,15 @@ public class ExternalHttpUtils {
             configBuilder.setConnectTimeout(timeout);
             configBuilder.setConnectionRequestTimeout(timeout);
             requestBuilder.setDefaultRequestConfig(configBuilder.build());
+        }
+
+        if (insecureSSL) {
+            try {
+                requestBuilder.setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, TrustAllStrategy.INSTANCE).build());
+                requestBuilder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+            } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException e) {
+                // do nothing
+            }
         }
 
         HttpResponse response = (HttpResponse) BaseUtils.executeWithTimeout(() -> requestBuilder.build().execute(httpRequest), timeout);
