@@ -1695,8 +1695,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
             });
             ImplementTable.updatedStats = true;
 
-            new TaskRunner(getBusinessLogics()).runTask(initTask, startLogger);
-
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
             LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
@@ -1707,6 +1705,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
             for (DBConcreteClass newClass : newDBStructure.concreteClasses) {
                 newClass.ID = newClass.customClass.ID;
             }
+
+            // we need after fillIDs because isValueUnique / usePrev can call classExpr -> getClassObject which uses ID
+            new TaskRunner(getBusinessLogics()).runTask(initTask, startLogger);
 
             try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
                 startLogger.info("Writing static objects changes");
