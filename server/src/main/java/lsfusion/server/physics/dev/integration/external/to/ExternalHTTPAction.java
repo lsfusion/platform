@@ -140,12 +140,13 @@ public class ExternalHTTPAction extends CallAction {
                 }
 
                 Integer timeout = (Integer) context.getBL().LM.timeoutHttp.read(context);
+                boolean insecureSSL = context.getBL().LM.insecureSSL.read(context) != null;
 
                 ExternalHttpResponse response;
                 if (clientAction) {
-                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, timeout, body, headers, cookies, cookieStore));
+                    response = (ExternalHttpResponse) context.requestUserInteraction(new HttpClientAction(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore));
                 } else {
-                    response = ExternalHttpUtils.sendRequest(method, connectionString, timeout, body, headers, cookies, cookieStore);
+                    response = ExternalHttpUtils.sendRequest(method, connectionString, timeout, insecureSSL, body, headers, cookies, cookieStore);
                 }
 
                 ContentType contentType = response.contentType != null ? ContentType.parse(response.contentType) : ExternalUtils.APPLICATION_OCTET_STREAM;
