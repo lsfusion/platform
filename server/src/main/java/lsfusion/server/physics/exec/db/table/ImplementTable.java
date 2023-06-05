@@ -479,6 +479,16 @@ public class ImplementTable extends DBTable { // последний интерф
     public static boolean updatedStats;
     private static final ThreadLocal<Boolean> ignoreStatProps = new ThreadLocal<>();
 
+    public static <T> T ignoreStatPropsNoException(Supplier<T> supplier) {
+        Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
+        ImplementTable.ignoreStatProps.set(true);
+        try {
+            return supplier.get();
+        } finally {
+            ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
+        }
+    }
+
     public static <T> T ignoreStatProps(Callable<T> callable) throws Exception {
         Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
         ImplementTable.ignoreStatProps.set(true);
