@@ -4,15 +4,15 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
 import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
+import lsfusion.gwt.client.form.object.table.grid.view.DiffObjectInterface;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class CustomCellRenderer extends CellRenderer {
@@ -82,50 +82,26 @@ public class CustomCellRenderer extends CellRenderer {
             rerenderState(element, true);
     }
 
-    private static JavaScriptObject getOldValue(List<JavaScriptObject> oldOptionsList, int objectIndex) {
-        //find oldValue by index field
-        JavaScriptObject oldValue = null;
-        for (JavaScriptObject javaScriptObject : oldOptionsList) {
-            Integer index = GwtClientUtils.getIntegerField(javaScriptObject, "index");
-            if (index != null && index == objectIndex) {
-                oldValue = javaScriptObject;
-                oldOptionsList.remove(oldValue);
-                break;
+    private static JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering, JavaScriptObject element) {
+        return GSimpleStateTableView.getDiff(list, supportReordering, new DiffObjectInterface<JavaScriptObject, JavaScriptObject>() {
+
+            @Override
+            public JavaScriptObject getKey(JavaScriptObject object) {
+                return new JavaScriptObjectWrapper(object).get();
             }
-        }
-        return oldValue;
-    }
 
-    protected static JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering, JavaScriptObject element) {
-        List<JavaScriptObject> optionsToAdd = new ArrayList<>();
-        List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
-        List<JavaScriptObject> optionsToRemove = new ArrayList<>();
+            @Override
+            public NativeHashMap<JavaScriptObject, JavaScriptObject> getOldObjectsList() {
+                // to save a separate oldOptionsList for each element
+                JavaScriptObject oldOptionsListField = GwtClientUtils.getField(element, "oldOptionsList");
+                return oldOptionsListField != null ? GStateTableView.toObject(oldOptionsListField) : new NativeHashMap<>();
+            }
 
-        // to save a separate oldOptionsList for each element
-        JavaScriptObject oldOptionsListField = GwtClientUtils.getField(element, "oldOptionsList");
-        List<JavaScriptObject> oldOptionsList = oldOptionsListField != null ? GStateTableView.toObject(oldOptionsListField) : new ArrayList<>();
-
-        List<JavaScriptObject> mappedList = new ArrayList<>();
-        for (int i = 0; i < list.length(); i++) {
-            JavaScriptObject object = list.get(i);
-            GwtClientUtils.setField(object, "index", GStateTableView.fromDouble(i));
-            // "selected" field may be missing because in lsf field with null-value is not added to result JSON
-            if (GwtClientUtils.getField(object, "selected") == null)
-                GwtClientUtils.setField(object, "selected", GStateTableView.fromObject(false));
-
-            mappedList.add(object);
-
-            JavaScriptObject oldValue = getOldValue(oldOptionsList, i);
-            Integer oldIndex = GwtClientUtils.getIntegerField(oldValue, "index");
-            GSimpleStateTableView.fillOptions(oldValue, object, supportReordering && oldIndex != null && oldIndex != i, optionsToAdd, optionsToUpdate, optionsToRemove);
-        }
-
-        optionsToRemove.addAll(oldOptionsList);
-        oldOptionsList = mappedList;
-
-        GwtClientUtils.setField(element, "oldOptionsList", GStateTableView.fromObject(oldOptionsList));
-
-        return GSimpleStateTableView.getDiffObject(optionsToAdd, optionsToUpdate, optionsToRemove);
+            @Override
+            public void setOldObjectsList(NativeHashMap<JavaScriptObject, JavaScriptObject> optionsList) {
+                GwtClientUtils.setField(element, "oldOptionsList", GStateTableView.fromObject(optionsList));
+            }
+        });
     }
 
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
@@ -176,6 +152,12 @@ public class CustomCellRenderer extends CellRenderer {
                     newList = mappedList;
                 } else if(newList == null) {
                     newList = [];
+                } else {
+                    // "selected" field may be missing because in lsf field with null-value is not added to result JSON
+                    for (var j = 0; j < newList.length; j++) {
+                        if (newList[j].selected == null)
+                            newList[j].selected = false;
+                    }
                 }
 
                 return @CustomCellRenderer::getDiff(*)(newList, supportReordering, element);

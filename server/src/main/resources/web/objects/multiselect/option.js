@@ -35,19 +35,21 @@ function _checkBoxRadioButtonGroup(type, hasName) {
 }
 
 function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName) {
-    let isDefaultView = !isGroup && divClasses != null; // true if standard checkBox or radiobutton
-    let name = hasName ? _getRandomId(type) : null; // radiobutton must have a name attribute
+    let isButton = isGroup || divClasses == null;
+    let name = hasName ? _getRandomId() : null; // radiobutton must have a name attribute
 
-    function _getRandomId(postfix) {
-        return Math.random().toString(36).slice(2) + '_' + postfix;
+    function _getRandomId() {
+        return Math.random().toString(36).slice(2);
     }
 
-    function _getOptionElement(options, index, isInput, isInner) {
-        if (isDefaultView) {
-            let option = options.children[index];
-            return isInner ? isInput ? option.firstChild : option.lastChild : option;
-        } else {
+    /* if isInnerElement==true this is <label> or <input> element. Uses in diff.update
+    * if isInnerElement==false this is <option> element Uses in diff.remove*/
+    function _getOptionElement(options, index, isInput, isInnerElement) {
+        if (isButton) {
             return options.children[(index * 2) + (isInput ? 0 : 1)]
+        } else {
+            let option = options.children[index];
+            return isInnerElement ? isInput ? option.firstChild : option.lastChild : option;
         }
     }
 
@@ -78,10 +80,15 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
             event.preventDefault(); // is needed to prevent the click event reaching the input element.
     }
 
+    function _setCurrent(controller, option) {
+        if (option != null)
+            option.classList[controller.isCurrent(option.key) ? 'add' : 'remove']('option-item-current');
+    }
+
     return {
-        render: function (element, controller) {
+        render: function (element) {
             let options = document.createElement('div');
-            options.classList.add(isDefaultView ? "option-container" : "option-btn-container");
+            options.classList.add(isButton ? "option-btn-container" : "option-container");
             if (isGroup) {
                 options.setAttribute("role", "group");
                 if (divClasses != null)
@@ -97,11 +104,11 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
             let diff = controller.getDiff(list, true);
 
             diff.remove.forEach(rawOption => {
-                if (isDefaultView) {
-                    options.removeChild(_getOptionElement(options, rawOption.index, false, false));
-                } else {
+                if (isButton) {
                     options.removeChild(_getOptionElement(options, rawOption.index, false, false));
                     options.removeChild(_getOptionElement(options, rawOption.index, true, false));
+                } else {
+                    options.removeChild(_getOptionElement(options, rawOption.index, false, false));
                 }
             });
 
@@ -109,7 +116,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 let input = document.createElement('input');
                 inputClasses.forEach(inputClass => input.classList.add(inputClass));
                 input.type = type;
-                input.id = _getRandomId(rawOption.name);
+                input.id = _getRandomId();
                 input.setAttribute("autocomplete", 'off');
 
                 if (name != null)
@@ -123,31 +130,15 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 label.innerText = rawOption.name;
                 label.selected = rawOption.selected
 
-
                 label.key = rawOption;
-                label.addEventListener('click', function (event) {
-                    let input = this.previousElementSibling;
-                    if (!(input.type === 'radio' && input.checked)) // so that the "checked" attribute is not removed from the radiobutton. because in _setSelected we directly affect the checked attribute
-                        _changeProperty(controller, this.key, this.selected, isList, event);
+                input.addEventListener('change', function () {
+                    let label = this.nextSibling;
+                    _changeProperty(controller, label.key, label.selected, isList);
                 });
 
-                // is only used for the standard representation of radiobutton and checkbox
-                if (isDefaultView) {
-                    input.addEventListener('click', function () {
-                        let label = this.nextSibling;
-                        if(!(label.selected && this.checked))
-                            _changeProperty(controller, label.key, label.selected, isList);
-                    });
-                }
-
                 let currentOptions = options.children;
-                let append = rawOption.index === (isDefaultView ? currentOptions.length : currentOptions.length / 2);
-                if (isDefaultView) {
-                    if (append)
-                        options.appendChild(_createStandaloneOptionDivElements(input, label));
-                    else
-                        options.insertBefore(_createStandaloneOptionDivElements(input, label), currentOptions[rawOption.index]);
-                } else {
+                let append = rawOption.index === (isButton ? currentOptions.length / 2 : currentOptions.length);
+                if (isButton) {
                     if (append) {
                         options.appendChild(input);
                         options.appendChild(label);
@@ -155,30 +146,26 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                         options.insertBefore(input, currentOptions[rawOption.index * 2]);
                         options.insertBefore(label, currentOptions[(rawOption.index * 2) + 1]);
                     }
+                } else {
+                    if (append)
+                        options.appendChild(_createStandaloneOptionDivElements(input, label));
+                    else
+                        options.insertBefore(_createStandaloneOptionDivElements(input, label), currentOptions[rawOption.index]);
                 }
             });
 
             diff.update.forEach(rawOption => {
-                let id = _getRandomId(rawOption.name);
-
                 let label = _getOptionElement(options, rawOption.index, false, true);
                 label.innerText = rawOption.name;
                 label.selected = rawOption.selected;
-                label.setAttribute('for', id);
 
                 let input = _getOptionElement(options, rawOption.index, true, true);
-                input.id = id;
 
                 _setSelected(input, rawOption);
             });
 
             if (isList)
-                Array.from(options.children).forEach(label => {
-                    if (label.key != null && controller.isCurrent(label.key))
-                        label.classList.add("option-item-current");
-                    else
-                        label.classList.remove("option-item-current");
-                });
+                Array.from(options.children).forEach(option => _setCurrent(controller, option.tagName === 'DIV' ? option.lastChild : option.tagName === 'LABEL' ? option : null));
         }
     }
 }
