@@ -265,10 +265,14 @@ public class CacheAspect {
     private static class Waiting {}
 
     private static boolean disableCaches = false;
+    private static boolean disableStrongCaches = false;
     private static boolean checkCaches = false;
 
     public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs, Type type, CacheStats.CacheType cacheType) throws Throwable {
         if(type == Type.STRONG) {
+            if(disableStrongCaches)
+                return execute(target, thisJoinPoint, args, changedArgs);
+
 //            synchronized (lazyIdentityExecute) {
 //                IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
 //                Object result = lazyIdentityExecute.get(invocation);

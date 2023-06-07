@@ -203,7 +203,11 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
 //    }
     
     public boolean isValueUnique(ImRevMap<V, StaticParamNullableExpr> listParamExprs) {
-        return property.isValueFullAndUnique(mapValues.join(listParamExprs), true);
+        if(!Property.isDefaultWYSInput(property.getValueClass(ClassType.typePolicy)))
+            return false;
+
+        ImMap<P, StaticParamNullableExpr> fixedExprs = mapValues.join(listParamExprs);
+        return property.isValueUnique(fixedExprs, true);
     }
     
     @Override

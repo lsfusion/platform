@@ -2703,6 +2703,16 @@ public class Settings implements Cloneable {
         this.checkExcludeStatementSubstring = checkExcludeStatementSubstring;
     }
 
+    private boolean onlyUniqueObjectEvents = false;
+
+    public boolean isOnlyUniqueObjectEvents() {
+        return onlyUniqueObjectEvents;
+    }
+
+    public void setOnlyUniqueObjectEvents(boolean onlyUniqueObjectEvents) {
+        this.onlyUniqueObjectEvents = onlyUniqueObjectEvents;
+    }
+
     // temporary fallback
     private boolean removeClassesFallback = false;
 

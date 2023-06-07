@@ -124,6 +124,7 @@ import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 import static lsfusion.server.logics.property.oraction.ActionOrPropertyUtils.*;
@@ -1658,74 +1659,104 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return valueClass instanceof StringClass;
     }
     
+    private boolean checkViewObjectEvent(ValueClass valueClass, Supplier<Property<?>> viewProperty) {
+        if(!(valueClass instanceof CustomClass))
+            return true;
+
+        if(viewProperty == null)
+            return true;
+
+        if(!Settings.get().isOnlyUniqueObjectEvents())
+            return true;
+
+        // optimization of using the Supplier, since isValueFullAndUnique can be rather heavy
+        Property<?> property = viewProperty.get();
+        return property.isValueUnique(MapFact.EMPTY(), true); // optimistic because otherwise all properties will become readonly
+    }
+    
     @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
-//        ImMap<T, ValueClass> interfaceClasses = getInterfaceClasses(ClassType.tryEditPolicy); // так как в определении propertyDraw также используется FULL, а не ASSERTFULL
-//        if(interfaceClasses.size() < interfaces.size()) // не все классы есть
-//            return null;
+
+        ActionMapImplement<?, T> joinDefaultEventAction = getJoinDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
+        if(joinDefaultEventAction != null)
+            return joinDefaultEventAction;
+
+        // we want "value unique join edit object" to have "higher priority" than "interface edit object"
+        if (eventActionSID.equals(ServerResponse.EDIT_OBJECT) && interfaces.size() == 1) {
+            T singleInterface = interfaces.single();
+            ValueClass interfaceClass = getInterfaceClasses(ClassType.tryEditPolicy).get(singleInterface);
+
+            if(!checkViewObjectEvent(interfaceClass, () -> PropertyFact.createViewProperty(viewProperties.addList(this)).property))
+                return null;
+
+            if(interfaceClass != null) {
+                LA<?> defaultOpenAction = interfaceClass.getDefaultOpenAction(getBaseLM());
+                if (defaultOpenAction != null)
+                    return defaultOpenAction.getImplement(singleInterface);
+            }
+        }
+
+        return null;
+    }
+
+    public ActionMapImplement<?, T> getJoinDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+        if (eventActionSID.equals(ServerResponse.CHANGE) && !canBeChanged(false)) // optimization
+            return null;
 
         BaseLogicsModule lm = getBaseLM();
 
+        Supplier<Property<?>> viewProperty = !viewProperties.isEmpty() ? () -> PropertyFact.createViewProperty(viewProperties).property : null;
+
+        ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
+
+        if(!checkViewObjectEvent(valueClass, viewProperty))
+            return null;
+
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
-            ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            if(editClass != null) {
-                LA<?> defaultOpenAction = editClass.getDefaultOpenAction(lm);
+            if(valueClass != null) {
+                LA<?> defaultOpenAction = valueClass.getDefaultOpenAction(lm);
                 if(defaultOpenAction != null)
                     return PropertyFact.createJoinAction(defaultOpenAction.action, getImplement());
             }
 
-            if (interfaces.size() == 1 && isValueFullAndUnique(MapFact.EMPTY(), true)) {
-                T singleInterface = interfaces.single();
-                ValueClass interfaceClass = getInterfaceClasses(ClassType.tryEditPolicy).get(singleInterface);
-                if(interfaceClass != null) {
-                    LA<?> defaultOpenAction = interfaceClass.getDefaultOpenAction(getBaseLM());
-                    if(defaultOpenAction != null)
-                        return defaultOpenAction.getImplement(singleInterface);
-                }
+            return null;
+        } else {
+            assert eventActionSID.equals(ServerResponse.CHANGE);
+
+            LP targetProp = lm.getRequestedValueProperty(valueClass);
+
+            // target prop will be used to change this property
+            boolean notNull = Property.this.isNotNull();
+
+            ActionMapImplement<?, T> action;
+            if (valueClass instanceof CustomClass) {
+                InputListEntity<?, T> list = viewProperty != null ? new InputListEntity<>(viewProperty.get(), MapFact.EMPTYREV()) : null;
+
+                // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
+                LP<T> lp = new LP<>(this);
+                ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
+
+                // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
+                LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, objectEntity -> getCheckFilters(objectEntity), customChangeFunction, notNull, MapFact.EMPTYREV());
+
+                action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
+            } else {
+                // INPUT valueCLass
+                action = lm.addDataInputAProp((DataClass) valueClass, targetProp, false, this, SetFact.EMPTYORDER(),
+                        null, null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
             }
 
-            return null;
+            ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
+                    // adaptive canBeChanged, to provide better ergonomics for abstracts
+                    PropertyFact.createListAction(interfaces, PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()), action),
+                    PropertyFact.createSetAction(interfaces, getImplement(), targetProp.getImplement()), null);// INPUT scripted input generates FOR, but now it's not important
+
+            setResetAsync(result);
+
+            return result;
         }
-
-        assert eventActionSID.equals(ServerResponse.CHANGE);
-
-        if (!canBeChanged(false)) // optimization
-            return null;
-
-        ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
-
-        LP targetProp = lm.getRequestedValueProperty(valueClass);
-
-        // target prop will be used to change this property
-        boolean notNull = Property.this.isNotNull();
-
-        ActionMapImplement<?, T> action;
-        if(valueClass instanceof CustomClass) {
-            InputListEntity<?, T> list = !viewProperties.isEmpty() ? new InputListEntity<>(PropertyFact.createViewProperty(viewProperties).property, MapFact.EMPTYREV()) : null;
-
-            // DIALOG LIST valueCLass INPUT object=property(...) CONSTRAINTFILTER
-            LP<T> lp = new LP<>(this);
-            ImOrderSet<T> orderInterfaces = lp.listInterfaces; // actually we don't need all interfaces in dialog input action itself (only used one in checkfilters), but for now it doesn't matter
-
-            // selectors could be used, but since this method is used after logics initialization, getting form, check properties here is more effective
-            LA<?> inputAction = lm.addDialogInputAProp((CustomClass) valueClass, targetProp, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_CUSTOMCHANGE_EVENTSCOPE), orderInterfaces, list, objectEntity -> getCheckFilters(objectEntity), customChangeFunction, notNull);
-
-            action = ((LA<?>) lm.addJoinAProp(inputAction, BaseUtils.add(directLI(lp), getUParams(orderInterfaces.size())))).getImplement(orderInterfaces);
-        } else {
-            // INPUT valueCLass
-            action = lm.addDataInputAProp((DataClass) valueClass, targetProp, false, this, SetFact.EMPTYORDER(),
-                    null, null, BaseUtils.nvl(defaultChangeEventScope, PropertyDrawEntity.DEFAULT_DATACHANGE_EVENTSCOPE), ListFact.EMPTY(), customChangeFunction, notNull).getImplement();
-        }
-
-        ActionMapImplement<?, T> result = PropertyFact.createRequestAction(interfaces,
-                // adaptive canBeChanged, to provide better ergonomics for abstracts
-                PropertyFact.createListAction(interfaces, PropertyFact.createCheckCanBeChangedAction(interfaces, getImplement()), action),
-                PropertyFact.createSetAction(interfaces, getImplement(), targetProp.getImplement()), null);// INPUT scripted input generates FOR, but now it's not important
-
-        setResetAsync(result);
-
-        return result;
     }
+
 
     public boolean tooMuchSelectData(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return !getSelectCost(fixedExprs.keys()).rows.less(new Stat(Settings.get().getAsyncValuesMaxReadDataCompletionCount()));
@@ -2368,10 +2399,9 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return name != null && BaseUtils.findInCamelCase(name, predefinedValueUniqueNames::contains);
     }
 
+    // optimistic determines what to do when there is no statistics
     public boolean isValueUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
-        assert isValueFull(fixedExprs);
-
-        if(!isDefaultWYSInput(getValueClass(ClassType.typePolicy)))
+        if(!isValueFull(fixedExprs))
             return false;
 
         if(isPredefineValueUnique())
@@ -2385,14 +2415,11 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return getSelectStat(fixedExprs).equals(Stat.ONE);
     }
 
-    public boolean isValueFullAndUnique(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean optimistic) {
-        return isValueFull(fixedExprs) && isValueUnique(fixedExprs, optimistic);
-    }
-
     public boolean isValueFull(ImMap<T, StaticParamNullableExpr> fixedExprs) {
         return isFull(interfaces.removeIncl(fixedExprs.keys()), AlgType.statAlotType);
     }
 
+    // filter or custom view completion
     public <X extends PropertyInterface> InputListEntity<?, T> getInputList(ImMap<T, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(isValueFull(fixedExprs) && !tooMuchSelectData(fixedExprs))
             return new InputListEntity<>(this, fixedExprs.keys().toRevMap());

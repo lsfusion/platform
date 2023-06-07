@@ -316,13 +316,6 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }
         }
 
-        // we want "value edit object" to have "higher priority" than "value unique join edit object"
-        if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
-            ValueClass editClass = getValueClass(ClassType.tryEditPolicy);
-            if((editClass != null && editClass.getDefaultOpenAction(getBaseLM()) != null)) // just call open action (see super implementation)
-                return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
-        }
-
         if(isIdentity) {
             ActionMapImplement<?, T> editImplement = implementProperty.getEventAction(eventActionSID, defaultChangeEventScope, ListFact.EMPTY(), customChangeFunction);
             if(editImplement != null) {
@@ -332,10 +325,23 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }
         }
 
-        if (implementMapping.size() == 1 && implementProperty.isValueFullAndUnique(MapFact.EMPTY(), true))
+        return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
+    }
+
+    @Override
+    public ActionMapImplement<?, Interface> getJoinDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
+        // we want "value edit object" to have "higher priority" than "value unique join edit object"
+        ActionMapImplement<?, Interface> result = super.getJoinDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
+        if(result != null)
+            return result;
+
+        Property<T> implementProperty = implement.property;
+        ImMap<T, PropertyInterfaceImplement<Interface>> implementMapping = implement.mapping;
+
+        if (implementMapping.size() == 1)
             return implementMapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(implementProperty), customChangeFunction);
 
-        return super.getDefaultEventAction(eventActionSID, defaultChangeEventScope, viewProperties, customChangeFunction);
+        return null;
     }
 
     public boolean checkEquals() {
@@ -441,13 +447,13 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         if (super.isNotNull()) {
             return true;
         }
-        if (implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement &&
-                (implement.property.isValueFullAndUnique(MapFact.EMPTY(), false) || implement.property.isNotNull()))
+        if ((implement.mapping.size() == 1 && implement.mapping.singleValue() instanceof PropertyMapImplement &&
+                (implement.property.isValueUnique(MapFact.EMPTY(), true)) || implement.property.isNotNull()))
             return ((PropertyMapImplement) implement.mapping.singleValue()).property.isNotNull();
         return false;
     }
 
-
+    // filter or custom view completion
     @Override
     public <X extends PropertyInterface> InputListEntity<?, Interface> getInputList(ImMap<Interface, StaticParamNullableExpr> fixedExprs, boolean noJoin) {
         if(!noJoin) {
@@ -469,17 +475,23 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             if(mapProperty != null) {
                 ImRevMap<X, Interface> mapFixedInterfaces = mapImplements.filterFnValuesRev(fixedExprs.keys());
                 ImMap<X, StaticParamNullableExpr> mapFixedExprs = mapFixedInterfaces.join(fixedExprs);
-                // using top most property or bottom most property / property itself
-                InputListEntity<?, X> mapInputList = mapProperty.getInputList(mapFixedExprs, noJoin);
-                if (mapInputList != null && (
-                        mapProperty.isValueUnique(mapFixedExprs, true) ||
-                                !isValueFull(fixedExprs) ||
-                                !getValueStat(fixedExprs).less(mapProperty.getValueStat(mapFixedExprs)))) {
-                    return mapInputList.map(mapFixedInterfaces);
+                if(!useJoinFilterProperty(fixedExprs, mapProperty, mapFixedExprs)) {
+                    InputListEntity<?, X> mapInputList = mapProperty.getInputList(mapFixedExprs, noJoin);
+                    if (mapInputList != null) {
+                        return mapInputList.map(mapFixedInterfaces);
+                    }
                 }
             }
         }
 
         return super.getInputList(fixedExprs, noJoin);
+    }
+
+    // checks if want to remove params / wheres
+    // and it makes sense to do only when we have the same statistics
+    private <X extends PropertyInterface> boolean useJoinFilterProperty(ImMap<Interface, StaticParamNullableExpr> fixedExprs, Property<X> mapProperty, ImMap<X, StaticParamNullableExpr> mapFixedExprs) {
+        return isValueFull(fixedExprs) &&
+                getValueStat(fixedExprs).less(mapProperty.getValueStat(mapFixedExprs));
+//                && !mapProperty.isValueUnique(mapFixedExprs, true); // not sure that value unique check makes sense here
     }
 }
