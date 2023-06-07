@@ -9,11 +9,11 @@
     background: var(--component-hover-background-color);
 }
 
-.btn-check.active + .btn.btn-outline-primary.option-item {
+.btn-check:checked + .btn.btn-outline-primary.option-item {
     background: var(--selection-color);
 }
 
-.btn-check.active + .btn.btn-outline-primary.option-item:hover {
+.btn-check:checked + .btn.btn-outline-primary.option-item:hover {
     background: var(--option-selected-hover-color);
 }
 

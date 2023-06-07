@@ -53,20 +53,12 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
         }
     }
 
-    function _setSelected(input, rawOption) {
-        if (rawOption.selected) {
-            input.checked = true;
-            input.classList.add("active");
-            input.selected = true;
-        } else {
-            input.checked = false;
-            input.classList.remove("active");
-            input.selected = false;
-        }
+    function _setChecked(input, rawOption) {
+        input.checked = rawOption.selected;
     }
 
     function _changeProperty(controller, key, selected, isList, event) {
-        controller.changeProperty('selected', key, !selected ? true : null);
+        controller.changeProperty('selected', key, selected ? true : null);
         if (isList)
             controller.changeObject(key);
 
@@ -112,7 +104,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 if (name != null)
                     input.setAttribute('name', name);
 
-                _setSelected(input, rawOption);
+                _setChecked(input, rawOption);
 
                 let label = document.createElement('label');
                 labelClasses.forEach(labelClass => label.classList.add(labelClass));
@@ -120,7 +112,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 label.innerText = rawOption.name;
 
                 input.addEventListener('change', function () {
-                    _changeProperty(controller, this.key, this.selected, isList);
+                    _changeProperty(controller, this.key, this.checked, isList);
                 });
 
                 let currentOptions = options.children;
@@ -151,7 +143,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 label.innerText = rawOption.name;
 
                 let input = _getOptionElement(options, rawOption.index, true, true);
-                _setSelected(input, rawOption);
+                _setChecked(input, rawOption);
             });
 
             if (isList)

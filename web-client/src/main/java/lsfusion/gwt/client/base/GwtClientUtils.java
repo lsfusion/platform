@@ -1074,14 +1074,6 @@ public class GwtClientUtils {
         element.getStyle().setZIndex(0);
     }
 
-    public static Integer getIntegerField(JavaScriptObject object, String field) {
-        try {
-            return Integer.parseInt(getField(object, field).toString());
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public static native JavaScriptObject getGlobalField(String field)/*-{
         var jsField = $wnd[field];
         if (jsField != null)
@@ -1134,29 +1126,39 @@ public class GwtClientUtils {
         });
     }-*/;
 
-    public static native int hashJSObject(JavaScriptObject object)/*-{
-        var keys = Object.keys(object);
+    public static native int javaScriptObjectHashCode(JavaScriptObject object)/*-{
         var hash = 0;
-        for (var i = 0; i < keys.length; i++) {
-            var value = object[keys[i]];
-            if (!keys[i].startsWith('#') && value != null) {
-                var valueHash = 0;
-                var str = JSON.stringify(value);
-                for (var j = 0, len = str.length; j < len; j++) {
-                    valueHash = (valueHash << 5) - valueHash + str.charCodeAt(j);
-                    valueHash |= 0; // Convert to 32bit integer
-                }
-                hash += valueHash;
-            }
+        var str = JSON.stringify(object);
+        for (var j = 0, len = str.length; j < len; j++) {
+            hash = (hash << 5) - hash + str.charCodeAt(j);
+            hash |= 0; // Convert to 32bit integer
         }
         return hash;
     }-*/;
-    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
-        var keys = Object.keys(object1);
+
+    public static native int javaScriptObjectAllFieldsHashCode(JavaScriptObject object)/*-{
+        var keys = Object.keys(object).filter(function (objectKey) { return !objectKey.startsWith('#') });
+        var hash = 0;
         for (var i = 0; i < keys.length; i++) {
-            if (!keys[i].startsWith('#') && object1[keys[i]] !== object2[keys[i]])
-                return false;
+            var key = keys[i];
+            hash += @GwtClientUtils::javaScriptObjectHashCode(*)(key) ^ @GwtClientUtils::javaScriptObjectHashCode(*)(object[key]);
         }
+        return hash;
+    }-*/;
+
+    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
+        var object1Keys = Object.keys(object1).filter(function (object1Key) { return !object1Key.startsWith('#') });
+        var object2Keys = Object.keys(object2).filter(function (object2Key) { return !object2Key.startsWith('#') });
+
+        if (object1Keys.length !== object2Keys.length)
+            return false;
+
+        if (object1Keys.filter(function (object1Key) { return object2[object1Key] === undefined || object1[object1Key] !== object2[object1Key]}).length > 0)
+            return false;
+
+        if (object2Keys.filter(function (object2Key) {return object1[object2Key] === undefined }).length > 0)
+            return false;
+
         return true;
     }-*/;
 
@@ -1259,4 +1261,28 @@ public class GwtClientUtils {
     public static final native NodeList<Element> getElementsByClassName(String className) /*-{
         return $doc.getElementsByClassName(className);
     }-*/;
+
+    public static class JavaScriptObjectWrapper {
+        private final JavaScriptObject object;
+
+        public JavaScriptObjectWrapper(JavaScriptObject object) {
+            this.object = object;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+
+            if (!(o instanceof JavaScriptObjectWrapper))
+                return false;
+
+            return GwtClientUtils.isJSObjectPropertiesEquals(this.object, ((JavaScriptObjectWrapper) o).object);
+        }
+
+        @Override
+        public int hashCode() {
+            return javaScriptObjectAllFieldsHashCode(object);
+        }
+    }
 }
