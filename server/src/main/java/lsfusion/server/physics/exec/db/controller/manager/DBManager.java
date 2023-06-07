@@ -1595,16 +1595,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
                 }
 
-            ImplementTable.ignoreStatProps(() -> {
-                if (isFirstStart) {
-                    try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
-                        startLogger.info("Recalculate class stats");
-                        recalculateClassStats(session, false);
-                        apply(session);
-                    }
-                }
-                return null;
-            });
+//            plus it has to be after fillIDs since it uses getClassObject
+//            not sure that it is needed (and why only classes and not all stats)
+//            ImplementTable.ignoreStatProps(() -> {
+//                if (isFirstStart) {
+//                    try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
+//                        startLogger.info("Recalculate class stats");
+//                        recalculateClassStats(session, false);
+//                        apply(session);
+//                    }
+//                }
+//                return null;
+//            });
 
             ImMap<String, Integer> tableStats = ImplementTable.reflectionStatProps(() -> {
                 startLogger.info("Updating stats");
