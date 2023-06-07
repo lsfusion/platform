@@ -1200,7 +1200,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 }
 
                 if (drop) {
-                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldIndex.getValue(), Settings.get().isStartServerAnyWay());
+                    boolean isDowngradeStart = oldDBStructure.version > newDBStructure.version;
+                    sql.dropIndex(oldTable, oldTable.keys, oldIndexKeysSet, oldIndex.getValue(), Settings.get().isStartServerAnyWay(), isDowngradeStart);
                 } else {
                     if(replaced) // assert что keys совпадают
                         sql.renameIndex(oldTable, oldTable.keys, oldIndexKeysSet, SetFact.fromJavaOrderSet(oldIndexKeys), oldIndex.getValue(), Settings.get().isStartServerAnyWay());

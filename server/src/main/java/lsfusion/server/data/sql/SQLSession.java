@@ -801,6 +801,10 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         return syntax.getIndexName(fields.keyOrderSet().toString("_") + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName()));
     }
 
+    static String getFutureIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, String suffix, SQLSyntax syntax) {
+        return syntax.getIndexName(fields.keyOrderSet().toString("_") + suffix + "_idx" + (syntax.isIndexNameLocal() ? "" : "_" + table.getName()));
+    }
+   
     static String getOldIndexName(NamedTable table, ImOrderMap<String, Boolean> fields, SQLSyntax syntax) {
         return syntax.getIndexName((syntax.isIndexNameLocal() ? "" : table.getName() + "_") + fields.keyOrderSet().toString("_") + "_idx");
     }
@@ -919,25 +923,34 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         executeDDL("CREATE INDEX " + (ifNotExists ? "IF NOT EXISTS " : "") + nameIndex + " ON " + table.getName(syntax) + columnsPostfix);
     }
 
-    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists) throws SQLException {
-        String indexName = getIndexName(table, getOrderFields(keyFields, fields, indexOptions), syntax);
-        if(indexOptions.type.isLike()) {
-            dropLikeIndex(table, indexName, ifExists);
-        } else if(indexOptions.type.isMatch()) {
-            dropLikeIndex(table, indexName, ifExists);
-            dropMatchIndex(table, indexName, ifExists);
+    public void dropIndex(NamedTable table, ImOrderSet<KeyField> keyFields, ImOrderSet<String> fields, IndexOptions indexOptions, boolean ifExists, boolean isDowngrade) throws SQLException {
+        ImOrderMap<String, Boolean> strFields = getOrderFields(keyFields, fields, indexOptions);
+        String indexName = getIndexName(table, strFields, syntax);
+        if (indexOptions.type.isLike()) {
+            dropLikeIndex(table, indexName + likeIndexPostfix, ifExists || isDowngrade);
+            if (isDowngrade) {
+                dropLikeIndex(table, getFutureIndexName(table, strFields, likeIndexPostfix, syntax), true);
+            }
+        } else if (indexOptions.type.isMatch()) {
+            dropLikeIndex(table, indexName + likeIndexPostfix, ifExists || isDowngrade);
+            dropMatchIndex(table, indexName + matchIndexPostfix, ifExists || isDowngrade);
+            if (isDowngrade) {
+                dropLikeIndex(table, getFutureIndexName(table, strFields, likeIndexPostfix, syntax), true);
+                dropMatchIndex(table, getFutureIndexName(table, strFields, matchIndexPostfix, syntax), true);
+            }
         }
-        dropDefaultIndex(table, indexName, ifExists);
+        // We don't create default index with match index for tsvector in v6.
+        dropDefaultIndex(table, indexName, ifExists || (isDowngrade && indexOptions.type.isMatch()));
     }
 
     public void dropLikeIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            dropIndex(table, indexName + likeIndexPostfix, ifExists);
+            dropIndex(table, indexName, ifExists);
     }
 
     public void dropMatchIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
         if(DataAdapter.hasTrgmExtension())
-            dropIndex(table, indexName + matchIndexPostfix, ifExists);
+            dropIndex(table, indexName, ifExists);
     }
 
     public void dropDefaultIndex(NamedTable table, String indexName, boolean ifExists) throws SQLException {
