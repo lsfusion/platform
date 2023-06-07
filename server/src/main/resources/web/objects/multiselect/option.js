@@ -42,8 +42,8 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
         return Math.random().toString(36).slice(2);
     }
 
-    /* if isInnerElement==true this is <label> or <input> element. Uses in diff.update
-    * if isInnerElement==false this is <option> element Uses in diff.remove*/
+    /* if isInnerElement==true this is <label> or <input> element.
+    * if isInnerElement==false this is <div> element*/
     function _getOptionElement(options, index, isInput, isInnerElement) {
         if (isButton) {
             return options.children[(index * 2) + (isInput ? 0 : 1)]
@@ -57,18 +57,12 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
         if (rawOption.selected) {
             input.checked = true;
             input.classList.add("active");
+            input.selected = true;
         } else {
             input.checked = false;
             input.classList.remove("active");
+            input.selected = false;
         }
-    }
-
-    function _createStandaloneOptionDivElements(input, label) {
-        let div = document.createElement('div');
-        divClasses.forEach(divClass => div.classList.add(divClass));
-        div.appendChild(input);
-        div.appendChild(label);
-        return div;
     }
 
     function _changeProperty(controller, key, selected, isList, event) {
@@ -78,11 +72,6 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
 
         if (event != null)
             event.preventDefault(); // is needed to prevent the click event reaching the input element.
-    }
-
-    function _setCurrent(controller, option) {
-        if (option != null)
-            option.classList[controller.isCurrent(option.key) ? 'add' : 'remove']('option-item-current');
     }
 
     return {
@@ -117,6 +106,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 inputClasses.forEach(inputClass => input.classList.add(inputClass));
                 input.type = type;
                 input.id = _getRandomId();
+                input.key = rawOption;
                 input.setAttribute("autocomplete", 'off');
 
                 if (name != null)
@@ -128,12 +118,9 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 labelClasses.forEach(labelClass => label.classList.add(labelClass));
                 label.setAttribute('for', input.id);
                 label.innerText = rawOption.name;
-                label.selected = rawOption.selected
 
-                label.key = rawOption;
                 input.addEventListener('change', function () {
-                    let label = this.nextSibling;
-                    _changeProperty(controller, label.key, label.selected, isList);
+                    _changeProperty(controller, this.key, this.selected, isList);
                 });
 
                 let currentOptions = options.children;
@@ -147,25 +134,31 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                         options.insertBefore(label, currentOptions[(rawOption.index * 2) + 1]);
                     }
                 } else {
+                    let div = document.createElement('div');
+                    divClasses.forEach(divClass => div.classList.add(divClass));
+                    div.appendChild(input);
+                    div.appendChild(label);
+
                     if (append)
-                        options.appendChild(_createStandaloneOptionDivElements(input, label));
+                        options.appendChild(div);
                     else
-                        options.insertBefore(_createStandaloneOptionDivElements(input, label), currentOptions[rawOption.index]);
+                        options.insertBefore(div, currentOptions[rawOption.index]);
                 }
             });
 
             diff.update.forEach(rawOption => {
                 let label = _getOptionElement(options, rawOption.index, false, true);
                 label.innerText = rawOption.name;
-                label.selected = rawOption.selected;
 
                 let input = _getOptionElement(options, rawOption.index, true, true);
-
                 _setSelected(input, rawOption);
             });
 
             if (isList)
-                Array.from(options.children).forEach(option => _setCurrent(controller, option.tagName === 'DIV' ? option.lastChild : option.tagName === 'LABEL' ? option : null));
+                Array.from(list).forEach(element => {
+                    let option = _getOptionElement(options, element.index, true, true);
+                    option.classList[controller.isCurrent(option.key) ? 'add' : 'remove']('option-item-current');
+                });
         }
     }
 }

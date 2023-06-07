@@ -83,22 +83,22 @@ public class CustomCellRenderer extends CellRenderer {
     }
 
     private static JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering, JavaScriptObject element) {
-        return GSimpleStateTableView.getDiff(list, supportReordering, new DiffObjectInterface<JavaScriptObject, JavaScriptObject>() {
+        return GSimpleStateTableView.getDiff(list, supportReordering, new DiffObjectInterface<DiffObjectInterface.JavaScriptObjectWrapper, JavaScriptObject>() {
 
             @Override
-            public JavaScriptObject getKey(JavaScriptObject object) {
-                return new JavaScriptObjectWrapper(object).get();
+            public JavaScriptObjectWrapper getKey(JavaScriptObject object) {
+                return new JavaScriptObjectWrapper(object);
             }
 
             @Override
-            public NativeHashMap<JavaScriptObject, JavaScriptObject> getOldObjectsList() {
+            public NativeHashMap<JavaScriptObjectWrapper, JavaScriptObject> getOldObjectsList() {
                 // to save a separate oldOptionsList for each element
                 JavaScriptObject oldOptionsListField = GwtClientUtils.getField(element, "oldOptionsList");
                 return oldOptionsListField != null ? GStateTableView.toObject(oldOptionsListField) : new NativeHashMap<>();
             }
 
             @Override
-            public void setOldObjectsList(NativeHashMap<JavaScriptObject, JavaScriptObject> optionsList) {
+            public void setOldObjectsList(NativeHashMap<JavaScriptObjectWrapper, JavaScriptObject> optionsList) {
                 GwtClientUtils.setField(element, "oldOptionsList", GStateTableView.fromObject(optionsList));
             }
         });
@@ -147,10 +147,10 @@ public class CustomCellRenderer extends CellRenderer {
                     var strings = newList.split(",");
                     var mappedList = [];
                     for (var i = 0; i < strings.length; i++) {
-                        mappedList.push({name: strings[i], selected: false, index: i});
+                        mappedList.push({name: strings[i], selected: false});
                     }
                     newList = mappedList;
-                } else if(newList == null) {
+                } else if(newList == null || newList.length === 1 && newList[0] == null) { // if there was one object and it was set by "JSON FROM" operator, when you delete it you get an array of one object - [null] in newList;
                     newList = [];
                 } else {
                     // "selected" field may be missing because in lsf field with null-value is not added to result JSON

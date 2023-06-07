@@ -4,10 +4,6 @@
     flex-flow: row wrap;
 }
 
-.btn.btn-outline-primary.option-item {
-    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
-}
-
 .option-btn-container:not(.btn-group) .btn.btn-outline-primary.option-item:hover {
     border: 1px solid var(--component-hover-border-color);
     background: var(--component-hover-background-color);
@@ -35,7 +31,6 @@
     margin: 0;
 }
 
-/*todo ??*/
 .option-btn-container.btn-group {
     padding: 0.5em;
 }

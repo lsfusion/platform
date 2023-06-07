@@ -264,11 +264,3 @@
 .panel-container.form-switch {
     padding-left: unset;
 }
-
-.form-check-input:focus {
-    box-shadow: unset;
-}
-
-.option-btn-container:not(.btn-group) > .btn {
-    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
-}

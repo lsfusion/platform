@@ -1134,6 +1134,23 @@ public class GwtClientUtils {
         });
     }-*/;
 
+    public static native int hashJSObject(JavaScriptObject object)/*-{
+        var keys = Object.keys(object);
+        var hash = 0;
+        for (var i = 0; i < keys.length; i++) {
+            var value = object[keys[i]];
+            if (!keys[i].startsWith('#') && value != null) {
+                var valueHash = 0;
+                var str = JSON.stringify(value);
+                for (var j = 0, len = str.length; j < len; j++) {
+                    valueHash = (valueHash << 5) - valueHash + str.charCodeAt(j);
+                    valueHash |= 0; // Convert to 32bit integer
+                }
+                hash += valueHash;
+            }
+        }
+        return hash;
+    }-*/;
     public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
         var keys = Object.keys(object1);
         for (var i = 0; i < keys.length; i++) {
@@ -1241,9 +1258,5 @@ public class GwtClientUtils {
 
     public static final native NodeList<Element> getElementsByClassName(String className) /*-{
         return $doc.getElementsByClassName(className);
-    }-*/;
-
-    public static native JsArrayString getKeys(JavaScriptObject object)/*-{
-        return Object.keys(object);
     }-*/;
 }

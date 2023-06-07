@@ -1,0 +1,3 @@
+.option-btn-container:not(.btn-group) > .btn {
+    margin: var(--border-comp-vert-padding) var(--border-comp-horz-padding);
+}
