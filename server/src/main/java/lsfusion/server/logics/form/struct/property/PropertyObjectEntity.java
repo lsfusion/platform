@@ -76,7 +76,8 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
     public boolean isValueUnique(GroupObjectEntity grid) {
         // remapping all objects except ones in the grid
-        return property.isValueFullAndUnique(mapping.filterFnValuesRev(value -> grid != null && !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr), false);
+        ImMap<P, StaticParamNullableExpr> fixedExprs = mapping.filterFnValuesRev(value -> grid != null && !grid.getObjects().contains(value)).mapRevValues(ObjectEntity::getParamExpr);
+        return property.isValueUnique(fixedExprs, false); // false because all sticky columns look bad
     }
 
     @Override

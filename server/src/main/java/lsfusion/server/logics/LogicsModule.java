@@ -27,6 +27,7 @@ import lsfusion.server.data.expr.formula.CustomFormulaSyntax;
 import lsfusion.server.data.expr.formula.StringConcatenateFormulaImpl;
 import lsfusion.server.data.expr.query.GroupType;
 import lsfusion.server.data.expr.query.PartitionType;
+import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
@@ -1029,13 +1030,12 @@ public abstract class LogicsModule {
         return addAction(null, new LA(new InputAction(LocalizedString.create("Input"), valueClass, targetProp, hasOldValue, orderInterfaces, contextList, contextSelector, contextActions, customEditorFunction)));
     }
 
-    public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, LP targetProp, FormSessionScope scope, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> list, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters, String customChangeFunction, boolean notNull) {
+    public <T extends PropertyInterface> LA addDialogInputAProp(CustomClass customClass, LP targetProp, FormSessionScope scope, ImOrderSet<T> orderInterfaces, InputListEntity<?, T> list, Function<ObjectEntity, ImSet<ContextFilterEntity<?, T, ObjectEntity>>> filters, String customChangeFunction, boolean notNull, ImRevMap<T, StaticParamNullableExpr> listParamExprs) {
 //        if (viewProperties.isEmpty() || viewProperties.get(0).getValueClass(ClassType.tryEditPolicy) instanceof CustomClass)
 //            viewProperties = ListFact.add(((LP<?>) getBaseLM().addCastProp(ObjectType.idClass)).property, viewProperties); // casting object class to long to provide WYS
 
-        // already checked in the isValueUnique
-//        if(list != null && !list.isDefaultWYSInput())
-//            list = null;
+        if(list != null && !list.isValueUnique(listParamExprs))
+            list = null;
 
         ClassFormEntity dialogForm = customClass.getDialogForm(baseLM);
         return addDialogInputAProp(dialogForm.form, targetProp, dialogForm.object, true, orderInterfaces, scope, list, BaseUtils.immutableCast(filters.apply(dialogForm.object)), customChangeFunction, notNull);
