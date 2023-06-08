@@ -1150,16 +1150,7 @@ public class GwtClientUtils {
         var object1Keys = Object.keys(object1).filter(function (object1Key) { return !object1Key.startsWith('#') });
         var object2Keys = Object.keys(object2).filter(function (object2Key) { return !object2Key.startsWith('#') });
 
-        if (object1Keys.length !== object2Keys.length)
-            return false;
-
-        if (object1Keys.filter(function (object1Key) { return object2[object1Key] === undefined || object1[object1Key] !== object2[object1Key]}).length > 0)
-            return false;
-
-        if (object2Keys.filter(function (object2Key) {return object1[object2Key] === undefined }).length > 0)
-            return false;
-
-        return true;
+        return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1[object1Key] !== object2[object1Key]}) !== undefined));
     }-*/;
 
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{

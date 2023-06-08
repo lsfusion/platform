@@ -1,4 +1,4 @@
-function checkBox() {
+function check() {
     return _defaultRadioCheckBox('checkbox');
 }
 
@@ -6,11 +6,11 @@ function radio() {
     return _defaultRadioCheckBox('radio', true);
 }
 
-function toggleButton() {
+function checkButton() {
     return _checkBoxRadioButtonToggle('checkbox');
 }
 
-function radioToggleButton() {
+function radioButton() {
     return _checkBoxRadioButtonToggle('radio', true);
 }
 
