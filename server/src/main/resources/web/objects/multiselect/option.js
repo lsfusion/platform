@@ -1,3 +1,8 @@
+// todo --- backward compatibility. option() should be removed in future releases ---
+function option() {
+    return checkButton();
+}
+
 function check() {
     return _defaultRadioCheckBox('checkbox');
 }
