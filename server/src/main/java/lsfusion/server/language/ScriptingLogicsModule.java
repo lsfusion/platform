@@ -248,11 +248,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes(DBManager dbManager) throws RecognitionException {
-        for (TemporaryIndexInfo info : tempIndicies) {
+        for (TemporaryIndexInfo info : tempIndexes) {
             checkIndexDifferentTables(info.params);
-            dbManager.addIndex(info.keyNames, info.dbName, info.params);
+            dbManager.addIndex(info.keyNames, info.dbName, info.indexType, info.params);
         }
-        tempIndicies.clear();
+        tempIndexes.clear();
 
         for (int i = 0; i < indexedProperties.size(); i++) {
             dbManager.addIndex(indexedProperties.get(i), indexNames.get(i), indexTypes.get(i));
@@ -4808,7 +4808,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<LP> indexedProperties = new ArrayList<>();
     private List<String> indexNames = new ArrayList<>();
     private List<IndexType> indexTypes = new ArrayList<>();
-    private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
+    private List<TemporaryIndexInfo> tempIndexes = new ArrayList<>();
             
     public void addScriptedIndex(LP lp, String dbName, IndexType indexType) {
         indexedProperties.add(lp);
@@ -4830,24 +4830,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
 
-    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps, IndexType indexType) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkIndexNecessaryProperty(lps);
         checks.checkMarkStoredProperties(lps);
         checks.checkDistinctParametersList(lps);
         checks.checkIndexNumberOfParameters(params.size(), lps);
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(value -> value.paramName);
-        tempIndicies.add(new TemporaryIndexInfo(dbName, keyNames, getParamsPlainList(lps).toArray()));
+        tempIndexes.add(new TemporaryIndexInfo(dbName, keyNames, getParamsPlainList(lps).toArray(), indexType));
     }
 
     private static class TemporaryIndexInfo {
         public String dbName;
         public ImOrderSet<String> keyNames;
         public Object[] params;
+        public IndexType indexType;
         
-        public TemporaryIndexInfo(String dbName, ImOrderSet<String> keyNames, Object[] params) {
+        public TemporaryIndexInfo(String dbName, ImOrderSet<String> keyNames, Object[] params, IndexType indexType) {
             this.dbName = dbName;
             this.keyNames = keyNames;
             this.params = params;
+            this.indexType = indexType;
         }
     }
 

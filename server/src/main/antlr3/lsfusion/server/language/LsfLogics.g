@@ -4749,13 +4749,14 @@ nonEmptyMappedPropertyOrSimpleParamList[List<TypedParameter> context] returns [L
 indexStatement
 @init {
 	List<TypedParameter> context = new ArrayList<>();
+	IndexType indexType = IndexType.DEFAULT;
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex($dbName.val, context, $list.props);
+		self.addScriptedIndex($dbName.val, context, $list.props, indexType);
 	}	
 }
-	:	'INDEX' (dbName=stringLiteralNoID)? list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
+	:	'INDEX' (dbName=stringLiteralNoID)? ('LIKE' { indexType = IndexType.LIKE; } | 'MATCH' { indexType = IndexType.MATCH; })? list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
 	;
 
 

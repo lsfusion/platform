@@ -191,10 +191,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         addIndex(keyNames, dbName, indexType, directLI(lp));
     }
 
-    public void addIndex(ImOrderSet<String> keyNames, String dbName, Object... params) {
-        addIndex(keyNames, dbName, IndexType.DEFAULT, params);
-    }
-
     public void addIndex(ImOrderSet<String> keyNames, String dbName, IndexType indexType, Object... params) {
         ImList<PropertyObjectInterfaceImplement<String>> index = ActionOrPropertyUtils.readObjectImplements(keyNames, params);
         addIndex(index, dbName, indexType);
