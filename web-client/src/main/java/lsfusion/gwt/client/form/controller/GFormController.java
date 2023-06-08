@@ -2353,7 +2353,8 @@ public class GFormController implements EditManager {
         /*if(!previewLoadingManagerSinkEvents(handler.event)) {
             return;
         }*/
-        checkChangeEvent(handler, renderElement);
+        if (renderElement != null)
+            checkChangeEvent(handler, renderElement);
 
         if(handler.consumed)
             return;
