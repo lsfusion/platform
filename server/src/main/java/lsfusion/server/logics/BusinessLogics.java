@@ -19,8 +19,10 @@ import lsfusion.base.log.DebugInfoWriter;
 import lsfusion.interop.connection.LocalePreferences;
 import lsfusion.interop.connection.TFormats;
 import lsfusion.interop.form.property.Compare;
-import lsfusion.server.base.caches.*;
+import lsfusion.server.base.caches.CacheStats;
 import lsfusion.server.base.caches.CacheStats.CacheType;
+import lsfusion.server.base.caches.IdentityLazy;
+import lsfusion.server.base.caches.IdentityStrongLazy;
 import lsfusion.server.base.controller.lifecycle.LifecycleAdapter;
 import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
@@ -182,6 +184,8 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     public TFormats tFormats;
 
+    private boolean filtersManualApplyMode;
+
     private LocalizedString.Localizer localizer;
     
     private PublicTask initTask;
@@ -239,6 +243,14 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
         this.timeFormat = timeFormat;
     }
 
+    public boolean isFiltersManualApplyMode() {
+        return filtersManualApplyMode;
+    }
+
+    public void setFiltersManualApplyMode(boolean filtersManualApplyMode) {
+        this.filtersManualApplyMode = filtersManualApplyMode;
+    }
+    
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(initTask, "initTask must be specified");

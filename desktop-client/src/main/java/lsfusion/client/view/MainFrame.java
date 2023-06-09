@@ -107,6 +107,7 @@ public abstract class MainFrame extends JFrame {
             MainController.matchSearchSeparator = clientSettings.matchSearchSeparator;
             MainController.colorPreferences = clientSettings.colorPreferences;
             MainController.useTextAsFilterSeparator = clientSettings.useTextAsFilterSeparator;
+            MainController.userFiltersManualApplyMode = clientSettings.userFiltersManualApplyMode;
             SwingDefaults.resetClientSettingsProperties();
             MainController.setClientSettingsDependentUIDefaults();
 

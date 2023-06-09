@@ -718,7 +718,8 @@ DESIGN settings {
 EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
     PROPERTIES(u) fontSize, colorThemeName,
-                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, 
+                  tableGridColor, userFiltersManualApplyMode
     OBJECTS r = DateTimePickerRanges
     PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
     
@@ -745,6 +746,7 @@ DESIGN editProfile {
                 MOVE PROPERTY(focusedCellBorderColor(u)) { fontSize = 24; }
                 MOVE PROPERTY(tableGridColor(u)) { fontSize = 24; }
             }
+            MOVE PROPERTY(userFiltersManualApplyMode(u));
             NEW predefinedRanges {
                 horizontal = TRUE;
                 MOVE BOX(r);
@@ -768,7 +770,8 @@ onStarted() + {
 }
 
 EXTEND FORM customUser
-    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor
+    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, 
+        focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, userFiltersManualApplyMode
 ;
 
 DESIGN customUser {
@@ -784,6 +787,7 @@ DESIGN customUser {
                 MOVE PROPERTY(focusedCellBorderColor(u));
                 MOVE PROPERTY(tableGridColor(u));
             }
+            MOVE PROPERTY(userFiltersManualApplyMode(u));
         }
     }
 } 

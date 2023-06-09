@@ -3000,4 +3000,14 @@ public class Settings implements Cloneable {
     public void setUseTextAsFilterSeparator(boolean useTextAsFilterSeparator) {
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
     }
+
+    private boolean userFiltersManualApplyMode = false;
+
+    public boolean isUserFiltersManualApplyMode() {
+        return userFiltersManualApplyMode;
+    }
+
+    public void setUserFiltersManualApplyMode(boolean userFiltersManualApplyMode) {
+        this.userFiltersManualApplyMode = userFiltersManualApplyMode;
+    }
 }

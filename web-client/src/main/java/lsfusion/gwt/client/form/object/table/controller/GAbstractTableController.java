@@ -235,7 +235,7 @@ public abstract class GAbstractTableController extends GPropertyController imple
 
     public void addFilter(Event event) {
         if (filter != null && filter.hasFiltersContainer()) {
-            filter.addCondition(event, false);
+            filter.addCondition(event, false, true);
             
             filter.setControlsVisible(true);
         }

@@ -518,6 +518,10 @@ button {
     margin-bottom: var(--border-padding);
 }
 
+.userFilterButton.active {
+    background: var(--selection-color);
+}
+
 .userFilterListBox, .userFilterDataPropertyValue, .userFilterSelector, .userFilterButton {
     margin-left: var(--border-padding);
 }

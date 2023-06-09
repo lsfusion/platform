@@ -139,6 +139,7 @@
                 <entry key="pivotOnlySelectedColumn" value="${settings.pivotOnlySelectedColumn:}"/>
                 <entry key="filterMatchLanguage" value="${settings.filterMatchLanguage:}"/>
                 <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
+                <entry key="userFiltersManualApplyMode" value="${settings.userFiltersManualApplyMode:}"/>
             </map>
         </property>
         </bean>

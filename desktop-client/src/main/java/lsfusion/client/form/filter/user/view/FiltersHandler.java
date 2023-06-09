@@ -8,4 +8,6 @@ public interface FiltersHandler {
     void applyFilters(boolean focusFirstComponent);
     
     void resetConditions();
+
+    boolean isManualApplyMode();
 }

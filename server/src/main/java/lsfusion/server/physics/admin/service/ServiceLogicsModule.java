@@ -52,6 +52,8 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
 
     public LP transactTimeoutUser;
     public LP inDevMode;
+    
+    public LP userFiltersManualApplyMode;
 
     public ServiceLogicsModule(BusinessLogics BL, BaseLogicsModule baseLM) throws IOException {
         super(baseLM, BL, "/system/Service.lsf");
@@ -97,5 +99,7 @@ public class ServiceLogicsModule extends ScriptingLogicsModule {
         allowExcessAllocatedBytes = findProperty("allowExcessAllocatedBytes[CustomUser]");
 
         transactTimeoutUser = findProperty("transactTimeout[User]");
+
+        userFiltersManualApplyMode = findProperty("userFiltersManualApplyMode[]");
     }
 }

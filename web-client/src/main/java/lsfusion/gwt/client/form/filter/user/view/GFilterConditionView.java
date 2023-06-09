@@ -40,6 +40,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         void removeCondition(GPropertyFilter condition);
         void applyFilters(boolean focusFirstComponent, GFilterConditionView changedView);
         void enableApplyButton();
+        boolean isManualApplyMode();
     }
 
     private static final String DELETE_ICON_PATH = "filtdel.png";
@@ -143,15 +144,15 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                enableApplyButton();
-                focusValueView();
+
+                conditionChanged(true);
             }
 
             @Override
             public void allowNullChanged(boolean value) {
                 allowNull = value;
-                enableApplyButton();
-                focusValueView();
+
+                conditionChanged(true);
             }
 
             @Override
@@ -160,8 +161,8 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                enableApplyButton();
-                focusValueView();
+
+                conditionChanged(true);
             }
         };
         compareView.setSelectedValue(condition.compare);
@@ -172,10 +173,9 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
             @Override
             public void valueChanged(Object value) {
                 super.valueChanged(value);
-                enableApplyButton();
-                if (cell.enterPressed || !GFilterConditionView.this.controlsVisible) {
-                    uiHandler.applyFilters(cell.enterPressed, GFilterConditionView.this);
-                }
+
+                conditionChanged(false);
+                
                 confirmed = true;
             }
 
@@ -222,8 +222,7 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
                     }
                     setTitle(caption);
 
-                    enableApplyButton();
-                    focusValueView();
+                    conditionChanged(true);
                 };
             }
         };
@@ -234,7 +233,18 @@ public class GFilterConditionView extends FlexPanel implements CaptionContainerH
         rightPanel.addCentered(junctionView);
     }
 
-    private void focusValueView() {
+    private void conditionChanged(boolean focusValueView) {
+        if (uiHandler.isManualApplyMode()) {
+            enableApplyButton();
+            if (focusValueView) {
+                focusValueView();
+            }
+        } else {
+            uiHandler.applyFilters(true, this);
+        }
+    }
+
+    public void focusValueView() {
         // focus value view in order to be able to apply filter by pressing Enter (even if focus was somewhere else before)
         valueView.focusOnValue();
     }

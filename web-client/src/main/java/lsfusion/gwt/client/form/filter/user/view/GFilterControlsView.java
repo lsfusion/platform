@@ -14,10 +14,12 @@ public class GFilterControlsView extends FlexPanel {
     private static final String ADD_ICON_PATH = "filtadd.png";
     private static final String APPLY_ICON_PATH = "ok.png";
     private static final String RESET_ICON_PATH = "filtreset.png";
+    private final GFiltersHandler handler;
     
     private GToolbarButton applyButton;
 
     public GFilterControlsView(GFiltersHandler handler) {
+        this.handler = handler;
         GSize buttonFlexBasis = GSize.CONST(COMPONENT_HEIGHT);
         
         if (handler.hasFiltersContainer()) {
@@ -54,5 +56,15 @@ public class GFilterControlsView extends FlexPanel {
 
     public void setApplyEnabled(boolean enabled) {
         applyButton.setEnabled(enabled);
+        applyButton.setStyleName("active", enabled);
+    }
+
+    @Override
+    public void setVisible(boolean nVisible) {
+        super.setVisible(nVisible);
+        
+        if (nVisible) {
+            applyButton.setVisible(handler.isManualApplyMode());
+        }
     }
 }

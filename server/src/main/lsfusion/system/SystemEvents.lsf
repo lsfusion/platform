@@ -243,6 +243,9 @@ isMobile() = isNativeMobile() OR isWebMobile();
 isNative() = isNativeDesktop() OR isNativeMobile();
 isWeb() = isWebDesktop() OR isWebMobile();
 
+userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
+userFiltersManualApplyMode = userFiltersManualApplyMode(currentUser());
+
 onClientStarted () + {
     IF isNativeDesktop() THEN {
         onDesktopClientStarted();

@@ -25,6 +25,7 @@ import lsfusion.gwt.client.form.object.table.controller.GTableController;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.view.Column;
+import lsfusion.gwt.client.view.MainFrame;
 
 import java.util.*;
 
@@ -158,14 +159,26 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void addCondition(Event keyEvent, boolean replace) {
-        addCondition((GFilter) null, null, keyEvent, replace, true);
+        addCondition(keyEvent, replace, false);
+    }
+
+    public void addCondition(Event keyEvent, boolean replace, boolean checkExistingFilter) {
+        addCondition(null, null, keyEvent, replace, true, checkExistingFilter);
     }
 
     public void addCondition(GFilter filter, GGroupObjectValue columnKey, boolean readSelectedValue) {
         addCondition(filter, columnKey, null, false, readSelectedValue);
     }
 
-    public void addCondition(GPropertyDraw propertyDraw, GGroupObjectValue columnKey, Event keyEvent, boolean replace, boolean readSelectedValue) {
+    public void addCondition(GPropertyDraw propertyDraw, GGroupObjectValue columnKey, Event keyEvent, boolean replace, boolean readSelectedValue, boolean checkExistingFilter) {
+        if (checkExistingFilter) {
+            GFilterConditionView existingFilter = findExistingFilter(propertyDraw, columnKey);
+            if (existingFilter != null) {
+                existingFilter.focusValueView(); // to leave focus on value with manual apply mode and be able to apply on Enter
+                existingFilter.startEditing(keyEvent);
+                return;
+            }
+        }
         addCondition(new GFilter(propertyDraw), columnKey, keyEvent, replace, readSelectedValue);
     }
 
@@ -215,6 +228,20 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
         
         applyFilters(focusFirstComponent, null);
     }
+    
+    private GFilterConditionView findExistingFilter(GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
+        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
+
+        if (!conditionViews.isEmpty()) {
+            for (GPropertyFilter filter : conditionViews.keySet()) {
+                if (filter.property.equals(column.first) && GwtSharedUtils.nullEquals(filter.columnKey, column.second)) {
+                    return conditionViews.get(filter);
+                }
+            }
+        }
+        
+        return null;
+    }
 
     private void removeConditionView(GPropertyFilter condition) {
         GFormLayout layout = logicsSupplier.getForm().getFormLayout();
@@ -251,6 +278,11 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     @Override
     public void resetConditions() {
         resetAllConditions(true);
+    }
+
+    @Override
+    public boolean isManualApplyMode() {
+        return MainFrame.userFiltersManualApplyMode && controlsVisible;
     }
 
     public void resetAllConditions(boolean focusFirstComponent) {
@@ -324,23 +356,7 @@ public abstract class GFilterController implements GFilterConditionView.UIHandle
     }
 
     public void quickEditFilter(Event keyEvent, GPropertyDraw propertyDraw, GGroupObjectValue columnKey) {
-        Pair<GPropertyDraw, GGroupObjectValue> column = getActualColumn(propertyDraw, columnKey);
-
-        GFilterConditionView columnCondition = null;
-        if (!conditionViews.isEmpty()) {
-            for (GPropertyFilter filter : conditionViews.keySet()) {
-                if (filter.property.equals(column.first) && GwtSharedUtils.nullEquals(filter.columnKey, column.second)) {
-                    columnCondition = conditionViews.get(filter);
-                    break;
-                }
-            }
-        }
-
-        if (columnCondition == null) {
-            addCondition(propertyDraw, columnKey, keyEvent, false, true);
-        } else {
-            columnCondition.startEditing(keyEvent);
-        }
+        addCondition(propertyDraw, columnKey, keyEvent, false, true, true);
     }
 
     public boolean hasFiltersContainer() {

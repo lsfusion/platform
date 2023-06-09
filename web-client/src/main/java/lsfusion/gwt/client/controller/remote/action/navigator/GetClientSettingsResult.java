@@ -23,6 +23,7 @@ public class GetClientSettingsResult implements Result {
     public String staticImagesURL;
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
+    public boolean userFiltersManualApplyMode;
 
     public GetClientSettingsResult() {
     }
@@ -30,7 +31,7 @@ public class GetClientSettingsResult implements Result {
     public GetClientSettingsResult(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms, boolean showNotDefinedStrings,
                                    boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, Map<String, String> versionedColorThemesCss,
                                    GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
-                                   boolean useTextAsFilterSeparator) {
+                                   boolean useTextAsFilterSeparator, boolean userFiltersManualApplyMode) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -47,5 +48,6 @@ public class GetClientSettingsResult implements Result {
         this.staticImagesURL = staticImagesURL;
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
+        this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
 }
