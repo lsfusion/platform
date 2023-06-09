@@ -3039,6 +3039,16 @@ public class Settings implements Cloneable {
     public void setVerticalColumnsFiltersContainer(boolean verticalColumnsFiltersContainer) {
         this.verticalColumnsFiltersContainer = verticalColumnsFiltersContainer;
     }
+    
+    private boolean userFiltersManualApplyMode = false;
+    
+    public boolean isUserFiltersManualApplyMode() {
+        return userFiltersManualApplyMode;
+    }
+    
+    public void setUserFiltersManualApplyMode(boolean userFiltersManualApplyMode) {
+        this.userFiltersManualApplyMode = userFiltersManualApplyMode;
+    }
 
     //use AND/OR text instead of vertical line as filter separator
     private boolean useTextAsFilterSeparator = false;

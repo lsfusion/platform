@@ -89,6 +89,8 @@ public class MainFrame implements EntryPoint {
     public static boolean useTextAsFilterSeparator;
     
     public static boolean verticalNavbar;
+    
+    public static boolean userFiltersManualApplyMode;
 
     // async dispatch
     public <T extends Result> long asyncDispatch(final ExecuteNavigatorAction action, RequestCountingAsyncCallback<ServerResponseResult> callback) {
@@ -588,6 +590,7 @@ public class MainFrame implements EntryPoint {
                 dateTimeFormat = gClientSettings.dateFormat + " " + gClientSettings.timeFormat;
                 preDefinedDateRangesNames = gClientSettings.preDefinedDateRangesNames;
                 useTextAsFilterSeparator = gClientSettings.useTextAsFilterSeparator;
+                userFiltersManualApplyMode = gClientSettings.userFiltersManualApplyMode;
                 
                 verticalNavbar = gClientSettings.verticalNavbar;
 

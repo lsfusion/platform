@@ -13,10 +13,12 @@ public class FilterControlsView extends FlexPanel {
     public static final String ADD_ICON_PATH = "filtadd.png";
     public static final String APPLY_ICON_PATH = "ok.png";
     public static final String RESET_ICON_PATH = "filtreset.png";
-    
+    private final FiltersHandler handler;
+
     private ToolbarGridButton applyButton;
 
     public FilterControlsView(FiltersHandler handler) {
+        this.handler = handler;
         setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
         
         if (handler.hasFiltersContainer()) {
@@ -36,5 +38,15 @@ public class FilterControlsView extends FlexPanel {
     
     public void setApplyEnabled(boolean enabled) {
         applyButton.setEnabled(enabled);
+        applyButton.showBackground(enabled);
+    }
+
+    @Override
+    public void setVisible(boolean nVisible) {
+        super.setVisible(nVisible);
+
+        if (nVisible) {
+            applyButton.setVisible(handler.isManualApplyMode());
+        }
     }
 }

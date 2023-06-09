@@ -8,4 +8,6 @@ public interface GFiltersHandler {
     void applyFilters();
 
     void resetConditions();
+    
+    boolean isManualApplyMode();
 }

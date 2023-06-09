@@ -9,3 +9,7 @@
 .filter-controls {
     margin: 0;
 }
+
+.filter-controls .btn.filter-button.active {
+    background: var(--selection-color);
+}

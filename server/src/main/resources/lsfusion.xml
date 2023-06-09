@@ -140,6 +140,7 @@
                 <entry key="filterMatchLanguage" value="${settings.filterMatchLanguage:}"/>
                 <entry key="tsVectorDictionaryLanguage" value="${settings.tsVectorDictionaryLanguage:}"/>
                 <entry key="verticalColumnsFiltersContainer" value="${settings.verticalColumnsFiltersContainer:}"/>
+                <entry key="userFiltersManualApplyMode" value="${settings.userFiltersManualApplyMode:}"/>
                 <entry key="defaultAutoImageRankingThreshold" value="${settings.defaultAutoImageRankingThreshold:}"/>
                 <entry key="defaultNavigatorImageRankingThreshold" value="${settings.defaultNavigatorImageRankingThreshold:}"/>
                 <entry key="defaultFormImageRankingThreshold" value="${settings.defaultFormImageRankingThreshold:}"/>
