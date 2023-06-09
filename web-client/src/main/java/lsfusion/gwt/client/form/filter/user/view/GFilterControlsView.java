@@ -12,10 +12,12 @@ import static lsfusion.gwt.client.view.StyleDefaults.COMPONENT_HEIGHT;
 
 public class GFilterControlsView extends FlexPanel {
     private static final ClientMessages messages = ClientMessages.Instance.get();
+    private final GFiltersHandler handler;
 
     private GToolbarButton applyButton;
 
     public GFilterControlsView(GFiltersHandler handler) {
+        this.handler = handler;
         addStyleName("filter-controls btn-group btn-toolbar");
         
         GSize buttonFlexBasis = GSize.CONST(COMPONENT_HEIGHT);
@@ -54,5 +56,15 @@ public class GFilterControlsView extends FlexPanel {
 
     public void setApplyEnabled(boolean enabled) {
         applyButton.setEnabled(enabled);
+        applyButton.setStyleName("active", enabled);
+    }
+
+    @Override
+    public void setVisible(boolean nVisible) {
+        super.setVisible(nVisible);
+        
+        if (nVisible) {
+            applyButton.setVisible(handler.isManualApplyMode());
+        }
     }
 }

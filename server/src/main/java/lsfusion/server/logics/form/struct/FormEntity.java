@@ -853,20 +853,29 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
                                                                                ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        String propertySID = null;
-        if (propertyImplement.property.isNamed()) 
-            propertySID = PropertyDrawEntity.createSID(propertyImplement, interfaces);
-        return addPropertyDraw(propertyImplement, formPath, propertySID, null, location, version);
+        return addPropertyDraw(propertyImplement, formPath, null, interfaces, location, version);
     }
-    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
-                                                                               String propertySID, ActionOrProperty inheritedProperty, ComplexLocation<PropertyDrawEntity> location, Version version) {
-        if(inheritedProperty == null)
-            inheritedProperty = propertyImplement.property;
+    public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
+                                                                               Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
 
+        ActionOrProperty inheritedProperty;
+        List<String> inheritedInterfaces;
+        if(inherited != null) {
+            inheritedProperty = inherited.first;
+            inheritedInterfaces = inherited.second;
+        } else {
+            inheritedProperty = propertyImplement.property;
+            inheritedInterfaces = PropertyDrawEntity.getMapping(propertyImplement, interfaces);
+        }
+
+        String propertySID;
         String integrationSID;
-        if(propertySID != null)
+
+        if (inheritedProperty.isNamed()) {
+            propertySID = PropertyDrawEntity.createSID(inheritedProperty.getName(), inheritedInterfaces);
+
             integrationSID = inheritedProperty.getName();
-        else {
+        } else {
             propertySID = "propertyDraw" + version.getOrder() + propertyDraws.size(version);
 
             integrationSID = propertySID;
@@ -922,12 +931,25 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return null;
     }
 
+    public PropertyDrawEntity<?> getPropertyDrawIntegration(String sID) {
+        for (PropertyDrawEntity propertyDraw : getPropertyDrawsIt()) {
+            if (BaseUtils.nullEquals(propertyDraw.getIntegrationSID(), sID)) {
+                return propertyDraw;
+            }
+        }
+
+        return null;
+    }
+
     public PropertyDrawEntity<?> getPropertyDraw(String sid, Version version) {
+        return getPropertyDraw(sid, version, null);
+    }
+    public PropertyDrawEntity<?> getPropertyDraw(String sid, Version version, PropertyDrawEntity except) {
         if (sid == null) {
             return null;
         }
         for (PropertyDrawEntity propertyDraw : getNFPropertyDrawsIt(version)) {
-            if (sid.equals(propertyDraw.getSID())) {
+            if (sid.equals(propertyDraw.getSID()) && propertyDraw != except) {
                 return propertyDraw;
             }
         }
@@ -964,26 +986,19 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         }
     }
 
-    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias, boolean ignoreAlreadyDefinedCheck) throws AlreadyDefined {
-        String newSID = (alias == null ? property.getSID() : alias);
-        if (!ignoreAlreadyDefinedCheck) {
-            property.setSID(null);
-            PropertyDrawEntity drawEntity;
-            if ((drawEntity = getPropertyDraw(newSID, Version.current())) != null) {
-                throw new AlreadyDefined(getCanonicalName(), newSID, drawEntity.getFormPath());
-            }
-        }
-        property.setSID(newSID);
-
-        // has to be done somewhere in open operator, because interactive forms can have properties with the same name 
-//        String newIntegrationSID = (alias == null ? property.getIntegrationSID() : alias);
-//        property.setIntegrationSID(null);
-//        if ((drawEntity = getPropertyDrawIntegration(newIntegrationSID, property, Version.CURRENT)) != null) {
-//            throw new AlreadyDefined(getCanonicalName(), newIntegrationSID, drawEntity.getFormPath());
-//        }
-//        property.setIntegrationSID(newIntegrationSID);
-        if(alias != null)
+    public void setFinalPropertyDrawSID(PropertyDrawEntity property, String alias) {
+        if(alias != null) {
+            property.setSID(alias);
             property.setIntegrationSID(alias);
+        }
+    }
+
+    public void checkAlreadyDefined(PropertyDrawEntity property, String alias) throws AlreadyDefined {
+        String newSID = (alias == null ? property.getSID() : alias);
+        PropertyDrawEntity drawEntity;
+        if ((drawEntity = getPropertyDraw(newSID, Version.current(), property)) != null) {
+            throw new AlreadyDefined(getCanonicalName(), newSID, drawEntity.getFormPath());
+        }
     }
 
 
@@ -1224,20 +1239,6 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         } catch (ScriptParsingException e) {
             throw new ScriptParsingException("error finalizing form " + this + ":\n" + e.getMessage());
         }
-
-        // not sure if we need this, because the platform at first shows optimistic list, so we won't have much benefits from this
-//        MSet<Property> mAsyncInitPropertyChanges = SetFact.mSet();
-        proceedAllEventActions((action, property) -> {
-//            if(property != null) {
-//                AsyncMapEventExec<?> asyncEventExec = action.property.getAsyncEventExec(property.optimisticAsync);
-//                if(asyncEventExec instanceof AsyncMapInput) {
-//                    InputListEntity<?, ?> list = ((AsyncMapInput<?>) asyncEventExec).list;
-//                    if(list != null)
-//                        mAsyncInitPropertyChanges.add(list.getProperty());
-//                }
-//            }
-        }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
-//        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
     }
 
     public void prereadAutoIcons() {
@@ -1603,7 +1604,23 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         return new Pair<>(this, getObjects().toRevMap());
     }
 
-    public void proceedAllEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
+    public void prereadEventActions() {
+        // not sure if we need this, because the platform at first shows optimistic list, so we won't have much benefits from this
+//        MSet<Property> mAsyncInitPropertyChanges = SetFact.mSet();
+        prereadEventActions((action, property) -> {
+//            if(property != null) {
+//                AsyncMapEventExec<?> asyncEventExec = action.property.getAsyncEventExec(property.optimisticAsync);
+//                if(asyncEventExec instanceof AsyncMapInput) {
+//                    InputListEntity<?, ?> list = ((AsyncMapInput<?>) asyncEventExec).list;
+//                    if(list != null)
+//                        mAsyncInitPropertyChanges.add(list.getProperty());
+//                }
+//            }
+        }); // need this to generate default event actions (which will generate auto forms, and for example fill GroupObjectEntity.FILTER props, what is important to do before form is used)
+//        asyncInitPropertyChanges = mAsyncInitPropertyChanges.immutable();
+    }
+
+    private void prereadEventActions(BiConsumer<ActionObjectEntity<?>, PropertyDrawEntity<?>> consumer) {
         for(PropertyDrawEntity<?> propertyDraw : getPropertyDrawsIt()) {
             for(String changeEvent : propertyDraw.getAllPropertyEventActions()) {
                 ActionObjectEntity<?> editAction = propertyDraw.getEventAction(changeEvent, this);

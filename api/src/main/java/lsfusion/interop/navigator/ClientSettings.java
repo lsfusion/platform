@@ -32,7 +32,8 @@ public class ClientSettings implements Serializable {
     public List<Pair<String, RawFileData>> mainResourcesAfterSystem;
     
     public boolean verticalNavbar;
-            
+    public boolean userFiltersManualApplyMode;
+
 
     public ClientSettings(LocalePreferences localePreferences, String currentUserName, Integer fontSize, boolean busyDialog,
                           long busyDialogTimeout, boolean useRequestTimeout, boolean devMode, String projectLSFDir,
@@ -40,7 +41,7 @@ public class ClientSettings implements Serializable {
                           boolean pivotOnlySelectedColumn, String matchSearchSeparator,
                           ColorTheme colorTheme, boolean useBootstrap, ColorPreferences colorPreferences, String[] preDefinedDateRangesNames,
                           boolean useTextAsFilterSeparator, List<Pair<String, RawFileData>> mainResourcesBeforeSystem, 
-                          List<Pair<String, RawFileData>> mainResourcesAfterSystem, boolean verticalNavbar) {
+                          List<Pair<String, RawFileData>> mainResourcesAfterSystem, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
         this.localePreferences = localePreferences;
         this.currentUserName = currentUserName;
         this.fontSize = fontSize;
@@ -62,5 +63,6 @@ public class ClientSettings implements Serializable {
         this.mainResourcesBeforeSystem = mainResourcesBeforeSystem;
         this.mainResourcesAfterSystem = mainResourcesAfterSystem;
         this.verticalNavbar = verticalNavbar;
+        this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
 }

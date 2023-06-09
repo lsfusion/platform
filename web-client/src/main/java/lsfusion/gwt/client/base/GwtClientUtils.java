@@ -62,7 +62,7 @@ public class GwtClientUtils {
         MainFrame.cleanRemote(() -> Window.open(GwtClientUtils.getLogoutUrl(), "_self", null), connectionLost);
     }
 
-    public static void downloadFile(String name, boolean autoPrint, Integer autoPrintTimeout) {
+    public static void openFile(String name, boolean autoPrint, Integer autoPrintTimeout) {
         if (name != null) {
             JavaScriptObject window = openWindow(getAppDownloadURL(name));
             if (autoPrint)
@@ -70,8 +70,24 @@ public class GwtClientUtils {
         }
     }
 
+    public static void downloadFile(String fileUrl) {
+        if (fileUrl != null)
+            fileDownload(getAppDownloadURL(fileUrl));
+    }
+
     public static native JavaScriptObject openWindow(String url)/*-{
         return $wnd.open(url);
+    }-*/;
+
+    //js does not allow to download files. use the solution from https://stackoverflow.com/questions/3916191/download-data-url-file
+    public static native void fileDownload(String url)/*-{
+        var document = $wnd.document;
+        var downloadLink = document.createElement("a");
+        downloadLink.setAttribute("download", "");
+        downloadLink.href = url;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
     }-*/;
 
     public static native void print(JavaScriptObject window, Integer timeout)/*-{
@@ -1110,13 +1126,31 @@ public class GwtClientUtils {
         });
     }-*/;
 
-    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
-        var keys = Object.keys(object1);
-        for (var i = 0; i < keys.length; i++) {
-            if (!keys[i].startsWith('#') && object1[keys[i]] !== object2[keys[i]])
-                return false;
+    public static native int javaScriptObjectHashCode(JavaScriptObject object)/*-{
+        var hash = 0;
+        var str = JSON.stringify(object);
+        for (var j = 0, len = str.length; j < len; j++) {
+            hash = (hash << 5) - hash + str.charCodeAt(j);
+            hash |= 0; // Convert to 32bit integer
         }
-        return true;
+        return hash;
+    }-*/;
+
+    public static native int javaScriptObjectAllFieldsHashCode(JavaScriptObject object)/*-{
+        var keys = Object.keys(object).filter(function (objectKey) { return !objectKey.startsWith('#') });
+        var hash = 0;
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            hash += @GwtClientUtils::javaScriptObjectHashCode(*)(key) ^ @GwtClientUtils::javaScriptObjectHashCode(*)(object[key]);
+        }
+        return hash;
+    }-*/;
+
+    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
+        var object1Keys = Object.keys(object1).filter(function (object1Key) { return !object1Key.startsWith('#') });
+        var object2Keys = Object.keys(object2).filter(function (object2Key) { return !object2Key.startsWith('#') });
+
+        return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1[object1Key] !== object2[object1Key]}) !== undefined));
     }-*/;
 
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
@@ -1218,4 +1252,28 @@ public class GwtClientUtils {
     public static final native NodeList<Element> getElementsByClassName(String className) /*-{
         return $doc.getElementsByClassName(className);
     }-*/;
+
+    public static class JavaScriptObjectWrapper {
+        private final JavaScriptObject object;
+
+        public JavaScriptObjectWrapper(JavaScriptObject object) {
+            this.object = object;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+
+            if (!(o instanceof JavaScriptObjectWrapper))
+                return false;
+
+            return GwtClientUtils.isJSObjectPropertiesEquals(this.object, ((JavaScriptObjectWrapper) o).object);
+        }
+
+        @Override
+        public int hashCode() {
+            return javaScriptObjectAllFieldsHashCode(object);
+        }
+    }
 }

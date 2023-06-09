@@ -287,10 +287,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         };
     }
 
-    public void gainedFocus(FormInstance form) {
-        //todo: не нужно, так что позже можно удалить
-    }
-
     public static void updateOpenFormCount(BusinessLogics businessLogics, DataSession session, ExecutionStack stack) {
         try {
             List<Pair<DataObject, String>> openForms;

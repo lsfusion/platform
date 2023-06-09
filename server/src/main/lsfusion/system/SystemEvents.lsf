@@ -381,6 +381,9 @@ noSystemToolbarCaptions() += isNativeDesktop();
 dontShowCloseButtonOnInactiveTab '{service.dont.show.close.button.on.inactive.tab}' = DATA BOOLEAN(CustomUser);
 dontShowCloseButtonOnInactiveTab = dontShowCloseButtonOnInactiveTab(currentUser());
 
+userFiltersManualApplyMode '{service.user.filters.manual.apply.mode}' = DATA TBOOLEAN (CustomUser);
+userFiltersManualApplyMode = userFiltersManualApplyMode(currentUser());
+
 onClientStarted () + {
     IF isNativeDesktop() THEN {
         onDesktopClientStarted();

@@ -1489,7 +1489,7 @@ public class GFormController implements EditManager {
         syncDispatch(new GroupReport(groupObjectID, getUserPreferences()), new CustomErrorHandlingCallback<GroupReportResult>() {
             @Override
             public void onSuccess(GroupReportResult result) {
-                GwtClientUtils.downloadFile(result.filename, false, null);
+                GwtClientUtils.openFile(result.filename, false, null);
             }
         });
     }
@@ -2353,7 +2353,8 @@ public class GFormController implements EditManager {
         /*if(!previewLoadingManagerSinkEvents(handler.event)) {
             return;
         }*/
-        checkChangeEvent(handler, renderElement);
+        if (renderElement != null)
+            checkChangeEvent(handler, renderElement);
 
         if(handler.consumed)
             return;

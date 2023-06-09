@@ -1654,15 +1654,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public void gainedFocus(ExecutionStack stack) {
         dataChanged = true;
-        FocusListener focusListener = getFocusListener();
-        if (focusListener != null)
-            focusListener.gainedFocus(this);
 
-        String formCanonicalName = entity.getCanonicalName();
-        if (session.prevFormCanonicalName == null || !session.prevFormCanonicalName.equals(formCanonicalName)) {
-            session.env.form.changeCurrentForm(formCanonicalName);
-            session.prevFormCanonicalName = formCanonicalName;
-        }
+        session.env.form.changeCurrentForm(entity.getCanonicalName());
     }
 
     private int updateSessionOwner(boolean set, ExecutionStack stack) throws SQLException, SQLHandledException {

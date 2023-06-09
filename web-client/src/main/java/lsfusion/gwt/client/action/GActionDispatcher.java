@@ -35,6 +35,8 @@ public interface GActionDispatcher {
 
     void execute(GOpenFileAction action);
 
+    void execute(GWriteAction action);
+
     String execute(GLoadLinkAction action);
 
     void execute(GBeepAction action);

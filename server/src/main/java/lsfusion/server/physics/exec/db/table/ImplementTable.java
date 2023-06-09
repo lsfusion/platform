@@ -68,6 +68,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 public class ImplementTable extends DBTable { // последний интерфейс assert что isFull
     private static double topCoefficient = 0.8;
@@ -160,12 +162,16 @@ public class ImplementTable extends DBTable { // последний интерф
         return changesQuery.getQuery();
     }
 
-    public void moveColumn(SQLSession sql, PropertyField field, NamedTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException, SQLHandledException {
-        QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
-        Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
-        moveColumn.addProperty(field, moveExpr);
-        moveColumn.and(moveExpr.getWhere());
-        sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
+    public void moveColumn(SQLSession sql, PropertyField field, NamedTable prevTable, ImMap<KeyField, KeyField> mapFields, PropertyField prevField) throws Exception {
+        ImplementTable.ignoreStatProps(() -> {
+            QueryBuilder<KeyField, PropertyField> moveColumn = new QueryBuilder<>(this);
+            Expr moveExpr = prevTable.join(mapFields.join(moveColumn.getMapExprs())).getExpr(prevField);
+            moveColumn.addProperty(field, moveExpr);
+            moveColumn.and(moveExpr.getWhere());
+
+            sql.modifyRecords(new ModifyQuery(this, moveColumn.getQuery(), OperationOwner.unknown, TableOwner.global));
+            return null;
+        });
     }
 
     @NFLazy
@@ -463,16 +469,59 @@ public class ImplementTable extends DBTable { // последний интерф
     }
 
     public TableStatKeys getTableStatKeys() {
-        if(statKeys!=null)
+        if(statKeys!=null) {
+            checkStatProps();
             return statKeys;
-        else
+        } else
             return SerializedTable.getStatKeys(this);
     }
 
+    public static boolean updatedStats;
+    private static final ThreadLocal<Boolean> ignoreStatProps = new ThreadLocal<>();
+
+    public static <T> T ignoreStatPropsNoException(Supplier<T> supplier) {
+        Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
+        ImplementTable.ignoreStatProps.set(true);
+        try {
+            return supplier.get();
+        } finally {
+            ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
+        }
+    }
+
+    public static <T> T ignoreStatProps(Callable<T> callable) throws Exception {
+        Boolean prevIgnoreStatProps = ImplementTable.ignoreStatProps.get();
+        ImplementTable.ignoreStatProps.set(true);
+        try {
+            return callable.call();
+        } finally {
+            ImplementTable.ignoreStatProps.set(prevIgnoreStatProps);
+        }
+    }
+
+    private static final ThreadLocal<Boolean> reflectionStatProps = new ThreadLocal<>();
+    public static <T> T reflectionStatProps(Callable<T> callable) throws Exception {
+        ImplementTable.reflectionStatProps.set(true);
+        try {
+            return callable.call();
+        } finally {
+            ImplementTable.reflectionStatProps.set(null);
+        }
+    }
+
+    public static void checkStatProps(String name) {
+        assert updatedStats || ignoreStatProps.get() != null || (reflectionStatProps.get() != null && (name == null || name.startsWith("Reflection_") || name.startsWith("System_")));
+    }
+
+    private void checkStatProps() {
+        checkStatProps(name);
+    }
+
     public ImMap<PropertyField,PropStat> getStatProps() {
-        if(statProps!=null)
+        if(statProps!=null) {
+            checkStatProps();
             return statProps;
-        else
+        } else
             return SerializedTable.getStatProps(this);
     }
 

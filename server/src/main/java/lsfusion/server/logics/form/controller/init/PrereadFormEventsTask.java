@@ -2,18 +2,20 @@ package lsfusion.server.logics.form.controller.init;
 
 import lsfusion.server.logics.form.struct.FormEntity;
 
-public class FinalizeFormsTask extends GroupFormsTask {
+public class PrereadFormEventsTask extends GroupFormsTask {
 
+    @Override
     protected boolean prerun() {
-        getBL().markFormsForFinalization();
+        getBL().getCheckConstrainedProperties(); // to avoid the concurrent calculation
         return true;
     }
 
     protected void runTask(FormEntity form) {
-        form.finalizeAroundInit();
+        form.prereadEventActions();
     }
 
     public String getCaption() {
-        return "Finalizing forms";
+        return "Prereading form property events";
     }
+
 }

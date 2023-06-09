@@ -24,6 +24,8 @@ public class GClientSettings implements Serializable {
     public String[] preDefinedDateRangesNames;
     public boolean useTextAsFilterSeparator;
     public boolean verticalNavbar;
+    
+    public boolean userFiltersManualApplyMode;
 
     @SuppressWarnings("unused")
     public GClientSettings() {
@@ -32,7 +34,7 @@ public class GClientSettings implements Serializable {
     public GClientSettings(long busyDialogTimeout, boolean devMode, String projectLSFDir, boolean showDetailedInfo, boolean forbidDuplicateForms,
                            boolean pivotOnlySelectedColumn, String matchSearchSeparator, GColorTheme colorTheme, boolean useBootstrap, Map<String, String> versionedColorThemesCss,
                            GColorPreferences colorPreferences, String dateFormat, String timeFormat, String staticImagesURL, String[] preDefinedDateRangesNames,
-                           boolean useTextAsFilterSeparator, boolean verticalNavbar) {
+                           boolean useTextAsFilterSeparator, boolean verticalNavbar, boolean userFiltersManualApplyMode) {
         this.busyDialogTimeout = busyDialogTimeout;
         this.devMode = devMode;
         this.projectLSFDir = projectLSFDir;
@@ -50,5 +52,6 @@ public class GClientSettings implements Serializable {
         this.preDefinedDateRangesNames = preDefinedDateRangesNames;
         this.useTextAsFilterSeparator = useTextAsFilterSeparator;
         this.verticalNavbar = verticalNavbar;
+        this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
 }

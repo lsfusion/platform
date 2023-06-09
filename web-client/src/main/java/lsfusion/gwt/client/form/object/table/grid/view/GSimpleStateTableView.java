@@ -35,7 +35,6 @@ import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -488,19 +487,39 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
          }});
     }
 
-    NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
+    private NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
     private JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering) {
+        return getDiff(list, supportReordering, new DiffObjectInterface<GGroupObjectValue, JavaScriptObject>() {
+            @Override
+            public GGroupObjectValue getKey(JavaScriptObject object) {
+                return GSimpleStateTableView.this.getKey(object);
+            }
+
+            @Override
+            public NativeHashMap<GGroupObjectValue, JavaScriptObject> getOldObjectsList() {
+                return GSimpleStateTableView.this.oldOptionsList;
+            }
+
+            @Override
+            public void setOldObjectsList(NativeHashMap<GGroupObjectValue, JavaScriptObject> optionsList) {
+                GSimpleStateTableView.this.oldOptionsList = optionsList;
+            }
+        });
+    }
+
+    public static <K, V extends JavaScriptObject> JavaScriptObject getDiff(JsArray<V> list, boolean supportReordering, DiffObjectInterface<K, V> diffObjectInterface) {
+        NativeHashMap<K, V> oldOptionsList = diffObjectInterface.getOldObjectsList();
         List<JavaScriptObject> optionsToAdd = new ArrayList<>();
         List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
         List<JavaScriptObject> optionsToRemove = new ArrayList<>();
 
-        NativeHashMap<GGroupObjectValue, JavaScriptObject> mappedList = new NativeHashMap<>();
+        NativeHashMap<K, V> mappedList = new NativeHashMap<>();
         for (int i = 0; i < list.length(); i++) {
-            JavaScriptObject object = list.get(i);
+            V object = list.get(i);
             GwtClientUtils.setField(object, "index", fromDouble(i));
-            mappedList.put(getKey(object), object);
-
-            JavaScriptObject oldValue = oldOptionsList.remove(getKey(object));
+            K key = diffObjectInterface.getKey(object);
+            mappedList.put(key, object);
+            JavaScriptObject oldValue = oldOptionsList.remove(key);
             if (oldValue != null) {
                 if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue)) {
                     if (supportReordering && Integer.parseInt(GwtClientUtils.getField(oldValue, "index").toString()) != i) {
@@ -516,7 +535,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
         }
 
         oldOptionsList.foreachValue(optionsToRemove::add);
-        oldOptionsList = mappedList;
+        diffObjectInterface.setOldObjectsList(mappedList);
 
         JavaScriptObject object = GwtClientUtils.newObject();
         GwtClientUtils.setField(object, "add", fromObject(optionsToAdd.toArray()));
@@ -609,10 +628,13 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 return thisObj.@GSimpleStateTableView::getKey(*)(object);
             },
             getDiff: function (newList, supportReordering) {
-                return thisObj.@GSimpleStateTableView::getDiff(*)(newList, supportReordering);
+                return thisObj.@GSimpleStateTableView::getDiff(Lcom/google/gwt/core/client/JsArray;Z)(newList, supportReordering);
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
+            },
+            isList: function () {
+                return true;
             }
         };
     }-*/;

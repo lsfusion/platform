@@ -28,6 +28,8 @@ import lsfusion.server.base.controller.lifecycle.LifecycleEvent;
 import lsfusion.server.base.controller.manager.LogicsManager;
 import lsfusion.server.base.controller.stack.*;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
+import lsfusion.server.base.task.PublicTask;
+import lsfusion.server.base.task.TaskRunner;
 import lsfusion.server.base.version.NFLazy;
 import lsfusion.server.data.OperationOwner;
 import lsfusion.server.data.expr.Expr;
@@ -70,6 +72,7 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ByteArrayClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.CustomClass;
 import lsfusion.server.logics.classes.user.ObjectValueClassSet;
@@ -191,10 +194,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         addIndex(keyNames, dbName, indexType, directLI(lp));
     }
 
-    public void addIndex(ImOrderSet<String> keyNames, String dbName, Object... params) {
-        addIndex(keyNames, dbName, IndexType.DEFAULT, params);
-    }
-
     public void addIndex(ImOrderSet<String> keyNames, String dbName, IndexType indexType, Object... params) {
         ImList<PropertyObjectInterfaceImplement<String>> index = ActionOrPropertyUtils.readObjectImplements(keyNames, params);
         addIndex(index, dbName, indexType);
@@ -207,24 +206,27 @@ public class DBManager extends LogicsManager implements InitializingBean {
         systemEventsLM = businessLogics.systemEventsLM;
 
         try {
-            SQLSession sql = getThreadLocalSql();
+            ImplementTable.reflectionStatProps(() -> {
+                SQLSession sql = getThreadLocalSql();
 
-            adapter.ensure(false);
+                adapter.ensure(false);
 
-            if (!isFirstStart(sql)) {
-                updateReflectionStats(sql);
+                if (!isFirstStart(sql)) {
+                    updateStats(sql, true);
 
-                startLogger.info("Setting user logging for properties");
-                setUserLoggableProperties(sql);
+                    startLogger.info("Setting user logging for properties");
+                    setUserLoggableProperties(sql);
 
-                startLogger.info("Setting user not null constraints for properties");
-                setNotNullProperties(sql);
+                    startLogger.info("Setting user not null constraints for properties");
+                    setNotNullProperties(sql);
 
-                if (getOldDBStructure(sql).version >= 34) {
-                    startLogger.info("Disabling input list");
-                    setDisableInputListProperties(sql);
+                    if (getOldDBStructure(sql).version >= 34) {
+                        startLogger.info("Disabling input list");
+                        setDisableInputListProperties(sql);
+                    }
                 }
-            }
+                return null;
+            });
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -308,7 +310,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public static Integer getPropertyInterfaceStat(Property property) {
         Integer statsProperty = null;
-        Stat interfaceStat = property.getInterfaceStat();
+        Stat interfaceStat = property.getInterfaceStat(false);
         if (interfaceStat != null)
             statsProperty = interfaceStat.getCount();
         return statsProperty;
@@ -349,9 +351,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
     public void checkIndexes(SQLSession session) throws SQLException, SQLHandledException {
         try {
-            for (Map.Entry<NamedTable, Map<List<Field>, IndexOptions>> mapIndex : getIndexesMap().entrySet()) {
+            for (Map.Entry<ImplementTable, Map<List<Field>, IndexOptions>> mapIndex : getIndexesMap().entrySet()) {
                 session.startTransaction(START_TIL, OperationOwner.unknown);
-                NamedTable table = mapIndex.getKey();
+                ImplementTable table = mapIndex.getKey();
                 for (Map.Entry<List<Field>, IndexOptions> index : mapIndex.getValue().entrySet()) {
                     ImOrderSet<Field> fields = SetFact.fromJavaOrderSet(index.getKey());
                     session.checkIndex(table, table.keys, fields, index.getValue());
@@ -475,10 +477,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         return mCustomObjectClassMap.immutable();
     }
 
-    private ImMap<String, Integer> updateReflectionStats(SQLSession sql) throws SQLException, SQLHandledException {
-        return updateStats(sql, true);
-    }
-    
     private ImMap<String, Integer> updateStats(SQLSession sql, boolean useSIDsForClasses) throws SQLException, SQLHandledException {
         ImMap<String, Integer> result = updateTableStats(sql, true); // чтобы сами таблицы статистики получили статистику
         updateFullClassStats(sql, useSIDsForClasses);
@@ -735,10 +733,6 @@ public class DBManager extends LogicsManager implements InitializingBean {
         this.dbMaxIdLength = dbMaxIdLength;
     }
 
-    public void updateStats(SQLSession sql) throws SQLException, SQLHandledException {
-        updateStats(sql, false);
-    }
-
     public SQLSyntax getSyntax() {
         return adapter.syntax;
     }
@@ -758,19 +752,26 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+
+    private PublicTask initTask;
+
+    public void setInitTask(PublicTask initTask) {
+        this.initTask = initTask;
+    }
+
     @Override
     protected void onInit(LifecycleEvent event) {
         this.LM = businessLogics.LM;
         this.reflectionLM = businessLogics.reflectionLM;
         this.systemEventsLM = businessLogics.systemEventsLM;
-        try {
-            if(getSyntax().getSyntaxType() == SQLSyntaxType.MSSQL)
-                Expr.useCasesCount = 5;
+        if(getSyntax().getSyntaxType() == SQLSyntaxType.MSSQL)
+            Expr.useCasesCount = 5;
 
+        try {
             startLogger.info("Synchronizing DB");
             synchronizeDB();
         } catch (Exception e) {
-            throw new RuntimeException("Error synchronizing DB: ", e);
+            throw new RuntimeException("Error starting DBManager: ", e);
         }
     }
 
@@ -1156,15 +1157,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
             NamedTable oldTable = oldTableIndexes.getKey();
             Map<List<String>, IndexOptions> oldIndexes = oldTableIndexes.getValue();
             NamedTable newTable = newDBStructure.getTable(oldTable.getName()); // Здесь никак не учитываем возможное изменение имени
-            
+
             if (newTable == null) {
                 dropTableIndexes(sql, oldTable, oldIndexes);
                 continue;
             }
-            
+
             Map<List<Field>, IndexOptions> newTableIndexes = newDBStructure.tables.get(newTable);
             Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndexesNames = getTableIndexNames(newTableIndexes);
-    
+
             Map<String, String> fieldsOldToNew = getOldToNewFieldsMap(oldTableFieldToCN.get(oldTable.getName()),
                                                                         newTableFieldToCN.get(newTable.getName()),
                                                                         propertyCNChanges);
@@ -1173,8 +1174,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 IndexOptions oldOptions = oldIndex.getValue();
                 ImOrderSet<String> oldIndexKeysSet = SetFact.fromJavaOrderSet(oldIndex.getKey());
 
-                ReplaceResult res = replaceIndexKeys(oldIndexKeys, fieldsOldToNew);
-    
+                ReplaceResult res = replaceIndexKeys(oldIndexKeys, fieldsOldToNew, newTable.getTableKeys().toJavaSet());
+
                 Pair<IndexOptions, List<Field>> newIndex = newTableIndexesNames.get(oldIndexKeys);
                 if (res != ReplaceResult.FAILED && newIndex != null && newIndex.first.equalsWithoutDBName(oldOptions)) {
                     IndexOptions newOptions = newIndex.first;
@@ -1191,37 +1192,40 @@ public class DBManager extends LogicsManager implements InitializingBean {
     }
 
     private enum ReplaceResult {FAILED, REPLACED, OK}
-    
-    private ReplaceResult replaceIndexKeys(List<String> oldIndexKeys, Map<String, String> fieldsOldToNew) {
+
+    private ReplaceResult replaceIndexKeys(List<String> oldIndexKeys, Map<String, String> fieldsOldToNew, Set<KeyField> tableKeys) {
         ReplaceResult res = ReplaceResult.OK;
+        Set<String> tableKeyNames = tableKeys.stream().map(Field::getName).collect(Collectors.toSet());
         for (int i = 0; i < oldIndexKeys.size(); ++i) {
             String oldKey = oldIndexKeys.get(i);
-            String newKey = fieldsOldToNew.get(oldKey);
-            if (newKey == null) {
-                return ReplaceResult.FAILED;
-            }
-            if (!newKey.equals(oldKey)) {
-                oldIndexKeys.set(i, newKey);
-                res = ReplaceResult.REPLACED;
+            if (!tableKeyNames.contains(oldKey)) {
+                String newKey = fieldsOldToNew.get(oldKey);
+                if (newKey == null) {
+                    return ReplaceResult.FAILED;
+                }
+                if (!newKey.equals(oldKey)) {
+                    oldIndexKeys.set(i, newKey);
+                    res = ReplaceResult.REPLACED;
+                }
             }
         }
         return res;
     }
-    
+
     private ImMap<String, String> getStoredOldToNewCNMapping(OldDBStructure oldDBStructure, NewDBStructure newDBStructure) {
         Map<String, String> changes = migrationManager.getStoredPropertyCNChangesAfter(oldDBStructure.migrationVersion);
         Set<String> newCanonicalNames = newDBStructure.storedProperties.stream().map(DBStoredProperty::getCanonicalName).collect(Collectors.toSet());
         Set<String> oldCanonicalNames = oldDBStructure.storedProperties.stream().map(DBStoredProperty::getCanonicalName).collect(Collectors.toSet());
         Map<String, String> result = new HashMap<>();
         Set<String> usedNewCNs = new HashSet<>();
-        
+
         changes.forEach((oldCN, newCN) -> {
             if (oldCanonicalNames.contains(oldCN)) {
                 result.put(oldCN, newCN);
                 usedNewCNs.add(newCN);
             }
         });
-        
+
         for (DBStoredProperty oldProperty : oldDBStructure.storedProperties) {
             String cn = oldProperty.getCanonicalName();
             if (!result.containsKey(cn) && newCanonicalNames.contains(cn) && !usedNewCNs.contains(cn)) {
@@ -1237,7 +1241,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
             sql.dropIndex(table, table.keys, indexKeysSet, index.getValue(), Settings.get().isStartServerAnyWay());
         }
     }
-    
+
     // old field -> old cn -> new cn -> ne field
     private Map<String, String> getOldToNewFieldsMap(ImRevMap<String, String> oldFieldToCN,
                                                        ImRevMap<String, String> newFieldToCN,
@@ -1245,7 +1249,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         if (oldFieldToCN == null || newFieldToCN == null) { // tables can be empty
             return new HashMap<>();
         }
-        
+
         Map<String, String> result = oldFieldToCN.innerJoin(propertyCNChanges).innerCrossValues(newFieldToCN).toJavaMap();
         // class property canonical name may differ between server starts due to non-determinism in canonical name creation
         for (int i = 0; i < oldFieldToCN.size(); ++i) {
@@ -1259,15 +1263,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         return result;
     }
-    
+
     private boolean isClassPropertyCN(String canonicalName) {
         String propertyName = PropertyCanonicalNameParser.getName(canonicalName);
         return propertyName.startsWith(PropertyCanonicalNameUtils.classDataPropPrefix);
     }
-    
+
     private Map<List<String>, Pair<IndexOptions, List<Field>>> getTableIndexNames(Map<List<Field>, IndexOptions> newTableIndexes) {
         Map<List<String>, Pair<IndexOptions, List<Field>>> newTableIndexesNames = new HashMap<>();
-        
+
         newTableIndexes.forEach((fields, options) -> {
             List<String> names = new ArrayList<>();
             for (Field field : fields) {
@@ -1277,7 +1281,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         });
         return newTableIndexesNames;
     }
-    
+
     private void checkUniqueDBName(NewDBStructure struct) {
         Map<Pair<String, String>, DBStoredProperty> sids = new HashMap<>();
         for (DBStoredProperty property : struct.storedProperties) {
@@ -1446,7 +1450,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
         // "старое" состояние базы
         OldDBStructure oldDBStructure = getOldDBStructure(sql);
-        if(!oldDBStructure.isEmpty() && oldDBStructure.version < 30)
+        boolean isFirstStart = oldDBStructure.isEmpty();
+        if(!isFirstStart && oldDBStructure.version < 30)
             throw new RuntimeException("You should update to version 30 first");
         checkModules(oldDBStructure);
 
@@ -1481,7 +1486,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             checkIndexes(sql, oldDBStructure, newDBStructure);
 
-            if (!oldDBStructure.isEmpty()) {
+            if (!isFirstStart) {
                 startLogger.info("Applying migration script (" + oldDBStructure.migrationVersion + " -> " + newDBStructure.migrationVersion + ")");
 
                 // применяем к oldDBStructure изменения из migration script, переименовываем таблицы и поля
@@ -1603,7 +1608,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             for (DBStoredProperty property : restNewDBStored) { // добавляем оставшиеся
                 sql.addColumn(property.getTable(), property.property.field);
-                if (!oldDBStructure.isEmpty()) // если все свойства "новые" то ничего перерасчитывать не надо
+                if (!isFirstStart) // если все свойства "новые" то ничего перерасчитывать не надо
                     recalculateProperties.add(property.property);
             }
 
@@ -1623,29 +1628,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 DBStoredProperty classProp = newDBStructure.getProperty(toCopy.getKey(i));
                 NamedTable table = newDBStructure.getTable(classProp.tableName);
 
-                QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
-                Expr keyExpr = copyObjects.getMapExprs().singleValue();
-                Where moveWhere = Where.FALSE();
-                ImMap<String, ImSet<Long>> copyFrom = toCopy.getValue(i);
-                CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
-                MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
-                for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
-                    DBStoredProperty oldClassProp = oldDBStructure.getProperty(copyFrom.getKey(j));
-                    Table oldTable = oldDBStructure.getTable(oldClassProp.tableName);
-                    mCopyFromTables.add(oldClassProp.tableName);
-
-                    Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
-                    Where moveExprWhere = Where.FALSE();
-                    for (long prevID : copyFrom.getValue(j))
-                        moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, LM.baseClass.objectClass), Compare.EQUALS));
-                    mExpr.add(moveExprWhere, oldExpr);
-                    moveWhere = moveWhere.or(moveExprWhere);
-                }
-                copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
-                copyObjects.and(moveWhere);
-
-                startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
-                sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
+                moveObjects(table, sql, oldDBStructure, toCopy.getValue(i), classProp, LM.baseClass);
             }
             ImMap<String, ImSet<Long>> toClean = MapFact.mergeMaps(toCopy.values(), ASet.addMergeSet());
             for (int i = 0, size = toClean.size(); i < size; i++) { // удалим оставшиеся классы
@@ -1693,6 +1676,25 @@ public class DBManager extends LogicsManager implements InitializingBean {
                     sql.addIndex(table, table.keys, SetFact.fromJavaOrderSet(index.getKey()), index.getValue(), oldDBStructure.getTable(table.getName()) == null ? null : startLogger, Settings.get().isStartServerAnyWay()); // если таблица новая нет смысла логировать
                 }
 
+//            plus it has to be after fillIDs since it uses getClassObject
+//            not sure that it is needed (and why only classes and not all stats)
+//            ImplementTable.ignoreStatProps(() -> {
+//                if (isFirstStart) {
+//                    try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
+//                        startLogger.info("Recalculate class stats");
+//                        recalculateClassStats(session, false);
+//                        apply(session);
+//                    }
+//                }
+//                return null;
+//            });
+
+            ImMap<String, Integer> tableStats = ImplementTable.reflectionStatProps(() -> {
+                startLogger.info("Updating stats");
+                return updateStats(sql, true);
+            });
+            ImplementTable.updatedStats = true;
+
             startLogger.info("Filling static objects ids");
             IDChanges idChanges = new IDChanges();
             LM.baseClass.fillIDs(sql, DataSession.emptyEnv(OperationOwner.unknown), this::generateID, LM.staticCaption, LM.staticImage,LM.staticName,
@@ -1704,22 +1706,18 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 newClass.ID = newClass.customClass.ID;
             }
 
-            try(DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
-                if (oldDBStructure.isEmpty()) {
-                    startLogger.info("Recalculate class stats");
-                    recalculateClassStats(session, false);
-                    apply(session);
-                }
+            // we need after fillIDs because isValueUnique / usePrev can call classExpr -> getClassObject which uses ID
+            new TaskRunner(getBusinessLogics()).runTask(initTask, startLogger);
 
-                startLogger.info("Updating stats");
-                ImMap<String, Integer> tableStats = updateStats(sql, false);  // пересчитаем статистику
-
+            try (DataSession session = createSession(OperationOwner.unknown)) { // apply in transaction
                 startLogger.info("Writing static objects changes");
-                idChanges.apply(session, LM, oldDBStructure.isEmpty());
+                idChanges.apply(session, LM, isFirstStart);
                 apply(session);
 
                 startLogger.info("Migrating reflection properties and actions");
                 migrateReflectionProperties(session, oldDBStructure);
+                apply(session);
+
                 newDBStructure.writeConcreteClasses(outDB);
 
                 try {
@@ -1732,9 +1730,12 @@ public class DBManager extends LogicsManager implements InitializingBean {
                 startLogger.info("Recalculating aggregations");
                 recalculateAggregations(session, getStack(), sql, recalculateProperties, false, startLogger); // перерасчитаем агрегации
                 apply(session);
+
                 recalculateProperties.addAll(recalculateStatProperties);
                 updateAggregationStats(session,recalculateProperties, tableStats);
-            writeDroppedColumns(session, columnsToDrop);
+                apply(session);
+
+                writeDroppedColumns(session, columnsToDrop);
                 apply(session);
             }
             if(!noTransSyncDB)
@@ -1760,6 +1761,34 @@ public class DBManager extends LogicsManager implements InitializingBean {
 
             classForNameSQL();
         }
+    }
+
+    public static void moveObjects(NamedTable table, SQLSession sql, OldDBStructure oldDBStructure, ImMap<String, ImSet<Long>> copyFrom, DBStoredProperty classProp, BaseClass baseClass) throws Exception {
+        ImplementTable.ignoreStatProps(() -> {
+            QueryBuilder<KeyField, PropertyField> copyObjects = new QueryBuilder<>(table);
+            Expr keyExpr = copyObjects.getMapExprs().singleValue();
+            Where moveWhere = Where.FALSE();
+            CaseExprInterface mExpr = Expr.newCases(true, copyFrom.size());
+            MSet<String> mCopyFromTables = SetFact.mSetMax(copyFrom.size());
+            for (int j = 0, sizeJ = copyFrom.size(); j < sizeJ; j++) {
+                DBStoredProperty oldClassProp = oldDBStructure.getProperty(copyFrom.getKey(j));
+                Table oldTable = oldDBStructure.getTable(oldClassProp.tableName);
+                mCopyFromTables.add(oldClassProp.tableName);
+
+                Expr oldExpr = oldTable.join(MapFact.singleton(oldTable.getTableKeys().single(), keyExpr)).getExpr(oldTable.findProperty(oldClassProp.getDBName()));
+                Where moveExprWhere = Where.FALSE();
+                for (long prevID : copyFrom.getValue(j))
+                    moveExprWhere = moveExprWhere.or(oldExpr.compare(new DataObject(prevID, baseClass.objectClass), Compare.EQUALS));
+                mExpr.add(moveExprWhere, oldExpr);
+                moveWhere = moveWhere.or(moveExprWhere);
+            }
+            copyObjects.addProperty(table.findProperty(classProp.getDBName()), mExpr.getFinal());
+            copyObjects.and(moveWhere);
+
+            startLogger.info(localize(LocalizedString.createFormatted("{logics.info.objects.are.transferred.from.tables.to.table}", classProp.tableName, mCopyFromTables.immutable().toString())));
+            sql.modifyRecords(new ModifyQuery(table, copyObjects.getQuery(), OperationOwner.unknown, TableOwner.global));
+            return null;
+        });
     }
 
     private void classForNameSQL() {
@@ -2353,7 +2382,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         // Переустановим имена классовым свойствам, если это необходимо. Также при необходимости переименуем поля в таблицах   
         // Имена полей могут измениться при переименовании таблиц (так как в именах классовых свойств есть имя таблицы) либо при изменении dbNamePolicy
         migrateClassProperties(sql, oldData, newData);        
-        
+
         // переименовываем классы из скрипта миграции
         renameMigratingClasses(oldData);
     }
@@ -2599,7 +2628,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public int version;
         public MigrationVersion migrationVersion;
         public List<String> modulesList = new ArrayList<>();
-        public Map<NamedTable, Map<List<F>, IndexOptions>> tables = new HashMap<>();
+        public Map<NamedTable, Map<List<F>, IndexOptions>> tables = new HashMap<>(); // actually it's only ImplementTable or SerializedTable
         public List<DBStoredProperty> storedProperties = new ArrayList<>();
         public Set<DBConcreteClass> concreteClasses = new HashSet<>();
 
@@ -2631,8 +2660,8 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
-    public <P extends PropertyInterface> Map<NamedTable, Map<List<Field>, IndexOptions>> getIndexesMap() {
-        Map<NamedTable, Map<List<Field>, IndexOptions>> res = new HashMap<>();
+    public <P extends PropertyInterface> Map<ImplementTable, Map<List<Field>, IndexOptions>> getIndexesMap() {
+        Map<ImplementTable, Map<List<Field>, IndexOptions>> res = new HashMap<>();
         for (ImplementTable table : LM.tableFactory.getImplementTablesMap().valueIt()) {
             res.put(table, new HashMap<>());
         }

@@ -1324,7 +1324,7 @@ formExprOrTrivialLADeclaration returns [LP property, ImOrderSet<String> mapping,
         }  
 	}	
 }
-	:	expr=propertyExpressionOrTrivialLA[context]
+	:	expr=propertyExpressionOrTrivialLA[context, false]
 	;
 
 formActionDeclaration returns [LA action, ImOrderSet<String> mapping, List<ResolveClassSet> signature]
@@ -1526,8 +1526,8 @@ propertyExpressionOrContextIndependent[List<TypedParameter> context, boolean dyn
         { if(inMainParseState()) { $ci = self.checkCIInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
-propertyExpressionOrTrivialLA[List<TypedParameter> context] returns [LPWithParams property, LPTrivialLA la]
-    :   exprOrNotExpr=propertyExpressionOrNot[context, false, false] { $property = $exprOrNotExpr.property;  }
+propertyExpressionOrTrivialLA[List<TypedParameter> context, boolean dynamic] returns [LPWithParams property, LPTrivialLA la]
+    :   exprOrNotExpr=propertyExpressionOrNot[context, dynamic, false] { $property = $exprOrNotExpr.property;  }
         { if(inMainParseState()) { $la = self.checkTLAInExpr($exprOrNotExpr.property, $exprOrNotExpr.ci); } }
 ;
 
@@ -2254,7 +2254,7 @@ jsonPropertyDefinition[List<TypedParameter> context, boolean dynamic] returns [L
 }
 @after {
 	if (inMainParseState()) {
-		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, orderProperties, orderDirections);
+		$property = self.addScriptedJSONProperty(context, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, orderProperties, orderDirections);
 	}
 }
 	:	'JSON'
@@ -2504,7 +2504,7 @@ exportActionDefinitionBody[List<TypedParameter> context, boolean dynamic] return
 }
 @after {
 	if (inMainParseState()) {
-			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $whereExpr.property, $pUsage.propUsage,
+			$action = self.addScriptedExportAction(context, format, $plist.aliases, $plist.literals, $plist.properties, $plist.propUsages, $whereExpr.property, $pUsage.propUsage,
 			                                                 sheetName, root, tag, separator, hasHeader, noEscape, selectTop, charset, attr, orderProperties, orderDirections);
 	}
 } 
@@ -2524,16 +2524,16 @@ propertyExpressionWithOrder[List<TypedParameter> context, boolean dynamic] retur
 	:	pDraw=propertyExpression[context, dynamic] { $property = $pDraw.property; } ('DESC' { $order = false; })?
 	;
 
-nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<String> aliases = new ArrayList<>(), List<Boolean> literals = new ArrayList<>(), List<LPWithParams> properties = new ArrayList<>()]
+nonEmptyAliasedPropertyExpressionList[List<TypedParameter> context, boolean dynamic] returns [List<String> aliases = new ArrayList<>(), List<Boolean> literals = new ArrayList<>(), List<LPWithParams> properties = new ArrayList<>(), List<LPTrivialLA> propUsages = new ArrayList<>()]
 @init {
     String alias;
 }
     :
-        expr=exportAliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); }
-		(',' expr=exportAliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); } )*
+        expr=exportAliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); $propUsages.add($expr.propUsage); }
+		(',' expr=exportAliasedPropertyExpression[context, dynamic] { $aliases.add($expr.alias); $literals.add($expr.literal); $properties.add($expr.property); $propUsages.add($expr.propUsage); } )*
 	;
 
-exportAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, Boolean literal = null, LPWithParams property]
+exportAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] returns [String alias = null, Boolean literal = null, LPWithParams property, LPTrivialLA propUsage]
     :
         ( { (input.LA(1)==ID || input.LA(1)==STRING_LITERAL) && input.LA(2)==EQ }?
           (   simpleName=ID { $alias = $simpleName.text; $literal = false; }
@@ -2541,7 +2541,7 @@ exportAliasedPropertyExpression[List<TypedParameter> context, boolean dynamic] r
           )
           EQ
         )?
-        expr=propertyExpression[context, dynamic] { $property = $expr.property; }
+        expr=propertyExpressionOrTrivialLA[context, dynamic] { $property = $expr.property; $propUsage = $expr.la; }
     ;
 
 importFormActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
@@ -4749,13 +4749,14 @@ nonEmptyMappedPropertyOrSimpleParamList[List<TypedParameter> context] returns [L
 indexStatement
 @init {
 	List<TypedParameter> context = new ArrayList<>();
+	IndexType indexType = IndexType.DEFAULT;
 }
 @after {
 	if (inMainParseState()) {
-		self.addScriptedIndex($dbName.val, context, $list.props);
+		self.addScriptedIndex($dbName.val, context, $list.props, indexType);
 	}	
 }
-	:	'INDEX' (dbName=stringLiteralNoID)? list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
+	:	'INDEX' (dbName=stringLiteralNoID)? ('LIKE' { indexType = IndexType.LIKE; } | 'MATCH' { indexType = IndexType.MATCH; })? list=nonEmptyMappedPropertyOrSimpleParamList[context] ';'
 	;
 
 

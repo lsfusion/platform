@@ -201,7 +201,8 @@
 
                 "static/css/gwt/navigator/navigator.css",
                 "static/css/gwt/navigator/split-window.css",
-                "static/css/gwt/navigator/tab-window.css"
+                "static/css/gwt/navigator/tab-window.css",
+                "static/css/gwt/option.css"
         ));%>
 
         <lsf:writeResources resources="${versionedResources}"/>

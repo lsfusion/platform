@@ -1381,6 +1381,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     public boolean propertyListInitialized;
     // should be synchronized because of actionChangeProps / links, but it is already synchronized with the IdentityStrongLazy
     public Pair<ImOrderSet<ActionOrProperty>, Graph<ActionOrProperty>> calcPropertyListWithGraph(ApplyFilter filter, DebugInfoWriter debugInfoWriter, BiConsumer<ImOrderSet<ActionOrProperty>, HMap<Link, List<Link>>> debugConsumer) {
+        assert ImplementTable.updatedStats;
         assert propertyListInitialized;
 
         fillActionChangeProps(filter);
@@ -1485,7 +1486,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
 
     @IdentityLazy
     public ImOrderSet<Property> getStoredProperties() {
-        return BaseUtils.immutableCast(getPropertyList(ApplyFilter.NO).filterOrder(property -> property instanceof Property && ((Property) property).isStored()));
+        return BaseUtils.immutableCast(getOrderProperties().filterOrder(property -> property instanceof Property && ((Property) property).isStored()));
     }
 
     public ImSet<CustomClass> getCustomClasses() {
@@ -1678,7 +1679,7 @@ public abstract class BusinessLogics extends LifecycleAdapter implements Initial
     @IdentityLazy
     public ImSet<Property> getCheckConstrainedProperties() {
         ImSet<Property> result = getCheckConstrainedProperties(getOrderActionOrProperties()); // in theory all data properties with event should be in this method (because is used only for propertyExpression properties)
-        assert result.equals(getCheckConstrainedProperties(getPropertyList(ApplyFilter.NO))); // can be broken in CONSRAINT LOCAL
+//        assert result.equals(getCheckConstrainedProperties(getPropertyList(ApplyFilter.NO))); // can be broken in CONSRAINT LOCAL
         return result;
     }
 

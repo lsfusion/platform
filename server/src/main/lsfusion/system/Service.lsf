@@ -713,7 +713,8 @@ DESIGN settings {
 EXTEND FORM editProfile
     PROPERTIES()  resetWindowsLayout
     PROPERTIES(u) fontSize, colorThemeName,
-                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab
+                  selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, 
+                  tableGridColor, dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
     OBJECTS r = DateTimePickerRanges
     PROPERTIES dateTimeRange(r) READONLY, isDateTimeRangeSelected(r, u)
     
@@ -742,6 +743,7 @@ DESIGN editProfile {
             }
             NEW closeButton {
                 MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(u));
+                MOVE PROPERTY(userFiltersManualApplyMode(u));
             }
             NEW predefinedRanges {
                 horizontal = TRUE;
@@ -801,6 +803,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
         pivotOnlySelectedColumn = valueSettingBoolean('pivotOnlySelectedColumn'),
         matchSearchSeparator = valueSetting('matchSearchSeparator'),
         useTextAsFilterSeparator = valueSettingBoolean('useTextAsFilterSeparator'),
+        userFiltersManualApplyMode = IF userFiltersManualApplyMode() THEN (IF userFiltersManualApplyMode() == TTRUE THEN TRUE ELSE NULL) ELSE valueSettingBoolean('userFiltersManualApplyMode'),
         verticalNavbar = verticalNavbar(),
         navigatorPinMode = navigatorPinMode();
 }
@@ -821,7 +824,8 @@ onStarted() + {
 }
 
 EXTEND FORM customUser
-    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab
+    PROPERTIES(u) fontSize, colorThemeName, selectedRowBackgroundColor, selectedCellBackgroundColor, 
+        focusedCellBackgroundColor, focusedCellBorderColor, tableGridColor, dontShowCloseButtonOnInactiveTab, userFiltersManualApplyMode
 ;
 
 DESIGN customUser {
@@ -839,6 +843,7 @@ DESIGN customUser {
             }
             NEW closeButton {
                 MOVE PROPERTY(dontShowCloseButtonOnInactiveTab(u));
+                MOVE PROPERTY(userFiltersManualApplyMode(u));
             }
         }
     }

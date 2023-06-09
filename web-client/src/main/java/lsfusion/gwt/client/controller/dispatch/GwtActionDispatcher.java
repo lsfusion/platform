@@ -234,7 +234,7 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GReportAction action) {
-        GwtClientUtils.downloadFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout);
+        GwtClientUtils.openFile(action.reportFileName, action.autoPrint, action.autoPrintTimeout);
     }
 
     @Override
@@ -314,7 +314,12 @@ public abstract class GwtActionDispatcher implements GActionDispatcher {
 
     @Override
     public void execute(GOpenFileAction action) {
-        GwtClientUtils.downloadFile(action.fileUrl, false, null);
+        GwtClientUtils.openFile(action.fileUrl, false, null);
+    }
+
+    @Override
+    public void execute(GWriteAction action) {
+        GwtClientUtils.downloadFile(action.fileUrl);
     }
 
     //todo: по идее, action должен заливать куда-то в сеть выбранный локально файл

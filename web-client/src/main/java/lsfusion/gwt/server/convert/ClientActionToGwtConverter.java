@@ -218,9 +218,10 @@ public class ClientActionToGwtConverter extends ObjectConverter {
         return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, action.name));
     }
 
+    //it is actually downloading the file, not opening it in the browser
     @Converter(from = WriteClientAction.class)
-    public GOpenFileAction convertAction(WriteClientAction action) {
-        return new GOpenFileAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)));
+    public GWriteAction convertAction(WriteClientAction action) {
+        return new GWriteAction(FileUtils.saveActionFile(action.file, action.extension, BaseUtils.getFileName(action.path)));
     }
 
     @Converter(from = HttpClientAction.class)

@@ -248,11 +248,11 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes(DBManager dbManager) throws RecognitionException {
-        for (TemporaryIndexInfo info : tempIndicies) {
+        for (TemporaryIndexInfo info : tempIndexes) {
             checkIndexDifferentTables(info.params);
-            dbManager.addIndex(info.keyNames, info.dbName, info.params);
+            dbManager.addIndex(info.keyNames, info.dbName, info.indexType, info.params);
         }
-        tempIndicies.clear();
+        tempIndexes.clear();
 
         for (int i = 0; i < indexedProperties.size(); i++) {
             dbManager.addIndex(indexedProperties.get(i), indexNames.get(i), indexTypes.get(i));
@@ -419,33 +419,33 @@ public class ScriptingLogicsModule extends LogicsModule {
         return obj;
     }
 
-    public MappedActionOrProperty getPropertyWithMapping(FormEntity form, AbstractFormActionOrPropertyUsage pDrawUsage, Result<Pair<ActionOrProperty, String>> inherited) throws ScriptingErrorLog.SemanticErrorException {
+    public MappedActionOrProperty getPropertyWithMapping(FormEntity form, AbstractFormActionOrPropertyUsage pDrawUsage, Result<Pair<ActionOrProperty, List<String>>> inherited) throws ScriptingErrorLog.SemanticErrorException {
         assert !(pDrawUsage instanceof FormPredefinedUsage);
         LAP<?, ?> property;
         ImOrderSet<String> mapping;
         if(pDrawUsage instanceof FormActionOrPropertyUsage) {
             List<String> usageMapping = ((FormActionOrPropertyUsage<?>) pDrawUsage).mapping;
-            LAP usageProperty = findLAPByActionOrPropertyUsage(((FormActionOrPropertyUsage) pDrawUsage).usage, form, usageMapping);
-            
+            property = findLAPByActionOrPropertyUsage(((FormActionOrPropertyUsage) pDrawUsage).usage, form, usageMapping);
+
             ImList<String> uMapping = ListFact.fromJavaList(usageMapping);
             mapping = uMapping.toOrderSet();
-            if(mapping.size() == usageMapping.size())
-                property = usageProperty;
-            else {
+            if(mapping.size() != usageMapping.size()) { // if we have "repeating" objects we're wrapping it into the JOIN / EXEC property
+                if(inherited != null) {
+                    assert property.getActionOrProperty().isNamed();
+                    inherited.set(new Pair<>(property.getActionOrProperty(), usageMapping));
+                }
+
                 final ImOrderSet<String> fMapping = mapping;
                 ImList<Integer> indexMapping = uMapping.mapListValues((String value) -> fMapping.indexOf(value) + 1);
-                if(usageProperty instanceof LP)
-                    property = addJProp((LP)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
+                if(property instanceof LP)
+                    property = addJProp((LP)property, indexMapping.toArray(new Integer[uMapping.size()]));
                 else
-                    property = addJoinAProp((LA)usageProperty, indexMapping.toArray(new Integer[uMapping.size()]));
-                
-                if(inherited != null) {
-                    inherited.set(new Pair<>(usageProperty.getActionOrProperty(), usageProperty.getActionOrProperty().isNamed() ? PropertyDrawEntity.createSID(usageProperty.getActionOrProperty().getName(), usageMapping) : null));
-                }
+                    property = addJoinAProp((LA)property, indexMapping.toArray(new Integer[uMapping.size()]));
             }
         } else {
             property = ((FormLAPUsage)pDrawUsage).lp;
             mapping = ((FormLAPUsage<?>) pDrawUsage).mapping;
+//            assert inherited == null || !property.getActionOrProperty().isNamed();
         }
 
 //        if (property.property.interfaces.size() != mapping.size()) {
@@ -1110,9 +1110,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
     public static class LPTrivialLA extends LPNotExpr {
         public final FormActionOrPropertyUsage action;
+        public final List<TypedParameter> mapParams;
 
-        public LPTrivialLA(FormActionOrPropertyUsage action) {
+        public LPTrivialLA(FormActionOrPropertyUsage action, List<TypedParameter> mapParams) {
             this.action = action;
+            this.mapParams = mapParams;
         }
     }
     public static class LPContextIndependent extends LPNotExpr {
@@ -1620,7 +1622,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LP mainProp = findLPByPropertyUsage(pUsage, paramProps, params, true);
 
         LPWithParams result = null;
-        
+
         if(mainProp != null) {
             result = addScriptedJProp(user, mainProp, paramProps);
         } else {
@@ -1630,15 +1632,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         // this whole thing is needed for PROPERTIES f(a,b) block in form (to keep LL(*) parser there, just like with GROUP BY)
         LPTrivialLA la = null;
         if(result == null || result.getLP() != mainProp) { // optimization if it was lastoptimized, we can use this property (it will 
-            List<String> paramNames = getJParamNames(params, paramProps);
-            if (paramNames != null) {
+            List<TypedParameter> jParams = getJParams(params, paramProps);
+            if (jParams != null) {
+                List<String> paramNames = getParamNamesFromTypedParams(jParams);
                 FormActionOrPropertyUsage formUsage;
                 if (mainProp == null) { // action hack
                     formUsage = new FormActionUsage(pUsage, paramNames);
                 } else {
                     formUsage = new FormPropertyUsage(pUsage, paramNames);
                 }
-                la = new LPTrivialLA(formUsage);
+                la = new LPTrivialLA(formUsage, jParams);
             } else if (result == null ) {
                 errLog.emitPropertyNotFoundError(parser, pUsage.getSourceName());
             }
@@ -4162,29 +4165,57 @@ public class ScriptingLogicsModule extends LogicsModule {
         return getTypesByParamProperties(paramProps, params);
     }
 
+    public static class IntegrationPropUsage<P extends PropertyInterface> {
+        public final String alias;
+
+        public final boolean literal;
+
+        public final ImOrderSet<P> listInterfaces;
+
+        public final Pair<ActionOrProperty, List<String>> inherited;
+
+        public IntegrationPropUsage(String alias, Boolean literal, LPWithParams lp, Pair<ActionOrProperty, List<String>> inherited) {
+            this(alias, literal, lp.getLP(), inherited);
+        }
+        public IntegrationPropUsage(String alias, Boolean literal, LP lp, Pair<ActionOrProperty, List<String>> inherited) {
+            this.alias = alias;
+            this.literal = literal != null && literal;
+            this.listInterfaces = lp != null ? (ImOrderSet<P>) lp.listInterfaces : null;
+            this.inherited = inherited;
+        }
+    }
+
     public LPWithParams addScriptedJSONProperty(List<TypedParameter> oldContext, final List<String> ids, List<Boolean> literals,
-                                                List<LPWithParams> exprs, LPWithParams whereProperty,
+                                                List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty,
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
-        List<String> exIds = new ArrayList<>(ids);
-        List<Boolean> exLiterals = new ArrayList<>(literals);
+        List<LPWithParams> exExprs = new ArrayList<>(exprs);
+        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
+        for (int i = 0, size = exprs.size(); i < size; i++) {
+            Pair<ActionOrProperty, List<String>> exPropUsage = null;
+            LPTrivialLA propUsage = propUsages.get(i);
+            if (propUsage != null) { // we need property to get the correct integrationSID
+                FormActionOrPropertyUsage<?> pDrawUsage = propUsage.action;
+                LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
+                exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
+            }
+            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
+        }
 
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
         for (int i = 0; i < orderProperties.size(); i++) {
             LPWithParams orderProperty = orderProperties.get(i);
-            exprs.add(orderProperty);
-            String orderId = "order" + exIds.size();
-            exIds.add(orderId);
-            exLiterals.add(false);
+            exExprs.add(orderProperty);
+            String orderId = "order" + exPropUsages.size();
+            exPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
             mOrders.exclAdd(orderId, orderDirections.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
 
-        List<LPWithParams> props = exprs;
-        if(whereProperty != null)
-            props = BaseUtils.add(exprs, whereProperty);
-
         // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
+        List<LPWithParams> props = exExprs;
+        if(whereProperty != null)
+            props = BaseUtils.add(exExprs, whereProperty);
         List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LAPWithParams[props.size()]));
         List<LPWithParams> mapping = new ArrayList<>();
         for (int resI : resultInterfaces) {
@@ -4193,7 +4224,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LAPWithParams> paramsList = new ArrayList<>();
         paramsList.addAll(mapping);
-        paramsList.addAll(exprs);
+        paramsList.addAll(exExprs);
         if (whereProperty != null) {
             paramsList.add(whereProperty);
         }
@@ -4202,7 +4233,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LP result = null;
         try {
-            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exIds, exLiterals, orders,
+            result = addJSONProp(LocalizedString.NONAME, resultInterfaces.size(), exPropUsages, orders,
                     whereProperty != null, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
@@ -4215,7 +4246,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LAWithParams addScriptedExportAction(List<TypedParameter> oldContext, FormIntegrationType type, final List<String> ids, List<Boolean> literals,
-                                                List<LPWithParams> exprs, LPWithParams whereProperty, NamedPropertyUsage fileProp,
+                                                List<LPWithParams> exprs, List<LPTrivialLA> propUsages, LPWithParams whereProperty, NamedPropertyUsage fileProp,
                                                 LPWithParams sheetNameProperty, LPWithParams rootProperty, LPWithParams tagProperty,
                                                 String separator, Boolean hasHeader, boolean noEscape, Integer selectTop, String charset, boolean attr,
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
@@ -4224,29 +4255,38 @@ public class ScriptingLogicsModule extends LogicsModule {
         if(targetProp == null)
             targetProp = baseLM.exportFile;
 
-        List<String> exIds = new ArrayList<>(ids);
-        List<Boolean> exLiterals = new ArrayList<>(literals);
+        List<LPWithParams> exExprs = new ArrayList<>(exprs);
+
+        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
+        for (int i = 0, size = exprs.size(); i < size; i++) {
+            Pair<ActionOrProperty, List<String>> exPropUsage = null;
+            LPTrivialLA propUsage = propUsages.get(i);
+            if (propUsage != null) { // we need property to get the correct integrationSID
+                FormActionOrPropertyUsage<?> pDrawUsage = propUsage.action;
+                LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
+                exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
+            }
+            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
+        }
 
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
         for (int i = 0; i < orderProperties.size(); i++) {
             LPWithParams orderProperty = orderProperties.get(i);
-            exprs.add(orderProperty);
-            String orderId = "order" + exIds.size();
-            exIds.add(orderId);
-            exLiterals.add(false);
+            exExprs.add(orderProperty);
+            String orderId = "order" + exPropUsages.size();
+            exPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
             mOrders.exclAdd(orderId, orderDirections.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
-
-        List<LPWithParams> props = exprs;
-        if(whereProperty != null)
-            props = BaseUtils.add(exprs, whereProperty);
 
         if(type == null)
             type = FormIntegrationType.JSON;
 //            type = doesExtendContext(oldContext.size(), new ArrayList<LAPWithParams>(), props) ? FormIntegrationType.JSON : FormIntegrationType.TABLE;
 
         // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
+        List<LPWithParams> props = exExprs;
+        if(whereProperty != null)
+            props = BaseUtils.add(props, whereProperty);
         List<Integer> resultInterfaces = getResultInterfaces(oldContext.size(), props.toArray(new LAPWithParams[props.size()]));
         List<LPWithParams> mapping = new ArrayList<>();
         for (int resI : resultInterfaces) {
@@ -4255,7 +4295,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LAPWithParams> paramsList = new ArrayList<>();
         paramsList.addAll(mapping);
-        paramsList.addAll(exprs);
+        paramsList.addAll(exExprs);
         if (whereProperty != null) {
             paramsList.add(whereProperty);
         }
@@ -4268,7 +4308,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LA result = null;
         try {
-            result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), exIds, exLiterals, orders, targetProp,
+            result = addExportPropertyAProp(LocalizedString.NONAME, type, resultInterfaces.size(), exPropUsages, orders, targetProp,
                     whereProperty != null, sheetName, root, tag, separator, hasHeader, noEscape, selectTop, charset, attr, resultParams.toArray());
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
@@ -4296,13 +4336,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         return mResult.immutableOrder();
     }
 
-    public static List<String> getJParamNames(List<TypedParameter> context, List<LPWithParams> params) {
-        List<String> result = new ArrayList<>();
+    public static List<TypedParameter> getJParams(List<TypedParameter> context, List<LPWithParams> params) {
+        List<TypedParameter> result = new ArrayList<>();
         for (LPWithParams param : params) {
             if(param.getLP() != null)
                 return null;
             else
-                result.add(context.get(param.usedParams.get(0)).paramName);
+                result.add(context.get(param.usedParams.get(0)));
         }
         return result;
     }
@@ -4454,6 +4494,10 @@ public class ScriptingLogicsModule extends LogicsModule {
             props = findLPsForImport(propUsages, paramClasses);
         }
 
+        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
+        for(int i = 0, size = props.size(); i < size; i++)
+            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), props.get(i), null));
+
         boolean noParams = paramClasses.isEmpty();
 
         LP<?> whereLCP;
@@ -4483,7 +4527,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         LA importAction = null;
         try {
-            importAction = addImportPropertyAProp(format, params.size(), ids, literals, paramClasses, whereLCP, separator,
+            importAction = addImportPropertyAProp(format, params.size(), exPropUsages, paramClasses, whereLCP, separator,
                     noHeader, noEscape, charset, sheetAll, attr, hasRoot, hasWhere, getUParams(props.toArray(new LP[props.size()])));
         } catch (FormEntity.AlreadyDefined alreadyDefined) {
             throwAlreadyDefinePropertyDraw(alreadyDefined);
@@ -4764,7 +4808,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private List<LP> indexedProperties = new ArrayList<>();
     private List<String> indexNames = new ArrayList<>();
     private List<IndexType> indexTypes = new ArrayList<>();
-    private List<TemporaryIndexInfo> tempIndicies = new ArrayList<>();
+    private List<TemporaryIndexInfo> tempIndexes = new ArrayList<>();
             
     public void addScriptedIndex(LP lp, String dbName, IndexType indexType) {
         indexedProperties.add(lp);
@@ -4786,24 +4830,26 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(toPropertyLP, getParamsAssertList(toPropertyMapping));
     }
 
-    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps, IndexType indexType) throws ScriptingErrorLog.SemanticErrorException {
         checks.checkIndexNecessaryProperty(lps);
         checks.checkMarkStoredProperties(lps);
         checks.checkDistinctParametersList(lps);
         checks.checkIndexNumberOfParameters(params.size(), lps);
         ImOrderSet<String> keyNames = ListFact.fromJavaList(params).toOrderExclSet().mapOrderSetValues(value -> value.paramName);
-        tempIndicies.add(new TemporaryIndexInfo(dbName, keyNames, getParamsPlainList(lps).toArray()));
+        tempIndexes.add(new TemporaryIndexInfo(dbName, keyNames, getParamsPlainList(lps).toArray(), indexType));
     }
 
     private static class TemporaryIndexInfo {
         public String dbName;
         public ImOrderSet<String> keyNames;
         public Object[] params;
+        public IndexType indexType;
         
-        public TemporaryIndexInfo(String dbName, ImOrderSet<String> keyNames, Object[] params) {
+        public TemporaryIndexInfo(String dbName, ImOrderSet<String> keyNames, Object[] params, IndexType indexType) {
             this.dbName = dbName;
             this.keyNames = keyNames;
             this.params = params;
+            this.indexType = indexType;
         }
     }
 

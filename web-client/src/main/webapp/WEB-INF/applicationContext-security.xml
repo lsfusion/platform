@@ -71,7 +71,6 @@
 
         <csrf disabled="true"/>
 
-        <custom-filter ref="characterEncodingFilter" before="OAUTH2_AUTHORIZATION_REQUEST_FILTER"/>
         <custom-filter after="ANONYMOUS_FILTER" ref="anonymousFilter"/>
 
         <custom-filter position="PRE_AUTH_FILTER" ref="urlAuthenticationFilter"/>
@@ -83,11 +82,6 @@
     <b:bean id="lsfClientRegistrationRepository" class="lsfusion.http.authentication.LSFClientRegistrationRepository"/>
     <b:bean id="auth2AuthorizedClientService" class="org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService">
         <b:constructor-arg ref="lsfClientRegistrationRepository"/>
-    </b:bean>
-
-    <b:bean id="characterEncodingFilter" class="org.springframework.web.filter.CharacterEncodingFilter">
-        <b:property name="encoding" value="UTF-8"/>
-        <b:property name="forceEncoding" value="true"/>
     </b:bean>
 
     <!-- read app token from authentication:bearer -->

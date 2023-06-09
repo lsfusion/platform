@@ -162,7 +162,7 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
             query.and(where.getWhere(query.getMapExprs()));
 
         Expr dbExpr = checkInconsistence ? getInconsistentExpr(query.getMapExprs(), baseClass) : getExpr(query.getMapExprs());
-        Expr calculateExpr = calculateExpr(query.getMapExprs(), isFullProperty() ? CalcType.RECALC : CalcType.EXPR, PropertyChanges.EMPTY, null);  // оптимизация - только для FULL свойств, так как в остальных лучше использовать кэш по EXPR
+        Expr calculateExpr = aspectCalculateExpr(query.getMapExprs(), isFullProperty() ? CalcType.RECALC : CalcType.EXPR, PropertyChanges.EMPTY, null);  // оптимизация - только для FULL свойств, так как в остальных лучше использовать кэш по EXPR
         if(outDB)
             query.addProperty("dbvalue", dbExpr);
         query.addProperty("calcvalue", calculateExpr);

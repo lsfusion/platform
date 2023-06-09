@@ -1,6 +1,7 @@
 package lsfusion.server.language;
 
 import lsfusion.base.Pair;
+import lsfusion.server.data.table.IndexType;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.language.property.PropertySettings;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -36,7 +37,7 @@ public class EvalScriptingLogicsModule extends ScriptingLogicsModule {
     }
 
     @Override
-    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedIndex(String dbName, List<TypedParameter> params, List<LPWithParams> lps, IndexType indexType) throws ScriptingErrorLog.SemanticErrorException {
         emitEvalError("INDEX statement");
     }
 

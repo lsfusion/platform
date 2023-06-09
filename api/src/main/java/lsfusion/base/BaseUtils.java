@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static lsfusion.base.ApiResourceBundle.getString;
@@ -55,7 +56,7 @@ public class BaseUtils {
     private static final int STRING_SERIALIZATION_CHUNK_SIZE = 65535/3;
 
     public static Integer getApiVersion() {
-        return 238;
+        return 240;
     }
 
     public static String getPlatformVersion() {
@@ -356,6 +357,21 @@ public class BaseUtils {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         serializeObject(new DataOutputStream(outStream), value);
         return outStream.toByteArray();
+    }
+
+    public static boolean findInCamelCase(String string, Predicate<String> test) {
+        StringBuilder word = new StringBuilder();
+        for(int i = 0, length = string.length(); i < length; i++) {
+            char ch = string.charAt(i);
+            if(Character.isUpperCase(ch)) {
+                if (test.test(word.toString()))
+                    return true;
+                word = new StringBuilder();
+                word.append(Character.toLowerCase(ch));
+            } else
+                word.append(ch);
+        }
+        return test.test(word.toString());
     }
 
     public static void serializeObject(DataOutputStream outStream, Object object) throws IOException {

@@ -291,13 +291,6 @@ public class RemoteFormProxy extends RemoteRequestObjectProxy<RemoteFormInterfac
         return result;
     }
 
-    public ServerResponse moveGroupObject(long requestIndex, long lastReceivedRequestIndex, int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException {
-        logRemoteMethodStartVoidCall("moveGroupObject");
-        ServerResponse result = target.moveGroupObject(requestIndex, lastReceivedRequestIndex, parentGroupId, parentKey, childGroupId, childKey, index);
-        logRemoteMethodEndVoidCall("moveGroupObject");
-        return result;
-    }
-
     @Override
     public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException {
         logRemoteMethodStartCall("executeEventAction");

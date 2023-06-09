@@ -97,7 +97,7 @@ public abstract class AbstractTableController implements TableController {
 
     public Boolean addFilter() {
         if (filter != null && filter.hasFiltersContainer()) {
-            boolean added = filter.addCondition();
+            boolean added = filter.addCondition(false, true);
             if (added) {
                 filter.setControlsVisible(true);
             }

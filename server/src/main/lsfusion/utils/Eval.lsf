@@ -163,7 +163,7 @@ changeScript(Script sc) {
 onWebClientStarted() + { INTERNAL CLIENT 'interpreter.js'; }
 
 FORM interpreter '{eval.script.form.interpreter}'
-    OBJECTS st = ScriptType CUSTOM 'option'
+    OBJECTS st = ScriptType CUSTOM 'radioButtonGroup'
     PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName
     ORDERS executionScriptTypeName(st)
     EVENTS 

@@ -1,6 +1,7 @@
 package lsfusion.client.form.property.cell.classes.view;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.file.FileData;
 import lsfusion.base.file.RawFileData;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.view.MainFrame;
@@ -26,7 +27,7 @@ public class ImagePropertyRenderer extends FilePropertyRenderer {
         
         icon = null; // сбрасываем
         if (value != null) {
-            Image image = convertValue(((RawFileData) value));
+            Image image = convertValue(((FileData) value).getRawFile());
             if (image != null) {
                 icon = new ImageIcon(image);
             }

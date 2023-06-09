@@ -198,13 +198,16 @@ public class InputListEntity<P extends PropertyInterface, V extends PropertyInte
         return mapValues.valuesSet();
     }
     
-    public boolean isDefaultWYSInput() {
-        return Property.isDefaultWYSInput(property.getValueClass(ClassType.tryEditPolicy));
-    }
+//    public boolean isDefaultWYSInput() {
+//        return Property.isDefaultWYSInput(property.getValueClass(ClassType.tryEditPolicy));
+//    }
     
     public boolean isValueUnique(ImRevMap<V, StaticParamNullableExpr> listParamExprs) {
-        ImRevMap<P, StaticParamNullableExpr> mapExprs = mapValues.join(listParamExprs);
-        return property.isValueFull(mapExprs) && property.isValueUnique(mapExprs, true);
+        if(!Property.isDefaultWYSInput(property.getValueClass(ClassType.typePolicy)))
+            return false;
+
+        ImMap<P, StaticParamNullableExpr> fixedExprs = mapValues.join(listParamExprs);
+        return property.isValueUnique(fixedExprs, true);
     }
     
     @Override

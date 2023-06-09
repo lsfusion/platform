@@ -34,6 +34,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         void removeCondition(ClientPropertyFilter condition);
         void applyFilters(boolean focusFirstComponent);
         void enableApplyButton();
+        boolean isManualApplyMode();
     }
 
     private TableController logicsSupplier;
@@ -134,22 +135,24 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                 condition.compare = value;
                 updateCompareLabelText();
                 valueView.changeCompare(value);
-                enableApplyButton();
-                focusValueView();
+                
+                conditionChanged(true);
             }
 
             @Override
             public void negationChanged(boolean value) {
                 condition.negation = value;
                 updateCompareLabelText();
-                enableApplyButton();
+
+                conditionChanged(true);
                 
                 FilterConditionView.this.logicsSupplier.getFormController().revalidate();
             }
 
             @Override
             public void allowNullChanged(boolean value) {
-                enableApplyButton();
+                conditionChanged(true);
+                
                 allowNull = value;
             }
 
@@ -168,10 +171,8 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
             public void valueChanged(Object newValue) {
                 super.valueChanged(newValue);
                 if (!innerValueChange) { // to avoid multiple apply calls
-                    enableApplyButton();
-                    if (valueTable.editorEnterPressed() || !FilterConditionView.this.controlsVisible) {
-                        applyFilters(valueTable.editorEnterPressed());
-                    }
+                    conditionChanged(false);
+                    
                     confirmed = true;
                 }
             }
@@ -220,8 +221,7 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
                     }
                     setToolTipText(caption);
 
-                    enableApplyButton();
-                    focusValueView();
+                    conditionChanged(true);
                 });
             }
         };
@@ -233,6 +233,17 @@ public class FilterConditionView extends FlexPanel implements CaptionContainerHo
         setControlsVisible(controlsVisible);
 
         propertyView.setSelectedValue(currentColumn, currentCaption);
+    }
+    
+    private void conditionChanged(boolean focusValueView) {
+        if (uiHandler.isManualApplyMode()) {
+            enableApplyButton();
+            if (focusValueView) {
+                focusValueView();
+            }
+        } else {
+            applyFilters(true);
+        }
     }
 
     private void focusValueView() {
