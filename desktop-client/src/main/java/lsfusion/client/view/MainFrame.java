@@ -335,8 +335,6 @@ public abstract class MainFrame extends JFrame {
 
     protected File baseDir;
     public RemoteNavigatorInterface remoteNavigator;
-    public JLabel statusComponent;
-    public JComponent status;
 
     private LockableUI lockableUI;
 
@@ -349,10 +347,6 @@ public abstract class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         updateUser(userName);
-
-        statusComponent = new JLabel();
-        status = new JPanel(new BorderLayout());
-        status.add(statusComponent, BorderLayout.CENTER);
 
         loadLayout();
 

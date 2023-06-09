@@ -11,7 +11,6 @@ import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -474,11 +473,7 @@ public class MainFrame implements EntryPoint {
         formsWindowLink.link = formsWindow;
         Map<GAbstractWindow, Widget> commonWindows = new LinkedHashMap<>();
         commonWindows.put(result.log, GLog.createLogPanel(result.log.visible));
-        commonWindows.put(result.status, new Label(result.status.caption));
         commonWindowsLink.link = commonWindows;
-
-        // пока прячем всё, что не поддерживается
-        result.status.visible = false;
 
         ArrayList<GNavigatorWindow> navigatorWindows = result.navigatorWindows;
 

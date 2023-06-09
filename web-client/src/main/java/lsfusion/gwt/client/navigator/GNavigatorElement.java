@@ -33,7 +33,12 @@ public abstract class GNavigatorElement implements Serializable, HasNativeSID {
     public GNavigatorWindow getDrawWindow() {
         if(parentWindow)
             return window;
-        return parent != null ? parent.window : window;
+        if(parent != null) {
+            if(parent.window != null)
+                return parent.window;
+            return parent.getDrawWindow();
+        }
+        return null;
     }
 
     public GNavigatorElement findChild(GNavigatorElement element) {

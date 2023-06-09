@@ -79,7 +79,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.*;
 
 import static lsfusion.base.BaseUtils.nvl;
@@ -451,7 +450,6 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             dataStream.write(getNavigatorChangesByteArray(true));
 
             businessLogics.LM.baseWindows.log.serialize(dataStream);
-            businessLogics.LM.baseWindows.status.serialize(dataStream);
             businessLogics.LM.baseWindows.forms.serialize(dataStream);
 
         } catch (IOException e) {

@@ -11,10 +11,6 @@ public class SizedFlexPanel extends FlexPanel {
         super(vertical, flexAlignment, gridLines, wrap, resizeOverflow);
     }
 
-    public SizedFlexPanel(boolean vertical, GFlexAlignment flexAlignment) {
-        super(vertical, flexAlignment);
-    }
-
     public SizedFlexPanel(boolean vertical) {
         super(vertical);
     }

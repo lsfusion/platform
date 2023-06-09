@@ -18,17 +18,15 @@ public class NavigatorData {
     public final ClientNavigatorChanges navigatorChanges;
 
     public final ClientAbstractWindow logs;
-    public final ClientAbstractWindow status;
     public final ClientAbstractWindow forms;
 
     public NavigatorData(ClientNavigatorElement root, Map<String, ClientNavigatorWindow> windows,
                          ClientNavigatorChanges navigatorChanges,
-                         ClientAbstractWindow logs, ClientAbstractWindow status, ClientAbstractWindow forms) {
+                         ClientAbstractWindow logs, ClientAbstractWindow forms) {
         this.root = root;
         this.windows = windows;
         this.navigatorChanges = navigatorChanges;
         this.logs = logs;
-        this.status = status;
         this.forms = forms;
     }
 
@@ -64,9 +62,8 @@ public class NavigatorData {
         ClientNavigatorChanges clientNavigatorChanges = new ClientNavigatorChanges(inStream);
 
         ClientAbstractWindow logs =new ClientAbstractWindow(inStream);
-        ClientAbstractWindow status = new ClientAbstractWindow(inStream);
         ClientAbstractWindow forms = new ClientAbstractWindow(inStream);
 
-        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, status, forms);
+        return new NavigatorData(elements.isEmpty() ? null : elements.get(0), windows, clientNavigatorChanges, logs, forms);
     }
 }

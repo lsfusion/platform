@@ -456,38 +456,37 @@ logoWindowClass = ABSTRACT STRING();
 rootWindowClass = ABSTRACT STRING();
 systemWindowClass = ABSTRACT STRING();
 formsWindowClass = ABSTRACT STRING();
+toolbarWindowClass = ABSTRACT STRING();
+logsWindowClass = ABSTRACT STRING();
 
 WINDOW logo TOOLBAR HORIZONTAL POSITION(0, 0, 10, 6) VALIGN (CENTER) HALIGN (START) HIDETITLE HIDESCROLLBARS CLASS logoWindowClass();
 WINDOW root TOOLBAR HORIZONTAL POSITION(10, 0, 70, 6) VALIGN (CENTER) HALIGN (CENTER) HIDETITLE HIDESCROLLBARS CLASS rootWindowClass();
 WINDOW system TOOLBAR HORIZONTAL POSITION(80, 0, 20, 6) VALIGN (CENTER) HALIGN (END) HIDETITLE HIDESCROLLBARS CLASS systemWindowClass();
 
-WINDOW toolbar TOOLBAR VERTICAL POSITION(0, 6, 20, 64) HIDETITLE CLASS 'bg-body-secondary';
-WINDOW tree  TOOLBAR POSITION(0, 6, 20, 64) HIDETITLE CLASS 'bg-body-secondary';
+WINDOW toolbar TOOLBAR VERTICAL POSITION(0, 6, 20, 89) HIDETITLE CLASS toolbarWindowClass();
+WINDOW tree  TOOLBAR POSITION(0, 6, 20, 89) HIDETITLE CLASS 'bg-body-secondary';
 
-WINDOW forms NATIVE POSITION(20, 20, 80, 79) CLASS formsWindowClass();
-WINDOW log NATIVE POSITION(0, 70, 20, 29) CLASS 'bg-body-secondary';
-WINDOW status NATIVE POSITION(0, 99, 100, 1) HIDETITLE CLASS 'bg-body-secondary';
+WINDOW forms NATIVE POSITION(20, 6, 80, 89) CLASS formsWindowClass();
+WINDOW log NATIVE POSITION(0, 95, 100, 5) HIDETITLE CLASS logsWindowClass();
 
 noSystemToolbarCaptions = ABSTRACT BOOLEAN();
 
 NAVIGATOR {
-    NEW FOLDER root '{navigator.forms}' WINDOW root {
-        NEW FOLDER administration '{navigator.administration}' HEADER '{navigator.administration}' IF NOT noSystemToolbarCaptions() LAST WINDOW system PARENT IMAGE 'tools.png' {
-            NEW FOLDER application '{navigator.application}' WINDOW toolbar PARENT {
-                NEW options;
-                NEW integrationData;
-                NEW migrationData;
-            }
-            
-            NEW FOLDER system '{navigator.system}' WINDOW toolbar PARENT {
-                NEW FOLDER performance '{navigator.performance}';
-                NEW FOLDER notification '{navigator.notification}';    
-                NEW FOLDER scheduler '{navigator.scheduler}';    
-                NEW FOLDER logs '{navigator.logs}';            
-            }
-            
-            NEW FOLDER objects '{navigator.objects}' WINDOW tree; 
+    NEW FOLDER administration '{navigator.administration}' HEADER '{navigator.administration}' IF NOT noSystemToolbarCaptions() LAST WINDOW system PARENT IMAGE 'tools.png' {
+        NEW FOLDER application '{navigator.application}' WINDOW toolbar PARENT {
+            NEW options;
+            NEW integrationData;
+            NEW migrationData;
         }
+        
+        NEW FOLDER system '{navigator.system}' WINDOW toolbar PARENT {
+            NEW FOLDER performance '{navigator.performance}';
+            NEW FOLDER notification '{navigator.notification}';    
+            NEW FOLDER scheduler '{navigator.scheduler}';    
+            NEW FOLDER logs '{navigator.logs}';            
+        }
+        
+        NEW FOLDER objects '{navigator.objects}' WINDOW tree; 
     }
 }
 

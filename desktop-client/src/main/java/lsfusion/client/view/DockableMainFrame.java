@@ -48,7 +48,10 @@ import lsfusion.client.navigator.controller.NavigatorController;
 import lsfusion.client.navigator.controller.dispatch.ClientNavigatorActionDispatcher;
 import lsfusion.client.navigator.window.ClientAbstractWindow;
 import lsfusion.client.navigator.window.view.ClientWindowDockable;
-import lsfusion.interop.action.*;
+import lsfusion.interop.action.ClientAction;
+import lsfusion.interop.action.ExceptionClientAction;
+import lsfusion.interop.action.FormClientAction;
+import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 import lsfusion.interop.navigator.remote.RemoteNavigatorInterface;
@@ -64,7 +67,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
-import java.lang.String;
 import java.rmi.RemoteException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -561,7 +563,6 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
 
         try {
             windows.put(navigatorData.logs, Log.recreateLogPanel());
-            windows.put(navigatorData.status, status);
 
             formsWindow = navigatorData.forms;
         } catch (Exception e) {

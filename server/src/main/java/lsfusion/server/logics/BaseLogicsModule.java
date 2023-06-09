@@ -58,6 +58,7 @@ import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.navigator.NavigatorElement;
+import lsfusion.server.logics.navigator.NavigatorFolder;
 import lsfusion.server.logics.navigator.window.AbstractWindow;
 import lsfusion.server.logics.navigator.window.NavigatorWindow;
 import lsfusion.server.logics.navigator.window.ToolBarNavigatorWindow;
@@ -504,6 +505,11 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         // need it before initMainLogic because it is used in constraints
         cancel = addCancelAProp(null, LocalizedString.NONAME, SetFact.EMPTY());
 
+        // navigator elements (before parsing because root is used there)
+        root = new NavigatorFolder("System.root");
+        root.caption = () -> LocalizedString.NONAME;
+        addNavigatorElement(root);
+
         super.initMainLogic();
         initGroups();
         addClassDataPropsToGroup();
@@ -681,7 +687,6 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
         public NavigatorWindow tree;
         public AbstractWindow forms;
         public AbstractWindow log;
-        public AbstractWindow status;
     }
 
     public Windows baseWindows;
@@ -705,21 +710,19 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
 
         baseWindows.root = (ToolBarNavigatorWindow) findWindow("root");
         baseWindows.root.autoSize = true;
+        root.window = baseWindows.root;
 
         baseWindows.system = (ToolBarNavigatorWindow) findWindow("system");
         baseWindows.system.autoSize = true;
 
         baseWindows.toolbar = (NavigatorWindow) findWindow("toolbar");
+//        baseWindows.toolbar.autoSize = true;
 
         baseWindows.tree = (NavigatorWindow) findWindow("tree");
+//        baseWindows.tree.autoSize = true;
 
         baseWindows.forms = findWindow("forms");
         baseWindows.log = findWindow("log");
-        baseWindows.status = findWindow("status");
-
-        // todo : перенести во внутренний класс Navigator, как в Windows
-        // Навигатор
-        root = findNavigatorElement("root");
 
         administration = findNavigatorElement("administration");
 
