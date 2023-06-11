@@ -23,7 +23,7 @@ public class BaseComponentViewInstance extends ComponentViewInstance<ComponentVi
 
     public class ShowIfReaderInstance implements PropertyReaderInstance {
 
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return new PropertyObjectInstance<>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
         }
 

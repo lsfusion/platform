@@ -22,7 +22,7 @@ public class ComponentViewInstance<T extends ComponentView> extends CellInstance
 
     public class ElementClassReaderInstance implements PropertyReaderInstance {
 
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return propertyElementClass;
         }
 

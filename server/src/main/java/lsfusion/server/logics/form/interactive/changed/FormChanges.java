@@ -45,6 +45,7 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static lsfusion.base.BaseUtils.*;
 
@@ -284,15 +285,16 @@ public class FormChanges {
     }
 
     private static NeedImage getNeedImage(PropertyReaderInstance reader, FormView formView) {
+        Supplier<Type> readType = () -> reader.getReaderProperty().getType();
         Type readerType;
-        if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty() && (readerType = ((PropertyDrawInstance) reader).getType()) instanceof ImageClass)) {
+        if ((reader instanceof PropertyDrawInstance && ((PropertyDrawInstance<?>) reader).isProperty() && (readerType = readType.get()) instanceof ImageClass)) {
             PropertyDrawEntity<?> propertyDraw = ((PropertyDrawInstance<?>) reader).entity;
             return getNeedImage(readerType, propertyDraw, formView);
         } else if (reader instanceof PropertyDrawInstance.ExtraReaderInstance && reader.getTypeID() == PropertyDrawExtraType.IMAGE.getPropertyReadType()) {
-            return getNeedImage(reader.getPropertyObjectInstance().getType(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, formView);
+            return getNeedImage(readType.get(), ((PropertyDrawInstance<?>.ExtraReaderInstance) reader).getPropertyDraw().entity, formView);
         } else if (reader instanceof ContainerViewInstance.ExtraReaderInstance && reader.getTypeID() == ContainerViewExtraType.IMAGE.getContainerReadType()) {
             ContainerView containerView = ((ContainerViewInstance.ExtraReaderInstance) reader).getContainerView();
-            return new NeedImage(reader.getPropertyObjectInstance().getType(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, formView).get());
+            return new NeedImage(readType.get(), imagePath -> AppServerImage.createContainerImage(imagePath, containerView, formView).get());
         }
         return null;
     }

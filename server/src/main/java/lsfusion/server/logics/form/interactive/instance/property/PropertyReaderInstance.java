@@ -4,7 +4,7 @@ import lsfusion.server.physics.admin.profiler.ProfiledObject;
 
 public interface PropertyReaderInstance extends ProfiledObject {
 
-    PropertyObjectInstance getPropertyObjectInstance();
+    PropertyObjectInstance getReaderProperty();
 
     byte getTypeID();
 

@@ -11,13 +11,19 @@ import lsfusion.interop.form.event.KeyInputEvent;
 import lsfusion.interop.form.event.MouseInputEvent;
 import lsfusion.interop.form.print.ReportFieldExtraType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.server.base.caches.ManualLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.TypeSerializer;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.action.flow.ChangeFlowType;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.classes.data.LogicalClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
+import lsfusion.server.logics.classes.data.integral.IntegralClass;
+import lsfusion.server.logics.classes.data.time.DateClass;
+import lsfusion.server.logics.classes.data.time.DateTimeClass;
+import lsfusion.server.logics.classes.data.time.TimeClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncNoWaitExec;
@@ -97,7 +103,7 @@ public class PropertyDrawView extends BaseComponentView {
 
     public boolean drawAsync = false;
 
-    public Format format;
+    public String pattern;
 
     public Boolean focusable;
 
@@ -306,12 +312,10 @@ public class PropertyDrawView extends BaseComponentView {
         if(!isProperty())
             return false;
 
-        PropertyObjectEntity<?> property = entity.getPropertyObjectEntity();
-
-        if(property.isValueUnique(entity.getToDraw(formEntity)))
+        if(entity.getAssertProperty().isValueUnique(entity.getToDraw(formEntity)))
             return true;
 
-        if(LM.isRecognize(property.property))
+        if(LM.isRecognize(entity.getInheritedProperty()))
             return true;
 
         return false;
@@ -339,18 +343,20 @@ public class PropertyDrawView extends BaseComponentView {
         }
         setupShowIf(reportField);
         
-        reportField.pattern = getFormatPattern();
+        reportField.pattern = getPattern();
 
         type.fillReportDrawField(reportField);
         return reportField;
     }
 
     private void setupGeometry(ReportDrawField reportField, int scale) {
-        Type type = getType();
-
         reportField.scale = scale;
-        reportField.minimumWidth = type.getReportMinimumWidth() * scale;
-        reportField.preferredWidth = type.getReportPreferredWidth() * scale;
+
+        if(isProperty()) {
+            Type type = getType();
+            reportField.minimumWidth = type.getReportMinimumWidth() * scale;
+            reportField.preferredWidth = type.getReportPreferredWidth() * scale;
+        }
         int reportCharWidth = getCharWidth();
         if (reportCharWidth != 0) {
             reportField.fixedCharWidth = reportCharWidth * scale;
@@ -428,7 +434,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         outStream.writeBoolean(drawAsync);
 
-        pool.writeObject(outStream, format);
+        pool.writeObject(outStream, getFormat());
 
         outStream.writeBoolean(entity.isList(pool.context.view.entity));
 
@@ -443,7 +449,7 @@ public class PropertyDrawView extends BaseComponentView {
         
         pool.writeObject(outStream, getValueAlignment());
 
-        pool.writeObject(outStream, changeOnSingleClick);
+        pool.writeObject(outStream, getChangeOnSingleClick());
         outStream.writeBoolean(hide);
 
         //entity часть
@@ -483,9 +489,10 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(hasChangeAction(pool.context));
         outStream.writeBoolean(entity.hasDynamicImage());
 
-        outStream.writeBoolean(entity.getDrawProperty().property.disableInputList);
+        ActionOrProperty inheritedProperty = entity.getInheritedProperty();
+        outStream.writeBoolean(inheritedProperty instanceof Property ? ((Property<?>) inheritedProperty).disableInputList : null);
 
-        ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugProperty(); // only for tooltip
+        ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugActionOrProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
 
         pool.writeString(outStream, debugBinding.getNamespace());
@@ -600,14 +607,8 @@ public class PropertyDrawView extends BaseComponentView {
         return contextMenuItems;
     }
 
-    public String getFormatPattern() {
-        if (format != null) {
-            if (format instanceof DecimalFormat)
-                return ((DecimalFormat) format).toPattern();
-            else if (format instanceof SimpleDateFormat)
-                return ((SimpleDateFormat) format).toPattern();
-        }
-        return null;
+    public String getPattern() {
+        return pattern;
     }
 
     @Override
@@ -638,7 +639,7 @@ public class PropertyDrawView extends BaseComponentView {
         changeMouse = pool.readObject(inStream);
         changeMousePriority = pool.readInt(inStream);
 
-        format = pool.readObject(inStream);
+        pattern = pool.readObject(inStream);
 
         focusable = pool.readObject(inStream);
 
@@ -775,6 +776,42 @@ public class PropertyDrawView extends BaseComponentView {
         if(eventAction != null)
             return eventAction.property.hasFlow(type);
         return false;
+    }
+
+
+    private Format format;
+    private boolean formatCalculated;
+    @ManualLazy
+    public Format getFormat() {
+        if(pattern != null) {
+            if(!formatCalculated) {
+                if(isProperty()) {
+                    Type type = getType();
+                    if (type instanceof IntegralClass) {
+                        format = new DecimalFormat(pattern);
+                    } else if (type instanceof DateClass || type instanceof TimeClass || type instanceof DateTimeClass) {
+                        format = new SimpleDateFormat(pattern);
+                    }
+                }
+                formatCalculated = true;
+            }
+            return format;
+        }
+
+        return null;
+    }
+
+    public Boolean getChangeOnSingleClick() {
+        if(changeOnSingleClick != null)
+            return changeOnSingleClick;
+
+        if(isProperty()) {
+            if (getType() instanceof LogicalClass)
+                return Settings.get().getChangeBooleanOnSingleClick();
+        } else
+            return Settings.get().getChangeActionOnSingleClick();
+
+        return null;
     }
 
     public FlexAlignment getValueAlignment() {

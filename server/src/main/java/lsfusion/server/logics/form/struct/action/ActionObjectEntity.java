@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.struct.action;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.caches.IdentityInstanceLazy;
+import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.action.Action;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
@@ -26,6 +27,9 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         //нужен для десериализации
     }
 
+    public ActionObjectEntity(LA<P> property) {
+        this(property.action, MapFact.EMPTYREV());
+    }
     public ActionObjectEntity(Action<P> property, ImRevMap<P, ObjectEntity> mapping) {
         this(property, mapping, null, null, null);
     }
@@ -65,7 +69,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
 //
 
     @IdentityInstanceLazy
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly) {
+    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly) {
         //        return PropertyFact.createTrue().mapObjects(MapFact.<PropertyInterface, PropertyObjectInterfaceInstance>EMPTY());
         if(readOnly == null) // optimization
             return PropertyFact.createTrue().mapEntityObjects(MapFact.EMPTYREV());

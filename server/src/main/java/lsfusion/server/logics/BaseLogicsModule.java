@@ -293,7 +293,7 @@ public class BaseLogicsModule extends ScriptingLogicsModule {
     }
 
     @IdentityLazy
-    public LA getFormRefresh() {
+    public LA<?> getFormRefresh() {
         try {
             return findAction("formRefresh[]");
         } catch (ScriptingErrorLog.SemanticErrorException e) {

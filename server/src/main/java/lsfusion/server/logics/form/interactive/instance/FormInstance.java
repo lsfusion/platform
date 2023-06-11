@@ -383,7 +383,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             Boolean ascending = defaultOrders.getValue(i);
 
             if(toDraw != null) {
-                OrderInstance order = property.getOrder();
+                OrderInstance order = property.getOrderProperty();
                 toDraw.changeOrder(order, wasOrder.contains(toDraw) ? ADD : REPLACE);
                 if (!ascending) {
                     toDraw.changeOrder(order, DIR);
@@ -1106,7 +1106,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
         ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
 
-        Expr expr = GroupExpr.create(MapFact.EMPTY(), propertyDraw.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.EMPTY());
+        Expr expr = GroupExpr.create(MapFact.EMPTY(), propertyDraw.getGroupProperty().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), GroupType.SUM, MapFact.EMPTY());
 
         QueryBuilder<Object, String> query = new QueryBuilder<>(MapFact.EMPTYREV());
         query.addProperty("sum", expr);
@@ -1385,7 +1385,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
                 String propertyKey = getSID(property, i);
                 mKeyExprMap.revAdd(propertyKey, new KeyExpr("expr"));
-                Expr propExpr = property.getDrawInstance().getExpr(keys, getModifier());
+                Expr propExpr = property.getGroupProperty().getExpr(keys, getModifier());
                 // override to support NULLs
                 Expr expr = FormulaUnionExpr.create(StringOverrideFormulaImpl.instance, ListFact.toList(propExpr, ValueExpr.IMPOSSIBLESTRING));
                 mExprMap.exclAdd(propertyKey, expr);
@@ -1424,7 +1424,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             for (ImMap<ObjectInstance, DataObject> columnKeys : currentList) {
                 idIndex++;
                 ImMap<ObjectInstance, Expr> keys = overrideColumnKeys(mapKeys, columnKeys);
-                Expr expr = GroupExpr.create(exprMap, property.getDrawInstance().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), groupType, keyExprMap);
+                Expr expr = GroupExpr.create(exprMap, property.getGroupProperty().getExpr(keys, getModifier()), groupObject.getWhere(mapKeys, getModifier()), groupType, keyExprMap);
                 query.addProperty(getSID(property, idIndex), expr);
                 if (onlyNotNull) {
                     query.and(expr.getWhere());
@@ -1437,7 +1437,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             int i = 0;
             for (ImMap<ObjectInstance, DataObject> columnKeys : toGroup.get(property)) {
                 i++;
-                Expr expr = property.getDrawInstance().getExpr(overrideColumnKeys(mapKeys, columnKeys), getModifier());
+                Expr expr = property.getGroupProperty().getExpr(overrideColumnKeys(mapKeys, columnKeys), getModifier());
                 Expr gexpr = GroupExpr.create(exprMap, expr, groupObject.getWhere(mapKeys, getModifier()), GroupType.ANY, keyExprMap);
                 query.addProperty(getSID(property, i) + "_key", gexpr);
             }
@@ -2050,7 +2050,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
             MExclMap<R, ImMap<ImMap<ObjectInstance, DataObject>, ObjectValue>> properties,
             ImSet<GroupObjectInstance> keyGroupObjects,
             ImSet<R> propertySet) throws SQLException, SQLHandledException {
-        queryPropertyObjectValues(propertySet, properties, keyGroupObjects, PropertyReaderInstance::getPropertyObjectInstance);
+        queryPropertyObjectValues(propertySet, properties, keyGroupObjects, PropertyReaderInstance::getReaderProperty);
     }
 
     private <T> Expr groupExpr(SQLFunction<PropertyObjectInstance<?>, Expr> getExpr, T key, Where groupModeWhere, ImMap<Object, Expr> groupModeExprs, ImSet<GroupMode> groupModes) throws SQLException, SQLHandledException {
@@ -2490,7 +2490,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     }
 
     private void fillChangedReader(PropertyReaderInstance propertyReader, GroupObjectInstance toDraw, MFormChanges result, ImSet<GroupObjectInstance> columnGroupGrids, boolean hidden, boolean update, boolean wasShown, MExclMap<PropertyReaderInstance, ImSet<GroupObjectInstance>> readProperties, ImSet<PropertyDrawInstance> changedDrawProps, ChangedData changedProps) throws SQLException, SQLHandledException {
-        PropertyObjectInstance<?> drawProperty = propertyReader.getPropertyObjectInstance();
+        PropertyObjectInstance<?> drawProperty = propertyReader.getReaderProperty();
         if(drawProperty == null)
             return;
 
@@ -2574,7 +2574,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
 
         for (PropertyDrawInstance<?> property : propertyDraws)
-            query.addProperty(property, property.getDrawInstance().getExpr(query.getMapExprs(), getModifier()));
+            query.addProperty(property, property.getGroupProperty().getExpr(query.getMapExprs(), getModifier()));
 
         ImOrderMap<ImMap<ObjectInstance, Object>, ImMap<Object, Object>> resultSelect = query.execute(this, mQueryOrders.immutableOrder(), orderTop);
 

@@ -825,7 +825,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         ScriptingFormEntity form = new ScriptingFormEntity(this, formEntity);
 
         if(autoRefresh > 0) {
-            formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), (ActionObjectEntity) form.getForm().refreshActionPropertyDraw.getValueActionOrProperty());
+            formEntity.addActionsOnEvent(new FormScheduler(autoRefresh, false), false, getVersion(), new ActionObjectEntity<>(baseLM.getFormRefresh()));
         }
 
         form.setLocalAsync(localAsync);

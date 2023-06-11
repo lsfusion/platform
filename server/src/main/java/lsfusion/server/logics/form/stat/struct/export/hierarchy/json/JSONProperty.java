@@ -22,7 +22,6 @@ import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
-import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
@@ -139,7 +138,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
 
             JSONObject objects = rootObject.getJSONObject("object");
 
-            PropertyObjectEntity<T> propertyObject = (PropertyObjectEntity<T>) propertyDraw.getValueProperty();
+            PropertyObjectEntity<T> propertyObject = (PropertyObjectEntity<T>) propertyDraw.getReaderProperty();
             Property<T> property = propertyObject.property;
             ImMap<T, ObjectValue> mapPropValues = propertyObject.mapping.<ObjectValue, SQLException, SQLHandledException>mapValuesEx(object -> {
                 ObjectValue value = mapValues.get(object);

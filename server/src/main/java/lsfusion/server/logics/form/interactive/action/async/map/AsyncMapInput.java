@@ -70,7 +70,7 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
 
     @Override
     public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
-        if (hasOldValue && !(oldValue instanceof PropertyMapImplement && ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty)))
+        if (hasOldValue && !(oldValue instanceof PropertyMapImplement && drawProperty != null && ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty)))
             return null;
         return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, policy, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
     }

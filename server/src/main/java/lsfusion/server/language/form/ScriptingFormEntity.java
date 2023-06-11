@@ -578,12 +578,12 @@ public class ScriptingFormEntity {
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
         if (hintNoUpdate != null && hintNoUpdate) {
-            form.addHintsNoUpdate(property.getValueProperty().property, version);
+            form.addHintsNoUpdate(property.getAssertProperty().property, version);
         }
         
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
-            form.addHintsIncrementTable(version, property.getValueProperty().property);
+            form.addHintsIncrementTable(version, property.getAssertProperty().property);
         }
 
         Boolean optimisticAsync = options.getOptimisticAsync();
@@ -648,7 +648,7 @@ public class ScriptingFormEntity {
 
         Boolean filter = options.getFilter();
         if(filter != null && filter)
-            form.addFixedFilter(new FilterEntity(property.getPropertyObjectEntity()), version);
+            form.addFixedFilter(new FilterEntity(property.getAssertProperty()), version);
 
         Boolean pivotColumn = options.getPivotColumn();
         if(pivotColumn != null && pivotColumn)

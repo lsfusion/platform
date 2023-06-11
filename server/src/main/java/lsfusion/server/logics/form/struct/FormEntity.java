@@ -293,9 +293,9 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         logMessagePropertyDraw = addPropertyDraw(baseLM.getLogMessage(), version);
         logMessagePropertyDraw.setPropertyExtra(addPropertyObject(externalShowIf), PropertyDrawExtraType.SHOWIF, version);
 
-        addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied.action, MapFact.EMPTYREV()));
-        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk.action, MapFact.EMPTYREV()));
-        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose.action, MapFact.EMPTYREV()));
+        addActionsOnEvent(FormEventType.AFTERAPPLY, false, version, new ActionObjectEntity<>(formApplied));
+        addActionsOnEvent(FormEventType.QUERYOK, true, version, new ActionObjectEntity<>(formOk));
+        addActionsOnEvent(FormEventType.QUERYCLOSE, true, version, new ActionObjectEntity<>(formClose));
     }
 
     public Iterable<FormEvent> getAllFormEventActions() {
@@ -624,7 +624,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     }
 
     public ImOrderSet<PropertyDrawEntity> getStaticPropertyDrawsList() {
-        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
+        return ((ImOrderSet<PropertyDrawEntity>)getPropertyDrawsList()).filterOrder(element -> element.isStaticProperty() && element.getIntegrationSID() != null && element != logMessagePropertyDraw);
     }
 
     // assumes that there is an equals check for a PropertyObjectEntity
@@ -634,7 +634,7 @@ public class FormEntity implements FormSelector<ObjectEntity> {
         for(PropertyDrawEntity property : getPropertyDrawsList()) {
             PropertyObjectEntity<T> valueProperty;
             if(property.isProperty() &&
-                (valueProperty = property.getValueProperty()).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
+                (valueProperty = property.getAssertProperty()).mapping.valuesSet().containsAll(changeProp.getObjects()) &&
                 (!(changeProp instanceof PropertyMapImplement) || Property.depends(valueProperty.property, ((PropertyMapImplement<?, ?>) changeProp).property)) && // optimization
                 valueProperty.property.isChangedWhen(toNull, changeProp.getImplement(valueProperty.mapping.reverse()))) {
                 if(mProps == null)

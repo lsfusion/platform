@@ -66,7 +66,7 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
     }
 
     @Override
-    public <X extends PropertyInterface> PropertyObjectEntity<?> getDrawProperty(PropertyObjectEntity<X> readOnly) {
+    public <X extends PropertyInterface> PropertyObjectEntity<?> getProperty(PropertyObjectEntity<X> readOnly) {
         return this;
     }
 

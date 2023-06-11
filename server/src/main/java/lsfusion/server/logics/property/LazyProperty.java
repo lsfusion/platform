@@ -39,10 +39,7 @@ public abstract class LazyProperty extends SimpleIncrementProperty<ClassProperty
         return new Inferred<>(ExClassSet.toExValue(IsClassProperty.getMapClasses(interfaces)));
     }
 
-    @Override
-    public void finalizeInit() {
-        super.finalizeInit();
-
+    public void finalizeLazyInit() {
         property = createProperty();
     }
 

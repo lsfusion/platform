@@ -75,7 +75,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private PropertyEditType editType = PropertyEditType.EDITABLE;
     
-    private final ActionOrPropertyObjectEntity<P, ?> propertyObject;
+    private final ActionOrPropertyObjectEntity<P, ?> actionOrProperty;
     
     public GroupObjectEntity toDraw;
 
@@ -170,10 +170,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         public PropertyDrawReader(PropertyDrawExtraType type) {
             this.type = type;    
         }
-        
+
         @Override
-        public Type getType() {
-            return getPropertyObjectEntity().getType();
+        public Type getReaderType() {
+            return getReaderProperty().getType();
         }
 
         @Override
@@ -182,7 +182,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         }
 
         @Override
-        public PropertyObjectEntity getPropertyObjectEntity() {
+        public PropertyObjectEntity getReaderProperty() {
             return getPropertyExtra(type);
         }
 
@@ -198,7 +198,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
         @Override
         public Object getProfiledObject() {
-            return getPropertyObjectEntity();
+            return getReaderProperty();
         }
 
         @Override
@@ -218,27 +218,31 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     private ActionOrProperty inheritedProperty;
 
-    public PropertyDrawEntity(int ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?> propertyObject, ActionOrProperty inheritedProperty) {
+    public PropertyDrawEntity(int ID, String sID, String integrationSID, ActionOrPropertyObjectEntity<P, ?> actionOrProperty, ActionOrProperty inheritedProperty) {
         super(ID);
         setSID(sID);
         setIntegrationSID(integrationSID);
-        this.propertyObject = propertyObject;
+        this.actionOrProperty = actionOrProperty;
         this.inheritedProperty = inheritedProperty;
     }
 
+    public boolean isStaticProperty() {
+        return getStaticActionOrProperty() instanceof PropertyObjectEntity;
+    }
+
     public boolean isProperty() {
-        return getValueActionOrProperty() instanceof PropertyObjectEntity;
+        return getActionOrProperty() instanceof PropertyObjectEntity;
     }
 
     public PropertyObjectEntity<?> getOrder() {
-        return getValueProperty();
+        return getReaderProperty();
     }
 
     // for all external calls will set optimistic to true
     public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean externalChange) {
         ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, policy, getSecurityProperty(), getDrawProperty(), getToDraw(form), optimisticAsync || externalChange);
+            return changeAction.getAsyncEventExec(form, policy, getSecurityProperty(), isProperty() ? getAssertProperty() : null, getToDraw(form), optimisticAsync || externalChange);
         }
         return null;
     }
@@ -285,7 +289,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return eventAction;
     }
 
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form) {
+    public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormEntity form) {
         if (eventActions != null) {
             ActionObjectSelector eventSelector = eventActions.get(actionId);
             ActionObjectEntity<?> eventAction;
@@ -293,10 +297,12 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
                 return eventAction;
         }
 
-        ActionOrProperty<P> eventProperty = getEditProperty();
-        ImRevMap<P, ObjectEntity> eventMapping = getEditMapping();
+        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty();
 
-        ActionMapImplement<?, P> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
+        ActionOrProperty<X> eventProperty = eventPropertyObject.property;
+        ImRevMap<X, ObjectEntity> eventMapping = eventPropertyObject.mapping;
+
+        ActionMapImplement<?, X> eventActionImplement = eventProperty.getExplicitEventAction(actionId);
         if(eventActionImplement != null)
             return eventActionImplement.mapObjects(eventMapping);
 
@@ -335,7 +341,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterAndOrderEntities(object, SetFact.EMPTY(), mapObjects).first;
             assert !filter.mapValues.valuesSet().contains(objectInterface);
 
-            PropertyObjectEntity<X> listProperty = (PropertyObjectEntity<X>) getDrawProperty();
+            PropertyObjectEntity<X> listProperty = isProperty() ? (PropertyObjectEntity<X>) getAssertProperty() : null;
             ImRevMap<ObjectEntity, PropertyInterface> listMapObjects = mapObjects.removeRev(object);
 
             // filter orderInterfaces to only used in view and filter
@@ -407,18 +413,15 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public static FormSessionScope DEFAULT_OBJECTS_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
-    public ActionOrProperty<P> getEditProperty() {
-        return propertyObject.property;
-    }     
-    public ImRevMap<P, ObjectEntity> getEditMapping() {
-        return propertyObject.mapping;
-    }     
+    public ActionOrProperty<P> getBindingProperty() {
+        return getInheritedProperty();
+    }
 
     public Iterable<String> getAllPropertyEventActions() {
         return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings().keySet()), getKeyBindings().valueIt());
     }
     public OrderedMap<String, LocalizedString> getContextMenuBindings() {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getEditProperty().getContextMenuBindings();
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getBindingProperty().getContextMenuBindings();
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
@@ -446,14 +449,14 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public ImMap<KeyStroke, String> getKeyBindings() {
-        ImMap<KeyStroke, String> propertyKeyBindings = getEditProperty().getKeyBindings();
+        ImMap<KeyStroke, String> propertyKeyBindings = getBindingProperty().getKeyBindings();
         if(keyBindings != null)
             propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
         return propertyKeyBindings;
     }
 
     public String getMouseBinding() {
-        return mouseBinding != null ? mouseBinding : getEditProperty().getMouseBinding();
+        return mouseBinding != null ? mouseBinding : getBindingProperty().getMouseBinding();
     }
 
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
@@ -498,7 +501,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     @Override
     public String toString() {
-        return (formPath == null ? "" : formPath) + " property:" + propertyObject.toString();
+        return (formPath == null ? "" : formPath) + " property:" + actionOrProperty.toString();
     }
 
     // interactive
@@ -532,7 +535,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         MSet<ObjectEntity> mObjects = SetFact.mSet();
         for(int i=0,size=propertyObjects.size();i<size;i++)
             mObjects.addAll(propertyObjects.get(i).getObjectInstances());
-        mObjects.addAll(getValueActionOrProperty().getObjectInstances());
+        mObjects.addAll(actionOrProperty.getObjectInstances());
         if(toDraw != null)
             mObjects.addAll(toDraw.getObjects());
         return mObjects.immutable();
@@ -615,7 +618,20 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public Type getType() {
-        return getValueProperty().property.getType();
+        return getAssertProperty().property.getType();
+    }
+
+    public Type getStaticType() {
+        return getAssertStaticProperty().property.getType();
+    }
+
+    @Override
+    public Type getReaderType() {
+        return getStaticType();
+    }
+
+    public Type getImportType() {
+        return getStaticType();
     }
 
     public LocalizedString getCaption() {
@@ -638,27 +654,39 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public String getIntegrationSID() {
         return integrationSID;
     }
-    
+
+    // IMPORT
     public PropertyObjectEntity getImportProperty() {
-        return (PropertyObjectEntity) propertyObject;
+        return getAssertStaticProperty();
     }
 
-    public PropertyObjectEntity<?> getDrawProperty() {
-        return propertyObject.getDrawProperty(getPropertyExtras().get(READONLYIF));
+    public PropertyObjectEntity<?> getProperty() {
+        return getActionOrProperty().getProperty(getPropertyExtras().get(READONLYIF));
     }
 
-    // for getExpr, getType purposes
-    public ActionOrPropertyObjectEntity<?, ?> getValueActionOrProperty() {
-        return propertyObject;
+    public ActionOrPropertyObjectEntity<?, ?> getStaticActionOrProperty() {
+        return actionOrProperty;
     }
 
-    public PropertyObjectEntity<?> getValueProperty() {
-        return (PropertyObjectEntity) getValueActionOrProperty();
+    public ActionOrPropertyObjectEntity<?, ?> getActionOrProperty() {
+        return actionOrProperty;
     }
 
+    public PropertyObjectEntity<?> getAssertProperty() {
+        assert isProperty();
+        return getProperty();
+    }
+
+    // EXPORT / JSON + ORDERS IN INPUT / SELECTOR
     @Override
-    public PropertyObjectEntity getPropertyObjectEntity() {
-        return getValueProperty();
+    public PropertyObjectEntity getReaderProperty() {
+        return getAssertStaticProperty();
+    }
+
+    // EXPORT / JSON / IMPORT
+    public PropertyObjectEntity<?> getAssertStaticProperty() {
+        assert isStaticProperty();
+        return (PropertyObjectEntity<?>) getStaticActionOrProperty();
     }
 
     // presentation info, probably should be merged with inheritDrawOptions mechanism
@@ -674,8 +702,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ActionOrProperty getDebugBindingProperty() {
         return getInheritedProperty();
     }
-    public ActionOrPropertyObjectEntity getDebugProperty() {
-        return propertyObject;
+    public ActionOrPropertyObjectEntity getDebugActionOrProperty() {
+        return getActionOrProperty();
     }
 
     @Override

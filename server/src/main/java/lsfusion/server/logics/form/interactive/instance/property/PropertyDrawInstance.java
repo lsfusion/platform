@@ -23,7 +23,6 @@ import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.instance.filter.FilterInstance;
 import lsfusion.server.logics.form.interactive.instance.object.GroupObjectInstance;
 import lsfusion.server.logics.form.interactive.instance.object.ObjectInstance;
-import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.property.AsyncMode;
 import lsfusion.server.logics.form.struct.action.ActionObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -102,9 +101,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return new AsyncValueList<>(list, mapObjects, newSession, asyncMode);
     }
 
+    // filter / custom view
     private <X extends PropertyInterface> InputValueList<X> getInputValueList(Function<PropertyObjectInterfaceInstance, ObjectValue> valuesGetter, Result<ImRevMap<X, ObjectInstance>> rMapObjects, int useFilters) {
         // actually that all X can be different
-        PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) this.drawProperty;
+        PropertyObjectInstance<X> valueProperty = (PropertyObjectInstance<X>) getProperty();
 
         InputValueList<X> list;
         if(useFilters > 0)
@@ -117,22 +117,14 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         return list;
     }
 
-    private ActionOrPropertyObjectInstance<?, ?> propertyObject;
+    private ActionOrPropertyObjectInstance<?, ?> actionOrProperty;
 
-    public ActionOrPropertyObjectInstance<?, ?> getValueProperty() {
-        return propertyObject;
+    public ActionOrPropertyObjectInstance<?, ?> getActionOrProperty() {
+        return actionOrProperty;
     }
 
     public boolean isInInterface(final ImSet<GroupObjectInstance> classGroups, boolean any) {
-        return getValueProperty().isInInterface(classGroups, any);
-    }
-
-    public OrderInstance getOrder() {
-        return (PropertyObjectInstance) getValueProperty();
-    }
-
-    public boolean isProperty() {
-        return getValueProperty() instanceof PropertyObjectInstance;
+        return getActionOrProperty().isInInterface(classGroups, any);
     }
 
     // в какой "класс" рисоваться, ессно один из Object.GroupTo должен быть ToDraw
@@ -155,6 +147,10 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         if(isList())
             result = result.addExcl(toDraw);
         return result;
+    }
+
+    public boolean isProperty() {
+        return entity.isProperty();
     }
 
     public Type getType() {
@@ -187,15 +183,15 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
-                                ActionOrPropertyObjectInstance<?, ?> propertyObject,
-                                PropertyObjectInstance<?> drawProperty,
+                                ActionOrPropertyObjectInstance<?, ?> actionOrProperty,
+                                PropertyObjectInstance<?> property,
                                 GroupObjectInstance toDraw,
                                 ImOrderSet<GroupObjectInstance> columnGroupObjects,
                                 ImMap<PropertyDrawExtraType, PropertyObjectInstance<?>> propertyExtras,
                                 ImList<PropertyObjectInstance<?>> propertiesAggrLast) {
         super(entity);
-        this.propertyObject = propertyObject;
-        this.drawProperty = drawProperty;
+        this.actionOrProperty = actionOrProperty;
+        this.property = property;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
 
@@ -222,15 +218,33 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 
-    public PropertyObjectInstance getPropertyObjectInstance() {
-        return getDrawInstance();
+    // PIVOT / GRID
+    public PropertyObjectInstance getReaderProperty() {
+        return getProperty();
     }
 
-    public PropertyObjectInstance<?> getDrawInstance() {
-        return drawProperty;
+    public PropertyObjectInstance<?> getProperty() {
+        return property;
     }
 
-    private final PropertyObjectInstance<?> drawProperty;
+    // DEPRECATED
+    public PropertyObjectInstance<?> getValueProperty() {
+        return getProperty();
+    }
+    // SUM / GROUP / DEPRECATED
+    public PropertyObjectInstance<?> getGroupProperty() {
+        return getProperty();
+    }
+
+    public PropertyObjectInstance<?> getFilterProperty() {
+        return getProperty();
+    }
+
+    public PropertyObjectInstance<?> getOrderProperty() {
+        return getProperty();
+    }
+
+    private final PropertyObjectInstance<?> property;
 
     public byte getTypeID() {
         return PropertyReadType.DRAW;
@@ -241,7 +255,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     public String toString() {
-        return propertyObject.toString();
+        return actionOrProperty.toString();
     }
 
     public PropertyDrawEntity getEntity() {
@@ -260,7 +274,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     // заглушка чтобы на сервере ничего не читать
     public class HiddenReaderInstance implements PropertyReaderInstance {
 
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return new PropertyObjectInstance<>(NullValueProperty.instance, MapFact.<PropertyInterface, ObjectInstance>EMPTY());
         }
 
@@ -288,7 +302,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
 
         @Override
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return property;
         }
 
@@ -327,7 +341,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     }
 
     @Override
-    public PropertyDrawInstance getProperty() {
+    public PropertyDrawInstance getAggrProperty() {
         return this;
     }
 
@@ -339,12 +353,12 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
 
         @Override
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return propertiesAggrLast.get(index);
         }
 
         @Override
-        public PropertyDrawInstance getProperty() {
+        public PropertyDrawInstance getAggrProperty() {
             return PropertyDrawInstance.this;
         }
 

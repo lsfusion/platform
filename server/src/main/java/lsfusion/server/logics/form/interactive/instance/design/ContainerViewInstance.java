@@ -40,7 +40,7 @@ public class ContainerViewInstance extends ComponentViewInstance<ContainerView> 
         }
 
         @Override
-        public PropertyObjectInstance getPropertyObjectInstance() {
+        public PropertyObjectInstance getReaderProperty() {
             return property;
         }
 

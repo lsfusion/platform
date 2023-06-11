@@ -437,8 +437,8 @@ public class ExecutionContext<P extends PropertyInterface> implements UserIntera
     }
 
     public ActionOrProperty getSecurityProperty() {
-        PropertyDrawInstance changingDrawInstance = form != null ? form.getChangingDrawInstance() : null;
-        return changingDrawInstance != null ? changingDrawInstance.getValueProperty().property : null;
+        PropertyDrawInstance<?> changingDrawInstance = form != null ? form.getChangingDrawInstance() : null;
+        return changingDrawInstance != null ? changingDrawInstance.entity.getSecurityProperty() : null;
     }
 
     public GroupObjectInstance getChangingPropertyToDraw() {

@@ -372,10 +372,20 @@
         <property name="BL" ref="businessLogics"/>
     </bean>
 
+    <!-- we need to execute it after synchronizeDB because updateStat is done there (and thus statProps are filled), and finalizeLazyInit -> form usage -> PropertyDrawEntity.getValue/DrawProperty is used which uses / caches statProps  -->
     <bean id="finalizeLazyTask" class="lsfusion.server.logics.property.controller.init.FinalizeLazyTask">
         <property name="dependencies">
             <set>
-                <ref bean="checkDuplicateSystemElements"/>
+
+            </set>
+        </property>
+        <property name="BL" ref="businessLogics"/>
+    </bean>
+
+    <bean id="checkRecursionsTask" class="lsfusion.server.logics.property.controller.init.CheckRecursionsTask">
+        <property name="dependencies">
+            <set>
+                <ref bean="finalizeLazyTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -384,9 +394,8 @@
     <bean id="markRecursionsTask" class="lsfusion.server.logics.property.controller.init.MarkRecursionsTask">
         <property name="dependencies">
             <set>
+                <ref bean="checkDuplicateSystemElements"/>
                 <ref bean="finalizeActionAbstractTask"/>
-                <ref bean="finalizeCalcAbstractTask"/>
-                <ref bean="finalizeLazyTask"/>
             </set>
         </property>
         <property name="BL" ref="businessLogics"/>
@@ -694,6 +703,7 @@
             <set>
                 <ref bean="getSessionPropertyListTask"/>
                 <ref bean="prereadFormEventsTask"/>
+                <ref bean="checkRecursionsTask"/>
             </set>
         </property>
     </bean>
