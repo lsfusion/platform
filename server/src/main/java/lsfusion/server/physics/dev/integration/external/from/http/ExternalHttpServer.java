@@ -93,8 +93,6 @@ public class ExternalHttpServer extends MonitorServer {
             ThreadLocalContext.aspectBeforeMonitorHTTP(ExternalHttpServer.this);
             try {
 
-                ServerLoggers.httpServerLogger.info(request.getRequestURI() + "; headers: " + StringUtils.join(request.getRequestHeaders().entrySet().iterator(), ","));
-
                 String[] headerNames = request.getRequestHeaders().keySet().toArray(new String[0]);
                 String[] headerValues = getRequestHeaderValues(request.getRequestHeaders(), headerNames);
 
@@ -126,8 +124,7 @@ public class ExternalHttpServer extends MonitorServer {
                 ExecInterface remoteExec = ExternalUtils.getExecInterface(AuthenticationToken.ANONYMOUS, sessionInfo, remoteLogics);
                 ExternalUtils.ExternalResponse response = ExternalUtils.processRequest(remoteExec,
                         request.getRequestBody(), getContentType(request), headerNames, headerValues, cookieNames, cookieValues, null, null,null,
-                        "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery(),
-                        Settings.get().isLogExternalHttpServerBody());
+                        "http", request.getRequestMethod(), host[0], Integer.parseInt(host[1]), "", request.getRequestURI().getPath(), "", request.getRequestURI().getRawQuery());
 
                 if (response.response != null)
                     sendResponse(request, response);
@@ -192,7 +189,6 @@ public class ExternalHttpServer extends MonitorServer {
             request.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
             statusHttp = nvl(statusHttp, error ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : HttpServletResponse.SC_OK);
             request.getResponseHeaders().add("Access-Control-Allow-Origin","*");
-            ServerLoggers.httpServerLogger.info(request.getRequestURI() + " response: " + statusHttp);
             request.sendResponseHeaders(statusHttp, response.length);
             OutputStream os = request.getResponseBody();
             os.write(response);
@@ -235,7 +231,6 @@ public class ExternalHttpServer extends MonitorServer {
             if(contentDisposition != null && !hasContentDisposition)
                 response.getResponseHeaders().add("Content-Disposition", contentDisposition);
             response.getResponseHeaders().add("Access-Control-Allow-Origin","*");
-            ServerLoggers.httpServerLogger.info(response.getRequestURI() + " response: " + statusHttp);
             response.sendResponseHeaders(statusHttp, responseEntity.getContentLength());
             responseEntity.writeTo(response.getResponseBody());
         }
