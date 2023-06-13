@@ -49,7 +49,7 @@
         <jcalendar.version>1.4</jcalendar.version>
         <jssc.version>0.8</jssc.version>
         <mssql.version>4.0</mssql.version>
-        <javax.mail.version>1.5.6</javax.mail.version>
+        <javax.mail.version>1.6.2</javax.mail.version>
         <blocking.map.version>1.0-patched</blocking.map.version>
         <antlr.version>3.5.2</antlr.version>
         <jna.version>5.4.0</jna.version>
@@ -108,7 +108,6 @@
 
         <tess4j.version>4.3.1</tess4j.version>
         <pdfbox.version>2.0.12</pdfbox.version>
-        <fax4j.version>0.44.2</fax4j.version>
     </properties>
 
     <!-- DEPENDENCY VERSIONS -->
@@ -315,8 +314,8 @@
                 <version>${mssql.version}</version>
             </dependency>
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
                 <version>${javax.mail.version}</version>
             </dependency>
             <dependency>
@@ -648,11 +647,6 @@
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>${pdfbox.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sf.fax4j</groupId>
-                <artifactId>fax4j</artifactId>
-                <version>${fax4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

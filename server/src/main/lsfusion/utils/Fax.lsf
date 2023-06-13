@@ -1,7 +1,0 @@
-MODULE Fax;
-
-REQUIRE System, Utils;
-
-//need fax4j in pom.xml
-//text, faxNumber
-writeToFax '{fax.write.to.fax}'  INTERNAL  'lsfusion.server.physics.dev.integration.external.to.equ.fax.WriteToFaxAction' (TEXT, ISTRING[255]);
