@@ -90,6 +90,8 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     private NonReentrantLock lock = new NonReentrantLock();
 
     private final TableManager tableManager = new TableManager();
+    
+    private ClientWindowDockable logsDockable;
 
     private final EProvider<String> serverMessageProvider = new EProvider<String>() {
         @Override
@@ -562,7 +564,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
         LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<>();
 
         try {
-            windows.put(navigatorData.logs, Log.recreateLogPanel());
+            windows.put(navigatorData.logs, Log.recreateLogPanel(aBoolean -> {
+                if (aBoolean != null) {
+                    setLogsDockableVisible(aBoolean);
+                }
+            }));
 
             formsWindow = navigatorData.forms;
         } catch (Exception e) {
@@ -580,6 +586,11 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             if (window.visible) {
                 if (window.position == WindowType.DOCKING_POSITION) {
                     ClientWindowDockable dockable = new ClientWindowDockable(window, entry.getValue());
+                    
+                    if (window == navigatorData.logs) {
+                        logsDockable = dockable;
+                    }
+                    
                     dockable.setMinimizable(false);
                     navigatorController.recordDockable(component, dockable);
                     windowDockables.put(dockable, window);
@@ -606,6 +617,12 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
     private void setDefaultVisible() {
         for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : windowDockables.entrySet()) {
             entry.getKey().setVisible(entry.getValue().visible);
+        }
+    }
+    
+    public void setLogsDockableVisible(boolean visible) {
+        if (logsDockable != null) {
+            logsDockable.setVisible(visible);
         }
     }
 

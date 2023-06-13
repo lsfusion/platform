@@ -4,14 +4,20 @@ import lsfusion.client.base.SwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.Consumer;
 
 import static lsfusion.client.base.view.SwingDefaults.getPanelBackground;
 
 class LogPanel extends JPanel {
+    private static final int HIDE_DELAY = 3500;
+    
     private final LogTextArea logArea;
     private final JLabel info;
+    private final Consumer<Boolean> visibilityConsumer;
 
-    public LogPanel() {
+    public LogPanel(Consumer<Boolean> visibilityConsumer) {
+        this.visibilityConsumer = visibilityConsumer;
+        
         setLayout(new BorderLayout());
 
         logArea = new LogTextArea();
@@ -30,6 +36,13 @@ class LogPanel extends JPanel {
         logArea.setText(newText);
         if (!newText.isEmpty()) {
             logArea.setCaretPosition(newText.length() - 1);
+
+            visibilityConsumer.accept(true);
+            SwingUtils.stopSingleAction("logSetInvisible", false);
+            
+            SwingUtils.invokeLaterSingleAction("logSetInvisible",
+                    e -> visibilityConsumer.accept(false),
+                    HIDE_DELAY);
         }
     }
 
@@ -40,7 +53,7 @@ class LogPanel extends JPanel {
 
         SwingUtils.invokeLaterSingleAction("logSetOldBackground",
                 e -> logArea.setBackground(getPanelBackground()),
-                10000);
+                HIDE_DELAY);
     }
 
     public void provideErrorFeedback() {

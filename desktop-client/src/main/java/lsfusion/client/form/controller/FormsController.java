@@ -26,8 +26,8 @@ import lsfusion.client.view.MainFrame;
 import lsfusion.interop.form.print.ReportGenerationData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
-import java.awt.*;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -131,6 +131,8 @@ public class FormsController implements ColorThemeChangeListener {
 
         page.onOpened();
         openedForms.add(page);
+
+        ((DockableMainFrame) MainFrame.instance).setLogsDockableVisible(false);
     }
 
     public ClientFormDockable openForm(AsyncFormController asyncFormController, ClientNavigator navigator, String canonicalName, String formSID, boolean forbidDuplicate,
@@ -250,6 +252,11 @@ public class FormsController implements ColorThemeChangeListener {
 
                 dockable.onClosed();
                 openedForms.remove(dockable);
+                
+                if (openedForms.isEmpty()) {
+                    ((DockableMainFrame) MainFrame.instance).setLogsDockableVisible(true);
+                }
+                
                 //return focus to previous page (by default in maximized mode after closing page focus returns to the last page from the list)
                 if(prevFocusPage != null) {
                     ExtendedMode mode = prevFocusPage.getExtendedMode();

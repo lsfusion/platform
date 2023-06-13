@@ -22,6 +22,7 @@ import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static lsfusion.client.ClientResourceBundle.getString;
 import static lsfusion.client.base.view.SwingDefaults.getRequiredForeground;
@@ -37,8 +38,8 @@ public final class Log {
 
     private static WeakReference<LogPanel> logPanelRef = new WeakReference<>(null);
 
-    public static JPanel recreateLogPanel() {
-        LogPanel logPanel = new LogPanel();
+    public static JPanel recreateLogPanel(Consumer<Boolean> visibilityConsumer) {
+        LogPanel logPanel = new LogPanel(visibilityConsumer);
 
         logPanelRef = new WeakReference<>(logPanel);
         text = "";
@@ -47,13 +48,7 @@ public final class Log {
     }
 
     private static LogPanel getLogPanel() {
-        LogPanel logPanel = logPanelRef.get();
-        // пока таким образом определим есть ли он на экране
-        if (logPanel != null && logPanel.getTopLevelAncestor() != null) {
-            return logPanel;
-        }
-
-        return null;
+        return logPanelRef.get();
     }
 
     private static void print(String itext) {
