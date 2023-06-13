@@ -105,8 +105,8 @@
                     <artifactId>junit</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>javax.mail</groupId>
-                    <artifactId>mail</artifactId>
+                    <groupId>com.sun.mail</groupId>
+                    <artifactId>javax.mail</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.olap4j</groupId>
@@ -189,10 +189,6 @@
         <dependency>
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.fax4j</groupId>
-            <artifactId>fax4j</artifactId>
         </dependency>
         <!--need to print pdf files-->
         <dependency>
