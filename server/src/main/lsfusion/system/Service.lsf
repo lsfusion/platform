@@ -810,7 +810,7 @@ getClientSettings(User user) + WHEN TRUE AND user IS User THEN {
 
 getClientSettings() {
     getClientSettings(currentUser());
-}
+} @@noauth;
 
 //Temporary. For migration. Can be deleted later. Need to fill in fields for existing users
 migratedRanges = DATA BOOLEAN();
