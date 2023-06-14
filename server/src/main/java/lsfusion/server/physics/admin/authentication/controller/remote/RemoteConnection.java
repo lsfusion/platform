@@ -527,17 +527,31 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    public static String getRequestLogMessage(ExternalRequest request, LogInfo logInfo, boolean extraLog) {
+    public static String getRequestLog(ExternalRequest request, LogInfo logInfo, boolean exec, String action) {
         return "\nREQUEST:\n" +
                 "\tREQUEST_USER_INFO: " + logInfo.toString() + "\n" +
                 "\tREQUEST_PATH: " + request.servletPath + "\n" +
                 "\tREQUEST_QUERY: " + request.query + "\n" +
-                "\tREQUEST_METHOD: " + request.method +
-                (extraLog ? ("\n" + getHeadersString(request.headerNames, request.headerValues) +
-                        getCookiesString(request.cookieNames, request.cookieValues) +
-                        "\tBODY:\n\t\t" +
-                        (request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : "")) : "") +
-                "\n";
+                "\tREQUEST_METHOD: " + request.method + "\n" +
+                "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action + "\n";
+    }
+
+    public static String getRequestLogDetail(ExternalRequest request, ExternalResponse response) {
+        Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
+        List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
+        String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
+        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
+        HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
+
+        return "\n" + getHeadersString(request.headerNames, request.headerValues) +
+                getCookiesString(request.cookieNames, request.cookieValues) +
+                "\tBODY:\n\t\t" +
+                (request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : "") +
+                "\n\nRESPONSE:\n" +
+                "\tOBJECTS:\n\t\t" + httpEntity + "\n" +
+                getHeadersString(response.headerNames, response.headerValues) +
+                getCookiesString(response.cookieNames, response.cookieValues) +
+                "\n\tRESPONSE_STATUS_HTTP: " + BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK) + "\n";
     }
 
     private static String getHeadersString(String[] headerNames, String[] headerValues) {
@@ -560,32 +574,15 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         return cookies.toString();
     }
 
-    public static String getResponseLogMessage(ExternalResponse response, ExternalRequest request) {
-        //copy paste ExternalUtils.processRequest
-        Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
-        List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
-        String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
-        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
-
-        return "\n\nRESPONSE:\n" +
-                "\tOBJECTS:\n\t\t" + httpEntity + "\n" +
-                getHeadersString(response.headerNames, response.headerValues) +
-                getCookiesString(response.cookieNames, response.cookieValues);
-    }
-
     private ExternalResponse logRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
-        boolean logExternalRequestsBody = Settings.get().isLogExternalRequestsBody();
-        String requestLogMessage = Settings.get().isLogExternalRequests() ? getRequestLogMessage(request, logInfo, logExternalRequestsBody) : null;
-
+        String requestLogMessage = Settings.get().isLogExternalRequests() ? getRequestLog(request, logInfo, exec, action) : null;
         try {
             ExternalResponse response = responseCallable.call();
             if (requestLogMessage != null) {
-                requestLogMessage += "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action + "\n";
-                if (logExternalRequestsBody)
-                    requestLogMessage += getResponseLogMessage(response, request);
 
-                requestLogMessage += "\n\tRESPONSE_STATUS_HTTP: " + BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK) + "\n";
+                if (Settings.get().isLogExternalRequestsDetail())
+                    requestLogMessage += getRequestLogDetail(request, response);
+
                 ServerLoggers.httpServerLogger.info(requestLogMessage);
             }
 
