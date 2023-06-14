@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
 
 public abstract class RemoteConnection extends RemoteRequestObject implements RemoteConnectionInterface {
 
@@ -303,146 +304,70 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
     }
 
-    public static String getRequestLogMessage(ExternalRequest request, LogInfo logInfo, boolean extraLog) {
-        return "\nREQUEST:\n" +
-                "\tREQUEST_USER_INFO: " + logInfo.toString() + "\n" +
-                "\tREQUEST_PATH: " + request.servletPath + "\n" +
-                "\tREQUEST_QUERY: " + request.query + "\n" +
-                "\tREQUEST_METHOD: " + request.method +
-                (extraLog ? ("\n" + getHeadersString(request.headerNames, request.headerValues) +
-                getCookiesString(request.cookieNames, request.cookieValues) +
-                "\tBODY:\n\t\t" +
-                (request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : "")) : "") +
-                "\n";
-    }
-
-    private static String getHeadersString(String[] headerNames, String[] headerValues) {
-        StringBuilder headers = new StringBuilder().append("\tHEADERS:\n");
-        if (headerNames != null) {
-            for (int i = 0; i < headerNames.length; i++) {
-                headers.append("\t\t").append(headerNames[i]).append(": ").append(headerValues[i]).append("\n");
-            }
-        }
-        return headers.toString();
-    }
-
-    private static String getCookiesString(String[] cookieNames, String[] cookieValues) {
-        StringBuilder cookies = new StringBuilder().append("\tCOOKIES:\n");
-        if (cookieNames != null) {
-            for (int i = 0; i < cookieNames.length; i++) {
-                cookies.append("\t\t").append(cookieNames[i]).append(": ").append(cookieValues[i]).append("\n");
-            }
-        }
-        return cookies.toString();
-    }
-
-    public static String getResponseLogMessage(ExternalResponse response, ExternalRequest request) {
-        //copy paste ExternalUtils.processRequest
-        Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
-        List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
-        String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
-        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
-        HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
-
-        return "\n\nRESPONSE:\n" +
-                "\tOBJECTS:\n\t\t" + httpEntity + "\n" +
-                getHeadersString(response.headerNames, response.headerValues) +
-                getCookiesString(response.cookieNames, response.cookieValues);
-    }
-
-    public static void logErrorMessage(String logMessage, String errorMessage, ExternalResponse response) {
-        if (logMessage != null) {
-            logMessage += "\n\tRESPONSE_STATUS_HTTP: " + BaseUtils.nvl(response != null ? response.statusHttp : null, HttpServletResponse.SC_INTERNAL_SERVER_ERROR) + "\n" + "\nERROR: " + errorMessage + "\n";
-            ServerLoggers.httpServerLogger.error(logMessage);
-        }
-    }
-
-    public static void logInfoMessage(String logMessage, ExternalResponse response) {
-        if (logMessage != null) {
-            logMessage += "\n\tRESPONSE_STATUS_HTTP: " + BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK) + "\n";
-            ServerLoggers.httpServerLogger.info(logMessage);
-        }
-    }
-
     @Override
     public ExternalResponse exec(String actionName, ExternalRequest request) {
-        boolean logExternalRequestsBody = Settings.get().isLogExternalRequestsBody();
-        String requestLogMessage = Settings.get().isLogExternalRequests() ? getRequestLogMessage(request, logInfo, logExternalRequestsBody) : null;
-        ExternalResponse result = null;
-        try {
-            if(actionName != null) {
-                if (requestLogMessage != null)
-                    requestLogMessage += "\tACTION: " + actionName + "\n";
+            return logRequest(() -> {
+                ExternalResponse result;
+                try {
+                    if(actionName != null) {
+                        LA action;
+                        String findActionName = actionName;
+                        while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
+                            int lastSlash = findActionName.lastIndexOf('/'); // if it is url
+                            String checkActionName = findActionName;
+                            if(lastSlash >= 0) // optimization
+                                checkActionName = checkActionName.replace('/', '_');
 
-                LA action;
-                String findActionName = actionName;
-                while(true) { // we're doing greedy search for all subpathes to find appropriate "endpoint" action
-                    int lastSlash = findActionName.lastIndexOf('/'); // if it is url
-                    String checkActionName = findActionName;
-                    if(lastSlash >= 0) // optimization
-                        checkActionName = checkActionName.replace('/', '_');
+                            if((action = businessLogics.findActionByCompoundName(checkActionName)) != null || lastSlash < 0)
+                                break;
 
-                    if((action = businessLogics.findActionByCompoundName(checkActionName)) != null || lastSlash < 0)
-                        break;
-
-                    findActionName = findActionName.substring(0, lastSlash);
+                            findActionName = findActionName.substring(0, lastSlash);
+                        }
+                        if (action != null) {
+                            result = executeExternal(action, request);
+                        } else {
+                            throw new RuntimeException("Action %s was not found");
+                        }
+                    } else {
+                        throw new RuntimeException("Action was not specified");
+                    }
+                } catch (ParseException | SQLHandledException | SQLException | IOException e) {
+                    throw new RuntimeException(e);
                 }
-                if (action != null) {
-                    result = executeExternal(action, request);
-
-                    if (requestLogMessage != null && logExternalRequestsBody)
-                        requestLogMessage += getResponseLogMessage(result, request);
-                } else {
-                    String errorMessage = String.format("Action %s was not found", actionName);
-                    logErrorMessage(requestLogMessage, errorMessage, result);
-                    throw new RuntimeException(errorMessage);
-                }
-            } else {
-                String errorMessage = "Action was not specified";
-                logErrorMessage(requestLogMessage, errorMessage, result);
-                throw new RuntimeException(errorMessage);
-            }
-        } catch (ParseException | SQLHandledException | SQLException | IOException e) {
-            logErrorMessage(requestLogMessage, e.getMessage(), result);
-            throw new RuntimeException(e);
-        }
-        logInfoMessage(requestLogMessage, result);
-        return result;
+                return result;
+            }, true, actionName, request);
     }
 
     @Override
     public ExternalResponse eval(boolean action, Object paramScript, ExternalRequest request) {
-        boolean logExternalRequestsBody = Settings.get().isLogExternalRequestsBody();
-        String requestLogMessage = Settings.get().isLogExternalRequests() ? getRequestLogMessage(request, logInfo, logExternalRequestsBody) : null;
-        ExternalResponse result = null;
-        if (paramScript != null) {
-            try {
-                Charset charset = Charset.forName(request.charsetName);
-                String script = StringClass.text.parseHTTP(paramScript, charset);
-                if (requestLogMessage != null)
-                    requestLogMessage += "\tSCRIPT:\n" + "\t\t" + script + "\n";
+        String script = parseScript(paramScript, request.charsetName);
 
-                LA<?> runAction = businessLogics.evaluateRun(script, action);
-                if(runAction != null) {
-                    result = executeExternal(runAction, request);
-                    if (requestLogMessage != null && logExternalRequestsBody)
-                        requestLogMessage += getResponseLogMessage(result, request);
-                } else {
-                    String errorMessage = "Action with name 'run' was not found";
-                    logErrorMessage(requestLogMessage, errorMessage, result);
-                    throw new RuntimeException(errorMessage);
+        return logRequest(() -> {
+            ExternalResponse result;
+            if (script != null) {
+                try {
+                    LA<?> runAction = businessLogics.evaluateRun(script, action);
+                    if(runAction != null) {
+                        result = executeExternal(runAction, request);
+                    } else {
+                        throw new RuntimeException("Action with name 'run' was not found");
+                    }
+                } catch (SQLException | ParseException | SQLHandledException | IOException e) {
+                    throw Throwables.propagate(e);
                 }
-            } catch (SQLException | ParseException | SQLHandledException | IOException e) {
-                logErrorMessage(requestLogMessage, e.getMessage(), result);
-                throw Throwables.propagate(e);
+            } else {
+                throw new RuntimeException("Eval script was not found");
             }
-        } else {
-            String errorMessage = "Eval script was not found";
-            logErrorMessage(requestLogMessage, errorMessage, result);
-            throw new RuntimeException(errorMessage);
+            return result;
+        }, false, script, request);
+    }
+
+    private String parseScript(Object paramScript, String charsetName) {
+        try {
+            return paramScript != null ? StringClass.text.parseHTTP(paramScript, Charset.forName(charsetName)) : null;
+        } catch (ParseException e) {
+            return null;
         }
-        logInfoMessage(requestLogMessage, result);
-        return result;
     }
 
     private ExternalResponse executeExternal(LA<?> property, ExternalRequest request) throws SQLException, ParseException, SQLHandledException, IOException {
@@ -599,6 +524,79 @@ public abstract class RemoteConnection extends RemoteRequestObject implements Re
         }
 
         public void close() throws SQLException {
+        }
+    }
+
+    public static String getRequestLogMessage(ExternalRequest request, LogInfo logInfo, boolean extraLog) {
+        return "\nREQUEST:\n" +
+                "\tREQUEST_USER_INFO: " + logInfo.toString() + "\n" +
+                "\tREQUEST_PATH: " + request.servletPath + "\n" +
+                "\tREQUEST_QUERY: " + request.query + "\n" +
+                "\tREQUEST_METHOD: " + request.method +
+                (extraLog ? ("\n" + getHeadersString(request.headerNames, request.headerValues) +
+                        getCookiesString(request.cookieNames, request.cookieValues) +
+                        "\tBODY:\n\t\t" +
+                        (request.body != null ? new String(request.body, Charset.forName(request.charsetName)) : "")) : "") +
+                "\n";
+    }
+
+    private static String getHeadersString(String[] headerNames, String[] headerValues) {
+        StringBuilder headers = new StringBuilder().append("\tHEADERS:\n");
+        if (headerNames != null) {
+            for (int i = 0; i < headerNames.length; i++) {
+                headers.append("\t\t").append(headerNames[i]).append(": ").append(headerValues[i]).append("\n");
+            }
+        }
+        return headers.toString();
+    }
+
+    private static String getCookiesString(String[] cookieNames, String[] cookieValues) {
+        StringBuilder cookies = new StringBuilder().append("\tCOOKIES:\n");
+        if (cookieNames != null) {
+            for (int i = 0; i < cookieNames.length; i++) {
+                cookies.append("\t\t").append(cookieNames[i]).append(": ").append(cookieValues[i]).append("\n");
+            }
+        }
+        return cookies.toString();
+    }
+
+    public static String getResponseLogMessage(ExternalResponse response, ExternalRequest request) {
+        //copy paste ExternalUtils.processRequest
+        Charset charset = ExternalUtils.getCharsetFromContentType(request.contentType == null ? null : ContentType.parse(request.contentType));
+        List<NameValuePair> queryParams = URLEncodedUtils.parse(request.query, charset);
+        String returnMultiType = ExternalUtils.getParameterValue(queryParams, ExternalUtils.RETURNMULTITYPE_PARAM);
+        boolean returnBodyUrl = returnMultiType != null && returnMultiType.equals("bodyurl");
+        HttpEntity httpEntity = ExternalUtils.getInputStreamFromList(response.results, ExternalUtils.getBodyUrl(response.results, returnBodyUrl), null, new ArrayList<>(), null, null);
+
+        return "\n\nRESPONSE:\n" +
+                "\tOBJECTS:\n\t\t" + httpEntity + "\n" +
+                getHeadersString(response.headerNames, response.headerValues) +
+                getCookiesString(response.cookieNames, response.cookieValues);
+    }
+
+    private ExternalResponse logRequest(Callable<ExternalResponse> responseCallable, boolean exec, String action, ExternalRequest request) {
+        boolean logExternalRequestsBody = Settings.get().isLogExternalRequestsBody();
+        String requestLogMessage = Settings.get().isLogExternalRequests() ? getRequestLogMessage(request, logInfo, logExternalRequestsBody) : null;
+
+        try {
+            ExternalResponse response = responseCallable.call();
+            if (requestLogMessage != null) {
+                requestLogMessage += "\t" + (exec ? "ACTION" : "SCRIPT") + ":\n\t\t " + action + "\n";
+                if (logExternalRequestsBody)
+                    requestLogMessage += getResponseLogMessage(response, request);
+
+                requestLogMessage += "\n\tRESPONSE_STATUS_HTTP: " + BaseUtils.nvl(response.statusHttp, HttpServletResponse.SC_OK) + "\n";
+                ServerLoggers.httpServerLogger.info(requestLogMessage);
+            }
+
+            return response;
+        } catch (Throwable t) {
+            if (requestLogMessage != null) {
+                requestLogMessage += "\n\tERROR: " + t.getMessage() + "\n";
+                ServerLoggers.httpServerLogger.error(requestLogMessage);
+            }
+
+            throw Throwables.propagate(t);
         }
     }
 }
