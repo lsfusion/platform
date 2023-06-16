@@ -262,7 +262,7 @@ sendMessage '{chat.send.message.chat}' (Chat chat, TEXT message, BOOLEAN system,
 
 sendMessage '{chat.send.message.user}' (CustomUser user1, CustomUser user2, STRING message, BOOLEAN notificate)  {
     createDialogChat(user1, user2);
-    sendMessage(chatIn(user1, user2), message, NULL, notificate());
+    sendMessage(chatIn(user1, user2), message, NULL, notificate);
 }
 
 sendMessage '{chat.send.message.user}' (CustomUser user, STRING message, BOOLEAN notificate)  {
