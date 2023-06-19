@@ -2,7 +2,7 @@ package lsfusion.client.classes.data;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.view.TXTPropertyRenderer;
+import lsfusion.client.form.property.cell.classes.view.FilePropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
@@ -25,7 +25,7 @@ public class ClientTXTClass extends ClientStaticFormatFileClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new TXTPropertyRenderer(property);
+        return new FilePropertyRenderer(property, "txt");
     }
 
     @Override

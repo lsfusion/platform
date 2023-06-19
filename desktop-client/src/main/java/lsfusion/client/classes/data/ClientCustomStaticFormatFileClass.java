@@ -5,7 +5,7 @@ import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
 import lsfusion.client.form.property.cell.classes.controller.FilePropertyEditor;
 import lsfusion.client.form.property.cell.classes.controller.PropertyEditor;
-import lsfusion.client.form.property.cell.classes.view.CustomStaticFormatFileRenderer;
+import lsfusion.client.form.property.cell.classes.view.FilePropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
@@ -50,7 +50,7 @@ public class ClientCustomStaticFormatFileClass extends ClientStaticFormatFileCla
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new CustomStaticFormatFileRenderer(property, filterExtensions[0]);
+        return new FilePropertyRenderer(property, filterExtensions[0]);
     }
 
     public PropertyEditor getDataClassEditorComponent(Object value, ClientPropertyDraw design) {
