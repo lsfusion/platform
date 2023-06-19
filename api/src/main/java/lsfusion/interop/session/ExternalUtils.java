@@ -25,7 +25,6 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ByteArrayBody;
 import org.apache.http.entity.mime.content.StringBody;
-import org.apache.log4j.Logger;
 
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
@@ -46,8 +45,6 @@ import static org.apache.http.entity.ContentType.APPLICATION_FORM_URLENCODED;
 
 public class ExternalUtils {
 
-    public static final Logger httpServerLogger = Logger.getLogger("HttpServerLogger");
-
     public static final String defaultCSVSeparator = ";";
     public static final String defaultCSVCharset = "UTF-8";
     public static final String defaultXMLJSONCharset = "UTF-8";
@@ -65,7 +62,7 @@ public class ExternalUtils {
     private static final String SCRIPT_PARAM = "script";
     private static final String PARAMS_PARAM = "p";
     private static final String RETURN_PARAM = "return";
-    private static final String RETURNMULTITYPE_PARAM = "returnmultitype";
+    public static final String RETURNMULTITYPE_PARAM = "returnmultitype";
     private static final String PROPERTY_PARAM = "property";
     
     public static ExecInterface getExecInterface(final AuthenticationToken token, final SessionInfo sessionInfo, final RemoteLogicsInterface remoteLogics) {
@@ -101,27 +98,15 @@ public class ExternalUtils {
         return cookie;
     }
 
-    //web request, compatibility to not change apiVersion
     public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,
                                                   String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
                                                   Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
                                                   String contextPath, String servletPath, String pathInfo, String query) throws IOException, MessagingException {
-        return processRequest(remoteExec, is, requestContentType, headerNames, headerValues, cookieNames, cookieValues, logicsHost, logicsPort, logicsExportName,
-                scheme, method, webHost, webPort, contextPath, servletPath, pathInfo, query, false);
-    }
-
-    public static ExternalResponse processRequest(ExecInterface remoteExec, InputStream is, ContentType requestContentType,
-                                                  String[] headerNames, String[] headerValues, String[] cookieNames, String[] cookieValues, String logicsHost,
-                                                  Integer logicsPort, String logicsExportName, String scheme, String method, String webHost, Integer webPort,
-                                                  String contextPath, String servletPath, String pathInfo, String query, boolean logBody) throws IOException, MessagingException {
         Charset charset = getCharsetFromContentType(requestContentType);
         List<NameValuePair> queryParams = URLEncodedUtils.parse(query, charset);
 
         ImList<String> queryActionParams = getParameterValues(queryParams, PARAMS_PARAM);
         byte[] body = IOUtils.readBytesFromStream(is);
-        if(logBody) {
-            httpServerLogger.info("request body: " + new String(body, charset));
-        }
         ImList<Object> bodyActionParams = getListFromInputStream(body, requestContentType);
         ImList<Object> paramsList = ListFact.add(queryActionParams, bodyActionParams);
         
@@ -208,7 +193,7 @@ public class ExternalUtils {
         return MIMETypeUtils.fileExtensionForMIMEType(contentType.getMimeType());
     }
 
-    private static String getParameterValue(List<NameValuePair> queryParams, String key) {
+    public static String getParameterValue(List<NameValuePair> queryParams, String key) {
         ImList<String> params = getParameterValues(queryParams, key);
         return params.isEmpty() ? null : params.get(0);
     }
