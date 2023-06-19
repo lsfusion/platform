@@ -2,7 +2,7 @@ package lsfusion.client.classes.data.link;
 
 import lsfusion.client.ClientResourceBundle;
 import lsfusion.client.form.property.ClientPropertyDraw;
-import lsfusion.client.form.property.cell.classes.view.link.ExcelLinkPropertyRenderer;
+import lsfusion.client.form.property.cell.classes.view.link.LinkPropertyRenderer;
 import lsfusion.client.form.property.cell.view.PropertyRenderer;
 import lsfusion.interop.classes.DataType;
 
@@ -15,7 +15,7 @@ public class ClientExcelLinkClass extends ClientStaticFormatLinkClass {
     }
 
     public PropertyRenderer getRendererComponent(ClientPropertyDraw property) {
-        return new ExcelLinkPropertyRenderer(property);
+        return new LinkPropertyRenderer(property, "xls");
     }
 
     public byte getTypeId() {
