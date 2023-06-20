@@ -78,7 +78,6 @@ public class ImageLinkPropertyRenderer extends LinkPropertyRenderer {
             RawFileData result = getFromCache(property, link);
             if (result == null && !isCached(property, link)) {
                 URLConnection httpcon = new URL(link).openConnection();
-                httpcon.addRequestProperty("User-Agent", "");
                 InputStream inputStream = httpcon.getInputStream();
                 result = new RawFileData(inputStream);
                 
