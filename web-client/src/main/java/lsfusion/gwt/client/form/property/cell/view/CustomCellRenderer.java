@@ -82,12 +82,16 @@ public class CustomCellRenderer extends CellRenderer {
             rerenderState(element, true);
     }
 
+    private static GwtClientUtils.JavaScriptObjectWrapper getKey(JavaScriptObject object) {
+        return new GwtClientUtils.JavaScriptObjectWrapper(object);
+    }
+
     private static JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering, JavaScriptObject element) {
         return GSimpleStateTableView.getDiff(list, supportReordering, new DiffObjectInterface<GwtClientUtils.JavaScriptObjectWrapper, JavaScriptObject>() {
 
             @Override
             public GwtClientUtils.JavaScriptObjectWrapper getKey(JavaScriptObject object) {
-                return new GwtClientUtils.JavaScriptObjectWrapper(object);
+                return CustomCellRenderer.getKey(object);
             }
 
             @Override
@@ -164,6 +168,9 @@ public class CustomCellRenderer extends CellRenderer {
             },
             isList: function () {
                 return false;
+            },
+            getKey: function (object) {
+                return @CustomCellRenderer::getKey(*)(object);
             }
         }
     }-*/;
