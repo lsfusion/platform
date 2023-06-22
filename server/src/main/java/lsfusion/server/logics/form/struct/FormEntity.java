@@ -858,21 +858,13 @@ public class FormEntity implements FormSelector<ObjectEntity> {
     public <P extends PropertyInterface, I extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(ActionOrPropertyObjectEntity<P, ?> propertyImplement, String formPath,
                                                                                Pair<ActionOrProperty, List<String>> inherited, ImOrderSet<P> interfaces, ComplexLocation<PropertyDrawEntity> location, Version version) {
 
-        ActionOrProperty inheritedProperty;
-        List<String> inheritedInterfaces;
-        if(inherited != null) {
-            inheritedProperty = inherited.first;
-            inheritedInterfaces = inherited.second;
-        } else {
-            inheritedProperty = propertyImplement.property;
-            inheritedInterfaces = PropertyDrawEntity.getMapping(propertyImplement, interfaces);
-        }
+        ActionOrProperty inheritedProperty = inherited != null ? inherited.first : propertyImplement.property;
 
         String propertySID;
         String integrationSID;
 
-        if (inheritedProperty.isNamed()) {
-            propertySID = PropertyDrawEntity.createSID(inheritedProperty.getName(), inheritedInterfaces);
+        if (inheritedProperty.isNamed() && interfaces != null) {
+            propertySID = PropertyDrawEntity.createSID(inheritedProperty.getName(), inherited != null ? inherited.second : PropertyDrawEntity.getMapping(propertyImplement, interfaces));
 
             integrationSID = inheritedProperty.getName();
         } else {

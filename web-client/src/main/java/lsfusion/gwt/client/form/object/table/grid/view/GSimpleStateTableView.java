@@ -35,9 +35,11 @@ import lsfusion.gwt.client.form.property.cell.view.GUserInputResult;
 import lsfusion.gwt.client.form.view.Column;
 import lsfusion.interop.action.ServerResponse;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -160,7 +162,7 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             return null;
         if(type instanceof GIntegralType)
             return ((GIntegralType) type).convertDouble(toDouble(value));
-        if(type instanceof GJSONType)
+        if(type instanceof GJSONType || (type == null && !(value instanceof Serializable))) // if type == null and incorrect value is passed, value will be not serializable and there will be an exception
             return PValue.getPValue(GwtClientUtils.jsonStringify(value));
 
         return PValue.getPValue(toString(value));
@@ -484,64 +486,100 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
                 GwtClientUtils.setField(data, "data", fromObject(results));
                 GwtClientUtils.setField(data, "more", fromBoolean(result.second));
                 GwtClientUtils.call(successCallBack, data);
-         }});
-    }
-
-    private NativeHashMap<GGroupObjectValue, JavaScriptObject> oldOptionsList = new NativeHashMap<>();
-    private JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering) {
-        return getDiff(list, supportReordering, new DiffObjectInterface<GGroupObjectValue, JavaScriptObject>() {
-            @Override
-            public GGroupObjectValue getKey(JavaScriptObject object) {
-                return GSimpleStateTableView.this.getKey(object);
-            }
-
-            @Override
-            public NativeHashMap<GGroupObjectValue, JavaScriptObject> getOldObjectsList() {
-                return GSimpleStateTableView.this.oldOptionsList;
-            }
-
-            @Override
-            public void setOldObjectsList(NativeHashMap<GGroupObjectValue, JavaScriptObject> optionsList) {
-                GSimpleStateTableView.this.oldOptionsList = optionsList;
             }
         });
     }
 
-    public static <K, V extends JavaScriptObject> JavaScriptObject getDiff(JsArray<V> list, boolean supportReordering, DiffObjectInterface<K, V> diffObjectInterface) {
-        NativeHashMap<K, V> oldOptionsList = diffObjectInterface.getOldObjectsList();
-        List<JavaScriptObject> optionsToAdd = new ArrayList<>();
-        List<JavaScriptObject> optionsToUpdate = new ArrayList<>();
-        List<JavaScriptObject> optionsToRemove = new ArrayList<>();
+    private static class Change<V extends JavaScriptObject> {
+        public final String type;
+        public final int index;
+        public final V object;
 
-        NativeHashMap<K, V> mappedList = new NativeHashMap<>();
-        for (int i = 0; i < list.length(); i++) {
-            V object = list.get(i);
-            GwtClientUtils.setField(object, "index", fromDouble(i));
-            K key = diffObjectInterface.getKey(object);
-            mappedList.put(key, object);
-            JavaScriptObject oldValue = oldOptionsList.remove(key);
-            if (oldValue != null) {
-                if (!GwtClientUtils.isJSObjectPropertiesEquals(object, oldValue)) {
-                    if (supportReordering && Integer.parseInt(GwtClientUtils.getField(oldValue, "index").toString()) != i) {
-                        optionsToRemove.add(oldValue);
-                        optionsToAdd.add(object);
-                    } else {
-                        optionsToUpdate.add(object);
-                    }
-                }
-            } else {
-                optionsToAdd.add(object);
+        public Change(String type, int index, V object) {
+            this.type = type;
+            this.index = index;
+            this.object = object;
+        }
+
+        protected void apply(JavaScriptObject fnc) {
+            nativeApply(fnc, type, index, object);
+        }
+        protected native void nativeApply(JavaScriptObject fnc, String type, int index, V object)/*-{
+            fnc(type, index, object)
+        }-*/;
+    }
+
+    // wagner - fischer algorithm
+    // diff from s2 make s1
+    private static <V extends JavaScriptObject> ArrayList<Change<V>> buildDiff(JsArray<V> s1, JsArray<V> s2, int insertCost, int deleteCost, BiFunction<V, V, Integer> fnReplaceCost) {
+        ArrayList<Change<V>> diff = new ArrayList<>();
+
+        int c1 = s1.length();
+        int c2 = s2.length();
+
+        int[] D[] = new int[c2+1][];
+        for(int i1 = 0; i1 <= c2; i1++)
+            D[i1] = new int[c1+1];
+
+        D[0][0]=0;
+        for(int i1 = 1; i1 <= c1; i1++)
+            D[0][i1] = D[0][i1-1] + insertCost;
+        for(int i2 = 1; i2 <= c2; i2++) {
+            D[i2][0] = D[i2 - 1][0] + deleteCost;
+            for (int i1 = 1; i1 <= c1; i1++) {
+                int replaceCost = fnReplaceCost.apply(s1.get(i1 - 1), s2.get(i2 - 1));
+                D[i2][i1] = Math.min(Math.min(D[i2 - 1][i1] + deleteCost,
+                        D[i2][i1 - 1] + insertCost),
+                        D[i2 - 1][i1 - 1] + replaceCost);
             }
         }
 
-        oldOptionsList.foreachValue(optionsToRemove::add);
-        diffObjectInterface.setOldObjectsList(mappedList);
+        int i2 = c2;
+        int i1 = c1;
+        while(i2 > 0 || i1 > 0) {
+            int cost = D[i2][i1];
+            if(i1 == 0 || (i2 > 0 && cost == D[i2 - 1][i1] + deleteCost)) {
+                i2 = i2 - 1;
+                diff.add(new Change<>("remove", i1, s2.get(i2)));
+            } else if (i2 == 0 || cost == D[i2][i1 - 1] + insertCost) {
+                i1 = i1 - 1;
+                diff.add(new Change<>("add", i1, s1.get(i1)));
+            } else {
+                i2 = i2 - 1;
+                i1 = i1 - 1;
 
-        JavaScriptObject object = GwtClientUtils.newObject();
-        GwtClientUtils.setField(object, "add", fromObject(optionsToAdd.toArray()));
-        GwtClientUtils.setField(object, "update", fromObject(optionsToUpdate.toArray()));
-        GwtClientUtils.setField(object, "remove", GwtClientUtils.sortArray(fromObject(optionsToRemove.toArray()), "index", true));
-        return object;
+                if(D[i2 + 1][i1 + 1] - D[i2][i1] > 0)
+                    diff.add(new Change<>("update", i1, s1.get(i1)));
+            }
+        }
+        return diff;
+    }
+
+    // fnc - method with params:
+    //  type - remove, add, update
+    //  index - current location
+    //  object - object
+
+    // replaceFnc (to, from) - 0 if equals, so no replace should be done, 100000 if can not be updated, 1 - if can be updated
+
+    // option - 0 if totally equals
+    // 100000 if key are not equals
+    // 1 - otherwise
+
+    public static <K, V extends JavaScriptObject> void diff(JsArray<V> list, Element element, JavaScriptObject proceed, JavaScriptObject updateKey) {
+        JsArray<V> prevList = (JsArray<V>) GwtClientUtils.getField(element, "prevList");
+        if(prevList == null)
+            prevList = GwtClientUtils.emptyArray();
+
+        ArrayList<Change<V>> diff = buildDiff(list, prevList, 10, 10, (to, from) -> {
+                                                    if(updateKey != null && !GSimpleStateTableView.toString(GwtClientUtils.call(updateKey, to)).equals(GSimpleStateTableView.toString(GwtClientUtils.call(updateKey, from))))
+                                                        return 100000;
+                                                    return GwtClientUtils.deepEquals(to, from) ? 0 : 1;
+                                                });
+        for (int i = diff.size() - 1; i >= 0; i--)
+            diff.get(i).apply(proceed);
+
+        GwtClientUtils.setField(element, "prevList", list);
     }
 
     protected native JavaScriptObject getController()/*-{
@@ -627,8 +665,8 @@ public abstract class GSimpleStateTableView<P> extends GStateTableView {
             getKey: function (object) {
                 return thisObj.@GSimpleStateTableView::getKey(*)(object);
             },
-            getDiff: function (newList, supportReordering) {
-                return thisObj.@GSimpleStateTableView::getDiff(Lcom/google/gwt/core/client/JsArray;Z)(newList, supportReordering);
+            diff: function (newList, element, fnc, updateKey) {
+                @GSimpleStateTableView::diff(*)(newList, element, fnc, updateKey);
             },
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();

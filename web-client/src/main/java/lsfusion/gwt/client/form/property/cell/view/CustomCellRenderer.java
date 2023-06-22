@@ -13,8 +13,6 @@ import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
 
-import java.util.function.Consumer;
-
 public class CustomCellRenderer extends CellRenderer {
     private final JavaScriptObject customRenderer;
 
@@ -36,7 +34,8 @@ public class CustomCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
-        setRendererValue(customRenderer, element, getController(property, updateContext, element), GSimpleStateTableView.convertToJSValue(property, value));
+        JavaScriptObject renderValue = GSimpleStateTableView.convertToJSValue(property, value);
+        setRendererValue(customRenderer, element, getController(property, updateContext, element), renderValue);
 
         return false;
     }
@@ -62,14 +61,15 @@ public class CustomCellRenderer extends CellRenderer {
         return PValue.getStringValue(value);
     }
 
-    protected static void changeValue(Element element, Consumer<PValue> valueChangeConsumer, JavaScriptObject value, GPropertyDraw property) {
+    protected static void changeValue(Element element, UpdateContext updateContext, JavaScriptObject value, GPropertyDraw property, JavaScriptObject renderValueSupplier) {
         GType externalChangeType = property.getExternalChangeType();
 
-        boolean canUseChangeValueForRendering = property.canUseChangeValueForRendering(externalChangeType);
+        boolean canUseChangeValueForRendering = renderValueSupplier != null || property.canUseChangeValueForRendering(externalChangeType);
         if(!canUseChangeValueForRendering) // to break a recursion when there are several changes in update
             rerenderState(element, false);
 
-        valueChangeConsumer.accept(GSimpleStateTableView.convertFromJSUndefValue(externalChangeType, value));
+        updateContext.changeProperty(GSimpleStateTableView.convertFromJSUndefValue(externalChangeType, value),
+                renderValueSupplier != null ? (oldValue, changeValue) -> GSimpleStateTableView.convertFromJSValue(property.baseType, GwtClientUtils.call(renderValueSupplier, GSimpleStateTableView.convertToJSValue(property.baseType, oldValue))) : null);
 
         // if we don't use change value for rendering, and the renderer is interactive (it's state can be changed without notifying the element)
         // there might be a problem that this change might be grouped with the another change that will change the state to the previous value, but update won't be called (because of caching), which is usually an "unexpected behaviour"
@@ -86,50 +86,28 @@ public class CustomCellRenderer extends CellRenderer {
         return new GwtClientUtils.JavaScriptObjectWrapper(object);
     }
 
-    private static JavaScriptObject getDiff(JsArray<JavaScriptObject> list, boolean supportReordering, JavaScriptObject element) {
-        return GSimpleStateTableView.getDiff(list, supportReordering, new DiffObjectInterface<GwtClientUtils.JavaScriptObjectWrapper, JavaScriptObject>() {
-
-            @Override
-            public GwtClientUtils.JavaScriptObjectWrapper getKey(JavaScriptObject object) {
-                return CustomCellRenderer.getKey(object);
-            }
-
-            @Override
-            public NativeHashMap<GwtClientUtils.JavaScriptObjectWrapper, JavaScriptObject> getOldObjectsList() {
-                // to save a separate oldOptionsList for each element
-                JavaScriptObject oldOptionsListField = GwtClientUtils.getField(element, "oldOptionsList");
-                return oldOptionsListField != null ? GStateTableView.toObject(oldOptionsListField) : new NativeHashMap<>();
-            }
-
-            @Override
-            public void setOldObjectsList(NativeHashMap<GwtClientUtils.JavaScriptObjectWrapper, JavaScriptObject> optionsList) {
-                GwtClientUtils.setField(element, "oldOptionsList", GStateTableView.fromObject(optionsList));
-            }
-        });
-    }
-
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
-        return getController(property, updateContext::changeProperty, element, updateContext.isPropertyReadOnly());
+        return getController(property, updateContext, element, updateContext.isPropertyReadOnly());
     }
 
-    private static native JavaScriptObject getController(GPropertyDraw property, Consumer<PValue> valueChangeConsumer, Element element, Boolean isReadOnly)/*-{
+    private static native JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element, Boolean isReadOnly)/*-{
         return {
-            change: function (value) {
+            change: function (value, renderValueSupplier) {
                 if(value === undefined) // not passed
                     value = @GSimpleStateTableView::UNDEFINED;
-                return @CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value, property);
+                return @CustomCellRenderer::changeValue(*)(element, updateContext, value, property, renderValueSupplier);
             },
             changeValue: function (value) { // deprecated
-                if(value === undefined) // not passed
-                    value = @GSimpleStateTableView::UNDEFINED;
-                return @CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, value, property);
+                return this.change(value);
             },
             changeProperty: function (propertyName, object, newValue) {
-                return @CustomCellRenderer::changeValue(*)(element, valueChangeConsumer, {
+                return this.change({
                     property : propertyName,
                     object : object,
                     value : newValue
-                }, property);
+                }, function(oldValue) {
+                    return $wnd.replaceObjectFieldInArray(oldValue, object, propertyName, newValue);
+                });
             },
             isReadOnly: function () {
                 return isReadOnly;
@@ -146,25 +124,8 @@ public class CustomCellRenderer extends CellRenderer {
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             },
-            getDiff: function (newList, supportReordering) {
-                if(typeof newList === 'string') {
-                    var strings = newList.split(",");
-                    var mappedList = [];
-                    for (var i = 0; i < strings.length; i++) {
-                        mappedList.push({name: strings[i], selected: false});
-                    }
-                    newList = mappedList;
-                } else if(newList == null) {
-                    newList = [];
-                } else {
-                    // "selected" field may be missing because in lsf field with null-value is not added to result JSON
-                    for (var j = 0; j < newList.length; j++) {
-                        if (newList[j].selected == null)
-                            newList[j].selected = false;
-                    }
-                }
-
-                return @CustomCellRenderer::getDiff(*)(newList, supportReordering, element);
+            diff: function (newList, element, fnc, updateKey) {
+                @GSimpleStateTableView::diff(*)(newList, element, fnc, updateKey);
             },
             isList: function () {
                 return false;

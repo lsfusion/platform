@@ -109,3 +109,18 @@ function lsfController(callerElement) {
 function reload() {
     document.location.reload();
 }
+
+function replaceObjectFieldInArray(array, obj, propertyName, newValue) {
+    return array.map(oldObj => deepEquals(oldObj, obj) ? { ...oldObj, [propertyName] : newValue } : oldObj);
+}
+
+function deepEquals(object1, object2) {
+    if(object1 === object2)
+        return true;
+
+    var object1Keys = Object.keys(object1);
+    var object2Keys = Object.keys(object2);
+
+    return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1[object1Key] !== object2[object1Key]}) !== undefined));
+}
+

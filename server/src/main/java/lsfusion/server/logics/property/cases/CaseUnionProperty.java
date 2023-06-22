@@ -17,8 +17,8 @@ import lsfusion.server.base.version.impl.NFListImpl;
 import lsfusion.server.base.version.interfaces.NFList;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.query.GroupType;
-import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.expr.where.CaseExprInterface;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
@@ -293,6 +293,34 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             return null;
 
         return PropertyFact.createCaseAction(interfaces, isExclusive, actionCases);
+    }
+
+    @Override
+    @IdentityStrongLazy
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties) {
+        Stat resultStat = Stat.ONE;
+        MList<Property> mResultWheres = ListFact.mList();
+        ImList<CalcCase<Interface>> cases = getCases();
+        MList<CalcCase<Interface>> mJsonCases = ListFact.mList();
+        for(CalcCase<Interface> propCase : cases) {
+            Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties);
+            if(joinProperty == null)
+                return null;
+
+            PropertyMapImplement<?, Interface> where;
+            if(propCase.isSimple())
+                where = ((PropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
+            else
+                where = (PropertyMapImplement<?, Interface>) propCase.where;
+            mJsonCases.add(new CalcCase<>(where, joinProperty.property));
+
+            if(joinProperty.wheres == null) // unknown wheres
+                mResultWheres = null;
+            else if(mResultWheres != null)
+                mResultWheres.addAll(joinProperty.wheres);
+            resultStat = resultStat.max(joinProperty.whereStat);
+        }
+        return new Select<>(PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList()), resultStat, mResultWheres != null ? mResultWheres.immutableList() : null);
     }
 
     @Override

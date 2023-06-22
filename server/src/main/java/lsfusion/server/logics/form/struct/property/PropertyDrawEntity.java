@@ -27,6 +27,7 @@ import lsfusion.server.base.version.interfaces.NFMap;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
@@ -55,6 +56,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
@@ -290,12 +292,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormEntity form) {
-        if (eventActions != null) {
-            ActionObjectSelector eventSelector = eventActions.get(actionId);
-            ActionObjectEntity<?> eventAction;
-            if (eventSelector != null && (eventAction = eventSelector.getAction(form)) != null)
-                return eventAction;
-        }
+        ActionObjectEntity<?> explicitEventAction = getExplicitEventAction(actionId, form);
+        if (explicitEventAction != null)
+            return explicitEventAction;
 
         ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty();
 
@@ -316,6 +315,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
             if (eventActionImplement != null)
                 return eventActionImplement.mapObjects(eventMapping);
+        }
+        return null;
+    }
+
+    private ActionObjectEntity<?> getExplicitEventAction(String actionId, FormEntity form) {
+        if (eventActions != null) {
+            ActionObjectSelector eventSelector = eventActions.get(actionId);
+            ActionObjectEntity<?> eventAction;
+            if (eventSelector != null && (eventAction = eventSelector.getAction(form)) != null)
+                return eventAction;
         }
         return null;
     }
@@ -413,8 +422,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public static FormSessionScope DEFAULT_OBJECTS_EVENTSCOPE = FormSessionScope.OLDSESSION;
     public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
-    public ActionOrProperty<P> getBindingProperty() {
-        return getInheritedProperty();
+    // should be the same property that is used in getEventAction (because eventActions should be synchronized with the contextMenuBindings)
+    public ActionOrProperty<?> getBindingProperty() {
+//        return getInheritedProperty();
+        return getActionOrProperty().property;
     }
 
     public Iterable<String> getAllPropertyEventActions() {
@@ -668,7 +679,41 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return actionOrProperty;
     }
 
+    private Pair<PropertyObjectEntity<?>, Stat> getSelectProperty() {
+        if(actionOrProperty instanceof PropertyObjectEntity) {
+            return ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty();
+        }
+        return null;
+    }
+
+    public String getCustomRenderFunction() {
+        if(customRenderFunction != null)
+            return customRenderFunction;
+
+        Pair<PropertyObjectEntity<?>, Stat> chameleon = getSelectProperty();
+        if(chameleon != null) {
+            Stat stat = chameleon.second;
+            if(stat.lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueRadio()))) {
+                // less than option
+                // horizontal or "short data"
+                return "radio";
+                // vertical
+                // radio
+            }
+
+//            assert stat.less(new Stat(Settings.get().getMinInterfaceStatForValueCombo()));
+            return "combo";
+        }
+
+        return null;
+    }
+
+    // INTERACTIVE (NON-STATIC) USAGES
     public ActionOrPropertyObjectEntity<?, ?> getActionOrProperty() {
+        Pair<PropertyObjectEntity<?>, Stat> chameleon = getSelectProperty();
+        if(chameleon != null)
+            return chameleon.first;
+
         return actionOrProperty;
     }
 

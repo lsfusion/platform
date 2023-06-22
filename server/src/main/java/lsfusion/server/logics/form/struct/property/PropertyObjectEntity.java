@@ -1,5 +1,7 @@
 package lsfusion.server.logics.form.struct.property;
 
+import lsfusion.base.Pair;
+import lsfusion.base.col.ListFact;
 import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.base.col.interfaces.immutable.ImSet;
@@ -7,6 +9,7 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
@@ -72,6 +75,13 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
 
     public <T extends PropertyInterface> PropertyMapImplement<?, T> getImplement(ImRevMap<ObjectEntity, T> mapObjects) {
         return new PropertyMapImplement<>(property, mapping.join(mapObjects));
+    }
+
+    public Pair<PropertyObjectEntity<?>, Stat> getSelectProperty() {
+        Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY());
+        if(select != null)
+            return new Pair<>(select.property.mapEntityObjects(mapping), select.whereStat);
+        return null;
     }
 
     public boolean isValueUnique(GroupObjectEntity grid) {

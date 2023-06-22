@@ -32,16 +32,15 @@ function _defaultRadioCheckBox(type, hasName) {
 }
 
 function _checkBoxRadioButtonToggle(type, hasName) {
-    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-primary', 'option-item'], hasName);
+    return _option(type, false, null, ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], hasName);
 }
 
 function _checkBoxRadioButtonGroup(type, hasName) {
-    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-primary', 'option-item'], hasName);
+    return _option(type, true, ['btn-group'], ['btn-check'], ['btn', 'btn-outline-secondary', 'option-item'], hasName);
 }
 
 function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName) {
     let isButton = isGroup || divClasses == null;
-    let name = hasName ? _getRandomId() : null; // radiobutton must have a name attribute
 
     function _getRandomId() {
         return Math.random().toString(36).slice(2);
@@ -58,21 +57,10 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
         }
     }
 
-    function _setChecked(input, rawOption) {
-        input.checked = rawOption.selected;
-    }
-
-    function _changeProperty(controller, key, selected, isList, event) {
-        controller.changeProperty('selected', key, selected ? true : null);
-        if (isList)
-            controller.changeObject(key);
-
-        if (event != null)
-            event.preventDefault(); // is needed to prevent the click event reaching the input element.
-    }
-
     return {
         render: function (element) {
+            element.name = hasName ? _getRandomId() : null; // radiobutton must have a name attribute
+
             let options = document.createElement('div');
             options.classList.add(isButton ? "option-btn-container" : "option-container");
             if (isGroup) {
@@ -84,78 +72,120 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
             element.appendChild(options);
             element.options = options;
         }, update: function (element, controller, list) {
-            let options = element.options;
-
             let isList = controller.isList();
-            let diff = controller.getDiff(list, true);
 
-            diff.remove.forEach(rawOption => {
-                if (isButton) {
-                    options.removeChild(_getOptionElement(options, rawOption.index, false, false));
-                    options.removeChild(_getOptionElement(options, rawOption.index, true, false));
-                } else {
-                    options.removeChild(_getOptionElement(options, rawOption.index, false, false));
-                }
-            });
-
-            diff.add.forEach(rawOption => {
-                let input = document.createElement('input');
-                inputClasses.forEach(inputClass => input.classList.add(inputClass));
-                input.type = type;
-                input.id = _getRandomId();
-                input.key = rawOption;
-                input.setAttribute("autocomplete", 'off');
-
-                if (name != null)
-                    input.setAttribute('name', name);
-
-                _setChecked(input, rawOption);
-
-                let label = document.createElement('label');
-                labelClasses.forEach(labelClass => label.classList.add(labelClass));
-                label.setAttribute('for', input.id);
-                label.innerText = rawOption.name;
-
-                input.addEventListener('change', function () {
-                    _changeProperty(controller, this.key, this.checked, isList);
-                });
-
-                let currentOptions = options.children;
-                let append = rawOption.index === (isButton ? currentOptions.length / 2 : currentOptions.length);
-                if (isButton) {
-                    if (append) {
-                        options.appendChild(input);
-                        options.appendChild(label);
-                    } else {
-                        options.insertBefore(input, currentOptions[rawOption.index * 2]);
-                        options.insertBefore(label, currentOptions[(rawOption.index * 2) + 1]);
+            if(!isList) {
+                if (typeof list === 'string') {
+                    let strings = list.split(",");
+                    list = [];
+                    for (let i = 0; i < strings.length; i++) {
+                        list.push({name: strings[i], selected: false});
                     }
-                } else {
-                    let div = document.createElement('div');
-                    divClasses.forEach(divClass => div.classList.add(divClass));
-                    div.appendChild(input);
-                    div.appendChild(label);
+                } else if (list == null) {
+                    list = [];
+                }
+            }
 
-                    if (append)
-                        options.appendChild(div);
-                    else
-                        options.insertBefore(div, currentOptions[rawOption.index]);
+            let changed = { dropAndNotSetChecked : false}
+            let options = element.options;
+            controller.diff(list, element, (changeType, index, object) => {
+                switch(changeType) {
+                    case 'remove': // clear
+                        if (isButton) {
+                            options.removeChild(_getOptionElement(options, index, false, false));
+                            options.removeChild(_getOptionElement(options, index, true, false));
+                        } else {
+                            options.removeChild(_getOptionElement(options, index, false, false));
+                        }
+                        break;
+                    case 'add': // render and update
+                    case 'update': // update
+                        let input, label;
+                        if(changeType === 'add') {
+                            input = document.createElement('input');
+                            inputClasses.forEach(inputClass => input.classList.add(inputClass));
+                            input.type = type;
+                            input.id = _getRandomId();
+                            input.setAttribute("autocomplete", 'off');
+
+                            input.setAttribute('name', element.name);
+
+                            label = document.createElement('label');
+                            labelClasses.forEach(labelClass => label.classList.add(labelClass));
+                            label.setAttribute('for', input.id);
+
+                            input.addEventListener('change', function () {
+                                controller.changeProperty('selected', this.key, this.checked ? true : null);
+                                if (isList)
+                                    controller.changeObject(this.key);
+                            });
+
+                            let currentOptions = options.children;
+                            let append = index === (isButton ? currentOptions.length / 2 : currentOptions.length);
+                            if (isButton) {
+                                if (append) {
+                                    options.appendChild(input);
+                                    options.appendChild(label);
+                                } else {
+                                    options.insertBefore(input, currentOptions[index * 2]);
+                                    options.insertBefore(label, currentOptions[(index * 2) + 1]);
+                                }
+                            } else {
+                                let div = document.createElement('div');
+                                divClasses.forEach(divClass => div.classList.add(divClass));
+                                div.appendChild(input);
+                                div.appendChild(label);
+
+                                if (append)
+                                    options.appendChild(div);
+                                else
+                                    options.insertBefore(div, currentOptions[index]);
+                            }
+                        } else {
+                            input = _getOptionElement(options, index, true, true);
+                            label = _getOptionElement(options, index, false, true);
+                        }
+
+                        input.key = object;
+                        label.innerText = object.name;
+
+                        let checked = object.selected != null && object.selected;
+                        if(checked)
+                            changed.dropAndNotSetChecked = false;
+                        else
+                            if(input.checked)
+                                changed.dropAndNotSetChecked = true;
+                        input.checked = checked;
+                        break;
                 }
             });
 
-            diff.update.forEach(rawOption => {
-                let label = _getOptionElement(options, rawOption.index, false, true);
-                label.innerText = rawOption.name;
+            // if we dropped (and not set) checked and there are other selected elements - select them
+            if(changed.dropAndNotSetChecked) {
+                for (let i = 0; i < list.length; i++) {
+                    let object = list[i];
+                    if(object.selected != null && object.selected) {
+                        let input = _getOptionElement(options, i, true, true);
+                        input.checked = true;
+                        break;
+                    }
+                }
+            }
 
-                let input = _getOptionElement(options, rawOption.index, true, true);
-                _setChecked(input, rawOption);
-            });
-
-            if (isList)
-                Array.from(list).forEach(element => {
-                    let option = _getOptionElement(options, element.index, true, true);
-                    option.classList[controller.isCurrent(option.key) ? 'add' : 'remove']('option-item-current');
-                });
+            for (let i = 0; i < list.length; i++){
+                let input = _getOptionElement(options, i, true, true);
+                let readonly;
+                if (isList) {
+                    input.classList[controller.isCurrent(input.key) ? 'add' : 'remove']('option-item-current');
+                    readonly = controller.isPropertyReadOnly('selected', input.key);
+                } else {
+                    readonly = controller.isReadOnly();
+                }
+                if(readonly)
+                    input.setAttribute('onclick', 'return false');
+                else
+                    input.removeAttribute('onclick')
+            }
         }
     }
 }

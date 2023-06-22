@@ -133,8 +133,8 @@ public class ActionOrPropertyPanelValue extends ActionOrPropertyValue implements
     }
 
     @Override
-    public void changeProperty(PValue result) {
-        form.changeProperty(this, result);
+    public void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
+        form.changeProperty(this, result, renderValueSupplier);
     }
 
     @Override

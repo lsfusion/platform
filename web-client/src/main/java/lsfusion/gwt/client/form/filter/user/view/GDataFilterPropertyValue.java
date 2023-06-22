@@ -132,7 +132,7 @@ public class GDataFilterPropertyValue extends ActionOrPropertyValue {
     }
 
     @Override
-    public void changeProperty(PValue result) {
+    public void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
         updateAndCommit(result);
     }
 

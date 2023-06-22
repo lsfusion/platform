@@ -6,7 +6,6 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
-import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -340,6 +339,21 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
         if (implementMapping.size() == 1)
             return implementMapping.singleValue().mapEventAction(eventActionSID, defaultChangeEventScope, viewProperties.addList(implementProperty), customChangeFunction);
+
+        return null;
+    }
+
+    @Override
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties) {
+        Select<Interface> result = super.getSelectProperty(viewProperties);
+        if(result != null)
+            return result;
+
+        Property<T> implementProperty = implement.property;
+        ImMap<T, PropertyInterfaceImplement<Interface>> implementMapping = implement.mapping;
+
+        if (implementMapping.size() == 1)
+            return implementMapping.singleValue().mapSelect(viewProperties.addList(implementProperty));
 
         return null;
     }

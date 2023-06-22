@@ -22,8 +22,9 @@ public class HTMLTextCellRenderer extends CellRenderer {
 
     @Override
     public boolean updateContent(Element element, PValue value, Object extraValue, UpdateContext updateContext) {
+        String renderValue = getHTMLValue(value);
         GwtClientUtils.setField(element, "controller", CustomCellRenderer.getController(property, updateContext, element));
-        element.setInnerHTML(getHTMLValue(value));
+        element.setInnerHTML(renderValue);
         return true;
     }
 

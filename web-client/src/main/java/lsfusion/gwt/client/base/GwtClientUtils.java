@@ -1087,14 +1087,20 @@ public class GwtClientUtils {
     public static native JavaScriptObject call(JavaScriptObject object)/*-{
         return object();
     }-*/;
-    public static native JavaScriptObject call(JavaScriptObject object, Object param)/*-{
+    public static native JavaScriptObject call(JavaScriptObject object, JavaScriptObject param)/*-{
         return object(param);
+    }-*/;
+    public static native JavaScriptObject call(JavaScriptObject object, JavaScriptObject param1, JavaScriptObject param2)/*-{
+        return object(param1, param2);
     }-*/;
     public static native JavaScriptObject call(JavaScriptObject object, JsArray<JavaScriptObject> params)/*-{
         return object.apply(object, params);
     }-*/;
     public static native JavaScriptObject newObject()/*-{
         return {};
+    }-*/;
+    public static native JsArray emptyArray()/*-{
+        return [];
     }-*/;
     public static native void setField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
         return object[field] = value;
@@ -1146,11 +1152,8 @@ public class GwtClientUtils {
         return hash;
     }-*/;
 
-    public static native boolean isJSObjectPropertiesEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
-        var object1Keys = Object.keys(object1).filter(function (object1Key) { return !object1Key.startsWith('#') });
-        var object2Keys = Object.keys(object2).filter(function (object2Key) { return !object2Key.startsWith('#') });
-
-        return !(object1Keys.length !== object2Keys.length || (object1Keys.find(function (object1Key) { return object1[object1Key] !== object2[object1Key]}) !== undefined));
+    public static native boolean deepEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
+        return $wnd.deepEquals(object1, object2);
     }-*/;
 
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
@@ -1268,7 +1271,7 @@ public class GwtClientUtils {
             if (!(o instanceof JavaScriptObjectWrapper))
                 return false;
 
-            return GwtClientUtils.isJSObjectPropertiesEquals(this.object, ((JavaScriptObjectWrapper) o).object);
+            return GwtClientUtils.deepEquals(this.object, ((JavaScriptObjectWrapper) o).object);
         }
 
         @Override

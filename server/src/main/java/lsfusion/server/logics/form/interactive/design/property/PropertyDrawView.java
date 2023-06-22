@@ -168,11 +168,11 @@ public class PropertyDrawView extends BaseComponentView {
         return -1;
     }
 
-    public int getValueHeight(FormEntity form) {
+    public int getValueHeight(ServerContext context) {
         if(valueHeight != null)
             return valueHeight;
 
-        if(isAutoSize(form)) {
+        if(isAutoSize(context)) {
             if(!isProperty() && !entity.hasDynamicImage()) // we want vertical size for action to be equal to text fields
                 return -2;
         }
@@ -236,6 +236,10 @@ public class PropertyDrawView extends BaseComponentView {
         if (container != null && !container.isHorizontal() && isHorizontalValueShrink())
             return true;
         return super.isDefaultAlignShrink(formEntity, explicit);
+    }
+
+    private String getCustomRenderFunction(ServerContext context) {
+        return entity.getCustomRenderFunction();
     }
 
     public static final boolean defaultSync = true;
@@ -400,7 +404,7 @@ public class PropertyDrawView extends BaseComponentView {
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream) throws IOException {
         super.customSerialize(pool, outStream);
 
-        outStream.writeBoolean(isAutoSize(pool.context.entity));
+        outStream.writeBoolean(isAutoSize(pool.context));
         outStream.writeBoolean(isBoxed(pool.context.entity));
 
         pool.writeString(outStream, getDrawCaption());
@@ -421,7 +425,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeInt(getCharWidth());
 
         outStream.writeInt(getValueWidth(pool.context.entity));
-        outStream.writeInt(getValueHeight(pool.context.entity));
+        outStream.writeInt(getValueHeight(pool.context));
 
         outStream.writeInt(getCaptionWidth(pool.context.entity));
         outStream.writeInt(getCaptionHeight(pool.context.entity));
@@ -490,7 +494,7 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(entity.hasDynamicImage());
 
         ActionOrProperty inheritedProperty = entity.getInheritedProperty();
-        outStream.writeBoolean(inheritedProperty instanceof Property ? ((Property<?>) inheritedProperty).disableInputList : null);
+        outStream.writeBoolean(inheritedProperty instanceof Property && ((Property<?>) inheritedProperty).disableInputList);
 
         ActionOrPropertyObjectEntity<?, ?> debug = entity.getDebugActionOrProperty(); // only for tooltip
         ActionOrProperty<?> debugBinding = entity.getDebugBindingProperty(); // only for tooltip
@@ -556,7 +560,7 @@ public class PropertyDrawView extends BaseComponentView {
             outStream.writeByte(DataType.ACTION);
         }
         
-        pool.writeString(outStream, entity.customRenderFunction);
+        pool.writeString(outStream, getCustomRenderFunction(pool.context));
 
         pool.writeString(outStream, entity.eventID);
 
@@ -828,7 +832,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(tag != null)
             return tag;
 
-        if(isCustom())
+        if(isCustom(context))
             return null;
 
         Type changeType = getChangeType(context, false);
@@ -875,7 +879,7 @@ public class PropertyDrawView extends BaseComponentView {
             if(tag == null && !entity.isList(context.entity)) {
                 if (hasFlow(context, ChangeFlowType.INPUT))
                     return "form-control";
-                else if (hasChangeAction(context) && !isCustom())
+                else if (hasChangeAction(context) && !isCustom(context))
                     return "btn btn-light";
             }
         } else {
@@ -896,7 +900,7 @@ public class PropertyDrawView extends BaseComponentView {
         if(toolbar != null)
             return toolbar;
 
-        if(isCustom())
+        if(isCustom(context))
             return false;
 
         if(!isProperty())
@@ -922,14 +926,14 @@ public class PropertyDrawView extends BaseComponentView {
 
     public Boolean autoSize;
 
-    public boolean isAutoSize(FormEntity entity) {
+    public boolean isAutoSize(ServerContext context) {
         if(autoSize != null)
             return autoSize;
 
-        return isCustom() || !isProperty();
+        return isCustom(context) || !isProperty();
     }
 
-    protected boolean isCustom() {
-        return entity.customRenderFunction != null;
+    protected boolean isCustom(ServerContext context) {
+        return getCustomRenderFunction(context) != null;
     }
 }

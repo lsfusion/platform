@@ -51,6 +51,7 @@ import lsfusion.server.data.where.Where;
 import lsfusion.server.data.where.WhereBuilder;
 import lsfusion.server.data.where.classes.ClassWhere;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.BaseLogicsModule;
@@ -88,6 +89,7 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapChange;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
 import lsfusion.server.logics.form.interactive.action.input.*;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
+import lsfusion.server.logics.form.interactive.dialogedit.ClassFormEntity;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
 import lsfusion.server.logics.form.interactive.property.checked.ConstraintCheckChangeProperty;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -1673,7 +1675,106 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         Property<?> property = viewProperty.get();
         return property.isValueUnique(MapFact.EMPTY(), true); // optimistic because otherwise all properties will become readonly
     }
-    
+
+    public static class Select<T extends PropertyInterface> {
+        public final PropertyMapImplement<?, T> property;
+
+        public final ImList<Property> wheres;
+        public final Stat whereStat;
+
+
+        public Select(PropertyMapImplement<?, T> property, Stat whereStat, ImList<Property> wheres) {
+            this.property = property;
+            this.whereStat = whereStat;
+            this.wheres = wheres;
+        }
+    }
+
+    @IdentityStrongLazy
+    public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<T> getSelectProperty(ImList<Property> viewProperties) {
+        if(!canBeChanged(false)) // optimization
+            return null; // ? because sometimes can be used to display one of the option
+
+        BaseLogicsModule baseLM = getBaseLM();
+
+        ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
+
+        Property<V> viewProperty;
+        if(valueClass instanceof CustomClass && !viewProperties.isEmpty() &&
+                (viewProperty = (Property<V>) PropertyFact.createViewProperty(viewProperties).property).isValueUnique(MapFact.EMPTY(), true)) {
+            CustomClass customClass = (CustomClass) valueClass;
+
+            // generation this interfaces + object
+            ImRevMap<T, I> mapPropertyInterfaces = interfaces.mapRevValues(() -> (I)new PropertyInterface());
+            ImOrderSet<I> orderPropertyInterfaces = getOrderInterfaces().mapOrder(mapPropertyInterfaces);
+            I objectInterface = (I) new PropertyInterface();
+            ImOrderSet<I> orderInterfaces = orderPropertyInterfaces.addOrderExcl(objectInterface);
+            ImOrderSet<T> orderMapPropertyInterfaces = orderPropertyInterfaces.mapOrder(mapPropertyInterfaces.reverse());
+
+            // first we're calculating where to fail fast because of the stat
+            // ORDER / WHERE (reading from the dialog form to have )
+            ClassFormEntity dialogForm = customClass.getDialogForm(baseLM);
+            Pair<InputFilterEntity<?, I>, ImOrderMap<InputOrderEntity<?, I>, Boolean>> filtersAndOrders = dialogForm.form.getInputFilterAndOrderEntities(dialogForm.object, getCheckFilters(dialogForm.object).mapSetValues(filter -> filter.map(mapPropertyInterfaces)), MapFact.EMPTYREV()); // , MapFact.singletonRev(dialogForm.object, objectInterface) - it will be removed
+            InputFilterEntity<?, I> filters = filtersAndOrders.first;
+            ImOrderMap<InputOrderEntity<?, I>, Boolean> orders = filtersAndOrders.second;
+
+            // there are 2 options : add WHERE to the IntegrationFormEntity, add it to JSONProperty context filters
+            // the first option looks "cleaner" (since we need the external context anyway)
+
+            // WHERE
+            PropertyMapImplement<W, I> where = (PropertyMapImplement<W, I>) filters.getWhereProperty(objectInterface);
+
+            ImSet<W> mapWhereInterfaces = where.mapping.filterValuesRev(orderPropertyInterfaces.getSet()).keys();
+            Stat whereStat = where.property.getInterfaceStat(mapWhereInterfaces);
+
+            if(!whereStat.lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueCombo()))) // optimization
+                return null;
+
+            // CLASSES
+//            ImList<ValueClass> classes = null; //getInterfaceClasses(ClassType.tryEditPolicy) + customClass;
+
+            // JSON
+            int propCount = orderInterfaces.size() + 2;
+            MList<PropertyInterfaceImplement<I>> mProperties = ListFact.mList(propCount);
+            MList<ScriptingLogicsModule.IntegrationPropUsage> mPropUsages = ListFact.mList(propCount);
+
+            // name = viewProperty(o)
+            mProperties.add(viewProperty.getImplement(SetFact.singletonOrder(objectInterface)));
+            mPropUsages.add(new ScriptingLogicsModule.IntegrationPropUsage<>("name", false, (LP)null, null));
+
+            // selected = (o = this (x, y, z))
+            PropertyMapImplement<PropertyInterface, I> compare = PropertyFact.<I>createCompare(new PropertyMapImplement<>(this, mapPropertyInterfaces), objectInterface, Compare.EQUALS);
+            mProperties.add(compare);
+            mPropUsages.add(new ScriptingLogicsModule.IntegrationPropUsage<>("selected", false, (LP)null, null));
+
+            // x, y, z, o
+            for(I orderInterface : orderInterfaces) {
+                mProperties.add(orderInterface);
+                mPropUsages.add(new ScriptingLogicsModule.IntegrationPropUsage(null, false, (LP)null, null));
+            }
+
+            // ORDERS
+            MOrderExclMap<String, Boolean> mPropOrders = MapFact.mOrderExclMap();
+            for(int i = 0, size = orders.size(); i < size; i++) {
+                PropertyMapImplement<?, I> orderProperty = orders.getKey(i).getOrderProperty(objectInterface);
+                mProperties.add(orderProperty);
+                String orderId = "order" + i;
+                mPropUsages.add(new ScriptingLogicsModule.IntegrationPropUsage(orderId, false, (LP) null, null));
+                mPropOrders.exclAdd(orderId, orders.getValue(i));
+            }
+            ImOrderMap<String, Boolean> propOrders = mPropOrders.immutableOrder();
+
+            ImList<PropertyInterfaceImplement<I>> properties = mProperties.immutableList();
+            ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages = mPropUsages.immutableList();
+
+            LP<?> jsonProp = baseLM.addJSONProp(LocalizedString.NONAME, orderInterfaces, orderPropertyInterfaces, properties, propUsages, propOrders, where);
+
+            return new Select<>(jsonProp.getImplement(orderMapPropertyInterfaces), whereStat, mapWhereInterfaces.isEmpty() ? ListFact.singleton(where.property) : null);
+        }
+
+        return null;
+    }
+
     @IdentityStrongLazy // STRONG for using in security policy
     public ActionMapImplement<?, T> getDefaultEventAction(String eventActionSID, FormSessionScope defaultChangeEventScope, ImList<Property> viewProperties, String customChangeFunction) {
 

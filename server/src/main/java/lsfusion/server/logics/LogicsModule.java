@@ -1,5 +1,6 @@
 package lsfusion.server.logics;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -683,19 +684,19 @@ public abstract class LogicsModule {
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, getBaseClass()));
     }
 
-    private static class IntegrationForm {
-        public final IntegrationFormEntity<PropertyInterface> form;
+    private static class IntegrationForm<I extends PropertyInterface> {
+        public final IntegrationFormEntity<I> form;
         public final ImOrderSet<ObjectEntity> objectsToSet;
         public final ImList<Boolean> nulls;
 
-        public IntegrationForm(IntegrationFormEntity<PropertyInterface> form, ImOrderSet<ObjectEntity> objectsToSet, ImList<Boolean> nulls) {
+        public IntegrationForm(IntegrationFormEntity<I> form, ImOrderSet<ObjectEntity> objectsToSet, ImList<Boolean> nulls) {
             this.form = form;
             this.objectsToSet = objectsToSet;
             this.nulls = nulls;
         }
     }
 
-    private IntegrationForm addIntegrationForm(int resInterfaces, List<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, boolean hasWhere, Object[] params) throws FormEntity.AlreadyDefined {
+    private IntegrationForm addIntegrationForm(int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, boolean hasWhere, Object[] params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> readImplements = readCalcImplements(innerInterfaces, params);
         final ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readImplements.subList(resInterfaces, readImplements.size() - (hasWhere ? 1 : 0));
@@ -705,9 +706,15 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement<PropertyInterface> where = hasWhere ? readImplements.get(readImplements.size() - 1) : null;
         where = PropertyFact.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
+        IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, mapInterfaces, exprs, propUsages, orders, where, true);
+        addAutoFormEntityNotFinalized(integrationForm.form);
+
+        return integrationForm;
+    }
+
+    private <I extends PropertyInterface> IntegrationForm addIntegrationForm(ImOrderSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean notFinalized) throws FormEntity.AlreadyDefined {
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, propUsages, exprs, where, orders, false, version);
-        addAutoFormEntityNotFinalized(form);
+        IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, properties, propUsages, where, orders, false, version);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
@@ -715,16 +722,36 @@ public abstract class LogicsModule {
         return new IntegrationForm(form, objectsToSet, nulls);
     }
 
-    protected LP addJSONProp(LocalizedString caption, int resInterfaces, List<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+    protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                              boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params);
 
+        return addJSONFormProp(caption, integrationForm);
+    }
+
+    public <I extends PropertyInterface> LP addJSONProp(LocalizedString caption, ImOrderSet<I> innerInterfaces, ImOrderSet<I> innerValues, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyMapImplement<?, I> where) {
+        try {
+            assert this instanceof BaseLogicsModule;
+
+            IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, innerValues, properties, propUsages, orders, where, false);
+            addAutoFormEntityFinalized(integrationForm.form);
+
+            LP jsonFormProp = addJSONFormProp(caption, integrationForm);
+            jsonFormProp.property.finalizeInit();
+            ((LazyProperty)jsonFormProp.property).finalizeLazyInit();
+            return jsonFormProp;
+        } catch (FormEntity.AlreadyDefined e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
         // creating action
         return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY());
     }
 
     // ------------------- Export property action ----------------- //
-    protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, List<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
+    protected LA addExportPropertyAProp(LocalizedString caption, FormIntegrationType type, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
                                         LP singleExportFile, boolean hasWhere, ValueClass sheetName, ValueClass root, ValueClass tag, String separator,
                                         Boolean hasHeader, boolean noEscape, Integer selectTop, String charset, boolean attr, Object... params) throws FormEntity.AlreadyDefined {
         IntegrationForm integrationForm = addIntegrationForm(resInterfaces, propUsages, orders, hasWhere, params);
@@ -740,7 +767,7 @@ public abstract class LogicsModule {
         return addEFAProp(null, caption, form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY(), type, hasHeader, separator, noEscape, new SelectTop(selectTop), charset, singleExportFile, exportFiles, sheetName, root, tag);
     }
 
-    protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, List<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<ValueClass> paramClasses, LP<?> whereLCP,
+    protected LA addImportPropertyAProp(FormIntegrationType type, int paramsCount, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<ValueClass> paramClasses, LP<?> whereLCP,
                                         String separator, boolean noHeader, boolean noEscape, String charset, boolean sheetAll, boolean attr, boolean hasRoot, boolean hasWhere, Object... params) throws FormEntity.AlreadyDefined {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(getIntNum(params));
         ImList<PropertyInterfaceImplement<PropertyInterface>> exprs = readCalcImplements(innerInterfaces, params);
@@ -749,7 +776,7 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement<PropertyInterface> where = innerInterfaces.size() == 1 && whereLCP != null ? whereLCP.getImplement(innerInterfaces.single()) : null;
 
         // creating form
-        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), propUsages, exprs, where, MapFact.EMPTYORDER(), attr, version);
+        IntegrationFormEntity<PropertyInterface> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, paramClasses, SetFact.EMPTYORDER(), exprs, propUsages, where, MapFact.EMPTYORDER(), attr, version);
         addAutoFormEntityNotFinalized(form);
         
         // create action
@@ -2307,6 +2334,12 @@ public abstract class LogicsModule {
     public void addAutoFormEntityNotFinalized(AutoFormEntity form) {
         assert !formsFinalized;
         addAutoFormEntity(form);
+    }
+    public void addAutoFormEntityFinalized(AutoFormEntity form) {
+        assert formsFinalized;
+        boolean added = addAutoFormEntity(form);
+        if(added) // last check is recursion guard
+            form.finalizeAroundInit();
     }
     public void addAutoFormEntity(AutoFinalFormEntity form) {
         boolean added = addAutoFormEntity((AutoFormEntity) form);

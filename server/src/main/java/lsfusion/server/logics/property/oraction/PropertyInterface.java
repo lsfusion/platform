@@ -136,6 +136,10 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         return null;
     }
 
+    public Property.Select<P> mapSelect(ImList<Property> viewProperties) {
+        return null;
+    }
+
     public Property<?> mapViewProperty(CustomClass customClass, ImList<Property> viewProperties) {
         return null;
     }

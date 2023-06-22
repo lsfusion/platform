@@ -4178,9 +4178,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             this(alias, literal, lp.getLP(), inherited);
         }
         public IntegrationPropUsage(String alias, Boolean literal, LP lp, Pair<ActionOrProperty, List<String>> inherited) {
+            this(alias, literal, lp != null ? (ImOrderSet<P>) lp.listInterfaces : null, inherited);
+        }
+        public IntegrationPropUsage(String alias, Boolean literal, ImOrderSet<P> listInterfaces, Pair<ActionOrProperty, List<String>> inherited) {
             this.alias = alias;
             this.literal = literal != null && literal;
-            this.listInterfaces = lp != null ? (ImOrderSet<P>) lp.listInterfaces : null;
+            this.listInterfaces = listInterfaces;
             this.inherited = inherited;
         }
     }
@@ -4190,7 +4193,7 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                 List<LPWithParams> orderProperties, List<Boolean> orderDirections) throws ScriptingErrorLog.SemanticErrorException {
 
         List<LPWithParams> exExprs = new ArrayList<>(exprs);
-        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
+        MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
         for (int i = 0, size = exprs.size(); i < size; i++) {
             Pair<ActionOrProperty, List<String>> exPropUsage = null;
             LPTrivialLA propUsage = propUsages.get(i);
@@ -4199,18 +4202,19 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
                 exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
             }
-            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
+            mExPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
         }
 
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
-        for (int i = 0; i < orderProperties.size(); i++) {
+        for (int i = 0, size = orderProperties.size(); i < size; i++) {
             LPWithParams orderProperty = orderProperties.get(i);
             exExprs.add(orderProperty);
-            String orderId = "order" + exPropUsages.size();
-            exPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
+            String orderId = "order" + mExPropUsages.size();
+            mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
             mOrders.exclAdd(orderId, orderDirections.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
+        ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
 
         // technically it's a mixed operator with exec technics (root, tag like SHOW / DIALOG) and operator technics (exprs, where like CHANGE)
         List<LPWithParams> props = exExprs;
@@ -4257,7 +4261,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         List<LPWithParams> exExprs = new ArrayList<>(exprs);
 
-        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
+        MList<IntegrationPropUsage> mExPropUsages = ListFact.mList();
         for (int i = 0, size = exprs.size(); i < size; i++) {
             Pair<ActionOrProperty, List<String>> exPropUsage = null;
             LPTrivialLA propUsage = propUsages.get(i);
@@ -4266,18 +4270,19 @@ public class ScriptingLogicsModule extends LogicsModule {
                 LAP usageProperty = findLPByPropertyUsage(pDrawUsage.usage.property, propUsage.mapParams);
                 exPropUsage = new Pair<>(usageProperty.getActionOrProperty(), pDrawUsage.mapping);
             }
-            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
+            mExPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), exprs.get(i), exPropUsage));
         }
 
         MOrderExclMap<String, Boolean> mOrders = MapFact.mOrderExclMap(orderProperties.size());
         for (int i = 0; i < orderProperties.size(); i++) {
             LPWithParams orderProperty = orderProperties.get(i);
             exExprs.add(orderProperty);
-            String orderId = "order" + exPropUsages.size();
-            exPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
+            String orderId = "order" + mExPropUsages.size();
+            mExPropUsages.add(new IntegrationPropUsage(orderId, false, orderProperty, null));
             mOrders.exclAdd(orderId, orderDirections.get(i));
         }
         ImOrderMap<String, Boolean> orders = mOrders.immutableOrder();
+        ImList<IntegrationPropUsage> exPropUsages = mExPropUsages.immutableList();
 
         if(type == null)
             type = FormIntegrationType.JSON;
@@ -4494,9 +4499,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             props = findLPsForImport(propUsages, paramClasses);
         }
 
-        List<IntegrationPropUsage> exPropUsages = new ArrayList<>();
-        for(int i = 0, size = props.size(); i < size; i++)
-            exPropUsages.add(new IntegrationPropUsage(ids.get(i), literals.get(i), props.get(i), null));
+        ImList<IntegrationPropUsage> exPropUsages = ListFact.toList(props.size(), i -> new IntegrationPropUsage(ids.get(i), literals.get(i), props.get(i), null));
 
         boolean noParams = paramClasses.isEmpty();
 

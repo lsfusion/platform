@@ -1,30 +1,25 @@
 function select() {
 
-    function mapOption(option, controller) {
-        return {
-            value: controller.getKey(option).toString(),
-            text: option.name,
-            originalObject: option
-        }
+    function _getKey(object, controller) {
+        return controller.getKey(object).toString();
     }
 
     return {
         render: function (element, controller) {
+            let isList = controller != null;
+            if(!isList) //if is a CustomCellRenderer, there is no controller in the render()
+                controller = element.controller;
+
             element.selectizeInstance = $(element).selectize({
                 dropdownParent: 'body',
-                onItemAdd: function (value) {
-                    //if is a CustomCellRenderer, there is no controller in the render()
-                    if (controller == null)
-                        controller = element.controller;
 
+                // ??? maybe we have to undo this changes???
+                onItemAdd: function (value) {
                     controller.changeProperty('selected', this.options[value].originalObject, true);
                 },
                 onItemRemove: function (value) {
-                    //if is a CustomCellRenderer, there is no controller in the render()
-                    if (controller == null)
-                        controller = element.controller;
-
                     let option = this.options[value];
+                    // ???
                     if (option != null) // if option == null so option has been removed by .removeOption() method
                         controller.changeProperty('selected', option.originalObject, null);
                 },
@@ -32,7 +27,7 @@ function select() {
             });
 
             //controller != null if is a GSimpleStateTableView
-            if (controller != null) {
+            if (isList) {
                 let selectizeInstance = element.selectizeInstance[0].selectize;
 
                 selectizeInstance.settings.preload = 'focus';
@@ -53,42 +48,42 @@ function select() {
             }
         },
         update: function (element, controller, list) {
-            element.controller = controller; // controller is needed in render() to add onItemAdd and onItemRemove listeners. In CustomCellRenderer we cannot pass the controller to render()
-
             if (controller.booleanFilterSet !== undefined && !controller.booleanFilterSet && list.length > 0) {
                 controller.setBooleanViewFilter('selected', 1000);
                 controller.booleanFilterSet = true;
                 return;
             }
 
+            let isList = controller.isList();
+            if(!isList) // controller is needed in render() to add onItemAdd and onItemRemove listeners. In CustomCellRenderer we cannot pass the controller to render()
+                element.controller = controller;
+
             let selectizeInstance = element.selectizeInstance[0].selectize;
-            let diff = controller.getDiff(list);
+            controller.diff(list, element, (type, index, object) => {
+                let selectizeOption = {
+                    value: _getKey(object, controller),
+                    text: object.name,
+                    originalObject: object
+                };
+                switch(type) {
+                    case 'remove':
+                        selectizeInstance.removeOption(selectizeOption.value);
+                        break;
+                    case 'add':
+                    case 'update':
+                        if(type === 'add')
+                            selectizeInstance.addOption(selectizeOption);
+                        else
+                            selectizeInstance.updateOption(selectizeOption.value)
 
-            //remove
-            diff.remove.forEach(option => selectizeInstance.removeOption(controller.getKey(option).toString()));
-
-            //add
-            //wrapper to avoid calling selectize events
-            let eventName = 'item_add';
-            let e = selectizeInstance._events[eventName];
-            delete selectizeInstance._events[eventName];
-            diff.add.forEach(option => {
-                let selectizeOption = mapOption(option, controller);
-                selectizeInstance.addOption(selectizeOption);
-
-                if (option.selected === true)
-                    selectizeInstance.addItem(selectizeOption.value);
-            })
-            selectizeInstance._events[eventName] = e;
-
-            //update
-            diff.update.forEach(option => {
-                let selectizeOption = mapOption(option, controller);
-
-                //updateOption only changes value and text. selected / unselected need to be manually controlled by addItem / removeItem
-                selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
-                selectizeInstance[option.selected === true ? 'addItem' : 'removeItem'](selectizeOption.value);
-            });
+                        if(isList || selectizeOption.selected) {
+                            selectizeInstance.setCaret(index);
+                            selectizeInstance.addItem(selectizeOption.value, true);
+                        } else
+                            selectizeInstance.removeItem(selectizeOption.value, true);
+                }
+            }, to => _getKey(to, controller))
         }
     }
+
 }

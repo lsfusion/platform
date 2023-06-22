@@ -788,8 +788,8 @@ protected Double getUserFlex(int i) {
     public UpdateContext getUpdateContext(Cell cell, Element renderElement, GPropertyDraw property, GridPropertyColumn column) {
         return new UpdateContext() {
             @Override
-            public void changeProperty(PValue result) {
-                form.changeProperty(getEditContext(cell, renderElement), result);
+            public void changeProperty(PValue changeValue, GFormController.ChangedRenderValueSupplier renderValueSupplier) {
+                form.changeProperty(getEditContext(cell, renderElement), changeValue, renderValueSupplier);
             }
 
             @Override

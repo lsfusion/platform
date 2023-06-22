@@ -2947,6 +2947,8 @@ public class Settings implements Cloneable {
     }
 
     public int minInterfaceStatForValueUnique = 100;
+    public int minInterfaceStatForValueRadio = 5;
+    public int minInterfaceStatForValueCombo = 5;
 
     public int getMinInterfaceStatForValueUnique() {
         return minInterfaceStatForValueUnique;
@@ -2954,6 +2956,22 @@ public class Settings implements Cloneable {
 
     public void setMinInterfaceStatForValueUnique(int minInterfaceStatForValueUnique) {
         this.minInterfaceStatForValueUnique = minInterfaceStatForValueUnique;
+    }
+
+    public int getMinInterfaceStatForValueRadio() {
+        return minInterfaceStatForValueRadio;
+    }
+
+    public void setMinInterfaceStatForValueRadio(int minInterfaceStatForValueRadio) {
+        this.minInterfaceStatForValueRadio = minInterfaceStatForValueRadio;
+    }
+
+    public int getMinInterfaceStatForValueCombo() {
+        return minInterfaceStatForValueCombo;
+    }
+
+    public void setMinInterfaceStatForValueCombo(int minInterfaceStatForValueCombo) {
+        this.minInterfaceStatForValueCombo = minInterfaceStatForValueCombo;
     }
 
     private boolean disableCombineFilters = false;

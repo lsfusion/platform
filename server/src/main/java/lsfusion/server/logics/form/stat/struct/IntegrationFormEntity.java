@@ -1,13 +1,11 @@
 package lsfusion.server.logics.form.stat.struct;
 
-import lsfusion.base.Pair;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingLogicsModule;
-import lsfusion.server.language.property.oraction.LAP;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
@@ -23,14 +21,12 @@ import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
-import java.util.List;
-
 public class IntegrationFormEntity<P extends PropertyInterface> extends AutoFormEntity {
 
     public final GroupObjectEntity groupObject;
     public final ImRevMap<P, ObjectEntity> mapObjects;
             
-    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, List<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImList<PropertyInterfaceImplement<P>> properties, PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
+    public <M extends PropertyInterface> IntegrationFormEntity(BaseLogicsModule LM, ImOrderSet<P> innerInterfaces, ImList<ValueClass> innerClasses, final ImOrderSet<P> valueInterfaces, ImList<PropertyInterfaceImplement<P>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, PropertyInterfaceImplement<P> where, ImOrderMap<String, Boolean> orders, boolean attr, Version version) throws AlreadyDefined {
         super(LocalizedString.NONAME, version);
 
         final ImMap<P, ValueClass> interfaceClasses;

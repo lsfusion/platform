@@ -63,15 +63,17 @@ public class EvalUtils {
                     module.addWatchLocalDataProperty(local.first, local.second);
                 }
             }
-            module.runInit(ScriptingLogicsModule::initMainLogic);            
+            module.runInit(ScriptingLogicsModule::initMainLogic);
+            for(LazyProperty property : module.lazyProps) {
+                property.finalizeInit(); // needed at least for lazy properties
+                property.finalizeLazyInit();
+            }
             // finalize forms task (other elements can't be created in script)
             module.markFormsForFinalization();
             for(FormEntity form : module.getAllModuleForms()) {
                 form.finalizeAroundInit();
                 form.prereadEventActions();
             }
-            for(LazyProperty property : module.lazyProps)
-                property.finalizeInit(); // needed at least for lazy properties
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);
