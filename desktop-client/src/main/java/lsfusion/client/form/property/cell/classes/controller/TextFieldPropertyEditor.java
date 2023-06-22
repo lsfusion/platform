@@ -37,9 +37,7 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -625,7 +623,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                         }
                     }
                 }
-            } catch (UnsupportedFlavorException | IOException ignored) {}
+            } catch (Exception ignored) {}
         }
         return str;
     }
