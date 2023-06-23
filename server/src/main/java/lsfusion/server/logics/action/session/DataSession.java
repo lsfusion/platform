@@ -635,7 +635,7 @@ public class DataSession extends ExecutionEnvironment implements SessionChanges,
         try {
             final Query<T, String> query = set.getAddQuery(baseClass); // query, который генерит номера записей (one-based)
             // сначала закидываем в таблицу set с номерами рядов (!!! нужно гарантировать однозначность)
-            table = new SinglePropertyTableUsage<>(debugInfo, query.getMapKeys().keys().toOrderSet(), query::getKeyType, ObjectType.instance);
+            table = new SinglePropertyTableUsage<>(debugInfo, query.getMapKeys().keys().toOrderSet(), key -> query.getKeyType(k -> null, key), ObjectType.instance);
             table.modifyRows(sql, query, baseClass, Modify.ADD, env, SessionTable.matLocalQuery);
         } finally {
             if(matSetTable != null)
