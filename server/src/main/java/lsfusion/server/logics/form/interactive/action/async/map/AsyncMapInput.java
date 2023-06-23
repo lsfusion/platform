@@ -7,7 +7,7 @@ import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
@@ -15,7 +15,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec<T> {
 
@@ -69,10 +68,10 @@ public class AsyncMapInput<T extends PropertyInterface> extends AsyncMapFormExec
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
         if (hasOldValue && !(oldValue instanceof PropertyMapImplement && drawProperty != null && ((PropertyMapImplement<?, T>) oldValue).mapEntityObjects(mapObjects).equalsMap(drawProperty)))
             return null;
-        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, form, policy, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
+        return new AsyncInput(type, list != null && inputList != null ? inputList.map(mapObjects, context, securityProperty, drawProperty, toDraw) : null, customEditorFunction);
     }
 
     @Override

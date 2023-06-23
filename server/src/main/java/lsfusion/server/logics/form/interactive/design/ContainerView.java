@@ -12,10 +12,10 @@ import lsfusion.server.base.version.NeighbourComplexLocation;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.base.version.interfaces.NFComplexOrderSet;
 import lsfusion.server.language.ScriptParsingException;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.object.GridView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.physics.admin.Settings;
 import lsfusion.server.physics.dev.debug.DebugInfo;
@@ -239,32 +239,32 @@ public class ContainerView extends ComponentView {
     }
 
     @Override
-    public boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
+    public boolean isDefaultShrink(FormInstanceContext context, boolean explicit) {
         ContainerView container = getLayoutParamContainer();
         boolean horizontal = container != null && container.isHorizontal();
 
-        if(isShrinkedAutoSizedWrap(formEntity, horizontal))
+        if(isShrinkedAutoSizedWrap(context, horizontal))
             return true;
 
-        if(!explicit && container != null && container.isWrap() && isShrinkDominant(formEntity, container, horizontal, false))
+        if(!explicit && container != null && container.isWrap() && isShrinkDominant(context, container, horizontal, false))
             return true;
 
-        return super.isDefaultShrink(formEntity, explicit);
+        return super.isDefaultShrink(context, explicit);
     }
 
-    public boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
+    public boolean isDefaultAlignShrink(FormInstanceContext context, boolean explicit) {
         ContainerView container = getLayoutParamContainer();
         boolean horizontal = container != null && container.isHorizontal();
-        if(isShrinkedAutoSizedWrap(formEntity, !horizontal))
+        if(isShrinkedAutoSizedWrap(context, !horizontal))
             return true;
 
-        if(!explicit && container != null && isShrinkDominant(formEntity, container, !horizontal, true))
+        if(!explicit && container != null && isShrinkDominant(context, container, !horizontal, true))
             return true;
 
-        return super.isDefaultAlignShrink(formEntity, explicit);
+        return super.isDefaultAlignShrink(context, explicit);
     }
 
-    public boolean isLineShrink(FormEntity formEntity) {
+    public boolean isLineShrink(FormInstanceContext context) {
         if(lineShrink != null)
             return lineShrink;
 
@@ -273,18 +273,18 @@ public class ContainerView extends ComponentView {
         boolean horizontal = container != null && container.isHorizontal();
         boolean linesHorizontal = !isHorizontal(); // lines direction
         boolean sameDirection = horizontal == linesHorizontal;
-        return sameDirection ? isShrink(formEntity) : isAlignShrink(formEntity);
+        return sameDirection ? isShrink(context) : isAlignShrink(context);
     }
 
-    private boolean isShrinkDominant(FormEntity formEntity, ContainerView container, boolean horizontal, boolean align) {
+    private boolean isShrinkDominant(FormInstanceContext context, ContainerView container, boolean horizontal, boolean align) {
         ContainerView upperContainer = container.getLayoutParamContainer();
         boolean upperHorizontal = upperContainer != null && upperContainer.isHorizontal();
-        if((horizontal == upperHorizontal ? container.isShrink(formEntity) : container.isAlignShrink(formEntity))) {
+        if((horizontal == upperHorizontal ? container.isShrink(context) : container.isAlignShrink(context))) {
             // checking siblings if there are more
             int shrinked = 0;
             int notShrinked = 0;
             for(ComponentView child : container.getChildrenIt())
-                if(align ? child.isAlignShrink(formEntity, true) : child.isShrink(formEntity, true))
+                if(align ? child.isAlignShrink(context, true) : child.isShrink(context, true))
                     shrinked++;
                 else
                     notShrinked++;
@@ -297,8 +297,8 @@ public class ContainerView extends ComponentView {
     // if we have cascade shrinking (with auto size) and some wrap at some point, consider that we want shrink
     // otherwise shrinking will lead to more scrolls in lower containers
     // however we can use simple shrink check
-    protected boolean isShrinkedAutoSizedWrap(FormEntity formEntity, boolean horizontal) {
-        if ((horizontal ? getWidth(formEntity) : getHeight(formEntity)) != -1) // if we have fixed size than there is no wrap problem
+    protected boolean isShrinkedAutoSizedWrap(FormInstanceContext context, boolean horizontal) {
+        if ((horizontal ? getWidth(context) : getHeight(context)) != -1) // if we have fixed size than there is no wrap problem
             return false;
 
         boolean thisHorizontal = isHorizontal();
@@ -314,7 +314,7 @@ public class ContainerView extends ComponentView {
         for (ComponentView child : getChildrenList())
             if(child instanceof ContainerView) {
                 ContainerView containerChild = (ContainerView) child;
-                if ((sameDirection ? containerChild.isShrink(formEntity, true) : child.isAlignShrink(formEntity, true)) && containerChild.isShrinkedAutoSizedWrap(formEntity, horizontal))
+                if ((sameDirection ? containerChild.isShrink(context, true) : child.isAlignShrink(context, true)) && containerChild.isShrinkedAutoSizedWrap(context, horizontal))
                     return true;
             }
 
@@ -495,7 +495,7 @@ public class ContainerView extends ComponentView {
         outStream.writeInt(lines);
         pool.writeInt(outStream, lineSize);
         pool.writeInt(outStream, captionLineSize);
-        outStream.writeBoolean(isLineShrink(pool.context.entity));
+        outStream.writeBoolean(isLineShrink(pool.context));
 
         outStream.writeBoolean(isCustomDesign());
         if (isCustomDesign())

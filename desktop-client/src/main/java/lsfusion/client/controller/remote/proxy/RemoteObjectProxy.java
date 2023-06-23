@@ -41,29 +41,6 @@ public abstract class RemoteObjectProxy<T extends Remote> implements Remote {
         assert realHostName != null;
     }
 
-    public Object getProperty(Object key) {
-        return properties.get(key);
-    }
-
-    public void setProperty(Object key, Object value) {
-        properties.put(key, value);
-    }
-
-    public boolean hasProperty(Object key) {
-        return properties.containsKey(key);
-    }
-
-    protected <T> T callImmutableMethod(String methodName, Callable<T> callable) throws Exception {
-        logger.debug("Running immutable method: " + methodName);
-        if (hasProperty(methodName)) {
-            Object result = getProperty(methodName);
-            logger.debug("  Returning cached value: " + result);
-            return (T) result;
-        }
-        logger.debug("  Directly call immutable method:");
-        return callable.call();
-    }
-
     protected void logRemoteMethodStartCall(String methodName) {
         if (logger.isInfoEnabled()) {
             startCall = System.currentTimeMillis();

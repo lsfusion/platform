@@ -720,7 +720,7 @@ public class FormView extends IdentityObject implements ServerCustomSerializable
         pool.writeString(outStream, path);
         pool.writeInt(outStream, overridePageWidth);
         serializeFormSchedulers(outStream, formSchedulers.getOrderSet());
-        serializeAsyncExecMap(outStream, entity.getAsyncExecMap());
+        serializeAsyncExecMap(outStream, entity.getAsyncExecMap(pool.context));
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {

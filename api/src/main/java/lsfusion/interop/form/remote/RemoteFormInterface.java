@@ -20,14 +20,6 @@ import java.util.Set;
 
 public interface RemoteFormInterface extends RemoteRequestInterface {
 
-    // form structure + design
-
-    byte[] getRichDesignByteArray() throws RemoteException;
-
-    Integer getInitFilterPropertyDraw() throws RemoteException;
-
-    Set<Integer> getInputGroupObjects() throws RemoteException;
-
     ServerResponse getRemoteChanges(long requestIndex, long lastReceivedRequestIndex, boolean refresh, boolean forceLocalEvents) throws RemoteException;
 
     // events : form
@@ -105,8 +97,6 @@ public interface RemoteFormInterface extends RemoteRequestInterface {
 
     ServerResponse saveUserPreferences(long requestIndex, long lastReceivedRequestIndex, GroupObjectUserPreferences preferences, boolean forAllUsers, boolean completeOverride, String[] hiddenProps) throws RemoteException;
 
-    FormUserPreferences getUserPreferences() throws RemoteException;
-    
     ServerResponse refreshUPHiddenProperties(long requestIndex, long lastReceivedRequestIndex, String groupObjectSID, String[] propSids) throws RemoteException;
 
     // external

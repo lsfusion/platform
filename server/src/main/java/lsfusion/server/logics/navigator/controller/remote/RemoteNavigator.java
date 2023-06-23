@@ -33,7 +33,6 @@ import lsfusion.server.data.query.build.QueryBuilder;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.value.DataObject;
 import lsfusion.server.data.value.ObjectValue;
-import lsfusion.server.language.ScriptingErrorLog;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.logics.BusinessLogics;
 import lsfusion.server.logics.LogicsInstance;
@@ -606,7 +605,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         }
         script += "run() { SHOW " + name + "; }";
 
-        RemoteForm remoteForm;
+        RemoteForm<?> remoteForm;
 
         RemoteNavigatorContext navigatorContext = (RemoteNavigatorContext) this.context;
         navigatorContext.pushGetForm();
@@ -619,10 +618,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             remoteForm = navigatorContext.popGetForm();
         }
 
-        JSONObject result = new JSONObject();
-        result.put("initial", remoteForm.getFormChangesExternal(getStack()).get("modify"));
-        result.put("meta", remoteForm.getMetaExternal().serialize());
-        return new Pair<>(remoteForm, result.toString());
+        return remoteForm.getFormExternal(getStack());
     }
 
     private void runNotification(ExecutionEnvironment env, ExecutionStack stack, String actionSID) {

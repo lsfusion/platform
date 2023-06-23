@@ -9,6 +9,7 @@ import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExe
 import lsfusion.server.logics.form.interactive.action.change.ActionObjectSelector;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.property.ActionObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -19,7 +20,6 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPropertyObjectEntity<P, Action<P>> implements Instantiable<ActionObjectInstance<P>>, ActionObjectSelector {
 
@@ -49,10 +49,10 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
         return this.property.getGroupChange(entity, mapping);
     }
 
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
+    public AsyncEventExec getAsyncEventExec(FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity drawProperty, GroupObjectEntity toDraw, boolean optimistic) {
         AsyncMapEventExec<P> asyncExec = property.getAsyncEventExec(optimistic);
         if(asyncExec != null)
-            return asyncExec.map(mapping, form, policy, securityProperty, drawProperty, toDraw);
+            return asyncExec.map(mapping, context, securityProperty, drawProperty, toDraw);
         return null;
     }
 
@@ -77,7 +77,7 @@ public class ActionObjectEntity<P extends PropertyInterface> extends ActionOrPro
     }
 
     @Override
-    public ActionObjectEntity<P> getAction(FormEntity formEntity) {
+    public ActionObjectEntity<P> getAction(FormEntity form, PropertyObjectEntity property) {
         return this;
     }
 }

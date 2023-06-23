@@ -1385,10 +1385,6 @@ public class GFormController implements EditManager {
         }
     }
 
-    public void getInitialFilterProperty(PriorityErrorHandlingCallback<NumberResult> callback) {
-        dispatcher.executePriority(new GetInitialFilterProperty(), callback);
-    }
-
     public void focusProperty(GPropertyDraw propertyDraw) {
         getPropertyController(propertyDraw).focusProperty(propertyDraw);
     }

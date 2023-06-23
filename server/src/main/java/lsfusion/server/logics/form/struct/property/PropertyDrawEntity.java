@@ -43,6 +43,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputFilterEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -232,8 +233,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getStaticActionOrProperty() instanceof PropertyObjectEntity;
     }
 
-    public boolean isProperty() {
-        return getActionOrProperty() instanceof PropertyObjectEntity;
+    public boolean isProperty(FormInstanceContext context) {
+        return getActionOrProperty(context) instanceof PropertyObjectEntity; // in theory we can also use FormContext if needed
     }
 
     public PropertyObjectEntity<?> getOrder() {
@@ -241,27 +242,28 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // for all external calls will set optimistic to true
-    public AsyncEventExec getAsyncEventExec(FormEntity form, SecurityPolicy policy, String actionSID, boolean externalChange) {
-        ActionObjectEntity<?> changeAction = getEventAction(actionSID, form, policy);
+    public AsyncEventExec getAsyncEventExec(FormInstanceContext context, String actionSID, boolean externalChange) {
+        ActionObjectEntity<?> changeAction = getEventAction(actionSID, context);
         if (changeAction != null) {
-            return changeAction.getAsyncEventExec(form, policy, getSecurityProperty(), isProperty() ? getAssertProperty() : null, getToDraw(form), optimisticAsync || externalChange);
+            return changeAction.getAsyncEventExec(context, getSecurityProperty(), isProperty(context) ? getAssertProperty(context) : null, getToDraw(context.entity), optimisticAsync || externalChange);
         }
         return null;
     }
 
-    private boolean isChange(String eventActionSID) {
+    private boolean isChange(String eventActionSID, FormInstanceContext context) {
         // GROUP_CHANGE can also be in context menu binding (see Property constructor)
         boolean isEdit = CHANGE.equals(eventActionSID) || GROUP_CHANGE.equals(eventActionSID);
-        assert isEdit || hasContextMenuBinding(eventActionSID) || hasKeyBinding(eventActionSID);
+        assert isEdit || hasContextMenuBinding(eventActionSID, context) || hasKeyBinding(eventActionSID, context);
         return isEdit;
     }
     
-    private boolean checkPermission(Action eventAction, String eventActionSID, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
+    private boolean checkPermission(Action eventAction, String eventActionSID, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+        SecurityPolicy securityPolicy = context.securityPolicy;
         if(EDIT_OBJECT.equals(eventActionSID))
             return securityPolicy.checkPropertyEditObjectsPermission(getSecurityProperty());
 
         ActionOrProperty securityProperty;
-        if (isChange(eventActionSID)) {
+        if (isChange(eventActionSID, context)) {
             if (isReadOnly() || (checkReadOnly != null && checkReadOnly.call())) 
                 return false;
 
@@ -273,30 +275,30 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return securityPolicy.checkPropertyChangePermission(securityProperty, eventAction);
     }
 
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SecurityPolicy securityPolicy) {
+    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context) {
         try {
-            return getEventAction(actionId, form, null, securityPolicy);
+            return getCheckedEventAction(actionId, context, null);
         } catch (SQLException | SQLHandledException e) {
             assert false;
             throw Throwables.propagate(e);
         }
     }
     
-    public ActionObjectEntity<?> getEventAction(String actionId, FormEntity form, SQLCallable<Boolean> checkReadOnly, SecurityPolicy securityPolicy) throws SQLException, SQLHandledException {
-        ActionObjectEntity<?> eventAction = getEventAction(actionId, form);
+    public ActionObjectEntity<?> getCheckedEventAction(String actionId, FormInstanceContext context, SQLCallable<Boolean> checkReadOnly) throws SQLException, SQLHandledException {
+        ActionObjectEntity<?> eventAction = getEventAction(actionId, context);
 
-        if (eventAction != null && !checkPermission(eventAction.property, actionId, checkReadOnly, securityPolicy))
+        if (eventAction != null && !checkPermission(eventAction.property, actionId, context, checkReadOnly))
             return null;
         
         return eventAction;
     }
 
-    public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormEntity form) {
-        ActionObjectEntity<?> explicitEventAction = getExplicitEventAction(actionId, form);
+    public <X extends PropertyInterface> ActionObjectEntity<?> getEventAction(String actionId, FormInstanceContext context) {
+        ActionObjectEntity<?> explicitEventAction = getExplicitEventAction(actionId, context);
         if (explicitEventAction != null)
             return explicitEventAction;
 
-        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty();
+        ActionOrPropertyObjectEntity<X, ?> eventPropertyObject = (ActionOrPropertyObjectEntity<X, ?>) getActionOrProperty(context);
 
         ActionOrProperty<X> eventProperty = eventPropertyObject.property;
         ImRevMap<X, ObjectEntity> eventMapping = eventPropertyObject.mapping;
@@ -308,9 +310,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         // default implementations for group change and change wys
         if (GROUP_CHANGE.equals(actionId)) {
             // if there is no explicit default handler, then generate one
-            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, form);
+            ActionObjectEntity<?> eventAction = getEventAction(CHANGE, context);
             if (eventAction != null)
-                return eventAction.getGroupChange(getToDraw(form));
+                return eventAction.getGroupChange(getToDraw(context.entity));
         } else { // default handler
             eventActionImplement = eventProperty.getDefaultEventAction(actionId, actionId.equals(CHANGE) ? defaultChangeEventScope : null, ListFact.EMPTY(), actionId.equals(CHANGE) ? customChangeFunction : null);
             if (eventActionImplement != null)
@@ -319,18 +321,18 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return null;
     }
 
-    private ActionObjectEntity<?> getExplicitEventAction(String actionId, FormEntity form) {
+    private ActionObjectEntity<?> getExplicitEventAction(String actionId, FormInstanceContext context) {
         if (eventActions != null) {
             ActionObjectSelector eventSelector = eventActions.get(actionId);
             ActionObjectEntity<?> eventAction;
-            if (eventSelector != null && (eventAction = eventSelector.getAction(form)) != null)
+            if (eventSelector != null && (eventAction = eventSelector.getAction(context.entity, isProperty(context) ? getAssertProperty(context) : null)) != null)
                 return eventAction;
         }
         return null;
     }
 
     @IdentityStrongLazy
-    public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormEntity entity) {
+    public <X extends PropertyInterface> ActionObjectEntity<?> getSelectorAction(FormEntity entity, PropertyObjectEntity<X> listProperty) {
         GroupObjectEntity groupObject = getToDraw(entity);
         ImSet<ObjectEntity> objects;
         ObjectEntity object;
@@ -350,7 +352,6 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
             InputFilterEntity<?, PropertyInterface> filter = entity.getInputFilterAndOrderEntities(object, SetFact.EMPTY(), mapObjects).first;
             assert !filter.mapValues.valuesSet().contains(objectInterface);
 
-            PropertyObjectEntity<X> listProperty = isProperty() ? (PropertyObjectEntity<X>) getAssertProperty() : null;
             ImRevMap<ObjectEntity, PropertyInterface> listMapObjects = mapObjects.removeRev(object);
 
             // filter orderInterfaces to only used in view and filter
@@ -423,16 +424,16 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public static FormSessionScope DEFAULT_DATACHANGE_EVENTSCOPE = FormSessionScope.NEWSESSION; // since when data changed in the same session, it immediately leads to pessimistic async values which gives a big overhead in most cases
 
     // should be the same property that is used in getEventAction (because eventActions should be synchronized with the contextMenuBindings)
-    public ActionOrProperty<?> getBindingProperty() {
+    public ActionOrProperty<?> getBindingProperty(FormInstanceContext context) {
 //        return getInheritedProperty();
-        return getActionOrProperty().property;
+        return getActionOrProperty(context).property;
     }
 
-    public Iterable<String> getAllPropertyEventActions() {
-        return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings().keySet()), getKeyBindings().valueIt());
+    public Iterable<String> getAllPropertyEventActions(FormInstanceContext context) {
+        return BaseUtils.mergeIterables(BaseUtils.mergeIterables(ServerResponse.events, getContextMenuBindings(context).keySet()), getKeyBindings(context).valueIt());
     }
-    public OrderedMap<String, LocalizedString> getContextMenuBindings() {
-        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getBindingProperty().getContextMenuBindings();
+    public OrderedMap<String, LocalizedString> getContextMenuBindings(FormInstanceContext context) {
+        ImOrderMap<String, LocalizedString> propertyContextMenuBindings = getBindingProperty(context).getContextMenuBindings();
         if (propertyContextMenuBindings.isEmpty()) {
             return contextMenuBindings;
         }
@@ -449,25 +450,25 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return result;
     }
 
-    public boolean hasContextMenuBinding(String actionSid) {
-        OrderedMap contextMenuBindings = getContextMenuBindings();
+    public boolean hasContextMenuBinding(String actionSid, FormInstanceContext context) {
+        OrderedMap contextMenuBindings = getContextMenuBindings(context);
         return contextMenuBindings != null && contextMenuBindings.containsKey(actionSid);
     }
     
-    public boolean hasKeyBinding(String actionId) {
-        ImMap<KeyStroke, String> keyBindings = getKeyBindings();
+    public boolean hasKeyBinding(String actionId, FormInstanceContext context) {
+        ImMap<KeyStroke, String> keyBindings = getKeyBindings(context);
         return keyBindings != null && keyBindings.containsValue(actionId);
     }
 
-    public ImMap<KeyStroke, String> getKeyBindings() {
-        ImMap<KeyStroke, String> propertyKeyBindings = getBindingProperty().getKeyBindings();
+    public ImMap<KeyStroke, String> getKeyBindings(FormInstanceContext context) {
+        ImMap<KeyStroke, String> propertyKeyBindings = getBindingProperty(context).getKeyBindings();
         if(keyBindings != null)
             propertyKeyBindings = propertyKeyBindings.merge(MapFact.fromJavaMap(keyBindings), MapFact.override());
         return propertyKeyBindings;
     }
 
-    public String getMouseBinding() {
-        return mouseBinding != null ? mouseBinding : getBindingProperty().getMouseBinding();
+    public String getMouseBinding(FormInstanceContext context) {
+        return mouseBinding != null ? mouseBinding : getBindingProperty(context).getMouseBinding();
     }
 
     public ImOrderSet<GroupObjectEntity> getColumnGroupObjects() {
@@ -628,8 +629,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return PropertyReadType.DRAW;
     }
 
-    public Type getType() {
-        return getAssertProperty().property.getType();
+    public Type getType(FormInstanceContext context) {
+        return getAssertProperty(context).property.getType();
     }
 
     public Type getStaticType() {
@@ -671,8 +672,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return getAssertStaticProperty();
     }
 
-    public PropertyObjectEntity<?> getProperty() {
-        return getActionOrProperty().getProperty(getPropertyExtras().get(READONLYIF));
+    public PropertyObjectEntity<?> getProperty(FormInstanceContext context) {
+        return getActionOrProperty(context).getProperty(getPropertyExtras().get(READONLYIF));
     }
 
     public ActionOrPropertyObjectEntity<?, ?> getStaticActionOrProperty() {
@@ -709,7 +710,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     // INTERACTIVE (NON-STATIC) USAGES
-    public ActionOrPropertyObjectEntity<?, ?> getActionOrProperty() {
+    public ActionOrPropertyObjectEntity<?, ?> getActionOrProperty(FormInstanceContext context) {
         Pair<PropertyObjectEntity<?>, Stat> chameleon = getSelectProperty();
         if(chameleon != null)
             return chameleon.first;
@@ -717,9 +718,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return actionOrProperty;
     }
 
-    public PropertyObjectEntity<?> getAssertProperty() {
-        assert isProperty();
-        return getProperty();
+    public PropertyObjectEntity<?> getAssertProperty(FormInstanceContext context) {
+        assert isProperty(context);
+        return getProperty(context);
     }
 
     // EXPORT / JSON + ORDERS IN INPUT / SELECTOR
@@ -747,8 +748,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     public ActionOrProperty getDebugBindingProperty() {
         return getInheritedProperty();
     }
-    public ActionOrPropertyObjectEntity getDebugActionOrProperty() {
-        return getActionOrProperty();
+    public ActionOrPropertyObjectEntity getDebugActionOrProperty(FormInstanceContext context) {
+        return getActionOrProperty(context);
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface ClientActionDispatcher {
 
-    void execute(FormClientAction action);
+    void execute(FormClientAction action) throws IOException;
 
     Integer execute(ReportClientAction action);
 

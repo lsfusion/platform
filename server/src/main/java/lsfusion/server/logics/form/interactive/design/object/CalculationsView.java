@@ -1,10 +1,7 @@
 package lsfusion.server.logics.form.interactive.design.object;
 
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.design.BaseComponentView;
-import lsfusion.server.logics.form.interactive.design.ComponentView;
-import lsfusion.server.logics.form.struct.FormEntity;
-
-import java.awt.*;
 
 public class CalculationsView extends BaseComponentView {
     public CalculationsView() {}
@@ -14,7 +11,7 @@ public class CalculationsView extends BaseComponentView {
     }
 
     @Override
-    protected int getDefaultWidth(FormEntity entity) {
+    protected int getDefaultWidth(FormInstanceContext context) {
         return 0;
     }
 }

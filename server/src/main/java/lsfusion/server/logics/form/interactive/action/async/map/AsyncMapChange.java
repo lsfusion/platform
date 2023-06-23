@@ -7,7 +7,7 @@ import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.logics.form.interactive.action.async.AsyncChange;
 import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
@@ -16,7 +16,6 @@ import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 
 import java.io.Serializable;
@@ -40,11 +39,11 @@ public class AsyncMapChange<X extends PropertyInterface, T extends PropertyInter
     }
 
     @Override
-    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+    public AsyncEventExec map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
         if(valueInterface != null)
             return null;
 
-        ImList<PropertyDrawEntity> changedProps = form.findChangedProperties(object != null ? object : property.mapEntityObjects(mapObjects), value == null);
+        ImList<PropertyDrawEntity> changedProps = context.entity.findChangedProperties(object != null ? object : property.mapEntityObjects(mapObjects), value == null);
         if(changedProps != null)
             return new AsyncChange(changedProps, value instanceof LocalizedString ? ThreadLocalContext.localize((LocalizedString) value) : (Serializable) value);
 

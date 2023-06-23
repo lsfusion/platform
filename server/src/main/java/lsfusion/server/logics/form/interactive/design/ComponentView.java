@@ -14,9 +14,9 @@ import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.action.session.LocalNestedType;
 import lsfusion.server.logics.classes.data.LogicalClass;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerIdentitySerializable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
-import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.PropertyFact;
@@ -57,29 +57,29 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public PropertyObjectEntity<?> showIf;
 
-    public int getWidth(FormEntity entity) {
+    public int getWidth(FormInstanceContext context) {
         if(width != null)
             return width;
 
-        return getDefaultWidth(entity);
+        return getDefaultWidth(context);
     }
 
-    public int getHeight(FormEntity entity) {
+    public int getHeight(FormInstanceContext context) {
         if(height != null)
             return height;
 
-        return getDefaultHeight(entity);
+        return getDefaultHeight(context);
     }
 
-    protected int getDefaultWidth(FormEntity entity) {
+    protected int getDefaultWidth(FormInstanceContext context) {
         return -1;
     }
 
-    protected int getDefaultHeight(FormEntity entity) {
+    protected int getDefaultHeight(FormInstanceContext context) {
         return -1;
     }
 
-    public double getFlex(FormEntity formEntity) {
+    public double getFlex(FormInstanceContext context) {
         ContainerView container = getLayoutParamContainer();
         if (container != null) {
             if (container.isScroll() || container.isSplit())
@@ -93,14 +93,14 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             if (container.isTabbed())
                 return 1;
         }
-        return getDefaultFlex(formEntity);
+        return getDefaultFlex(context);
     }
 
-    protected double getDefaultFlex(FormEntity formEntity) {
+    protected double getDefaultFlex(FormInstanceContext context) {
         return 0;
     }
 
-    public FlexAlignment getAlignment(FormEntity formEntity) {
+    public FlexAlignment getAlignment(FormInstanceContext context) {
         if (alignment != null)
             return alignment;
 
@@ -109,18 +109,18 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             if ((container.isScroll() || container.isSplit() || container.isTabbed()))
                 return FlexAlignment.STRETCH;
         }
-        return getDefaultAlignment(formEntity);
+        return getDefaultAlignment(context);
     }
 
-    protected FlexAlignment getDefaultAlignment(FormEntity formEntity) {
+    protected FlexAlignment getDefaultAlignment(FormInstanceContext context) {
         return FlexAlignment.START;
     }
 
-    public boolean isShrink(FormEntity formEntity) {
-        return isShrink(formEntity, false);
+    public boolean isShrink(FormInstanceContext context) {
+        return isShrink(context, false);
     }
     // second parameter is needed to break the recursion in container default heuristics
-    public boolean isShrink(FormEntity formEntity, boolean explicit) {
+    public boolean isShrink(FormInstanceContext context, boolean explicit) {
         if(shrink != null)
             return shrink;
 
@@ -128,30 +128,30 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         if(container != null && container.isSplit())
             return true;
 
-        return isDefaultShrink(formEntity, explicit);
+        return isDefaultShrink(context, explicit);
     }
 
-    protected boolean isDefaultShrink(FormEntity formEntity, boolean explicit) {
+    protected boolean isDefaultShrink(FormInstanceContext context, boolean explicit) {
         return false;
     }
 
-    public boolean isAlignShrink(FormEntity formEntity) {
-        return isAlignShrink(formEntity, false);
+    public boolean isAlignShrink(FormInstanceContext context) {
+        return isAlignShrink(context, false);
     }
     // second parameter is needed to break the recursion in container default heuristics
-    public boolean isAlignShrink(FormEntity formEntity, boolean explicit) {
+    public boolean isAlignShrink(FormInstanceContext context, boolean explicit) {
         if(alignShrink != null)
             return alignShrink;
 
         ContainerView container = getLayoutParamContainer();
-        FlexAlignment alignment = getAlignment(formEntity);
+        FlexAlignment alignment = getAlignment(context);
         if(alignment == FlexAlignment.STRETCH && (container == null || !container.isScroll()))
             return true;
 
-        return isDefaultAlignShrink(formEntity, explicit);
+        return isDefaultAlignShrink(context, explicit);
     }
 
-    protected boolean isDefaultAlignShrink(FormEntity formEntity, boolean explicit) {
+    protected boolean isDefaultAlignShrink(FormInstanceContext context, boolean explicit) {
         return false;
     }
 
@@ -384,15 +384,15 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
         pool.writeString(outStream, elementClass);
 
-        outStream.writeInt(getWidth(pool.context.entity));
-        outStream.writeInt(getHeight(pool.context.entity));
+        outStream.writeInt(getWidth(pool.context));
+        outStream.writeInt(getHeight(pool.context));
 
         outStream.writeInt(span);
 
-        outStream.writeDouble(getFlex(pool.context.entity));
-        pool.writeObject(outStream, getAlignment(pool.context.entity));
-        outStream.writeBoolean(isShrink(pool.context.entity));
-        outStream.writeBoolean(isAlignShrink(pool.context.entity));
+        outStream.writeDouble(getFlex(pool.context));
+        pool.writeObject(outStream, getAlignment(pool.context));
+        outStream.writeBoolean(isShrink(pool.context));
+        outStream.writeBoolean(isAlignShrink(pool.context));
         pool.writeObject(outStream, alignCaption);
 
         outStream.writeInt(marginTop);

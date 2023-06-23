@@ -4,7 +4,7 @@ import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
 import lsfusion.client.form.controller.ClientFormController;
 import lsfusion.client.view.MainFrame;
-import lsfusion.interop.form.event.KeyStrokes;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.remote.RemoteFormInterface;
 
 import javax.swing.*;
@@ -12,7 +12,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.rmi.RemoteException;
 import java.util.EventObject;
 
 import static lsfusion.client.base.SwingUtils.*;
@@ -37,12 +36,12 @@ public class ClientModalForm extends JDialog {
         this.async = async;
     }
 
-    public void init(String canonicalName, String formSID, final RemoteFormInterface remoteForm, ClientForm clientForm, byte[] firstChanges, boolean isDialog, EventObject initFilterEvent) {
+    public void init(final RemoteFormInterface remoteForm, ClientForm clientForm, FormClientData clientData, boolean isDialog, EventObject initFilterEvent) {
         this.remoteForm = remoteForm;
 
         this.initFilterKeyEvent = initFilterEvent instanceof KeyEvent ? (KeyEvent) initFilterEvent : null;
 
-        form = new ClientFormController(canonicalName, formSID, ClientModalForm.this.remoteForm, null, clientForm, firstChanges, null, true, isDialog) {
+        form = new ClientFormController(ClientModalForm.this.remoteForm, null, clientForm, clientData, null, true, isDialog) {
             @Override
             public void onFormHidden() {
                 hideDialog();
@@ -115,38 +114,21 @@ public class ClientModalForm extends JDialog {
     }
 
     protected void beforeShowDialog() {
-        int initialFilterPropertyDrawID = -1;
-        try {
-            Integer filterPropertyDraw = remoteForm.getInitFilterPropertyDraw();
-            if (filterPropertyDraw != null) {
-                initialFilterPropertyDrawID = filterPropertyDraw;
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
+                SwingUtilities.invokeLater(() -> {
+                    if (defaultComponent != null) {
+                        defaultComponent.requestFocusInWindow();
+                    } else if (form != null && !form.activateFirstComponents()) {
+                        form.focusFirstComponent();
+                    }
+                });
+
+                removeWindowListener(this);
             }
-        } catch (RemoteException ignored) {
-        }
-
-        if (initialFilterPropertyDrawID > 0) {
-            form.selectProperty(initialFilterPropertyDrawID);
-        }
-
-        if (initFilterKeyEvent != null && initialFilterPropertyDrawID > 0 && KeyStrokes.isSuitableDialogFilteringEvent(initFilterKeyEvent)) {
-            form.quickEditFilter(initFilterKeyEvent, initialFilterPropertyDrawID);
-        } else {
-            addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowActivated(WindowEvent e) {
-                    Component defaultComponent = form.getLayout().getFocusTraversalPolicy().getDefaultComponent(form.getLayout());
-                    SwingUtilities.invokeLater(() -> {
-                        if (defaultComponent != null) {
-                            defaultComponent.requestFocusInWindow();
-                        } else if (form != null && !form.activateFirstComponents()) {
-                            form.focusFirstComponent();
-                        }
-                    });
-                    
-                    removeWindowListener(this);
-                }
-            });
-        }
+        });
     }
 
     public static int nativeScrollbarWidth = UIManager.getInt("ScrollBar.width");

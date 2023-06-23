@@ -44,6 +44,7 @@ import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObjectEntity;
+import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.PropertyFact;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
@@ -578,12 +579,12 @@ public class ScriptingFormEntity {
 
         Boolean hintNoUpdate = options.getHintNoUpdate();
         if (hintNoUpdate != null && hintNoUpdate) {
-            form.addHintsNoUpdate(property.getAssertProperty().property, version);
+            form.addHintsNoUpdate((Property) property.getInheritedProperty(), version);
         }
-        
+
         Boolean hintTable = options.getHintTable();
         if (hintTable != null && hintTable) {
-            form.addHintsIncrementTable(version, property.getAssertProperty().property);
+            form.addHintsIncrementTable(version, (Property) property.getInheritedProperty());
         }
 
         Boolean optimisticAsync = options.getOptimisticAsync();
@@ -648,7 +649,7 @@ public class ScriptingFormEntity {
 
         Boolean filter = options.getFilter();
         if(filter != null && filter)
-            form.addFixedFilter(new FilterEntity(property.getAssertProperty()), version);
+            form.addFixedFilter(new FilterEntity(property.getAssertProperty(form.getGlobalContext())), version);
 
         Boolean pivotColumn = options.getPivotColumn();
         if(pivotColumn != null && pivotColumn)

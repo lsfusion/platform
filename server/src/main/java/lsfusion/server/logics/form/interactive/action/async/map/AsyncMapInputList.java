@@ -5,14 +5,13 @@ import lsfusion.base.col.interfaces.immutable.ImMap;
 import lsfusion.base.col.interfaces.immutable.ImRevMap;
 import lsfusion.server.logics.form.interactive.action.async.InputList;
 import lsfusion.server.logics.form.interactive.action.async.InputListAction;
-import lsfusion.server.logics.form.struct.FormEntity;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
-import lsfusion.server.physics.admin.authentication.security.policy.SecurityPolicy;
 
 import java.util.function.Function;
 
@@ -30,8 +29,8 @@ public class AsyncMapInputList<T extends PropertyInterface> {
         return new InputList(actions.mapListValues((Function<AsyncMapInputListAction<T>, InputListAction>) AsyncMapInputListAction::map).toArray(new InputListAction[actions.size()]), strict);
     }
 
-    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormEntity form, SecurityPolicy policy, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
-        return new InputList(actions.mapListValues(action -> action.map(mapObjects, form, policy, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()]), strict).filter(policy, securityProperty);
+    public InputList map(ImRevMap<T, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+        return new InputList(actions.mapListValues(action -> action.map(mapObjects, context, securityProperty, drawProperty, toDraw)).toArray(new InputListAction[actions.size()]), strict).filter(context.securityPolicy, securityProperty);
     }
 
     public <P extends PropertyInterface> AsyncMapInputList<P> map(ImRevMap<T, P> mapping) {

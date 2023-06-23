@@ -63,6 +63,7 @@ import lsfusion.interop.action.ExceptionClientAction;
 import lsfusion.interop.action.LogMessageClientAction;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.base.remote.RemoteRequestInterface;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.InputEvent;
 import lsfusion.interop.form.event.*;
@@ -188,9 +189,13 @@ public class ClientFormController implements AsyncListener {
     private List<ClientComponent> firstTabsToActivate;
     private List<ClientPropertyDraw> firstPropsToActivate;
 
-    public ClientFormController(String icanonicalName, String iformSID, RemoteFormInterface iremoteForm, FormsController iformsController, ClientForm iform, byte[] firstChanges, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
-        formSID = iformSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
-        canonicalName = icanonicalName;
+    private Set<Integer> inputGroupObjects;
+
+    public ClientFormController(RemoteFormInterface iremoteForm, FormsController iformsController, ClientForm iform, FormClientData clientData, ClientNavigator iclientNavigator, boolean iisModal, boolean iisDialog) {
+        formSID = clientData.formSID + (iisModal ? "(modal)" : "") + "(" + System.identityHashCode(this) + ")";
+        canonicalName = clientData.canonicalName;
+        inputGroupObjects = clientData.inputGroupObjects;
+
         isDialog = iisDialog;
         isWindow = iisModal;
 
@@ -223,18 +228,14 @@ public class ClientFormController implements AsyncListener {
 
             updateFormCaption();
 
-            initializeForm(firstChanges);
+            initializeForm(clientData);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
 
-    public static ClientForm deserializeClientForm(RemoteFormInterface remoteForm) {
-        try {
-            return new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+    public static ClientForm deserializeClientForm(RemoteFormInterface remoteForm, FormClientData clientData) throws IOException {
+        return new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(clientData.richDesign)));
     }
 
     public void checkMouseEvent(MouseEvent e, boolean preview, ClientPropertyDraw property, Supplier<ClientGroupObject> groupObjectSupplier, boolean panel) {
@@ -302,14 +303,15 @@ public class ClientFormController implements AsyncListener {
     // ------------------------------------------------------------------------------------ //
     // ----------------------------------- Инициализация ---------------------------------- //
     // ------------------------------------------------------------------------------------ //
-    private void initializeForm(byte[] firstChanges) throws Exception {
+    private void initializeForm(FormClientData clientData) throws Exception {
 
         initializeParams(); // has to be done before initializeControllers (since adding component uses getSize)
 
-        initializeControllers();
+        initializeControllers(clientData);
 
         initializeDefaultOrders(); // now it doesn't matter, because NavigatorForm will be removed, and first changes will always be not null, but still
 
+        byte[] firstChanges = clientData.firstChanges;
         if(firstChanges != null) {
             applyFormChanges(-1, firstChanges, true);
         } else {
@@ -344,8 +346,8 @@ public class ClientFormController implements AsyncListener {
         }
     }
 
-    private void initializeControllers() throws IOException {
-        FormUserPreferences preferences = remoteForm.getUserPreferences();
+    private void initializeControllers(FormClientData clientData) throws IOException {
+        FormUserPreferences preferences = clientData.userPreferences;
         
         for (ClientTreeGroup treeGroup : form.treeGroups) {
             initializeTreeController(treeGroup);
@@ -2004,15 +2006,10 @@ public class ClientFormController implements AsyncListener {
     }
 
     private Set<ClientGroupObject> getInputGroupObjects() {
-        try {
-            Set<ClientGroupObject> inputGroupObjects = new HashSet<>();
-            for(Integer inputGroupObject : remoteForm.getInputGroupObjects()) {
-                inputGroupObjects.add(form.getGroupObject(inputGroupObject));
-            }
-            return inputGroupObjects;
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        Set<ClientGroupObject> inputGroupObjects = new HashSet<>();
+        for(Integer inputGroupObject : this.inputGroupObjects)
+            inputGroupObjects.add(form.getGroupObject(inputGroupObject));
+        return inputGroupObjects;
     }
 
     private boolean equalGroup(ClientGroupObject groupObject, Binding binding) {

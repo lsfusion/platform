@@ -15,9 +15,8 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ImFilterValueMap;
 import lsfusion.base.col.interfaces.mutable.mapvalue.ImValueMap;
 import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
+import lsfusion.interop.form.FormClientData;
 import lsfusion.interop.form.UpdateMode;
-import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormEventClose;
 import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
@@ -46,7 +45,7 @@ import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
-import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerSerializationPool;
 import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.FormView;
@@ -108,6 +107,14 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         remoteFormListener.formCreated(this);
     }
 
+    public Pair<RemoteFormInterface, String> getFormExternal(ExecutionStack stack) {
+        JSONObject result = new JSONObject();
+        FormInstanceContext context = getRemoteContext();
+        result.put("initial", getFormChangesExternal(stack, context).get("modify"));
+        result.put("meta", getMetaExternal().serialize());
+        return new Pair<>(this, result.toString());
+    }
+
     public RemoteFormListener getRemoteFormListener() {
         return weakRemoteFormListener.get();
     }
@@ -139,11 +146,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
      * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается,
      * что он отработаывает как ImmutableMethod через createAndExecute
      */
-    public byte[] getRichDesignByteArray() {
+    public byte[] getRichDesignByteArray(FormInstanceContext context) {
         //будем использовать стандартный OutputStream, чтобы кол-во передаваемых данных было бы как можно меньше
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
-            new ServerSerializationPool(new ServerContext(form.securityPolicy, richDesign, form.BL, form.isUseBootstrap())).serializeObject(new DataOutputStream(outStream), richDesign);
+            new ServerSerializationPool(context).serializeObject(new DataOutputStream(outStream), richDesign);
             //            richDesign.serialize(new DataOutputStream(outStream));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -151,15 +158,6 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return outStream.toByteArray();
     }
 
-    /**
-     * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается,
-     * что он отработаывает как ImmutableMethod через createAndExecute
-     */
-    public Integer getInitFilterPropertyDraw() throws RemoteException {
-        return null; // deprecated
-    }
-
-    @Override
     public Set<Integer> getInputGroupObjects() {
         Set<Integer> inputObjects = new HashSet<>();
         if(form.inputObjects != null) {
@@ -173,7 +171,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     /**
      * этот метод не имеет специальной обработки RMI-вызова, т.к. предполагается, что он отработаывает как ImmutableMethod через createAndExecute
      */
-    public FormUserPreferences getUserPreferences() throws RemoteException {
+    public FormUserPreferences getUserPreferences() {
 
         FormUserPreferences result = form.loadUserPreferences();
         
@@ -410,7 +408,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     }
 
     public ServerResponse pasteExternalTable(long requestIndex, long lastReceivedRequestIndex, final List<Integer> propertyIDs, final List<byte[]> columnKeys, final List<List<byte[]>> values, List<ArrayList<String>> rawValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+        return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             List<PropertyDrawInstance> properties = new ArrayList<>();
             List<ImMap<ObjectInstance, DataObject>> keys = new ArrayList<>();
             for (int i =0; i < propertyIDs.size(); i++) {
@@ -428,13 +426,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     }
                 }
             }
-            
-            form.pasteExternalTable(properties, keys, values, rawValues, stack);
+
+            form.pasteExternalTable(properties, keys, values, rawValues, stack, context);
         });
     }
 
     public ServerResponse pasteMulticellValue(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> bkeys, final Map<Integer, byte[]> bvalues, Map<Integer, String> rawValues) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+        return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             Map<PropertyDrawInstance, ImOrderMap<ImMap<ObjectInstance, DataObject>, Pair<Object, String>>> keysValues
                     = new HashMap<>();
 
@@ -458,7 +456,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 keysValues.put(propertyDraw, propKeys.immutableOrder());
             }
 
-            form.pasteMulticellValue(keysValues, stack);
+            form.pasteMulticellValue(keysValues, stack, context);
         });
     }
 
@@ -540,7 +538,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     public byte[] groupData(long requestIndex, long lastReceivedRequestIndex, final Map<Integer, List<byte[]>> groupMap, final Map<Integer, List<byte[]>> sumMap,
                                                      final Map<Integer, List<byte[]>> maxMap, final boolean onlyNotNull) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+        return processRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             List<Map<Integer, List<byte[]>>> inMaps = Arrays.asList(groupMap, sumMap, maxMap);
             List<ImOrderMap<Object, ImList<ImMap<ObjectInstance, DataObject>>>> outMaps = new ArrayList<>();
             for (Map<Integer, List<byte[]>> one : inMaps) {
@@ -564,7 +562,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
 
             Map<List<Object>, List<Object>> grouped = form.groupData(BaseUtils.immutableCast(outMaps.get(0)),
-                    outMaps.get(1), BaseUtils.immutableCast(outMaps.get(2)), onlyNotNull);
+                    outMaps.get(1), BaseUtils.immutableCast(outMaps.get(2)), onlyNotNull, context);
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             DataOutputStream outStream = new DataOutputStream(out);
@@ -659,13 +657,13 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @Override
     public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, FormEvent formEvent, byte[] pushAsyncResult) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+        return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
 
             if (logger.isDebugEnabled()) {
                 logger.debug("executeEventAction");
             }
 
-            AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formEvent);
+            AsyncEventExec asyncEventExec = form.entity.getAsyncEventExec(formEvent, context);
             form.fireFormEvent(stack, formEvent, asyncEventExec != null && pushAsyncResult != null ? asyncEventExec.deserializePush(pushAsyncResult) : null);
         });
     }
@@ -714,7 +712,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @Override
     public ServerResponse executeEventAction(long requestIndex, long lastReceivedRequestIndex, String actionSID, int[] propertyIDs, byte[][] fullKeys, boolean[] externalChanges, byte[][] pushAsyncResults) throws RemoteException {
-        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+        return processPausableRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             for (int j = 0; j < propertyIDs.length; j++) {
                 PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyIDs[j]);
                 ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKeys[j]);
@@ -725,7 +723,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     asyncResult = asyncEventExec -> asyncEventExec.deserializePush(pushAsyncResult);
 
                 logger.info(String.format("executeEventAction started: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
-                form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack);
+                form.executeEventAction(propertyDraw, actionSID, keys, externalChanges[j], asyncResult, stack, context);
                 logger.info(String.format("executeEventAction ended: [ID: %1$d, SID: %2$s]", propertyDraw.getID(), propertyDraw.getSID()));
 
                 if (logger.isTraceEnabled()) {
@@ -838,7 +836,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
         ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKey);
 
-        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic, optimisticRun);
+        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic, optimisticRun, getRemoteContext());
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));
@@ -896,7 +894,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
         List<ClientAction> resultActions = new ArrayList<>();
 
-        byte[] formChanges = getFormChangesByteArray(stack, forceLocalEvents, resultActions);
+        byte[] formChanges = getFormChangesByteArray(stack, getRemoteContext(), forceLocalEvents, resultActions);
 
         resultActions.add(new ProcessFormChangesClientAction(requestIndex, formChanges));
 
@@ -905,17 +903,17 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return returnRemoteChangesResponse(requestIndex, resultActions, delayedHideForm, stack);
     }
 
-    public byte[] getFormChangesByteArray(ExecutionStack stack) {
-        return getFormChangesByteArray(stack, false, new ArrayList<>());
+    public byte[] getFormChangesByteArray(ExecutionStack stack, FormInstanceContext context) {
+        return getFormChangesByteArray(stack, context, false, new ArrayList<>());
     }
 
-    public byte[] getFormChangesByteArray(ExecutionStack stack, boolean forceLocalEvents, List<ClientAction> resultActions) {
+    public byte[] getFormChangesByteArray(ExecutionStack stack, FormInstanceContext context, boolean forceLocalEvents, List<ClientAction> resultActions) {
         try {
             FormChanges formChanges;
             if(isDeactivated() || delayedHideFormSent) // formWillBeClosed
                 formChanges = FormChanges.EMPTY;
             else
-                formChanges = form.getChanges(stack, forceLocalEvents, resultActions);
+                formChanges = form.getChanges(stack, context, forceLocalEvents, resultActions);
 
             if (logger.isDebugEnabled()) {
                 logger.debug("getFormChanges");
@@ -924,7 +922,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                 }
             }
 
-            return formChanges.serialize(richDesign);
+            return formChanges.serialize(context);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -958,12 +956,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return super.requestUserInteraction(actions);
     }
 
-    public Object[] getImmutableMethods() {
-        try {
-            return new Object[]{getUserPreferences(), getRichDesignByteArray(), getInitFilterPropertyDraw(), getInputGroupObjects()};
-        } catch (RemoteException e) {
-            return null;
-        }
+    public FormClientData initClientData(ExecutionStack stack) {
+        FormInstanceContext context = getRemoteContext();
+        return new FormClientData(getSID(), getCanonicalName(), getUserPreferences(), getRichDesignByteArray(context), getInputGroupObjects(), Settings.get().isDisableFirstChangesOptimization() ? null : getFormChangesByteArray(stack, context));
     }
 
     @Override
@@ -971,17 +966,17 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         return "RF[" + form + "]";
     }
     
-    public JSONObject getFormChangesExternal(ExecutionStack stack) {
+    public JSONObject getFormChangesExternal(ExecutionStack stack, FormInstanceContext context) {
         try {
             FormChanges formChanges;
             if(getInvocationsCount() > 1 || isDeactivated())
                 formChanges = FormChanges.EMPTY;
             else
-                formChanges = form.getChanges(stack);
+                formChanges = form.getChanges(stack, context);
             // should use formatJSON and getIntegrationSID
             // if group consists of one object and their sids are equal put value
             // if there are no gridObjects, we can use GroupObjectInstance.keys instead
-            return formChanges.serializeExternal();
+            return formChanges.serializeExternal(context);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
@@ -989,14 +984,27 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
 
     @IdentityLazy
     public FormEntity.MetaExternal getMetaExternal() {
-        return form.entity.getMetaExternal(form.securityPolicy);
+        return form.entity.getMetaExternal(FormInstanceContext.CACHE(form.entity)); // ServerContext.FORM(this)
     }
 
     private boolean currentInvocationExternal = false;
 
+    private interface RMIRequestCallable<T> {
+        T call(ExecutionStack stack, FormInstanceContext context) throws Exception;
+    }
+    private interface RMIRequestRunnable {
+        void run(ExecutionStack stack, FormInstanceContext context) throws Exception;
+    }
+    protected <T> T processRMIContextRequest(long requestIndex, long lastReceivedRequestIndex, final RMIRequestCallable<T> request) throws RemoteException {
+        return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> request.call(stack, getRemoteContext()));
+    }
+    protected ServerResponse processPausableRMIContextRequest(final long requestIndex, long lastReceivedRequestIndex, final RMIRequestRunnable runnable) throws RemoteException {
+        return processPausableRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> runnable.run(stack, getRemoteContext()));
+    }
+
     @Override
     public Pair<Long, String> changeExternal(final long requestIndex, long lastReceivedRequestIndex, final String json) throws RemoteException {
-        return processRMIRequest(requestIndex, lastReceivedRequestIndex, stack -> {
+        return processRMIContextRequest(requestIndex, lastReceivedRequestIndex, (stack, context) -> {
             assert !currentInvocationExternal;
             currentInvocationExternal = true;
             try {
@@ -1032,10 +1040,10 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                             while (propertyKeys.hasNext()) {
                                 String propertyName = propertyKeys.next();
                                 if (!propertyName.equals("value"))
-                                    changePropertyOrExecActionExternal(groupObjectOrProperty, propertyName, groupObjectModify.get(propertyName), currentObjects, stack);
+                                    changePropertyOrExecActionExternal(groupObjectOrProperty, propertyName, groupObjectModify.get(propertyName), currentObjects, stack, context);
                             }
                         } else // properties without group
-                            changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack);
+                            changePropertyOrExecActionExternal(null, groupObjectOrProperty, modifyValue, currentObjects, stack, context);
                     }
                 } finally {
                     ImList<AbstractContext.LogMessage> logMessages = ThreadLocalContext.popLogMessage();
@@ -1043,7 +1051,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                         form.BL.LM.getLogMessage().change(DataSession.getLogMessage(logMessages, true), form);
                 }
 
-                return new Pair<>(requestIndex, getFormChangesExternal(stack).toString());
+                return new Pair<>(requestIndex, getFormChangesExternal(stack, context).toString());
             } finally {
                 currentInvocationExternal = false;
             }
@@ -1133,11 +1141,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             groupObject.change(session, objectValues, form, stack);
     }
 
-    private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack) throws SQLException, SQLHandledException, ParseException {
+    private void changePropertyOrExecActionExternal(String groupSID, String propertySID, final Object value, ImMap<ObjectInstance, ? extends ObjectValue> currentObjects, ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException, ParseException {
         PropertyDrawInstance propertyDraw = form.getPropertyDrawIntegration(groupSID, propertySID);
 
         PushAsyncResult asyncResult = null;
-        if(propertyDraw.isProperty()) {
+        if(propertyDraw.isProperty(context)) {
             asyncResult = new PushExternalInput(type -> {
                 try {
                     return type.parseJSON(value);
@@ -1161,7 +1169,7 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
             }
         }
         final PushAsyncResult fAsyncResult = asyncResult;
-        form.executeExternalEventAction(propertyDraw, currentObjects, asyncEventExec -> fAsyncResult, stack);
+        form.executeExternalEventAction(propertyDraw, currentObjects, asyncEventExec -> fAsyncResult, stack, context);
     }
 
     // будем считать что если unreferenced \ finalized то форма точно также должна закрыться ???
@@ -1180,6 +1188,11 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         if (listener != null) {
             listener.formClosed(this);
         }
+    }
+
+    // remote calls
+    public FormInstanceContext getRemoteContext() {
+        return form.context;
     }
     
     @Override
