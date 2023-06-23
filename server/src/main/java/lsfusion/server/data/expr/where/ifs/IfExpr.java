@@ -142,14 +142,12 @@ public class IfExpr extends Expr {
 
     public Type getType(KeyType keyType) { // порядок высот
         Type trueType = trueExpr.getType(keyType);
-        assert trueType!=null;
-        if(!(trueType instanceof DataClass))
+        if (trueType instanceof DataClass) {
+            Type falseType = falseExpr.getType(keyType);
+            return falseType != null ? trueType.getCompatible(falseType) : trueType;
+        } else {
             return trueType;
-        Type falseType = falseExpr.getType(keyType);
-        if(falseType==null)
-            return trueType;
-        else
-            return trueType.getCompatible(falseType);
+        }
     }
     public Stat getTypeStat(Where fullWhere, boolean forJoin) {
         return trueExpr.getTypeStat(fullWhere.and(ifWhere), forJoin);
