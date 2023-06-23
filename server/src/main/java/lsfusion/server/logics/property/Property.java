@@ -76,6 +76,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -1659,7 +1661,12 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return valueClass instanceof StringClass;
     }
     
-    private boolean checkViewObjectEvent(ValueClass valueClass, Supplier<Property<?>> viewProperty) {
+    private boolean checkViewObjectEvent(ValueClass checkClass, ValueClass valueClass, Supplier<Property<?>> viewProperty) {
+        //to avoid edit on dblclick
+        if(checkClass instanceof TextClass || checkClass instanceof JSONClass) {
+            return false;
+        }
+
         if(!(valueClass instanceof CustomClass))
             return true;
 
@@ -1686,7 +1693,8 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             T singleInterface = interfaces.single();
             ValueClass interfaceClass = getInterfaceClasses(ClassType.tryEditPolicy).get(singleInterface);
 
-            if(!checkViewObjectEvent(interfaceClass, () -> PropertyFact.createViewProperty(viewProperties.addList(this)).property))
+            ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
+            if(!checkViewObjectEvent(valueClass, interfaceClass, () -> PropertyFact.createViewProperty(viewProperties.addList(this)).property))
                 return null;
 
             if(interfaceClass != null) {
@@ -1709,7 +1717,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
 
-        if(!checkViewObjectEvent(valueClass, viewProperty))
+        if(!checkViewObjectEvent(valueClass, valueClass, viewProperty))
             return null;
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
