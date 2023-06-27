@@ -200,4 +200,15 @@ public class KeyStrokes {
     public static boolean isChangeAppendKeyEvent(EventObject event) {
         return event instanceof ActionEvent;
     }
+    
+    public static boolean isPlainPasteEvent(EventObject event) {
+        if (event instanceof KeyEvent) {
+            KeyEvent keyEvent = (KeyEvent) event;
+            return keyEvent.getKeyCode() == KeyEvent.VK_V && 
+                    keyEvent.isControlDown() && 
+                    keyEvent.isShiftDown() &&
+                    !keyEvent.isAltDown();
+        }
+        return false;
+    }
 }

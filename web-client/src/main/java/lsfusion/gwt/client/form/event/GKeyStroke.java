@@ -285,6 +285,14 @@ public class GKeyStroke implements Serializable {
         return !isActionKey(event.getKeyCode()) && !isAlt(event);
     }
 
+    public static boolean isPlainPasteEvent(NativeEvent event) {
+        return KEYDOWN.equals(event.getType()) && 
+                event.getKeyCode() == KEY_V && 
+                event.getCtrlKey() && 
+                event.getShiftKey() &&
+                !event.getAltKey();
+    }
+
     public static boolean isActionKey(int keyCode) {
         switch (keyCode) {
             case KEY_HOME:
