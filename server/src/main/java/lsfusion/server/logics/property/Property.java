@@ -1661,23 +1661,24 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         return valueClass instanceof StringClass;
     }
     
-    private boolean checkViewObjectEvent(ValueClass checkClass, ValueClass valueClass, Supplier<Property<?>> viewProperty) {
-        //to avoid edit on dblclick
-        if(checkClass instanceof TextClass || checkClass instanceof JSONClass) {
-            return false;
-        }
-
+    private boolean checkViewObjectEvent(ValueClass valueClass, Supplier<Property<?>> viewProperty) {
         if(!(valueClass instanceof CustomClass))
             return true;
 
         if(viewProperty == null)
             return true;
 
+        // optimization of using the Supplier, since isValueFullAndUnique can be rather heavy
+        Property<?> property = viewProperty.get();
+
+        //to avoid edit on dblclick
+        ValueClass viewValueClass = property.getValueClass(ClassType.editValuePolicy);
+        if(viewValueClass instanceof TextClass || viewValueClass instanceof JSONClass)
+            return false;
+
         if(!Settings.get().isOnlyUniqueObjectEvents())
             return true;
 
-        // optimization of using the Supplier, since isValueFullAndUnique can be rather heavy
-        Property<?> property = viewProperty.get();
         return property.isValueUnique(MapFact.EMPTY(), true); // optimistic because otherwise all properties will become readonly
     }
     
@@ -1693,8 +1694,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
             T singleInterface = interfaces.single();
             ValueClass interfaceClass = getInterfaceClasses(ClassType.tryEditPolicy).get(singleInterface);
 
-            ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
-            if(!checkViewObjectEvent(valueClass, interfaceClass, () -> PropertyFact.createViewProperty(viewProperties.addList(this)).property))
+            if(!checkViewObjectEvent(interfaceClass, () -> PropertyFact.createViewProperty(viewProperties.addList(this)).property))
                 return null;
 
             if(interfaceClass != null) {
@@ -1717,7 +1717,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
         ValueClass valueClass = getValueClass(ClassType.editValuePolicy);
 
-        if(!checkViewObjectEvent(valueClass, valueClass, viewProperty))
+        if(!checkViewObjectEvent(valueClass, viewProperty))
             return null;
 
         if(eventActionSID.equals(ServerResponse.EDIT_OBJECT)) {
