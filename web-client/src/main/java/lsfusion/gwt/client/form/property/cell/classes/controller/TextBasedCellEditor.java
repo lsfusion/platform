@@ -124,15 +124,17 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
             }
         });
     }
-    
+
+    boolean plainPaste = false;
     private void onPaste(Event event) {
-        if (editContext != null) {
+        if (!plainPaste && editContext != null) {
             String cbText = CopyPasteUtils.getEventClipboardData(event);
             String modifiedPastedText = (String) editContext.modifyPastedString(cbText);
             if (modifiedPastedText != null && !modifiedPastedText.equals(cbText)) { // to paste via default mechanism otherwise
                 pasteClipboardText(event, modifiedPastedText);
             }
         }
+        plainPaste = false;
     }
 
     protected native boolean pasteClipboardText(Event event, String pastedText)/*-{
@@ -175,6 +177,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
                 suggestBox.setFocus(true);
                 return;
             }
+        } else if (GKeyStroke.isPlainPasteEvent(event)) {
+            plainPaste = true;
         } else {
             Integer inputActionIndex = property.getInputActionIndex(event, true);
             if(inputActionIndex != null) {
