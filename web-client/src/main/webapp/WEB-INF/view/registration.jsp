@@ -47,7 +47,7 @@
                     <fieldset>
                         <div class="label-and-field">
                             <label for="username"><%= ServerMessages.getString(request, "login") %></label>
-                            <input type="text" id="username" name="username" class="round full-width-box" required="required" value="${login}"/>
+                            <input type="text" id="username" name="username" class="round full-width-box" required="required" value="${username}"/>
                         </div>
                         <div class="label-and-field">
                             <label for="password"><%= ServerMessages.getString(request, "password") %></label>

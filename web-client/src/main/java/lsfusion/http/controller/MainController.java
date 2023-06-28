@@ -102,6 +102,7 @@ public class MainController {
         }
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
+        addUserDataAttributes(model, request);
         if (checkVersionError.result != null) {
             model.addAttribute("error", checkVersionError.result);
             return "restricted";
@@ -113,16 +114,7 @@ public class MainController {
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
     public String registration(ModelMap model, HttpServletRequest request) {
         addStandardModelAttributes(model, request);
-        HttpSession session = request.getSession(true);
-        Object userDataSessionAttribute = session.getAttribute("USER_DATA");
-        if (userDataSessionAttribute != null) {
-            String[] userData = (String[]) userDataSessionAttribute;
-            model.addAttribute("login", userData[0]);
-            model.addAttribute("firstName", userData[1]);
-            model.addAttribute("lastName", userData[2]);
-            model.addAttribute("email", userData[3]);
-            session.removeAttribute("USER_DATA");
-        }
+        addUserDataAttributes(model, request);
         return getDisableRegistration(getAndCheckServerSettings(request, checkVersionError, false)) ? "login" : "registration";
     }
 
@@ -147,7 +139,7 @@ public class MainController {
             SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
-            request.getSession(true).setAttribute("USER_DATA", new String[]{username, firstName, lastName, email});
+            request.getSession(true).setAttribute("USER_DATA", Map.of("username", username, "firstName", firstName, "lastName", lastName, "email", email));
             return getRedirectUrl("/registration", null, request);
         }
         return getRedirectUrl("/login", null, request);
@@ -212,6 +204,16 @@ public class MainController {
             return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
+        }
+    }
+
+    private void addUserDataAttributes(ModelMap model, HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+        Object userDataSessionAttribute = session.getAttribute("USER_DATA");
+        if (userDataSessionAttribute != null) {
+            Map<?, ?> userData = (Map<?, ?>) userDataSessionAttribute;
+            userData.keySet().forEach(key -> model.addAttribute((String) key, userData.get(key)));
+            session.removeAttribute("USER_DATA");
         }
     }
 

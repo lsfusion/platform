@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.rmi.RemoteException;
 import java.util.Locale;
+import java.util.Map;
 
 public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implements AuthenticationProvider {
 
@@ -56,6 +57,7 @@ public class LSFRemoteAuthenticationProvider extends LogicsRequestHandler implem
 
             return new LSFAuthenticationToken(username, password, authLocale.first, authLocale.second);
         } catch (Throwable e) {
+            getHttpServletRequest().getSession(true).setAttribute("USER_DATA", Map.of("username", username));
             throw new InternalAuthenticationServiceException(e.getMessage()); //need to throw AuthenticationException for SpringSecurity to redirect to /login
         }
     }
