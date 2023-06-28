@@ -47,7 +47,7 @@
                     <fieldset>
                         <div class="label-and-field">
                             <label for="username"><%= ServerMessages.getString(request, "login") %></label>
-                            <input type="text" id="username" name="username" class="round full-width-box" required="required"/>
+                            <input type="text" id="username" name="username" class="round full-width-box" required="required" value="${login}"/>
                         </div>
                         <div class="label-and-field">
                             <label for="password"><%= ServerMessages.getString(request, "password") %></label>
@@ -60,15 +60,15 @@
                         </div>
                         <div class="label-and-field">
                             <label for="firstName"><%= ServerMessages.getString(request, "first.name") %></label>
-                            <input type="text" id="firstName" name="firstName" class="round full-width-box" required="required"/>
+                            <input type="text" id="firstName" name="firstName" class="round full-width-box" required="required" value="${firstName}"/>
                         </div>
                         <div class="label-and-field">
                             <label for="lastName"><%= ServerMessages.getString(request, "last.name") %></label>
-                            <input type="text" id="lastName" name="lastName" class="round full-width-box" required="required"/>
+                            <input type="text" id="lastName" name="lastName" class="round full-width-box" required="required" value="${lastName}"/>
                         </div>
                         <div class="label-and-field">
                             <label for="email"><%= ServerMessages.getString(request, "email") %></label>
-                            <input type="email" id="email" name="email" class="round full-width-box" required="required"/>
+                            <input type="email" id="email" name="email" class="round full-width-box" required="required" value="${email}"/>
                         </div>
                         <input name="submit" type="submit" class="action-button round blue" id="submit" value="<%= ServerMessages.getString(request, "registration") %>"/>
                         <c:if test="${not empty REGISTRATION_EXCEPTION}">

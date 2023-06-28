@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -112,6 +113,16 @@ public class MainController {
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
     public String registration(ModelMap model, HttpServletRequest request) {
         addStandardModelAttributes(model, request);
+        HttpSession session = request.getSession(true);
+        Object userDataSessionAttribute = session.getAttribute("USER_DATA");
+        if (userDataSessionAttribute != null) {
+            String[] userData = (String[]) userDataSessionAttribute;
+            model.addAttribute("login", userData[0]);
+            model.addAttribute("firstName", userData[1]);
+            model.addAttribute("lastName", userData[2]);
+            model.addAttribute("email", userData[3]);
+            session.removeAttribute("USER_DATA");
+        }
         return getDisableRegistration(getAndCheckServerSettings(request, checkVersionError, false)) ? "login" : "registration";
     }
 
@@ -136,6 +147,7 @@ public class MainController {
             SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
+            request.getSession(true).setAttribute("USER_DATA", new String[]{username, firstName, lastName, email});
             return getRedirectUrl("/registration", null, request);
         }
         return getRedirectUrl("/login", null, request);
