@@ -7,7 +7,6 @@ import lsfusion.base.ReflectionUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.client.base.SwingUtils;
 import lsfusion.client.base.view.SwingDefaults;
-import lsfusion.client.classes.ClientType;
 import lsfusion.client.classes.data.ClientRichTextClass;
 import lsfusion.client.controller.remote.RmiQueue;
 import lsfusion.client.form.ClientForm;
@@ -789,6 +788,13 @@ public class GridTable extends ClientPropertyTable implements ClientTableView {
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet())
             setOrders.put(getMinColumnKey(entry.getKey()), entry.getValue());
         return sortableHeaderManager.changeOrders(groupObject, setOrders, alreadySet);
+    }
+
+    @Override
+    public void changePropertyOrders(LinkedHashMap<ClientPropertyDraw, Order> orders) {
+        for (Map.Entry<ClientPropertyDraw, Order> entry : orders.entrySet()) {
+            sortableHeaderManager.changeOrder(getMinColumnKey(entry.getKey()), entry.getValue());
+        }
     }
 
     private Pair<ClientPropertyDraw, ClientGroupObjectValue> getMinColumnKey(ClientPropertyDraw property) {

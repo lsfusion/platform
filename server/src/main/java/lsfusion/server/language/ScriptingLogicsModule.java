@@ -3,7 +3,6 @@ package lsfusion.server.language;
 import com.google.common.base.Throwables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
-import lsfusion.server.base.ResourceUtils;
 import lsfusion.base.Result;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
@@ -11,7 +10,6 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.*;
-import lsfusion.server.base.AppServerImage;
 import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.base.view.FlexAlignment;
 import lsfusion.interop.form.WindowFormType;
@@ -22,6 +20,8 @@ import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.ExtInt;
 import lsfusion.interop.form.property.PivotOptions;
 import lsfusion.interop.session.ExternalHttpMethod;
+import lsfusion.server.base.AppServerImage;
+import lsfusion.server.base.ResourceUtils;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.version.ComplexLocation;
 import lsfusion.server.base.version.Version;
@@ -141,7 +141,10 @@ import lsfusion.server.physics.admin.reflection.property.CanonicalNameProperty;
 import lsfusion.server.physics.dev.debug.*;
 import lsfusion.server.physics.dev.debug.action.ShowRecDepAction;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
-import lsfusion.server.physics.dev.id.name.*;
+import lsfusion.server.physics.dev.id.name.ClassCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.DBNamingPolicy;
+import lsfusion.server.physics.dev.id.name.PropertyCanonicalNameUtils;
+import lsfusion.server.physics.dev.id.name.PropertyCompoundNameParser;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors;
 import lsfusion.server.physics.dev.id.resolve.ResolvingErrors.ResolvingError;
 import lsfusion.server.physics.dev.integration.external.to.*;
@@ -2573,6 +2576,18 @@ public class ScriptingLogicsModule extends LogicsModule {
             return new LAWithParams(LA, mergeAllParams(values));
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(name));
+            return null;
+        }
+    }
+    
+    public LAWithParams addScriptedOrderProp(String goName)  throws ScriptingErrorLog.SemanticErrorException {
+        FormEntity form = getFormFromSeekObjectName(goName);
+        GroupObjectEntity go = getSeekGroupObject(form, goName);
+
+        if (go != null) {
+            return new LAWithParams(addOrderAProp(go), Collections.emptyList());
+        } else {
+            errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;
         }
     }

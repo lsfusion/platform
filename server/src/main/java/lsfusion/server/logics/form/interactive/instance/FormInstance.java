@@ -27,6 +27,7 @@ import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.toolbar.FormGrouping;
 import lsfusion.interop.form.order.Scroll;
+import lsfusion.interop.form.order.user.Order;
 import lsfusion.interop.form.print.FormPrintType;
 import lsfusion.interop.form.property.Compare;
 import lsfusion.server.base.caches.ManualLazy;
@@ -81,10 +82,7 @@ import lsfusion.server.logics.classes.data.integral.DoubleClass;
 import lsfusion.server.logics.classes.user.ConcreteCustomClass;
 import lsfusion.server.logics.classes.user.ConcreteObjectClass;
 import lsfusion.server.logics.classes.user.CustomClass;
-import lsfusion.server.logics.form.interactive.FormCloseType;
-import lsfusion.server.logics.form.interactive.FormEventType;
-import lsfusion.server.logics.form.interactive.ManageSessionType;
-import lsfusion.server.logics.form.interactive.UpdateType;
+import lsfusion.server.logics.form.interactive.*;
 import lsfusion.server.logics.form.interactive.action.async.*;
 import lsfusion.server.logics.form.interactive.action.input.InputContext;
 import lsfusion.server.logics.form.interactive.action.input.InputListExpr;
@@ -134,10 +132,10 @@ import lsfusion.server.physics.admin.authentication.security.policy.SecurityPoli
 import lsfusion.server.physics.admin.log.LogInfo;
 import lsfusion.server.physics.admin.log.ServerLoggers;
 import lsfusion.server.physics.admin.profiler.ProfiledObject;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.lang.String;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.*;
@@ -2666,6 +2664,13 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
     public void fireOnDrop(ExecutionStack stack) throws SQLException, SQLHandledException {
         formResult = FormCloseType.DROP;
         fireEvent(FormEventType.DROP, stack);
+    }
+
+    public void fireOnOrder(ExecutionStack stack, OrderEvent orderEvent, PropertyDrawInstance propertyDraw, Order modiType) throws SQLException, SQLHandledException {
+        JSONObject json = new JSONObject(Collections.singletonMap(propertyDraw.getSID(), modiType.name()));
+        BL.LM.orderedProperty.change(json, getSession());
+
+        fireEvent(orderEvent, stack);
     }
 
     public void fireFormEvent(ExecutionStack stack, FormEvent formEvent, PushAsyncResult pushedAsyncResult) throws SQLException, SQLHandledException {

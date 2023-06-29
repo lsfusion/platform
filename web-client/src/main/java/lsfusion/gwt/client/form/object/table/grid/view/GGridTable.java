@@ -39,7 +39,6 @@ import lsfusion.gwt.client.form.property.PValue;
 import java.util.*;
 
 import static java.lang.Boolean.TRUE;
-import static java.lang.Math.min;
 import static java.lang.String.valueOf;
 import static lsfusion.gwt.client.base.GwtSharedUtils.*;
 
@@ -736,6 +735,16 @@ public class GGridTable extends GGridPropertyTable<GridDataRecord> implements GT
         for (Map.Entry<GPropertyDraw, Boolean> entry : orders.entrySet())
             setOrders.put(getMinColumnKey(entry.getKey()), entry.getValue());
         return sortableHeaderManager.changeOrders(groupObject, setOrders, alreadySet);
+    }
+
+    @Override
+    public void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> orders) {
+        for (Map.Entry<GPropertyDraw, GOrder> entry : orders.entrySet()) {
+            sortableHeaderManager.changeOrder(getMinColumnKey(entry.getKey()), entry.getValue());
+        }
+        if (!orders.isEmpty()) {
+            headersChanged();
+        }
     }
 
     private HashMap<GPropertyDraw, GGroupObjectValue> getMinColumnKey(GPropertyDraw property) {

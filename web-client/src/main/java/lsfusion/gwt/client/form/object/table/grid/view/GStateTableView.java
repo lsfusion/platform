@@ -20,6 +20,7 @@ import lsfusion.gwt.client.form.object.GGroupObjectValue;
 import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.object.table.grid.user.design.GGroupObjectUserPreferences;
 import lsfusion.gwt.client.form.object.table.view.GGridPropertyTable;
+import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.view.Column;
@@ -327,6 +328,10 @@ public abstract class GStateTableView extends FlexPanel implements GTableView {
     @Override
     public boolean changePropertyOrders(LinkedHashMap<GPropertyDraw, Boolean> value, boolean alreadySet) {
         return false;
+    }
+
+    @Override
+    public void changePropertyOrders(LinkedHashMap<GPropertyDraw, GOrder> value) {
     }
 
     @Override

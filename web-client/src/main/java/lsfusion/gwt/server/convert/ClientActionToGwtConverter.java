@@ -308,4 +308,9 @@ public class ClientActionToGwtConverter extends ObjectConverter {
             resourcePath = (String) resource;
         return new GClientWebAction(resourcePath, action.resourceName, originalResourceName, values, types, returnType, action.isFile, action.syncType);
     }
+
+    @Converter(from = OrderClientAction.class)
+    public GOrderAction convertAction(OrderClientAction action) {
+        return new GOrderAction(action.goID, action.ordersMap);
+    }
 }

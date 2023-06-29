@@ -73,6 +73,8 @@ public interface ClientActionDispatcher {
     void execute(ChangeColorThemeClientAction action);
     
     void execute(ResetWindowsLayoutClientAction action);
+    
+    void execute(OrderClientAction action);
 
     void execute(ClientWebAction action);
 

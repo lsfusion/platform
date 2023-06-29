@@ -17,8 +17,6 @@ import lsfusion.base.file.RawFileData;
 import lsfusion.interop.action.*;
 import lsfusion.interop.form.UpdateMode;
 import lsfusion.interop.form.event.FormEvent;
-import lsfusion.interop.form.event.FormEventClose;
-import lsfusion.interop.form.event.FormEvent;
 import lsfusion.interop.form.object.table.grid.ListViewType;
 import lsfusion.interop.form.object.table.grid.user.design.FormUserPreferences;
 import lsfusion.interop.form.object.table.grid.user.design.GroupObjectUserPreferences;
@@ -43,7 +41,11 @@ import lsfusion.server.logics.action.controller.stack.EExecutionStackCallable;
 import lsfusion.server.logics.action.controller.stack.ExecutionStack;
 import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.data.ParseException;
-import lsfusion.server.logics.form.interactive.action.async.*;
+import lsfusion.server.logics.form.interactive.OrderEvent;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncAdd;
+import lsfusion.server.logics.form.interactive.action.async.PushAsyncResult;
+import lsfusion.server.logics.form.interactive.action.async.PushExternalInput;
 import lsfusion.server.logics.form.interactive.changed.FormChanges;
 import lsfusion.server.logics.form.interactive.controller.context.RemoteFormContext;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.ServerContext;
@@ -475,7 +477,9 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
                     logger.debug(String.format("new order: %s", order.toString()));
                 }
 
-                propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys, false), Order.deserialize(modiType));
+                propertyDraw.toDraw.changeOrder(propertyDraw.getDrawInstance().getRemappedPropertyObject(keys, false), order);
+                
+                form.fireOnOrder(stack, new OrderEvent(propertyDraw.toDraw.getSID()), propertyDraw, order);
             }
         });
     }

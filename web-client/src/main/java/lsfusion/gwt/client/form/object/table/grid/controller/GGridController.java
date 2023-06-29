@@ -30,6 +30,7 @@ import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GCountQuanti
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButton;
 import lsfusion.gwt.client.form.object.table.grid.user.toolbar.view.GToolbarButtonGroup;
 import lsfusion.gwt.client.form.object.table.grid.view.*;
+import lsfusion.gwt.client.form.order.user.GOrder;
 import lsfusion.gwt.client.form.property.*;
 import lsfusion.gwt.client.form.view.Column;
 
@@ -586,6 +587,11 @@ public class GGridController extends GAbstractTableController {
     public boolean changeOrders(LinkedHashMap<GPropertyDraw, Boolean> orders, boolean alreadySet) {
         assert isList();
         return table.changePropertyOrders(orders, alreadySet);
+    }
+
+    public void changeOrders(LinkedHashMap<GPropertyDraw, GOrder> orders) {
+        assert isList();
+        table.changePropertyOrders(orders);
     }
 
     public LinkedHashMap<GPropertyDraw, Boolean> getUserOrders() {

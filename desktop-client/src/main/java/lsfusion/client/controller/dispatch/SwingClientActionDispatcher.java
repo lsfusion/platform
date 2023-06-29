@@ -711,6 +711,10 @@ public abstract class SwingClientActionDispatcher implements ClientActionDispatc
     }
 
     @Override
+    public void execute(OrderClientAction action) {
+    }
+
+    @Override
     public EventBus getEventBus() {
         return MainFrame.instance.eventBus;
     }

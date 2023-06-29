@@ -1,7 +1,6 @@
 package lsfusion.client.form.controller.dispatch;
 
 import com.google.common.base.Throwables;
-import lsfusion.client.controller.MainController;
 import lsfusion.client.controller.dispatch.DispatcherListener;
 import lsfusion.client.controller.dispatch.SwingClientActionDispatcher;
 import lsfusion.client.controller.remote.RmiQueue;
@@ -87,5 +86,10 @@ public abstract class ClientFormActionDispatcher extends SwingClientActionDispat
     @Override
     public void execute(AsyncGetRemoteChangesClientAction action) {
         getFormController().getRemoteChanges(true, action.forceLocalEvents);
+    }
+
+    @Override
+    public void execute(OrderClientAction action) {
+        getFormController().changePropertyOrder(action.goID, action.ordersMap);
     }
 }

@@ -1300,6 +1300,21 @@ public class GFormController implements EditManager {
         syncResponseDispatch(new ChangePropertyOrder(property.ID, columnKey, modiType));
     }
 
+    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Byte> orders) {
+        GGroupObject groupobject = form.getGroupObject(goID);
+        if (groupobject != null) {
+            LinkedHashMap<GPropertyDraw, GOrder> pOrders = new LinkedHashMap<>();
+            for (Integer propertyID : orders.keySet()) {
+                GPropertyDraw propertyDraw = form.getProperty(propertyID);
+                if (propertyDraw != null) {
+                    pOrders.put(propertyDraw, GOrder.deserialize(orders.get(propertyID)));
+                }
+            }
+
+            controllers.get(groupobject).changeOrders(pOrders);
+        }
+    }
+
     public void setPropertyOrders(GGroupObject groupObject, List<Integer> propertyList, List<GGroupObjectValue> columnKeyList, List<Boolean> orderList) {
         syncResponseDispatch(new SetPropertyOrders(groupObject.ID, propertyList, columnKeyList, orderList));
     }

@@ -1418,6 +1418,21 @@ public class ClientFormController implements AsyncListener {
             }
         });
     }
+    
+    public void changePropertyOrder(int goID, LinkedHashMap<Integer, Byte> orders) {
+        ClientGroupObject groupObject = form.getGroupObject(goID);
+        if (groupObject != null) {
+            LinkedHashMap<ClientPropertyDraw, Order> pOrders = new LinkedHashMap<>();
+            for (Integer propertyID : orders.keySet()) {
+                ClientPropertyDraw propertyDraw = form.getProperty(propertyID);
+                if (propertyDraw != null) {
+                    pOrders.put(propertyDraw, Order.deserialize(orders.get(propertyID)));
+                }
+            }
+
+            controllers.get(groupObject).changeOrders(pOrders);
+        }
+    }
 
     public void setPropertyOrders(final ClientGroupObject groupObject, List<Integer> propertyList, List<byte[]> columnKeyList, List<Boolean> orderList) {
         commitOrCancelCurrentEditing();

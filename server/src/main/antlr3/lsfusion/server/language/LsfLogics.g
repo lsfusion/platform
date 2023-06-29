@@ -57,6 +57,7 @@ grammar LsfLogics;
     import lsfusion.server.logics.event.ChangeEvent;
     import lsfusion.server.logics.event.Event;
     import lsfusion.server.logics.event.SystemEvent;
+    import lsfusion.server.logics.form.interactive.OrderEvent;
     import lsfusion.server.logics.form.interactive.FormEventType;
     import lsfusion.server.logics.form.interactive.ManageSessionType;
     import lsfusion.server.logics.form.interactive.UpdateType;
@@ -1229,6 +1230,7 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
+		|   'ORDER' objectId=ID { $type = new OrderEvent($objectId.text); }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
@@ -3240,6 +3242,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $action = $seekADB.action; }
 	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
 	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
+	|   orderADB=orderActionDefinitionBody { $action = $orderADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
@@ -3933,6 +3936,16 @@ collapseGroupObjectActionDefinitionBody[List<TypedParameter> context, boolean dy
 expandCollapseObjectsList[List<TypedParameter> context, boolean dynamic] returns [List<String> objects, List<LPWithParams> values]
 	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $values = $list.exprs; }
 	;
+
+orderActionDefinitionBody returns [LAWithParams action]
+@after {
+	if (inMainParseState()) {
+		$action = self.addScriptedOrderProp($gobj.sid);
+	}
+}
+    :   'ORDER'
+        gobj=formGroupObjectID
+    ;
 
 changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]
 @init {
