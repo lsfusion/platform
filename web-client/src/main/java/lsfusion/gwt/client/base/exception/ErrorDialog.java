@@ -29,16 +29,15 @@ public class ErrorDialog extends DialogModalWindow {
 
         if (javaStack != null || lsfStack != null) {
             stacks = new FlexTabbedPanel();
-            stacks.setStyleName("dialog-error-stacks");
             if (javaStack != null) {
                 TextArea javaTA = new TextArea();
-                javaTA.setStyleName("form-control");
+                javaTA.setStyleName("dialog-error-stack form-control");
                 javaTA.setText(javaStack);
                 stacks.addTab(javaTA, "Java");
             }
             if (lsfStack != null) {
                 TextArea lsfTA = new TextArea();
-                lsfTA.setStyleName("form-control");
+                lsfTA.setStyleName("dialog-error-stack form-control");
                 lsfTA.setText(lsfStack);
                 stacks.addTab(lsfTA, "LSF");
             }

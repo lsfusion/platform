@@ -125,8 +125,9 @@
 
 /* ------------- error ----------- */
 
-.dialog-error-stacks {
+.dialog-error-stack {
     height: 30em;
+    width: 100%;
 }
 
 /* ------------- busy ----------- */
