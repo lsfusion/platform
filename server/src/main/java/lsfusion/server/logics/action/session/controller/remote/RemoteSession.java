@@ -20,6 +20,7 @@ import lsfusion.server.physics.exec.db.controller.manager.DBManager;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 public class RemoteSession extends RemoteConnection implements RemoteSessionInterface {
     private final DataSession dataSession;
@@ -45,6 +46,11 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
 
     @Override
     protected ServerResponse prepareResponse(long requestIndex, List<ClientAction> pendingActions, ExecutionStack stack, boolean forceLocalEvents) {
+        return null;
+    }
+
+    @Override
+    protected Set<Thread> getAllContextThreads() {
         return null;
     }
 

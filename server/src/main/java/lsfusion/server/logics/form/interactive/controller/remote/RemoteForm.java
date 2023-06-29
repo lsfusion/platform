@@ -970,7 +970,16 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
     protected String notSafeToString() {
         return "RF[" + form + "]";
     }
-    
+
+    @Override
+    protected Set<Thread> getAllContextThreads() {
+        RemoteFormListener remoteNavigator = getRemoteFormListener();
+        if(remoteNavigator != null) {
+            return remoteNavigator.getAllContextThreads();
+        } else
+            return null;
+    }
+
     public JSONObject getFormChangesExternal(ExecutionStack stack) {
         try {
             FormChanges formChanges;

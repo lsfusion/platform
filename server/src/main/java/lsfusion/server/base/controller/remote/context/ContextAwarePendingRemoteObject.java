@@ -91,7 +91,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         return exportPort < 0;
     }
 
-    private Set<Thread> getContextThreads() {
+    public Set<Thread> getContextThreads() {
         assert !isLocal();
         synchronized (threads) {
             return threads.copy();
@@ -247,6 +247,7 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
     public void interrupt(boolean cancelable) throws RemoteException {
         try {
             Thread thread = ExecutionStackAspect.getLastThread(getContextThreads());
+            if (thread == null) thread = ExecutionStackAspect.getLastThread(getAllContextThreads());
             if (thread != null) {
                 Context context = getContext();
                 if (cancelable)
@@ -257,4 +258,6 @@ public abstract class ContextAwarePendingRemoteObject extends PendingRemoteObjec
         } catch (SQLException | SQLHandledException ignored) {
         }
     }
+
+    protected abstract Set<Thread> getAllContextThreads();
 }

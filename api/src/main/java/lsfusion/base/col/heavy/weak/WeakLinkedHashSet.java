@@ -47,4 +47,8 @@ public class WeakLinkedHashSet<L> {
             return BaseUtils.singleKey(map);
         return null;
     }
+
+    public boolean contains (L item) {
+        return map.containsKey(item);
+    }
 }
