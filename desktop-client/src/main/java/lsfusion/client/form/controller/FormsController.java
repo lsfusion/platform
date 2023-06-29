@@ -253,7 +253,7 @@ public class FormsController implements ColorThemeChangeListener {
                 dockable.onClosed();
                 openedForms.remove(dockable);
                 
-                if (openedForms.isEmpty()) {
+                if (openedForms.isEmpty() && MainFrame.instance != null) {
                     ((DockableMainFrame) MainFrame.instance).setLogsDockableVisible(true);
                 }
                 
