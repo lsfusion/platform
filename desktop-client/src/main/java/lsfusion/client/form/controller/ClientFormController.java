@@ -420,7 +420,7 @@ public class ClientFormController implements AsyncListener {
         if (remoteForm != null) {
             scheduler.schedule(() -> {
                 if (formLayout.isShowing()) {
-                    SwingUtils.invokeLater(() -> rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("executeFormSchedulerAction") {
+                    SwingUtils.invokeLater(() -> rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("executeFormSchedulerAction") {
                         @Override
                         protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                             if (formScheduler.fixed) {
@@ -600,7 +600,7 @@ public class ClientFormController implements AsyncListener {
     }
     
     public void refreshUPHiddenProperties(final String groupObjectSID, final String[] sids) {
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("refreshUPHiddenProperties") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("refreshUPHiddenProperties") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.refreshUPHiddenProperties(requestIndex, lastReceivedRequestIndex, groupObjectSID, sids);   
@@ -700,7 +700,7 @@ public class ClientFormController implements AsyncListener {
             }
         };
         if (async) {
-            rmiQueue.asyncRequest(request);
+            rmiQueue.adaptiveSyncRequest(request);
         } else {
             rmiQueue.syncRequest(request);
         }
@@ -929,7 +929,7 @@ public class ClientFormController implements AsyncListener {
 
     public void collapseGroupObject(final ClientGroupObject group, final ClientGroupObjectValue objectValue) {
         commitOrCancelCurrentEditing();
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("collapseGroupObject") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("collapseGroupObject") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.collapseGroupObject(requestIndex, lastReceivedRequestIndex, group.getID(), objectValue.serialize());
@@ -952,7 +952,7 @@ public class ClientFormController implements AsyncListener {
             return;
         }
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("changeGroupObject") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("changeGroupObject") {
             @Override
             protected void onAsyncRequest(long requestIndex) {
 //                        System.out.println("!!Async changing group object with req#: " + requestIndex + " on " + objectValue);
@@ -990,7 +990,7 @@ public class ClientFormController implements AsyncListener {
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey);
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("changeProperty", editDispatcher) {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("changeProperty", editDispatcher) {
             @Override
             protected void onAsyncRequest(long requestIndex) {
 //                System.out.println("!!Async changing property with req#: " + requestIndex);
@@ -1056,7 +1056,7 @@ public class ClientFormController implements AsyncListener {
 
         final byte[] fullCurrentKey = getFullCurrentKey(columnKey); // чтобы не изменился
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("modifyObject", dispatcher) {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("modifyObject", dispatcher) {
             @Override
             protected void onAsyncRequest(long requestIndex) {
                 controller.modifyGroupObject(value, add, -1); // сначала посылаем запрос, так как getFullCurrentKey может измениться
@@ -1178,7 +1178,7 @@ public class ClientFormController implements AsyncListener {
 
     public void gainedFocus() {
         try {
-            rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("gainedFocus") {
+            rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("gainedFocus") {
                 @Override
                 protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                     return remoteForm.gainedFocus(requestIndex, lastReceivedRequestIndex);
@@ -1190,7 +1190,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void setTabActive(final ClientContainer container, final ClientComponent component) {
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setTabActive(requestIndex, lastReceivedRequestIndex, container.getID(), component.getID());
@@ -1199,7 +1199,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void setContainerCollapsed(ClientContainer container, boolean collapsed) {
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("setTabVisible") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setContainerCollapsed(requestIndex, lastReceivedRequestIndex, container.getID(), collapsed);
@@ -1210,7 +1210,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void executeNotificationAction(final Integer idNotification) throws IOException {
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("executeNotificationAction") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("executeNotificationAction") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.executeNotificationAction(requestIndex, lastReceivedRequestIndex, idNotification);
@@ -1246,7 +1246,7 @@ public class ClientFormController implements AsyncListener {
         for (ClientGroupObjectValue key : columnKeys) {
             serializedColumnKeys.add(key.serialize());
         }
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("pasteExternalTable") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("pasteExternalTable") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.pasteExternalTable(requestIndex, lastReceivedRequestIndex, propertyIdList, serializedColumnKeys, values, rawValues);
@@ -1278,7 +1278,7 @@ public class ClientFormController implements AsyncListener {
             mRawValues.put(propertyID, pasteData.rawValue);
         }
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("pasteMulticellValue") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("pasteMulticellValue") {
             @Override
             protected void onAsyncRequest(long requestIndex) {
                 for (Map.Entry<ClientPropertyDraw, PasteData> e : paste.entrySet()) {
@@ -1471,7 +1471,7 @@ public class ClientFormController implements AsyncListener {
             }
         }
 
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("applyCurrentFilters") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.setUserFilters(requestIndex, lastReceivedRequestIndex, filters.toArray(new byte[filters.size()][]));
@@ -1585,7 +1585,7 @@ public class ClientFormController implements AsyncListener {
     }
     
     public void saveGrouping(final FormGrouping grouping) {
-        rmiQueue.asyncRequest(new RmiVoidRequest("saveGrouping") {
+        rmiQueue.adaptiveSyncRequest(new RmiVoidRequest("saveGrouping") {
             @Override
             protected void doExecute(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 remoteForm.saveGrouping(requestIndex, lastReceivedRequestIndex, grouping);
@@ -1594,7 +1594,7 @@ public class ClientFormController implements AsyncListener {
     }
 
     public void changePageSize(final ClientGroupObject groupObject, final Integer pageSize) throws IOException {
-        rmiQueue.asyncRequest(new ProcessServerResponseRmiRequest("changePageSize") {
+        rmiQueue.adaptiveSyncRequest(new ProcessServerResponseRmiRequest("changePageSize") {
             @Override
             protected ServerResponse doRequest(long requestIndex, long lastReceivedRequestIndex, RemoteFormInterface remoteForm) throws RemoteException {
                 return remoteForm.changePageSize(requestIndex, lastReceivedRequestIndex, groupObject.getID(), pageSize);

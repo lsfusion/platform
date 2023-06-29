@@ -287,7 +287,7 @@ public class DockableMainFrame extends MainFrame implements AsyncListener {
             if(sync) {
                 rmiQueue.syncRequest(request);
             } else {
-                rmiQueue.asyncRequest(request);
+                rmiQueue.adaptiveSyncRequest(request);
             }
             return request.getRequestIndex();
         } finally {
