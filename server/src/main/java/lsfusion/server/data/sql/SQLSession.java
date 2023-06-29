@@ -2982,7 +2982,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // so we have to guarantee that statement canceling is done for the specific thread
     private void runSyncActiveThread(Thread thread, SQLRunnable runnable) throws SQLException, SQLHandledException {
         synchronized (activeThreadLock) {
-            if(activeThreads.single() == thread)
+            if (activeThreads.contains(thread))
                 runnable.run();
         }
     }

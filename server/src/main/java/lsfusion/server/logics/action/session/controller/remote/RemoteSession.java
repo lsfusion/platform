@@ -38,6 +38,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class RemoteSession extends RemoteConnection implements RemoteSessionInterface {
     
@@ -125,6 +126,11 @@ public class RemoteSession extends RemoteConnection implements RemoteSessionInte
             authException = e;
             super.initUser(securityManager, AuthenticationToken.ANONYMOUS, session);
         }
+    }
+
+    @Override
+    protected Set<Thread> getAllContextThreads() {
+        return null;
     }
 
     @Override
