@@ -105,9 +105,11 @@ public class ExecutionStackAspect {
     public static Thread getLastThread(Set<Thread> threads) {
         if (threads == null) return null;
         List<ThreadStackDump> list = getSortedThreadStacks(threads, true);
-        for (int i = list.size() - 1; i >= 0; i--)
-            if (list.get(i).thread.getState().equals(Thread.State.RUNNABLE) && (System.currentTimeMillis() - list.get(i).time) > 1000)
+        for (int i = list.size() - 1; i >= 0; i--) {
+            Thread.State state = list.get(i).thread.getState();
+            if (state.equals(Thread.State.RUNNABLE) || state.equals(Thread.State.TIMED_WAITING))
                 return list.get(i).thread;
+        }
         return null;
     }
 
