@@ -9,13 +9,14 @@ import lsfusion.base.col.interfaces.mutable.mapvalue.ThrowingFunction;
 import lsfusion.server.data.expr.Expr;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.data.value.ObjectValue;
 import lsfusion.server.logics.action.controller.context.ExecutionEnvironment;
 import lsfusion.server.logics.action.session.change.modifier.Modifier;
 import lsfusion.server.logics.form.interactive.action.input.InputOrderEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyObjectInstance;
 import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
@@ -25,6 +26,7 @@ import lsfusion.server.logics.form.struct.property.oraction.ActionOrPropertyObje
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
+import lsfusion.server.physics.admin.Settings;
 
 import java.sql.SQLException;
 
@@ -77,11 +79,48 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends ActionOrP
         return new PropertyMapImplement<>(property, mapping.join(mapObjects));
     }
 
-    public Pair<PropertyObjectEntity<?>, Stat> getSelectProperty() {
+    public static class Select {
+
+        public final PropertyObjectEntity<?> property;
+
+        public final int length;
+        public final int count;
+
+        public final boolean notNull;
+
+        public Select(PropertyObjectEntity<?> property, int length, int count, boolean notNull) {
+            this.property = property;
+            this.length = length;
+            this.count = count;
+            this.notNull = notNull;
+        }
+    }
+    public Select getSelectProperty(FormInstanceContext context) {
         Property.Select<P> select = property.getSelectProperty(ListFact.EMPTY());
-        if(select != null)
-            return new Pair<>(select.property.mapEntityObjects(mapping), select.whereStat);
+        if(select != null) {
+            Pair<Integer, Integer> stats = select.stat;
+            if(select.values != null && context.dbManager != null) {
+                stats = getActualSelectStats(context, select);
+                if(stats == null) // too much values
+                    return null;
+            }
+            return new Select(select.property.mapEntityObjects(mapping), stats.first, stats.second, property.isNotNull());
+        }
         return null;
+    }
+
+    private static <P extends PropertyInterface> Pair<Integer, Integer> getActualSelectStats(FormInstanceContext context, Property.Select<P> select) {
+        Pair<Integer, Integer> actualStats = new Pair<>(0, 0);
+        for(InputValueList value : select.values) {
+            Pair<Integer, Integer> readValues = context.getValues(value);
+            if(readValues.second == null) {
+                return null;
+            } else {
+                if(actualStats.second < readValues.second)
+                    actualStats = readValues;
+            }
+        }
+        return actualStats;
     }
 
     public boolean isValueUnique(GroupObjectEntity grid) {

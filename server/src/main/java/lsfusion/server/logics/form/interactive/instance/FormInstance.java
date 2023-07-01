@@ -256,7 +256,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         this.weakFocusListener = new WeakReference<>(focusListener);
         this.weakClassListener = new WeakReference<>(classListener);
 
-        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap());
+        FormInstanceContext context = new FormInstanceContext(entity, entity.getRichDesign(), securityPolicy, isUseBootstrap(), logicsInstance.getDbManager());
         this.context = context;
         instanceFactory = new InstanceFactory(context);
 
@@ -1001,7 +1001,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     @ThisMessage
     public void executeEventAction(final PropertyDrawInstance<?> property, String eventActionSID, final ImMap<ObjectInstance, ? extends ObjectValue> keys, boolean externalChange, Function<AsyncEventExec, PushAsyncResult> asyncResult, final ExecutionStack stack, FormInstanceContext context) throws SQLException, SQLHandledException {
-        SQLCallable<Boolean> checkReadOnly = property.propertyReadOnly != null ? () -> property.propertyReadOnly.getRemappedPropertyObject(keys, true).read(FormInstance.this) != null : null;
+        PropertyObjectInstance<?> propertyReadOnly = property.propertyReadOnly;
+        SQLCallable<Boolean> checkReadOnly = propertyReadOnly != null ? () -> propertyReadOnly.getRemappedPropertyObject(keys, true).read(FormInstance.this) != null : null;
+
         ActionObjectInstance<?> eventAction = property.getEventAction(eventActionSID, context, this, checkReadOnly);
         if(eventAction == null) {
             ThreadLocalContext.delayUserInteraction(EditNotPerformedClientAction.instance);
@@ -1163,27 +1165,28 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return null;
     }
 
-    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+    public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
-        int neededCount = settings.getAsyncValuesNeededCount();
-        double extraReadCoeff = settings.getAsyncValuesExtraReadCoeff();
-        double statDegree = settings.getStatDegree();
-        int maxLimitRead = settings.getAsyncValuesMaxReadCount();
 
         boolean highlight = list.isHighlight();
 
         InputListExpr<P> listExprKeys = list.getListExpr(modifier);
-//        t(o) = list AND list match request
 
         Expr listExpr = listExprKeys.expr;
-        Where filter;
-        if(Settings.get().isInputListSearchInsteadOfContains())
-            filter = listExpr.compare(new DataObject(value), Compare.MATCH);
-        else
-            filter = listExpr.compare(new DataObject(FilterInstance.needWrapContains(value, true) ? FilterInstance.wrapContains(value) : value), Compare.CONTAINS);
-        listExpr = listExpr.and(filter);
+        if(!value.isEmpty()) {
+            Where filter;
+            if (Settings.get().isInputListSearchInsteadOfContains())
+                filter = listExpr.compare(new DataObject(value), Compare.MATCH);
+            else
+                filter = listExpr.compare(new DataObject(FilterInstance.needWrapContains(value, true) ? FilterInstance.wrapContains(value) : value), Compare.CONTAINS);
+            listExpr = listExpr.and(filter);
+        }
 
         if(listExprKeys.orders.isEmpty()) {
+            double extraReadCoeff = settings.getAsyncValuesExtraReadCoeff();
+            double statDegree = settings.getStatDegree();
+            int maxLimitRead = settings.getAsyncValuesMaxReadCount();
+
             double estDistinctRate = (asyncMode.isValues() ? list.getSelectStat().getCount() : 1) * extraReadCoeff;
             int estNeededRead = (int) BaseUtils.min(((double) neededCount * estDistinctRate), maxLimitRead);
             while (estNeededRead <= maxLimitRead) {
@@ -1282,8 +1285,8 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         for(int i = 0, size = result.size(); i < size; i++) {
             ImMap<String, ObjectValue> values = result.getValue(i);
             count += (Integer)values.get("count").getValue();
-            resultValues[i] = new PropertyAsync<P>((String)values.get("highlight").getValue(),
-                    readObjects ? (String)values.get("raw").getValue() : (String)result.getKey(i).singleValue().getValue(),
+            resultValues[i] = new PropertyAsync<P>(BaseUtils.nullToString(values.get("highlight").getValue()), // acutally there is always String, because of isDefaultWYSInput check, except when using in getSelectProperty
+                    readObjects ? BaseUtils.nullToString(values.get("raw").getValue()) : (String)result.getKey(i).singleValue().getValue(),
                     needObjects ? (ImMap<P, DataObject>)result.getKey(i) : null);
         }
 
@@ -1316,7 +1319,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         }
         return result;
     }
-    public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, Boolean optimistic, Supplier<Boolean> optimisticRun, FormInstanceContext context) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, int neededCount, Boolean optimistic, Supplier<Boolean> optimisticRun, FormInstanceContext context) throws SQLException, SQLHandledException {
         InputValueList<X> listProperty;
         ImRevMap<X, ObjectInstance> mapObjects;
         AsyncMode asyncMode;
@@ -1333,7 +1336,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 asyncMode = inputContext.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
                 for(Property<X> changeProp : listProperty.getChangeProps())
                     if (!inputContext.newSession && changeProp.hasChanges(inputContext.modifier))
-                        return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, inputContext.session, inputContext.modifier, value, asyncMode));
+                        return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, inputContext.session, inputContext.modifier, value, neededCount, asyncMode));
             } finally {
                 ThreadLocalContext.unlockInputContext();
             }
@@ -1355,7 +1358,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                             return null; // switching to pessimistic mode
                     } else {
                         if (updateAsyncPropertyChanges(changeProp)) // recheck changes since we're in a thread-safe mode
-                            return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, getSession(), getModifier(), value, asyncMode));
+                            return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, getSession(), getModifier(), value, neededCount, asyncMode));
                     }
             }
         }
@@ -1365,7 +1368,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(!optimisticRun.get())
             return new Async[] {Async.CANCELED};
 
-        Async[] result = convertPropertyAsyncs(mapObjects, logicsInstance.getDbManager().getAsyncValues(listProperty, value, asyncMode));
+        Async[] result = convertPropertyAsyncs(mapObjects, logicsInstance.getDbManager().getAsyncValues(listProperty, value, neededCount, asyncMode));
         if(needRecheck) // not sure yet, resending RECHECK
             result = BaseUtils.addElement(result, Async.RECHECK, Async[]::new);
         return result;

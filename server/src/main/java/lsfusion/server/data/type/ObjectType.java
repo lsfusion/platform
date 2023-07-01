@@ -137,7 +137,7 @@ public class ObjectType extends AbstractType<Long> {
     }
 
     public ExtInt getCharLength() {
-        return new ExtInt(10);
+        return idClass.getCharLength();
     }
 
     @Override

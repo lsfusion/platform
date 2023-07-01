@@ -2947,8 +2947,9 @@ public class Settings implements Cloneable {
     }
 
     public int minInterfaceStatForValueUnique = 100;
-    public int minInterfaceStatForValueRadio = 5;
-    public int minInterfaceStatForValueCombo = 5;
+    public int maxInterfaceStatForValueRadio = 5;
+    public int maxInterfaceStatForValueCombo = 5;
+    public int maxLengthForValueRadioButtonGroup = 40;
 
     public int getMinInterfaceStatForValueUnique() {
         return minInterfaceStatForValueUnique;
@@ -2958,20 +2959,28 @@ public class Settings implements Cloneable {
         this.minInterfaceStatForValueUnique = minInterfaceStatForValueUnique;
     }
 
-    public int getMinInterfaceStatForValueRadio() {
-        return minInterfaceStatForValueRadio;
+    public int getMaxInterfaceStatForValueRadio() {
+        return maxInterfaceStatForValueRadio;
     }
 
-    public void setMinInterfaceStatForValueRadio(int minInterfaceStatForValueRadio) {
-        this.minInterfaceStatForValueRadio = minInterfaceStatForValueRadio;
+    public void setMaxInterfaceStatForValueRadio(int maxInterfaceStatForValueRadio) {
+        this.maxInterfaceStatForValueRadio = maxInterfaceStatForValueRadio;
     }
 
-    public int getMinInterfaceStatForValueCombo() {
-        return minInterfaceStatForValueCombo;
+    public int getMaxInterfaceStatForValueCombo() {
+        return maxInterfaceStatForValueCombo;
     }
 
-    public void setMinInterfaceStatForValueCombo(int minInterfaceStatForValueCombo) {
-        this.minInterfaceStatForValueCombo = minInterfaceStatForValueCombo;
+    public void setMaxInterfaceStatForValueCombo(int maxInterfaceStatForValueCombo) {
+        this.maxInterfaceStatForValueCombo = maxInterfaceStatForValueCombo;
+    }
+
+    public int getMaxLengthForValueRadioButtonGroup() {
+        return maxLengthForValueRadioButtonGroup;
+    }
+
+    public void setMaxLengthForValueRadioButtonGroup(int maxLengthForValueRadioButtonGroup) {
+        this.maxLengthForValueRadioButtonGroup = maxLengthForValueRadioButtonGroup;
     }
 
     private boolean disableCombineFilters = false;

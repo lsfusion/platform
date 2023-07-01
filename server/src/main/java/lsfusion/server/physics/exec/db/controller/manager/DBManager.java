@@ -998,13 +998,15 @@ public class DBManager extends LogicsManager implements InitializingBean {
         public final ImMap<CurrentEnvironmentProperty, Object> envValues; // can have null values
         public final ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders; // it's not pretty clean solution, but it's the easiest way to implement this
         public final String value;
+        public final int neededCount;
         public final Object mode;
 
-        public Param(ImMap<P, ObjectValue> mapValues, ImMap<CurrentEnvironmentProperty, Object> envValues, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, String value, Object mode) {
+        public Param(ImMap<P, ObjectValue> mapValues, ImMap<CurrentEnvironmentProperty, Object> envValues, ImOrderMap<PropertyInterfaceImplement<P>, Boolean> orders, String value, int neededCount, Object mode) {
             this.mapValues = mapValues;
             this.envValues = envValues;
             this.orders = orders;
             this.value = value;
+            this.neededCount = neededCount;
             this.mode = mode;
         }
 
@@ -1028,11 +1030,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         public boolean equals(Object o) {
-            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && envValues.equals(((Param) o).envValues) && value.equals(((Param) o).value) && mode == ((Param) o).mode && equalsMap(orders, ((Param<P>) o).orders);
+            return this == o || o instanceof Param && mapValues.equals(((Param) o).mapValues) && envValues.equals(((Param) o).envValues) && value.equals(((Param) o).value) && neededCount == ((Param<?>) o).neededCount && mode == ((Param) o).mode && equalsMap(orders, ((Param<P>) o).orders);
         }
 
         public int hashCode() {
-            return 31 * (31 * ( 31 * (31 * mapValues.hashCode() + envValues.hashCode())  + value.hashCode()) + mode.hashCode()) + hashMap(orders);
+            return 31 * (31 * (31 * ( 31 * (31 * mapValues.hashCode() + envValues.hashCode())  + value.hashCode()) + mode.hashCode()) + neededCount) + hashMap(orders);
         }
     }
     private static class ParamRef {
@@ -1066,9 +1068,9 @@ public class DBManager extends LogicsManager implements InitializingBean {
     private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache1 = new LRUWWEVSMap<>(LRUUtil.G1);
     private final LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache2 = new LRUWWEVSMap<>(LRUUtil.G2);
 
-    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, String value, AsyncMode mode) throws SQLException, SQLHandledException {
+    public <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, String value, int neededCount, AsyncMode mode) throws SQLException, SQLHandledException {
         if(Settings.get().isIsClustered()) // we don't want to use caches since they can be inconsistent
-            return readAsyncValues(list, value, mode);
+            return readAsyncValues(list, value, neededCount, mode);
 
         LRUWVSMap<Property<?>, ConcurrentIdentityWeakHashSet<ParamRef>> asyncValuesPropCache;
         LRUWWEVSMap<Property<?>, Param, ValueRef> asyncValuesValueCache;
@@ -1081,7 +1083,7 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
 
         Property<?> key = list.getCacheKey();
-        Param param = list.getCacheParam(value, mode, env);
+        Param param = list.getCacheParam(value, neededCount, mode, env);
 
         ValueRef<P> valueRef = asyncValuesValueCache.get(key, param);
         if(valueRef != null && valueRef.ref.param != null)
@@ -1096,16 +1098,16 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
         paramRefs.add(ref);
 
-        PropertyAsync<P>[] values = readAsyncValues(list, value, mode);
+        PropertyAsync<P>[] values = readAsyncValues(list, value, neededCount, mode);
         asyncValuesValueCache.put(key, param, new ValueRef<>(ref, values));
 
         return values;
     }
 
-    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, String value, AsyncMode asyncMode) throws SQLException, SQLHandledException {
+    private <P extends PropertyInterface> PropertyAsync<P>[] readAsyncValues(InputValueList<P> list, String value, int neededCount, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         PropertyAsync<P>[] values;
         try(DataSession session = createSession()) {
-            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value, asyncMode);
+            values = FormInstance.getAsyncValues(list, session, Property.defaultModifier, value, neededCount, asyncMode);
         }
         return values;
     }

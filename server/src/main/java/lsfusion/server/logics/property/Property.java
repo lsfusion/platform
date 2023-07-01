@@ -14,6 +14,7 @@ import lsfusion.base.lambda.set.FunctionSet;
 import lsfusion.interop.action.ServerResponse;
 import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.interop.form.property.Compare;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.*;
 import lsfusion.server.base.controller.stack.StackMessage;
 import lsfusion.server.base.controller.stack.ThisMessage;
@@ -1679,14 +1680,15 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
     public static class Select<T extends PropertyInterface> {
         public final PropertyMapImplement<?, T> property;
 
-        public final ImList<Property> wheres;
-        public final Stat whereStat;
+        public final ImList<InputValueList> values;
+
+        public final Pair<Integer, Integer> stat; // estimate stat
 
 
-        public Select(PropertyMapImplement<?, T> property, Stat whereStat, ImList<Property> wheres) {
+        public Select(PropertyMapImplement<?, T> property, Pair<Integer, Integer> stat, ImList<InputValueList> values) {
             this.property = property;
-            this.whereStat = whereStat;
-            this.wheres = wheres;
+            this.stat = stat;
+            this.values = values;
         }
     }
 
@@ -1726,9 +1728,26 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
             ImSet<W> mapWhereInterfaces = where.mapping.filterValuesRev(orderPropertyInterfaces.getSet()).keys();
             Stat whereStat = where.property.getInterfaceStat(mapWhereInterfaces);
+            int whereCount = whereStat.getCount();
 
-            if(!whereStat.lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueCombo()))) // optimization
+            if(whereCount > Settings.get().getMaxInterfaceStatForValueCombo()) // optimization
                 return null;
+
+            InputValueList values = null;
+            if(viewProperty.getEnvDepends().isEmpty()) {
+                Property valuesProperty = null;
+                if (mapWhereInterfaces.isEmpty() && where.property.getEnvDepends().isEmpty())
+                    valuesProperty = where.property;
+                else {
+                    IsClassProperty classProperty = customClass.getProperty();
+                    Stat classStat = classProperty.getInterfaceStat(false); // customClass.getUpSet().getCount() could be used instead
+                    if(classStat.lessEquals(whereStat))
+                        valuesProperty = classProperty;
+                }
+
+                if(valuesProperty != null)
+                   values = new InputListEntity(viewProperty, MapFact.EMPTYREV()).merge(new Pair<>(new InputFilterEntity<>(valuesProperty, MapFact.EMPTYREV()), MapFact.EMPTYORDER())).map(MapFact.EMPTY());
+            }
 
             // CLASSES
 //            ImList<ValueClass> classes = null; //getInterfaceClasses(ClassType.tryEditPolicy) + customClass;
@@ -1769,7 +1788,7 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
 
             LP<?> jsonProp = baseLM.addJSONProp(LocalizedString.NONAME, orderInterfaces, orderPropertyInterfaces, properties, propUsages, propOrders, where);
 
-            return new Select<>(jsonProp.getImplement(orderMapPropertyInterfaces), whereStat, mapWhereInterfaces.isEmpty() ? ListFact.singleton(where.property) : null);
+            return new Select<>(jsonProp.getImplement(orderMapPropertyInterfaces), new Pair<>(viewProperty.getType().getAverageCharLength() * whereCount, whereCount), values != null ? ListFact.singleton(values) : null);
         }
 
         return null;

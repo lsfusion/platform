@@ -85,7 +85,7 @@ public class InputValueList<P extends PropertyInterface> {
     public Property<?> getCacheKey() {
         return property;
     }
-    public DBManager.Param<?> getCacheParam(String value, AsyncMode mode, QueryEnvironment env) {
+    public DBManager.Param<?> getCacheParam(String value, int neededCount, AsyncMode mode, QueryEnvironment env) {
         ImMap<CurrentEnvironmentProperty, Object> envValues = MapFact.EMPTY();
         ImSet<CurrentEnvironmentProperty> envDepends = property.getEnvDepends();
         if(!envDepends.isEmpty()) { // optimization
@@ -93,6 +93,6 @@ public class InputValueList<P extends PropertyInterface> {
             envValues = envDepends.mapValues((CurrentEnvironmentProperty prop) -> queryPropParams.get(prop.paramString).getValue());
         }
 
-        return new DBManager.Param<P>(mapValues, envValues, orders, value, mode.getCacheMode());
+        return new DBManager.Param<P>(mapValues, envValues, orders, value, neededCount, mode.getCacheMode());
     }
 }

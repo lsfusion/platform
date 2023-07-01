@@ -223,7 +223,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     @Override
     public Property.Select<T> mapSelect(ImList<Property> viewProperties) {
         Property.Select<P> select = property.getSelectProperty(viewProperties);
-        return select == null ? null : new Property.Select<>(select.property.map(mapping), select.whereStat, select.wheres);
+        return select == null ? null : new Property.Select<>(select.property.map(mapping), select.stat, select.values);
     }
 
     public Inferred<T> mapInferInterfaceClasses(ExClassSet commonValue, InferType inferType) {

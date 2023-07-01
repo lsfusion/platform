@@ -713,7 +713,7 @@ public abstract class LogicsModule {
     }
 
     private <I extends PropertyInterface> IntegrationForm addIntegrationForm(ImOrderSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean notFinalized) throws FormEntity.AlreadyDefined {
-        // creating form
+        // creating integration form
         IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, properties, propUsages, where, orders, false, version);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);

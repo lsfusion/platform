@@ -836,7 +836,8 @@ public class RemoteForm<F extends FormInstance> extends RemoteRequestObject impl
         PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
         ImMap<ObjectInstance, ? extends ObjectValue> keys = deserializeKeysValues(fullKey);
 
-        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, optimistic, optimisticRun, getRemoteContext());
+        int neededCount = Settings.get().getAsyncValuesNeededCount();
+        Async[] result = form.getAsyncValues(propertyDraw, keys, actionSID, value, neededCount, optimistic, optimisticRun, getRemoteContext());
 
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("getAsyncValues Action. propertyDrawID: %s. Result: %s", propertyDraw.getSID(), result));

@@ -8,6 +8,7 @@ import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MList;
 import lsfusion.base.col.interfaces.mutable.MSet;
+import lsfusion.interop.form.property.ExtInt;
 import lsfusion.server.base.caches.IdentityLazy;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
@@ -30,6 +31,8 @@ import lsfusion.server.logics.action.session.changed.OldProperty;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.user.set.ResolveClassSet;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
+import lsfusion.server.logics.form.interactive.action.input.InputValueList;
 import lsfusion.server.logics.property.*;
 import lsfusion.server.logics.property.cases.graph.Graph;
 import lsfusion.server.logics.property.classes.infer.*;
@@ -298,8 +301,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @Override
     @IdentityStrongLazy
     public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties) {
-        Stat resultStat = Stat.ONE;
-        MList<Property> mResultWheres = ListFact.mList();
+        Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
+        MList<InputValueList> mResultValues = ListFact.mList();
         ImList<CalcCase<Interface>> cases = getCases();
         MList<CalcCase<Interface>> mJsonCases = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
@@ -314,13 +317,15 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 where = (PropertyMapImplement<?, Interface>) propCase.where;
             mJsonCases.add(new CalcCase<>(where, joinProperty.property));
 
-            if(joinProperty.wheres == null) // unknown wheres
-                mResultWheres = null;
-            else if(mResultWheres != null)
-                mResultWheres.addAll(joinProperty.wheres);
-            resultStat = resultStat.max(joinProperty.whereStat);
+            if(joinProperty.values == null) // unknown wheres
+                mResultValues = null;
+            else if(mResultValues != null)
+                mResultValues.addAll(joinProperty.values);
+            Pair<Integer, Integer> joinStat = joinProperty.stat;
+            if(resultStat.second < joinStat.second)
+                resultStat = joinStat;
         }
-        return new Select<>(PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList()), resultStat, mResultWheres != null ? mResultWheres.immutableList() : null);
+        return new Select<>(PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList()), resultStat, mResultValues != null ? mResultValues.immutableList() : null);
     }
 
     @Override

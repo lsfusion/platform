@@ -207,7 +207,7 @@ public class PropertyDrawView extends BaseComponentView {
     @Override
     public double getDefaultFlex(FormInstanceContext context) {
         ContainerView container = getLayoutParamContainer();
-        if(((container != null && container.isHorizontal()) || entity.isList(context.entity)) && isHorizontalValueFlex(context))
+        if(((container != null && container.isHorizontal()) || entity.isList(context)) && isHorizontalValueFlex(context))
             return -2; // flex = width
         return super.getDefaultFlex(context);
     }
@@ -238,7 +238,7 @@ public class PropertyDrawView extends BaseComponentView {
     }
 
     private String getCustomRenderFunction(FormInstanceContext context) {
-        return entity.getCustomRenderFunction();
+        return entity.getCustomRenderFunction(context);
     }
 
     public static final boolean defaultSync = true;
@@ -439,7 +439,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         pool.writeObject(outStream, getFormat(pool.context));
 
-        outStream.writeBoolean(entity.isList(pool.context.entity));
+        outStream.writeBoolean(entity.isList(pool.context));
 
         pool.writeObject(outStream, focusable);
         outStream.writeByte(entity.getEditType().serialize());
@@ -838,7 +838,7 @@ public class PropertyDrawView extends BaseComponentView {
         if (isProperty(context)) {
             Type type = getType(context);
             if(type != null && changeType != null && type.getCompatible(changeType) != null &&
-                    type.useInputTag(!entity.isList(context.entity), context.useBootstrap))
+                    type.useInputTag(!entity.isList(context), context.useBootstrap))
                 return "input";
 
             if(isLink(context) && !hasFlow(context, ChangeFlowType.INPUT))
@@ -875,7 +875,7 @@ public class PropertyDrawView extends BaseComponentView {
 
         if (isProperty(context)) {
             String tag = getTag(context);
-            if(tag == null && !entity.isList(context.entity)) {
+            if(tag == null && !entity.isList(context)) {
                 if (hasFlow(context, ChangeFlowType.INPUT))
                     return "form-control";
                 else if (hasChangeAction(context) && !isCustom(context))
@@ -908,7 +908,7 @@ public class PropertyDrawView extends BaseComponentView {
         Type type = getType(context);
         if(type != null) {
             String tag = getTag(context);
-            return type.hasToolbar(tag != null && tag.equals("input") && !entity.isList(context.entity));
+            return type.hasToolbar(tag != null && tag.equals("input") && !entity.isList(context));
         }
 
         return true;

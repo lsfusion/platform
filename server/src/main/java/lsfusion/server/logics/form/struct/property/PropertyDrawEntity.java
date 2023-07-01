@@ -20,6 +20,7 @@ import lsfusion.interop.form.property.PropertyGroupType;
 import lsfusion.interop.form.property.PropertyReadType;
 import lsfusion.server.base.caches.IdentityStartLazy;
 import lsfusion.server.base.caches.IdentityStrongLazy;
+import lsfusion.server.base.caches.ParamLazy;
 import lsfusion.server.base.controller.thread.ThreadLocalContext;
 import lsfusion.server.base.version.NFFact;
 import lsfusion.server.base.version.Version;
@@ -27,7 +28,6 @@ import lsfusion.server.base.version.interfaces.NFMap;
 import lsfusion.server.data.expr.value.StaticParamNullableExpr;
 import lsfusion.server.data.sql.exception.SQLHandledException;
 import lsfusion.server.data.sql.lambda.SQLCallable;
-import lsfusion.server.data.stat.Stat;
 import lsfusion.server.data.type.Type;
 import lsfusion.server.language.action.LA;
 import lsfusion.server.language.property.LP;
@@ -44,6 +44,7 @@ import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.controller.init.InstanceFactory;
 import lsfusion.server.logics.form.interactive.controller.init.Instantiable;
 import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
 import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.interactive.design.property.PropertyDrawView;
 import lsfusion.server.logics.form.interactive.instance.property.PropertyDrawInstance;
@@ -573,6 +574,9 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         return toDraw != null && toDraw.viewType.isToolbar();
     }
 
+    public boolean isList(FormInstanceContext context) {
+        return isList(context.entity);
+    }
     public boolean isList(FormEntity formEntity) {
         GroupObjectEntity toDraw = getToDraw(formEntity);
         return toDraw != null && toDraw.viewType.isList() && (viewType == null || viewType.isList());
@@ -673,47 +677,68 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
     }
 
     public PropertyObjectEntity<?> getProperty(FormInstanceContext context) {
-        return getActionOrProperty(context).getProperty(getPropertyExtras().get(READONLYIF));
+        return getActionOrProperty(context).getProperty(getReadOnly());
+    }
+
+    private PropertyObjectEntity<?> getReadOnly() {
+        return getPropertyExtras().get(READONLYIF);
+    }
+
+    private boolean hasNoGridReadOnly(FormEntity form) {
+        PropertyObjectEntity<?> readOnly = getReadOnly();
+        return readOnly != null && isList(form) && !readOnly.getObjectInstances().intersect(getToDraw(form).getObjects());
     }
 
     public ActionOrPropertyObjectEntity<?, ?> getStaticActionOrProperty() {
         return actionOrProperty;
     }
 
-    private Pair<PropertyObjectEntity<?>, Stat> getSelectProperty() {
+    @ParamLazy
+    private Pair<PropertyObjectEntity, String> getSelectProperty(FormInstanceContext context) {
         if(actionOrProperty instanceof PropertyObjectEntity) {
-            return ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty();
+            PropertyObjectEntity.Select select = ((PropertyObjectEntity<P>) actionOrProperty).getSelectProperty(context);
+
+            String selectCustom = null;
+            if(select != null) {
+                if(!isReadOnly() && !hasNoGridReadOnly(context.entity) && select.count > (select.notNull ? 1 : 0)) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                    if(select.length <= Settings.get().getMaxLengthForValueRadioButtonGroup()) {
+                        selectCustom = select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
+                    } else if(select.count <= Settings.get().getMaxInterfaceStatForValueRadio() && !isList(context)) {
+                        ContainerView container = context.view.get(this).getLayoutParamContainer();
+                        if(container != null) {
+                            if(container.isHorizontal())
+                                selectCustom = select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
+                            else
+                                selectCustom = "radio";
+                        }
+                    } else
+                        selectCustom = null; //"combo"
+                }
+
+//            assert stat.less(new Stat(Settings.get().getMinInterfaceStatForValueCombo()));
+                if(selectCustom != null)
+                    return new Pair<>(select.property, selectCustom);
+            }
         }
         return null;
     }
 
-    public String getCustomRenderFunction() {
+    public String getCustomRenderFunction(FormInstanceContext context) {
         if(customRenderFunction != null)
             return customRenderFunction;
 
-        Pair<PropertyObjectEntity<?>, Stat> chameleon = getSelectProperty();
-        if(chameleon != null) {
-            Stat stat = chameleon.second;
-            if(stat.lessEquals(new Stat(Settings.get().getMinInterfaceStatForValueRadio()))) {
-                // less than option
-                // horizontal or "short data"
-                return "radio";
-                // vertical
-                // radio
-            }
-
-//            assert stat.less(new Stat(Settings.get().getMinInterfaceStatForValueCombo()));
-            return "combo";
-        }
+        Pair<PropertyObjectEntity, String> select = getSelectProperty(context);
+        if(select != null)
+            return select.second;
 
         return null;
     }
 
     // INTERACTIVE (NON-STATIC) USAGES
     public ActionOrPropertyObjectEntity<?, ?> getActionOrProperty(FormInstanceContext context) {
-        Pair<PropertyObjectEntity<?>, Stat> chameleon = getSelectProperty();
-        if(chameleon != null)
-            return chameleon.first;
+        Pair<PropertyObjectEntity, String> select = getSelectProperty(context);
+        if(select != null)
+            return select.first;
 
         return actionOrProperty;
     }
