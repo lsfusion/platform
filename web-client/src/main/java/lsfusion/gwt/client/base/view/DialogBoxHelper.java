@@ -1,6 +1,8 @@
 package lsfusion.gwt.client.base.view;
 
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -100,6 +102,11 @@ public class DialogBoxHelper {
             this.closeCallback = closeCallback;
 
             setBodyWidget(contents);
+
+            Style contentsContainerStyle = contents.getElement().getStyle();
+            contentsContainerStyle.setProperty("overflow", "auto");
+            contentsContainerStyle.setProperty("maxWidth", (Window.getClientWidth() * 0.75) + "px");
+            contentsContainerStyle.setProperty("maxHeight", (Window.getClientHeight() * 0.75) + "px");
 
             createButtonsPanel(activeOption, options);
 
