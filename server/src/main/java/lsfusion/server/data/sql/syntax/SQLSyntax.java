@@ -241,7 +241,7 @@ public interface SQLSyntax {
 
     SQLSyntaxType getSyntaxType();
 
-    String getSafeCastNameFnc(Type type, boolean isInt);
+    String getSafeCastNameFnc(Type type, Integer sourceType);
 
     Date fixDate(Date value);
 

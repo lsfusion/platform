@@ -17,7 +17,7 @@ public interface TypeEnvironment {
 
     void addNeedArrayClass(ArrayClass tableType);
 
-    void addNeedSafeCast(Type type, Boolean isInt);
+    void addNeedSafeCast(Type type, Integer sourceType);
 
     void addNeedAggOrder(GroupType groupType, ImList<Type> types);
 

@@ -9,6 +9,7 @@ import lsfusion.server.data.type.Type;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.TextBasedClass;
 import lsfusion.server.logics.form.stat.print.design.ReportDrawField;
 import lsfusion.server.logics.form.stat.struct.export.plain.xls.ExportXLSWriter;
@@ -45,12 +46,14 @@ public abstract class IntegralClass<T extends Number> extends TextBasedClass<T> 
 
     public String getCast(String value, SQLSyntax syntax, TypeEnvironment typeEnv, Type typeFrom, boolean isArith) {
         boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
+        boolean isStr = typeFrom instanceof StringClass;
         if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
             if(typeFrom != null && equalsDB(typeFrom))
                 return value;
 
-            typeEnv.addNeedSafeCast(this, isInt);
-            return syntax.getSafeCastNameFnc(this, isInt) + "(" + value + ")";
+            int sourceType = isInt ? 0 : isStr ? 1 : 2;
+            typeEnv.addNeedSafeCast(this, sourceType);
+            return syntax.getSafeCastNameFnc(this, sourceType) + "(" + value + ")";
         }
 
         return super.getCast(value, syntax, typeEnv, typeFrom, isArith);
