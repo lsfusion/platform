@@ -151,7 +151,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
             throw new UnsupportedOperationException();
         }
 
-        public void addNeedSafeCast(Type type, Boolean isInt) {
+        public void addNeedSafeCast(Type type, Integer sourceType) {
             throw new UnsupportedOperationException();
         }
     };
@@ -225,10 +225,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
 
     protected String safeCastString;
     protected String safeCastIntString;
+    protected String safeCastStrString;
 
-    private LRUSVSMap<Pair<Type, Boolean>, Boolean> ensuredSafeCasts = new LRUSVSMap<>(LRUUtil.G2);
+    private LRUSVSMap<Pair<Type, Integer>, Boolean> ensuredSafeCasts = new LRUSVSMap<>(LRUUtil.G2);
 
-    public synchronized void ensureSafeCast(Pair<Type, Boolean> castType) throws SQLException {
+    public synchronized void ensureSafeCast(Pair<Type, Integer> castType) throws SQLException {
         Boolean ensured = ensuredSafeCasts.get(castType);
         if(ensured != null)
             return;
@@ -240,8 +241,11 @@ public abstract class DataAdapter extends AbstractConnectionPool implements Type
         properties.put("param.minvalue", castType.first.getInfiniteValue(true).toString());
         properties.put("param.maxvalue", castType.first.getInfiniteValue(false).toString());
 
+        boolean isInt = castType.second == 0 && Settings.get().getSafeCastIntType() == 1;
+        boolean isStr = castType.second == 1 && Settings.get().getSafeCastIntType() == 1;
+
         executeEnsure(stringResolver.replacePlaceholders(
-                castType.second && Settings.get().getSafeCastIntType() == 1 ? safeCastIntString : safeCastString, properties));
+                isInt ? safeCastIntString : isStr ? safeCastStrString : safeCastString, properties));
 
         ensuredSafeCasts.put(castType, true);
     }

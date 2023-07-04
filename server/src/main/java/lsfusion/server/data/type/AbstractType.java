@@ -10,6 +10,7 @@ import lsfusion.server.data.sql.syntax.SQLSyntax;
 import lsfusion.server.data.type.exec.TypeEnvironment;
 import lsfusion.server.data.type.reader.AbstractReader;
 import lsfusion.server.logics.classes.data.ParseException;
+import lsfusion.server.logics.classes.data.StringClass;
 import lsfusion.server.logics.classes.data.integral.IntegerClass;
 import lsfusion.server.logics.classes.data.integral.IntegralClass;
 import lsfusion.server.logics.classes.data.time.DateClass;
@@ -53,9 +54,11 @@ public abstract class AbstractType<T> extends AbstractReader<T> implements Type<
                 return value;
 
             boolean isInt = isArith || typeFrom instanceof IntegralClass || typeFrom instanceof ObjectType;
+            boolean isStr = typeFrom instanceof StringClass;
             if(!(isInt && Settings.get().getSafeCastIntType() == 2)) {
-                typeEnv.addNeedSafeCast(this, isInt);
-                return syntax.getSafeCastNameFnc(this, isInt) + "(" + value + ")";
+                int sourceType = isInt ? 0 : isStr ? 1 : 2;
+                typeEnv.addNeedSafeCast(this, sourceType);
+                return syntax.getSafeCastNameFnc(this, sourceType) + "(" + value + ")";
             }
         }
         return getCast(value, syntax, typeEnv, typeFrom);

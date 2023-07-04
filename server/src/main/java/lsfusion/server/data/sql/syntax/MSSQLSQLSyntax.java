@@ -109,8 +109,8 @@ public class MSSQLSQLSyntax extends DefaultSQLSyntax {
     }
 
     @Override
-    public String getSafeCastNameFnc(Type type, boolean isInt) {
-        return "dbo." + super.getSafeCastNameFnc(type, isInt);
+    public String getSafeCastNameFnc(Type type, Integer sourceType) {
+        return "dbo." + super.getSafeCastNameFnc(type, sourceType);
     }
 
     @Override

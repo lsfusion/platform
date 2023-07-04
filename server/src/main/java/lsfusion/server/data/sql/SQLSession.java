@@ -3422,7 +3422,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         public void ensureConcType(ConcatenateType concType) {
             throw new UnsupportedOperationException();
         }
-        public void ensureSafeCast(Pair<Type, Boolean> type) {
+        public void ensureSafeCast(Pair<Type, Integer> type) {
             throw new UnsupportedOperationException();
         }
         public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) {
