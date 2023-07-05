@@ -133,15 +133,17 @@ public class Query<K,V> extends IQuery<K,V> {
     }
     
     public ImMap<K, Type> getKeyTypes(final Type.Getter<K> typeGetter) {
-        return mapKeys.keys().mapValues((K value) -> {
-            Type propertyType = getKeyType(value);
-            if(propertyType != null)
-                return propertyType;
-            Type entityType = typeGetter.getType(value);
-            if(entityType != null)
-                return entityType;
-            return AbstractType.getUnknownTypeNull();
-        });        
+        return mapKeys.keys().mapValues((K key) -> getKeyType(typeGetter, key));
+    }
+
+    public Type getKeyType(final Type.Getter<K> typeGetter, K key) {
+        Type propertyType = getKeyType(key);
+        if(propertyType != null)
+            return propertyType;
+        Type entityType = typeGetter.getType(key);
+        if(entityType != null)
+            return entityType;
+        return AbstractType.getUnknownTypeNull();
     }
 
     public ImMap<V, Type> getPropertyTypes(final Type.Getter<V> typeGetter) {

@@ -358,6 +358,13 @@ public class RmiQueue implements DispatcherListener {
         }
     }
 
+    public <T> void adaptiveSyncRequest(final RmiRequest<T> request) {
+        if (rmiFutures.size() < 10 || syncsDepth > 0)
+            asyncRequest(request, false);
+        else
+            syncRequest(request);
+    }
+
     public <T> long asyncRequest(final RmiRequest<T> request) {
         asyncRequest(request, false);
         return request.getRequestIndex();

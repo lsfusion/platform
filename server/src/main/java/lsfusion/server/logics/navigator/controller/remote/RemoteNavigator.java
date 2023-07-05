@@ -822,6 +822,16 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         return "RN[clientAddress: " + logInfo.remoteAddress + "," + user + "," + System.identityHashCode(this) + "," + sql + "]";
     }
 
+    @Override
+    public Set<Thread> getAllContextThreads() {
+        synchronized (forms) {
+            Set<Thread> threads = new HashSet<>();
+            for(RemoteForm form : forms)
+                threads.addAll(form.getContextThreads());
+            return threads;
+        }
+    }
+
     public static void checkEnableUI(boolean anonymous) {
         byte enableUI = Settings.get().getEnableUI();
         if(enableUI == 0)

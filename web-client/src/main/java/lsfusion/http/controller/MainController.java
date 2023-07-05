@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -101,6 +102,7 @@ public class MainController {
         }
 
         model.addAttribute("jnlpUrls", getJNLPUrls(request, serverSettings));
+        addUserDataAttributes(model, request);
         if (checkVersionError.result != null) {
             model.addAttribute("error", checkVersionError.result);
             return "restricted";
@@ -112,6 +114,7 @@ public class MainController {
     @RequestMapping(value = "/registration", method = RequestMethod.GET)
     public String registration(ModelMap model, HttpServletRequest request) {
         addStandardModelAttributes(model, request);
+        addUserDataAttributes(model, request);
         return getDisableRegistration(getAndCheckServerSettings(request, checkVersionError, false)) ? "login" : "registration";
     }
 
@@ -136,6 +139,7 @@ public class MainController {
             SecurityContextHolder.getContext().setAuthentication(getAuthentication(request, username, password, authenticationProvider));
         } else if (jsonResponse.has("error")) {
             request.getSession(true).setAttribute("REGISTRATION_EXCEPTION", new AuthenticationException(jsonResponse.optString("error")));
+            request.getSession(true).setAttribute("USER_DATA", Map.of("username", username, "firstName", firstName, "lastName", lastName, "email", email));
             return getRedirectUrl("/registration", null, request);
         }
         return getRedirectUrl("/login", null, request);
@@ -200,6 +204,16 @@ public class MainController {
             return new JSONObject(new String(((FileData) externalResponse.results[0]).getRawFile().getBytes(), StandardCharsets.UTF_8));
         } catch (IOException | AppServerNotAvailableDispatchException e) {
             throw Throwables.propagate(e);
+        }
+    }
+
+    private void addUserDataAttributes(ModelMap model, HttpServletRequest request) {
+        HttpSession session = request.getSession(true);
+        Object userDataSessionAttribute = session.getAttribute("USER_DATA");
+        if (userDataSessionAttribute != null) {
+            Map<?, ?> userData = (Map<?, ?>) userDataSessionAttribute;
+            userData.keySet().forEach(key -> model.addAttribute((String) key, userData.get(key)));
+            session.removeAttribute("USER_DATA");
         }
     }
 

@@ -254,10 +254,6 @@ public class FormsController implements ColorThemeChangeListener {
                 dockable.onClosed();
                 openedForms.remove(dockable);
                 
-                if (openedForms.isEmpty()) {
-                    ((DockableMainFrame) MainFrame.instance).setLogsDockableVisible(true);
-                }
-                
                 //return focus to previous page (by default in maximized mode after closing page focus returns to the last page from the list)
                 if(prevFocusPage != null) {
                     ExtendedMode mode = prevFocusPage.getExtendedMode();

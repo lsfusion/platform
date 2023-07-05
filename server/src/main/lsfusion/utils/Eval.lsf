@@ -108,8 +108,9 @@ CLASS ScriptType {
     java '{eval.script.java}'
 }
 
-dataScriptType = DATA ScriptType();
-selectedExecutionScriptType (ScriptType st) = st == dataScriptType();
+dataScriptType = DATA ScriptType(Script);
+dataScriptType(Script s) <- ScriptType.action WHEN SET(s IS Script);
+selectedExecutionScriptType (ScriptType st, Script s) = st == dataScriptType(s);
 executionScriptTypeCaption (ScriptType st) = staticCaption(st);
 executionScriptTypeName (ScriptType st) = getWord(staticName(st),'.',2);
 
@@ -118,38 +119,37 @@ executeScript '{eval.execution}' (Script s) {
     preRunScript(s);
 
     NEWSESSION TRY { 
-        IF executionScriptTypeName(dataScriptType()) == 'script' OR executionScriptTypeName(dataScriptType()) == 'action' THEN evalString() <- text(s);
-        IF executionScriptTypeName(dataScriptType()) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}';
-        IF executionScriptTypeName(dataScriptType()) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
+        IF executionScriptTypeName(dataScriptType(s)) == 'script' OR executionScriptTypeName(dataScriptType(s)) == 'action' THEN evalString() <- text(s);
+        IF executionScriptTypeName(dataScriptType(s)) == 'form' THEN evalString() <- CONCAT ' ', 'FORM form', text(s), '\n;\nrun() \{ SHOW form NOWAIT; \}';
+        IF executionScriptTypeName(dataScriptType(s)) == 'java' THEN evalString() <- CONCAT ' ', 'run()  INTERNAL  <\{ ', text(s), ' \}>;';
          
-        IF executionScriptTypeName(dataScriptType()) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
+        IF executionScriptTypeName(dataScriptType(s)) == 'action' THEN EVAL ACTION evalString(); ELSE EVAL evalString(); 
     } CATCH {
         SHOW exception OBJECTS message = messageCaughtException(), javaStack = javaStackTraceCaughtException(), lsfStack = lsfStackTraceCaughtException() WAIT;
     }
 } IMAGE 'play.png';
 
 scriptExecution '{eval.script.script.execution}' (Script s)  {
-    dataScriptType() <- ScriptType.script;
+    dataScriptType(s) <- ScriptType.script;
     executeScript(s);    
 }
 
 actionBodyExecution '{eval.script.action.body.execution}' (Script s)  {
-    dataScriptType() <- ScriptType.action; 
+    dataScriptType(s) <- ScriptType.action; 
     executeScript(s);    
 }
 
 formExecution '{eval.script.form.execution}' (Script s)  {
-    dataScriptType() <- ScriptType.form;   
+    dataScriptType(s) <- ScriptType.form;   
     executeScript(s);    
 }
 
 javaActionBodyExecution '{eval.script.java.action.body.execution}' (Script s)  {
-    dataScriptType() <- ScriptType.java; 
+    dataScriptType(s) <- ScriptType.java; 
     executeScript(s);    
 }
 
-json '{eval.script.text.script}' (Script s) = [FORMULA TEXT 'json_build_object(\'text\',$1,\'type\',$2)'] 
-            ((OVERRIDE text(s), ''), (OVERRIDE executionScriptTypeName(dataScriptType()), ''));
+json(Script s) = JSON FROM text = (OVERRIDE text(s), ''), type = (OVERRIDE executionScriptTypeName(dataScriptType(s)), '');
 
 changeScript(Script sc) {
     INPUT s = TEXT DO {
@@ -163,18 +163,13 @@ changeScript(Script sc) {
 onWebClientStarted() + { INTERNAL CLIENT 'interpreter.js'; }
 
 FORM interpreter '{eval.script.form.interpreter}'
-    OBJECTS st = ScriptType CUSTOM 'radioButtonGroup'
-    PROPERTIES(st) SHOWIF isWeb() name=executionScriptTypeCaption, selected=selectedExecutionScriptType, executionScriptTypeName
-    ORDERS executionScriptTypeName(st)
-    EVENTS 
-        ON INIT {
-            IF NOT dataScriptType() THEN dataScriptType() <- ScriptType.action;
-            SEEK interpreter.st = dataScriptType();
-        }
-    
     OBJECTS s = Script PANEL
     PROPERTIES name(s), json(s) CUSTOM 'interpreter' SHOWIF isWeb() ON CHANGE changeScript(s), text(s) SHOWIF NOT isWeb()
-    
+
+    OBJECTS st = ScriptType CUSTOM 'radioButtonGroup'
+    PROPERTIES SHOWIF isWeb() name=executionScriptTypeCaption(st), selected=selectedExecutionScriptType(st, s), executionScriptTypeName(st)
+    ORDERS executionScriptTypeName(st)
+
     PROPERTIES(s) SHOWIF NOT isWeb() scriptExecution, actionBodyExecution, formExecution, javaActionBodyExecution
     PROPERTIES(s) '' = executeScript SHOWIF isWeb()
                  
@@ -183,14 +178,6 @@ FORM interpreter '{eval.script.form.interpreter}'
     PROPERTIES(r) numeric1, numeric2, numeric3, numeric4, numeric5, date1, date2, date3
     PROPERTIES(r) NEW, DELETE GRID
 ;
-
-//option.js works like a checkboxes and we want radio-button behaviour.
-//When click again to script-type in the WEB, we want the selection to remain as it is.
-previousScriptType() = DATA ScriptType();
-WHEN LOCAL CHANGED(dataScriptType()) DO {
-    IF NOT dataScriptType() THEN dataScriptType() <- previousScriptType();
-    previousScriptType() <- dataScriptType();
-}
 
 copyScript '{eval.script.copy.script}' (Script sf)  { 
     NEW s = Script {

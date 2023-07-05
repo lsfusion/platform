@@ -185,7 +185,7 @@ public class LinearContainerView extends LayoutContainerView {
         int containerIndex = containerPosition.second;
 
         if(alignCaptions)
-            if(childrenCaptions.get(index) != null)
+            if(children.get(index).isAlignCaption() && childrenCaptions.get(index) != null)
                 container.removeSized(containerIndex);
 
         container.removeSized(containerIndex);

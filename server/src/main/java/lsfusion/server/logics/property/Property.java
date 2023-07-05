@@ -78,6 +78,8 @@ import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.DataClass;
 import lsfusion.server.logics.classes.data.OrderClass;
 import lsfusion.server.logics.classes.data.StringClass;
+import lsfusion.server.logics.classes.data.TextClass;
+import lsfusion.server.logics.classes.data.file.JSONClass;
 import lsfusion.server.logics.classes.struct.ConcatenateValueClass;
 import lsfusion.server.logics.classes.user.BaseClass;
 import lsfusion.server.logics.classes.user.CustomClass;
@@ -1669,11 +1671,17 @@ public abstract class Property<T extends PropertyInterface> extends ActionOrProp
         if(viewProperty == null)
             return true;
 
+        // optimization of using the Supplier, since isValueFullAndUnique can be rather heavy
+        Property<?> property = viewProperty.get();
+
+        //to avoid edit on dblclick
+        ValueClass viewValueClass = property.getValueClass(ClassType.editValuePolicy);
+        if(viewValueClass instanceof TextClass || viewValueClass instanceof JSONClass)
+            return false;
+
         if(!Settings.get().isOnlyUniqueObjectEvents())
             return true;
 
-        // optimization of using the Supplier, since isValueFullAndUnique can be rather heavy
-        Property<?> property = viewProperty.get();
         return property.isValueUnique(MapFact.EMPTY(), true); // optimistic because otherwise all properties will become readonly
     }
 

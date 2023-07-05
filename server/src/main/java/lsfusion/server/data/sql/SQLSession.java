@@ -3049,7 +3049,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
     // so we have to guarantee that statement canceling is done for the specific thread
     private void runSyncActiveThread(Thread thread, SQLRunnable runnable) throws SQLException, SQLHandledException {
         synchronized (activeThreadLock) {
-            if(activeThreads.single() == thread)
+            if (activeThreads.contains(thread))
                 runnable.run();
         }
     }
@@ -3487,7 +3487,7 @@ public class SQLSession extends MutableClosedObject<OperationOwner> implements A
         public void ensureConcType(ConcatenateType concType) {
             throw new UnsupportedOperationException();
         }
-        public void ensureSafeCast(Pair<Type, Boolean> type) {
+        public void ensureSafeCast(Pair<Type, Integer> type) {
             throw new UnsupportedOperationException();
         }
         public void ensureGroupAggOrder(Pair<GroupType, ImList<Type>> groupAggOrder) {

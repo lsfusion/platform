@@ -43,7 +43,9 @@ public class ClassExprWhere extends AbstractClassWhere<VariableSingleClassExpr, 
 
     public Type getKeyType(ParamExpr keyExpr) {
         if (wheres.length == 0) {
-            return ObjectType.instance;
+            if(keyExpr instanceof PullExpr)
+                return ObjectType.instance;
+            return null;
         }
         Type result = null;
         for(And<VariableSingleClassExpr> where : wheres) {

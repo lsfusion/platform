@@ -37,9 +37,7 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.*;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -466,6 +464,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             }
         }
 
+        boolean plainPaste = false;
         private void addListeners(String value) {
             //stop editing after item selection
             comboBox.setEditor(new AutoCompleteComboBoxEditor(new BasicComboBoxEditor() {
@@ -509,7 +508,10 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
             comboBoxEditorComponent.setDocument(new PlainDocument() {
                 @Override
                 public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
-                    str = modifyInsertString(asyncChange, str);
+                    if (!plainPaste) {
+                        str = modifyInsertString(asyncChange, str);
+                    }
+                    
                     super.insertString(offs, str, a);
                 }
             });
@@ -560,6 +562,11 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                         e.consume();
                     } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                         tableEditor.cancelCellEditing();
+                        e.consume();
+                    } else if (KeyStrokes.isPlainPasteEvent(e)) {
+                        plainPaste = true;
+                        comboBoxEditorComponent.paste(); // editor doesn't recognize ctrl+shift+V as paste event by default
+                        plainPaste = false;
                         e.consume();
                     } else {
                         Integer inputActionIndex = property.getInputActionIndex(e);
@@ -625,7 +632,7 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
                         }
                     }
                 }
-            } catch (UnsupportedFlavorException | IOException ignored) {}
+            } catch (Exception ignored) {}
         }
         return str;
     }

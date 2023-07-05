@@ -56,15 +56,6 @@ function interpreter() {
                 e.stopPropagation();
                 e.preventDefault();
             });
-        },
-        update: function (element, controller, value) {
-            let aceEditor = element.aceEditor;
-            let theme = aceEditor.getOption('theme');
-            let colorThemeName = controller.getColorThemeName();
-            if ((colorThemeName === 'LIGHT' && theme !== 'ace/theme/chrome') || (colorThemeName === 'DARK' && theme !== 'ace/theme/ambiance'))
-                aceEditor.setOption('theme', colorThemeName === 'LIGHT' ? 'ace/theme/chrome' : 'ace/theme/ambiance');
-
-            let parsedValue = JSON.parse(value);
 
             aceEditor.onBlur = function (e) {
                 //need setting $isFocused to false because we "override" onBlur, but ace used this variable in inner events handlers
@@ -72,14 +63,25 @@ function interpreter() {
                 //disable text caret cursor blinking
                 aceEditor.renderer.hideCursor();
 
-                if (e.relatedTarget == null || !e.relatedTarget.contains(aceEditor.container))
-                    controller.changeValue(JSON.stringify({text : aceEditor.getValue()}));
+                let editorValue = aceEditor.getValue();
+                if ((e.relatedTarget == null || !e.relatedTarget.contains(aceEditor.container)) && element.currentValue !== editorValue)
+                    element.controller.changeValue(JSON.stringify({"text": editorValue}));
             }
+        },
+        update: function (element, controller, value) {
+            if (element.controller == null)
+                element.controller = controller;
 
-            if (parsedValue != null) {
+            let aceEditor = element.aceEditor;
+            let theme = aceEditor.getOption('theme');
+            let colorThemeName = controller.getColorThemeName();
+            if ((colorThemeName === 'LIGHT' && theme !== 'ace/theme/chrome') || (colorThemeName === 'DARK' && theme !== 'ace/theme/ambiance'))
+                aceEditor.setOption('theme', colorThemeName === 'LIGHT' ? 'ace/theme/chrome' : 'ace/theme/ambiance');
+
+            if (value != null) {
                 //updating "lsfWorkerType" option will only work after a mode change
-                if (parsedValue.type !== 'java') {
-                    aceEditor.session.setOption('lsfWorkerType', parsedValue.type);
+                if (value.type !== 'java') {
+                    aceEditor.session.setOption('lsfWorkerType', value.type);
 
                     aceEditor.session.setMode({
                         path: 'ace/mode/lsf'
@@ -90,8 +92,11 @@ function interpreter() {
                     });
                 }
 
-                if (parsedValue.text !== aceEditor.getValue())
-                    aceEditor.setValue(parsedValue.text);
+                let editorValue = value.text;
+                if (editorValue !== aceEditor.getValue())
+                    aceEditor.setValue(editorValue);
+
+                element.currentValue = editorValue;
             }
         }
     }

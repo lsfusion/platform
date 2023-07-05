@@ -103,8 +103,14 @@ public class ExecutionStackAspect {
     }
 
     public static Thread getLastThread(Set<Thread> threads) {
+        if (threads == null) return null;
         List<ThreadStackDump> list = getSortedThreadStacks(threads, true);
-        return list.isEmpty() ? null : list.get(list.size() - 1).thread;
+        for (int i = list.size() - 1; i >= 0; i--) {
+            Thread.State state = list.get(i).thread.getState();
+            if (state.equals(Thread.State.RUNNABLE) || state.equals(Thread.State.TIMED_WAITING))
+                return list.get(i).thread;
+        }
+        return null;
     }
 
     public static ProgressStackItem pushProgressStackItem(String message, Integer progress, Integer total) {

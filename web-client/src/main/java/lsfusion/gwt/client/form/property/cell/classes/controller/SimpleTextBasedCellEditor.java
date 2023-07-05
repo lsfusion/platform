@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -188,15 +187,17 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
         return element.getValue();
     }
 
+    boolean plainPaste = false;
     private void addPasteListener(InputElement inputElement) {
         GwtClientUtils.setEventListener(inputElement, ONPASTE, event -> {
-            if (editContext != null && event.getTypeInt() == ONPASTE) {
+            if (editContext != null && event.getTypeInt() == ONPASTE && !plainPaste) {
                 String cbText = CopyPasteUtils.getEventClipboardData(event);
                 String modifiedPastedText = (String) editContext.modifyPastedString(cbText);
                 if (modifiedPastedText != null && !modifiedPastedText.equals(cbText)) { // to paste via default mechanism otherwise
                     pasteClipboardText(event, modifiedPastedText);
                 }
             }
+            plainPaste = false;
         });
     }
 
@@ -237,6 +238,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
                 isCorrect = false; // this thing is needed to disable inputting incorrect symbols
 
             handler.consume(isCorrect, false);
+        } else if (GKeyStroke.isPlainPasteEvent(event)) {
+            plainPaste = true;
         } else {
             Integer inputActionIndex = property.getInputActionIndex(event, true);
             if(inputActionIndex != null) {

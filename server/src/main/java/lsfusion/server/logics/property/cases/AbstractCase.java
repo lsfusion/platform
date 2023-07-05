@@ -110,7 +110,7 @@ public abstract class AbstractCase<P extends PropertyInterface, W extends Proper
                     return -Integer.compare(list.indexOf(o1), list.indexOf(o2));
                 }
             }
-            return Integer.compare(list.indexOf(o2), list.indexOf(o1));
+            return 0;
         };
 
         ImOrderSet<A> orderSet = list.toOrderSet(); // может повторяться implementation

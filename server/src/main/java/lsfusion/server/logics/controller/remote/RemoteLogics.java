@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static lsfusion.server.base.controller.thread.ThreadLocalContext.localize;
 
@@ -185,6 +186,11 @@ public class RemoteLogics<T extends BusinessLogics> extends ContextAwarePendingR
     @Override
     protected boolean isEnabledUnreferenced() { // иначе когда отключаются все клиенты логика закрывается
         return false;
+    }
+
+    @Override
+    protected Set<Thread> getAllContextThreads() {
+        return null;
     }
 
     @Override

@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.ClientMessages;
@@ -14,7 +13,10 @@ import lsfusion.gwt.client.GForm;
 import lsfusion.gwt.client.RemoteDispatchAsync;
 import lsfusion.gwt.client.action.GFormAction;
 import lsfusion.gwt.client.action.GHideFormAction;
-import lsfusion.gwt.client.base.*;
+import lsfusion.gwt.client.base.BaseImage;
+import lsfusion.gwt.client.base.GwtClientUtils;
+import lsfusion.gwt.client.base.Pair;
+import lsfusion.gwt.client.base.StaticImage;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.controller.dispatch.GwtActionDispatcher;
 import lsfusion.gwt.client.controller.remote.action.RequestCountingAsyncCallback;
@@ -555,6 +557,10 @@ public abstract class FormsController {
         formFocusOrder.remove(index);
 
         updateFormsNotEmptyClassName();
+        
+        if (forms.isEmpty()) {
+            MainFrame.openNavigatorMenu();
+        }
 
         ensureTabSelected();
     }
