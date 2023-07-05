@@ -42,6 +42,8 @@
     <set-configuration-property name="compiler.emulatedStack.recordLineNumbers" value="true"/>
     <set-configuration-property name="compiler.emulatedStack.recordFileNames" value="true"/>
 
+    <set-property name="jre.checks.checkLevel" value="MINIMAL" />
+
     <!--Super Dev Mode doesn't like <script> tags. We have some in Uploader. Adding this just to ignore errors.-->
     <set-configuration-property name='xsiframe.failIfScriptTag' value='FALSE'/>
 
