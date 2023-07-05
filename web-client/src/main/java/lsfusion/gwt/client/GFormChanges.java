@@ -140,6 +140,12 @@ public class GFormChanges {
                 return form.findComponentByID(readerId).elementClassReader;
             case GPropertyReadType.CUSTOM_OPTIONS:
                 return form.getGroupObject(readerId).customOptionsReader;
+            case GPropertyReadType.COMMENT:
+                return form.getProperty(readerId).commentReader;
+            case GPropertyReadType.COMMENTELEMENTCLASS:
+                return form.getProperty(readerId).commentElementClassReader;
+            case GPropertyReadType.PLACEHOLDER:
+                return form.getProperty(readerId).placeholderReader;
             default:
                 return null;
         }
@@ -173,5 +179,8 @@ public class GFormChanges {
         public final static byte CELL_VALUEELEMENTCLASS = 16;
         public final static byte COMPONENT_ELEMENTCLASS = 17;
         public final static byte CAPTIONELEMENTCLASS = 18;
+        public final static byte COMMENT = 19;
+        public final static byte COMMENTELEMENTCLASS = 20;
+        public final static byte PLACEHOLDER = 21;
     }
 }

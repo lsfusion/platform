@@ -469,6 +469,18 @@ public class GGridController extends GAbstractTableController {
     }
 
     @Override
+    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
+    public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
+    public void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+    }
+
+    @Override
     public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
         table.updateLastValues(formController.getProperty(reader.propertyID), reader.index, values);
     }

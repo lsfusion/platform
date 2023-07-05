@@ -63,6 +63,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ImageReader imageReader = new ImageReader();
     public boolean hasDynamicImage;
 
+    public CommentReader commentReader = new CommentReader();
+    public CommentElementClassReader commentElementClassReader = new CommentElementClassReader();
+    public PlaceholderReader placeholderReader = new PlaceholderReader();
+
     public boolean autoSize;
     public boolean boxed;
 
@@ -129,6 +133,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public FlexAlignment valueAlignment;
 
     public String comment;
+    public String commentElementClass;
     public boolean panelCommentVertical;
     public Boolean panelCommentFirst;
     public FlexAlignment panelCommentAlignment;
@@ -606,6 +611,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         valueAlignment = pool.readObject(inStream);
 
         comment = pool.readString(inStream);
+        commentElementClass = pool.readString(inStream);
         panelCommentVertical = inStream.readBoolean();
         panelCommentFirst = inStream.readBoolean();
         panelCommentAlignment = pool.readObject(inStream);
@@ -1063,6 +1069,57 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public byte getType() {
             return PropertyReadType.IMAGE;
+        }
+    }
+
+    public class CommentReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.COMMENT;
+        }
+    }
+
+    public class CommentElementClassReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.COMMENTELEMENTCLASS;
+        }
+    }
+
+    public class PlaceholderReader implements ClientPropertyReader {
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, boolean updateKeys, TableController controller) {
+        }
+
+        public int getID() {
+            return ClientPropertyDraw.this.getID();
+        }
+
+        public byte getType() {
+            return PropertyReadType.PLACEHOLDER;
         }
     }
 }

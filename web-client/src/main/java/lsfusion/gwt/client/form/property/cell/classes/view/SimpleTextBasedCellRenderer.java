@@ -150,6 +150,7 @@ public abstract class SimpleTextBasedCellRenderer extends CellRenderer {
         if(inputElement != null)
             setInputElement(element, inputElement);
 
+        //works only for static placeholder
         if(property.placeholder != null) {
             (inputElement != null ? inputElement : element).setAttribute("placeholder", property.placeholder);
         }

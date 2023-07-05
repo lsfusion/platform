@@ -173,6 +173,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public final PropertyObjectInstance<?> propertyBackground;
     public final PropertyObjectInstance<?> propertyForeground;
     public final PropertyObjectInstance<?> propertyImage;
+    public final PropertyObjectInstance<?> propertyComment;
+    public final PropertyObjectInstance<?> propertyCommentElementClass;
+    public final PropertyObjectInstance<?> propertyPlaceholder;
     public final ImList<PropertyObjectInstance<?>> propertiesAggrLast;
 
     public ExtraReaderInstance captionReader;
@@ -184,6 +187,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public ExtraReaderInstance backgroundReader;
     public ExtraReaderInstance foregroundReader;
     public ExtraReaderInstance imageReader;
+    public ExtraReaderInstance commentReader;
+    public ExtraReaderInstance commentElementClassReader;
+    public ExtraReaderInstance placeholderReader;
     public final ImOrderSet<LastReaderInstance> aggrLastReaders;
 
     public PropertyDrawInstance(PropertyDrawEntity<P> entity,
@@ -208,6 +214,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         propertyBackground = propertyExtras.get(PropertyDrawExtraType.BACKGROUND);
         propertyForeground = propertyExtras.get(PropertyDrawExtraType.FOREGROUND);
         propertyImage = propertyExtras.get(PropertyDrawExtraType.IMAGE);
+        propertyComment = propertyExtras.get(PropertyDrawExtraType.COMMENT);
+        propertyCommentElementClass = propertyExtras.get(PropertyDrawExtraType.COMMENTELEMENTCLASS);
+        propertyPlaceholder = propertyExtras.get(PropertyDrawExtraType.PLACEHOLDER);
         this.propertiesAggrLast = propertiesAggrLast;
 
         captionReader = new ExtraReaderInstance(PropertyDrawExtraType.CAPTION, propertyCaption);
@@ -219,6 +228,9 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         backgroundReader = new ExtraReaderInstance(PropertyDrawExtraType.BACKGROUND, propertyBackground);
         foregroundReader = new ExtraReaderInstance(PropertyDrawExtraType.FOREGROUND, propertyForeground);
         imageReader = new ExtraReaderInstance(PropertyDrawExtraType.IMAGE, propertyImage);
+        commentReader = new ExtraReaderInstance(PropertyDrawExtraType.COMMENT, propertyComment);
+        commentElementClassReader = new ExtraReaderInstance(PropertyDrawExtraType.COMMENTELEMENTCLASS, propertyCommentElementClass);
+        placeholderReader = new ExtraReaderInstance(PropertyDrawExtraType.PLACEHOLDER, propertyPlaceholder);
         aggrLastReaders = SetFact.toOrderExclSet(propertiesAggrLast.size(), LastReaderInstance::new);
     }
 

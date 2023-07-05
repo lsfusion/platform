@@ -327,6 +327,10 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GForegroundReader foregroundReader;
     public GImageReader imageReader;
 
+    public GCommentReader commentReader;
+    public GCommentElementClassReader commentElementClassReader;
+    public GPlaceholderReader placeholderReader;
+
     // for pivoting
     public String formula;
     public ArrayList<GPropertyDraw> formulaOperands;
@@ -357,6 +361,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFlexAlignment valueAlignment;
 
     public String comment;
+    public String commentElementClass;
     public boolean panelCommentVertical;
     public Boolean panelCommentFirst;
     public GFlexAlignment panelCommentAlignment;

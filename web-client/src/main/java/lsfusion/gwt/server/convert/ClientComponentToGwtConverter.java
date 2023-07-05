@@ -347,6 +347,9 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.foregroundReader = convertForegroundReader(clientPropertyDraw.foregroundReader);
         propertyDraw.imageReader = convertImageReader(clientPropertyDraw.imageReader);
         propertyDraw.hasDynamicImage = clientPropertyDraw.hasDynamicImage;
+        propertyDraw.commentReader = convertCommentReader(clientPropertyDraw.commentReader);
+        propertyDraw.commentElementClassReader = convertCommentElementClassReader(clientPropertyDraw.commentElementClassReader);
+        propertyDraw.placeholderReader = convertPlaceholderReader(clientPropertyDraw.placeholderReader);
 
         propertyDraw.formula = clientPropertyDraw.formula;
         if(clientPropertyDraw.formula != null) {
@@ -382,6 +385,7 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
         propertyDraw.valueAlignment = convertFlexAlignment(clientPropertyDraw.valueAlignment);
 
         propertyDraw.comment = clientPropertyDraw.comment;
+        propertyDraw.commentElementClass = clientPropertyDraw.commentElementClass;
         propertyDraw.panelCommentVertical = clientPropertyDraw.panelCommentVertical;
         propertyDraw.panelCommentFirst = clientPropertyDraw.panelCommentFirst;
         propertyDraw.panelCommentAlignment = convertFlexAlignment(clientPropertyDraw.panelCommentAlignment);
@@ -526,6 +530,18 @@ public class ClientComponentToGwtConverter extends CachedObjectConverter {
 
     public GCustomOptionsReader convertCustomOptionsReader(ClientGroupObject.CustomOptionsReader reader) {
         return reader == null ? null : new GCustomOptionsReader(reader.getID());
+    }
+
+    public GCommentReader convertCommentReader(ClientPropertyDraw.CommentReader reader) {
+        return reader == null ? null : new GCommentReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GCommentElementClassReader convertCommentElementClassReader(ClientPropertyDraw.CommentElementClassReader reader) {
+        return reader == null ? null : new GCommentElementClassReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
+    }
+
+    public GPlaceholderReader convertPlaceholderReader(ClientPropertyDraw.PlaceholderReader reader) {
+        return reader == null ? null : new GPlaceholderReader(reader.getID(), reader.getGroupObject() != null ? reader.getGroupObject().ID : -1);
     }
 
     @Cached

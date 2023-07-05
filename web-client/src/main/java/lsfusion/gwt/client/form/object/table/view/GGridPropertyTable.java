@@ -107,6 +107,16 @@ public abstract class GGridPropertyTable<T extends GridDataRecord> extends GProp
         return property.appImage;
     }
 
+    public static String getDynamicComment(PValue commentObject) {
+        String comment = PValue.getStringValue(commentObject);
+        return comment != null ? comment.trim() : null;
+    }
+
+    /*public static String getDynamicPlaceholder(PValue placeholderObject) {
+        String placeholder = PValue.getStringValue(placeholderObject);
+        return placeholder != null ? placeholder.trim() : null;
+    }*/
+
     protected GGridPropertyTableHeader getGridHeader(int i) {
         return (GGridPropertyTableHeader) getHeader(i);
     }
