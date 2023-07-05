@@ -380,8 +380,8 @@ country '{authentication.country.user}' (CustomUser user) = IF useClientLocale(u
                                                                 THEN clientCountry(user)
                                                                 ELSE IF userLanguage(user) THEN userCountry(user) ELSE IF defaultUserLanguage() THEN defaultUserCountry() ELSE serverCountry();
 
-dateFormat '{authentication.date.format.user}' (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat();
-timeFormat '{authentication.time.format.user}' (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
+dateFormat (CustomUser user) = OVERRIDE (clientDateFormat(user) IF useClientDateTimeFormat(user)), userDateFormat(user), defaultUserDateFormat(), serverDateFormat();
+timeFormat (CustomUser user) = OVERRIDE (clientTimeFormat(user) IF useClientDateTimeFormat(user)), userTimeFormat(user), defaultUserTimeFormat(), serverTimeFormat();
 
 lsfParams(STRING s) += country(currentUser()) IF s = 'googleMapAutocompleteCountry';
 lsfParams(STRING s) += language(currentUser()) IF s = 'googleGeocodingLanguage';

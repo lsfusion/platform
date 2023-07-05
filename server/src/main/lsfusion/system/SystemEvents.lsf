@@ -290,6 +290,17 @@ userLoginConnection '{system.events.user.login.connection.session}' = userLogin(
 
 @defineLog (Session, '{system.events.define.log.of.changes}', log, date);
 
+@defineLog (SessionDetail, '{system.events.define.log.of.changes.detail}', log);
+clearApplicationLog () + { 
+	NEWSESSION {
+        APPLY {
+            IF countDaysClearSessionDetail() THEN {
+                changes(Session d) <- NULL WHERE date(d) <= subtract(currentDate(), countDaysClearSessionDetail());
+            }
+        }
+    }
+}       
+
 TABLE pingTable(Computer, DATETIME, DATETIME);
 pingFromTo '{system.events.ping.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
 minTotalMemoryFromTo '{system.events.min.total.memory.from.to}' = DATA INTEGER (Computer, DATETIME, DATETIME);
