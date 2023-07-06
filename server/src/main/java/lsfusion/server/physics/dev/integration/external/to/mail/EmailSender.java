@@ -37,6 +37,8 @@ public class EmailSender {
     String password;
     String smtpHost;
     String smtpPort;
+
+    String protocol;
     String fromAddress;
     Map<String, Message.RecipientType> emails = new HashMap<>();
 
@@ -84,6 +86,8 @@ public class EmailSender {
         this.smtpHost = smtpHostAccount;
         this.smtpPort = smtpPortAccount;
         this.fromAddress = fromAddressAccount;
+
+        this.protocol = "SSL".equals(encryptedConnectionType) ? "smtps" : "smtp";
     }
 
     private Session getSession() {
@@ -187,7 +191,7 @@ public class EmailSender {
                 send = true;
                 count++;
                 try {
-                     sendMessage(message, smtpHost, smtpPort, userName, password);
+                     sendMessage(message, smtpHost, smtpPort, protocol, userName, password);
                     logger.info(localize("{mail.successful.mail.sending}") + " : " + messageInfo);
                 } catch (MessagingException e) {
                     if (!syncType) {
@@ -219,10 +223,10 @@ public class EmailSender {
         }
     }
 
-    private void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String userName, String password) throws MessagingException {
+    private void sendMessage(SMTPMessage message, String smtpHost, String smtpPort, String protocol, String userName, String password) throws MessagingException {
         trustAllCerts();
         Integer port = parsePort(smtpPort);
-        Transport transport = message.getSession().getTransport(port != null && port.equals(25) ? "smtp" : "smtps");
+        Transport transport = message.getSession().getTransport(protocol);
         if(port == null)
             transport.connect(smtpHost, userName, password);
         else
@@ -293,7 +297,7 @@ public class EmailSender {
 
         boolean send = false;
         try {
-            sendMessage(message, smtpHost, smtpPort, userName, password);
+            sendMessage(message, smtpHost, smtpPort, protocol, userName, password);
             send = true;
         } catch (MessagingException e) {
             throw new RuntimeException(localize("{mail.error.send.mail}") + " " + messageInfo, e);
