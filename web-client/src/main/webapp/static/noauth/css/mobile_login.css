@@ -1,6 +1,5 @@
 body {
     background-color: #f8f9fa;
-    font-size: 2em;
 }
 
 html, body {
@@ -9,10 +8,6 @@ html, body {
 
 body, input {
     font-family: 'Segoe UI', 'Open Sans', Arial Unicode MS, Arial, sans-serif;
-}
-
-input, .title {
-    font-size: 1.4em;
 }
 
 a {
@@ -178,4 +173,12 @@ details summary::-webkit-details-marker {
 .main-page-link {
     align-self: center;
     margin: 1em ;
+}
+
+.appNotAvailableReconnect button {
+    background: none;
+    border: none;
+    color: #2069b4;
+    text-decoration: underline;
+    font-size: 1em;
 }
