@@ -109,6 +109,13 @@ public class PropertyDrawView extends BaseComponentView {
 
     public FlexAlignment valueAlignment;
 
+    public String comment;
+    //public boolean panelCommentVertical;
+    public boolean panelCommentFirst;
+    public FlexAlignment panelCommentAlignment;
+
+    public String placeholder;
+
     public LocalizedString caption;
     public Supplier<AppServerImage> image;
     public boolean clearText;
@@ -442,6 +449,13 @@ public class PropertyDrawView extends BaseComponentView {
         outStream.writeBoolean(panelColumnVertical);
         
         pool.writeObject(outStream, getValueAlignment());
+
+        pool.writeString(outStream, comment);
+        //outStream.writeBoolean(panelCommentVertical);
+        outStream.writeBoolean(panelCommentFirst);
+        pool.writeObject(outStream, panelCommentAlignment);
+
+        pool.writeString(outStream, placeholder);
 
         pool.writeObject(outStream, changeOnSingleClick);
         outStream.writeBoolean(hide);

@@ -23,6 +23,8 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
     private Widget label;
 
+    private Widget comment;
+
     public PropertyPanelRenderer(final GFormController form, ActionOrPropertyValueController controller, GPropertyDraw property, GGroupObjectValue columnKey, Result<CaptionWidget> captionContainer) {
         super(form, controller, property, columnKey, property.isAction()); // assert if is Action that property has alignCaption() true and captionContainer != null
 
@@ -84,7 +86,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         GFlexAlignment panelCaptionAlignment = property.getPanelCaptionAlignment(); // vertical alignment
         GFlexAlignment panelValueAlignment = property.getPanelValueAlignment(); // vertical alignment
+        GFlexAlignment panelCommentAlignment = property.getPanelCommentAlignment(); // vertical alignment
         boolean captionLast = property.isPanelCaptionLast();
+        boolean commentFirst = property.isPanelCommentFirst();
         SizedWidget sizedLabel = new SizedWidget(label, property.getCaptionWidth(), property.getCaptionHeight());
 
         if(property.isAlignCaption() && captionContainer != null) { // align caption
@@ -99,6 +103,9 @@ public class PropertyPanelRenderer extends PanelRenderer {
         SizedFlexPanel panel = new SizedFlexPanel(property.panelCaptionVertical);
         panel.addStyleName("panel-container");
 
+        if(commentFirst)
+            addCommentLabel(panel, panelCommentAlignment);
+
         if (!captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
@@ -108,10 +115,23 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
+        if(!commentFirst)
+            addCommentLabel(panel, panelCommentAlignment);
+
         // mostly it is needed to handle margins / paddings / layouting but we do it ourselves
 //        cellRenderer.renderPanelContainer(panel);
 
         return new SizedWidget(panel);
+    }
+
+    private void addCommentLabel(SizedFlexPanel panel, GFlexAlignment panelCommentAlignment) {
+        if(property.comment != null) {
+            comment = GFormLayout.createLabelCaptionWidget();
+            BaseImage.initImageText(comment, property.comment, property.appImage, property./*panelCommentVertical*/panelCaptionVertical);
+            comment.addStyleName("panel-label");
+            SizedWidget sizedComment = new SizedWidget(comment, property.getCaptionWidth(), property.getCaptionHeight());
+            sizedComment.add(panel, panelCommentAlignment);
+        }
     }
 
     @Override

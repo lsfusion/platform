@@ -46,6 +46,26 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.panelCaptionAlignment = panelCaptionAlignment;
     }
 
+    public void setComment(String comment) {
+        target.comment = comment;
+    }
+
+    /*public void setPanelCommentVertical(boolean panelCommentVertical) {
+        target.panelCommentVertical = panelCommentVertical;
+    }*/
+
+    public void setPanelCommentFirst(boolean panelCommentFirst) {
+        target.panelCommentFirst = panelCommentFirst;
+    }
+
+    public void setPanelCommentAlignment(FlexAlignment panelCommentAlignment) {
+        target.panelCommentAlignment = panelCommentAlignment;
+    }
+
+    public void setPlaceholder(String placeholder) {
+        target.placeholder = placeholder;
+    }
+
     //for backward compatibility
     public void setEditOnSingleClick(boolean editOnSingleClick) {
         target.changeOnSingleClick = editOnSingleClick;

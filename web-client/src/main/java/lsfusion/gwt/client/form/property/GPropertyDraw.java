@@ -356,6 +356,13 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     
     public GFlexAlignment valueAlignment;
 
+    public String comment;
+    //public boolean panelCommentVertical;
+    public Boolean panelCommentFirst;
+    public GFlexAlignment panelCommentAlignment;
+
+    public String placeholder;
+
     public Boolean changeOnSingleClick;
 
     public boolean hide;
@@ -684,12 +691,20 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
         return panelCaptionLast != null ? panelCaptionLast : (isBoolean() && !panelCaptionVertical);
     }
 
+    public boolean isPanelCommentFirst() {
+        return panelCommentFirst != null ? panelCommentFirst : (isBoolean() && !/*panelCommentVertical*/panelCaptionVertical);
+    }
+
     public GFlexAlignment getPanelCaptionAlignment() {
         return (panelCaptionAlignment != null && panelCaptionAlignment != GFlexAlignment.STRETCH) ? panelCaptionAlignment : GFlexAlignment.CENTER;
     }
 
     public GFlexAlignment getPanelValueAlignment() {
         return baseType instanceof GLogicalType && isTagInput() ? GFlexAlignment.CENTER : GFlexAlignment.STRETCH; // we don't want to stretch input, since it's usually has fixed size
+    }
+
+    public GFlexAlignment getPanelCommentAlignment() {
+        return (panelCommentAlignment != null && panelCommentAlignment != GFlexAlignment.STRETCH) ? panelCommentAlignment : GFlexAlignment.CENTER;
     }
 
     public GFlexAlignment getAlignment() {
