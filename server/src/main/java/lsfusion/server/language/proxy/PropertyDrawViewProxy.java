@@ -50,9 +50,9 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
         target.comment = comment;
     }
 
-    /*public void setPanelCommentVertical(boolean panelCommentVertical) {
+    public void setPanelCommentVertical(boolean panelCommentVertical) {
         target.panelCommentVertical = panelCommentVertical;
-    }*/
+    }
 
     public void setPanelCommentFirst(boolean panelCommentFirst) {
         target.panelCommentFirst = panelCommentFirst;

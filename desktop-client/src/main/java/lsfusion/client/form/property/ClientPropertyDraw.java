@@ -129,7 +129,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public FlexAlignment valueAlignment;
 
     public String comment;
-    //public boolean panelCommentVertical;
+    public boolean panelCommentVertical;
     public Boolean panelCommentFirst;
     public FlexAlignment panelCommentAlignment;
 
@@ -448,7 +448,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public boolean isPanelCommentFirst() {
-        return panelCommentFirst != null ? panelCommentFirst : (baseType instanceof ClientLogicalClass && !/*panelCommentVertical*/panelCaptionVertical);
+        return panelCommentFirst != null ? panelCommentFirst : (baseType instanceof ClientLogicalClass && !panelCommentVertical);
     }
 
     public FlexAlignment getPanelCommentAlignment() {
@@ -545,7 +545,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeObject(outStream, valueAlignment);
 
         pool.writeString(outStream, comment);
-        //outStream.writeBoolean(panelCommentVertical);
+        outStream.writeBoolean(panelCommentVertical);
         pool.writeObject(outStream, panelCommentFirst);
         pool.writeObject(outStream, panelCommentAlignment);
 
@@ -606,7 +606,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         valueAlignment = pool.readObject(inStream);
 
         comment = pool.readString(inStream);
-        //panelCommentVertical = inStream.readBoolean();
+        panelCommentVertical = inStream.readBoolean();
         panelCommentFirst = inStream.readBoolean();
         panelCommentAlignment = pool.readObject(inStream);
 

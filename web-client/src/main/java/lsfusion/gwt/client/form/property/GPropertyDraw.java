@@ -357,7 +357,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     public GFlexAlignment valueAlignment;
 
     public String comment;
-    //public boolean panelCommentVertical;
+    public boolean panelCommentVertical;
     public Boolean panelCommentFirst;
     public GFlexAlignment panelCommentAlignment;
 
@@ -692,7 +692,7 @@ public class GPropertyDraw extends GComponent implements GPropertyReader, Serial
     }
 
     public boolean isPanelCommentFirst() {
-        return panelCommentFirst != null ? panelCommentFirst : (isBoolean() && !/*panelCommentVertical*/panelCaptionVertical);
+        return panelCommentFirst != null ? panelCommentFirst : (isBoolean() && !panelCommentVertical);
     }
 
     public GFlexAlignment getPanelCaptionAlignment() {

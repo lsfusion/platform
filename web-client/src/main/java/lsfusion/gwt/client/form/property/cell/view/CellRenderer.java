@@ -38,7 +38,7 @@ public abstract class CellRenderer {
     }
 
     protected String getTag() {
-        return property.tag;
+        return property.placeholder != null ? "input" : property.tag;
     }
 
     public Element createRenderElement() {
