@@ -15,7 +15,18 @@
     <properties>
         <assemble.mainClass>lsfusion.client.controller.MainController</assemble.mainClass>
         <assemble.finalName>lsfusion-client-${project.version}</assemble.finalName>
+        <sign.jar>false</sign.jar>
     </properties>
+    
+    <profiles>
+        <profile>
+            <!-- activated in settings.xml -->
+            <id>sign-desktop-jar</id>
+            <properties>
+                <sign.jar>true</sign.jar>
+            </properties>
+        </profile>
+    </profiles>
     
     <build>
         <plugins>
@@ -24,13 +35,13 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>ant-sign-pack</id>
+                        <id>ant-sign</id>
                         <phase>package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <target if="${sign.jar}">
                                 <echo message="Repacking jar ${assemble.jar}" />
                                 <exec executable="pack200">
                                     <arg value="--repack" />
@@ -39,8 +50,19 @@
                                     <arg value="${assemble.jar}" />
                                 </exec>
 
+                                <!-- settings.xml -->
                                 <signjar jar="${assemble.jar}" keystore="${keystore.file}" alias="${keystore.alias}" storepass="${keystore.pass}" />
-
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>ant-pack</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
                                 <echo message="Pack200-ing jar ${assemble.jar}" />
                                 <exec executable="pack200">
                                     <arg value="--effort=1" />
