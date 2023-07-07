@@ -269,6 +269,7 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
         ColorPreferences colorPreferences;
         List<String> preDefinedDateRangesNames = new ArrayList<>();
         boolean userFiltersManualApplyMode;
+        int maxRequestQueueSize;
 
         try (DataSession session = createSession()) {
             currentUserName = nvl((String) businessLogics.authenticationLM.currentUserName.read(session), "(без имени)");
@@ -302,13 +303,14 @@ public class RemoteNavigator extends RemoteConnection implements RemoteNavigator
             } else {
                 userFiltersManualApplyMode = Settings.get().isUserFiltersManualApplyMode();
             }
+            maxRequestQueueSize = Settings.get().getMaxRequestQueueSize();
         } catch (SQLException | SQLHandledException e) {
             throw Throwables.propagate(e);
         }
         return new ClientSettings(localePreferences, currentUserName, fontSize, useBusyDialog, Settings.get().getBusyDialogTimeout(),
                 useRequestTimeout, devMode, projectLSFDir, showDetailedInfo, forbidDuplicateForms, Settings.get().isShowNotDefinedStrings(),
                 Settings.get().isPivotOnlySelectedColumn(), Settings.get().getMatchSearchSeparator(),
-                colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator(), userFiltersManualApplyMode);
+                colorTheme, colorPreferences, preDefinedDateRangesNames.toArray(new String[0]), Settings.get().isUseTextAsFilterSeparator(), userFiltersManualApplyMode, maxRequestQueueSize);
     }
 
     private void fillRanges(String json, List<String> ranges) {

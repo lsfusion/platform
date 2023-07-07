@@ -3010,4 +3010,14 @@ public class Settings implements Cloneable {
     public void setUserFiltersManualApplyMode(boolean userFiltersManualApplyMode) {
         this.userFiltersManualApplyMode = userFiltersManualApplyMode;
     }
+
+    private int maxRequestQueueSize = 0;
+
+    public int getMaxRequestQueueSize() {
+        return maxRequestQueueSize;
+    }
+
+    public void setMaxRequestQueueSize(int maxRequestQueueSize) {
+        this.maxRequestQueueSize = maxRequestQueueSize;
+    }
 }

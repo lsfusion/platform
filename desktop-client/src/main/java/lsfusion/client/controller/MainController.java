@@ -77,6 +77,8 @@ public class MainController {
     
     public static boolean userFiltersManualApplyMode;
 
+    public static int maxRequestQueueSize;
+
     // lifecycle
 
     private static RemoteClassLoader remoteClassLoader;
