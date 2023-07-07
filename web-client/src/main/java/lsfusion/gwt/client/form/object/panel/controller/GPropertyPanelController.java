@@ -184,7 +184,7 @@ public class GPropertyPanelController implements ActionOrPropertyValueController
         if (cellCommentElementClasses != null)
             renderer.setCommentElementClass(PValue.getClassStringValue(cellCommentElementClasses.get(columnKey)));
         if (placeholders != null)
-            renderer.setPlaceholder(GGridPropertyTable.getDynamicComment(placeholders.get(columnKey)));
+            renderer.setPlaceholder(GGridPropertyTable.getDynamicPlaceholder(placeholders.get(columnKey)));
     }
 
     public boolean focus(FocusUtils.Reason reason) {

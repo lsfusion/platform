@@ -186,8 +186,11 @@ public class PropertyDrawViewProxy extends ComponentViewProxy<PropertyDrawView> 
     public void setComment(Object comment) {
         if(comment instanceof LocalizedString)
             target.comment = (LocalizedString) comment;
-        else
+        else {
+            if (target.comment == null)
+                target.comment = LocalizedString.NONAME;
             target.entity.setPropertyExtra((PropertyObjectEntity<?>) comment, PropertyDrawExtraType.COMMENT, getVersion());
+        }
     }
 
     public void setCommentClass(Object valueClass) {

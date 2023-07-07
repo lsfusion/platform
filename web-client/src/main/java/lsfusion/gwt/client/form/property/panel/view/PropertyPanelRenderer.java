@@ -1,6 +1,7 @@
 package lsfusion.gwt.client.form.property.panel.view;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.user.client.ui.Widget;
 import lsfusion.gwt.client.base.AppBaseImage;
@@ -56,6 +57,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
         super.update(value, loading, image, valueElementClass, background, foreground, readOnly);
     }
 
+    Element placeholderParentElement;
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
         if(property.caption == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
@@ -95,30 +97,34 @@ public class PropertyPanelRenderer extends PanelRenderer {
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
         boolean verticalDiffers = property.panelCaptionVertical != property.panelCommentVertical;
 
-        SizedWidget valueCommentWidget = valuePanel;
-        comment = GFormLayout.createLabelCaptionWidget();
-        comment.getElement().setInnerText(property.comment);
-        SizedWidget commentWidget = new SizedWidget(comment, property.getCaptionWidth(), property.getCaptionHeight());
-        if(isAlignCaption || verticalDiffers) {
-            SizedFlexPanel valueCommentPanel = new SizedFlexPanel(property.panelCommentVertical);
+        placeholderParentElement = valuePanel.widget.getElement();
 
-            if (commentFirst)
-                commentWidget.add(valueCommentPanel, panelCommentAlignment);
+        SizedWidget commentWidget = null;
+        if(property.comment != null) {
+            comment = GFormLayout.createLabelCaptionWidget();
+            comment.getElement().setInnerText(property.comment);
+            commentWidget = new SizedWidget(comment, property.getCaptionWidth(), property.getCaptionHeight());
+            if (isAlignCaption || verticalDiffers) {
+                SizedFlexPanel valueCommentPanel = new SizedFlexPanel(property.panelCommentVertical);
 
-            valuePanel.add(valueCommentPanel, panelValueAlignment);
+                if (commentFirst)
+                    commentWidget.add(valueCommentPanel, panelCommentAlignment);
 
-            if (!commentFirst)
-                commentWidget.add(valueCommentPanel, panelCommentAlignment);
+                valuePanel.add(valueCommentPanel, panelValueAlignment);
 
-            valueCommentWidget = new SizedWidget(valueCommentPanel);
+                if (!commentFirst)
+                    commentWidget.add(valueCommentPanel, panelCommentAlignment);
+
+                valuePanel = new SizedWidget(valueCommentPanel);
+            }
         }
 
         if (isAlignCaption) { // align caption
             if(!panelCaptionAlignment.equals(GFlexAlignment.END))
                 captionLast = false; // it's odd having caption last for alignments other than END
 
-            captionContainer.set(new CaptionWidget(captionLast ? valueCommentWidget : sizedLabel, GFlexAlignment.START, panelCaptionAlignment, panelValueAlignment));
-            return captionLast ? sizedLabel : valueCommentWidget;
+            captionContainer.set(new CaptionWidget(captionLast ? valuePanel : sizedLabel, GFlexAlignment.START, panelCaptionAlignment, panelValueAlignment));
+            return captionLast ? sizedLabel : valuePanel;
         }
 
         SizedFlexPanel panel = new SizedFlexPanel(property.panelCaptionVertical);
@@ -127,13 +133,13 @@ public class PropertyPanelRenderer extends PanelRenderer {
         if (!captionLast)
             sizedLabel.add(panel, panelCaptionAlignment);
 
-        if (!verticalDiffers && commentFirst)
+        if (commentWidget != null && !verticalDiffers && commentFirst)
             commentWidget.add(panel, panelCommentAlignment);
 
         panel.transparentResize = true;
-        valueCommentWidget.add(panel, panelValueAlignment, 1, true);
+        valuePanel.add(panel, panelValueAlignment, 1, true);
 
-        if (!verticalDiffers && !commentFirst)
+        if (commentWidget != null && !verticalDiffers && !commentFirst)
             commentWidget.add(panel, panelCommentAlignment);
 
         if (captionLast)
@@ -186,7 +192,10 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     protected void setPlaceholderText(String placeholder) {
-        //todo: doesn't work, how to access input element?
-        //sizedView.widget.getElement().setAttribute("placeholder", placeholder);
+        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(placeholderParentElement);
+        if (placeholder != null)
+            inputElement.setAttribute("placeholder", placeholder);
+        else
+            inputElement.removeAttribute("placeholder");
     }
 }
