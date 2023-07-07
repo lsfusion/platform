@@ -3147,4 +3147,14 @@ public class Settings implements Cloneable {
     public void setDefaultPropertyImage(boolean defaultPropertyImage) {
         this.defaultPropertyImage = defaultPropertyImage;
     }
+
+    private int maxRequestQueueSize = 0;
+
+    public int getMaxRequestQueueSize() {
+        return maxRequestQueueSize;
+    }
+
+    public void setMaxRequestQueueSize(int maxRequestQueueSize) {
+        this.maxRequestQueueSize = maxRequestQueueSize;
+    }
 }

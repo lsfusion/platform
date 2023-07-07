@@ -359,7 +359,7 @@ public class RmiQueue implements DispatcherListener {
     }
 
     public <T> void adaptiveSyncRequest(final RmiRequest<T> request) {
-        if (rmiFutures.size() < 10 || syncsDepth > 0)
+        if (MainController.maxRequestQueueSize == 0 || rmiFutures.size() < MainController.maxRequestQueueSize || syncsDepth > 0)
             asyncRequest(request, false);
         else
             syncRequest(request);
