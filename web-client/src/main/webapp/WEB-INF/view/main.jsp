@@ -22,37 +22,20 @@
             @import url('static/css/fontsGoogle/fonts_googleapis_OpenSans.css');
         </style>
 
-        <style type="text/css">
-            #loading {
-                border: 1px solid #ccc;
+        <style>
+            .loadingIndicator {
                 position: absolute;
-                left: 45%;
-                top: 40%;
-                padding: 2px;
+                top: 50%;
+                left: 50%;
                 z-index: 20001;
-                height: auto;
+                transform: translate(-50%, -50%);
             }
 
-            #loading a {
-                color: #225588;
+            .loading-img {
+                height: 5rem;
+                width: 5rem;
             }
 
-            #loading .loadingIndicator {
-                background: white;
-                font: bold 13px tahoma, arial, helvetica;
-                padding: 10px;
-                margin: 0;
-                height: auto;
-                color: #444;
-            }
-
-            #loadingGif {
-                vertical-align:top;
-            }
-
-            #loadingMsg {
-                font: normal 13px arial, tahoma, sans-serif;
-            }
         </style>
 
         <lsf:writeResources resources="${mainResourcesBeforeSystem}"/>
@@ -237,15 +220,10 @@
             };
         </script>
 
-        <div id="loadingWrapper">
-            <div id="loading" align="center">
-                <div class="loadingIndicator">
-                    <img id="loadingGif" src="static/images/loading.gif" width="16" height="16"/>
-                    lsFusion<br/>
-                    <span id="loadingMsg"><%= ServerMessages.getString(request, "loading") %></span>
-                </div>
-            </div>
+        <div class="loadingIndicator" id="loadingWrapper">
+            <img class="loading-img" src="static/images/loading.gif" alt="Loading..."/>
         </div>
+
         <%-- gwt js src is <module name>/<module name>.nocache.js --%>
         <script type="text/javascript" language="javascript"
                 src="main/main.nocache.js"></script>
