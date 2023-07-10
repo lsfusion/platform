@@ -82,6 +82,7 @@ import lsfusion.server.logics.event.Event;
 import lsfusion.server.logics.event.PrevScope;
 import lsfusion.server.logics.event.SessionEnvEvent;
 import lsfusion.server.logics.form.interactive.ManageSessionType;
+import lsfusion.server.logics.form.interactive.OrderEvent;
 import lsfusion.server.logics.form.interactive.UpdateType;
 import lsfusion.server.logics.form.interactive.action.async.QuickAccess;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
@@ -2580,12 +2581,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
     
-    public LAWithParams addScriptedOrderProp(String goName)  throws ScriptingErrorLog.SemanticErrorException {
+    public OrderEvent createOrderEvent(String goName, String toProp) throws ScriptingErrorLog.SemanticErrorException {
+        LP toProperty = findLPByPropertyUsage(new NamedPropertyUsage(toProp));
+        return new OrderEvent(goName, toProperty);
+    }
+    
+    public LAWithParams addScriptedOrderProp(String goName, LPWithParams fromProp)  throws ScriptingErrorLog.SemanticErrorException {
         FormEntity form = getFormFromSeekObjectName(goName);
         GroupObjectEntity go = getSeekGroupObject(form, goName);
 
         if (go != null) {
-            return new LAWithParams(addOrderAProp(go), Collections.emptyList());
+            return new LAWithParams(addOrderAProp(go, fromProp != null ? fromProp.getLP() : null), Collections.emptyList());
         } else {
             errLog.emitGroupObjectNotFoundError(parser, getSeekObjectName(goName));
             return null;

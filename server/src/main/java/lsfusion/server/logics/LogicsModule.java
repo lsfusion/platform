@@ -2035,8 +2035,8 @@ public abstract class LogicsModule {
     }
     
     @IdentityStrongLazy
-    public LA addOrderAProp(GroupObjectEntity object) {
-        return addAction(null, new LA<>(new OrderAction(object)));
+    public LA addOrderAProp(GroupObjectEntity object, LP fromProperty) {
+        return addAction(null, new LA<>(new OrderAction(object, fromProperty)));
     }
 
     public void addConstraint(Property<?> property, LocalizedString message, boolean checkChange) {

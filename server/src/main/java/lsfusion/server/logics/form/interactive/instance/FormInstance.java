@@ -2668,7 +2668,19 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public void fireOnOrder(ExecutionStack stack, OrderEvent orderEvent, PropertyDrawInstance propertyDraw, Order modiType) throws SQLException, SQLHandledException {
         JSONObject json = new JSONObject(Collections.singletonMap(propertyDraw.getSID(), modiType.name()));
-        BL.LM.orderedProperty.change(json, getSession());
+        
+        LP orderEventProperty = null;
+        for (Object eventObject : entity.getEventActions().keyIt()) {
+            if (eventObject.equals(orderEvent)) {
+                orderEventProperty = ((OrderEvent) eventObject).toProperty;
+                break;
+            }
+        }
+        if (orderEventProperty == null) {
+            orderEventProperty = BL.LM.orderedProperty;
+        }
+        
+        orderEventProperty.change(json, getSession());
 
         fireEvent(orderEvent, stack);
     }

@@ -1230,7 +1230,7 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 		|	'QUERYCLOSE'	 { $type = FormEventType.QUERYCLOSE; }
 		| 	'CHANGE' objectId=ID { $type = $objectId.text; }
 		| 	schedule = scheduleFormEventDeclaration { $type = new FormScheduler($schedule.period, $schedule.fixed); }
-		|   'ORDER' objectId=ID { $type = new OrderEvent($objectId.text); }
+		|   oed = orderEventDeclaration { $type = $oed.type; }
 		)
 		('REPLACE' { $replace = true; } | 'NOREPLACE' { $replace = false; } )?
 		faprop=formActionObject { $action = $faprop.action; }
@@ -1239,6 +1239,19 @@ formEventDeclaration returns [ActionObjectEntity action, Object type, Boolean re
 scheduleFormEventDeclaration returns [int period, boolean fixed]
 	:   'SCHEDULE' 'PERIOD' periodLiteral=intLiteral { $period = $periodLiteral.val; } ('FIXED' { $fixed = true; })?
 	;
+	
+orderEventDeclaration returns [OrderEvent type]
+@init {
+	String object = null;
+	String propertyName = null;
+}
+@after {
+	if (inMainParseState()) {
+		$type = self.createOrderEvent(object, propertyName);
+	}
+}
+    :   'ORDER' objectId=ID { object = $objectId.text; } ('TO' pu = propertyUsage { propertyName = $pu.name; })?
+    ;
 
 
 filterGroupDeclaration
@@ -3242,7 +3255,7 @@ leafKeepContextActionDB[List<TypedParameter> context, boolean dynamic] returns [
 	|	seekADB=seekObjectActionDefinitionBody[context, dynamic] { $action = $seekADB.action; }
 	|	expandADB=expandGroupObjectActionDefinitionBody[context, dynamic] { $action = $expandADB.action; }
 	|	collapseADB=collapseGroupObjectActionDefinitionBody[context, dynamic] { $action = $collapseADB.action; }
-	|   orderADB=orderActionDefinitionBody { $action = $orderADB.action; }
+	|   orderADB=orderActionDefinitionBody[context, dynamic] { $action = $orderADB.action; }
 	|	mailADB=emailActionDefinitionBody[context, dynamic] { $action = $mailADB.action; }
 	|	evalADB=evalActionDefinitionBody[context, dynamic] { $action = $evalADB.action; }
 	|	readADB=readActionDefinitionBody[context, dynamic] { $action = $readADB.action; }
@@ -3937,14 +3950,15 @@ expandCollapseObjectsList[List<TypedParameter> context, boolean dynamic] returns
 	:	list=idEqualPEList[context, dynamic] { $objects = $list.ids; $values = $list.exprs; }
 	;
 
-orderActionDefinitionBody returns [LAWithParams action]
+orderActionDefinitionBody[List<TypedParameter> context, boolean dynamic] returns [LAWithParams action]
 @after {
 	if (inMainParseState()) {
-		$action = self.addScriptedOrderProp($gobj.sid);
+		$action = self.addScriptedOrderProp($gobj.sid, $fromExpr.property);
 	}
 }
     :   'ORDER'
         gobj=formGroupObjectID
+        ('FROM' fromExpr=propertyExpression[context, dynamic])?
     ;
 
 changeClassActionDefinitionBody[List<TypedParameter> context] returns [LAWithParams action]

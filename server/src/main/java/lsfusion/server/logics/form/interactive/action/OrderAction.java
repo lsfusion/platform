@@ -3,6 +3,7 @@ package lsfusion.server.logics.form.interactive.action;
 import lsfusion.interop.action.OrderClientAction;
 import lsfusion.interop.form.order.user.Order;
 import lsfusion.server.data.sql.exception.SQLHandledException;
+import lsfusion.server.language.property.LP;
 import lsfusion.server.logics.action.SystemExplicitAction;
 import lsfusion.server.logics.action.controller.context.ExecutionContext;
 import lsfusion.server.logics.form.interactive.instance.FormInstance;
@@ -17,9 +18,11 @@ import java.util.LinkedHashMap;
 
 public class OrderAction extends SystemExplicitAction {
     private final GroupObjectEntity groupObject;
+    private final LP fromProperty;
 
-    public OrderAction(GroupObjectEntity groupObject) {
+    public OrderAction(GroupObjectEntity groupObject, LP fromProperty) {
         this.groupObject = groupObject;
+        this.fromProperty = fromProperty;
     }
 
     @Override
@@ -27,7 +30,12 @@ public class OrderAction extends SystemExplicitAction {
         FormInstance formInstance = context.getFormInstance(true, true);
 
         JSONObject jsonObject;
-        Object json = formInstance.BL.LM.orderedProperty.read(context.getEnv());
+        Object json;
+        if (fromProperty != null) {
+            json = fromProperty.read(context.getEnv());
+        } else {
+            json = formInstance.BL.LM.orderedProperty.read(context.getEnv());
+        }
         if (json instanceof String) {
             Object readJson = JSONReader.readObject((String) json);
             if (readJson instanceof JSONObject) {
