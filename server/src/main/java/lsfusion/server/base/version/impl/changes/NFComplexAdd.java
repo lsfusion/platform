@@ -18,11 +18,13 @@ public class NFComplexAdd<T> implements NFComplexOrderSetChange<T> {
 
     @Override
     public void proceedComplexOrderSet(List<T> list, List<Integer> groupList) {
-        Pair<Integer, Integer> insert;
+        if (!list.contains(element)) {
+            Pair<Integer, Integer> insert;
 
-        insert = location.getInsertGroup(list, groupList);
+            insert = location.getInsertGroup(list, groupList);
 
-        list.add(insert.first, element);
-        groupList.add(insert.first, insert.second);
+            list.add(insert.first, element);
+            groupList.add(insert.first, insert.second);
+        }
     }
 }
