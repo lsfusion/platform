@@ -318,7 +318,6 @@ public class EmailReceiver {
                         }
                     }
 
-                    count++;
                     folderClosedCount = 0;
                 } catch (FolderClosedException | FolderClosedIOException e) {
                     if (folderClosedCount < 2) {
@@ -336,6 +335,7 @@ public class EmailReceiver {
                         folderClosedCount = 0;
                     } else throw e;
                 }
+                count++;
             }
 
             emailFolder.close(true);
