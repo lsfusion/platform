@@ -271,3 +271,8 @@
 .panel-container.form-switch {
     padding-left: unset;
 }
+
+.pvtRenderer.form-select,
+.pvtAggregator.form-select {
+    height: auto !important;
+}

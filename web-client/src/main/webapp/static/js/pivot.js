@@ -953,7 +953,7 @@
         };
       }
       result = document.createElement("table");
-      result.className = "pvtTable";
+      result.className = "pvtTable table";
       spanSize = function(arr, i, j) {
         var l, len, n, noDraw, ref, ref1, stop, x;
         if (i !== 0) {
@@ -1299,7 +1299,7 @@
         }).attr("cellpadding", 5).appendTo(pvtUiContainer);
         rendererControl = $("<td>").addClass("pvtUiCell");
         rendererControlDiv = $("<div>").appendTo(rendererControl);
-        renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControlDiv).css({
+        renderer = $("<select>").addClass('pvtRenderer form-select form-select-sm').appendTo(rendererControlDiv).css({
           height: opts.componentHeightString
         }).bind("change", function() {
           return refresh();
@@ -1423,7 +1423,7 @@
               controls.append($("<br>"));
               $("<button>", {
                 type: "button"
-              }).appendTo(controls).html(opts.localeStrings.selectAll).css({
+              }).addClass('btn btn-primary').appendTo(controls).html(opts.localeStrings.selectAll).css({
                 height: opts.componentHeightString
               }).bind("click", function() {
                 valueList.find("input:visible:not(:checked)").prop("checked", true).toggleClass("changed");
@@ -1431,7 +1431,7 @@
               });
               $("<button>", {
                 type: "button"
-              }).appendTo(controls).html(opts.localeStrings.selectNone).css({
+              }).addClass('btn btn-primary').appendTo(controls).html(opts.localeStrings.selectNone).css({
                 height: opts.componentHeightString
               }).bind("click", function() {
                 valueList.find("input:visible:checked").prop("checked", false).toggleClass("changed");
@@ -1451,7 +1451,7 @@
                 filterItemExcluded = (indexOf.call(opts.exclusions[attr], value) >= 0);
               }
               hasExcludedItem || (hasExcludedItem = filterItemExcluded);
-              $("<input>").attr("type", "checkbox").addClass('pvtFilter').attr("checked", !filterItemExcluded).data("filter", [attr, value]).appendTo(filterItem).bind("change", function() {
+              $("<input>").attr("type", "checkbox").addClass('pvtFilter form-check-input').attr("checked", !filterItemExcluded).data("filter", [attr, value]).appendTo(filterItem).bind("change", function() {
                 return $(this).toggleClass("changed");
               });
               filterItem.append($("<span>").addClass("value").text(value));
@@ -1473,7 +1473,7 @@
           if (values.length <= opts.menuLimit) {
             $("<button>", {
               type: "button"
-            }).text(opts.localeStrings.apply).appendTo(finalButtons).css({
+            }).text(opts.localeStrings.apply).addClass('btn btn-primary').appendTo(finalButtons).css({
               height: opts.componentHeightString
             }).bind("click", function() {
               if (valueList.find(".changed").removeClass("changed").length) {
@@ -1484,7 +1484,7 @@
           }
           $("<button>", {
             type: "button"
-          }).text(opts.localeStrings.cancel).appendTo(finalButtons).css({
+          }).text(opts.localeStrings.cancel).addClass('btn btn-primary').appendTo(finalButtons).css({
             height: opts.componentHeightString
           }).bind("click", function() {
             valueList.find(".changed:checked").removeClass("changed").prop("checked", false);
@@ -1532,7 +1532,7 @@
           fn1(attr);
         }
         tr1 = $("<tr>").addClass('uiTableRow').appendTo(uiTable);
-        aggregator = $("<select>").addClass('pvtAggregator').css({
+        aggregator = $("<select>").addClass('pvtAggregator form-select form-select-sm').css({
           height: opts.componentHeightString
         }).bind("change", function() {
           return refresh();

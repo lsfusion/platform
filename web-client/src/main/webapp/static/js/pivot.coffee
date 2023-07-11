@@ -468,7 +468,7 @@ callWithJQuery ($) ->
 
         #now actually build the output
         result = document.createElement("table")
-        result.className = "pvtTable"
+        result.className = "pvtTable table"
 
         #helper function for setting row/col-span in pivotTableRenderer
         spanSize = (arr, i, j) ->
@@ -736,7 +736,7 @@ callWithJQuery ($) ->
             rendererControlDiv = $("<div>").appendTo(rendererControl)
             
             renderer = $("<select>")
-                .addClass('pvtRenderer')
+                .addClass('pvtRenderer form-select form-select-sm')
                 .appendTo(rendererControlDiv)
                 .css(height: opts.componentHeightString)
                 .bind "change", -> refresh() #capture reference
@@ -814,14 +814,18 @@ callWithJQuery ($) ->
                                         else
                                             $(this).parent().parent().hide()
                             controls.append $("<br>")
-                            $("<button>", {type:"button"}).appendTo(controls)
+                            $("<button>", {type:"button"})
+                                .addClass('btn btn-primary')
+                                .appendTo(controls)
                                 .html(opts.localeStrings.selectAll)
                                 .css(height: opts.componentHeightString)
                                 .bind "click", ->
                                     valueList.find("input:visible:not(:checked)")
                                         .prop("checked", true).toggleClass("changed")
                                     return false
-                            $("<button>", {type:"button"}).appendTo(controls)
+                            $("<button>", {type:"button"})
+                                .addClass('btn btn-primary')
+                                .appendTo(controls)
                                 .html(opts.localeStrings.selectNone)
                                 .css(height: opts.componentHeightString)
                                 .bind "click", ->
@@ -841,7 +845,7 @@ callWithJQuery ($) ->
                                 filterItemExcluded = (value in opts.exclusions[attr])
                              hasExcludedItem ||= filterItemExcluded
                              $("<input>")
-                                .attr("type", "checkbox").addClass('pvtFilter')
+                                .attr("type", "checkbox").addClass('pvtFilter form-check-input')
                                 .attr("checked", !filterItemExcluded).data("filter", [attr,value])
                                 .appendTo(filterItem)
                                 .bind "change", -> $(this).toggleClass("changed")
@@ -864,6 +868,7 @@ callWithJQuery ($) ->
 
                     if values.length <= opts.menuLimit
                         $("<button>", {type: "button"}).text(opts.localeStrings.apply)
+                            .addClass('btn btn-primary')
                             .appendTo(finalButtons)
                             .css(height: opts.componentHeightString)
                             .bind "click", ->
@@ -872,6 +877,7 @@ callWithJQuery ($) ->
                                 closeFilterBox()
 
                     $("<button>", {type: "button"}).text(opts.localeStrings.cancel)
+                        .addClass('btn btn-primary')
                         .appendTo(finalButtons)
                         .css(height: opts.componentHeightString)
                         .bind "click", ->
@@ -913,7 +919,7 @@ callWithJQuery ($) ->
 
             #aggregator menu and value area
 
-            aggregator = $("<select>").addClass('pvtAggregator')
+            aggregator = $("<select>").addClass('pvtAggregator form-select form-select-sm')
                 .css(height: opts.componentHeightString)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.aggregators
