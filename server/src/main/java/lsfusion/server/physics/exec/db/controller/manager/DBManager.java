@@ -2706,11 +2706,11 @@ public class DBManager extends LogicsManager implements InitializingBean {
                             index.add(inputDB.readUTF());
                         }
                         if(version >= 36) {
-                            indices.put(index, IndexOptions.deserialize36(inputDB));
+                            addToIndexMap(indices, index, IndexOptions.deserialize36(inputDB));
                         } else if (version >= 32) {
-                            indices.put(index, IndexOptions.deserialize(inputDB));
+                            addToIndexMap(indices, index, IndexOptions.deserialize(inputDB));
                         } else {
-                            indices.put(index, new IndexOptions(inputDB.readBoolean()));
+                            addToIndexMap(indices, index, new IndexOptions(inputDB.readBoolean()));
                         }
 
                     }
@@ -2743,6 +2743,17 @@ public class DBManager extends LogicsManager implements InitializingBean {
         }
     }
 
+    private void addToIndexMap(Map<List<String>, IndexOptions> indices, List<String> index, IndexOptions options) {
+        if (oldDBStructureVersion >= 37) { // map multiple index records with the same fields to one record
+            if (indices.containsKey(index)) {
+                IndexOptions curOptions = indices.get(index);
+                if (curOptions.type == IndexType.MATCH || curOptions.type == IndexType.LIKE && options.type != IndexType.MATCH) {
+                    return;
+                }
+            }
+        }
+        indices.put(index, options);
+    }
 
     public void setDefaultUserLanguage(String defaultUserLanguage) {
         this.defaultUserLanguage = defaultUserLanguage;
