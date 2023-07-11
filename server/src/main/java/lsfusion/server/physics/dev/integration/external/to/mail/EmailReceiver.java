@@ -338,6 +338,7 @@ public class EmailReceiver {
                         }
                     }
 
+                    count++;
                     folderClosedCount = 0;
                 } catch (FolderClosedException | FolderClosedIOException e) {
                     if (folderClosedCount < 2) {
@@ -345,7 +346,10 @@ public class EmailReceiver {
                         ServerLoggers.mailLogger.error("Ignored exception :", e);
                         emailFolder.open(Folder.READ_WRITE);
                     } else {
-                        throw e;
+                        if (ignoreExceptions)
+                            count++;
+                        else
+                            throw e;
                     }
                 } catch (Exception e) {
                     if (ignoreExceptions) {
@@ -355,7 +359,6 @@ public class EmailReceiver {
                         folderClosedCount = 0;
                     } else throw e;
                 }
-                count++;
             }
 
             emailFolder.close(true);
