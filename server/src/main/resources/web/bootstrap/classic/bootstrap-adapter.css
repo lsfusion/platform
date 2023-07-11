@@ -77,7 +77,7 @@
 
 /*focused cell, same as table-active (which is used for the table-active), but opacity 0.3 instead of 0.1*/
 .focused-cell {
-    --bs-table-accent-bg: rgba(0, 0, 0, 0.3);
+    --bs-table-bg-state: rgba(0, 0, 0, 0.3);
 }
 
 /* it's odd, but modal-body has flex-shrink (flex: 1 1 auto), but min-height is not set to zero (as well as overflow:auto), what doesn't make sense */
