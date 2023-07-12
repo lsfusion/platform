@@ -100,7 +100,8 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
                 "querySQLProcess[STRING[10]]", "addressUserSQLProcess[STRING[10]]",
                 "dateTimeSQLProcess[STRING[10]]", "isActiveSQLProcess[STRING[10]]", "inTransactionSQLProcess[STRING[10]]",
                 "startTransactionSQLProcess[STRING[10]]", "attemptCountSQLProcess[STRING[10]]", "statusSQLProcess[STRING[10]]",
-                "statusMessageSQLProcess[STRING[10]]", "computerProcess[STRING[10]]", "userProcess[STRING[10]]", "lockOwnerIdProcess[STRING[10]]",
+                "statusMessageSQLProcess[STRING[10]]", "waitEventTypeSQLProcess[STRING[10]]", "waitEventSQLProcess[STRING[10]]",
+                "computerProcess[STRING[10]]", "userProcess[STRING[10]]", "lockOwnerIdProcess[STRING[10]]",
                 "lockOwnerNameProcess[STRING[10]]", "fullQuerySQLProcess[STRING[10]]", "idSQLProcess[STRING[10]]",
                 "isDisabledNestLoopProcess[STRING[10]]", "queryTimeoutProcess[STRING[10]]", "debugInfoSQLProcess[STRING[10]]",
                 "threadNameSQLProcess[STRING[10]]", "threadStackTraceSQLProcess[STRING[10]]"));
@@ -172,6 +173,10 @@ public class UpdateProcessMonitorAction extends ProcessDumpAction {
                 return sqlProcess.status == null ? NullValue.instance : new DataObject(sqlProcess.status);
             case "statusMessageSQLProcess":
                 return sqlProcess.statusMessage == null ? NullValue.instance : new DataObject(sqlProcess.statusMessage.getMessage());
+            case "waitEventTypeSQLProcess":
+                return sqlProcess.waitEventType == null ? NullValue.instance : new DataObject(sqlProcess.waitEventType);
+            case "waitEventSQLProcess":
+                return sqlProcess.waitEvent == null ? NullValue.instance : new DataObject(sqlProcess.waitEvent);
             case "lockOwnerIdProcess":
                 return sqlProcess.lockOwnerId == null ? NullValue.instance : new DataObject(sqlProcess.lockOwnerId);
             case "lockOwnerNameProcess":

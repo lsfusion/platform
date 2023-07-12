@@ -65,6 +65,8 @@ startTransactionSQLProcess '{process.monitor.start.transaction.sql.process}' = D
 attemptCountSQLProcess '{process.monitor.attempt.count.sql.process}' = DATA LOCAL STRING[30] (STRING[10]);
 statusSQLProcess '{process.monitor.status.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 statusMessageSQLProcess '{process.monitor.status.message.sql.process}' = DATA LOCAL TEXT (STRING[10]);
+waitEventTypeSQLProcess '{process.monitor.wait.event.type.sql.process}' = DATA LOCAL TEXT (STRING[10]);
+waitEventSQLProcess '{process.monitor.wait.event.sql.process}' = DATA LOCAL TEXT (STRING[10]);
 
 lsfStackTraceProcess '{process.monitor.lsf.stack.trace.process}' = DATA LOCAL TEXT (STRING[10]);
 lastThreadAllocatedBytesProcess '{process.monitor.last.thread.allocated.bytes.process}' = DATA LOCAL LONG (STRING[10]);
@@ -157,8 +159,9 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
     OBJECTS i = STRING[10]
     PROPERTIES(i) READONLY BACKGROUND backgroundProcess(i) activeProcess, idThreadProcess, nameComputer, nameUser,
                            dateTimeCallProcess, querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess,
-                           isActiveSQLProcess, inTransactionSQLProcess, startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess,
-                           statusMessageSQLProcess, addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
+                           isActiveSQLProcess, inTransactionSQLProcess, startTransactionSQLProcess, attemptCountSQLProcess,
+                           statusSQLProcess, statusMessageSQLProcess, waitEventTypeSQLProcess, waitEventSQLProcess,
+                           addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                            lastThreadAllocatedBytesProcess, nameJavaProcess, threadNameSQLProcess, statusJavaProcess,
                            lockNameJavaProcess, stackTraceJavaProcess, threadStackTraceSQLProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess,
                            queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID
@@ -174,7 +177,7 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
                             activeProcess, idThreadProcess, nameComputer, nameUser, dateTimeCallProcess,
                             querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                             startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
-                            addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
+                            waitEventTypeSQLProcess, waitEventSQLProcess, addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                             lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess,
                             lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess,
                             queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
@@ -187,14 +190,14 @@ FORM processMonitor '{process.monitor.form.process.monitor}'
                                  sumBlocking, nameComputer, nameUser, dateTimeCallProcess, 
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
-                                  lsfStackTraceProcess, threadAllocatedBytesProcess, 
+                                 waitEventTypeSQLProcess, waitEventSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                                  lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess, 
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
     PROPERTIES(blocking) READONLY activeProcess, idThreadProcess, sumBlocking, nameComputer, nameUser, dateTimeCallProcess,
                                  querySQLProcess, debugInfoSQLProcess, dateTimeSQLProcess, isActiveSQLProcess, inTransactionSQLProcess, 
                                  startTransactionSQLProcess, attemptCountSQLProcess, statusSQLProcess, statusMessageSQLProcess,
-                                 addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
+                                 waitEventTypeSQLProcess, waitEventSQLProcess, addressUserSQLProcess, lsfStackTraceProcess, threadAllocatedBytesProcess, 
                                  lastThreadAllocatedBytesProcess, threadNameSQLProcess, threadStackTraceSQLProcess, nameJavaProcess, statusJavaProcess,
                                  lockNameJavaProcess, stackTraceJavaProcess, lockOwnerIdProcess, lockOwnerNameProcess, isDisabledNestLoopProcess, 
                                  queryTimeoutProcess, idSQLProcess, copyFullQuerySQLProcess CHANGEABLE GRID 
