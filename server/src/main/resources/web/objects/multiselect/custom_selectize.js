@@ -89,6 +89,10 @@ function select() {
                 selectizeInstance.updateOption(selectizeOption.value, selectizeOption);
                 selectizeInstance[option.selected === true ? 'addItem' : 'removeItem'](selectizeOption.value);
             });
+        },
+        clear: function (element) {
+            let selectizeInstance = element.selectizeInstance[0].selectize;
+            selectizeInstance.destroy();
         }
     }
 }

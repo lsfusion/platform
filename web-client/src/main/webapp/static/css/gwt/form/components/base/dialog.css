@@ -169,6 +169,7 @@
 }
 
 .popup-dialog {
+    z-index: 1055; /*z-index of the modal-windows is 1055*/
     background-color: var(--background-color);
     border: 1px solid var(--dialog-outer-border-color);
     padding: var(--border-padding);
