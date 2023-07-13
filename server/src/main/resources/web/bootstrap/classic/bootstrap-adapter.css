@@ -287,6 +287,26 @@ table.pvtTable thead tr th {
 }
 
 .pvtAxisContainer li div.pvtAttr.form-select {
+    /*hide background image to show it in pvtTriangle*/
     background-image: none;
-    /*padding: .375rem 2.25rem .375rem .75rem;*/
+
+    /*paddings from form-select*/
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    padding-left: 0.5rem;
+    font-size: .875rem;
+    border-radius: var(--bs-border-radius-sm);
+}
+
+.form-select .pvtTriangle {
+    /*hide ▾*/
+    text-indent: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+
+    /*show background image*/
+    background-image: var(--bs-form-select-bg-img), var(--bs-form-select-bg-icon, none);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 16px 12px;
 }
