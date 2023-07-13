@@ -222,7 +222,7 @@ EXTEND FORM interpreter
 DESIGN interpreter {
     NEW pane {
         fill = 1;
-        type = TABBED;
+        tabbed = TRUE;
         NEW scriptPane {
             fill = 1;        
             caption = '{eval.script.form.interpreter.caption.script}';
