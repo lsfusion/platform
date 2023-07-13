@@ -57,7 +57,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
         super.update(value, loading, image, valueElementClass, background, foreground, readOnly);
     }
 
-    Element placeholderParentElement;
     private SizedWidget initCaption(SizedWidget valuePanel, GPropertyDraw property, Result<CaptionWidget> captionContainer) {
         if(property.caption == null) // if there is no (empty) static caption and no dynamic caption
             return valuePanel;
@@ -96,8 +95,6 @@ public class PropertyPanelRenderer extends PanelRenderer {
 
         boolean isAlignCaption = property.isAlignCaption() && captionContainer != null;
         boolean verticalDiffers = property.panelCaptionVertical != property.panelCommentVertical;
-
-        placeholderParentElement = valuePanel.widget.getElement();
 
         SizedWidget commentWidget = null;
         if(property.comment != null) {
@@ -192,7 +189,7 @@ public class PropertyPanelRenderer extends PanelRenderer {
     }
 
     protected void setPlaceholderText(String placeholder) {
-        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(placeholderParentElement);
+        InputElement inputElement = SimpleTextBasedCellRenderer.getInputElement(value.getElement());
         if (placeholder != null)
             inputElement.setAttribute("placeholder", placeholder);
         else
