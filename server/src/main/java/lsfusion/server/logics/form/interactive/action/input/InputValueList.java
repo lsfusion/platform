@@ -64,6 +64,10 @@ public class InputValueList<P extends PropertyInterface> {
         return property.getSelectStat(mapValues.keys());
     }
 
+    public Stat getInterfaceStat() {
+        return property.getInterfaceStat(mapValues.keys());
+    }
+
     public ImSet<Property> getChangeProps() {
         if(orders.isEmpty()) // optimization
             return SetFact.singleton(property);

@@ -318,8 +318,8 @@ public abstract class TextBasedCellEditor extends RequestReplaceValueCellEditor 
 
                     boolean emptyQuery = request.getQuery() == null;
                     String query = nvl(request.getQuery(), "");
-                    if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
-                        return;
+//                    if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
+//                        return;
 
                     //disable selection while loading
                     suggestBox.clearSelectedItem();
