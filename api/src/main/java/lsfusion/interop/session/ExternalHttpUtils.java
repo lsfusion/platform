@@ -3,6 +3,7 @@ package lsfusion.interop.session;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.col.heavy.OrderedMap;
 import lsfusion.base.file.IOUtils;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -30,6 +31,9 @@ public class ExternalHttpUtils {
 
     public static ExternalHttpResponse sendRequest(ExternalHttpMethod method, String connectionString, Integer timeout, boolean insecureSSL, byte[] body,
                                                    Map<String, String> headers, Map<String, String> cookies, CookieStore cookieStore) throws IOException {
+
+        connectionString = URIUtil.encodeQuery(connectionString);
+
         HttpUriRequest httpRequest;
         switch (method) {
             case GET:
