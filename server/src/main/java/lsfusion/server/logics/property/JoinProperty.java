@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.ListFact;
 import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
@@ -52,6 +53,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
         return SetFact.toOrderExclSet(intNum, genInterface);
     }
 
+    // similar to getIdentityMap
     public static <T extends PropertyInterface> boolean isIdentity(ImSet<Interface> interfaces, PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement) {
         Set<Interface> rest = SetFact.mAddRemoveSet(interfaces);
         for(PropertyInterfaceImplement<Interface> impl : implement.mapping.values())
@@ -234,6 +236,19 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             return implement.property.getChangeProps();
 
         return super.getChangeProps();
+    }
+
+    @Override
+    public Pair<PropertyInterfaceImplement<Interface>, PropertyInterfaceImplement<Interface>> getIfProp() {
+        if(implement.property instanceof AndFormulaProperty) {
+            ImSet<AndFormulaProperty.AndInterface> andInterfaces = ((AndFormulaProperty) implement.property).andInterfaces;
+            if(andInterfaces.size() == 1) {
+                AndFormulaProperty.ObjectInterface objectInterface = ((AndFormulaProperty) implement.property).objectInterface;
+                return new Pair<>(implement.mapping.get((T) objectInterface), implement.mapping.get((T)andInterfaces.single()));
+            }
+        }
+
+        return super.getIfProp();
     }
 
     @Override

@@ -70,10 +70,8 @@ public class EvalUtils {
             }
             // finalize forms task (other elements can't be created in script)
             module.markFormsForFinalization();
-            for(FormEntity form : module.getAllModuleForms()) {
-                form.finalizeAroundInit();
-                form.prereadEventActions();
-            }
+            for(FormEntity form : module.getAllModuleForms())
+                form.finalizeAndPreread();
         } finally {
             if(prevEventScope)
                 module.dropPrevScope(Event.SESSION);

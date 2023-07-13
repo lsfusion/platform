@@ -2973,7 +2973,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         checks.checkGPropSumConstraints(type, mainProps.get(0));
 
         List<LPWithParams> whereProps = new ArrayList<>();
-        if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
+        if (type == GroupingType.AGGR || type == GroupingType.NAGGR || (type == GroupingType.CONCAT && whereProp != null)) {
             if (whereProp != null) {
                 whereProps.add(whereProp);
             } else {
@@ -3000,13 +3000,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else if (type == GroupingType.MAX || type == GroupingType.MIN) {
             resultProp = addMGProp(null, emptyCaption, type == GroupingType.MIN, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.CONCAT) {
-            resultProp = addOGProp(null, false, emptyCaption, GroupType.CONCAT, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addOGProp(null, false, emptyCaption, GroupType.CONCAT, whereProp != null, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.AGGR || type == GroupingType.NAGGR) {
             resultProp = addAGProp(null, false, false, emptyCaption, type == GroupingType.NAGGR, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.EQUAL) {
             resultProp = addCGProp(null, false, false, emptyCaption, null, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         } else if (type == GroupingType.LAST) {
-            resultProp = addOGProp(null, false, emptyCaption, GroupType.LAST, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
+            resultProp = addOGProp(null, false, emptyCaption, GroupType.LAST, false, orderProps.size(), ordersNotNull, !ascending, groupPropParamCount, explicitInnerClasses, resultParams.toArray());
         }
         return resultProp;
     }
@@ -4174,17 +4174,23 @@ public class ScriptingLogicsModule extends LogicsModule {
 
         public final Pair<ActionOrProperty, List<String>> inherited;
 
+        public final Group group;
+
         public IntegrationPropUsage(String alias, Boolean literal, LPWithParams lp, Pair<ActionOrProperty, List<String>> inherited) {
             this(alias, literal, lp.getLP(), inherited);
         }
         public IntegrationPropUsage(String alias, Boolean literal, LP lp, Pair<ActionOrProperty, List<String>> inherited) {
-            this(alias, literal, lp != null ? (ImOrderSet<P>) lp.listInterfaces : null, inherited);
+            this(alias, literal, lp, inherited, Group.NOGROUP);
         }
-        public IntegrationPropUsage(String alias, Boolean literal, ImOrderSet<P> listInterfaces, Pair<ActionOrProperty, List<String>> inherited) {
+        public IntegrationPropUsage(String alias, Boolean literal, LP lp, Pair<ActionOrProperty, List<String>> inherited, Group group) {
+            this(alias, literal, lp != null ? (ImOrderSet<P>) lp.listInterfaces : null, inherited, group);
+        }
+        public IntegrationPropUsage(String alias, Boolean literal, ImOrderSet<P> listInterfaces, Pair<ActionOrProperty, List<String>> inherited, Group group) {
             this.alias = alias;
             this.literal = literal != null && literal;
             this.listInterfaces = listInterfaces;
             this.inherited = inherited;
+            this.group = group;
         }
     }
 

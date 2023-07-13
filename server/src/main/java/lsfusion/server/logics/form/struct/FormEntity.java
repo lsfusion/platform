@@ -1184,6 +1184,10 @@ public class FormEntity implements FormSelector<ObjectEntity> {
 
     private boolean finalizedChanges;
 
+    public void finalizeAndPreread() { // need to preread to fill FILTER + ORDER
+        finalizeAroundInit();
+        prereadEventActions();
+    }
     public void finalizeAroundInit() {
         // we need this synchronization since forms finalization first marks modules, and only then reads all unnamed forms (so form can be finalized twice)
         // unlike properties finalization it seems that here we can solve finalization problem another way (by adding synchronized to the addAutoFormEntity, getAllModuleForms methods)

@@ -1,6 +1,7 @@
 package lsfusion.server.logics.property.oraction;
 
 import lsfusion.base.BaseUtils;
+import lsfusion.base.Pair;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
@@ -48,6 +49,7 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
         super(ID, "PropInt" + ID);
     }
 
+    // similar to isIdentity
     public static <T, P extends PropertyInterface> ImRevMap<T, P> getIdentityMap(ImMap<T, PropertyInterfaceImplement<P>> mapping) {
         MAddSet<PropertyInterface> checked = SetFact.mAddSet();
         for(PropertyInterfaceImplement<P> propImplement : mapping.valueIt())
@@ -230,6 +232,12 @@ public class PropertyInterface<P extends PropertyInterface<P>> extends IdentityO
 //            return mappedInterface;
 //        return null;
 //    }
+
+
+    @Override
+    public Pair<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>> getIfProp() {
+        return null;
+    }
 
     @Override
     public <X extends PropertyInterface> AsyncMapChange<X, P> mapAsyncChange(PropertyMapImplement<X, P> writeTo, ObjectEntity object) {

@@ -184,7 +184,7 @@ public class FormInteractiveAction<O extends ObjectSelector> extends FormAction<
             if (!readOnly && !getForm().hasNoChange()) 
                 return true;
         }
-        if(type == ChangeFlowType.INTERACTIVEFORM)
+        if(type == ChangeFlowType.INTERACTIVEFORM && !(windowType != null && windowType.isEditing()))
             return true;
         if(type == ChangeFlowType.NEEDMORESESSIONUSAGES && syncType == null)
             return true;

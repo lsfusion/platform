@@ -15,12 +15,12 @@ public class Async {
     public final String displayString;
     public final String rawString;
 
-    public final ImMap<ObjectInstance, DataObject> key;
+    public final Object key; // ImMap (ObjectInstance -> ObjectValue) or String (JSON)
 
     public static final Async RECHECK = new Async("RECHECK", "RECHECK", null);
     public static final Async CANCELED = new Async("CANCELED", "CANCELED", null);
 
-    public Async(String displayString, String rawString, ImMap<ObjectInstance, DataObject> key) {
+    public Async(String displayString, String rawString, Object key) {
         this.displayString = displayString;
         this.rawString = rawString;
         this.key = key;
@@ -41,8 +41,28 @@ public class Async {
     public void serialize(DataOutputStream dataStream) throws IOException {
         BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, displayString));
         BaseUtils.serializeObject(dataStream, FormChanges.convertFileValue(null, rawString));
-        dataStream.writeBoolean(key != null);
-        if(key != null)
-            FormChanges.serializeGroupObjectValue(dataStream, key);
+        serializeKey(dataStream, key);
     }
+
+    public static void serializeKey(DataOutputStream outStream, Object key) throws IOException {
+        if(key == null) {
+            outStream.writeByte(0);
+            return;
+        }
+
+        if(key instanceof ImMap) {
+            outStream.writeByte(1);
+            FormChanges.serializeGroupObjectValue(outStream, (ImMap<ObjectInstance, ? extends ObjectValue>) key);
+            return;
+        }
+
+        if(key instanceof String) {
+            outStream.writeByte(2);
+            BaseUtils.serializeString(outStream, (String) key);
+            return;
+        }
+
+        throw new IOException();
+    }
+
 }

@@ -1,17 +1,14 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.Element;
 import lsfusion.gwt.client.base.GwtClientUtils;
-import lsfusion.gwt.client.base.jsni.NativeHashMap;
 import lsfusion.gwt.client.classes.GType;
 import lsfusion.gwt.client.form.object.table.grid.view.GSimpleStateTableView;
-import lsfusion.gwt.client.form.object.table.grid.view.GStateTableView;
-import lsfusion.gwt.client.form.object.table.grid.view.DiffObjectInterface;
 import lsfusion.gwt.client.form.property.GPropertyDraw;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.form.property.cell.classes.controller.CustomReplaceCellEditor;
+import lsfusion.interop.action.ServerResponse;
 
 public class CustomCellRenderer extends CellRenderer {
     private final JavaScriptObject customRenderer;
@@ -61,6 +58,10 @@ public class CustomCellRenderer extends CellRenderer {
         return PValue.getStringValue(value);
     }
 
+    protected static void getAsyncValues(String value, UpdateContext updateContext, JavaScriptObject successCallBack, JavaScriptObject failureCallBack) {
+        updateContext.getAsyncValues(value, ServerResponse.CHANGE, GSimpleStateTableView.getJSCallback(successCallBack, failureCallBack));
+    }
+
     protected static void changeValue(Element element, UpdateContext updateContext, JavaScriptObject value, GPropertyDraw property, JavaScriptObject renderValueSupplier) {
         GType externalChangeType = property.getExternalChangeType();
 
@@ -82,10 +83,6 @@ public class CustomCellRenderer extends CellRenderer {
             rerenderState(element, true);
     }
 
-    private static GwtClientUtils.JavaScriptObjectWrapper getKey(JavaScriptObject object) {
-        return new GwtClientUtils.JavaScriptObjectWrapper(object);
-    }
-
     public static JavaScriptObject getController(GPropertyDraw property, UpdateContext updateContext, Element element) {
         return getController(property, updateContext, element, updateContext.isPropertyReadOnly());
     }
@@ -101,13 +98,20 @@ public class CustomCellRenderer extends CellRenderer {
                 return this.change(value);
             },
             changeProperty: function (propertyName, object, newValue) {
+                var controller = this;
                 return this.change({
                     property : propertyName,
-                    object : object,
+                    objects : this.getObjects(object),
                     value : newValue
                 }, function(oldValue) {
-                    return $wnd.replaceObjectFieldInArray(oldValue, object, propertyName, newValue);
+                    if(oldValue == null)
+                        return oldValue;
+                    var objectsString = controller.getObjectsString(object);
+                    return $wnd.replaceObjectFieldInArray(oldValue, function (oldObject) { return controller.getObjectsString(oldObject) === objectsString; }, propertyName, newValue);
                 });
+            },
+            getValues: function(value, successCallback, failureCallback) {
+                return @CustomCellRenderer::getAsyncValues(*)(value, updateContext, successCallback, failureCallback);
             },
             isReadOnly: function () {
                 return isReadOnly;
@@ -124,14 +128,27 @@ public class CustomCellRenderer extends CellRenderer {
             getColorThemeName: function () {
                 return @lsfusion.gwt.client.view.MainFrame::colorTheme.@java.lang.Enum::name()();
             },
-            diff: function (newList, element, fnc, updateKey) {
-                @GSimpleStateTableView::diff(*)(newList, element, fnc, updateKey);
+            diff: function (newList, element, fnc, noDiffObjects) {
+                var controller = this;
+                @GSimpleStateTableView::diff(*)(newList, element, fnc, function(object) {return controller.getObjectsString(object);}, this.getObjectsField(), noDiffObjects);
             },
             isList: function () {
                 return false;
             },
-            getKey: function (object) {
-                return @CustomCellRenderer::getKey(*)(object);
+            getPropertyValues: function(property, value, successCallback, failureCallback) {
+                return this.getValues(property + ":" + value, successCallback, failureCallback); // should be compatible with JSONProperty.AsyncMapJSONChange.getAsyncValueList
+            },
+            getObjects: function (object) {
+                return object.objects;
+            },
+            getObjectsField: function () {
+                return "objects";
+            },
+            getObjectsString: function (object) {
+                return @GwtClientUtils::jsonStringify(*)(this.getObjects(object));
+            },
+            createObject: function (object, objects) {
+                return $wnd.replaceField(object, "objects", objects);
             }
         }
     }-*/;

@@ -33,6 +33,7 @@ import lsfusion.gwt.client.base.Result;
 import lsfusion.gwt.client.base.size.GSize;
 import lsfusion.gwt.client.base.view.*;
 import lsfusion.gwt.client.base.view.grid.cell.Cell;
+import lsfusion.gwt.client.form.EmbeddedForm;
 import lsfusion.gwt.client.form.event.GKeyStroke;
 import lsfusion.gwt.client.form.event.GMouseStroke;
 import lsfusion.gwt.client.form.object.table.TableComponent;
@@ -331,7 +332,21 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
 
     public static boolean isFakeBlur(Event event, Element blur) {
         EventTarget focus = event.getRelatedEventTarget();
-        return focus != null && blur.isOrHasChild(Element.as(focus));
+        if(focus == null)
+            return false;
+
+        return isFakeBlur(blur, Element.as(focus));
+    }
+
+    private static boolean isFakeBlur(Element blur, Element focusElement) {
+        if(blur.isOrHasChild(focusElement))
+            return true;
+
+        Element autoHidePartner = GwtClientUtils.getParentWithProperty(focusElement, "autoHidePartner");
+        if(autoHidePartner != null)
+            return isFakeBlur(blur, (Element) autoHidePartner.getPropertyObject("autoHidePartner"));
+
+        return false;
     }
 
     public static Element getTargetAndCheck(Element element, Event event) {
@@ -459,6 +474,17 @@ public abstract class DataGrid<T> implements TableComponent, ColorThemeChangeLis
                 if (cur == tbody || cur == tfoot || cur == thead) {
                     targetTableSection = cur.cast(); // We found the table section.
                     break;
+                }
+
+                if(EmbeddedForm.is(cur)) {
+                    row = -1;
+                    column = null;
+                    columnParent = null;
+
+                    header = null;
+                    headerParent = null;
+                    footer = null;
+                    footerParent = null;
                 }
 
                 if(row < 0) {

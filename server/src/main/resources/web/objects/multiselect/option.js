@@ -63,6 +63,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
 
             let options = document.createElement('div');
             options.classList.add(isButton ? "option-btn-container" : "option-container");
+            options.classList.add("fill-parent-perc")
             if (isGroup) {
                 options.setAttribute("role", "group");
                 if (divClasses != null)
@@ -115,9 +116,9 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                             label.setAttribute('for', input.id);
 
                             input.addEventListener('change', function () {
-                                controller.changeProperty('selected', this.key, this.checked ? true : null);
+                                controller.changeProperty('selected', this.object, this.checked ? true : null);
                                 if (isList)
-                                    controller.changeObject(this.key);
+                                    controller.changeObject(this.object);
                             });
 
                             let currentOptions = options.children;
@@ -146,7 +147,7 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                             label = _getOptionElement(options, index, false, true);
                         }
 
-                        input.key = object;
+                        input.object = object;
                         label.innerText = object.name;
 
                         let checked = object.selected != null && object.selected;
@@ -176,8 +177,8 @@ function _option(type, isGroup, divClasses, inputClasses, labelClasses, hasName)
                 let input = _getOptionElement(options, i, true, true);
                 let readonly;
                 if (isList) {
-                    input.classList[controller.isCurrent(input.key) ? 'add' : 'remove']('option-item-current');
-                    readonly = controller.isPropertyReadOnly('selected', input.key);
+                    input.classList[controller.isCurrent(input.object) ? 'add' : 'remove']('option-item-current');
+                    readonly = controller.isPropertyReadOnly('selected', input.object);
                 } else {
                     readonly = controller.isReadOnly();
                 }

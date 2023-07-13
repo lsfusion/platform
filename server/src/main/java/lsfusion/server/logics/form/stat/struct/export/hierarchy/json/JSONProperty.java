@@ -1,7 +1,10 @@
 package lsfusion.server.logics.form.stat.struct.export.hierarchy.json;
 
 import com.google.common.base.Throwables;
+import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
+import lsfusion.base.Result;
+import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.interop.action.ServerResponse;
@@ -19,10 +22,15 @@ import lsfusion.server.logics.action.session.DataSession;
 import lsfusion.server.logics.classes.ValueClass;
 import lsfusion.server.logics.classes.data.ParseException;
 import lsfusion.server.logics.classes.data.file.JSONClass;
+import lsfusion.server.logics.form.interactive.action.async.AsyncEventExec;
+import lsfusion.server.logics.form.interactive.action.async.AsyncInput;
 import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapEventExec;
-import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapInput;
+import lsfusion.server.logics.form.interactive.action.async.map.AsyncMapValue;
 import lsfusion.server.logics.form.interactive.action.edit.FormSessionScope;
+import lsfusion.server.logics.form.interactive.action.input.InputListEntity;
 import lsfusion.server.logics.form.interactive.action.input.InputResult;
+import lsfusion.server.logics.form.interactive.controller.remote.serialization.FormInstanceContext;
+import lsfusion.server.logics.form.interactive.property.AsyncDataConverter;
 import lsfusion.server.logics.form.open.FormAction;
 import lsfusion.server.logics.form.open.FormSelector;
 import lsfusion.server.logics.form.open.ObjectSelector;
@@ -35,7 +43,6 @@ import lsfusion.server.logics.form.struct.FormEntity;
 import lsfusion.server.logics.form.struct.filter.ContextFilterSelector;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
-import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
 import lsfusion.server.logics.form.struct.property.PropertyObjectEntity;
 import lsfusion.server.logics.property.LazyProperty;
 import lsfusion.server.logics.property.Property;
@@ -43,7 +50,9 @@ import lsfusion.server.logics.property.classes.ClassPropertyInterface;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.classes.infer.ExClassSet;
 import lsfusion.server.logics.property.classes.infer.InferType;
+import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
 import lsfusion.server.logics.property.implement.PropertyMapImplement;
+import lsfusion.server.logics.property.oraction.ActionOrProperty;
 import lsfusion.server.logics.property.oraction.PropertyInterface;
 import lsfusion.server.physics.dev.i18n.LocalizedString;
 import org.json.JSONObject;
@@ -100,12 +109,15 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
         return parseNode.getJSONProperty(formInterface, contextInterfaces.toRevMap(), mappedObjects);
     }
 
-    private static ObjectValue getJSONObjectValue(ValueClass valueClass, Object jsonValue, DataSession session) throws SQLException, SQLHandledException {
+    private static ObjectValue fromJSON(ValueClass valueClass, Object jsonValue, DataSession session) throws SQLException, SQLHandledException {
         try {
             return session.getObjectValue(valueClass, valueClass.getType().parseJSON(jsonValue));
         } catch (ParseException e) {
             throw Throwables.propagate(e);
         }
+    }
+    private static Object toJSON(ValueClass valueClass, DataObject value) {
+        return valueClass.getType().formatJSON(value.getValue());
     }
 
     // default change event action
@@ -125,39 +137,124 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             mapObjects = objects.mapSet(getOrderInterfaces());
         }
 
+        private class MapDraw<T extends PropertyInterface> {
+            public final Property<T> property;
+            public final ImRevMap<T, PropertyInterface> mapValues;
+            public final ImRevMap<T, ObjectEntity> mapKeys;
+
+            public MapDraw(Property<T> property, ImRevMap<T, PropertyInterface> mapValues, ImRevMap<T, ObjectEntity> mapKeys) {
+                this.property = property;
+                this.mapValues = mapValues;
+                this.mapKeys = mapKeys;
+            }
+        }
+
         protected <T extends PropertyInterface> void change(JSONObject rootObject, ExecutionContext<PropertyInterface> context) throws SQLException, SQLHandledException {
             String propertyID = rootObject.getString("property");
-
-            PropertyDrawEntity<T> propertyDraw = (PropertyDrawEntity<T>) form.getPropertyDrawIntegration(propertyID);
-            ImMap<ObjectEntity, ? extends ObjectValue> mapValues = mapObjects.join(context.getKeys());
-
             DataSession session = context.getSession();
 
             // INPUT f FIELDS o1 O1, o2 O2, v value DO
             //      changeProperty(x1, x2, o1, o2) <- v;
 
-            JSONObject objects = rootObject.getJSONObject("object");
-
-            PropertyObjectEntity<T> propertyObject = (PropertyObjectEntity<T>) propertyDraw.getReaderProperty();
-            Property<T> property = propertyObject.property;
-            ImMap<T, ObjectValue> mapPropValues = propertyObject.mapping.<ObjectValue, SQLException, SQLHandledException>mapValuesEx(object -> {
-                ObjectValue value = mapValues.get(object);
-                if (value != null)
-                    return value;
-
-                return getJSONObjectValue(object.baseClass, objects.opt(object.getIntegrationSID()), session);
-            });
+            MapDraw<T> mapDraw = getPropertyDraw(propertyID);
+            JSONObject objects = rootObject.getJSONObject("objects");
+            ImMap<T, ? extends ObjectValue> mapPropValues = MapFact.addExcl(mapDraw.mapValues.join(context.getKeys()),
+                    mapDraw.mapKeys.<ObjectValue, SQLException, SQLHandledException>mapValuesEx(object -> fromJSON(object.baseClass, objects.opt(object.getIntegrationSID()), session)));
             ImMap<T, DataObject> mapDataPropValues = DataObject.filterDataObjects(mapPropValues);
             if(mapDataPropValues.size() < mapPropValues.size())
                 return;
-            ObjectValue mapValue = getJSONObjectValue(property.getValueClass(ClassType.editValuePolicy), rootObject.opt("value"), session);
 
-            property.change(mapDataPropValues, context.getEnv(), mapValue);
+            ObjectValue mapValue = fromJSON(mapDraw.property.getValueClass(ClassType.editValuePolicy), rootObject.opt("value"), session);
+
+            mapDraw.property.change(mapDataPropValues, context.getEnv(), mapValue);
+        }
+
+        private <T extends PropertyInterface> MapDraw<T> getPropertyDraw(String propertyID) {
+            PropertyObjectEntity<T> propertyObject = (PropertyObjectEntity<T>) form.getPropertyDrawIntegration(propertyID).getReaderProperty();
+
+            Property<T> property = propertyObject.property;
+            ImRevMap<T, PropertyInterface> mapObjectValues = propertyObject.mapping.innerJoin(mapObjects);
+            ImRevMap<T, ObjectEntity> mapObjectKeys = propertyObject.mapping.removeRev(mapObjectValues.keys()); // Incl
+            return new MapDraw<>(property, mapObjectValues, mapObjectKeys);
+        }
+
+        public class AsyncMapJSONChange<C extends PropertyInterface> extends AsyncMapValue<C> {
+
+            public final ImRevMap<PropertyInterface, C> map;
+
+            public AsyncMapJSONChange(ImRevMap<PropertyInterface, C> map) {
+                super(JSONClass.instance);
+
+                this.map = map;
+            }
+
+            @Override
+            public AsyncMapEventExec<C> newSession() {
+                return this;
+            }
+
+            @Override
+            public <P extends PropertyInterface> AsyncMapEventExec<P> map(ImRevMap<C, P> mapping) {
+                return new AsyncMapJSONChange<>(map.join(mapping));
+            }
+
+            @Override
+            public <P extends PropertyInterface> AsyncMapEventExec<P> mapInner(ImRevMap<C, P> mapping) {
+                ImRevMap<PropertyInterface, P> joinMapValues = PropertyMapImplement.mapInner(map, mapping);
+                if(joinMapValues == null)
+                    return null;
+
+                return new AsyncMapJSONChange<>(joinMapValues);
+            }
+
+            @Override
+            public <P extends PropertyInterface> AsyncMapEventExec<P> mapJoin(ImMap<C, PropertyInterfaceImplement<P>> mapping) {
+                ImRevMap<PropertyInterface, P> joinMapValues = PropertyMapImplement.mapJoin(map, mapping);
+                if(joinMapValues == null)
+                    return null;
+
+                return new AsyncMapJSONChange<>(joinMapValues);
+            }
+
+            @Override
+            public AsyncMapEventExec<C> merge(AsyncMapEventExec<C> input) {
+                if(!(input instanceof AsyncMapJSONChange))
+                    return null;
+
+                AsyncMapJSONChange<C> jsonInput = (AsyncMapJSONChange<C>) input;
+                if(!BaseUtils.hashEquals(map, jsonInput.map))
+                    return null;
+
+                return this;
+            }
+
+            @Override
+            public AsyncEventExec map(ImRevMap<C, ObjectEntity> mapObjects, FormInstanceContext context, ActionOrProperty securityProperty, PropertyObjectEntity<?> drawProperty, GroupObjectEntity toDraw) {
+                return new AsyncInput(type, null, null);
+            }
+
+            @Override
+            public <X extends PropertyInterface> Pair<InputListEntity<X, C>, AsyncDataConverter<X>> getAsyncValueList(Result<String> value) {
+                int separator = value.result.indexOf(":"); // should correspond CustomCellRenderer.getPropertyValues
+                String propertyID = value.result.substring(0, separator);
+                value.set(value.result.substring(separator + 1));
+
+                MapDraw<X> mapDraw = getPropertyDraw(propertyID);
+
+                return new Pair<>(new InputListEntity<>(mapDraw.property, mapDraw.mapValues.join(map)), values -> {
+                    JSONObject objects = new JSONObject();
+                    for(int i = 0, size = values.size(); i < size; i++) {
+                        ObjectEntity object = mapDraw.mapKeys.get(values.getKey(i));
+                        objects.putOpt(object.getIntegrationSID(), toJSON(object.baseClass, values.getValue(i)));
+                    }
+                    return objects.toString();
+                });
+            }
         }
 
         @Override
         public AsyncMapEventExec<PropertyInterface> calculateAsyncEventExec(boolean optimistic, boolean recursive) {
-            return new AsyncMapInput<>(JSONClass.instance, null, null, false, null, null);
+            return new AsyncMapJSONChange<>(interfaces.toRevMap());
         }
 
         @Override
@@ -166,6 +263,7 @@ public class JSONProperty<O extends ObjectSelector> extends LazyProperty {
             if(pushedInput != null) {
                 String charset = ExternalUtils.defaultXMLJSONCharset;
                 try {
+                    // later maybe it makes sense to use simple new JSONObject() (since toString is used in getAsyncValues)
                     JSONObject rootObject = JSONReader.toJSONObject(JSONReader.readRootObject(ImportAction.readFile(pushedInput.value, charset), null, charset), true);
                     if(rootObject != null)
                         change(rootObject, context);

@@ -1,11 +1,17 @@
 package lsfusion.gwt.client.form.property.cell.view;
 
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import lsfusion.gwt.client.base.AppBaseImage;
+import lsfusion.gwt.client.base.GAsync;
+import lsfusion.gwt.client.base.Pair;
 import lsfusion.gwt.client.form.controller.GFormController;
 import lsfusion.gwt.client.form.property.PValue;
 
+import java.util.ArrayList;
+
 public interface UpdateContext {
     
+    default void getAsyncValues(String value, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {}
     default void changeProperty(PValue result, GFormController.ChangedRenderValueSupplier renderValueSupplier) {}
     default void executeContextAction(int action) {}
 

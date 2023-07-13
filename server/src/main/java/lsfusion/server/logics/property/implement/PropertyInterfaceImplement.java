@@ -1,5 +1,6 @@
 package lsfusion.server.logics.property.implement;
 
+import lsfusion.base.Pair;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.MSet;
 import lsfusion.server.data.expr.Expr;
@@ -62,7 +63,9 @@ public interface PropertyInterfaceImplement<P extends PropertyInterface> extends
     boolean mapIsNotNull();
     boolean mapHasAlotKeys();
     int mapEstComplexity();
-    
+
+    Pair<PropertyInterfaceImplement<P>, PropertyInterfaceImplement<P>> getIfProp();
+
     ImSet<DataProperty> mapChangeProps();
     boolean mapHasPreread(PropertyChanges propertyChanges);
     boolean mapHasPreread(Modifier modifier) throws SQLException, SQLHandledException;

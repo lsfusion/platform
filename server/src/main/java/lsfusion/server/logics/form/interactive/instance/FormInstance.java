@@ -107,10 +107,7 @@ import lsfusion.server.logics.form.interactive.instance.order.OrderInstance;
 import lsfusion.server.logics.form.interactive.instance.property.*;
 import lsfusion.server.logics.form.interactive.listener.CustomClassListener;
 import lsfusion.server.logics.form.interactive.listener.FocusListener;
-import lsfusion.server.logics.form.interactive.property.Async;
-import lsfusion.server.logics.form.interactive.property.AsyncMode;
-import lsfusion.server.logics.form.interactive.property.GroupObjectProp;
-import lsfusion.server.logics.form.interactive.property.PropertyAsync;
+import lsfusion.server.logics.form.interactive.property.*;
 import lsfusion.server.logics.form.stat.print.FormReportManager;
 import lsfusion.server.logics.form.stat.print.StaticFormReportManager;
 import lsfusion.server.logics.form.struct.FormEntity;
@@ -1311,17 +1308,17 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         return keys.get(0);
     }
 
-    private static <P extends PropertyInterface> Async[] convertPropertyAsyncs(ImRevMap<P, ObjectInstance> mapObjects, PropertyAsync<P>[] propAsyncs) {
+    private static <P extends PropertyInterface> Async[] convertPropertyAsyncs(AsyncDataConverter<P> converter, PropertyAsync<P>[] propAsyncs) {
         Async[] result = new Async[propAsyncs.length];
         for(int i=0;i<propAsyncs.length;i++) {
             PropertyAsync<P> propAsync = propAsyncs[i];
-            result[i] = new Async(propAsync.displayString, propAsync.rawString, propAsync.key != null ? mapObjects.crossJoin(propAsync.key) : null);
+            result[i] = new Async(propAsync.displayString, propAsync.rawString, converter != null ? converter.convert(propAsync.key) : null);
         }
         return result;
     }
     public <P extends PropertyInterface, X extends PropertyInterface> Async[] getAsyncValues(PropertyDrawInstance<P> propertyDraw, ImMap<ObjectInstance, ? extends ObjectValue> keys, String actionSID, String value, int neededCount, Boolean optimistic, Supplier<Boolean> optimisticRun, FormInstanceContext context) throws SQLException, SQLHandledException {
         InputValueList<X> listProperty;
-        ImRevMap<X, ObjectInstance> mapObjects;
+        AsyncDataConverter<X> converter;
         AsyncMode asyncMode;
         boolean needRecheck = false;
         if (actionSID.equals(INPUT)) {
@@ -1332,21 +1329,23 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                     return new Async[] {Async.CANCELED};
 
                 listProperty = inputContext.list;
-                mapObjects = null;
+                converter = null;
                 asyncMode = inputContext.strict ? AsyncMode.OBJECTVALUES : AsyncMode.VALUES;
                 for(Property<X> changeProp : listProperty.getChangeProps())
                     if (!inputContext.newSession && changeProp.hasChanges(inputContext.modifier))
-                        return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, inputContext.session, inputContext.modifier, value, neededCount, asyncMode));
+                        return convertPropertyAsyncs(converter, getAsyncValues(listProperty, inputContext.session, inputContext.modifier, value, neededCount, asyncMode));
             } finally {
                 ThreadLocalContext.unlockInputContext();
             }
         } else {
-            PropertyDrawInstance.AsyncValueList<X> valueList = (PropertyDrawInstance.AsyncValueList<X>) propertyDraw.getAsyncValueList(actionSID, context, this, keys);
+            Result<String> rValue = new Result<>(value);
+            PropertyDrawInstance.AsyncValueList<X> valueList = (PropertyDrawInstance.AsyncValueList<X>) propertyDraw.getAsyncValueList(actionSID, rValue, context, this, keys);
             if(valueList == null)
                 return new Async[] {Async.CANCELED};
 
+            value = rValue.result;
             listProperty = valueList.list;
-            mapObjects = valueList.mapObjects;
+            converter = valueList.converter;
             asyncMode = valueList.asyncMode;
             if(!valueList.newSession) { // ! new session
                 for(Property<X> changeProp : listProperty.getChangeProps())
@@ -1358,7 +1357,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                             return null; // switching to pessimistic mode
                     } else {
                         if (updateAsyncPropertyChanges(changeProp)) // recheck changes since we're in a thread-safe mode
-                            return convertPropertyAsyncs(mapObjects, getAsyncValues(listProperty, getSession(), getModifier(), value, neededCount, asyncMode));
+                            return convertPropertyAsyncs(converter, getAsyncValues(listProperty, getSession(), getModifier(), value, neededCount, asyncMode));
                     }
             }
         }
@@ -1368,7 +1367,7 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
         if(!optimisticRun.get())
             return new Async[] {Async.CANCELED};
 
-        Async[] result = convertPropertyAsyncs(mapObjects, logicsInstance.getDbManager().getAsyncValues(listProperty, value, neededCount, asyncMode));
+        Async[] result = convertPropertyAsyncs(converter, logicsInstance.getDbManager().getAsyncValues(listProperty, value, neededCount, asyncMode));
         if(needRecheck) // not sure yet, resending RECHECK
             result = BaseUtils.addElement(result, Async.RECHECK, Async[]::new);
         return result;

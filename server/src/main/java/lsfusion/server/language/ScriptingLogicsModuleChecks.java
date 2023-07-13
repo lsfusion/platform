@@ -353,7 +353,7 @@ public class ScriptingLogicsModuleChecks {
     }
 
     public void checkGPropWhereConsistence(GroupingType type, LPWithParams where) throws ScriptingErrorLog.SemanticErrorException {
-        if (type != GroupingType.AGGR && type != GroupingType.NAGGR && type != GroupingType.LAST && where != null) {
+        if (type != GroupingType.AGGR && type != GroupingType.NAGGR && type != GroupingType.LAST && type != GroupingType.CONCAT && where != null) {
             errLog.emitWhereGPropError(parser, type);
         }
     }

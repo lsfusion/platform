@@ -1026,6 +1026,15 @@ public class GwtClientUtils {
         }
         return null;
     }
+    public static Element getParentWithProperty(Element element, String property) {
+        while (element != null) {
+            if (element.getPropertyObject(property) != null) {
+                return element;
+            }
+            element = element.getParentElement();
+        }
+        return null;
+    }
     public static Element getParentWithClass(Element element, String className) {
         while (element != null) {
             if (element.hasClassName(className)) {
@@ -1106,6 +1115,10 @@ public class GwtClientUtils {
         return object[field] = value;
     }-*/;
 
+    public static native JavaScriptObject replaceField(JavaScriptObject object, String field, JavaScriptObject value)/*-{
+        return $wnd.replaceField(object, field, value);
+    }-*/;
+
     public static native void removeField(JavaScriptObject object, String field)/*-{
         if (object[field])
             delete object[field];
@@ -1152,8 +1165,8 @@ public class GwtClientUtils {
         return hash;
     }-*/;
 
-    public static native boolean deepEquals(JavaScriptObject object1, JavaScriptObject object2)/*-{
-        return $wnd.deepEquals(object1, object2);
+    public static native boolean plainEquals(JavaScriptObject object1, JavaScriptObject object2, String ignoreField)/*-{
+        return $wnd.plainEquals(object1, object2, ignoreField);
     }-*/;
 
     public static native boolean isFunctionContainsArguments(JavaScriptObject fn)/*-{
@@ -1255,28 +1268,4 @@ public class GwtClientUtils {
     public static final native NodeList<Element> getElementsByClassName(String className) /*-{
         return $doc.getElementsByClassName(className);
     }-*/;
-
-    public static class JavaScriptObjectWrapper {
-        private final JavaScriptObject object;
-
-        public JavaScriptObjectWrapper(JavaScriptObject object) {
-            this.object = object;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-
-            if (!(o instanceof JavaScriptObjectWrapper))
-                return false;
-
-            return GwtClientUtils.deepEquals(this.object, ((JavaScriptObjectWrapper) o).object);
-        }
-
-        @Override
-        public int hashCode() {
-            return javaScriptObjectAllFieldsHashCode(object);
-        }
-    }
 }

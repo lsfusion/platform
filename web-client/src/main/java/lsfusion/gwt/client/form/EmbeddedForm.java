@@ -1,5 +1,6 @@
 package lsfusion.gwt.client.form;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.DOM;
@@ -40,7 +41,7 @@ public class EmbeddedForm extends EditingForm {
             // so we just delay execution, expecting that the one who lost focus will immediately restore it
             // it seems that later this scheme should be used for all onBlur events
             if(event.getRelatedEventTarget() == null) {
-                SmartScheduler.getInstance().scheduleDeferred(() -> {
+                SmartScheduler.get().scheduleDeferred(() -> {
                     if(GwtClientUtils.getFocusedChild(parent) == null)
                         RequestReplaceCellEditor.super.onBlur(event, parent);
                 });
@@ -67,16 +68,21 @@ public class EmbeddedForm extends EditingForm {
 
     private Element renderElement;
 
-    private boolean autoSize;
+//    private boolean autoSize;
 
     public EmbeddedForm(FormsController formsController, long editRequestIndex, boolean async, Event editEvent, EditContext editContext, GFormController contextForm) {
         super(formsController, editRequestIndex, async, editEvent, editContext, contextForm);
 
-        autoSize = editContext.getProperty().autoSize;
+//        autoSize = editContext.getProperty().autoSize;
     }
 
     private ResizableComplexPanel getAttachContainer() {
         return contextForm.formLayout.attachContainer;
+    }
+
+    private static final String FORM_EMBEDDED = "form_embedeed";
+    public static boolean is(Element element) {
+        return element.getPropertyBoolean(FORM_EMBEDDED);
     }
 
     @Override
@@ -84,11 +90,13 @@ public class EmbeddedForm extends EditingForm {
         getAttachContainer().add(widget);
 
         Element element = widget.getElement();
-        GwtClientUtils.setupSizedParent(element, autoSize);
-        if(!autoSize) {
-            element.addClassName("comp-shrink-horz");
-            element.addClassName("comp-shrink-vert");
-        }
+        GwtClientUtils.setupSizedParent(element, true);
+//        if(!autoSize) {
+//            element.addClassName("comp-shrink-horz");
+//            element.addClassName("comp-shrink-vert");
+//        }
+        element.addClassName("form-embedded");
+        element.setPropertyBoolean(FORM_EMBEDDED, true);
 
         renderElement.appendChild(element);
     }
@@ -96,7 +104,7 @@ public class EmbeddedForm extends EditingForm {
     @Override
     protected void onSyncFocus(boolean add) {
         super.onSyncFocus(add);
-        if(add) {
+        if(add && editEvent != null) {
             Element focusedElement = GwtClientUtils.getFocusedElement();
             DOM.dispatchEvent(editEvent, focusedElement);
         }

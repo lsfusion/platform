@@ -700,19 +700,24 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
             String selectCustom = null;
             if(select != null) {
-                if(!isReadOnly() && !hasNoGridReadOnly(context.entity) && select.count > (select.notNull ? 1 : 0)) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
+                if(!isReadOnly() && !hasNoGridReadOnly(context.entity) && (select.multi || select.count > (select.notNull ? 1 : 0))) { // we don't have to check hasChangeAction, since canBeChanged is checked in getSelectProperty
                     if(select.length <= Settings.get().getMaxLengthForValueRadioButtonGroup()) {
-                        selectCustom = select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
+                        selectCustom = !select.multi && select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
                     } else if(select.count <= Settings.get().getMaxInterfaceStatForValueRadio() && !isList(context)) {
                         ContainerView container = context.view.get(this).getLayoutParamContainer();
-                        if(container != null) {
-                            if(container.isHorizontal())
-                                selectCustom = select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
-                            else
-                                selectCustom = "radio";
-                        }
-                    } else
-                        selectCustom = null; //"combo"
+                        if(container != null && container.isHorizontal())
+                            selectCustom = !select.multi && select.notNull ? "radioButtonGroup" : "checkButtonGroup"; // we will temporarily use select
+                        else
+                            selectCustom = !select.multi && select.notNull ? "radio" : "check";
+                    } else if(select.count <= Settings.get().getMaxInterfaceStatForValueCombo()) {
+                        if(select.multi)
+                            selectCustom = null; // "checkCombo"
+                        else
+                            selectCustom = null; // "radioCombo"
+                    } else {
+                        assert select.multi;
+                        selectCustom = "select";
+                    }
                 }
 
 //            assert stat.less(new Stat(Settings.get().getMinInterfaceStatForValueCombo()));

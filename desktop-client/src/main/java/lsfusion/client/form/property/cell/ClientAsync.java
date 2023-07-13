@@ -14,12 +14,12 @@ public class ClientAsync implements Serializable {
     public final Serializable displayValue;
     public final Serializable rawValue;
 
-    public final ClientGroupObjectValue key;
+    public final Serializable key; // ClientGroupObjectValue or String (JSON)
 
     public static final ClientAsync RECHECK = new ClientAsync("RECHECK", "RECHECK", null);
     public static final ClientAsync CANCELED = new ClientAsync("CANCELED", "CANCELED", null);
 
-    private ClientAsync(String displayValue, String rawValue, ClientGroupObjectValue key) {
+    private ClientAsync(String displayValue, String rawValue, Serializable key) {
         this.displayValue = displayValue;
         this.rawValue = rawValue;
         this.key = key;
@@ -32,10 +32,21 @@ public class ClientAsync implements Serializable {
     public ClientAsync(DataInputStream inStream, ClientForm form) throws IOException {
         displayValue = (Serializable) BaseUtils.deserializeObject(inStream);
         rawValue = (Serializable) BaseUtils.deserializeObject(inStream);
-        if(inStream.readBoolean())
-            key = new ClientGroupObjectValue(inStream, form);
-        else
-            key = null;
+        key = deserializeKey(inStream, form);
+    }
+
+    private static Serializable deserializeKey(DataInputStream inStream, ClientForm form) throws IOException {
+        byte type = inStream.readByte();
+        if(type == 0)
+            return null;
+
+        if(type == 1)
+            return new ClientGroupObjectValue(inStream, form);
+
+        if(type == 2)
+            return BaseUtils.deserializeString(inStream);
+
+        throw new IOException();
     }
 
     public static ClientAsync[] deserialize(byte[] asyncs, ClientForm form) {

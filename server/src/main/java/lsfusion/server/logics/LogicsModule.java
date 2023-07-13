@@ -1,6 +1,5 @@
 package lsfusion.server.logics;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import lsfusion.base.BaseUtils;
 import lsfusion.base.Pair;
@@ -554,7 +553,7 @@ public abstract class LogicsModule {
         return addIFAProp(group, caption, form, objectsToSet, newSession ? FormSessionScope.NEWSESSION : FormSessionScope.OLDSESSION, true, ModalityWindowFormType.FLOAT, false);
     }
 
-    protected <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImOrderSet<O> objectsToSet, FormSessionScope scope, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
+    public <O extends ObjectSelector> LA addIFAProp(Group group, LocalizedString caption, FormSelector<O> form, ImOrderSet<O> objectsToSet, FormSessionScope scope, boolean syncType, WindowFormType windowType, boolean forbidDuplicate) {
         return addIFAProp(group, caption, form, objectsToSet, ListFact.toList(false, objectsToSet.size()), scope, ManageSessionType.AUTO, FormEntity.DEFAULT_NOCANCEL, SetFact.EMPTYORDER(), SetFact.EMPTY(), syncType, windowType, forbidDuplicate, false, false, null);
     }
 
@@ -684,7 +683,7 @@ public abstract class LogicsModule {
                 mappedInterfaces, innerInterfaces.get(changeIndex), conditionalPart, getBaseClass()));
     }
 
-    private static class IntegrationForm<I extends PropertyInterface> {
+    public static class IntegrationForm<I extends PropertyInterface> {
         public final IntegrationFormEntity<I> form;
         public final ImOrderSet<ObjectEntity> objectsToSet;
         public final ImList<Boolean> nulls;
@@ -693,6 +692,10 @@ public abstract class LogicsModule {
             this.form = form;
             this.objectsToSet = objectsToSet;
             this.nulls = nulls;
+        }
+
+        public <T extends PropertyInterface> ImOrderSet<T> getOrderInterfaces(ImRevMap<T, I> mapPropertyInterfaces) {
+            return objectsToSet.mapOrder(mapPropertyInterfaces.join(form.mapObjects).reverse());
         }
     }
 
@@ -706,20 +709,20 @@ public abstract class LogicsModule {
         PropertyInterfaceImplement<PropertyInterface> where = hasWhere ? readImplements.get(readImplements.size() - 1) : null;
         where = PropertyFact.getFullWhereProperty(innerInterfaces.getSet(), mapInterfaces.getSet(), where, exprs.getCol());
 
-        IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, mapInterfaces, exprs, propUsages, orders, where, true);
+        IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, null, mapInterfaces, exprs, propUsages, orders, where);
         addAutoFormEntityNotFinalized(integrationForm.form);
 
         return integrationForm;
     }
 
-    private <I extends PropertyInterface> IntegrationForm addIntegrationForm(ImOrderSet<I> innerInterfaces, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where, boolean notFinalized) throws FormEntity.AlreadyDefined {
+    protected <I extends PropertyInterface> IntegrationForm<I> addIntegrationForm(ImOrderSet<I> innerInterfaces, ImList<ValueClass> innerClasses, ImOrderSet<I> mapInterfaces, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyInterfaceImplement<I> where) throws FormEntity.AlreadyDefined {
         // creating integration form
-        IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, null, mapInterfaces, properties, propUsages, where, orders, false, version);
+        IntegrationFormEntity<I> form = new IntegrationFormEntity<>(baseLM, innerInterfaces, innerClasses, mapInterfaces, properties, propUsages, where, orders, false, version);
 
         ImOrderSet<ObjectEntity> objectsToSet = mapInterfaces.mapOrder(form.mapObjects);
         ImList<Boolean> nulls = ListFact.toList(true, mapInterfaces.size());
 
-        return new IntegrationForm(form, objectsToSet, nulls);
+        return new IntegrationForm<I>(form, objectsToSet, nulls);
     }
 
     protected LP addJSONProp(LocalizedString caption, int resInterfaces, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders,
@@ -729,23 +732,7 @@ public abstract class LogicsModule {
         return addJSONFormProp(caption, integrationForm);
     }
 
-    public <I extends PropertyInterface> LP addJSONProp(LocalizedString caption, ImOrderSet<I> innerInterfaces, ImOrderSet<I> innerValues, ImList<PropertyInterfaceImplement<I>> properties, ImList<ScriptingLogicsModule.IntegrationPropUsage> propUsages, ImOrderMap<String, Boolean> orders, PropertyMapImplement<?, I> where) {
-        try {
-            assert this instanceof BaseLogicsModule;
-
-            IntegrationForm integrationForm = addIntegrationForm(innerInterfaces, innerValues, properties, propUsages, orders, where, false);
-            addAutoFormEntityFinalized(integrationForm.form);
-
-            LP jsonFormProp = addJSONFormProp(caption, integrationForm);
-            jsonFormProp.property.finalizeInit();
-            ((LazyProperty)jsonFormProp.property).finalizeLazyInit();
-            return jsonFormProp;
-        } catch (FormEntity.AlreadyDefined e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    private LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
+    protected LP addJSONFormProp(LocalizedString caption, IntegrationForm integrationForm) {
         // creating action
         return addJSONFormProp(null, caption, integrationForm.form, integrationForm.objectsToSet, integrationForm.nulls, SetFact.EMPTYORDER(), SetFact.EMPTY());
     }
@@ -1428,16 +1415,24 @@ public abstract class LogicsModule {
 
     // ------------------- Override property ----------------- //
 
-    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
+    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numOrders, boolean ordersNotNull, boolean descending, int interfaces, List<ResolveClassSet> explicitInnerClasses, Object... params) {
         ImOrderSet<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
-        return addOGProp(group, persist, caption, type, numOrders, ordersNotNull, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
+        return addOGProp(group, persist, caption, type, hasWhere, numOrders, ordersNotNull, descending, innerInterfaces, explicitInnerClasses, readCalcImplements(innerInterfaces, params));
     }
-    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
-        int numExprs = type.numExprs();
+    public <T extends PropertyInterface> LP addOGProp(Group group, boolean persist, LocalizedString caption, GroupType type, boolean hasWhere, int numOrders, boolean ordersNotNull, boolean descending, ImOrderSet<T> innerInterfaces, List<ResolveClassSet> explicitInnerClasses, ImList<PropertyInterfaceImplement<T>> listImplements) {
+        assert type == GroupType.CONCAT || type == GroupType.LAST;
+        int numExprs = 2;
         ImList<PropertyInterfaceImplement<T>> props = listImplements.subList(0, numExprs);
+        PropertyInterfaceImplement<T> where = null;
+        if(hasWhere) {
+            assert type == GroupType.CONCAT;
+            where = listImplements.get(numExprs);
+            numExprs++;
+        }
         ImOrderMap<PropertyInterfaceImplement<T>, Boolean> orders = listImplements.subList(numExprs, numExprs + numOrders).toOrderSet().toOrderMap(descending);
         ImList<PropertyInterfaceImplement<T>> groups = listImplements.subList(numExprs + numOrders, listImplements.size());
-        OrderGroupProperty<T> property = new OrderGroupProperty<>(caption, innerInterfaces.getSet(), groups.getCol(), props, type, orders, ordersNotNull);
+
+        OrderGroupProperty<T> property = OrderGroupProperty.create(caption, innerInterfaces.getSet(), groups.getCol(), props, where, type, orders, ordersNotNull);
         property.setExplicitInnerClasses(innerInterfaces, explicitInnerClasses);
 
         return mapLGProp(group, persist, property, groups);
@@ -2339,12 +2334,12 @@ public abstract class LogicsModule {
         assert formsFinalized;
         boolean added = addAutoFormEntity(form);
         if(added) // last check is recursion guard
-            form.finalizeAroundInit();
+            form.finalizeAndPreread();
     }
     public void addAutoFormEntity(AutoFinalFormEntity form) {
         boolean added = addAutoFormEntity((AutoFormEntity) form);
         if(formsFinalized && added) // last check is recursion guard
-            form.finalizeAroundInit();
+            form.finalizeAndPreread();
     }
     
     protected void addNavigatorElement(NavigatorElement element) {

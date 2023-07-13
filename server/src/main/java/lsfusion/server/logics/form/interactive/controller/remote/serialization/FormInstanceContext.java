@@ -70,8 +70,6 @@ public class FormInstanceContext {
             throw Throwables.propagate(e);
         }
         int count = asyncValues.length;
-        if(count > maxValuesNeeded) // optimization
-            return new Pair<>(null, null);
 
         int sumLength = 0;
         for(PropertyAsync asyncValue : asyncValues)

@@ -2052,7 +2052,11 @@ public class GFormController implements EditManager {
 
     public void getAsyncValues(String value, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
         if(editContext != null) // just in case
-            getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), editAsyncValuesSID, callback);
+            getAsyncValues(value, editContext, editAsyncValuesSID, callback);
+    }
+
+    public void getAsyncValues(String value, EditContext editContext, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {
+        getAsyncValues(value, editContext.getProperty(), editContext.getColumnKey(), actionSID, callback);
     }
 
     public void getAsyncValues(String value, GPropertyDraw property, GGroupObjectValue columnKey, String actionSID, AsyncCallback<Pair<ArrayList<GAsync>, Boolean>> callback) {

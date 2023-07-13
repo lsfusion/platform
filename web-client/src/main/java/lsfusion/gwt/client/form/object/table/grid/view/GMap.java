@@ -14,7 +14,6 @@ import lsfusion.gwt.client.form.object.table.grid.controller.GGridController;
 import lsfusion.gwt.client.form.property.PValue;
 import lsfusion.gwt.client.view.StyleDefaults;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,11 +119,11 @@ public class GMap extends GSimpleStateTableView<JavaScriptObject> implements Req
 
         for(int i=0,size=listObjects.length();i<size;i++) {
             JavaScriptObject object = listObjects.get(i);
-            GGroupObjectValue key = getKey(object);
+            GGroupObjectValue key = getObjects(object);
 
             GroupMarker groupMarker = new GroupMarker(object);
             if (groupMarker.color == null) {
-                String rowBackgroundColor = getRowBackgroundColor(getKey(object));
+                String rowBackgroundColor = getRowBackgroundColor(getObjects(object));
                 if (rowBackgroundColor != null) {
                     groupMarker.color = rowBackgroundColor;
                 }

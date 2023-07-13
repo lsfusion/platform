@@ -302,9 +302,11 @@ public class CaseUnionProperty extends IncrementUnionProperty {
     @IdentityStrongLazy
     public <I extends PropertyInterface, V extends PropertyInterface, W extends PropertyInterface> Select<Interface> getSelectProperty(ImList<Property> viewProperties) {
         Pair<Integer, Integer> resultStat = new Pair<>(0, 0);
+        boolean multi = false;
         MList<InputValueList> mResultValues = ListFact.mList();
         ImList<CalcCase<Interface>> cases = getCases();
-        MList<CalcCase<Interface>> mJsonCases = ListFact.mList();
+        MList<PropertyMapImplement<?, Interface>> mJsonWheres = ListFact.mList();
+        MList<SelectProperty<Interface>> mJsonProps = ListFact.mList();
         for(CalcCase<Interface> propCase : cases) {
             Select<Interface> joinProperty = propCase.implement.mapSelect(viewProperties);
             if(joinProperty == null)
@@ -315,7 +317,8 @@ public class CaseUnionProperty extends IncrementUnionProperty {
                 where = ((PropertyMapImplement<?, Interface>) propCase.implement).mapClassProperty();
             else
                 where = (PropertyMapImplement<?, Interface>) propCase.where;
-            mJsonCases.add(new CalcCase<>(where, joinProperty.property));
+            mJsonWheres.add(where);
+            mJsonProps.add(joinProperty.property);
 
             if(joinProperty.values == null) // unknown wheres
                 mResultValues = null;
@@ -324,8 +327,20 @@ public class CaseUnionProperty extends IncrementUnionProperty {
             Pair<Integer, Integer> joinStat = joinProperty.stat;
             if(resultStat.second < joinStat.second)
                 resultStat = joinStat;
+            multi = multi || joinProperty.multi;
         }
-        return new Select<>(PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList()), resultStat, mResultValues != null ? mResultValues.immutableList() : null);
+        ImList<PropertyMapImplement<?, Interface>> jsonWheres = mJsonWheres.immutableList();
+        ImList<SelectProperty<Interface>> jsonProps = mJsonProps.immutableList();
+        return new Select<>(filterSelected -> {
+            MList<CalcCase<Interface>> mJsonCases = ListFact.mList();
+            for(int i = 0, size = jsonProps.size(); i < size; i++) {
+                PropertyMapImplement<?, Interface> jsonProp = jsonProps.get(i).get(filterSelected);
+                if(jsonProp == null)
+                    return null;
+                mJsonCases.add(new CalcCase<>(jsonWheres.get(i), jsonProp));
+            }
+            return PropertyFact.createUnion(interfaces, isExclusive, mJsonCases.immutableList());
+        }, resultStat, mResultValues != null ? mResultValues.immutableList() : null, multi);
     }
 
     @Override

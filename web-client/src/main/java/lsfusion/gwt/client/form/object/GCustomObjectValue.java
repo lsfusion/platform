@@ -27,6 +27,11 @@ public class GCustomObjectValue implements Serializable {
     }
 
     @Override
+    public String toString() {
+        return id + " - " + idClass;
+    }
+
+    @Override
     public int hashCode() {
         return (int) (id * 31 + idClass);
     }

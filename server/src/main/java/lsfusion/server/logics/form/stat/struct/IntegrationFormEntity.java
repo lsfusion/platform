@@ -4,16 +4,21 @@ import lsfusion.base.col.MapFact;
 import lsfusion.base.col.SetFact;
 import lsfusion.base.col.interfaces.immutable.*;
 import lsfusion.base.col.interfaces.mutable.add.MAddExclMap;
+import lsfusion.interop.form.object.table.grid.ListViewType;
+import lsfusion.interop.form.property.ClassViewType;
 import lsfusion.server.base.version.Version;
 import lsfusion.server.language.ScriptingLogicsModule;
 import lsfusion.server.logics.BaseLogicsModule;
 import lsfusion.server.logics.classes.ValueClass;
+import lsfusion.server.logics.form.interactive.design.ContainerView;
+import lsfusion.server.logics.form.interactive.design.auto.DefaultFormView;
 import lsfusion.server.logics.form.struct.AutoFormEntity;
 import lsfusion.server.logics.form.struct.filter.FilterEntity;
 import lsfusion.server.logics.form.struct.group.Group;
 import lsfusion.server.logics.form.struct.object.GroupObjectEntity;
 import lsfusion.server.logics.form.struct.object.ObjectEntity;
 import lsfusion.server.logics.form.struct.property.PropertyDrawEntity;
+import lsfusion.server.logics.form.struct.property.PropertyDrawExtraType;
 import lsfusion.server.logics.property.Property;
 import lsfusion.server.logics.property.classes.infer.ClassType;
 import lsfusion.server.logics.property.implement.PropertyInterfaceImplement;
@@ -30,7 +35,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         super(LocalizedString.NONAME, version);
 
         final ImMap<P, ValueClass> interfaceClasses;
-        if(innerClasses == null) { // export
+        if(innerClasses == null) { // export / json
             if (where instanceof PropertyMapImplement) { // it'not clear what to do with parameter as where
                 PropertyMapImplement<M, P> mapWhere = (PropertyMapImplement<M, P>) where;
                 interfaceClasses = mapWhere.mapInterfaceClasses(ClassType.forPolicy); // need this for correct export action signature
@@ -46,12 +51,15 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
 
         if(!valueInterfaces.isEmpty()) {
             GroupObjectEntity valueGroupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(0, valueInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
+            valueGroupObject.setViewType(ClassViewType.PANEL); // for interactive view
             addGroupObject(valueGroupObject, version);
         }
 
         if(valueInterfaces.size() < innerInterfaces.size()) { // extending context
             groupObject = new GroupObjectEntity(genID(), innerInterfaces.subOrder(valueInterfaces.size(), innerInterfaces.size()).mapOrder(mapObjects)); // we don't know parameter classes
             groupObject.setSID("value"); // for JSON and XML
+            groupObject.setListViewType(ListViewType.CUSTOM);
+            groupObject.setCustomRenderFunction("select");
             addGroupObject(groupObject, version);
         } else
             groupObject = null;
@@ -91,7 +99,7 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
             }
             setFinalPropertyDrawSID(propertyDraw, alias);
 
-            propertyDraw.group = Group.NOGROUP; // without group
+            propertyDraw.group = propUsage.group;
 
             if(groupObject != null && !addObjects.intersect(groupObject.getObjects()))
                 propertyDraw.toDraw = groupObject;
@@ -108,10 +116,34 @@ public class IntegrationFormEntity<P extends PropertyInterface> extends AutoForm
         for(int i=0,size=orders.size();i<size;i++) {
             PropertyDrawEntity property = mapAliases.get(orders.getKey(i));
             property.setIntegrationSID(null);
+            property.setPropertyExtra(addPropertyObject(LM.vnull), PropertyDrawExtraType.SHOWIF, version); // for interactive view
             addDefaultOrder(property, orders.getValue(i), version);
         }
 
         finalizeInit(version);
+
+        // for interactive view
+        DefaultFormView formView = (DefaultFormView) getNFRichDesign(version);
+
+//        OBJECTS {
+//            border = FALSE;
+//            class = '';
+//        }
+        formView.objectsContainer.setBorder(false);
+        formView.objectsContainer.setElementClass(null);
+
+//        BOX(i) {
+//            caption = NULL;
+//        }
+//        REMOVE TOOLBARBOX(i);
+
+        if(groupObject != null) {
+            ContainerView boxContainer = formView.getBoxContainer(groupObject);
+            boxContainer.setCaption(null);
+
+            ContainerView toolbarBoxContainer = formView.getToolbarBoxContainer(groupObject);
+            formView.removeComponent(toolbarBoxContainer, version);
+        }
     }
 
     @Override
