@@ -158,6 +158,30 @@ public class GPanelController extends GPropertyController {
     }
 
     @Override
+    public void updatePropertyComments(GCommentReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyComments(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updateCellCommentElementClasses(GCommentElementClassReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setCellCommentElementClasses(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
+    public void updatePropertyPlaceholders(GPlaceholderReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
+        GPropertyDraw property = formController.getProperty(reader.propertyID);
+        propertyControllers.get(property).setPropertyPlaceholders(values);
+
+        updatedProperties.put(property, TRUE);
+    }
+
+    @Override
     public void updateLastValues(GLastReader reader, NativeHashMap<GGroupObjectValue, PValue> values) {
     }
 

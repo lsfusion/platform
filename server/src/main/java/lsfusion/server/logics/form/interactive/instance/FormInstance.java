@@ -2447,6 +2447,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
                 fillChangedReader(drawProperty.backgroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.foregroundReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 fillChangedReader(drawProperty.imageReader, toDraw, result, drawProperty.isProperty() ? propRowColumnGrids : propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.commentReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.commentElementClassReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
+                fillChangedReader(drawProperty.placeholderReader, toDraw, result, propRowColumnGrids, hidden, updateCaption, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
                 for(PropertyDrawInstance<?>.LastReaderInstance aggrLastReader : drawProperty.aggrLastReaders)
                     fillChangedReader(aggrLastReader, toDraw, result, propRowGrids, hidden, update, oldPropIsShown, mReadProperties, changedDrawProps, changedProps);
             } else if (oldPropIsShown) {

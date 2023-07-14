@@ -21,7 +21,7 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "{logics.property.caption}";    
         }
-    }, 
+    },
     FOOTER {
         @Override
         public ReportFieldExtraType getReportExtraType() {
@@ -149,7 +149,56 @@ public enum PropertyDrawExtraType {
         public String getText() {
             return "{logics.image}";
         }
-    };
+    },
+    COMMENT {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.COMMENT;
+        }
+
+        @Override
+        public String getText() {
+            return "COMMENT";
+        }
+    },
+    COMMENTELEMENTCLASS {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.COMMENTELEMENTCLASS;
+        }
+
+        @Override
+        public String getText() {
+            return "COMMENTELEMENTCLASS";
+        }
+    },
+    PLACEHOLDER {
+        @Override
+        public ReportFieldExtraType getReportExtraType() {
+            return null;
+        }
+
+        @Override
+        public byte getPropertyReadType() {
+            return PropertyReadType.PLACEHOLDER;
+        }
+
+        @Override
+        public String getText() {
+            return "PLACEHOLDER";
+        }
+    }
+    ;
 
     public static final ImSet<PropertyDrawExtraType> extras = SetFact.toSet(values());
 
