@@ -132,8 +132,8 @@ public abstract class TextFieldPropertyEditor extends JFormattedTextField implem
         final String query = currentRequest;
         currentRequest = null;
 
-        if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
-            return;
+//        if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
+//            return;
 
 
         //disable selection while loading

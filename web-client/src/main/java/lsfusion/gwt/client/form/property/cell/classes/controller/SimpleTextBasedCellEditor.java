@@ -394,8 +394,8 @@ public abstract class SimpleTextBasedCellEditor extends RequestReplaceValueCellE
 
                 boolean emptyQuery = request.query == null;
                 String query = nvl(request.query, "");
-                if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
-                    return;
+//                if(prevSucceededEmptyQuery != null && query.startsWith(prevSucceededEmptyQuery))
+//                    return;
 
                 suggestBox.updateDecoration(true);
 

@@ -66,6 +66,10 @@ public class InputValueList<P extends PropertyInterface> {
         return property.getSelectStat(mapValues.keys());
     }
 
+    public Stat getInterfaceStat() {
+        return property.getInterfaceStat(mapValues.keys());
+    }
+
     public boolean isHighlight() {
         Type type = property.getType();
         return !(type instanceof DataClass && ((DataClass<?>) type).markupHtml()); // ts_headline breaks html : https://stackoverflow.com/questions/40263956/why-is-postgresql-stripping-html-entities-in-ts-headline

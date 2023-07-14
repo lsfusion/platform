@@ -1159,6 +1159,9 @@ public class FormInstance extends ExecutionEnvironment implements ReallyChanged,
 
     public static <P extends PropertyInterface> PropertyAsync<P>[] getAsyncValues(InputValueList<P> list, DataSession session, Modifier modifier, String value, AsyncMode asyncMode) throws SQLException, SQLHandledException {
         Settings settings = Settings.get();
+        if(value.length() <= settings.getAsyncValuesCancelThreshold() && !list.getInterfaceStat().less(new Stat(settings.getAsyncValuesMaxReadDataCompletionCount())))
+            return new PropertyAsync[0];
+
         int neededCount = settings.getAsyncValuesNeededCount();
         double extraReadCoeff = settings.getAsyncValuesExtraReadCoeff();
         double statDegree = settings.getStatDegree();
